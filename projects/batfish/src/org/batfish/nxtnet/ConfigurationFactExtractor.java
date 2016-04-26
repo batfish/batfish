@@ -281,6 +281,10 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetRemoteAs_flat = _factBins.get("SetRemoteAs_flat");
       StringBuilder wSetBgpNeighborAdvertiseInactive_flat = _factBins
             .get("SetBgpNeighborAdvertiseInactive_flat");
+      StringBuilder wSetBgpNeighborAllowLocalAsIn_flat = _factBins
+            .get("SetBgpNeighborAllowLocalAsIn_flat");
+      StringBuilder wSetBgpNeighborAllowRemoteAsOut_flat = _factBins
+            .get("SetBgpNeighborAllowRemoteAsOut_flat");
       StringBuilder wSetBgpNeighborDefaultMetric_flat = _factBins
             .get("SetBgpNeighborDefaultMetric_flat");
       StringBuilder wSetBgpNeighborSendCommunity_flat = _factBins
@@ -306,6 +310,16 @@ public class ConfigurationFactExtractor {
             }
             if (neighbor.getAdvertiseInactive()) {
                wSetBgpNeighborAdvertiseInactive_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAllowLocalAsIn()) {
+               wSetBgpNeighborAllowLocalAsIn_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAllowRemoteAsOut()) {
+               wSetBgpNeighborAllowRemoteAsOut_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "\n");
             }

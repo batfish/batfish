@@ -12,7 +12,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
@@ -138,7 +137,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(
          Prefix.ZERO);
 
-   private static final String F_BGP_LOCAL_AS_LOOPS = "protocols - bgp - group? - local-as - loops";
+   private static final String F_BGP_LOCAL_AS_LOOPS = "protocols - bgp - group? - local-as - loops - currently we allow infinite occurences of local as";
 
    private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
 
@@ -2268,6 +2267,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitBt_advertise_inactive(Bt_advertise_inactiveContext ctx) {
+      _currentBgpGroup.setAdvertiseInactive(true);
+   }
+
+   @Override
+   public void exitBt_advertise_peer_as(Bt_advertise_peer_asContext ctx) {
+      _currentBgpGroup.setAdvertisePeerAs(true);
+   }
+
+   @Override
    public void exitBt_description(Bt_descriptionContext ctx) {
       String description = ctx.s_description().description.getText();
       _currentBgpGroup.setDescription(description);
@@ -2996,6 +3005,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitLast_loops(Last_loopsContext ctx) {
       todo(ctx, F_BGP_LOCAL_AS_LOOPS);
+      int loops = toInt(ctx.DEC());
+      _currentBgpGroup.setLoops(loops);
    }
 
    @Override

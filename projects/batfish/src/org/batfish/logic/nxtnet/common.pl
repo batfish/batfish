@@ -257,6 +257,11 @@ function_sig('RouteDetails_nextHop', 2).
       'BgpNeighborAdvertiseInactive'(SrcNode, DstIp)
    ),
    PathSize = PrevPathSize,
+   'RemoteAs'(SrcNode, DstIp, ReceiverAs),
+   (
+      \+ 'AdvertisementPath'(PrevAdvert, _, ReceiverAs) ;
+      'BgpNeighborAllowRemoteAsOut'(SrcNode, DstIp)
+   ),
    'BestBgpAdvertisement'(PrevAdvert),
    (
       'BgpDefaultLocalPref'(SrcNode, DstIp, LocalPref);
@@ -474,7 +479,11 @@ need_PolicyMapMatchRoute(Map, Route) :-
    PriorType = 'bgp_to',
    \+ 'HasIp'(DstNode, OriginatorIp),
    'LocalAs'(DstNode, SrcIp, ReceiverAs),
-   \+ 'AdvertisementPath'(PrevAdvert, _, ReceiverAs),
+   % filter advertisements with our own AS unless allowas-in
+   (
+      \+ 'AdvertisementPath'(PrevAdvert, _, ReceiverAs) ;
+      'BgpNeighborAllowLocalAsIn'(DstNode, SrcIp)
+   ),
    'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
    'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
    'BgpAdvertisement_localPref'(PrevAdvert, LocalPref),
@@ -664,6 +673,14 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'BgpNeighborAdvertiseInactive'(Node, NeighborIp) :-
    'SetBgpNeighborAdvertiseInactive'(Node, NeighborNetwork),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
+'BgpNeighborAllowLocalAsIn'(Node, NeighborIp) :-
+   'SetBgpNeighborAllowLocalAsIn'(Node, NeighborNetwork),
+   'NetworkOf'(NeighborIp, _, NeighborNetwork).
+
+'BgpNeighborAllowRemoteAsOut'(Node, NeighborIp) :-
+   'SetBgpNeighborAllowRemoteAsOut'(Node, NeighborNetwork),
    'NetworkOf'(NeighborIp, _, NeighborNetwork).
 
 'BgpNeighborGeneratedRoute'(Route),
@@ -1395,6 +1412,14 @@ need_PolicyMapMatchAdvert(Map, Advert)
 
 'SetBgpNeighborAdvertiseInactive'(Node, NeighborNetwork) :-
    'SetBgpNeighborAdvertiseInactive_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
+
+'SetBgpNeighborAllowLocalAsIn'(Node, NeighborNetwork) :-
+   'SetBgpNeighborAllowLocalAsIn_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
+   'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
+
+'SetBgpNeighborAllowRemoteAsOut'(Node, NeighborNetwork) :-
+   'SetBgpNeighborAllowRemoteAsOut_flat'(Node, NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length),
    'Network_constructor'(NeighborNetwork_start, NeighborNetwork_end, NeighborNetwork_prefix_length, NeighborNetwork).
 
 'SetBgpNeighborDefaultMetric'(Node, NeighborNetwork, Metric) :-

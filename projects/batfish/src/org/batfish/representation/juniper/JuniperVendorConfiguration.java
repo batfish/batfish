@@ -104,6 +104,19 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             ebgpMultihop = false;
          }
          neighbor.setEbgpMultihop(ebgpMultihop);
+         Integer loops = ig.getLoops();
+         boolean allowLocalAsIn = loops != null && loops > 0;
+         neighbor.setAllowLocalAsIn(allowLocalAsIn);
+         Boolean advertisePeerAs = ig.getAdvertisePeerAs();
+         if (advertisePeerAs == null) {
+            advertisePeerAs = false;
+         }
+         neighbor.setAllowRemoteAsOut(advertisePeerAs);
+         Boolean advertiseInactive = ig.getAdvertiseInactive();
+         if (advertiseInactive == null) {
+            advertiseInactive = false;
+         }
+         neighbor.setAdvertiseInactive(advertiseInactive);
          neighbor.setGroupName(ig.getGroupName());
          // import policies
          for (String importPolicyName : ig.getImportPolicies()) {
@@ -116,7 +129,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                setPolicyStatementReferent(importPolicyName,
                      ig.getImportPolicies(), "BGP import policy for neighbor: "
                            + ig.getRemoteAddress().toString());
-               neighbor.addInboundPolicyMap(importPolicy);
+               neighbor.getInboundPolicyMaps().add(importPolicy);
             }
          }
          // export policies
@@ -130,7 +143,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                setPolicyStatementReferent(exportPolicyName,
                      ig.getExportPolicies(), "BGP export policy for neighbor: "
                            + ig.getRemoteAddress().toString());
-               neighbor.addOutboundPolicyMap(exportPolicy);
+               neighbor.getOutboundPolicyMaps().add(exportPolicy);
             }
          }
          // inherit local-as

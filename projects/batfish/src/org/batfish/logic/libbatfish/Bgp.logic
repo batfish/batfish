@@ -64,6 +64,14 @@ BgpNeighborAdvertiseInactive(node, neighborIp) ->
    Node(node),
    Ip(neighborIp).
 
+BgpNeighborAllowLocalAsIn(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
+BgpNeighborRemoteLocalAsOut(node, neighborIp) ->
+   Node(node),
+   Ip(neighborIp).
+
 BgpNeighborDefaultMetric(node, neighborIp, metric) ->
    Node(node),
    Ip(neighborIp),
@@ -281,6 +289,26 @@ SetBgpNeighborAdvertiseInactive(node, neighborNetwork) ->
    Network(neighborNetwork).
 
 SetBgpNeighborAdvertiseInactive_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
+
+SetBgpNeighborAllowLocalAsIn(node, neighborNetwork) ->
+   Node(node),
+   Network(neighborNetwork).
+
+SetBgpNeighborAllowLocalAsIn_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
+   Node(node),
+   Ip(neighborNetwork_start),
+   Ip(neighborNetwork_end),
+   int(neighborNetwork_prefix_length).
+
+SetBgpNeighborAllowRemoteAsOut(node, neighborNetwork) ->
+   Node(node),
+   Network(neighborNetwork).
+
+SetBgpNeighborAllowRemoteAsOut_flat(node, neighborNetwork_start, neighborNetwork_end, neighborNetwork_prefix_length) ->
    Node(node),
    Ip(neighborNetwork_start),
    Ip(neighborNetwork_end),

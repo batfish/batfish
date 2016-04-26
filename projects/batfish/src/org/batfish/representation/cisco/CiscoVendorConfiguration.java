@@ -675,17 +675,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
-         Boolean advertiseInactive = lpg.getAdvertiseInactive();
-         if (advertiseInactive == null) {
-            advertiseInactive = false;
-         }
-         Boolean ebgpMultihop = lpg.getEbgpMultihop();
-         if (ebgpMultihop == null) {
-            ebgpMultihop = false;
-         }
+         boolean advertiseInactive = lpg.getAdvertiseInactive();
+         boolean ebgpMultihop = lpg.getEbgpMultihop();
+         boolean allowasIn = lpg.getAllowAsIn();
+         boolean disablePeerAsCheck = lpg.getDisablePeerAsCheck();
          String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
-            if (lpg.getRemoteAS() == null) {
+            if (lpg.getRemoteAs() == null) {
                _w.redFlag("No remote-as set for peer: " + lpg.getName());
                continue;
             }
@@ -707,31 +703,34 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             newBgpNeighbors.put(newNeighbor.getPrefix(), newNeighbor);
 
-            if (newInboundPolicyMap != null) {
-               newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
-            }
-            if (newOutboundPolicyMap != null) {
-               newNeighbor.addOutboundPolicyMap(newOutboundPolicyMap);
-               if (defaultOriginationPolicy != null) {
-                  newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
-               }
-            }
-            newNeighbor.setGroupName(lpg.getGroupName());
+            newNeighbor.setAdvertiseInactive(advertiseInactive);
+            newNeighbor.setAllowLocalAsIn(allowasIn);
+            newNeighbor.setAllowRemoteAsOut(disablePeerAsCheck);
             if (routeReflectorClient) {
                newNeighbor.setClusterId(clusterId.asLong());
             }
-            if (defaultRoute != null) {
-               newNeighbor.getGeneratedRoutes().add(defaultRoute);
-            }
-            newNeighbor.setAdvertiseInactive(advertiseInactive);
-            newNeighbor.setRemoteAs(lpg.getRemoteAS());
-            newNeighbor.setLocalAs(proc.getPid());
-            newNeighbor.setLocalIp(updateSource);
-            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
-            newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
             newNeighbor.setDescription(description);
             newNeighbor.setEbgpMultihop(ebgpMultihop);
+            if (defaultRoute != null) {
+               newNeighbor.getGeneratedRoutes().add(defaultRoute);
+            }
+            newNeighbor.setGroupName(lpg.getGroupName());
+            if (newInboundPolicyMap != null) {
+               newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
+            }
+            newNeighbor.setLocalAs(proc.getPid());
+            newNeighbor.setLocalIp(updateSource);
+            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
+            if (newOutboundPolicyMap != null) {
+               newNeighbor.getOutboundPolicyMaps().add(newOutboundPolicyMap);
+               if (defaultOriginationPolicy != null) {
+                  newNeighbor.getOutboundPolicyMaps().add(
+                        defaultOriginationPolicy);
+               }
+            }
+            newNeighbor.setRemoteAs(lpg.getRemoteAs());
+            newNeighbor.setSendCommunity(sendCommunity);
          }
       }
       return newBgpProcess;

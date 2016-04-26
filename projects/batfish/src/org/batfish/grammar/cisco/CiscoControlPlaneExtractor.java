@@ -1144,7 +1144,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.REMOTE_AS() != null) {
          int remoteAs = toInteger(ctx.asnum);
-         _currentPeerGroup.setRemoteAS(remoteAs);
+         _currentPeerGroup.setRemoteAs(remoteAs);
       }
       // TODO: verify if this is correct for nexus
       _currentPeerGroup.setActive(true);
@@ -1328,7 +1328,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
-      _currentPeerGroup.SetAllowAsIn(true);
+      _currentPeerGroup.setAllowAsIn(true);
       if (ctx.num != null) {
          todo(ctx, F_ALLOWAS_IN_NUMBER);
       }
@@ -1383,7 +1383,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          namedGroup.addNeighborPrefix(prefix);
          if (ctx.as != null) {
             int remoteAs = toInteger(ctx.as);
-            pg.setRemoteAS(remoteAs);
+            pg.setRemoteAs(remoteAs);
          }
       }
       else if (ctx.IPV6_PREFIX() != null) {
@@ -1455,6 +1455,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
       String description = ctx.description_line().text.getText().trim();
       _currentPeerGroup.setDescription(description);
+   }
+
+   @Override
+   public void exitDisable_peer_as_check_bgp_tail(
+         Disable_peer_as_check_bgp_tailContext ctx) {
+      _currentPeerGroup.setDisablePeerAsCheck(true);
    }
 
    @Override
@@ -2514,7 +2520,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       int as = toInteger(ctx.as);
       if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
-         _currentPeerGroup.setRemoteAS(as);
+         _currentPeerGroup.setRemoteAs(as);
       }
       else {
          throw new BatfishException("no peer or peer group in context");

@@ -50,7 +50,6 @@ address_family_rb_stanza
       | neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
-      | null_disable_peer_as_check_stanza
       | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
@@ -132,6 +131,7 @@ bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
    | description_bgp_tail
+   | disable_peer_as_check_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
@@ -197,6 +197,11 @@ default_shutdown_bgp_tail
 description_bgp_tail
 :
    description_line
+;
+
+disable_peer_as_check_bgp_tail
+:
+   DISABLE_PEER_AS_CHECK NEWLINE
 ;
 
 distribute_list_bgp_tail
@@ -509,11 +514,6 @@ null_bgp_tail
    ) ~NEWLINE* NEWLINE
 ;
 
-null_disable_peer_as_check_stanza
-:
-   DISABLE_PEER_AS_CHECK NEWLINE
-;
-
 null_no_neighbor_rb_stanza
 :
    NO NEIGHBOR
@@ -651,9 +651,11 @@ router_bgp_stanza
       | bgp_tail
       | cluster_id_rb_stanza
       | default_information_originate_rb_stanza
+      // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
+
+      | nexus_neighbor_rb_stanza
       | neighbor_rb_stanza
       | neighbor_group_rb_stanza
-      | nexus_neighbor_rb_stanza
       | no_bgp_enforce_first_as_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
