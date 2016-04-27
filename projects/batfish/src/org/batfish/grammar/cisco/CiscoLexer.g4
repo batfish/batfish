@@ -456,7 +456,6 @@ AS
    'as'
 ;
 
-
 ASA
 :
    'ASA'
@@ -5380,7 +5379,7 @@ TRACKING_PRIORITY_INCREMENT
 :
    'tracking-priority-increment'
 ;
-   
+
 TRAFFIC_ENG
 :
    'traffic-eng'
@@ -6452,6 +6451,11 @@ M_AsPathAccessList_DEC
 M_AsPathAccessList_DENY
 :
    'deny' -> type ( DENY ) , mode ( M_AsPathRegex )
+;
+
+M_AsPathAccessList_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
 ;
 
 M_AsPathAccessList_PERMIT

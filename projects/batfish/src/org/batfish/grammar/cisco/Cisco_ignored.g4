@@ -133,6 +133,13 @@ null_block_stanza
          )
       )
       | MULTI_CONFIG
+      |
+      (
+         NO
+         (
+            IP AS_PATH
+         )
+      )
       | NO_BANNER
       | NSR
       | NTP
@@ -153,11 +160,11 @@ null_block_stanza
       | RELOAD_TYPE
       | RMON
       | ROLE
-      | ROUTER 
-         (
-            LOG
-            | VRRP
-         )
+      | ROUTER
+      (
+         LOG
+         | VRRP
+      )
       | SAMPLER
       | SAMPLER_MAP
       | SCCP

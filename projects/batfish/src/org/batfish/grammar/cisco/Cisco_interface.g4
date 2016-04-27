@@ -268,6 +268,7 @@ null_block_if_stanza
          DSU BANDWIDTH
       )
       | DUPLEX
+      | ENABLE
       | ENCAPSULATION
       | EXIT
       | FAIR_QUEUE

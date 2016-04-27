@@ -184,6 +184,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");
       prefixes.put("HundredGigE", "HundredGigE");
+      prefixes.put("ip", "ip");
       prefixes.put("Group-Async", "Group-Async");
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
