@@ -12,7 +12,9 @@ null_block_stanza
    (
       AAA
       | ACCESS_GROUP
+      | ACCESS
       | ADMIN
+      | ALLOW
       | ARCHIVE
       | ATM
       | BASH
@@ -59,6 +61,7 @@ null_block_stanza
             )
             | ACCOUNTING_LIST
             | ACCOUNTING_THRESHOLD
+            | BOOTP_RELAY
             | DECAP_GROUP
             | DHCP
             | ECMP_GROUP
@@ -71,6 +74,7 @@ null_block_stanza
                OSPF NAME_LOOKUP
             )
             | POLICY_LIST
+            | ROUTER_ID
             | SLA
             | SOURCE
             | VIRTUAL_ROUTER
@@ -149,7 +153,11 @@ null_block_stanza
       | RELOAD_TYPE
       | RMON
       | ROLE
-      | ROUTER LOG
+      | ROUTER 
+         (
+            LOG
+            | VRRP
+         )
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
@@ -161,6 +169,7 @@ null_block_stanza
       | STCAPP
       | SVCLC
       | SWITCH_PROFILE
+      | SWITCH_TYPE
       | TACACS
       | TACACS_SERVER
       | TCP
@@ -278,6 +287,7 @@ null_block_substanza
          | DOMAIN_NAME
          | ECHO
          | EGRESS
+         | ENABLE
          | ENCAPSULATION
          | ENCRYPTION
          | END_CLASS_MAP
@@ -374,6 +384,7 @@ null_block_substanza
          | MAIN_CPU
          | MATCH
          | MAXIMUM
+         | MEMBER
          | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
@@ -508,6 +519,7 @@ null_block_substanza
          | TIMING
          | TOP
          | TOS
+         | TRACKING_PRIORITY_INCREMENT
          | TRANSPORT
          | TRIGGER
          | TRUNK
@@ -522,6 +534,7 @@ null_block_substanza
          | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
+         | VIRTUAL_ROUTER
          | VIRTUAL_TEMPLATE
          | VM_CPU
          | VM_MEMORY

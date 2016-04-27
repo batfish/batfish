@@ -451,6 +451,12 @@ AS_SET
    'as-set'
 ;
 
+AS
+:
+   'as'
+;
+
+
 ASA
 :
    'ASA'
@@ -694,6 +700,11 @@ BOOT_END_MARKER
 BOOT_START_MARKER
 :
    'boot-start-marker'
+;
+
+BOOTP_RELAY
+:
+   'bootp-relay'
 ;
 
 BOOTP
@@ -5110,6 +5121,11 @@ SWITCH_PROFILE
    'switch-profile'
 ;
 
+SWITCH_TYPE
+:
+   'switch-type'
+;
+
 SWITCHBACK
 :
    'switchback'
@@ -5360,6 +5376,11 @@ TRACKED
    'tracked'
 ;
 
+TRACKING_PRIORITY_INCREMENT
+:
+   'tracking-priority-increment'
+;
+   
 TRAFFIC_ENG
 :
    'traffic-eng'
