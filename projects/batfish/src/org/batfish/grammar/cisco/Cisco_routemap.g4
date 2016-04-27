@@ -239,7 +239,7 @@ route_policy_tail
 rp_community_set
 :
    name = variable
-   | PAREN_LEFT COMMUNITY_SET_VALUE PAREN_RIGHT
+   | PAREN_LEFT COMMUNITY_NUMBER PAREN_RIGHT
 ;
 
 rp_prefix_set
