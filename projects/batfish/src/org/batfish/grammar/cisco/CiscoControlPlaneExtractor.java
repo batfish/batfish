@@ -2748,8 +2748,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitShutdown_if_stanza(Shutdown_if_stanzaContext ctx) {
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setActive(false);
+      if (ctx.NO() == null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setActive(false);
+         }
       }
    }
 
