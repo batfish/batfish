@@ -17,6 +17,7 @@ verify {
          node.name);
       if (and{$show_ebgp, $show_received}) {
          printf("\tRECEIVED EBGP ADVERTISEMENTS\n");
+         printf("\t\t--------------\n");
          foreach received_ebgp_advertisement {
             $src_node := received_ebgp_advertisement.src_node;
             $src_ip := received_ebgp_advertisement.src_ip;
@@ -43,10 +44,12 @@ verify {
                printf("\t\t\t%s\n",
                   $community);
             }
+            printf("\t\t--------------\n");
          }
       }
       if (and{$show_ibgp, $show_received}) {
          printf("\tRECEIVED IBGP ADVERTISEMENTS\n");
+         printf("\t\t--------------\n");
          foreach received_ibgp_advertisement {
             $src_node := received_ibgp_advertisement.src_node;
             $src_ip := received_ibgp_advertisement.src_ip;
@@ -73,10 +76,12 @@ verify {
                printf("\t\t\t%s\n",
                   $community);
             }
+            printf("\t\t--------------\n");
          }
       }
       if (and{$show_ebgp, $show_sent}) {
          printf("\tSENT EBGP ADVERTISEMENTS\n");
+         printf("\t\t--------------\n");
          foreach sent_ebgp_advertisement {
             $src_node := sent_ebgp_advertisement.src_node;
             $src_ip := sent_ebgp_advertisement.src_ip;
@@ -103,10 +108,12 @@ verify {
                printf("\t\t\t%s\n",
                   $community);
             }
+            printf("\t\t--------------\n");
          }
       }
       if (and{$show_ibgp, $show_sent}) {
          printf("\tSENT IBGP ADVERTISEMENTS\n");
+         printf("\t\t--------------\n");
          foreach sent_ibgp_advertisement {
             $src_node := sent_ibgp_advertisement.src_node;
             $src_ip := sent_ibgp_advertisement.src_ip;
@@ -133,6 +140,7 @@ verify {
                printf("\t\t\t%s\n",
                   $community);
             }
+            printf("\t\t--------------\n");
          }
       }
       printf("\n");
