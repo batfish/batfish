@@ -88,7 +88,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String[] lines = text.split("\n");
       int errorLineIndex = offendingToken.getLine() - 1;
       int errorContextStartLine = Math.max(errorLineIndex - 10, 0);
-      int errorContextEndLine = Math.min(errorLineIndex + 10, lines.length);
+      int errorContextEndLine = Math.min(errorLineIndex + 10, lines.length - 1);
       sb.append("Error context lines:\n");
       for (int i = errorContextStartLine; i < errorLineIndex; i++) {
          sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
