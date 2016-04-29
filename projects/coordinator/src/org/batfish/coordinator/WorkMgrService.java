@@ -9,6 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipException;
 
@@ -601,17 +603,40 @@ public class WorkMgrService {
 
          checkStringParam(apiKey, "API key not supplied or is empty");
          ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
          checkApiKeyValidity(apiKey);
-         checkContainerAccessibility(apiKey, containerName);
-
-         String[] testrigList = Main.getWorkMgr().listTestrigs(containerName);
+         
+         if (apiKey.equals(CoordConsts.DEFAULT_API_KEY))
+            throw new AccessControlException("Listing all testrigs is not allowed with Default API key");
+         
+         List<String> containerList = new LinkedList<String>();
+         
+         if (containerName == null || containerName.equals("")) {
+            containerList.addAll(Arrays.asList(Main.getWorkMgr().listContainers(apiKey)));
+         }
+         else {
+            checkContainerAccessibility(apiKey, containerName);
+            containerList.add(containerName);
+         }
+         
+         JSONArray retArray = new JSONArray();
+         
+         for (String container : containerList) {
+            String[] testrigList = Main.getWorkMgr().listTestrigs(container);
+            
+            for (String testrig : testrigList) {
+               String testrigInfo = Main.getWorkMgr().getTestrigInfo(container, testrig);
+               
+               JSONObject jObject = new JSONObject()
+                  .put(CoordConsts.SVC_TESTRIG_NAME_KEY, container + "/" + testrig)
+                  .put(CoordConsts.SVC_TESTRIG_INFO_KEY, testrigInfo);
+               
+               retArray.put(jObject);
+            }                        
+         }
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY,
-                     new JSONArray(Arrays.asList(testrigList))))));
+                     retArray))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
