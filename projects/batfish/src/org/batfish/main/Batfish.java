@@ -1656,7 +1656,17 @@ public class Batfish implements AutoCloseable {
       try {
          Files.createDirectories(factsDirPath);
          for (String factsFilename : factBins.keySet()) {
-            String facts = factBins.get(factsFilename).toString();
+            String[] factsLines = factBins.get(factsFilename).toString().split("\n");
+            Set<String> uniqueFacts = new TreeSet<String>();
+            for (int i = 1; i < factsLines.length; i++) {
+               uniqueFacts.add(factsLines[i]);
+            }
+            StringBuilder factsBuilder = new StringBuilder();
+            factsBuilder.append(factsLines[0] + "\n");
+            for (String factsLine : uniqueFacts) {
+               factsBuilder.append(factsLine + "\n");
+            }
+            String facts = factsBuilder.toString();
             Path factsFilePath = factsDirPath.resolve(factsFilename);
             _logger.info("Writing: \""
                   + factsFilePath.toAbsolutePath().toString() + "\"\n");
