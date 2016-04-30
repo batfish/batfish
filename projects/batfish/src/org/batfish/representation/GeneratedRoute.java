@@ -1,14 +1,18 @@
 package org.batfish.representation;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
-public class GeneratedRoute extends Route {
+public final class GeneratedRoute extends Route {
 
    private static final long serialVersionUID = 1L;
 
    private int _administrativeCost;
 
    private AsPath _asPath;
+
+   private final Map<String, PolicyMap> _attributePolicies;
 
    private boolean _discard;
 
@@ -21,6 +25,7 @@ public class GeneratedRoute extends Route {
       super(prefix, null);
       _administrativeCost = administrativeCost;
       _generationPolicies = generationPolicyMaps;
+      _attributePolicies = new TreeMap<String, PolicyMap>();
    }
 
    @Override
@@ -36,6 +41,10 @@ public class GeneratedRoute extends Route {
 
    public AsPath getAsPath() {
       return _asPath;
+   }
+
+   public Map<String, PolicyMap> getAttributePolicies() {
+      return _attributePolicies;
    }
 
    public boolean getDiscard() {

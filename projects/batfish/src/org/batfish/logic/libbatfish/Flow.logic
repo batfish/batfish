@@ -9,6 +9,10 @@ block(`Flow) {
 ///   [x] is a traffic flow.
 Flow(x) -> .
 
+Flow_dscp[flow] = dscp ->
+   Flow(flow),
+   int(dscp).
+
 Flow_dstIp[flow] = dstIp ->
    Flow(flow),
    Ip(dstIp).
@@ -16,6 +20,10 @@ Flow_dstIp[flow] = dstIp ->
 Flow_dstPort[flow] = dstPort ->
    Flow(flow),
    int(dstPort).
+
+Flow_ecn[flow] = ecn ->
+   Flow(flow),
+   int(ecn).
 
 Flow_icmpCode[flow] = icmpCode ->
    Flow(flow),
@@ -25,9 +33,37 @@ Flow_icmpType[flow] = icmpType ->
    Flow(flow),
    int(icmpType).
 
-Flow_tcpFlags[flow] = tcpFlags ->
+Flow_tcpFlagsCWR[flow] = bit ->
    Flow(flow),
-   int(tcpFlags).
+   int(bit).
+
+Flow_tcpFlagsECE[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsURG[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsACK[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsPSH[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsRST[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsSYN[flow] = bit ->
+   Flow(flow),
+   int(bit).
+
+Flow_tcpFlagsFIN[flow] = bit ->
+   Flow(flow),
+   int(bit).
 
 Flow_ipProtocol[flow] = protocol ->
    Flow(flow),

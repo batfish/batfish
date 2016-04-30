@@ -7,31 +7,57 @@ import org.batfish.representation.Ip;
 public abstract class BgpPeerGroup implements Serializable {
 
    private static final long serialVersionUID = 1L;
-   protected Boolean _active;
-   protected Boolean _allowAsIn;
-   protected Ip _clusterId;
-   protected Integer _defaultMetric;
-   protected Boolean _defaultOriginate;
-   protected String _defaultOriginateMap;
-   protected String _description;
-   private Boolean _ebgpMultihop;
-   protected String _inboundPrefixList;
-   protected String _inboundRouteMap;
-   protected String _outboundPrefixList;
-   protected String _outboundRouteMap;
-   protected Integer _remoteAS;
-   private Boolean _removePrivateAs;
-   protected Boolean _routeReflectorClient;
-   protected Boolean _sendCommunity;
-   protected Boolean _shutdown;
-   protected String _updateSource;
 
-   public Boolean allowAsIn() {
-      return _allowAsIn;
-   }
+   protected Boolean _active;
+
+   protected Boolean _advertiseInactive;
+
+   protected Boolean _allowAsIn;
+
+   protected Ip _clusterId;
+
+   protected Integer _defaultMetric;
+
+   protected Boolean _defaultOriginate;
+
+   protected String _defaultOriginateMap;
+
+   protected String _description;
+
+   protected Boolean _disablePeerAsCheck;
+
+   protected Boolean _ebgpMultihop;
+
+   protected String _inboundPrefixList;
+
+   protected String _inboundRouteMap;
+
+   protected String _outboundPrefixList;
+
+   protected String _outboundRouteMap;
+
+   protected Integer _remoteAs;
+
+   protected Boolean _removePrivateAs;
+
+   protected Boolean _routeReflectorClient;
+
+   protected Boolean _sendCommunity;
+
+   protected Boolean _shutdown;
+
+   protected String _updateSource;
 
    public Boolean getActive() {
       return _active;
+   }
+
+   public Boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+   }
+
+   public Boolean getAllowAsIn() {
+      return _allowAsIn;
    }
 
    public Ip getClusterId() {
@@ -52,6 +78,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public String getDescription() {
       return _description;
+   }
+
+   public Boolean getDisablePeerAsCheck() {
+      return _disablePeerAsCheck;
    }
 
    public Boolean getEbgpMultihop() {
@@ -76,8 +106,8 @@ public abstract class BgpPeerGroup implements Serializable {
       return _outboundRouteMap;
    }
 
-   public Integer getRemoteAS() {
-      return _remoteAS;
+   public Integer getRemoteAs() {
+      return _remoteAs;
    }
 
    public Boolean getRemovePrivateAs() {
@@ -104,6 +134,12 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_active == null) {
          _active = pg.getActive();
       }
+      if (_advertiseInactive == null) {
+         _advertiseInactive = pg.getAdvertiseInactive();
+      }
+      if (_allowAsIn == null) {
+         _allowAsIn = pg.getAllowAsIn();
+      }
       if (_clusterId == null) {
          _clusterId = pg.getClusterId();
       }
@@ -115,6 +151,9 @@ public abstract class BgpPeerGroup implements Serializable {
       }
       if (_description == null) {
          _description = pg.getDescription();
+      }
+      if (_disablePeerAsCheck == null) {
+         _disablePeerAsCheck = pg.getDisablePeerAsCheck();
       }
       if (_ebgpMultihop == null) {
          _ebgpMultihop = pg.getEbgpMultihop();
@@ -131,8 +170,8 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_outboundRouteMap == null) {
          _outboundRouteMap = pg.getOutboundRouteMap();
       }
-      if (_remoteAS == null) {
-         _remoteAS = pg.getRemoteAS();
+      if (_remoteAs == null) {
+         _remoteAs = pg.getRemoteAs();
       }
       if (_routeReflectorClient == null) {
          _routeReflectorClient = pg.getRouteReflectorClient();
@@ -152,8 +191,12 @@ public abstract class BgpPeerGroup implements Serializable {
       _active = active;
    }
 
-   public void SetAllowAsIn(boolean b) {
-      _allowAsIn = b;
+   public void setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+   }
+
+   public void setAllowAsIn(boolean allowAsIn) {
+      _allowAsIn = allowAsIn;
    }
 
    public void setClusterId(Ip ip) {
@@ -176,6 +219,10 @@ public abstract class BgpPeerGroup implements Serializable {
       _description = description;
    }
 
+   public void setDisablePeerAsCheck(boolean disablePeerAsCheck) {
+      _disablePeerAsCheck = disablePeerAsCheck;
+   }
+
    public void setEbgpMultihop(boolean ebgpMultihop) {
       _ebgpMultihop = ebgpMultihop;
    }
@@ -196,8 +243,8 @@ public abstract class BgpPeerGroup implements Serializable {
       _outboundRouteMap = name;
    }
 
-   public void setRemoteAS(int remoteAS) {
-      _remoteAS = remoteAS;
+   public void setRemoteAs(int remoteAS) {
+      _remoteAs = remoteAS;
    }
 
    public void setRemovePrivateAs(boolean removePrivateAs) {

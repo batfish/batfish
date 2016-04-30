@@ -15,9 +15,13 @@ public final class IpAccessListLine implements Serializable {
 
    private LineAction _action;
 
-   private Set<Prefix> _dstIpRanges;
+   private final Set<Integer> _dscps;
 
-   private List<SubRange> _dstPortRanges;
+   private final Set<Prefix> _dstIpRanges;
+
+   private final List<SubRange> _dstPortRanges;
+
+   private final Set<Integer> _ecns;
 
    private int _icmpCode;
 
@@ -25,23 +29,50 @@ public final class IpAccessListLine implements Serializable {
 
    private String _invalidMessage;
 
-   private Set<IpProtocol> _protocols;
+   private final Set<IpProtocol> _protocols;
 
-   private Set<Prefix> _srcIpRanges;
+   private final Set<Prefix> _srcIpRanges;
 
-   private List<SubRange> _srcPortRanges;
+   private final Set<Prefix> _srcOrDstIpRanges;
 
-   private int _tcpFlags;
+   private final List<SubRange> _srcOrDstPortRanges;
+
+   private final List<SubRange> _srcPortRanges;
+
+   private final List<TcpFlags> _tcpFlags;
 
    public IpAccessListLine() {
+      _dscps = new TreeSet<Integer>();
       _protocols = EnumSet.noneOf(IpProtocol.class);
       _dstIpRanges = new TreeSet<Prefix>();
       _dstPortRanges = new ArrayList<SubRange>();
+      _ecns = new TreeSet<Integer>();
       _srcIpRanges = new TreeSet<Prefix>();
+      _srcOrDstIpRanges = new TreeSet<Prefix>();
+      _srcOrDstPortRanges = new ArrayList<SubRange>();
       _srcPortRanges = new ArrayList<SubRange>();
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
-      _tcpFlags = TcpFlags.UNSET;
+      _tcpFlags = new ArrayList<TcpFlags>();
+   }
+
+   public IpAccessListLine copy() {
+      IpAccessListLine line = new IpAccessListLine();
+      line._action = _action;
+      line._dscps.addAll(_dscps);
+      line._dstIpRanges.addAll(_dstIpRanges);
+      line._dstPortRanges.addAll(_dstPortRanges);
+      line._ecns.addAll(_ecns);
+      line._icmpCode = _icmpCode;
+      line._icmpType = _icmpType;
+      line._invalidMessage = _invalidMessage;
+      line._protocols.addAll(_protocols);
+      line._srcIpRanges.addAll(_srcIpRanges);
+      line._srcOrDstIpRanges.addAll(_srcOrDstIpRanges);
+      line._srcOrDstPortRanges.addAll(_srcOrDstPortRanges);
+      line._srcPortRanges.addAll(_srcPortRanges);
+      line._tcpFlags.addAll(_tcpFlags);
+      return line;
    }
 
    public LineAction getAction() {
@@ -52,8 +83,16 @@ public final class IpAccessListLine implements Serializable {
       return _dstIpRanges;
    }
 
+   public Set<Integer> getDscps() {
+      return _dscps;
+   }
+
    public List<SubRange> getDstPortRanges() {
       return _dstPortRanges;
+   }
+
+   public Set<Integer> getEcns() {
+      return _ecns;
    }
 
    public int getIcmpCode() {
@@ -76,11 +115,19 @@ public final class IpAccessListLine implements Serializable {
       return _srcIpRanges;
    }
 
+   public Set<Prefix> getSrcOrDstIpRanges() {
+      return _srcOrDstIpRanges;
+   }
+
+   public List<SubRange> getSrcOrDstPortRanges() {
+      return _srcOrDstPortRanges;
+   }
+
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
    }
 
-   public int getTcpFlags() {
+   public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }
 
@@ -100,17 +147,16 @@ public final class IpAccessListLine implements Serializable {
       _invalidMessage = invalidMessage;
    }
 
-   public void setTcpFlags(int tcpFlags) {
-      _tcpFlags = tcpFlags;
-   }
-
    @Override
    public String toString() {
       return "[Action:" + _action + ", Protocols:" + _protocols.toString()
             + ", SourceIpRanges:" + _srcIpRanges + ", DestinationIpRanges:"
-            + _dstIpRanges + ", SrcPortRanges:" + _srcPortRanges
-            + ", DstPortRanges:" + _dstPortRanges + ", IcmpType:" + _icmpType
-            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags + "]";
+            + _dstIpRanges + ", SrcOrDstIpRanges:" + _srcOrDstIpRanges
+            + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
+            + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
+            + ", Dscps: " + _dscps.toString() + ", IcmpType:" + _icmpType
+            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags.toString()
+            + "]";
    }
 
 }

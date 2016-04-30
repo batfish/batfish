@@ -15,8 +15,11 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
 
    public MasterBgpPeerGroup() {
       _active = false;
+      _advertiseInactive = false;
       _allowAsIn = false;
       _defaultOriginate = false;
+      _disablePeerAsCheck = false;
+      _ebgpMultihop = false;
       _routeReflectorClient = false;
       _sendCommunity = false;
       _shutdown = false;

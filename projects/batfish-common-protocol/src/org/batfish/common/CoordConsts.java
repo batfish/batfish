@@ -44,6 +44,7 @@ public class CoordConsts {
    public static final String SVC_QUESTION_LIST_KEY = "questionlist";
    public static final String SVC_QUESTION_NAME_KEY = "questionname";
    public static final String SVC_SUCCESS_KEY = "success";
+   public static final String SVC_TESTRIG_INFO_KEY = "testriginfo";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";
    public static final String SVC_WORKID_KEY = "workid";

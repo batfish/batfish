@@ -120,11 +120,6 @@ fromt_neighbor
    )
 ;
 
-fromt_null
-:
-   PREFIX_LIST_FILTER s_null_filler
-;
-
 fromt_origin
 :
    ORIGIN origin_type
@@ -138,6 +133,16 @@ fromt_policy
 fromt_prefix_list
 :
    PREFIX_LIST name = variable
+;
+
+fromt_prefix_list_filter
+:
+   PREFIX_LIST_FILTER name = variable fromt_prefix_list_filter_tail
+;
+
+fromt_prefix_list_filter_tail
+:
+   plft_orlonger
 ;
 
 fromt_protocol
@@ -207,6 +212,11 @@ metric_expression
    (
       OFFSET offset = DEC
    )?
+;
+
+plft_orlonger
+:
+   ORLONGER
 ;
 
 plt_apply_path
@@ -568,10 +578,10 @@ tt_from_tail
    | fromt_interface
    | fromt_level
    | fromt_neighbor
-   | fromt_null
    | fromt_origin
    | fromt_policy
    | fromt_prefix_list
+   | fromt_prefix_list_filter
    | fromt_protocol
    | fromt_rib
    | fromt_route_filter

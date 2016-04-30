@@ -35,6 +35,7 @@ public class BfConsts {
    public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
+   public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
    public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
@@ -68,6 +69,7 @@ public class BfConsts {
    public static final String RELPATH_ENV_DIR = "env";
    public static final String RELPATH_ENV_NODE_SET = "env-node-set";
    public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
+   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
@@ -101,4 +103,19 @@ public class BfConsts {
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
 
+   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
+   public static final String KEY_BGP_ANNOUNCEMENT_AS_PATH = "AsPath";
+   public static final String KEY_BGP_ANNOUNCEMENT_COMMUNITIES = "Communities";
+   public static final String KEY_BGP_ANNOUNCEMENT_DST_IP = "DstIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_DST_NODE = "DstNode";
+   public static final String KEY_BGP_ANNOUNCEMENT_LOCAL_PREF = "LocalPref";
+   public static final String KEY_BGP_ANNOUNCEMENT_MED = "Med";
+   public static final String KEY_BGP_ANNOUNCEMENT_NEXT_HOP_IP = "NextHopIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_ORIGINATOR_IP = "OriginatorIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_ORIGIN_TYPE = "OriginType";
+   public static final String KEY_BGP_ANNOUNCEMENT_PREFIX = "Prefix";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_IP = "SrcIp";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_NODE = "SrcNode";
+   public static final String KEY_BGP_ANNOUNCEMENT_SRC_PROTOCOL = "SrcProtocol";
+   public static final String KEY_BGP_ANNOUNCEMENT_TYPE = "Type";
 }

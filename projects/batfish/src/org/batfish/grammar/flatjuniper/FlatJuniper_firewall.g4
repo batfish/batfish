@@ -44,7 +44,7 @@ fwfromt_destination_port_except
 
 fwfromt_destination_prefix_list
 :
-   DESTINATION_PREFIX_LIST variable EXCEPT?
+   DESTINATION_PREFIX_LIST name = variable EXCEPT?
 ;
 
 fwfromt_dscp
@@ -116,7 +116,7 @@ fwfromt_precedence
 
 fwfromt_prefix_list
 :
-   PREFIX_LIST variable
+   PREFIX_LIST name = variable
 ;
 
 fwfromt_protocol
@@ -154,7 +154,7 @@ fwfromt_tcp_established
 
 fwfromt_tcp_flags
 :
-   TCP_FLAGS DOUBLE_QUOTED_STRING
+   TCP_FLAGS tcp_flags
 ;
 
 fwfromt_tcp_initial
@@ -359,4 +359,42 @@ s_firewall_tail
 :
    fwt_common
    | fwt_family
+;
+
+tcp_flags
+:
+   alternatives += tcp_flags_alternative
+   (
+      PIPE alternatives += tcp_flags_alternative
+   )*
+;
+
+tcp_flags_alternative
+:
+   (
+      OPEN_PAREN literals += tcp_flags_literal
+      (
+         AMPERSAND literals += tcp_flags_literal
+      )* CLOSE_PAREN
+   )
+   |
+   (
+      literals += tcp_flags_literal
+      (
+         AMPERSAND literals += tcp_flags_literal
+      )*
+   )
+;
+
+tcp_flags_atom
+:
+   ACK
+   | FIN
+   | RST
+   | SYN
+;
+
+tcp_flags_literal
+:
+   BANG? tcp_flags_atom
 ;

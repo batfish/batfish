@@ -1,6 +1,9 @@
 ﻿/// <reference path="batfish-common.js" />
 /// <reference path="workclient.js" />
-
+$.ajaxSetup ({
+//        Disable caching of AJAX responses
+            cache: false
+            });
 var spinOpts = {
     lines: 13 // The number of lines to draw
 , length: 28 // The length of each line

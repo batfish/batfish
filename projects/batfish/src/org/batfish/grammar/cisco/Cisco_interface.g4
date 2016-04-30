@@ -52,8 +52,10 @@ if_stanza
    | ip_policy_if_stanza
    | ip_router_isis_if_stanza
    | isis_circuit_type_if_stanza
+   | isis_enable_if_stanza
    | isis_metric_if_stanza
    | isis_network_if_stanza
+   | isis_passive_if_stanza
    | isis_tag_if_stanza
    | no_ip_address_if_stanza
    | null_if_stanza
@@ -66,6 +68,7 @@ if_stanza
    | switchport_mode_dynamic_auto_stanza
    | switchport_mode_dynamic_desirable_stanza
    | switchport_mode_trunk_stanza
+   | unrecognized_line
    | vrf_forwarding_if_stanza
    | vrf_if_stanza
    | vrf_member_if_stanza
@@ -91,15 +94,23 @@ interface_stanza_tail
 ip_access_group_if_stanza
 :
    (
-      IP
-      | IPV4
-   ) PORT? ACCESS_GROUP name = .
+      (
+         (
+            IP
+            | IPV4
+         ) PORT? ACCESS_GROUP
+      )
+      |
+      (
+         ACCESS_LIST NAME
+      )
+   ) name = variable
    (
       EGRESS
       | IN
       | INGRESS
       | OUT
-   ) NEWLINE
+   ) OPTIMIZED? NEWLINE
 ;
 
 ip_address_hsrpc_stanza
@@ -180,6 +191,11 @@ isis_circuit_type_if_stanza
    ISIS CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
 ;
 
+isis_enable_if_stanza
+:
+   ISIS ENABLE num = DEC NEWLINE
+;
+
 isis_metric_if_stanza
 :
    ISIS METRIC metric = DEC NEWLINE
@@ -188,6 +204,11 @@ isis_metric_if_stanza
 isis_network_if_stanza
 :
    ISIS NETWORK POINT_TO_POINT NEWLINE
+;
+
+isis_passive_if_stanza
+:
+   ISIS PASSIVE NEWLINE
 ;
 
 isis_tag_if_stanza
@@ -238,17 +259,22 @@ null_block_if_stanza
       | CRC
       | CRYPTO
       | DAMPENING
+      | DCB
       | DCBX
+      | DCB_POLICY
       | DESTINATION
       |
       (
          DSU BANDWIDTH
       )
       | DUPLEX
+      | ENABLE
       | ENCAPSULATION
+      | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
       | FLOW
+      | FLOW_CONTROL
       | FLOWCONTROL
       | FORWARDER
       | FRAME_RELAY
@@ -265,12 +291,17 @@ null_block_if_stanza
       | IGNORE
       |
       (
+         INTERFACE BREAKOUT
+      )
+      |
+      (
          IP
          (
             ACCOUNTING
             | ARP
             | BROADCAST_ADDRESS
             | CGMP
+            | CONTROL_APPS_USE_MGMT_PORT
             | DHCP
             | DVMRP
             |
@@ -369,6 +400,7 @@ null_block_if_stanza
       )
       | PATH_OPTION
       | PEER
+      | PFC PRIORITY
       | PHYSICAL_LAYER
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL

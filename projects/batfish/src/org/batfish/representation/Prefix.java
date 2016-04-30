@@ -7,6 +7,8 @@ import org.batfish.util.Util;
 
 public final class Prefix implements Comparable<Prefix>, Serializable {
 
+   public static final int MAX_PREFIX_LENGTH = 32;
+
    /**
     *
     */

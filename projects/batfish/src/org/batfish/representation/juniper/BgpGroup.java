@@ -18,6 +18,10 @@ public class BgpGroup implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   private Boolean _advertiseInactive;
+
+   private Boolean _advertisePeerAs;
+
    private String _description;
 
    private Boolean _ebgpMultihop;
@@ -33,6 +37,8 @@ public class BgpGroup implements Serializable {
    private Ip _localAddress;
 
    private Integer _localAs;
+
+   private Integer _loops;
 
    private BgpGroup _parent;
 
@@ -54,6 +60,12 @@ public class BgpGroup implements Serializable {
       _inherited = true;
       if (_parent != null) {
          _parent.cascadeInheritance();
+         if (_advertiseInactive == null) {
+            _advertiseInactive = _parent._advertiseInactive;
+         }
+         if (_advertisePeerAs == null) {
+            _advertisePeerAs = _parent._advertisePeerAs;
+         }
          if (_description == null) {
             _description = _parent._description;
          }
@@ -72,6 +84,9 @@ public class BgpGroup implements Serializable {
          if (_localAs == null) {
             _localAs = _parent._localAs;
          }
+         if (_loops == null) {
+            _loops = _parent._loops;
+         }
          if (_localAddress == null) {
             _localAddress = _parent._localAddress;
          }
@@ -82,6 +97,14 @@ public class BgpGroup implements Serializable {
             _type = _parent._type;
          }
       }
+   }
+
+   public Boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+   }
+
+   public Boolean getAdvertisePeerAs() {
+      return _advertisePeerAs;
    }
 
    public final String getDescription() {
@@ -112,6 +135,10 @@ public class BgpGroup implements Serializable {
       return _localAs;
    }
 
+   public Integer getLoops() {
+      return _loops;
+   }
+
    public final BgpGroup getParent() {
       return _parent;
    }
@@ -128,6 +155,14 @@ public class BgpGroup implements Serializable {
       return _type;
    }
 
+   public void setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+   }
+
+   public void setAdvertisePeerAs(boolean advertisePeerAs) {
+      _advertisePeerAs = advertisePeerAs;
+   }
+
    public final void setDescription(String description) {
       _description = description;
    }
@@ -142,6 +177,10 @@ public class BgpGroup implements Serializable {
 
    public final void setLocalAs(int localAs) {
       _localAs = localAs;
+   }
+
+   public void setLoops(int loops) {
+      _loops = loops;
    }
 
    public final void setParent(BgpGroup parent) {

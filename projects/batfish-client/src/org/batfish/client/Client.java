@@ -604,11 +604,10 @@ public class Client {
             break;
          }
          case COMMAND_LIST_TESTRIGS: {
-            if (!isSetContainer()) {
-               break;
-            }
-            String[] testrigList = _workHelper.listTestrigs(_currContainerName);
-            _logger.outputf("Testrigs: %s\n", Arrays.toString(testrigList));
+            Map<String,String> testrigs = _workHelper.listTestrigs(_currContainerName);
+            if (testrigs != null)
+               for (String testrigName : testrigs.keySet())
+                  _logger.outputf("Testrig: %s\n%s\n", testrigName, testrigs.get(testrigName));
             break;
          }
          case COMMAND_PWD: {

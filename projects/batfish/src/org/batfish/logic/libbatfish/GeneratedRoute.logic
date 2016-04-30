@@ -33,6 +33,10 @@ GeneratedRoute_type[route] = type ->
    Route(route),
    GeneratedRouteType(type).
 
+GeneratedRouteAttributePolicy(route, policy) ->
+   Route(route),
+   PolicyMap(policy).
+
 GeneratedRoutePolicy(route, policy) ->
    Route(route),
    PolicyMap(policy).
@@ -112,6 +116,18 @@ SetGeneratedRouteMetric_flat(node, network_start, network_end, prefix_length, me
    int(network_end),
    int(prefix_length),
    int(metric).
+
+SetGeneratedRouteAttributePolicy(node, network, map) ->
+   Node(node),
+   Network(network),
+   PolicyMap(map).
+
+SetGeneratedRouteAttributePolicy_flat(node, network_start, network_end, prefix_length, map) ->
+   Node(node),
+   int(network_start),
+   int(network_end),
+   int(prefix_length),
+   PolicyMap(map).
 
 SetGeneratedRoutePolicy(node, network, map) ->
    Node(node),

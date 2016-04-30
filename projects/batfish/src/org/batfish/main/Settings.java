@@ -23,6 +23,8 @@ public final class Settings extends BaseSettings {
 
       private String _envPath;
 
+      private String _externalBgpAnnouncementsPath;
+
       private String _interfaceBlacklistPath;
 
       private String _name;
@@ -61,6 +63,10 @@ public final class Settings extends BaseSettings {
 
       public String getEnvPath() {
          return _envPath;
+      }
+
+      public String getExternalBgpAnnouncementsPath() {
+         return _externalBgpAnnouncementsPath;
       }
 
       public String getInterfaceBlacklistPath() {
@@ -121,6 +127,11 @@ public final class Settings extends BaseSettings {
 
       public void setEnvPath(String envPath) {
          _envPath = envPath;
+      }
+
+      public void setExternalBgpAnnouncementsPath(
+            String externalBgpAnnouncementsPath) {
+         _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
       }
 
       public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
@@ -216,6 +227,8 @@ public final class Settings extends BaseSettings {
    private static final String ARG_NO_OUTPUT = "nooutput";
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
+
+   private static final String ARG_NXTNET_DEBUG_SYMBOLS = "nxtnetdebugsymbols";
 
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
 
@@ -374,6 +387,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _nxtnetDataPlane;
 
+   private boolean _nxtnetDebugSymbols;
+
    private boolean _nxtnetTraffic;
 
    private String _outputEnvironmentName;
@@ -457,6 +472,8 @@ public final class Settings extends BaseSettings {
    private boolean _unimplementedAsError;
 
    private boolean _unimplementedRecord;
+
+   private boolean _unrecognizedAsRedFlag;
 
    private boolean _usePrecomputedAdvertisements;
 
@@ -664,6 +681,10 @@ public final class Settings extends BaseSettings {
       return _nxtnetDataPlane;
    }
 
+   public boolean getNxtnetDebugSymbols() {
+      return _nxtnetDebugSymbols;
+   }
+
    public boolean getNxtnetTraffic() {
       return _nxtnetTraffic;
    }
@@ -824,6 +845,10 @@ public final class Settings extends BaseSettings {
       return _unimplementedRecord;
    }
 
+   public boolean getUnrecognizedAsRedFlag() {
+      return _unrecognizedAsRedFlag;
+   }
+
    public boolean getUsePrecomputedBgpAdvertisements() {
       return _usePrecomputedAdvertisements;
    }
@@ -894,6 +919,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
+      setDefaultProperty(ARG_NXTNET_DEBUG_SYMBOLS, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
@@ -922,6 +948,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
+      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(ARG_USE_PRECOMPUTED_FACTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
@@ -1050,6 +1077,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
+      addBooleanOption(ARG_NXTNET_DEBUG_SYMBOLS,
+            "compute/display nxtnet debug symbols for querying");
+
       addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment",
             ARGNAME_NAME);
 
@@ -1138,6 +1168,10 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS,
             "suppresses warnings about unimplemented configuration directives");
+
+      addBooleanOption(
+            BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG,
+            "treat unrecognized configuration directives as red flags instead of force-crashing");
 
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS,
             "add precomputed bgp advertisements to data plane model");
@@ -1247,6 +1281,7 @@ public final class Settings extends BaseSettings {
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
       _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
+      _nxtnetDebugSymbols = getBooleanOptionValue(ARG_NXTNET_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
@@ -1281,6 +1316,7 @@ public final class Settings extends BaseSettings {
       _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
       _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
       _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+      _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
       _usePrecomputedAdvertisements = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
       _usePrecomputedFacts = getBooleanOptionValue(ARG_USE_PRECOMPUTED_FACTS);
       _usePrecomputedIbgpNeighbors = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);

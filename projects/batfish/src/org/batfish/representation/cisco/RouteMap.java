@@ -1,10 +1,11 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class RouteMap implements Serializable {
+import org.batfish.util.ReferenceCountedStructure;
+
+public class RouteMap extends ReferenceCountedStructure {
 
    private static final long serialVersionUID = 1L;
 

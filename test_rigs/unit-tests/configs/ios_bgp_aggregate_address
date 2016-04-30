@@ -1,0 +1,18 @@
+!
+hostname aggAddress
+!
+router bgp 52
+   router-id 198.188.136.21
+   bgp log-neighbor-changes
+   no bgp default ipv4-unicast
+   network 192.154.2.0/24
+   network 2607:f010:3f9:8000::/52
+   aggregate-address 192.154.2.0/24 summary-only
+   aggregate-address 2607:f010:3f9:8000::/52 summary-only
+   redistribute connected
+!
+ip prefix-list ScienceDMZ-networks permit 192.154.2.0/24 le 32
+!
+ipv6 prefix-list ScienceDMZ-networks
+   seq 10 permit 2607:f010:3f9:8000::/52 le 128
+end

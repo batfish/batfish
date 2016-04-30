@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.batfish.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
@@ -17,6 +18,8 @@ public final class Configuration extends ComparableStructure<String> {
    private final Set<GeneratedRoute> _aggregateRoutes;
 
    private final Map<String, AsPathAccessList> _asPathAccessLists;
+
+   private transient Set<BgpAdvertisement> _bgpAdvertisements;
 
    private BgpProcess _bgpProcess;
 
@@ -48,13 +51,33 @@ public final class Configuration extends ComparableStructure<String> {
 
    private IsisProcess _isisProcess;
 
+   private transient Set<BgpAdvertisement> _originatedAdvertisements;
+
+   private transient Set<BgpAdvertisement> _originatedEbgpAdvertisements;
+
+   private transient Set<BgpAdvertisement> _originatedIbgpAdvertisements;
+
    private OspfProcess _ospfProcess;
 
    private final Map<String, PolicyMap> _policyMaps;
 
+   private transient Set<BgpAdvertisement> _receivedAdvertisements;
+
+   private transient Set<BgpAdvertisement> _receivedEbgpAdvertisements;
+
+   private transient Set<BgpAdvertisement> _receivedIbgpAdvertisements;
+
    private RoleSet _roles;
 
    private final Map<String, RouteFilterList> _routeFilterLists;
+
+   private transient Set<PrecomputedRoute> _routes;
+
+   private transient Set<BgpAdvertisement> _sentAdvertisements;
+
+   private transient Set<BgpAdvertisement> _sentEbgpAdvertisements;
+
+   private transient Set<BgpAdvertisement> _sentIbgpAdvertisements;
 
    private final Set<StaticRoute> _staticRoutes;
 
@@ -86,6 +109,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    public Map<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   public Set<BgpAdvertisement> getBgpAdvertisements() {
+      return _bgpAdvertisements;
    }
 
    public BgpProcess getBgpProcess() {
@@ -156,6 +183,18 @@ public final class Configuration extends ComparableStructure<String> {
       return _isisProcess;
    }
 
+   public Set<BgpAdvertisement> getOriginatedAdvertisements() {
+      return _originatedAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
+      return _originatedEbgpAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
+      return _originatedIbgpAdvertisements;
+   }
+
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
    }
@@ -164,12 +203,40 @@ public final class Configuration extends ComparableStructure<String> {
       return _policyMaps;
    }
 
+   public Set<BgpAdvertisement> getReceivedAdvertisements() {
+      return _receivedAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getReceivedEbgpAdvertisements() {
+      return _receivedEbgpAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getReceivedIbgpAdvertisements() {
+      return _receivedIbgpAdvertisements;
+   }
+
    public RoleSet getRoles() {
       return _roles;
    }
 
    public Map<String, RouteFilterList> getRouteFilterLists() {
       return _routeFilterLists;
+   }
+
+   public Set<PrecomputedRoute> getRoutes() {
+      return _routes;
+   }
+
+   public Set<BgpAdvertisement> getSentAdvertisements() {
+      return _sentAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getSentEbgpAdvertisements() {
+      return _sentEbgpAdvertisements;
+   }
+
+   public Set<BgpAdvertisement> getSentIbgpAdvertisements() {
+      return _sentIbgpAdvertisements;
    }
 
    public Set<StaticRoute> getStaticRoutes() {
@@ -182,6 +249,23 @@ public final class Configuration extends ComparableStructure<String> {
 
    public Map<String, Zone> getZones() {
       return _zones;
+   }
+
+   public void initBgpAdvertisements() {
+      _bgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _originatedAdvertisements = new TreeSet<BgpAdvertisement>();
+      _originatedEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _originatedIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _receivedAdvertisements = new TreeSet<BgpAdvertisement>();
+      _receivedEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _receivedIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _sentAdvertisements = new TreeSet<BgpAdvertisement>();
+      _sentEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _sentIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+   }
+
+   public void initRoutes() {
+      _routes = new TreeSet<PrecomputedRoute>();
    }
 
    public void setBgpProcess(BgpProcess process) {

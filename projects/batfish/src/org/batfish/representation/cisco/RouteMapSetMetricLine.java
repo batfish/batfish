@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
@@ -24,7 +25,8 @@ public class RouteMapSetMetricLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       return new PolicyMapSetMetricLine(_metric);
    }
 

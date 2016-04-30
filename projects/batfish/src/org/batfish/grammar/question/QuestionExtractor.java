@@ -29,6 +29,8 @@ import org.batfish.question.ReachabilityQuestion;
 import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
+import org.batfish.question.bgp_advertisement_expr.BaseCaseBgpAdvertisementExpr;
+import org.batfish.question.bgp_advertisement_expr.BgpAdvertisementExpr;
 import org.batfish.question.bgp_neighbor_expr.BaseCaseBgpNeighborExpr;
 import org.batfish.question.bgp_neighbor_expr.BgpNeighborExpr;
 import org.batfish.question.bgp_neighbor_expr.VarBgpNeighborExpr;
@@ -88,8 +90,13 @@ import org.batfish.question.int_expr.QuotientIntExpr;
 import org.batfish.question.int_expr.SetSizeIntExpr;
 import org.batfish.question.int_expr.SumIntExpr;
 import org.batfish.question.int_expr.VarIntExpr;
+import org.batfish.question.int_expr.bgp_advertisement.LocalPreferenceBgpAdvertisementIntExpr;
+import org.batfish.question.int_expr.bgp_advertisement.MedBgpAdvertisementIntExpr;
 import org.batfish.question.int_expr.bgp_neighbor.LocalAsBgpNeighborIntExpr;
 import org.batfish.question.int_expr.bgp_neighbor.RemoteAsBgpNeighborIntExpr;
+import org.batfish.question.int_expr.route.AdministrativeCostRouteIntExpr;
+import org.batfish.question.int_expr.route.CostRouteIntExpr;
+import org.batfish.question.int_expr.route.TagRouteIntExpr;
 import org.batfish.question.int_expr.static_route.AdministrativeCostStaticRouteIntExpr;
 import org.batfish.question.interface_expr.BaseCaseInterfaceExpr;
 import org.batfish.question.interface_expr.InterfaceExpr;
@@ -97,11 +104,15 @@ import org.batfish.question.interface_expr.VarInterfaceExpr;
 import org.batfish.question.ip_expr.IpExpr;
 import org.batfish.question.ip_expr.LiteralIpExpr;
 import org.batfish.question.ip_expr.VarIpExpr;
+import org.batfish.question.ip_expr.bgp_advertisement.DstIpBgpAdvertisementIpExpr;
+import org.batfish.question.ip_expr.bgp_advertisement.NextHopIpBgpAdvertisementIpExpr;
+import org.batfish.question.ip_expr.bgp_advertisement.SrcIpBgpAdvertisementIpExpr;
 import org.batfish.question.ip_expr.bgp_neighbor.LocalIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.bgp_neighbor.RemoteIpBgpNeighborIpExpr;
 import org.batfish.question.ip_expr.iface.IpInterfaceIpExpr;
 import org.batfish.question.ip_expr.ipsec_vpn.RemoteIpIpsecVpnIpExpr;
 import org.batfish.question.ip_expr.prefix.AddressPrefixIpExpr;
+import org.batfish.question.ip_expr.route.NextHopIpRouteIpExpr;
 import org.batfish.question.ip_expr.static_route.NextHopIpStaticRouteIpExpr;
 import org.batfish.question.ip_set_expr.IpSetExpr;
 import org.batfish.question.ip_set_expr.VarIpSetExpr;
@@ -125,8 +136,10 @@ import org.batfish.question.policy_map_expr.PolicyMapExpr;
 import org.batfish.question.policy_map_expr.VarPolicyMapExpr;
 import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.prefix_expr.VarPrefixExpr;
+import org.batfish.question.prefix_expr.bgp_advertisement.NetworkBgpAdvertisementPrefixExpr;
 import org.batfish.question.prefix_expr.iface.PrefixInterfacePrefixExpr;
 import org.batfish.question.prefix_expr.iface.SubnetInterfacePrefixExpr;
+import org.batfish.question.prefix_expr.route.NetworkRoutePrefixExpr;
 import org.batfish.question.prefix_expr.static_route.PrefixStaticRoutePrefixExpr;
 import org.batfish.question.prefix_set_expr.PrefixSetExpr;
 import org.batfish.question.prefix_set_expr.VarPrefixSetExpr;
@@ -135,11 +148,15 @@ import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.VarPrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.node.BgpOriginationSpaceExplicitNodePrefixSpaceExpr;
 import org.batfish.question.prefix_space_expr.prefix_space.IntersectionPrefixSpacePrefixSpaceExpr;
+import org.batfish.question.route_expr.BaseCaseRouteExpr;
+import org.batfish.question.route_expr.RouteExpr;
+import org.batfish.question.route_expr.VarRouteExpr;
 import org.batfish.question.route_filter_expr.BaseCaseRouteFilterExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.route_filter_line_expr.BaseCaseRouterFilterLineExpr;
 import org.batfish.question.route_filter_line_expr.RouteFilterLineExpr;
 import org.batfish.question.statement.Assertion;
+import org.batfish.question.statement.ForEachBgpAdvertisementStatement;
 import org.batfish.question.statement.ForEachBgpNeighborStatement;
 import org.batfish.question.statement.ForEachClauseStatement;
 import org.batfish.question.statement.ForEachGeneratedRouteStatement;
@@ -159,10 +176,15 @@ import org.batfish.question.statement.ForEachPolicyMapStatement;
 import org.batfish.question.statement.ForEachPrefixSpaceStatement;
 import org.batfish.question.statement.ForEachPrefixStatement;
 import org.batfish.question.statement.ForEachProtocolStatement;
+import org.batfish.question.statement.ForEachReceivedEbgpAdvertisementStatement;
+import org.batfish.question.statement.ForEachReceivedIbgpAdvertisementStatement;
 import org.batfish.question.statement.ForEachRemoteBgpNeighborStatement;
 import org.batfish.question.statement.ForEachRemoteIpsecVpnStatement;
 import org.batfish.question.statement.ForEachRouteFilterLineStatement;
 import org.batfish.question.statement.ForEachRouteFilterStatement;
+import org.batfish.question.statement.ForEachRouteStatement;
+import org.batfish.question.statement.ForEachSentEbgpAdvertisementStatement;
+import org.batfish.question.statement.ForEachSentIbgpAdvertisementStatement;
 import org.batfish.question.statement.ForEachStatement;
 import org.batfish.question.statement.ForEachStaticRouteStatement;
 import org.batfish.question.statement.ForEachStringStatement;
@@ -184,11 +206,15 @@ import org.batfish.question.string_expr.StringConcatenateExpr;
 import org.batfish.question.string_expr.StringExpr;
 import org.batfish.question.string_expr.StringLiteralStringExpr;
 import org.batfish.question.string_expr.VarStringExpr;
+import org.batfish.question.string_expr.bgp_advertisement.AsPathBgpAdvertisementStringExpr;
+import org.batfish.question.string_expr.bgp_advertisement.DstNodeBgpAdvertisementStringExpr;
+import org.batfish.question.string_expr.bgp_advertisement.SrcNodeBgpAdvertisementStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.BgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.DescriptionBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.GroupBgpNeighborStringExpr;
 import org.batfish.question.string_expr.bgp_neighbor.NameBgpNeighborStringExpr;
-import org.batfish.question.string_expr.iface.InterfaceStringExpr;
+import org.batfish.question.string_expr.iface.DescriptionInterfaceStringExpr;
+import org.batfish.question.string_expr.iface.NameInterfaceStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IkeGatewayNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IkePolicyNameIpsecVpnStringExpr;
 import org.batfish.question.string_expr.ipsec_vpn.IpsecPolicyNameIpsecVpnStringExpr;
@@ -197,9 +223,13 @@ import org.batfish.question.string_expr.ipsec_vpn.PreSharedKeyHashIpsecVpnString
 import org.batfish.question.string_expr.map.GetMapStringExpr;
 import org.batfish.question.string_expr.node.NameNodeStringExpr;
 import org.batfish.question.string_expr.protocol.ProtocolStringExpr;
+import org.batfish.question.string_expr.route.NextHopInterfaceRouteStringExpr;
+import org.batfish.question.string_expr.route.NextHopRouteStringExpr;
+import org.batfish.question.string_expr.route.ProtocolRouteStringExpr;
 import org.batfish.question.string_expr.route_filter.RouteFilterStringExpr;
 import org.batfish.question.string_expr.static_route.StaticRouteStringExpr;
 import org.batfish.question.string_set_expr.StringSetExpr;
+import org.batfish.question.string_set_expr.bgp_advertisement.CommunitiesBgpAdvertisementStringSetExpr;
 import org.batfish.question.string_set_expr.map.KeysMapStringSetExpr;
 import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.Ip;
@@ -212,6 +242,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       BatfishExtractor {
 
    private static final String ERR_CONVERT_ACTION = "Cannot convert parse tree node to action";
+
+   private static final String ERR_CONVERT_BGP_ADVERTISEMENT = "Cannot convert parse tree node to bgp_advertisement expression";
 
    private static final String ERR_CONVERT_BGP_NEIGHBOR = "Cannot convert parse tree node to bgp_neighbor expression";
 
@@ -243,6 +275,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_PRINTABLE = "Cannot convert parse tree node to printable expression";
 
+   private static final String ERR_CONVERT_ROUTE = "Cannot convert parse tree node to route expression";
+
    private static final String ERR_CONVERT_ROUTE_FILTER = "Cannot convert parse tree node to route_filter expression";
 
    private static final String ERR_CONVERT_ROUTE_FILTER_LINE = "Cannot convert parse tree node to route_filter_line expression";
@@ -251,7 +285,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private static final String ERR_CONVERT_STATIC_ROUTE = "Cannot convert parse tree node to static_route expression";
 
-   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";;
+   private static final String ERR_CONVERT_STRING = "Cannot convert parse tree node to string expression";
 
    private static final String ERR_CONVERT_STRING_SET = "Cannot convert parse tree node to string-set expression";;
 
@@ -278,6 +312,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       _parameters = parameters;
    }
 
+   private void bgp_advertisements() {
+      _verifyProgram.setDataPlane(true);
+      _verifyProgram.setDataPlaneBgpAdvertisements(true);
+   }
+
    private BatfishException conversionError(String error, ParserRuleContext ctx) {
       String parseTree = ParseTreePrettyPrinter.print(ctx, _parser);
       return new BatfishException(error + ": \n" + parseTree);
@@ -294,7 +333,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
       else if (ctx.boolean_literal() != null) {
          type = VariableType.BOOLEAN;
-         value = Boolean.parseBoolean(ctx.getText());
+         value = Boolean.parseBoolean(ctx.boolean_literal().getText());
       }
       else if (ctx.integer_literal() != null) {
          type = VariableType.INT;
@@ -532,8 +571,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void enterReachability_constraint_tcp_flags(
          Reachability_constraint_tcp_flagsContext ctx) {
-      int tcpFlags = toInt(ctx.int_constraint());
-      _reachabilityQuestion.setTcpFlags(tcpFlags);
+      // TODO: allow constraining tcpFlags
+      /*
+       * int tcpFlags = toInt(ctx.int_constraint());
+       * _reachabilityQuestion.setTcpFlags(tcpFlags);
+       */
    }
 
    @Override
@@ -590,6 +632,11 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       walker.walk(this, tree);
    }
 
+   private void routes() {
+      _verifyProgram.setDataPlane(true);
+      _verifyProgram.setDataPlaneRoutes(true);
+   }
+
    private ForwardingAction toAction(Action_constraintContext ctx) {
       ForwardingAction action;
       if (ctx.action() != null) {
@@ -612,6 +659,25 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return action;
    }
 
+   private BgpAdvertisementExpr toBgpAdvertisementExpr(
+         Bgp_advertisement_exprContext ctx) {
+      if (ctx.RECEIVED_EBGP_ADVERTISEMENT() != null) {
+         return BaseCaseBgpAdvertisementExpr.RECEIVED_EBGP_ADVERTISEMENT;
+      }
+      else if (ctx.RECEIVED_IBGP_ADVERTISEMENT() != null) {
+         return BaseCaseBgpAdvertisementExpr.RECEIVED_IBGP_ADVERTISEMENT;
+      }
+      else if (ctx.SENT_EBGP_ADVERTISEMENT() != null) {
+         return BaseCaseBgpAdvertisementExpr.SENT_EBGP_ADVERTISEMENT;
+      }
+      else if (ctx.SENT_IBGP_ADVERTISEMENT() != null) {
+         return BaseCaseBgpAdvertisementExpr.SENT_IBGP_ADVERTISEMENT;
+      }
+      else {
+         throw conversionError(ERR_CONVERT_BGP_ADVERTISEMENT, ctx);
+      }
+   }
+
    private BgpNeighborExpr toBgpNeighborExpr(Bgp_neighbor_exprContext ctx) {
       if (ctx.BGP_NEIGHBOR() != null) {
          return BaseCaseBgpNeighborExpr.BGP_NEIGHBOR;
@@ -619,9 +685,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.REMOTE_BGP_NEIGHBOR() != null) {
          return BaseCaseBgpNeighborExpr.REMOTE_BGP_NEIGHBOR;
       }
-      else if (ctx.var_bgp_neighbor_expr() != null) {
-         return new VarBgpNeighborExpr(
-               ctx.var_bgp_neighbor_expr().var.getText());
+      else if (ctx.variable() != null) {
+         return new VarBgpNeighborExpr(ctx.variable().var.getText());
       }
       else {
          throw conversionError(ERR_CONVERT_BGP_NEIGHBOR, ctx);
@@ -703,8 +768,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.true_expr() != null) {
          return BaseCaseBooleanExpr.TRUE;
       }
-      else if (ctx.var_boolean_expr() != null) {
-         return toBooleanExpr(ctx.var_boolean_expr());
+      else if (ctx.variable() != null) {
+         return toBooleanExpr(ctx.variable());
       }
       else if (ctx.lhs != null) {
          BooleanExpr lhs = toBooleanExpr(ctx.lhs);
@@ -1085,7 +1150,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private BooleanExpr toBooleanExpr(Var_boolean_exprContext ctx) {
+   private BooleanExpr toBooleanExpr(VariableContext ctx) {
       String variable = ctx.VARIABLE().getText();
       return new VarBooleanExpr(variable);
    }
@@ -1185,12 +1250,24 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.INTERFACE() != null) {
          return BaseCaseInterfaceExpr.INTERFACE;
       }
-      else if (ctx.var_interface_expr() != null) {
-         return new VarInterfaceExpr(ctx.var_interface_expr().VARIABLE()
-               .getText());
+      else if (ctx.variable() != null) {
+         return new VarInterfaceExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_INTERFACE, ctx);
+      }
+   }
+
+   private IntExpr toIntExpr(Bgp_advertisement_int_exprContext ctx) {
+      BgpAdvertisementExpr caller = toBgpAdvertisementExpr(ctx.caller);
+      if (ctx.bgp_advertisement_local_preference_int_expr() != null) {
+         return new LocalPreferenceBgpAdvertisementIntExpr(caller);
+      }
+      else if (ctx.bgp_advertisement_med_int_expr() != null) {
+         return new MedBgpAdvertisementIntExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_INT, ctx);
       }
    }
 
@@ -1244,6 +1321,22 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new LiteralIntExpr(i);
    }
 
+   private IntExpr toIntExpr(Route_int_exprContext ctx) {
+      RouteExpr caller = toRouteExpr(ctx.caller);
+      if (ctx.route_administrative_cost_int_expr() != null) {
+         return new AdministrativeCostRouteIntExpr(caller);
+      }
+      else if (ctx.route_cost_int_expr() != null) {
+         return new CostRouteIntExpr(caller);
+      }
+      else if (ctx.route_tag_int_expr() != null) {
+         return new TagRouteIntExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_INT, ctx);
+      }
+   }
+
    private IntExpr toIntExpr(Set_size_int_exprContext ctx) {
       String caller = ctx.caller.getText();
       VariableType type = ctx.type;
@@ -1261,7 +1354,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private IntExpr toIntExpr(Val_int_exprContext ctx) {
-      if (ctx.bgp_neighbor_int_expr() != null) {
+      if (ctx.bgp_advertisement_int_expr() != null) {
+         return toIntExpr(ctx.bgp_advertisement_int_expr());
+      }
+      else if (ctx.bgp_neighbor_int_expr() != null) {
          return toIntExpr(ctx.bgp_neighbor_int_expr());
       }
       else if (ctx.literal_int_expr() != null) {
@@ -1270,20 +1366,39 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.set_size_int_expr() != null) {
          return toIntExpr(ctx.set_size_int_expr());
       }
+      else if (ctx.route_int_expr() != null) {
+         return toIntExpr(ctx.route_int_expr());
+      }
       else if (ctx.static_route_int_expr() != null) {
          return toIntExpr(ctx.static_route_int_expr());
       }
-      else if (ctx.var_int_expr() != null) {
-         return toIntExpr(ctx.var_int_expr());
+      else if (ctx.variable() != null) {
+         return toIntExpr(ctx.variable());
       }
       else {
          throw conversionError(ERR_CONVERT_INT, ctx);
       }
    }
 
-   private IntExpr toIntExpr(Var_int_exprContext ctx) {
+   private IntExpr toIntExpr(VariableContext ctx) {
       String variable = ctx.VARIABLE().getText();
       return new VarIntExpr(variable);
+   }
+
+   private IpExpr toIpExpr(Bgp_advertisement_ip_exprContext ctx) {
+      BgpAdvertisementExpr caller = toBgpAdvertisementExpr(ctx.caller);
+      if (ctx.bgp_advertisement_dst_ip_ip_expr() != null) {
+         return new DstIpBgpAdvertisementIpExpr(caller);
+      }
+      else if (ctx.bgp_advertisement_next_hop_ip_ip_expr() != null) {
+         return new NextHopIpBgpAdvertisementIpExpr(caller);
+      }
+      else if (ctx.bgp_advertisement_src_ip_ip_expr() != null) {
+         return new SrcIpBgpAdvertisementIpExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_IP, ctx);
+      }
    }
 
    private IpExpr toIpExpr(Bgp_neighbor_ip_exprContext ctx) {
@@ -1310,7 +1425,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private IpExpr toIpExpr(Ip_exprContext ctx) {
-      if (ctx.bgp_neighbor_ip_expr() != null) {
+      if (ctx.bgp_advertisement_ip_expr() != null) {
+         return toIpExpr(ctx.bgp_advertisement_ip_expr());
+      }
+      else if (ctx.bgp_neighbor_ip_expr() != null) {
          return toIpExpr(ctx.bgp_neighbor_ip_expr());
       }
       else if (ctx.interface_ip_expr() != null) {
@@ -1322,14 +1440,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.prefix_ip_expr() != null) {
          return toIpExpr(ctx.prefix_ip_expr());
       }
+      else if (ctx.route_ip_expr() != null) {
+         return toIpExpr(ctx.route_ip_expr());
+      }
       else if (ctx.static_route_ip_expr() != null) {
          return toIpExpr(ctx.static_route_ip_expr());
       }
       else if (ctx.IP_ADDRESS() != null) {
          return new LiteralIpExpr(new Ip(ctx.IP_ADDRESS().getText()));
       }
-      else if (ctx.var_ip_expr() != null) {
-         return new VarIpExpr(ctx.var_ip_expr().VARIABLE().getText());
+      else if (ctx.variable() != null) {
+         return new VarIpExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_IP, ctx);
@@ -1350,6 +1471,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       PrefixExpr caller = toPrefixExpr(ctx.caller);
       if (ctx.prefix_address_ip_expr() != null) {
          return new AddressPrefixIpExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_IP, ctx);
+      }
+   }
+
+   private IpExpr toIpExpr(Route_ip_exprContext ctx) {
+      RouteExpr caller = toRouteExpr(ctx.caller);
+      if (ctx.route_next_hop_ip_ip_expr() != null) {
+         return new NextHopIpRouteIpExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_IP, ctx);
@@ -1394,15 +1525,15 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private IpSetExpr toIpSetExpr(Set_ip_exprContext ctx) {
-      if (ctx.var_set_ip_expr() != null) {
-         return toIpSetExpr(ctx.var_set_ip_expr());
+      if (ctx.variable() != null) {
+         return toIpSetExpr(ctx.variable());
       }
       else {
          throw conversionError(ERR_CONVERT_IP_SET, ctx);
       }
    }
 
-   private IpSetExpr toIpSetExpr(Var_set_ip_exprContext ctx) {
+   private IpSetExpr toIpSetExpr(VariableContext ctx) {
       return new VarIpSetExpr(ctx.VARIABLE().getText());
    }
 
@@ -1422,8 +1553,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
             throw conversionError(ERR_CONVERT_MAP_EXPR, ctx);
          }
       }
-      else if (ctx.var_map_expr() != null) {
-         String var = ctx.var_map_expr().VARIABLE().getText();
+      else if (ctx.variable() != null) {
+         String var = ctx.variable().VARIABLE().getText();
          return new VarMapExpr(var);
       }
       else {
@@ -1475,8 +1606,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.ipsec_vpn_node_expr() != null) {
          return toNodeExpr(ctx.ipsec_vpn_node_expr());
       }
-      else if (ctx.var_node_expr() != null) {
-         return new VarNodeExpr(ctx.var_node_expr().VARIABLE().getText());
+      else if (ctx.variable() != null) {
+         return new VarNodeExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_NODE, ctx);
@@ -1489,9 +1620,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.CLAUSE() != null) {
          return BaseCasePolicyMapClauseExpr.CLAUSE;
       }
-      else if (ctx.var_policy_map_clause_expr() != null) {
-         return new VarPolicyMapClauseExpr(ctx.var_policy_map_clause_expr()
-               .VARIABLE().getText());
+      else if (ctx.variable() != null) {
+         return new VarPolicyMapClauseExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_POLICY_MAP_CLAUSE, ctx);
@@ -1499,9 +1629,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private PolicyMapExpr toPolicyMapExpr(Policy_map_exprContext ctx) {
-      if (ctx.var_policy_map_expr() != null) {
-         return new VarPolicyMapExpr(ctx.var_policy_map_expr().VARIABLE()
-               .getText());
+      if (ctx.variable() != null) {
+         return new VarPolicyMapExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_POLICY_MAP, ctx);
@@ -1519,6 +1648,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else {
          throw conversionError(
                "invalid simple ip constraint: " + ctx.getText(), ctx);
+      }
+   }
+
+   private PrefixExpr toPrefixExpr(Bgp_advertisement_prefix_exprContext ctx) {
+      BgpAdvertisementExpr caller = toBgpAdvertisementExpr(ctx.caller);
+      if (ctx.bgp_advertisement_network_prefix_expr() != null) {
+         return new NetworkBgpAdvertisementPrefixExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PREFIX, ctx);
       }
    }
 
@@ -1545,17 +1684,33 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private PrefixExpr toPrefixExpr(Prefix_exprContext ctx) {
-      if (ctx.generated_route_prefix_expr() != null) {
+      if (ctx.bgp_advertisement_prefix_expr() != null) {
+         return toPrefixExpr(ctx.bgp_advertisement_prefix_expr());
+      }
+      else if (ctx.generated_route_prefix_expr() != null) {
          return toPrefixExpr(ctx.generated_route_prefix_expr());
       }
       else if (ctx.interface_prefix_expr() != null) {
          return toPrefixExpr(ctx.interface_prefix_expr());
       }
+      else if (ctx.route_prefix_expr() != null) {
+         return toPrefixExpr(ctx.route_prefix_expr());
+      }
       else if (ctx.static_route_prefix_expr() != null) {
          return toPrefixExpr(ctx.static_route_prefix_expr());
       }
-      else if (ctx.var_prefix_expr() != null) {
-         return toPrefixExpr(ctx.var_prefix_expr());
+      else if (ctx.variable() != null) {
+         return toPrefixExpr(ctx.variable());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_PREFIX, ctx);
+      }
+   }
+
+   private PrefixExpr toPrefixExpr(Route_prefix_exprContext ctx) {
+      RouteExpr caller = toRouteExpr(ctx.caller);
+      if (ctx.route_network_prefix_expr() != null) {
+         return new NetworkRoutePrefixExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_PREFIX, ctx);
@@ -1572,7 +1727,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
-   private PrefixExpr toPrefixExpr(Var_prefix_exprContext ctx) {
+   private PrefixExpr toPrefixExpr(VariableContext ctx) {
       String var = ctx.VARIABLE().getText();
       return new VarPrefixExpr(var);
    }
@@ -1636,15 +1791,15 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.interface_set_prefix_expr() != null) {
          return toPrefixSetExpr(ctx.interface_set_prefix_expr());
       }
-      else if (ctx.var_set_prefix_expr() != null) {
-         return toPrefixSetExpr(ctx.var_set_prefix_expr());
+      else if (ctx.variable() != null) {
+         return toPrefixSetExpr(ctx.variable());
       }
       else {
          throw conversionError(ERR_CONVERT_PREFIX_SET, ctx);
       }
    }
 
-   private PrefixSetExpr toPrefixSetExpr(Var_set_prefix_exprContext ctx) {
+   private PrefixSetExpr toPrefixSetExpr(VariableContext ctx) {
       return new VarPrefixSetExpr(ctx.VARIABLE().getText());
    }
 
@@ -1666,9 +1821,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          PrefixSpaceExpr caller = toPrefixSpaceExpr(ctx.prefix_space_expr());
          return toPrefixSpaceExpr(caller, ctx.prefix_space_prefix_space_expr());
       }
-      else if (ctx.var_prefix_space_expr() != null) {
-         return new VarPrefixSpaceExpr(ctx.var_prefix_space_expr().VARIABLE()
-               .getText());
+      else if (ctx.variable() != null) {
+         return new VarPrefixSpaceExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_PREFIX_SPACE, ctx);
@@ -1760,6 +1914,19 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          throw new BatfishException("unexpected regex token text: " + text);
       }
       return text.substring(prefix.length(), text.length() - 1);
+   }
+
+   private RouteExpr toRouteExpr(Route_exprContext ctx) {
+      routes();
+      if (ctx.ROUTE() != null) {
+         return BaseCaseRouteExpr.ROUTE;
+      }
+      else if (ctx.variable() != null) {
+         return new VarRouteExpr(ctx.variable().getText());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_ROUTE, ctx);
+      }
    }
 
    private RouteFilterExpr toRouteFilterExpr(Route_filter_exprContext ctx) {
@@ -1877,6 +2044,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       List<Statement> statements = toStatements(ctx.statement());
       switch (elementType) {
 
+      case BGP_ADVERTISEMENT:
+         return new ForEachBgpAdvertisementStatement(statements, var, setVar);
+
       case BGP_NEIGHBOR:
          return new ForEachBgpNeighborStatement(statements, var, setVar);
 
@@ -1913,6 +2083,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case PREFIX_SPACE:
          return new ForEachPrefixSpaceStatement(statements, var, setVar);
 
+      case ROUTE:
+         return new ForEachRouteStatement(statements, var, setVar);
+
       case ROUTE_FILTER:
          return new ForEachRouteFilterStatement(statements, var, setVar);
 
@@ -1930,6 +2103,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case PROTOCOL:
       case RANGE:
       case REGEX:
+      case SET_BGP_ADVERTISEMENT:
       case SET_BGP_NEIGHBOR:
       case SET_INT:
       case SET_INTERFACE:
@@ -1940,6 +2114,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX:
       case SET_PREFIX_SPACE:
+      case SET_ROUTE:
       case SET_ROUTE_FILTER:
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
@@ -1994,14 +2169,35 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.PROTOCOL() != null) {
          return new ForEachProtocolStatement(statements, var, setVar);
       }
+      else if (ctx.RECEIVED_EBGP_ADVERTISEMENT() != null) {
+         return new ForEachReceivedEbgpAdvertisementStatement(statements, var,
+               setVar);
+      }
+      else if (ctx.RECEIVED_IBGP_ADVERTISEMENT() != null) {
+         return new ForEachReceivedIbgpAdvertisementStatement(statements, var,
+               setVar);
+      }
       else if (ctx.REMOTE_BGP_NEIGHBOR() != null) {
          return new ForEachRemoteBgpNeighborStatement(statements, var, setVar);
       }
       else if (ctx.REMOTE_IPSEC_VPN() != null) {
          return new ForEachRemoteIpsecVpnStatement(statements, var, setVar);
       }
+      else if (ctx.ROUTE() != null) {
+         routes();
+         return new ForEachRouteStatement(statements, var, setVar);
+      }
       else if (ctx.ROUTE_FILTER() != null) {
          return new ForEachRouteFilterStatement(statements, var, setVar);
+      }
+      else if (ctx.SENT_EBGP_ADVERTISEMENT() != null) {
+         bgp_advertisements();
+         return new ForEachSentEbgpAdvertisementStatement(statements, var,
+               setVar);
+      }
+      else if (ctx.SENT_IBGP_ADVERTISEMENT() != null) {
+         return new ForEachSentIbgpAdvertisementStatement(statements, var,
+               setVar);
       }
       else if (ctx.STATIC_ROUTE() != null) {
          return new ForEachStaticRouteStatement(statements, var, setVar);
@@ -2176,9 +2372,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       if (ctx.STATIC_ROUTE() != null) {
          return BaseCaseStaticRouteExpr.STATIC_ROUTE;
       }
-      else if (ctx.var_static_route_expr() != null) {
-         return new VarStaticRouteExpr(ctx.var_static_route_expr().VARIABLE()
-               .getText());
+      else if (ctx.variable() != null) {
+         return new VarStaticRouteExpr(ctx.variable().VARIABLE().getText());
       }
       else {
          throw conversionError(ERR_CONVERT_STATIC_ROUTE, ctx);
@@ -2186,7 +2381,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringExpr toStringExpr(Base_string_exprContext ctx) {
-      if (ctx.bgp_neighbor_string_expr() != null) {
+      if (ctx.bgp_advertisement_string_expr() != null) {
+         return toStringExpr(ctx.bgp_advertisement_string_expr());
+      }
+      else if (ctx.bgp_neighbor_string_expr() != null) {
          return toStringExpr(ctx.bgp_neighbor_string_expr());
       }
       else if (ctx.format_string_expr() != null) {
@@ -2207,14 +2405,33 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.protocol_string_expr() != null) {
          return toStringExpr(ctx.protocol_string_expr());
       }
+      else if (ctx.route_string_expr() != null) {
+         return toStringExpr(ctx.route_string_expr());
+      }
       else if (ctx.static_route_string_expr() != null) {
          return toStringExpr(ctx.static_route_string_expr());
       }
       else if (ctx.route_filter_string_expr() != null) {
          return toStringExpr(ctx.route_filter_string_expr());
       }
-      else if (ctx.var_string_expr() != null) {
-         return toStringExpr(ctx.var_string_expr());
+      else if (ctx.variable() != null) {
+         return toStringExpr(ctx.variable());
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING, ctx);
+      }
+   }
+
+   private StringExpr toStringExpr(Bgp_advertisement_string_exprContext ctx) {
+      BgpAdvertisementExpr caller = toBgpAdvertisementExpr(ctx.caller);
+      if (ctx.bgp_advertisement_as_path_string_expr() != null) {
+         return new AsPathBgpAdvertisementStringExpr(caller);
+      }
+      else if (ctx.bgp_advertisement_dst_node_string_expr() != null) {
+         return new DstNodeBgpAdvertisementStringExpr(caller);
+      }
+      else if (ctx.bgp_advertisement_src_node_string_expr() != null) {
+         return new SrcNodeBgpAdvertisementStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);
@@ -2249,8 +2466,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringExpr toStringExpr(Interface_string_exprContext ctx) {
-      if (ctx.interface_name_string_expr() != null) {
-         return InterfaceStringExpr.INTERFACE_NAME;
+      InterfaceExpr caller = toInterfaceExpr(ctx.caller);
+      if (ctx.interface_description_string_expr() != null) {
+         return new NameInterfaceStringExpr(caller);
+      }
+      else if (ctx.interface_name_string_expr() != null) {
+         return new DescriptionInterfaceStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);
@@ -2323,6 +2544,22 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private StringExpr toStringExpr(Route_string_exprContext ctx) {
+      RouteExpr caller = toRouteExpr(ctx.caller);
+      if (ctx.route_next_hop_interface_string_expr() != null) {
+         return new NextHopInterfaceRouteStringExpr(caller);
+      }
+      else if (ctx.route_next_hop_string_expr() != null) {
+         return new NextHopRouteStringExpr(caller);
+      }
+      else if (ctx.route_protocol_string_expr() != null) {
+         return new ProtocolRouteStringExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING, ctx);
+      }
+   }
+
    private StringExpr toStringExpr(Static_route_string_exprContext ctx) {
       if (ctx.static_route_next_hop_interface_string_expr() != null) {
          return StaticRouteStringExpr.STATICROUTE_NEXT_HOP_INTERFACE;
@@ -2355,9 +2592,20 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       return new StringLiteralStringExpr(processed);
    }
 
-   private StringExpr toStringExpr(Var_string_exprContext ctx) {
+   private StringExpr toStringExpr(VariableContext ctx) {
       String var = ctx.VARIABLE().getText();
       return new VarStringExpr(var);
+   }
+
+   private StringSetExpr toStringSetExpr(
+         Bgp_advertisement_set_string_exprContext ctx) {
+      BgpAdvertisementExpr caller = toBgpAdvertisementExpr(ctx.caller);
+      if (ctx.bgp_advertisement_communities_set_string_expr() != null) {
+         return new CommunitiesBgpAdvertisementStringSetExpr(caller);
+      }
+      else {
+         throw conversionError(ERR_CONVERT_STRING_SET, ctx);
+      }
    }
 
    private StringSetExpr toStringSetExpr(Map_set_string_exprContext ctx) {
@@ -2371,7 +2619,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    private StringSetExpr toStringSetExpr(Set_string_exprContext ctx) {
-      if (ctx.map_set_string_expr() != null) {
+      if (ctx.bgp_advertisement_set_string_expr() != null) {
+         return toStringSetExpr(ctx.bgp_advertisement_set_string_expr());
+      }
+      else if (ctx.map_set_string_expr() != null) {
          return toStringSetExpr(ctx.map_set_string_expr());
       }
       else {

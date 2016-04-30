@@ -12,25 +12,35 @@ null_block_stanza
    (
       AAA
       | ACCESS_GROUP
+      | ACCESS
+      | ADMIN
+      | ALLOW
       | ARCHIVE
       | ATM
       | BASH
       | BFD
+      | BGP DISABLE_ADVERTISEMENT
       | BSD_USERNAME
+      | CAM_ACL
       | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
       | CLASS_MAP
       | CLI
+      | CLOCK
       | CONFDCONFIG
       | CONFIGURATION
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
       | CRYPTO
+      | DAEMON
       | DCB
+      | DCB_BUFFER_THRESHOLD
+      | DEBUG
       | DIAL_PEER
       | DOMAIN
+      | DO STOP
       | END
       | EVENT_HANDLER
       | FEX
@@ -40,6 +50,8 @@ null_block_stanza
       | GATEWAY
       | GROUP
       | GROUP_POLICY
+      | HASH_ALGORITHM
+      | INTERFACE BREAKOUT
       |
       (
          IP
@@ -49,15 +61,20 @@ null_block_stanza
             )
             | ACCOUNTING_LIST
             | ACCOUNTING_THRESHOLD
+            | BOOTP_RELAY
             | DECAP_GROUP
             | DHCP
+            | ECMP_GROUP
             | FLOW_TOP_TALKERS
+            | HARDWARE
+            | ICMP_ERRORS
             | INSPECT
             |
             (
                OSPF NAME_LOOKUP
             )
             | POLICY_LIST
+            | ROUTER_ID
             | SLA
             | SOURCE
             | VIRTUAL_ROUTER
@@ -100,6 +117,7 @@ null_block_stanza
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
+      | MAXIMUM_PATHS
       | MLAG
       | MODULE
       | MONITOR
@@ -108,9 +126,18 @@ null_block_stanza
          MPLS
          (
             (
-               LDP ~NEWLINE
+               IP
+               | LDP ~NEWLINE
             )
             | OAM
+         )
+      )
+      | MULTI_CONFIG
+      |
+      (
+         NO
+         (
+            IP AS_PATH
          )
       )
       | NO_BANNER
@@ -119,15 +146,25 @@ null_block_stanza
       | ONE
       | OPENFLOW
       | PLAT
+      | PLATFORM
       | POLICY_MAP
+      | POLICY_MAP_INPUT
+      | POLICY_MAP_OUTPUT
       | POWEROFF
+      | PRIORITY_FLOW_CONTROL
       | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
+      | QOS_POLICY_OUTPUT
       | REDUNDANCY
       | RELOAD_TYPE
       | RMON
       | ROLE
+      | ROUTER
+      (
+         LOG
+         | VRRP
+      )
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
@@ -139,6 +176,7 @@ null_block_stanza
       | STCAPP
       | SVCLC
       | SWITCH_PROFILE
+      | SWITCH_TYPE
       | TACACS
       | TACACS_SERVER
       | TCP
@@ -147,11 +185,16 @@ null_block_stanza
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | UDF
       | USERGROUP
       | VDC
       |
       (
-         VLAN DEC
+         VLAN
+         (
+            DEC
+            | ACCESS_MAP
+         )
       )
       | VLT
       | VOICE
@@ -164,6 +207,7 @@ null_block_stanza
       description_line
       | null_block_substanza
       | null_block_substanza_full
+      | unrecognized_line
    )*
 ;
 
@@ -186,6 +230,7 @@ null_block_substanza
          | ADVERTISE
          | AESA
          | ANYCONNECT
+         | APPLICATION
          | ARCHIVE_LENGTH
          | ARCHIVE_SIZE
          | ASSOCIATE
@@ -202,6 +247,7 @@ null_block_substanza
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
          | BANDWIDTH
+         | BANDWIDTH_PERCENTAGE
          | BANNER
          | BIND
          | BRIDGE
@@ -222,7 +268,7 @@ null_block_substanza
          | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
-	 | CONNECT_SOURCE
+         | CONNECT_SOURCE
          | CONTEXT
          | CPTONE
          | CREDENTIALS
@@ -247,6 +293,8 @@ null_block_substanza
          | DS0_GROUP
          | DOMAIN_NAME
          | ECHO
+         | EGRESS
+         | ENABLE
          | ENCAPSULATION
          | ENCRYPTION
          | END_CLASS_MAP
@@ -293,6 +341,7 @@ null_block_substanza
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
+         | INGRESS
          | INSERVICE
          | INSPECT
          | INSTANCE
@@ -342,7 +391,8 @@ null_block_substanza
          | MAIN_CPU
          | MATCH
          | MAXIMUM
-	 | MESH_GROUP
+         | MEMBER
+         | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
          | MODEM
@@ -358,6 +408,8 @@ null_block_substanza
          | NOTIFY
          | OBJECT
          | OPEN
+         | OPTION
+         | OPTIONS
          | OPS
          | PARAMETERS
          | PARENT
@@ -405,7 +457,7 @@ null_block_substanza
          | RELOAD
          | RELOAD_DELAY
          | REMARK
-	 | REMOTE_AS
+         | REMOTE_AS
          | REMOTE_IP
          | REMOTE_PORT
          | REMOTE_SPAN
@@ -423,7 +475,7 @@ null_block_substanza
          | ROUTE
          | ROUTE_TARGET
          | RULE
-	 | SA_FILTER
+         | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -433,6 +485,7 @@ null_block_substanza
          | SERVER_PRIVATE
          | SERVICE
          | SERVICE_POLICY
+         | SERVICE_QUEUE
          | SERVICE_TYPE
          | SESSION_DISCONNECT_WARNING
          | SESSION_LIMIT
@@ -473,6 +526,7 @@ null_block_substanza
          | TIMING
          | TOP
          | TOS
+         | TRACKING_PRIORITY_INCREMENT
          | TRANSPORT
          | TRIGGER
          | TRUNK
@@ -484,9 +538,10 @@ null_block_substanza
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
-	 | VERSION
+         | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
+         | VIRTUAL_ROUTER
          | VIRTUAL_TEMPLATE
          | VM_CPU
          | VM_MEMORY
@@ -498,6 +553,7 @@ null_block_substanza
          | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
+         | WRED
          | XML_CONFIG
       )
       (
@@ -862,4 +918,9 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
    (
       remaining_tokens += ~NEWLINE
    )* NEWLINE
+;
+
+unrecognized_block_stanza
+:
+   unrecognized_line null_block_substanza*
 ;

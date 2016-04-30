@@ -66,6 +66,11 @@ AND
    'and'
 ;
 
+AS_PATH
+:
+   'as_path'
+;
+
 ASSERT
 :
    'assert'
@@ -74,6 +79,11 @@ ASSERT
 BGP
 :
    'bgp'
+;
+
+BGP_ADVERTISEMENT
+:
+   'bgp_advertisement'
 ;
 
 BGP_NEIGHBOR
@@ -96,6 +106,11 @@ CLEAR
    'clear'
 ;
 
+COMMUNITIES
+:
+   'communities'
+;
+
 COMPATIBLE_IKE_PROPOSALS
 :
    'compatible_ike_proposals'
@@ -116,6 +131,11 @@ CONTAINS
    'contains'
 ;
 
+COST
+:
+   'cost'
+;
+
 DEFAULTS
 :
    'defaults'
@@ -134,6 +154,11 @@ DROP
 DST_IP
 :
    'dst_ip'
+;
+
+DST_NODE
+:
+   'dst_node'
 ;
 
 DST_PORT
@@ -381,6 +406,11 @@ LOCAL_PATH
    'local_path'
 ;
 
+LOCAL_PREFERENCE
+:
+   'local_preference'
+;
+
 MATCH_PROTOCOL
 :
    'match_protocol'
@@ -391,6 +421,11 @@ MATCH_ROUTE_FILTER
    'match_route_filter'
 ;
 
+MED
+:
+   'med'
+;
+
 MULTIPATH
 :
    'multipath'
@@ -399,6 +434,16 @@ MULTIPATH
 NAME
 :
    'name'
+;
+
+NETWORK
+:
+   'network'
+;
+
+NEXT_HOP
+:
+   'next_hop'
 ;
 
 NEXT_HOP_INTERFACE
@@ -511,6 +556,16 @@ REACHABILITY
    'reachability'
 ;
 
+RECEIVED_EBGP_ADVERTISEMENT
+:
+   'received_ebgp_advertisement'
+;
+
+RECEIVED_IBGP_ADVERTISEMENT
+:
+   'received_ibgp_advertisement'
+;
+
 REDUCED_REACHABILITY
 :
    'reduced_reachability'
@@ -536,9 +591,24 @@ REMOTE_IPSEC_VPN
    'remote_ipsec_vpn'
 ;
 
+ROUTE
+:
+   'route'
+;
+
 ROUTE_FILTER
 :
    'route_filter'
+;
+
+SENT_EBGP_ADVERTISEMENT
+:
+   'sent_ebgp_advertisement'
+;
+
+SENT_IBGP_ADVERTISEMENT
+:
+   'sent_ibgp_advertisement'
 ;
 
 SET
@@ -554,6 +624,11 @@ SIZE
 SRC_IP
 :
    'src_ip'
+;
+
+SRC_NODE
+:
+   'src_node'
 ;
 
 SRC_PORT
@@ -574,6 +649,11 @@ STATIC_ROUTE
 SUBNET
 :
    'subnet'
+;
+
+TAG
+:
+   'tag'
 ;
 
 TCP_FLAGS

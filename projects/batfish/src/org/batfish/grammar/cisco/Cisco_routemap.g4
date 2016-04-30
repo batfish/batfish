@@ -6,6 +6,96 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+apply_rp_stanza
+:
+   APPLY name = variable NEWLINE
+;
+
+boolean_and_rp_stanza
+:
+   boolean_not_rp_stanza
+   | boolean_and_rp_stanza AND boolean_not_rp_stanza
+;
+
+boolean_community_matches_any_rp_stanza
+:
+   COMMUNITY MATCHES_ANY rp_community_set
+;
+
+boolean_community_matches_every_rp_stanza
+:
+   COMMUNITY MATCHES_EVERY name = variable
+;
+
+boolean_destination_rp_stanza
+:
+   DESTINATION IN rp_prefix_set
+;
+
+boolean_not_rp_stanza
+:
+   boolean_simple_rp_stanza
+   | NOT boolean_simple_rp_stanza
+;
+
+boolean_rib_has_route_rp_stanza
+:
+   RIB_HAS_ROUTE IN rp_prefix_set
+;
+
+boolean_simple_rp_stanza
+:
+   PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
+   | boolean_community_matches_any_rp_stanza
+   | boolean_community_matches_every_rp_stanza
+   | boolean_destination_rp_stanza
+   | boolean_rib_has_route_rp_stanza
+;
+
+boolean_rp_stanza
+:
+   boolean_and_rp_stanza
+   | boolean_rp_stanza OR boolean_and_rp_stanza
+;
+
+delete_rp_stanza
+:
+   DELETE COMMUNITY
+   (
+      ALL
+      | NOT? IN rp_community_set
+   ) NEWLINE
+;
+
+disposition_rp_stanza
+:
+   (
+      DONE
+      | DROP
+      | PASS
+   ) NEWLINE
+;
+
+elseif_rp_stanza
+:
+   ELSEIF boolean_rp_stanza THEN NEWLINE rp_stanza*
+;
+
+else_rp_stanza
+:
+   ELSE NEWLINE rp_stanza*
+;
+
+if_rp_stanza
+:
+   IF boolean_rp_stanza THEN NEWLINE rp_stanza* elseif_rp_stanza*
+   else_rp_stanza?
+   (
+      ENDIF
+      | EXIT
+   ) NEWLINE
+;
+
 ip_policy_list_stanza
 :
    IP POLICY_LIST name = variable access_list_action NEWLINE match_rm_stanza*
@@ -17,6 +107,11 @@ match_as_path_access_list_rm_stanza
    (
       name_list += variable
    )+ NEWLINE
+;
+
+match_as_rm_stanza
+:
+   MATCH AS num = DEC NEWLINE
 ;
 
 match_community_list_rm_stanza
@@ -89,6 +184,7 @@ match_policy_list_rm_stanza
 match_rm_stanza
 :
    match_as_path_access_list_rm_stanza
+   | match_as_rm_stanza
    | match_community_list_rm_stanza
    | match_extcommunity_rm_stanza
    | match_interface_rm_stanza
@@ -116,6 +212,11 @@ null_rm_stanza
    ) ~NEWLINE* NEWLINE
 ;
 
+null_rp_stanza
+:
+   POUND ~NEWLINE* NEWLINE
+;
+
 rm_stanza
 :
    match_rm_stanza
@@ -123,46 +224,44 @@ rm_stanza
    | set_rm_stanza
 ;
 
-route_map_named_stanza
-locals [boolean again]
-:
-   ROUTE_MAP name = ~NEWLINE route_map_tail
-   {
-		$again = _input.LT(1).getType() == ROUTE_MAP &&
-		_input.LT(2).getType() != NEWLINE &&
-		_input.LT(2).getText().equals($name.text);
-	}
-
-   (
-      {$again}?
-
-      route_map_named_stanza
-      |
-      {!$again}?
-
-   )
-;
-
 route_map_stanza
 :
-   named = route_map_named_stanza
-;
-
-route_map_tail
-:
-   rmt = access_list_action num = DEC NEWLINE route_map_tail_tail
-;
-
-route_map_tail_tail
-:
-   (
-      rms_list += rm_stanza
-   )*
+   ROUTE_MAP name = variable rmt = access_list_action num = DEC NEWLINE
+   rm_stanza*
 ;
 
 route_policy_stanza
 :
-   ROUTE_POLICY name = variable NEWLINE ~END_POLICY* END_POLICY NEWLINE
+   ROUTE_POLICY name = variable NEWLINE route_policy_tail
+;
+
+route_policy_tail
+:
+   (
+      rp_stanza
+   )* END_POLICY NEWLINE
+;
+
+rp_community_set
+:
+   name = variable
+   | PAREN_LEFT COMMUNITY_NUMBER PAREN_RIGHT
+;
+
+rp_prefix_set
+:
+   name = variable
+   | PAREN_LEFT prefix_set_elem PAREN_RIGHT
+;
+
+rp_stanza
+:
+   apply_rp_stanza
+   | delete_rp_stanza
+   | disposition_rp_stanza
+   | if_rp_stanza
+   | null_rp_stanza
+   | set_rp_stanza
 ;
 
 set_as_path_prepend_rm_stanza
@@ -184,10 +283,26 @@ set_comm_list_delete_rm_stanza
 
 set_community_additive_rm_stanza
 :
-   SET COMMUNITY COMMUNITY_LIST?
+   SET COMMUNITY
    (
-      comm_list += community
+      communities += community
    )+ ADDITIVE NEWLINE
+;
+
+set_community_list_additive_rm_stanza
+:
+   SET COMMUNITY COMMUNITY_LIST
+   (
+      comm_lists += variable
+   )+ ADDITIVE NEWLINE
+;
+
+set_community_list_rm_stanza
+:
+   SET COMMUNITY COMMUNITY_LIST
+   (
+      comm_lists += variable
+   )+ NEWLINE
 ;
 
 set_community_none_rm_stanza
@@ -197,10 +312,15 @@ set_community_none_rm_stanza
 
 set_community_rm_stanza
 :
-   SET COMMUNITY COMMUNITY_LIST?
+   SET COMMUNITY
    (
-      comm_list += community
+      communities += community
    )+ NEWLINE
+;
+
+set_community_rp_stanza
+:
+   SET COMMUNITY rp_community_set ADDITIVE? NEWLINE
 ;
 
 set_extcomm_list_rm_stanza
@@ -240,6 +360,16 @@ set_local_preference_rm_stanza
    SET LOCAL_PREFERENCE pref = DEC NEWLINE
 ;
 
+set_local_preference_rp_stanza
+:
+   SET LOCAL_PREFERENCE pref = DEC NEWLINE
+;
+
+set_med_rp_stanza
+:
+   SET MED med = DEC NEWLINE
+;
+
 set_metric_rm_stanza
 :
    SET METRIC metric = DEC NEWLINE
@@ -266,6 +396,17 @@ set_next_hop_rm_stanza
    (
       nexthop_list += IP_ADDRESS
    )+ NEWLINE
+;
+
+set_next_hop_rp_stanza
+:
+   SET NEXT_HOP
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+      | PEER_ADDRESS
+      | SELF
+   ) DESTINATION_VRF? NEWLINE
 ;
 
 set_origin_rm_stanza
@@ -296,6 +437,8 @@ set_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
    | set_community_additive_rm_stanza
+   | set_community_list_additive_rm_stanza
+   | set_community_list_rm_stanza
    | set_community_none_rm_stanza
    | set_extcomm_list_rm_stanza
    | set_extcommunity_rm_stanza
@@ -313,3 +456,10 @@ set_rm_stanza
    | set_weight_rm_stanza
 ;
 
+set_rp_stanza
+:
+   set_community_rp_stanza
+   | set_local_preference_rp_stanza
+   | set_med_rp_stanza
+   | set_next_hop_rp_stanza
+;

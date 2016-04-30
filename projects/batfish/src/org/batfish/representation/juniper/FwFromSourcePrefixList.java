@@ -22,9 +22,15 @@ public final class FwFromSourcePrefixList extends FwFrom {
    }
 
    @Override
-   public void applyTo(IpAccessListLine line, Warnings w, Configuration c) {
-      RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
-      if (sourcePrefixList != null) {
+   public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
+         Warnings w, Configuration c) {
+      PrefixList pl = jc.getPrefixLists().get(_name);
+      if (pl != null) {
+         pl.getReferers().put(this, "firewall from source-prefix-list");
+         if (pl.getIpv6()) {
+            return;
+         }
+         RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
          for (RouteFilterLine rfLine : sourcePrefixList.getLines()) {
             if (rfLine.getAction() != LineAction.ACCEPT) {
                throw new BatfishException(

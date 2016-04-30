@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.collections.RoleSet;
+import org.batfish.common.BatfishException;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
@@ -51,6 +52,7 @@ import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
+import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
 import org.batfish.util.SubRange;
@@ -165,16 +167,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
          if (currentMap == null) {
-            throw new VendorConversionException(
-                  "undefined reference to routemap: " + mapName);
+            _w.redFlag("Undefined reference to route-map: " + mapName);
          }
-         for (RouteMapClause clause : currentMap.getClauses().values()) {
-            for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-               if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
-                  RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
-                  for (String listName : ipall.getListNames()) {
-                     if (eaListName.equals(listName)) {
-                        return true;
+         else {
+            for (RouteMapClause clause : currentMap.getClauses().values()) {
+               for (RouteMapMatchLine matchLine : clause.getMatchList()) {
+                  if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
+                     RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
+                     for (String listName : ipall.getListNames()) {
+                        if (eaListName.equals(listName)) {
+                           return true;
+                        }
                      }
                   }
                }
@@ -361,6 +364,20 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
+
+         // set attribute map for aggregate network
+         String attributeMapName = aggNet.getAttributeMap();
+         RouteMap attributeMap = _routeMaps.get(attributeMapName);
+         if (attributeMap != null) {
+            attributeMap.getReferers().put(aggNet,
+                  "attribute-map of aggregate route: " + prefix.toString());
+            PolicyMap attributePolicy = c.getPolicyMaps().get(attributeMapName);
+            gr.getAttributePolicies().put(attributeMapName, attributePolicy);
+         }
+         else {
+            _w.redFlag("Reference to undefined route-map used as attribute-map: \""
+                  + attributeMapName + "\"");
+         }
       }
 
       // create policy for denying suppressed summary-only networks
@@ -658,13 +675,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          boolean sendCommunity = lpg.getSendCommunity();
-         Boolean ebgpMultihop = lpg.getEbgpMultihop();
-         if (ebgpMultihop == null) {
-            ebgpMultihop = false;
-         }
+         boolean advertiseInactive = lpg.getAdvertiseInactive();
+         boolean ebgpMultihop = lpg.getEbgpMultihop();
+         boolean allowasIn = lpg.getAllowAsIn();
+         boolean disablePeerAsCheck = lpg.getDisablePeerAsCheck();
          String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
-            if (lpg.getRemoteAS() == null) {
+            if (lpg.getRemoteAs() == null) {
                _w.redFlag("No remote-as set for peer: " + lpg.getName());
                continue;
             }
@@ -686,30 +703,34 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
             newBgpNeighbors.put(newNeighbor.getPrefix(), newNeighbor);
 
-            if (newInboundPolicyMap != null) {
-               newNeighbor.addInboundPolicyMap(newInboundPolicyMap);
-            }
-            if (newOutboundPolicyMap != null) {
-               newNeighbor.addOutboundPolicyMap(newOutboundPolicyMap);
-               if (defaultOriginationPolicy != null) {
-                  newNeighbor.addOutboundPolicyMap(defaultOriginationPolicy);
-               }
-            }
-            newNeighbor.setGroupName(lpg.getGroupName());
+            newNeighbor.setAdvertiseInactive(advertiseInactive);
+            newNeighbor.setAllowLocalAsIn(allowasIn);
+            newNeighbor.setAllowRemoteAsOut(disablePeerAsCheck);
             if (routeReflectorClient) {
                newNeighbor.setClusterId(clusterId.asLong());
             }
-            if (defaultRoute != null) {
-               newNeighbor.getGeneratedRoutes().add(defaultRoute);
-            }
-            newNeighbor.setRemoteAs(lpg.getRemoteAS());
-            newNeighbor.setLocalAs(proc.getPid());
-            newNeighbor.setLocalIp(updateSource);
-            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
-            newNeighbor.setSendCommunity(sendCommunity);
             newNeighbor.setDefaultMetric(defaultMetric);
             newNeighbor.setDescription(description);
             newNeighbor.setEbgpMultihop(ebgpMultihop);
+            if (defaultRoute != null) {
+               newNeighbor.getGeneratedRoutes().add(defaultRoute);
+            }
+            newNeighbor.setGroupName(lpg.getGroupName());
+            if (newInboundPolicyMap != null) {
+               newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
+            }
+            newNeighbor.setLocalAs(proc.getPid());
+            newNeighbor.setLocalIp(updateSource);
+            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
+            if (newOutboundPolicyMap != null) {
+               newNeighbor.getOutboundPolicyMaps().add(newOutboundPolicyMap);
+               if (defaultOriginationPolicy != null) {
+                  newNeighbor.getOutboundPolicyMaps().add(
+                        defaultOriginationPolicy);
+               }
+            }
+            newNeighbor.setRemoteAs(lpg.getRemoteAs());
+            newNeighbor.setSendCommunity(sendCommunity);
          }
       }
       return newBgpProcess;
@@ -873,10 +894,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (icmpCode != null) {
             newLine.setIcmpCode(icmpCode);
          }
-         Integer tcpFlags = fromLine.getTcpFlags();
-         if (tcpFlags != null) {
-            newLine.setTcpFlags(tcpFlags);
-         }
+         List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
+         newLine.getTcpFlags().addAll(tcpFlags);
+         Set<Integer> dscps = fromLine.getDscps();
+         newLine.getDscps().addAll(dscps);
+         Set<Integer> ecns = fromLine.getEcns();
+         newLine.getEcns().addAll(ecns);
          lines.add(newLine);
       }
       return new IpAccessList(name, lines);
@@ -1122,6 +1145,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   case POLICY:
                   case COLOR:
                   case INTERFACE:
+                  case POLICY_CONJUNCTION:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching
@@ -1426,6 +1450,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   case POLICY:
                   case COLOR:
                   case INTERFACE:
+                  case POLICY_CONJUNCTION:
                   default:
                      // note: don't allow ip access lists in policies that
                      // are for prefix matching
@@ -1535,7 +1560,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       }
       Set<PolicyMapSetLine> setLines = pmClause.getSetLines();
       for (RouteMapSetLine rmSetLine : clause.getSetList()) {
-         setLines.add(rmSetLine.toPolicyMapSetLine(c));
+         setLines.add(rmSetLine.toPolicyMapSetLine(this, c, _w));
       }
       return pmClause;
    }
@@ -1804,7 +1829,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                case LEVEL:
                   break;
                default:
-                  throw new Error("bad set type");
+                  throw new BatfishException("bad set type");
                }
             }
          }

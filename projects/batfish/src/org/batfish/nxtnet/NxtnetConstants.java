@@ -11,6 +11,8 @@ public class NxtnetConstants {
 
    public static final Set<String> NXTNET_DATA_PLANE_ENTITY_SYMBOLS = initNxtnetDataPlaneEntitySymbols();
 
+   public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS = initNxtnetDataPlaneOutputDebugSymbols();
+
    public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_SYMBOLS = initNxtnetDataPlaneOutputSymbols();
 
    public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS = initNxtnetTrafficComputationControlPlaneFacts();
@@ -18,6 +20,8 @@ public class NxtnetConstants {
    public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS = initNxtnetTrafficComputationFlowFacts();
 
    public static final Set<String> NXTNET_TRAFFIC_ENTITY_SYMBOLS = initNxtnetTrafficEntitySymbols();
+
+   public static final Set<String> NXTNET_TRAFFIC_OUTPUT_DEBUG_SYMBOLS = initNxtnetTrafficOutputDebugSymbols();
 
    public static final Set<String> NXTNET_TRAFFIC_OUTPUT_SYMBOLS = initNxtnetTrafficOutputSymbols();
 
@@ -40,12 +44,18 @@ public class NxtnetConstants {
             "SetBgpDefaultLocalPref_flat",
             "SetBgpExportPolicy_flat",
             "SetBgpGeneratedRoute_flat",
+            "SetBgpGeneratedRouteAttributePolicy_flat",
             "SetBgpGeneratedRoutePolicy_flat",
             "SetBgpImportPolicy_flat",
             "SetBgpMultihopNeighborNetwork_flat",
+            "SetBgpNeighborAdvertiseInactive_flat",
+            "SetBgpNeighborAllowLocalAsIn_flat",
+            "SetBgpNeighborAllowRemoteAsOut_flat",
             "SetBgpNeighborDefaultMetric_flat",
             "SetBgpNeighborGeneratedRoute_flat",
+            "SetBgpNeighborGeneratedRouteAttributePolicy_flat",
             "SetBgpNeighborGeneratedRoutePolicy_flat",
+            "SetBgpNeighborLocalIp_flat",
             "SetBgpNeighborNetwork_flat",
             "SetBgpNeighborSendCommunity_flat",
             "SetBgpOriginationPolicy_flat",
@@ -54,11 +64,13 @@ public class NxtnetConstants {
             "SetCrossZoneFilter",
             "SetDefaultCrossZoneAccept",
             "SetDefaultInboundAccept",
+            "SetExternalBgpRemoteIp",
             "SetFakeInterface",
             "SetFlowSinkInterface",
             "SetGeneratedRouteDiscard_flat",
             "SetGeneratedRoute_flat",
             "SetGeneratedRouteMetric_flat",
+            "SetGeneratedRouteAttributePolicy_flat",
             "SetGeneratedRoutePolicy_flat",
             "SetIbgpNeighbors",
             "SetInboundInterfaceFilter",
@@ -67,15 +79,27 @@ public class NxtnetConstants {
             "SetInterfaceRoutingPolicy",
             "SetInterfaceZone",
             "SetIpAccessListLine_deny",
+            "SetIpAccessListLine_dscp",
             "SetIpAccessListLine_dstIpRange",
             "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_ecn",
             "SetIpAccessListLine_icmpCode",
             "SetIpAccessListLine_icmpType",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
             "SetIpAccessListLine_srcIpRange",
+            "SetIpAccessListLine_srcOrDstIpRange",
+            "SetIpAccessListLine_srcOrDstPortRange",
             "SetIpAccessListLine_srcPortRange",
             "SetIpAccessListLine_tcpFlags",
+            "SetIpAccessListLine_tcpFlagsCWR",
+            "SetIpAccessListLine_tcpFlagsECE",
+            "SetIpAccessListLine_tcpFlagsURG",
+            "SetIpAccessListLine_tcpFlagsACK",
+            "SetIpAccessListLine_tcpFlagsPSH",
+            "SetIpAccessListLine_tcpFlagsRST",
+            "SetIpAccessListLine_tcpFlagsSYN",
+            "SetIpAccessListLine_tcpFlagsFIN",
             "SetIpInt",
             "SetIsisArea",
             "SetIsisGeneratedRoute_flat",
@@ -110,6 +134,7 @@ public class NxtnetConstants {
             "SetPolicyMapClauseMatchInterface",
             "SetPolicyMapClauseMatchNeighbor",
             "SetPolicyMapClauseMatchPolicy",
+            "SetPolicyMapClauseMatchPolicyConjunction",
             "SetPolicyMapClauseMatchProtocol",
             "SetPolicyMapClauseMatchRouteFilter",
             "SetPolicyMapClauseMatchTag",
@@ -174,12 +199,104 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
+   private static final Set<String> initNxtnetDataPlaneOutputDebugSymbols() {
+      Set<String> factSet = new HashSet<String>();
+      String[] facts = new String[] {
+            "BgpExportPolicy",
+            "BgpImportPolicy",
+            "BgpMultihopNeighborIp",
+            "BgpMultihopNeighborTo",
+            "BgpNeighborAdvertiseInactive",
+            "BgpNeighborAllowLocalAsIn",
+            "BgpNeighborAllowRemoteAsOut",
+            "BgpNeighborGeneratedRouteAttributePolicy",
+            "BgpNeighborGeneratedRoutePolicy",
+            "BgpNeighborIp",
+            "BgpNeighborLocalIp",
+            "BgpNeighbors",
+            "BgpNeighborSendCommunity",
+            "GeneratedRouteAttributePolicy",
+            "Ip",
+            "IpAccessListMatchDscp",
+            "IpAccessListMatchEcn",
+            "IpAccessListMatchTcpFlags",
+            "IpAccessListMatchTcpFlagsCWR",
+            "IpAccessListMatchTcpFlagsECE",
+            "IpAccessListMatchTcpFlagsURG",
+            "IpAccessListMatchTcpFlagsACK",
+            "IpAccessListMatchTcpFlagsPSH",
+            "IpAccessListMatchTcpFlagsRST",
+            "IpAccessListMatchTcpFlagsSYN",
+            "IpAccessListMatchTcpFlagsFIN",
+            "IpReadyInt",
+            "IsisExport",
+            "IsisL2EnabledInterface",
+            "LocalAs",
+            "NetworkOf",
+            "need_PolicyMapMatchAdvert",
+            "OriginalBgpAdvertisementRoute",
+            "PolicyMapClauseMatchAdvert",
+            "PolicyMapClauseMatchRoute",
+            "PolicyMapClauseTransformAdvert",
+            "PolicyMapConjunctionDenyAdvert",
+            "PolicyMapConjunctionDenyRoute",
+            "PolicyMapDenyAdvert",
+            "PolicyMapDenyRoute",
+            "PolicyMapPermitAdvert",
+            "PolicyMapPermitRoute",
+            "SetBgpAdvertisement_flat",
+            "SetBgpGeneratedRouteAttributePolicy",
+            "SetBgpGeneratedRoutePolicy",
+            "SetBgpMultihopNeighborNetwork",
+            "SetBgpMultihopNeighborNetwork_flat",
+            "SetBgpNeighborAdvertiseInactive",
+            "SetBgpNeighborAdvertiseInactive_flat",
+            "SetBgpNeighborAllowLocalAsIn",
+            "SetBgpNeighborAllowLocalAsIn_flat",
+            "SetBgpNeighborAllowRemoteAsOut",
+            "SetBgpNeighborAllowRemoteAsOut_flat",
+            "SetBgpNeighborLocalIp",
+            "SetBgpNeighborLocalIp_flat",
+            "SetBgpNeighborNetwork",
+            "SetBgpNeighborNetwork_flat",
+            "SetExternalBgpRemoteIp",
+            "SetGeneratedRouteAttributePolicy",
+            "SetGeneratedRouteAttributePolicy_flat",
+            "SetIpAccessListLine_dscp",
+            "SetIpAccessListLine_ecn",
+            "SetIpAccessListLine_tcpFlags",
+            "SetIpAccessListLine_tcpFlagsCWR",
+            "SetIpAccessListLine_tcpFlagsECE",
+            "SetIpAccessListLine_tcpFlagsURG",
+            "SetIpAccessListLine_tcpFlagsACK",
+            "SetIpAccessListLine_tcpFlagsPSH",
+            "SetIpAccessListLine_tcpFlagsRST",
+            "SetIpAccessListLine_tcpFlagsSYN",
+            "SetIpAccessListLine_tcpFlagsFIN",
+            "SetIpInt",
+            "SetIsisOutboundPolicyMap",
+            "SetLocalAs",
+            "SetLocalAs_flat",
+            "SetNetwork",
+            "SetPolicyMapClauseMatchInterface",
+            "SetPolicyMapClauseMatchPolicy",
+            "SetPolicyMapClauseMatchPolicyConjunction",
+            "SetPolicyMapClauseMatchProtocol",
+            "SetPolicyMapClauseAddCommunity",
+            "SetPolicyMapClauseSetCommunity",
+            "SetPolicyMapClauseSetLocalPreference",
+            "SetPolicyMapClauseSetMetric" };
+      factSet.addAll(Arrays.asList(facts));
+      return Collections.unmodifiableSet(factSet);
+   }
+
    private static final Set<String> initNxtnetDataPlaneOutputSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "AdvertisementCommunity",
             "AdvertisementPath",
             "AdvertisementPathSize",
+            "BgpAdvertisement",
             "BgpAdvertisement_dstIp",
             "BgpAdvertisement_dstNode",
             "BgpAdvertisement_localPref",
@@ -192,20 +309,6 @@ public class NxtnetConstants {
             "BgpAdvertisement_srcNode",
             "BgpAdvertisement_srcProtocol",
             "BgpAdvertisement_type",
-            // BEGIN DEBUG SYMBOLS
-            "BgpMultihopNeighborIp",
-            "BgpMultihopNeighborTo",
-            "BgpNeighbors",
-            "PolicyMapClauseMatchRoute",
-            "PolicyMapDenyAdvert",
-            "PolicyMapDenyRoute",
-            "PolicyMapPermitAdvert",
-            "PolicyMapPermitRoute",
-            "SetBgpMultihopNeighborNetwork",
-            "SetBgpMultihopNeighborNetwork_flat",
-            "SetPolicyMapClauseMatchInterface",
-            "SetPolicyMapClauseMatchProtocol",
-            // END DEBUG SYMBOLS
             "FibForwardPolicyRouteNextHopIp",
             "FibNetwork",
             "InstalledRoute",
@@ -252,15 +355,27 @@ public class NxtnetConstants {
             "SetInterfaceZone",
             "SetInterfaceRoutingPolicy",
             "SetIpAccessListLine_deny",
+            "SetIpAccessListLine_dscp",
             "SetIpAccessListLine_dstIpRange",
             "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_ecn",
             "SetIpAccessListLine_icmpCode",
             "SetIpAccessListLine_icmpType",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
             "SetIpAccessListLine_srcIpRange",
+            "SetIpAccessListLine_srcOrDstIpRange",
+            "SetIpAccessListLine_srcOrDstPortRange",
             "SetIpAccessListLine_srcPortRange",
             "SetIpAccessListLine_tcpFlags",
+            "SetIpAccessListLine_tcpFlagsCWR",
+            "SetIpAccessListLine_tcpFlagsECE",
+            "SetIpAccessListLine_tcpFlagsURG",
+            "SetIpAccessListLine_tcpFlagsACK",
+            "SetIpAccessListLine_tcpFlagsPSH",
+            "SetIpAccessListLine_tcpFlagsRST",
+            "SetIpAccessListLine_tcpFlagsSYN",
+            "SetIpAccessListLine_tcpFlagsFIN",
             "SetIpInt",
             "SetLinkLoadLimitIn",
             "SetLinkLoadLimitOut",
@@ -278,6 +393,7 @@ public class NxtnetConstants {
             "SetPolicyMapClauseMatchInterface",
             "SetPolicyMapClauseMatchNeighbor",
             "SetPolicyMapClauseMatchPolicy",
+            "SetPolicyMapClauseMatchPolicyConjunction",
             "SetPolicyMapClauseMatchProtocol",
             "SetPolicyMapClauseMatchRouteFilter",
             "SetPolicyMapClauseMatchTag",
@@ -319,34 +435,32 @@ public class NxtnetConstants {
    private static final Set<String> initNxtnetTrafficEntitySymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
+            "Flow_dscp",
             "Flow_dstIp",
             "Flow_dstPort",
+            "Flow_ecn",
             "Flow_icmpCode",
             "Flow_icmpType",
             "Flow_ipProtocol",
             "Flow_node",
             "Flow_srcIp",
             "Flow_srcPort",
-            "Flow_tcpFlags",
+            "Flow_tcpFlagsCWR",
+            "Flow_tcpFlagsECE",
+            "Flow_tcpFlagsURG",
+            "Flow_tcpFlagsACK",
+            "Flow_tcpFlagsPSH",
+            "Flow_tcpFlagsRST",
+            "Flow_tcpFlagsSYN",
+            "Flow_tcpFlagsFIN",
             "Flow_tag" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficOutputSymbols() {
+   private static final Set<String> initNxtnetTrafficOutputDebugSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
-            "Flow_dstIp",
-            "Flow_dstPort",
-            "Flow_icmpCode",
-            "Flow_icmpType",
-            "Flow_ipProtocol",
-            "Flow_node",
-            "Flow_srcIp",
-            "Flow_srcPort",
-            "Flow_tcpFlags",
-            "Flow_tag",
-            // BEGIN DEBUG SYMBOLS
             "FlowAccepted",
             "FlowDeniedIn",
             "FlowDeniedInCrossZoneFilter",
@@ -376,8 +490,33 @@ public class NxtnetConstants {
             "FlowReachPostOutInterface",
             "FlowUnknown",
             "IpAccessListDeny",
-            "IpAccessListMatch",
-            // END DEBUG SYMBOLS
+            "IpAccessListMatch" };
+      factSet.addAll(Arrays.asList(facts));
+      return Collections.unmodifiableSet(factSet);
+   }
+
+   private static final Set<String> initNxtnetTrafficOutputSymbols() {
+      Set<String> factSet = new HashSet<String>();
+      String[] facts = new String[] {
+            "Flow_dscp",
+            "Flow_dstIp",
+            "Flow_dstPort",
+            "Flow_ecn",
+            "Flow_icmpCode",
+            "Flow_icmpType",
+            "Flow_ipProtocol",
+            "Flow_node",
+            "Flow_srcIp",
+            "Flow_srcPort",
+            "Flow_tcpFlagsCWR",
+            "Flow_tcpFlagsECE",
+            "Flow_tcpFlagsURG",
+            "Flow_tcpFlagsACK",
+            "Flow_tcpFlagsPSH",
+            "Flow_tcpFlagsRST",
+            "Flow_tcpFlagsSYN",
+            "Flow_tcpFlagsFIN",
+            "Flow_tag",
             "FlowPathAcceptedEdge",
             "FlowPathDeniedInEdge",
             "FlowPathDeniedOutEdge",

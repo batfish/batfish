@@ -43,4 +43,5 @@ rr_stanza
    | network_rr_stanza
    | passive_interface_rr_stanza
    | redistribute_rr_stanza
+   | unrecognized_line
 ;

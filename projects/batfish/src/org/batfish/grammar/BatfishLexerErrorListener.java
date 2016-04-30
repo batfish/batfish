@@ -36,6 +36,23 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       sb.append("Lexer mode: " + lexer.getMode() + "\n");
       sb.append("Lexer state variables:\n");
       sb.append(lexer.printStateVariables());
+
+      // collect context from text
+      String text = _combinedParser.getInput();
+      String[] lines = text.split("\n");
+      int errorLineIndex = line - 1;
+      int errorContextStartLine = Math.max(errorLineIndex - 10, 0);
+      int errorContextEndLine = Math.min(errorLineIndex + 10, lines.length);
+      sb.append("Error context lines:\n");
+      for (int i = errorContextStartLine; i < errorLineIndex; i++) {
+         sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
+      }
+      sb.append(String.format("%-11s%s\n", ">>>" + (errorLineIndex + 1) + ":",
+            lines[errorLineIndex]));
+      for (int i = errorLineIndex + 1; i <= errorContextEndLine; i++) {
+         sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
+      }
+
       String error = sb.toString();
       if (_combinedParser.getThrowOnLexerError()) {
          throw new BatfishException("\n" + error);

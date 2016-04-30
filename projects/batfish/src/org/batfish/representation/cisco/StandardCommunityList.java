@@ -4,20 +4,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StandardCommunityList implements Serializable {
+public final class StandardCommunityList implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private List<StandardCommunityListLine> _lines;
-   private String _name;
+   private final List<StandardCommunityListLine> _lines;
+
+   private final String _name;
 
    public StandardCommunityList(String name) {
       _name = name;
       _lines = new ArrayList<StandardCommunityListLine>();
-   }
-
-   public void addLine(StandardCommunityListLine line) {
-      _lines.add(line);
    }
 
    public List<StandardCommunityListLine> getLines() {

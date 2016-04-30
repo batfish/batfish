@@ -34,7 +34,10 @@ address_family_header
 address_family_footer
 :
    (
-      EXIT_ADDRESS_FAMILY NEWLINE
+      (
+         EXIT_ADDRESS_FAMILY
+         | EXIT
+      ) NEWLINE
    )?
 ;
 
@@ -62,7 +65,15 @@ aggregate_address_rb_stanza
       )
       | prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
-   ) AS_SET? SUMMARY_ONLY? NEWLINE
+   )
+   (
+      as_set = AS_SET
+      | summary_only = SUMMARY_ONLY
+      |
+      (
+         ATTRIBUTE_MAP mapname = variable
+      )
+   )* NEWLINE
 ;
 
 allowas_in_bgp_tail
@@ -86,6 +97,11 @@ as_override_bgp_tail
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
+;
+
+bgp_advertise_inactive_rb_stanza
+:
+   BGP ADVERTISE_INACTIVE NEWLINE
 ;
 
 bgp_listen_range_rb_stanza
@@ -115,6 +131,7 @@ bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
    | description_bgp_tail
+   | disable_peer_as_check_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
@@ -122,6 +139,7 @@ bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
    | next_hop_self_bgp_tail
+   | no_network_bgp_tail
    | null_bgp_tail
    | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
@@ -135,6 +153,7 @@ bgp_tail
    | router_id_bgp_tail
    | send_community_bgp_tail
    | shutdown_bgp_tail
+   | subnet_bgp_tail
    | update_source_bgp_tail
 ;
 
@@ -178,6 +197,11 @@ default_shutdown_bgp_tail
 description_bgp_tail
 :
    description_line
+;
+
+disable_peer_as_check_bgp_tail
+:
+   DISABLE_PEER_AS_CHECK NEWLINE
 ;
 
 distribute_list_bgp_tail
@@ -404,6 +428,11 @@ no_neighbor_shutdown_rb_stanza
    )
 ;
 
+no_network_bgp_tail
+:
+   NO NETWORK ~NEWLINE* NEWLINE
+;
+
 no_redistribute_connected_rb_stanza
 :
    NO REDISTRIBUTE
@@ -422,7 +451,8 @@ null_bgp_tail
 :
    NO?
    (
-      AUTO_SUMMARY
+      ADVERTISEMENT_INTERVAL
+      | AUTO_SUMMARY
       |
       (
          AGGREGATE_ADDRESS
@@ -450,16 +480,21 @@ null_bgp_tail
             | LOG
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
+            | NON_DETERMINISTIC_MED
+            | SCAN_TIME
          )
       )
       | DESCRIPTION
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
+      | EXIT
       | FALL_OVER
+      | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | MAXIMUM_PREFIX
+      | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
       |
       (
@@ -500,7 +535,7 @@ peer_group_assignment_rb_stanza
 
 peer_group_creation_rb_stanza
 :
-   NEIGHBOR name = VARIABLE PEER_GROUP NEWLINE
+   NEIGHBOR name = VARIABLE PEER_GROUP PASSIVE? NEWLINE
 ;
 
 prefix_list_bgp_tail
@@ -522,7 +557,7 @@ remove_private_as_bgp_tail
    (
       REMOVE_PRIVATE_AS
       | REMOVE_PRIVATE_CAP_A_CAP_S
-   ) NEWLINE
+   ) ALL? NEWLINE
 ;
 
 route_map_bgp_tail
@@ -610,14 +645,17 @@ router_bgp_stanza
       address_family_rb_stanza
       | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
+      | bgp_advertise_inactive_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_redistribute_internal_rb_stanza
       | bgp_tail
       | cluster_id_rb_stanza
       | default_information_originate_rb_stanza
+      // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
+
+      | nexus_neighbor_rb_stanza
       | neighbor_rb_stanza
       | neighbor_group_rb_stanza
-      | nexus_neighbor_rb_stanza
       | no_bgp_enforce_first_as_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
@@ -629,6 +667,7 @@ router_bgp_stanza
       | template_peer_rb_stanza
       | template_peer_session_rb_stanza
       | nexus_vrf_rb_stanza
+      | unrecognized_line
    )+
 ;
 
@@ -653,7 +692,19 @@ send_community_bgp_tail
 
 shutdown_bgp_tail
 :
-   SHUTDOWN NEWLINE
+   (
+      SHUTDOWN
+      | SHUT
+   ) NEWLINE
+;
+
+subnet_bgp_tail
+:
+   SUBNET
+   (
+      prefix = IP_PREFIX
+      | ipv6_prefix = IPV6_PREFIX
+   ) NEWLINE
 ;
 
 template_peer_address_family

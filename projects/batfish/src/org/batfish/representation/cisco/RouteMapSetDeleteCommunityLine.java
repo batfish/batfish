@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.main.Warnings;
 import org.batfish.representation.CommunityList;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapSetDeleteCommunityLine;
@@ -25,7 +26,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
    }
 
    @Override
-   public PolicyMapSetLine toPolicyMapSetLine(Configuration c) {
+   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
+         Configuration c, Warnings w) {
       CommunityList dcList = c.getCommunityLists().get(_listName);
       return new PolicyMapSetDeleteCommunityLine(dcList);
    }

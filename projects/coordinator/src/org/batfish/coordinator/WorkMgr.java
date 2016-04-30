@@ -450,6 +450,59 @@ public class WorkMgr {
    public JSONObject getStatusJson() throws JSONException {
       return _workQueueMgr.getStatusJson();
    }
+   
+   private File getTestrigDir(String containerName, String testrigName) throws FileNotFoundException {
+      File containerDir = Paths.get(
+            Main.getSettings().getContainersLocation(), containerName)
+            .toFile();
+
+      if (!containerDir.exists()) {
+         throw new FileNotFoundException("Container " + containerName
+               + " does not exist");
+      }
+
+      File testrigDir = Paths.get(
+            Main.getSettings().getContainersLocation(), containerName,
+            testrigName).toFile();      
+
+      if (!testrigDir.exists()) {
+         throw new FileNotFoundException("testrig " + testrigName
+               + " does not exist");
+      }
+
+      return testrigDir;
+   }
+   
+   public String getTestrigInfo(String containerName, String testrigName) throws Exception {
+
+      File testrigDir = getTestrigDir(containerName, testrigName);
+
+      File submittedTestrigDir = Paths.get(testrigDir.getAbsolutePath(), 
+            BfConsts.RELPATH_TEST_RIG_DIR).toFile();
+      
+      StringBuilder retStringBuilder = new StringBuilder();
+      
+      for (File subFile : submittedTestrigDir.listFiles()) {
+         retStringBuilder.append(subFile.getName());
+         if (subFile.isDirectory()) {
+            File[] subSubFiles = subFile.listFiles();
+            retStringBuilder.append("/\n");
+
+            //now append a maximum of 10 
+            for (int index=0; index < subSubFiles.length && index < 10; index++) {
+               retStringBuilder.append("  " + subSubFiles[index].getName() + "\n");
+            }
+            
+            if (subSubFiles.length > 10) 
+               retStringBuilder.append("  ...... " + (subSubFiles.length - 10) + " more entries\n");
+         }
+         else {
+            retStringBuilder.append("\n");
+         }                 
+      }
+      
+      return retStringBuilder.toString();
+   }
 
    public QueuedWork getWork(UUID workItemId) {
       return _workQueueMgr.getWork(workItemId);

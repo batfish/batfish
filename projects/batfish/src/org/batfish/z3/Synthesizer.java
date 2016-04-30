@@ -107,8 +107,12 @@ import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Z3Exception;
 
 public class Synthesizer {
+   public static final int DSCP_BITS = 6;
+   public static final String DSCP_VAR = "dscp";
    public static final String DST_IP_VAR = "dst_ip";
    public static final String DST_PORT_VAR = "dst_port";
+   public static final int ECN_BITS = 2;
+   public static final String ECN_VAR = "ecn";
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
    public static final int ICMP_CODE_BITS = 8;
    public static final String ICMP_CODE_VAR = "icmp_code";
@@ -123,8 +127,22 @@ public class Synthesizer {
    public static final int PROTOCOL_BITS = 8;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
-   public static final int TCP_FLAGS_BITS = 8;
-   public static final String TCP_FLAGS_VAR = "tcp_flags";
+   public static final int TCP_FLAGS_ACK_BITS = 1;
+   public static final String TCP_FLAGS_ACK_VAR = "tcp_flags_ack";
+   public static final int TCP_FLAGS_CWR_BITS = 1;
+   public static final String TCP_FLAGS_CWR_VAR = "tcp_flags_cwr";
+   public static final int TCP_FLAGS_ECE_BITS = 1;
+   public static final String TCP_FLAGS_ECE_VAR = "tcp_flags_ece";
+   public static final int TCP_FLAGS_FIN_BITS = 1;
+   public static final String TCP_FLAGS_FIN_VAR = "tcp_flags_fin";
+   public static final int TCP_FLAGS_PSH_BITS = 1;
+   public static final String TCP_FLAGS_PSH_VAR = "tcp_flags_psh";
+   public static final int TCP_FLAGS_RST_BITS = 1;
+   public static final String TCP_FLAGS_RST_VAR = "tcp_flags_rst";
+   public static final int TCP_FLAGS_SYN_BITS = 1;
+   public static final String TCP_FLAGS_SYN_VAR = "tcp_flags_syn";
+   public static final int TCP_FLAGS_URG_BITS = 1;
+   public static final String TCP_FLAGS_URG_VAR = "tcp_flags_urg";
 
    @SuppressWarnings("unused")
    private static void debug(BooleanExpr condition, List<Statement> statements) {
@@ -139,9 +157,18 @@ public class Synthesizer {
       vars.add(SRC_PORT_VAR);
       vars.add(DST_PORT_VAR);
       vars.add(IP_PROTOCOL_VAR);
+      vars.add(DSCP_VAR);
+      vars.add(ECN_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
-      vars.add(TCP_FLAGS_VAR);
+      vars.add(TCP_FLAGS_CWR_VAR);
+      vars.add(TCP_FLAGS_ECE_VAR);
+      vars.add(TCP_FLAGS_URG_VAR);
+      vars.add(TCP_FLAGS_ACK_VAR);
+      vars.add(TCP_FLAGS_PSH_VAR);
+      vars.add(TCP_FLAGS_RST_VAR);
+      vars.add(TCP_FLAGS_SYN_VAR);
+      vars.add(TCP_FLAGS_FIN_VAR);
       return vars;
    }
 
@@ -188,9 +215,18 @@ public class Synthesizer {
       varSizes.put(SRC_PORT_VAR, PORT_BITS);
       varSizes.put(DST_PORT_VAR, PORT_BITS);
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
+      varSizes.put(DSCP_VAR, DSCP_BITS);
+      varSizes.put(ECN_VAR, ECN_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
-      varSizes.put(TCP_FLAGS_VAR, TCP_FLAGS_BITS);
+      varSizes.put(TCP_FLAGS_CWR_VAR, TCP_FLAGS_CWR_BITS);
+      varSizes.put(TCP_FLAGS_ECE_VAR, TCP_FLAGS_ECE_BITS);
+      varSizes.put(TCP_FLAGS_URG_VAR, TCP_FLAGS_URG_BITS);
+      varSizes.put(TCP_FLAGS_ACK_VAR, TCP_FLAGS_ACK_BITS);
+      varSizes.put(TCP_FLAGS_PSH_VAR, TCP_FLAGS_PSH_BITS);
+      varSizes.put(TCP_FLAGS_RST_VAR, TCP_FLAGS_RST_BITS);
+      varSizes.put(TCP_FLAGS_SYN_VAR, TCP_FLAGS_SYN_BITS);
+      varSizes.put(TCP_FLAGS_FIN_VAR, TCP_FLAGS_FIN_BITS);
       return varSizes;
    }
 
@@ -782,16 +818,21 @@ public class Synthesizer {
                }
 
                Set<Prefix> srcIpRanges = line.getSourceIpRanges();
+               Set<Prefix> srcOrDstIpRanges = line.getSrcOrDstIpRanges();
                Set<Prefix> dstIpRanges = line.getDestinationIpRanges();
 
                Set<IpProtocol> protocols = line.getProtocols();
                Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
                srcPortRanges.addAll(line.getSrcPortRanges());
+               Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
+               srcOrDstPortRanges.addAll(line.getSrcOrDstPortRanges());
                Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
                dstPortRanges.addAll(line.getDstPortRanges());
                int icmpType = line.getIcmpType();
                int icmpCode = line.getIcmpCode();
-               int tcpFlags = line.getTcpFlags();
+               List<TcpFlags> tcpFlags = line.getTcpFlags();
+               Set<Integer> dscps = line.getDscps();
+               Set<Integer> ecns = line.getEcns();
 
                AndExpr matchConditions = new AndExpr();
 
@@ -843,6 +884,37 @@ public class Synthesizer {
                   matchLineCriteria.addConjunct(matchSomeSrcIpRange);
                }
 
+               // match srcOrDstIp
+               if (srcOrDstIpRanges.size() > 0) {
+                  OrExpr matchSomeSrcOrDstIpRange = new OrExpr();
+                  for (Prefix srcOrDstPrefix : srcOrDstIpRanges) {
+                     long srcOrDstIp = srcOrDstPrefix.getAddress().asLong();
+
+                     int srcOrDstIpWildcardBits = IP_BITS
+                           - srcOrDstPrefix.getPrefixLength();
+                     int srcOrDstIpStart = srcOrDstIpWildcardBits;
+                     int srcOrDstIpEnd = IP_BITS - 1;
+                     if (srcOrDstIpStart < IP_BITS) {
+                        IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
+                              srcOrDstIpStart, srcOrDstIpEnd);
+                        IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
+                              srcOrDstIpStart, srcOrDstIpEnd);
+                        LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(
+                              srcOrDstIp, srcOrDstIpStart, srcOrDstIpEnd);
+                        EqExpr matchSrcIp = new EqExpr(extractSrcIp,
+                              srcOrDstIpMatchLit);
+                        EqExpr matchDstIp = new EqExpr(extractDstIp,
+                              srcOrDstIpMatchLit);
+                        matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
+                        matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
+                     }
+                     else {
+                        matchSomeSrcOrDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+                     }
+                  }
+                  matchLineCriteria.addConjunct(matchSomeSrcOrDstIpRange);
+               }
+
                // match dstIp
                if (dstIpRanges.size() > 0) {
                   OrExpr matchSomeDstIpRange = new OrExpr();
@@ -869,14 +941,26 @@ public class Synthesizer {
                   matchLineCriteria.addConjunct(matchSomeDstIpRange);
                }
 
-               // match srcport
+               // match srcPort
                if (srcPortRanges != null && srcPortRanges.size() > 0) {
                   BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
                         srcPortRanges, SRC_PORT_VAR);
                   matchLineCriteria.addConjunct(matchSrcPort);
                }
 
-               // matchdstport
+               // match srcOrDstPort
+               if (srcOrDstPortRanges != null && srcOrDstPortRanges.size() > 0) {
+                  BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
+                        srcOrDstPortRanges, SRC_PORT_VAR);
+                  BooleanExpr matchDstPort = getMatchAclRules_portHelper(
+                        srcOrDstPortRanges, DST_PORT_VAR);
+                  OrExpr matchSrcOrDstPort = new OrExpr();
+                  matchSrcOrDstPort.addDisjunct(matchSrcPort);
+                  matchSrcOrDstPort.addDisjunct(matchDstPort);
+                  matchLineCriteria.addConjunct(matchSrcOrDstPort);
+               }
+
+               // match dstPort
                if (dstPortRanges != null && dstPortRanges.size() > 0) {
                   BooleanExpr matchDstPort = getMatchAclRules_portHelper(
                         dstPortRanges, DST_PORT_VAR);
@@ -888,6 +972,29 @@ public class Synthesizer {
                RuleExpr matchRule = new RuleExpr(valid ? matchConditions
                      : FalseExpr.INSTANCE, match);
                statements.add(matchRule);
+
+               // match dscp
+               if (!dscps.isEmpty()) {
+                  OrExpr matchSomeDscp = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeDscp);
+                  for (int dscp : dscps) {
+                     EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(
+                           DSCP_VAR), new LitIntExpr(dscp, DSCP_BITS));
+                     matchSomeDscp.addDisjunct(matchCurrentDscp);
+                  }
+               }
+
+               // match ecn
+               if (!ecns.isEmpty()) {
+                  OrExpr matchSomeEcn = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeEcn);
+                  for (int ecn : ecns) {
+                     EqExpr matchCurrentEcn = new EqExpr(
+                           new VarIntExpr(ECN_VAR), new LitIntExpr(ecn,
+                                 ECN_BITS));
+                     matchSomeEcn.addDisjunct(matchCurrentEcn);
+                  }
+               }
 
                // match icmp-type
                if (icmpType != IcmpType.UNSET) {
@@ -904,12 +1011,64 @@ public class Synthesizer {
                }
 
                // match tcp-flags
-               if (tcpFlags != TcpFlags.UNSET) {
-                  EqExpr exactMatch = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
-                        new LitIntExpr(tcpFlags, TCP_FLAGS_BITS));
-                  matchLineCriteria.addConjunct(exactMatch);
+               if (!tcpFlags.isEmpty()) {
+                  OrExpr matchSomeTcpFlags = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeTcpFlags);
+                  for (TcpFlags currentTcpFlags : tcpFlags) {
+                     AndExpr matchCurrentTcpFlags = new AndExpr();
+                     matchSomeTcpFlags.addDisjunct(matchCurrentTcpFlags);
+                     LitIntExpr one = new LitIntExpr(1, 1);
+                     LitIntExpr zero = new LitIntExpr(0, 1);
+                     if (currentTcpFlags.getUseCwr()) {
+                        LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_CWR_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseEce()) {
+                        LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_ECE_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseUrg()) {
+                        LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_URG_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseAck()) {
+                        LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_ACK_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUsePsh()) {
+                        LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_PSH_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseRst()) {
+                        LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_RST_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseSyn()) {
+                        LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_SYN_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                     if (currentTcpFlags.getUseFin()) {
+                        LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
+                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
+                              TCP_FLAGS_FIN_VAR), bit);
+                        matchCurrentTcpFlags.addConjunct(matchFlag);
+                     }
+                  }
                }
-
                // no match rule
                AndExpr noMatchConditions = new AndExpr();
                BooleanExpr noMatchLineCriteria = valid ? new NotExpr(
@@ -1614,8 +1773,24 @@ public class Synthesizer {
             new LitIntExpr(0, PORT_BITS));
       noPortNumbers.addConjunct(noDstPort);
       noPortNumbers.addConjunct(noSrcPort);
-      EqExpr noTcpFlags = new EqExpr(new VarIntExpr(TCP_FLAGS_VAR),
-            new LitIntExpr(TcpFlags.UNSET, TCP_FLAGS_BITS));
+      AndExpr noTcpFlags = new AndExpr();
+      LitIntExpr zero = new LitIntExpr(0, 1);
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_CWR_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_ECE_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_URG_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_ACK_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_PSH_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_RST_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_SYN_VAR), zero));
+      noTcpFlags
+            .addConjunct(new EqExpr(new VarIntExpr(TCP_FLAGS_FIN_VAR), zero));
       EqExpr noIcmpCode = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
             new LitIntExpr(IcmpCode.UNSET, ICMP_CODE_BITS));
       EqExpr noIcmpType = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),

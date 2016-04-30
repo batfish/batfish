@@ -7,12 +7,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.batfish.collections.AdvertisementSet;
+import org.batfish.collections.RouteSet;
 import org.batfish.common.BatfishException;
 import org.batfish.grammar.question.VariableType;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
+import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
@@ -24,18 +27,28 @@ import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
+import org.batfish.representation.PrecomputedRoute;
 import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
+import org.batfish.representation.BgpAdvertisement.BgpAdvertisementType;
 
 public class Environment {
 
    private int[] _assertionCount;
 
    private boolean[] _assertions;
+
+   private BgpAdvertisement _bgpAdvertisement;
+
+   private Map<String, BgpAdvertisement> _bgpAdvertisements;
+
+   private Map<String, Set<BgpAdvertisement>> _bgpAdvertisementSets;
+
+   private boolean[] _bgpAdvertisementsInitialized;
 
    private BgpNeighbor _bgpNeighbor;
 
@@ -58,6 +71,10 @@ public class Environment {
    private Map<String, GeneratedRoute> _generatedRoutes;
 
    private Map<String, Set<GeneratedRoute>> _generatedRouteSets;
+
+   private AdvertisementSet _globalBgpAdvertisements;
+
+   private RouteSet _globalRoutes;
 
    private Integer _integer;
 
@@ -127,6 +144,10 @@ public class Environment {
 
    private QMap _query;
 
+   private BgpAdvertisement _receivedEbgpAdvertisement;
+
+   private BgpAdvertisement _receivedIbgpAdvertisement;
+
    private BgpNeighbor _remoteBgpNeighbor;
 
    private boolean[] _remoteBgpNeighborsInitialized;
@@ -134,6 +155,8 @@ public class Environment {
    private IpsecVpn _remoteIpsecVpn;
 
    private boolean[] _remoteIpsecVpnsInitialized;
+
+   private PrecomputedRoute _route;
 
    private RouteFilterList _routeFilter;
 
@@ -148,6 +171,16 @@ public class Environment {
    private Set<RouteFilterList> _routeFilterSet;
 
    private Map<String, Set<RouteFilterList>> _routeFilterSets;
+
+   private Map<String, PrecomputedRoute> _routes;
+
+   private Map<String, Set<PrecomputedRoute>> _routeSets;
+
+   private boolean[] _routesInitialized;
+
+   private BgpAdvertisement _sentEbgpAdvertisement;
+
+   private BgpAdvertisement _sentIbgpAdvertisement;
 
    private StaticRoute _staticRoute;
 
@@ -166,6 +199,9 @@ public class Environment {
    public Environment() {
       _assertionCount = new int[1];
       _assertions = new boolean[1];
+      _bgpAdvertisements = new HashMap<String, BgpAdvertisement>();
+      _bgpAdvertisementsInitialized = new boolean[1];
+      _bgpAdvertisementSets = new HashMap<String, Set<BgpAdvertisement>>();
       _bgpNeighbors = new HashMap<String, BgpNeighbor>();
       _bgpNeighborSets = new HashMap<String, Set<BgpNeighbor>>();
       _bgpOriginationSpaceInitialized = new boolean[1];
@@ -197,6 +233,9 @@ public class Environment {
       _query = new QMap();
       _remoteBgpNeighborsInitialized = new boolean[1];
       _remoteIpsecVpnsInitialized = new boolean[1];
+      _routes = new HashMap<String, PrecomputedRoute>();
+      _routesInitialized = new boolean[1];
+      _routeSets = new HashMap<String, Set<PrecomputedRoute>>();
       _routeFilters = new HashMap<String, RouteFilterList>();
       _routeFilterLines = new HashMap<String, RouteFilterLine>();
       _routeFilterSets = new HashMap<String, Set<RouteFilterList>>();
@@ -231,6 +270,7 @@ public class Environment {
             break;
 
          case ACTION:
+         case BGP_ADVERTISEMENT:
          case BGP_NEIGHBOR:
          case GENERATED_ROUTE:
          case INTERFACE:
@@ -245,8 +285,10 @@ public class Environment {
          case PROTOCOL:
          case RANGE:
          case REGEX:
+         case ROUTE:
          case ROUTE_FILTER:
          case ROUTE_FILTER_LINE:
+         case SET_BGP_ADVERTISEMENT:
          case SET_BGP_NEIGHBOR:
          case SET_INT:
          case SET_INTERFACE:
@@ -257,6 +299,7 @@ public class Environment {
          case SET_POLICY_MAP_CLAUSE:
          case SET_PREFIX:
          case SET_PREFIX_SPACE:
+         case SET_ROUTE:
          case SET_ROUTE_FILTER:
          case SET_ROUTE_FILTER_LINE:
          case SET_STATIC_ROUTE:
@@ -274,6 +317,10 @@ public class Environment {
       Environment copy = new Environment();
       copy._assertionCount = _assertionCount;
       copy._assertions = _assertions;
+      copy._bgpAdvertisement = _bgpAdvertisement;
+      copy._bgpAdvertisements = _bgpAdvertisements;
+      copy._bgpAdvertisementsInitialized = _bgpAdvertisementsInitialized;
+      copy._bgpAdvertisementSets = _bgpAdvertisementSets;
       copy._bgpNeighbors = _bgpNeighbors;
       copy._bgpNeighborSets = _bgpNeighborSets;
       copy._bgpOriginationSpaceInitialized = _bgpOriginationSpaceInitialized;
@@ -283,6 +330,8 @@ public class Environment {
       copy._generatedRoute = _generatedRoute;
       copy._generatedRoutes = _generatedRoutes;
       copy._generatedRouteSets = _generatedRouteSets;
+      copy._globalBgpAdvertisements = _globalBgpAdvertisements;
+      copy._globalRoutes = _globalRoutes;
       copy._integer = _integer;
       copy._integers = _integers;
       copy._integerSets = _integerSets;
@@ -318,10 +367,16 @@ public class Environment {
       copy._protocolDependencyAnalysis = _protocolDependencyAnalysis;
       copy._protocols = _protocols;
       copy._query = _query;
+      copy._receivedEbgpAdvertisement = _receivedEbgpAdvertisement;
+      copy._receivedIbgpAdvertisement = _receivedIbgpAdvertisement;
       copy._remoteBgpNeighbor = _remoteBgpNeighbor;
       copy._remoteBgpNeighborsInitialized = _remoteBgpNeighborsInitialized;
       copy._remoteIpsecVpn = _remoteIpsecVpn;
       copy._remoteIpsecVpnsInitialized = _remoteIpsecVpnsInitialized;
+      copy._route = _route;
+      copy._routes = _routes;
+      copy._routesInitialized = _routesInitialized;
+      copy._routeSets = _routeSets;
       copy._routeFilter = _routeFilter;
       copy._routeFilters = _routeFilters;
       copy._routeFilterSet = _routeFilterSet;
@@ -329,6 +384,8 @@ public class Environment {
       copy._routeFilterLine = _routeFilterLine;
       copy._routeFilterLines = _routeFilterLines;
       copy._routeFilterLineSets = _routeFilterLineSets;
+      copy._sentEbgpAdvertisement = _sentEbgpAdvertisement;
+      copy._sentIbgpAdvertisement = _sentIbgpAdvertisement;
       copy._staticRoute = _staticRoute;
       copy._staticRoutes = _staticRoutes;
       copy._staticRouteSets = _staticRouteSets;
@@ -341,6 +398,14 @@ public class Environment {
 
    public boolean getAssertions() {
       return _assertions[0];
+   }
+
+   public Map<String, BgpAdvertisement> getBgpAdvertisements() {
+      return _bgpAdvertisements;
+   }
+
+   public Map<String, Set<BgpAdvertisement>> getBgpAdvertisementSets() {
+      return _bgpAdvertisementSets;
    }
 
    public BgpNeighbor getBgpNeighbor() {
@@ -511,12 +576,24 @@ public class Environment {
       return _query;
    }
 
+   public BgpAdvertisement getReceivedEbgpAdvertisement() {
+      return _receivedEbgpAdvertisement;
+   }
+
+   public BgpAdvertisement getReceivedIbgpAdvertisement() {
+      return _receivedIbgpAdvertisement;
+   }
+
    public BgpNeighbor getRemoteBgpNeighbor() {
       return _remoteBgpNeighbor;
    }
 
    public IpsecVpn getRemoteIpsecVpn() {
       return _remoteIpsecVpn;
+   }
+
+   public PrecomputedRoute getRoute() {
+      return _route;
    }
 
    public RouteFilterList getRouteFilter() {
@@ -545,6 +622,22 @@ public class Environment {
 
    public Map<String, Set<RouteFilterList>> getRouteFilterSets() {
       return _routeFilterSets;
+   }
+
+   public Map<String, PrecomputedRoute> getRoutes() {
+      return _routes;
+   }
+
+   public Map<String, Set<PrecomputedRoute>> getRouteSets() {
+      return _routeSets;
+   }
+
+   public BgpAdvertisement getSentEbgpAdvertisement() {
+      return _sentEbgpAdvertisement;
+   }
+
+   public BgpAdvertisement getSentIbgpAdvertisement() {
+      return _sentIbgpAdvertisement;
    }
 
    public StaticRoute getStaticRoute() {
@@ -585,6 +678,108 @@ public class Environment {
 
    public void incrementFailedAssertionCount() {
       _failedAssertionCount[0]++;
+   }
+
+   public void initBgpAdvertisements() {
+      if (_bgpAdvertisementsInitialized[0]) {
+         return;
+      }
+      _bgpAdvertisementsInitialized[0] = true;
+      for (Configuration node : _configurations.values()) {
+         node.initBgpAdvertisements();
+      }
+      for (BgpAdvertisement bgpAdvertisement : _globalBgpAdvertisements) {
+         BgpAdvertisementType type = BgpAdvertisementType
+               .fromNxtnetTypeName(bgpAdvertisement.getType());
+         switch (type) {
+         case EBGP_ORIGINATED: {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = _configurations
+                  .get(originationNodeName);
+            if (originationNode != null) {
+               originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+               originationNode.getOriginatedAdvertisements().add(
+                     bgpAdvertisement);
+               originationNode.getOriginatedEbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            else {
+               throw new BatfishException(
+                     "Originated bgp advertisement refers to missing node: \""
+                           + originationNodeName + "\"");
+            }
+            break;
+         }
+
+         case IBGP_ORIGINATED: {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = _configurations
+                  .get(originationNodeName);
+            if (originationNode != null) {
+               originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+               originationNode.getOriginatedAdvertisements().add(
+                     bgpAdvertisement);
+               originationNode.getOriginatedIbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            else {
+               throw new BatfishException(
+                     "Originated bgp advertisement refers to missing node: \""
+                           + originationNodeName + "\"");
+            }
+            break;
+         }
+
+         case EBGP_RECEIVED: {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = _configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+               receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedEbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            break;
+         }
+
+         case IBGP_RECEIVED: {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = _configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+               receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedIbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            break;
+         }
+
+         case EBGP_SENT: {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = _configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+               sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+         }
+
+         case IBGP_SENT: {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = _configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+               sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+         }
+
+         default:
+            throw new BatfishException("Invalid bgp advertisement type");
+         }
+      }
    }
 
    public void initBgpOriginationSpaceExplicit() {
@@ -786,8 +981,34 @@ public class Environment {
       _remoteIpsecVpnsInitialized[0] = true;
    }
 
+   public void initRoutes() {
+      if (_routesInitialized[0]) {
+         return;
+      }
+      _routesInitialized[0] = true;
+      for (Configuration node : _configurations.values()) {
+         node.initRoutes();
+      }
+      for (PrecomputedRoute route : _globalRoutes) {
+         String nodeName = route.getNode();
+         Configuration node = _configurations.get(nodeName);
+         if (node != null) {
+            node.getRoutes().add(route);
+         }
+         else {
+            throw new BatfishException(
+                  "Precomputed route refers to missing node: \"" + nodeName
+                        + "\"");
+         }
+      }
+   }
+
    public void setAssertions(boolean b) {
       _assertions[0] = b;
+   }
+
+   public void setBgpAdvertisement(BgpAdvertisement bgpAdvertisement) {
+      _bgpAdvertisement = bgpAdvertisement;
    }
 
    public void setBgpNeighbor(BgpNeighbor bgpNeighbor) {
@@ -800,6 +1021,14 @@ public class Environment {
 
    public void setGeneratedRoute(GeneratedRoute generatedRoute) {
       _generatedRoute = generatedRoute;
+   }
+
+   public void setGlobalBgpAdvertisements(AdvertisementSet bgpAdvertisements) {
+      _globalBgpAdvertisements = bgpAdvertisements;
+   }
+
+   public void setGlobalRoutes(RouteSet routes) {
+      _globalRoutes = routes;
    }
 
    public void setInteger(Integer i) {
@@ -851,12 +1080,24 @@ public class Environment {
       _currentProtocols = currentProtocols;
    }
 
+   public void setReceivedEbgpAdvertisement(BgpAdvertisement t) {
+      _receivedEbgpAdvertisement = t;
+   }
+
+   public void setReceivedIbgpAdvertisement(BgpAdvertisement t) {
+      _receivedIbgpAdvertisement = t;
+   }
+
    public void setRemoteBgpNeighbor(BgpNeighbor remoteBgpNeighbor) {
       _remoteBgpNeighbor = remoteBgpNeighbor;
    }
 
    public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {
       _remoteIpsecVpn = remoteIpsecVpn;
+   }
+
+   public void setRoute(PrecomputedRoute route) {
+      _route = route;
    }
 
    public void setRouteFilter(RouteFilterList routeFilter) {
@@ -873,6 +1114,14 @@ public class Environment {
 
    public void setRoutingProtocol(RoutingProtocol protocol) {
       _protocol = protocol;
+   }
+
+   public void setSentEbgpAdvertisement(BgpAdvertisement t) {
+      _sentEbgpAdvertisement = t;
+   }
+
+   public void setSentIbgpAdvertisement(BgpAdvertisement t) {
+      _sentIbgpAdvertisement = t;
    }
 
    public void setStaticRoute(StaticRoute staticRoute) {

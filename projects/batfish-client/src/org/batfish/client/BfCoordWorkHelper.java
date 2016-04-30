@@ -2,6 +2,8 @@ package org.batfish.client;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.ProcessingException;
@@ -631,7 +633,7 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public String[] listTestrigs(String containerName) {
+   public Map<String,String> listTestrigs(String containerName) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
@@ -642,8 +644,9 @@ public class BfCoordWorkHelper {
 
          addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
                _settings.getApiKey());
-         addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
-               containerName);
+         if (containerName != null)
+            addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
+                  containerName);
 
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
@@ -658,13 +661,15 @@ public class BfCoordWorkHelper {
          JSONArray testrigArray = jObj
                .getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
 
-         String[] testrigList = new String[testrigArray.length()];
+         Map<String,String> testrigs = new HashMap<String, String>();
 
          for (int index = 0; index < testrigArray.length(); index++) {
-            testrigList[index] = testrigArray.getString(index);
+            JSONObject jObjTestrig = testrigArray.getJSONObject(index);
+            testrigs.put(jObjTestrig.getString(CoordConsts.SVC_TESTRIG_NAME_KEY), 
+                  jObjTestrig.getString(CoordConsts.SVC_TESTRIG_INFO_KEY));
          }
 
-         return testrigList;
+         return testrigs;
       }
       catch (Exception e) {
          _logger.errorf("exception: ");

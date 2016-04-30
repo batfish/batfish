@@ -42,6 +42,7 @@ import org.batfish.representation.PolicyMapMatchCommunityListLine;
 import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchNeighborLine;
+import org.batfish.representation.PolicyMapMatchPolicyConjunctionLine;
 import org.batfish.representation.PolicyMapMatchPolicyLine;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
@@ -70,13 +71,13 @@ public class ConfigurationFactExtractor {
 
    private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
-   private Set<Long> _allCommunities;
+   private final Set<Long> _allCommunities;
 
-   private Configuration _configuration;
+   private final Configuration _configuration;
 
-   private Map<String, StringBuilder> _factBins;
+   private final Map<String, StringBuilder> _factBins;
 
-   private Warnings _w;
+   private final Warnings _w;
 
    public ConfigurationFactExtractor(Configuration c, Set<Long> allCommunities,
          Map<String, StringBuilder> factBins, Warnings warnings) {
@@ -165,6 +166,8 @@ public class ConfigurationFactExtractor {
       BgpProcess proc = _configuration.getBgpProcess();
       StringBuilder wSetBgpGeneratedRoute_flat = _factBins
             .get("SetBgpGeneratedRoute_flat");
+      StringBuilder wSetBgpGeneratedRouteAttributePolicy_flat = _factBins
+            .get("SetBgpGeneratedRouteAttributePolicy_flat");
       StringBuilder wSetBgpGeneratedRoutePolicy_flat = _factBins
             .get("SetBgpGeneratedRoutePolicy_flat");
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
@@ -177,6 +180,12 @@ public class ConfigurationFactExtractor {
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
+            for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
+               String apName = hostname + ":" + attributePolicy.getMapName();
+               wSetBgpGeneratedRouteAttributePolicy_flat.append(hostname + "|"
+                     + network_start + "|" + network_end + "|" + prefix_length
+                     + "|" + apName + "\n");
+            }
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getMapName();
                wSetBgpGeneratedRoutePolicy_flat.append(hostname + "|"
@@ -192,6 +201,8 @@ public class ConfigurationFactExtractor {
       BgpProcess proc = _configuration.getBgpProcess();
       StringBuilder wSetBgpNeighborGeneratedRoute_flat = _factBins
             .get("SetBgpNeighborGeneratedRoute_flat");
+      StringBuilder wSetBgpNeighborGeneratedRouteAttributePolicy_flat = _factBins
+            .get("SetBgpNeighborGeneratedRouteAttributePolicy_flat");
       StringBuilder wSetBgpNeighborGeneratedRoutePolicy_flat = _factBins
             .get("SetBgpNeighborGeneratedRoutePolicy_flat");
       if (proc != null) {
@@ -208,6 +219,15 @@ public class ConfigurationFactExtractor {
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "|" + network_start + "|"
                      + network_end + "|" + prefix_length + "\n");
+               for (PolicyMap attributePolicy : gr.getAttributePolicies()
+                     .values()) {
+                  String apName = hostname + ":" + attributePolicy.getMapName();
+                  wSetBgpNeighborGeneratedRouteAttributePolicy_flat
+                        .append(hostname + "|" + neighborPrefixStart + "|"
+                              + neighborPrefixEnd + "|" + neighborPrefixLength
+                              + "|" + network_start + "|" + network_end + "|"
+                              + prefix_length + "|" + apName + "\n");
+               }
                for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                   String gpName = hostname + ":"
                         + generationPolicy.getMapName();
@@ -253,12 +273,20 @@ public class ConfigurationFactExtractor {
    }
 
    private void writeBgpNeighbors() {
+      StringBuilder wSetBgpNeighborLocalIp_flat = _factBins
+            .get("SetBgpNeighborLocalIp_flat");
       StringBuilder wSetBgpNeighborNetwork_flat = _factBins
             .get("SetBgpNeighborNetwork_flat");
       StringBuilder wSetBgpMultihopNeighborNetwork_flat = _factBins
             .get("SetBgpMultihopNeighborNetwork_flat");
       StringBuilder wSetLocalAs_flat = _factBins.get("SetLocalAs_flat");
       StringBuilder wSetRemoteAs_flat = _factBins.get("SetRemoteAs_flat");
+      StringBuilder wSetBgpNeighborAdvertiseInactive_flat = _factBins
+            .get("SetBgpNeighborAdvertiseInactive_flat");
+      StringBuilder wSetBgpNeighborAllowLocalAsIn_flat = _factBins
+            .get("SetBgpNeighborAllowLocalAsIn_flat");
+      StringBuilder wSetBgpNeighborAllowRemoteAsOut_flat = _factBins
+            .get("SetBgpNeighborAllowRemoteAsOut_flat");
       StringBuilder wSetBgpNeighborDefaultMetric_flat = _factBins
             .get("SetBgpNeighborDefaultMetric_flat");
       StringBuilder wSetBgpNeighborSendCommunity_flat = _factBins
@@ -277,8 +305,30 @@ public class ConfigurationFactExtractor {
             wSetBgpNeighborNetwork_flat.append(hostname + "|"
                   + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                   + neighborPrefixLength + "\n");
+            Ip localIp = neighbor.getLocalIp();
+            if (localIp != null) {
+               long localIpAsLong = localIp.asLong();
+               wSetBgpNeighborLocalIp_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "|" + localIpAsLong + "\n");
+            }
             if (neighbor.getEbgpMultihop()) {
                wSetBgpMultihopNeighborNetwork_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAdvertiseInactive()) {
+               wSetBgpNeighborAdvertiseInactive_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAllowLocalAsIn()) {
+               wSetBgpNeighborAllowLocalAsIn_flat.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "\n");
+            }
+            if (neighbor.getAllowRemoteAsOut()) {
+               wSetBgpNeighborAllowRemoteAsOut_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "\n");
             }
@@ -392,6 +442,8 @@ public class ConfigurationFactExtractor {
             .get("SetGeneratedRouteDiscard_flat");
       StringBuilder wSetGeneratedRouteMetric_flat = _factBins
             .get("SetGeneratedRouteMetric_flat");
+      StringBuilder wSetGeneratedRouteAttributePolicy_flat = _factBins
+            .get("SetGeneratedRouteAttributePolicy_flat");
       StringBuilder wSetGeneratedRoutePolicy_flat = _factBins
             .get("SetGeneratedRoutePolicy_flat");
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
@@ -415,6 +467,12 @@ public class ConfigurationFactExtractor {
             wSetGeneratedRouteMetric_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "|" + metric
                   + "\n");
+         }
+         for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
+            String policyName = hostname + ":" + attributePolicy.getMapName();
+            wSetGeneratedRouteAttributePolicy_flat.append(hostname + "|"
+                  + network_start + "|" + network_end + "|" + prefix_length
+                  + "|" + policyName + "\n");
          }
          for (PolicyMap grPolicy : gr.getGenerationPolicies()) {
             String policyName = hostname + ":" + grPolicy.getMapName();
@@ -483,20 +541,44 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_dstIpRange");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_dscp = _factBins
+            .get("SetIpAccessListLine_dscp");
+      StringBuilder wSetIpAccessListLine_ecn = _factBins
+            .get("SetIpAccessListLine_ecn");
       StringBuilder wSetIpAccessListLine_icmpCode = _factBins
             .get("SetIpAccessListLine_icmpCode");
       StringBuilder wSetIpAccessListLine_icmpType = _factBins
             .get("SetIpAccessListLine_icmpType");
-      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
-            .get("SetIpAccessListLine_tcpFlags");
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
             .get("SetIpAccessListLine_protocol");
       StringBuilder wSetIpAccessListLine_srcIpRange = _factBins
             .get("SetIpAccessListLine_srcIpRange");
+      StringBuilder wSetIpAccessListLine_srcOrDstIpRange = _factBins
+            .get("SetIpAccessListLine_srcOrDstIpRange");
+      StringBuilder wSetIpAccessListLine_srcOrDstPortRange = _factBins
+            .get("SetIpAccessListLine_srcOrDstPortRange");
       StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
             .get("SetIpAccessListLine_srcPortRange");
+      StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
+            .get("SetIpAccessListLine_tcpFlags");
+      StringBuilder wSetIpAccessListLine_tcpFlagsCWR = _factBins
+            .get("SetIpAccessListLine_tcpFlagsCWR");
+      StringBuilder wSetIpAccessListLine_tcpFlagsECE = _factBins
+            .get("SetIpAccessListLine_tcpFlagsECE");
+      StringBuilder wSetIpAccessListLine_tcpFlagsURG = _factBins
+            .get("SetIpAccessListLine_tcpFlagsURG");
+      StringBuilder wSetIpAccessListLine_tcpFlagsACK = _factBins
+            .get("SetIpAccessListLine_tcpFlagsACK");
+      StringBuilder wSetIpAccessListLine_tcpFlagsPSH = _factBins
+            .get("SetIpAccessListLine_tcpFlagsPSH");
+      StringBuilder wSetIpAccessListLine_tcpFlagsRST = _factBins
+            .get("SetIpAccessListLine_tcpFlagsRST");
+      StringBuilder wSetIpAccessListLine_tcpFlagsSYN = _factBins
+            .get("SetIpAccessListLine_tcpFlagsSYN");
+      StringBuilder wSetIpAccessListLine_tcpFlagsFIN = _factBins
+            .get("SetIpAccessListLine_tcpFlagsFIN");
       for (IpAccessList ipAccessList : _configuration.getIpAccessLists()
             .values()) {
          String name = _configuration.getHostname() + ":"
@@ -552,15 +634,82 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
             }
+            for (Prefix srcOrDstIpRange : line.getSrcOrDstIpRanges()) {
+               long srcOrDstIpStart = srcOrDstIpRange.getAddress().asLong();
+               long srcOrDstIpEnd = srcOrDstIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_srcOrDstIpRange.append(name + "|" + i + "|"
+                     + srcOrDstIpStart + "|" + srcOrDstIpEnd + "\n");
+            }
+            for (SubRange srcOrDstPortRange : line.getSrcOrDstPortRanges()) {
+               long startPort = srcOrDstPortRange.getStart();
+               long endPort = srcOrDstPortRange.getEnd();
+               wSetIpAccessListLine_srcOrDstPortRange.append(name + "|" + i
+                     + "|" + startPort + "|" + endPort + "\n");
+            }
             for (SubRange srcPortRange : line.getSrcPortRanges()) {
                long startPort = srcPortRange.getStart();
                long endPort = srcPortRange.getEnd();
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            if (line.getTcpFlags() != TcpFlags.UNSET) {
-               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|"
-                     + line.getTcpFlags() + "\n");
+            for (SubRange srcPortRange : line.getSrcPortRanges()) {
+               long startPort = srcPortRange.getStart();
+               long endPort = srcPortRange.getEnd();
+               wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
+            }
+            for (int alt = 0; alt < line.getTcpFlags().size(); alt++) {
+               TcpFlags tcpFlags = line.getTcpFlags().get(alt);
+               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|" + alt
+                     + "\n");
+               if (tcpFlags.getUseCwr()) {
+                  int bit = tcpFlags.getCwr() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsCWR.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseEce()) {
+                  int bit = tcpFlags.getEce() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsECE.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseUrg()) {
+                  int bit = tcpFlags.getUrg() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsURG.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseAck()) {
+                  int bit = tcpFlags.getAck() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsACK.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUsePsh()) {
+                  int bit = tcpFlags.getPsh() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsPSH.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseRst()) {
+                  int bit = tcpFlags.getRst() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsRST.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseSyn()) {
+                  int bit = tcpFlags.getSyn() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsSYN.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+               if (tcpFlags.getUseFin()) {
+                  int bit = tcpFlags.getFin() ? 1 : 0;
+                  wSetIpAccessListLine_tcpFlagsFIN.append(name + "|" + i + "|"
+                        + alt + "|" + bit + "\n");
+               }
+            }
+            for (int dscp : line.getDscps()) {
+               wSetIpAccessListLine_dscp.append(name + "|" + i + "|" + dscp
+                     + "\n");
+            }
+            for (int ecn : line.getEcns()) {
+               wSetIpAccessListLine_ecn.append(name + "|" + i + "|" + ecn
+                     + "\n");
             }
          }
       }
@@ -835,6 +984,8 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseMatchNeighbor");
       StringBuilder wSetPolicyMapClauseMatchPolicy = _factBins
             .get("SetPolicyMapClauseMatchPolicy");
+      StringBuilder wSetPolicyMapClauseMatchPolicyConjunction = _factBins
+            .get("SetPolicyMapClauseMatchPolicyConjunction");
       StringBuilder wSetPolicyMapClauseMatchProtocol = _factBins
             .get("SetPolicyMapClauseMatchProtocol");
       StringBuilder wSetPolicyMapClauseMatchRouteFilter = _factBins
@@ -889,7 +1040,7 @@ public class ConfigurationFactExtractor {
             for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
                switch (matchLine.getType()) {
 
-               case AS_PATH_ACCESS_LIST:
+               case AS_PATH_ACCESS_LIST: {
                   PolicyMapMatchAsPathAccessListLine matchAsPathLine = (PolicyMapMatchAsPathAccessListLine) matchLine;
                   for (AsPathAccessList asPath : matchAsPathLine.getLists()) {
                      String asPathName = hostname + ":" + asPath.getName();
@@ -897,8 +1048,9 @@ public class ConfigurationFactExtractor {
                            + "|" + asPathName + "\n");
                   }
                   break;
+               }
 
-               case COMMUNITY_LIST:
+               case COMMUNITY_LIST: {
                   PolicyMapMatchCommunityListLine mclLine = (PolicyMapMatchCommunityListLine) matchLine;
                   for (CommunityList cList : mclLine.getLists()) {
                      String cListName = hostname + ":" + cList.getName();
@@ -906,8 +1058,9 @@ public class ConfigurationFactExtractor {
                            + i + "|" + cListName + "\n");
                   }
                   break;
+               }
 
-               case IP_ACCESS_LIST:
+               case IP_ACCESS_LIST: {
                   PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine) matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
                      String listName = hostname + ":" + list.getName();
@@ -915,30 +1068,46 @@ public class ConfigurationFactExtractor {
                            + listName + "\n");
                   }
                   break;
+               }
 
-               case NEIGHBOR:
+               case NEIGHBOR: {
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
                   long neighborIp = pmmnl.getNeighborIp().asLong();
                   wSetPolicyMapClauseMatchNeighbor.append(mapName + "|" + i
                         + "|" + neighborIp + "\n");
                   break;
+               }
 
-               case POLICY:
+               case POLICY: {
                   PolicyMapMatchPolicyLine matchPolicyLine = (PolicyMapMatchPolicyLine) matchLine;
                   PolicyMap policy = matchPolicyLine.getPolicy();
                   String policyName = hostname + ":" + policy.getMapName();
                   wSetPolicyMapClauseMatchPolicy.append(mapName + "|" + i + "|"
                         + policyName + "\n");
                   break;
+               }
 
-               case PROTOCOL:
+               case POLICY_CONJUNCTION: {
+                  PolicyMapMatchPolicyConjunctionLine matchPolicyConjunctionLine = (PolicyMapMatchPolicyConjunctionLine) matchLine;
+                  Set<PolicyMap> policies = matchPolicyConjunctionLine
+                        .getConjuncts();
+                  for (PolicyMap policy : policies) {
+                     String policyName = hostname + ":" + policy.getMapName();
+                     wSetPolicyMapClauseMatchPolicyConjunction.append(mapName
+                           + "|" + i + "|" + policyName + "\n");
+                  }
+                  break;
+               }
+
+               case PROTOCOL: {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
                   wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
                         + "|" + prot.protocolName() + "\n");
                   break;
+               }
 
-               case ROUTE_FILTER_LIST:
+               case ROUTE_FILTER_LIST: {
                   PolicyMapMatchRouteFilterListLine mrfLine = (PolicyMapMatchRouteFilterListLine) matchLine;
                   for (RouteFilterList rfList : mrfLine.getLists()) {
                      String rflName = hostname + ":" + rfList.getName();
@@ -946,28 +1115,32 @@ public class ConfigurationFactExtractor {
                            + i + "|" + rflName + "\n");
                   }
                   break;
+               }
 
-               case TAG:
+               case TAG: {
                   PolicyMapMatchTagLine pmmtl = (PolicyMapMatchTagLine) matchLine;
                   for (Integer tag : pmmtl.getTags()) {
                      wSetPolicyMapClauseMatchTag.append(mapName + "|" + i + "|"
                            + tag + "\n");
                   }
                   break;
+               }
 
-               case COLOR:
+               case COLOR: {
                   PolicyMapMatchColorLine pmmcl = (PolicyMapMatchColorLine) matchLine;
                   int color = pmmcl.getColor();
                   wSetPolicyMapClauseMatchColor.append(mapName + "|" + i + "|"
                         + color + "\n");
                   break;
+               }
 
-               case INTERFACE:
+               case INTERFACE: {
                   PolicyMapClauseMatchInterfaceLine pmmil = (PolicyMapClauseMatchInterfaceLine) matchLine;
                   String ifaceName = pmmil.getName();
                   wSetPolicyMapClauseMatchInterface.append(mapName + "|" + i
                         + "|" + hostname + "|" + ifaceName + "\n");
                   break;
+               }
 
                default:
                   throw new BatfishException("invalid match type");

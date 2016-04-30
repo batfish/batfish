@@ -67,6 +67,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private boolean _defaultAddressSelection;
 
+   private final Set<String> _ignoredPrefixLists;
+
    private transient Interface _lo0;
 
    private transient boolean _lo0Initialized;
@@ -82,6 +84,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
       _unimplementedFeatures = unimplementedFeatures;
+      _ignoredPrefixLists = new HashSet<String>();
    }
 
    private BgpProcess createBgpProcess() {
@@ -101,6 +104,19 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             ebgpMultihop = false;
          }
          neighbor.setEbgpMultihop(ebgpMultihop);
+         Integer loops = ig.getLoops();
+         boolean allowLocalAsIn = loops != null && loops > 0;
+         neighbor.setAllowLocalAsIn(allowLocalAsIn);
+         Boolean advertisePeerAs = ig.getAdvertisePeerAs();
+         if (advertisePeerAs == null) {
+            advertisePeerAs = false;
+         }
+         neighbor.setAllowRemoteAsOut(advertisePeerAs);
+         Boolean advertiseInactive = ig.getAdvertiseInactive();
+         if (advertiseInactive == null) {
+            advertiseInactive = false;
+         }
+         neighbor.setAdvertiseInactive(advertiseInactive);
          neighbor.setGroupName(ig.getGroupName());
          // import policies
          for (String importPolicyName : ig.getImportPolicies()) {
@@ -110,13 +126,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                      + "\"\n");
             }
             else {
-               _policyStatements
-                     .get(importPolicyName)
-                     .getReferers()
-                     .put(ig.getImportPolicies(),
-                           "BGP import policy for neighbor: "
-                                 + ig.getRemoteAddress().toString());
-               neighbor.addInboundPolicyMap(importPolicy);
+               setPolicyStatementReferent(importPolicyName,
+                     ig.getImportPolicies(), "BGP import policy for neighbor: "
+                           + ig.getRemoteAddress().toString());
+               neighbor.getInboundPolicyMaps().add(importPolicy);
             }
          }
          // export policies
@@ -127,13 +140,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                      + "\"");
             }
             else {
-               _policyStatements
-                     .get(exportPolicyName)
-                     .getReferers()
-                     .put(ig.getExportPolicies(),
-                           "BGP export policy for neighbor: "
-                                 + ig.getRemoteAddress().toString());
-               neighbor.addOutboundPolicyMap(exportPolicy);
+               setPolicyStatementReferent(exportPolicyName,
+                     ig.getExportPolicies(), "BGP export policy for neighbor: "
+                           + ig.getRemoteAddress().toString());
+               neighbor.getOutboundPolicyMaps().add(exportPolicy);
             }
          }
          // inherit local-as
@@ -201,8 +211,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   + policyName + "\"");
          }
          else {
-            _policyStatements.get(policyName).getReferers()
-                  .put(settings.getExportPolicies(), "IS-IS export policies");
+            setPolicyStatementReferent(policyName,
+                  settings.getExportPolicies(), "IS-IS export policies");
             newProc.getOutboundPolicyMaps().add(policy);
          }
       }
@@ -234,11 +244,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   + exportPolicyName + "\"");
          }
          else {
-            _policyStatements
-                  .get(exportPolicyName)
-                  .getReferers()
-                  .put(_defaultRoutingInstance.getOspfExportPolicies(),
-                        "OSPF export policies");
+            setPolicyStatementReferent(exportPolicyName,
+                  _defaultRoutingInstance.getOspfExportPolicies(),
+                  "OSPF export policies");
             newProc.getOutboundPolicyMaps().add(exportPolicy);
             // TODO: support type E1
             newProc.getPolicyMetricTypes().put(exportPolicy, OspfMetricType.E2);
@@ -272,6 +280,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       newProc.setReferenceBandwidth(_defaultRoutingInstance
             .getOspfReferenceBandwidth());
       return newProc;
+   }
+
+   public Set<String> getIgnoredPrefixLists() {
+      return _ignoredPrefixLists;
    }
 
    @Override
@@ -337,6 +349,35 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    public void setDefaultAddressSelection(boolean defaultAddressSelection) {
       _defaultAddressSelection = defaultAddressSelection;
+   }
+
+   private void setPolicyStatementReferent(String policyName, Object referer,
+         String description) {
+      PolicyStatement policy = _policyStatements.get(policyName);
+      if (policy == null) {
+         return;
+      }
+      policy.getReferers().put(referer, description);
+      List<PsTerm> terms = new ArrayList<PsTerm>();
+      terms.add(policy.getSingletonTerm());
+      terms.addAll(policy.getTerms().values());
+      for (PsTerm term : terms) {
+         for (PsFrom from : term.getFroms()) {
+            if (from instanceof PsFromPolicyStatement) {
+               PsFromPolicyStatement fromPolicyStatement = (PsFromPolicyStatement) from;
+               String subPolicyName = fromPolicyStatement.getPolicyStatement();
+               setPolicyStatementReferent(subPolicyName, referer, description);
+            }
+            else if (from instanceof PsFromPolicyStatementConjunction) {
+               PsFromPolicyStatementConjunction fromPolicyStatementConjunction = (PsFromPolicyStatementConjunction) from;
+               for (String subPolicyName : fromPolicyStatementConjunction
+                     .getConjuncts()) {
+                  setPolicyStatementReferent(subPolicyName, referer,
+                        description);
+               }
+            }
+         }
+      }
    }
 
    @Override
@@ -408,12 +449,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             _w.redFlag("missing generated route policy: \"" + policyName + "\"");
          }
          else {
-            _policyStatements
-                  .get(policyName)
-                  .getReferers()
-                  .put(route.getPolicies(),
-                        "Generated route policy for prefix: "
-                              + route.getPrefix().toString());
+            setPolicyStatementReferent(policyName, route.getPolicies(),
+                  "Generated route policy for prefix: "
+                        + route.getPrefix().toString());
             policies.add(policy);
          }
       }
@@ -664,7 +702,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          IpAccessListLine line = new IpAccessListLine();
          line.setAction(action);
          for (FwFrom from : term.getFroms()) {
-            from.applyTo(line, _w, _c);
+            from.applyTo(line, this, _w, _c);
          }
          boolean addLine = term.getFromApplications().isEmpty()
                && term.getFromHostProtocols().isEmpty()
@@ -812,7 +850,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   }
                }
             }
-            from.applyTo(clause, _c, _w);
+            from.applyTo(clause, ps, this, _c, _w);
          }
          for (PsThen then : term.getThens()) {
             then.applyTo(clause, _c, _w);
@@ -1155,7 +1193,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PolicyStatement forwardingTableExportPolicy = _policyStatements
                .get(forwardingTableExportPolicyName);
          if (forwardingTableExportPolicy != null) {
-            forwardingTableExportPolicy.getReferers().put(
+            setPolicyStatementReferent(forwardingTableExportPolicyName,
                   _defaultRoutingInstance, "Forwarding-table export policy");
          }
          else {
@@ -1172,6 +1210,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       warnUnreferencedIkeGateways();
       warnUnreferencedIpsecPropsals();
       warnUnreferencedIpsecPolicies();
+      warnUnusedPrefixLists();
+      warnEmptyPrefixLists();
       warnAndDisableUnreferencedStInterfaces();
       return _c;
    }
@@ -1274,6 +1314,16 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
    }
 
+   private void warnEmptyPrefixLists() {
+      for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+         String name = e.getKey();
+         PrefixList prefixList = e.getValue();
+         if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
+            _w.redFlag("Empty prefix-list: \"" + name + "\"");
+         }
+      }
+   }
+
    private void warnUnreferencedFirewallFilters() {
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
          String name = e.getKey();
@@ -1337,9 +1387,23 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private void warnUnreferencedPolicyStatements() {
       for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
          String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
          PolicyStatement ps = e.getValue();
-         if (ps.isUnused()) {
+         if (!ps.getIpv6() && ps.isUnused()) {
             _w.redFlag("Unused policy-statement: \"" + name + "\"");
+         }
+      }
+   }
+
+   private void warnUnusedPrefixLists() {
+      for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+         String name = e.getKey();
+         PrefixList prefixList = e.getValue();
+         if (!prefixList.getIpv6() && prefixList.isUnused()
+               && !_ignoredPrefixLists.contains(name)) {
+            _w.redFlag("Unused prefix-list: \"" + name + "\"");
          }
       }
    }

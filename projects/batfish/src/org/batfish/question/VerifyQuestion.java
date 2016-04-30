@@ -11,7 +11,7 @@ public class VerifyQuestion extends Question {
 
    @Override
    public boolean getDataPlane() {
-      return false;
+      return _program.getDataPlane();
    }
 
    @Override

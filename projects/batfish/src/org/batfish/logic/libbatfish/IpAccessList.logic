@@ -27,12 +27,22 @@ IpAccessListMatch(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchDscp(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchDstIp(list, line, flow) ->
    IpAccessList(list),
    int(line),
    Flow(flow).
 
 IpAccessListMatchDstPort(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchEcn(list, line, flow) ->
    IpAccessList(list),
    int(line),
    Flow(flow).
@@ -57,6 +67,16 @@ IpAccessListMatchSrcIp(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchSrcOrDstIp(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchSrcOrDstPort(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchSrcPort(list, line, flow) ->
    IpAccessList(list),
    int(line),
@@ -75,6 +95,16 @@ IpAccessListPermit(list, line, flow) ->
 SetIpAccessListLine_deny(list, line) ->
    IpAccessList(list),
    int(line).
+
+SetIpAccessListLine_dscp(list, line, dscp) ->
+   IpAccessList(list),
+   int(line),
+   int(dscp).
+
+SetIpAccessListLine_ecn(list, line, ecn) ->
+   IpAccessList(list),
+   int(line),
+   int(ecn).
 
 SetIpAccessListLine_dstIpRange(list, line, dstIp_start, dstIp_end) ->
    IpAccessList(list),
@@ -113,16 +143,76 @@ SetIpAccessListLine_srcIpRange(list, line, srcIp_start, srcIp_end) ->
    int(srcIp_start),
    int(srcIp_end).
 
+SetIpAccessListLine_srcOrDstIpRange(list, line, srcOrDstIp_start, srcOrDstIp_end) ->
+   IpAccessList(list),
+   int(line),
+   int(srcOrDstIp_start),
+   int(srcOrDstIp_end).
+
+SetIpAccessListLine_srcOrDstPortRange(list, line, srcOrDstPort_start, srcOrDstPort_end) ->
+   IpAccessList(list),
+   int(line),
+   int(srcOrDstPort_start),
+   int(srcOrDstPort_end).
+
 SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    IpAccessList(list),
    int(line),
    int(srcPort_start),
    int(srcPort_end).
 
-SetIpAccessListLine_tcpFlags(list, line, tcpFlags) ->
+SetIpAccessListLine_tcpFlags(list, line, alternative) ->
    IpAccessList(list),
    int(line),
-   int(tcpFlags).
+   int(alternative).
+
+SetIpAccessListLine_tcpFlagsCWR(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsECE(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsURG(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsACK(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsPSH(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsRST(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsSYN(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
+
+SetIpAccessListLine_tcpFlagsFIN(list, line, alternative, bit) ->
+   IpAccessList(list),
+   int(line),
+   int(alternative),
+   int(bit).
 
 SetCrossZoneFilter(node, srcZone, dstZone, filter) ->
    Node(node),

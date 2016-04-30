@@ -20,6 +20,12 @@ public final class BgpNeighbor implements Serializable {
     */
    private Ip _address;
 
+   private boolean _advertiseInactive;
+
+   private boolean _allowLocalAsIn;
+
+   private boolean _allowRemoteAsOut;
+
    private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
    /**
@@ -133,30 +139,22 @@ public final class BgpNeighbor implements Serializable {
    }
 
    /**
-    * Adds a policy to the set of inbound policies for this peer
-    *
-    * @param map
-    *           The policy to add
-    */
-   public void addInboundPolicyMap(PolicyMap map) {
-      _inboundPolicyMaps.add(map);
-   }
-
-   /**
-    * Adds a policy to the set of outbound policies for this peer
-    *
-    * @param map
-    *           The policy to add
-    */
-   public void addOutboundPolicyMap(PolicyMap map) {
-      _outboundPolicyMaps.add(map);
-   }
-
-   /**
     * @return {@link #_address}
     */
    public Ip getAddress() {
       return _address;
+   }
+
+   public boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+   }
+
+   public boolean getAllowLocalAsIn() {
+      return _allowLocalAsIn;
+   }
+
+   public boolean getAllowRemoteAsOut() {
+      return _allowRemoteAsOut;
    }
 
    public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
@@ -270,6 +268,18 @@ public final class BgpNeighbor implements Serializable {
 
    public void initCandidateRemoteBgpNeighbors() {
       _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
+   }
+
+   public void setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+   }
+
+   public void setAllowLocalAsIn(boolean allowLocalAsIn) {
+      _allowLocalAsIn = allowLocalAsIn;
+   }
+
+   public void setAllowRemoteAsOut(boolean allowRemoteAsOut) {
+      _allowRemoteAsOut = allowRemoteAsOut;
    }
 
    /**
