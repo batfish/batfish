@@ -142,7 +142,9 @@ fromt_prefix_list_filter
 
 fromt_prefix_list_filter_tail
 :
-   plft_orlonger
+   plft_exact
+   | plft_longer
+   | plft_orlonger
 ;
 
 fromt_protocol
@@ -212,6 +214,16 @@ metric_expression
    (
       OFFSET offset = DEC
    )?
+;
+
+plft_exact
+:
+   EXACT
+;
+
+plft_longer
+:
+   LONGER
 ;
 
 plft_orlonger

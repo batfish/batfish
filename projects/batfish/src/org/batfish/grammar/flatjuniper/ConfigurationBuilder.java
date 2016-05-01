@@ -97,6 +97,7 @@ import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
 import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
 import org.batfish.representation.juniper.PsFromPrefixList;
+import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
 import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
@@ -2467,14 +2468,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFromt_prefix_list_filter(Fromt_prefix_list_filterContext ctx) {
       String name = ctx.name.getText();
-      if (ctx.fromt_prefix_list_filter_tail().plft_orlonger() != null) {
-         PsFrom from = new PsFromPrefixListFilterOrLonger(name);
-         _currentPsTerm.getFroms().add(from);
+      PsFrom from;
+      if (ctx.fromt_prefix_list_filter_tail().plft_exact() != null) {
+         from = new PsFromPrefixList(name);
+      }
+      else if (ctx.fromt_prefix_list_filter_tail().plft_longer() != null) {
+         from = new PsFromPrefixListFilterLonger(name);
+      }
+      else if (ctx.fromt_prefix_list_filter_tail().plft_orlonger() != null) {
+         from = new PsFromPrefixListFilterOrLonger(name);
       }
       else {
-         PsFrom from = new PsFromPrefixList(name);
-         _currentPsTerm.getFroms().add(from);
+         throw new BatfishException(
+               "Invalid prefix-list-filter length specification");
       }
+      _currentPsTerm.getFroms().add(from);
    }
 
    @Override
