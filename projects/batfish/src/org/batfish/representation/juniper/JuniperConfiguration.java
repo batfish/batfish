@@ -1,7 +1,9 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.batfish.representation.IkeProposal;
@@ -17,9 +19,13 @@ public class JuniperConfiguration implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   protected final Set<Long> _allStandardCommunities;
+
    protected final Map<String, BaseApplication> _applications;
 
    protected final Map<String, CommunityList> _communityLists;
+
+   protected boolean _defaultAddressSelection;
 
    protected LineAction _defaultCrossZoneAction;
 
@@ -28,6 +34,8 @@ public class JuniperConfiguration implements Serializable {
    protected final Map<String, FirewallFilter> _filters;
 
    protected final Map<String, AddressBook> _globalAddressBooks;
+
+   protected final Set<String> _ignoredPrefixLists;
 
    protected final Map<String, IkeGateway> _ikeGateways;
 
@@ -53,13 +61,17 @@ public class JuniperConfiguration implements Serializable {
 
    protected final Map<String, Zone> _zones;
 
+   protected LineAction _defaultInboundAction;
+
    public JuniperConfiguration() {
+      _allStandardCommunities = new HashSet<Long>();
       _applications = new TreeMap<String, BaseApplication>();
       _communityLists = new TreeMap<String, CommunityList>();
       _defaultCrossZoneAction = LineAction.ACCEPT;
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
       _filters = new TreeMap<String, FirewallFilter>();
       _globalAddressBooks = new TreeMap<String, AddressBook>();
+      _ignoredPrefixLists = new HashSet<String>();
       _ikeGateways = new TreeMap<String, IkeGateway>();
       _ikePolicies = new TreeMap<String, IkePolicy>();
       _ikeProposals = new TreeMap<String, IkeProposal>();
@@ -72,6 +84,10 @@ public class JuniperConfiguration implements Serializable {
       _routeFilters = new TreeMap<String, RouteFilter>();
       _routingInstances = new TreeMap<String, RoutingInstance>();
       _zones = new TreeMap<String, Zone>();
+   }
+
+   public Set<Long> getAllStandardCommunities() {
+      return _allStandardCommunities;
    }
 
    public Map<String, BaseApplication> getApplications() {
@@ -100,6 +116,10 @@ public class JuniperConfiguration implements Serializable {
 
    public final String getHostname() {
       return _defaultRoutingInstance.getHostname();
+   }
+
+   public Set<String> getIgnoredPrefixLists() {
+      return _ignoredPrefixLists;
    }
 
    public final Map<String, IkeGateway> getIkeGateways() {
@@ -146,12 +166,20 @@ public class JuniperConfiguration implements Serializable {
       return _zones;
    }
 
+   public void setDefaultAddressSelection(boolean defaultAddressSelection) {
+      _defaultAddressSelection = defaultAddressSelection;
+   }
+
    public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
       _defaultCrossZoneAction = defaultCrossZoneAction;
    }
 
    public final void setHostname(String hostname) {
       _defaultRoutingInstance.setHostname(hostname);
+   }
+
+   public void setDefaultInboundAction(LineAction defaultInboundAction) {
+      _defaultInboundAction = defaultInboundAction;
    }
 
 }

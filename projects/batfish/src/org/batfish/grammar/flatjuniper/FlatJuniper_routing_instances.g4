@@ -6,14 +6,40 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+agast_origin
+:
+   ORIGIN IGP
+;
+
+agast_path
+:
+   PATH path = as_path_expr
+;
+
 agt_as_path
 :
-   AS_PATH PATH path = as_path_expr
+   AS_PATH agt_as_path_tail
+;
+
+agt_as_path_tail
+:
+   agast_origin
+   | agast_path
+;
+
+agt_community
+:
+   COMMUNITY community = COMMUNITY_LITERAL
 ;
 
 agt_preference
 :
    PREFERENCE preference = DEC
+;
+
+agt_tag
+:
+   TAG tag = DEC
 ;
 
 bmpt_station_address
@@ -114,22 +140,7 @@ rgt_import_rib
 
 ribt_aggregate
 :
-   AGGREGATE ROUTE
-   (
-      IP_PREFIX
-      | IPV6_PREFIX
-   ) ribt_aggregate_tail
-;
-
-ribt_apply_groups
-:
-   s_apply_groups
-;
-
-ribt_aggregate_tail
-:
-   agt_as_path
-   | agt_preference
+   rot_aggregate
 ;
 
 ribt_generate
@@ -277,26 +288,25 @@ roftt_null
 :
    (
       INDIRECT_NEXT_HOP
-   )
-   s_null_filler
+   ) s_null_filler
 ;
 
 rot_aggregate
 :
-   AGGREGATE ROUTE IP_PREFIX
+   AGGREGATE ROUTE
    (
-      (
-         AS_PATH ORIGIN IGP
-      )
-      |
-      (
-         COMMUNITY community = COMMUNITY_LITERAL
-      )
-      |
-      (
-         TAG tag = DEC
-      )
-   )*
+      prefix = IP_PREFIX
+      | prefix6 = IPV6_PREFIX
+   ) rot_aggregate_tail
+;
+
+rot_aggregate_tail
+:
+   agt_as_path
+   | agt_as_path_tail
+   | agt_community
+   | agt_preference
+   | agt_tag
 ;
 
 rot_auto_export
@@ -406,10 +416,8 @@ rot_rib
 
 rot_rib_tail
 :
-// intentional blank
-
+   apply
    | ribt_aggregate
-   | ribt_apply_groups
    | ribt_generate
    | ribt_static
 ;

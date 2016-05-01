@@ -79,6 +79,7 @@ import org.batfish.representation.juniper.IpsecVpn;
 import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
+import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
@@ -1370,7 +1371,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
    }
 
-   private JuniperVendorConfiguration _configuration;
+   private JuniperConfiguration _configuration;
 
    private int _conjunctionPolicyIndex;
 
@@ -1464,19 +1465,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final Set<String> _unimplementedFeatures;
 
+   private JuniperVendorConfiguration _vendorConfiguration;
+
    private final Warnings _w;
+
+   private boolean _hasZones;
+
+   private LineAction _defaultCrossZoneAction;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
       _parser = parser;
       _text = text;
-      _configuration = new JuniperVendorConfiguration(unimplementedFeatures);
+      _vendorConfiguration = new JuniperVendorConfiguration(
+            unimplementedFeatures);
+      _configuration = _vendorConfiguration;
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<PsTerm, RouteFilter>();
       _unimplementedFeatures = unimplementedFeatures;
       _w = warnings;
       _conjunctionPolicyIndex = 0;
       _disjunctionPolicyIndex = 0;
+   }
+
+   @Override
+   public void exitFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      if (_hasZones) {
+         if (_defaultCrossZoneAction == null) {
+           _defaultCrossZoneAction = LineAction.REJECT;
+         }
+         _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+         _configuration.setDefaultInboundAction(LineAction.REJECT);
+      }
+      else {
+         _configuration.setDefaultInboundAction(LineAction.ACCEPT);
+      }
    }
 
    @Override
@@ -1980,8 +2004,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRibt_aggregate(Ribt_aggregateContext ctx) {
-      if (ctx.IP_PREFIX() != null) {
+   public void enterRit_named_routing_instance(
+         Rit_named_routing_instanceContext ctx) {
+      String name;
+      name = ctx.name.getText();
+      _currentRoutingInstance = _configuration.getRoutingInstances().get(name);
+      if (_currentRoutingInstance == null) {
+         _currentRoutingInstance = new RoutingInstance(name);
+         _configuration.getRoutingInstances()
+               .put(name, _currentRoutingInstance);
+      }
+   }
+
+   @Override
+   public void enterRot_aggregate(Rot_aggregateContext ctx) {
+      if (ctx.prefix != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
          Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib
                .getAggregateRoutes();
@@ -1993,19 +2030,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else {
          _currentAggregateRoute = DUMMY_AGGREGATE_ROUTE;
-      }
-   }
-
-   @Override
-   public void enterRit_named_routing_instance(
-         Rit_named_routing_instanceContext ctx) {
-      String name;
-      name = ctx.name.getText();
-      _currentRoutingInstance = _configuration.getRoutingInstances().get(name);
-      if (_currentRoutingInstance == null) {
-         _currentRoutingInstance = new RoutingInstance(name);
-         _configuration.getRoutingInstances()
-               .put(name, _currentRoutingInstance);
       }
    }
 
@@ -2215,15 +2239,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitAgt_as_path(Agt_as_pathContext ctx) {
+   public void exitAgast_path(Agast_pathContext ctx) {
       AsPath asPath = toAsPath(ctx.path);
       _currentAggregateRoute.setAsPath(asPath);
+   }
+
+   @Override
+   public void exitAgt_community(Agt_communityContext ctx) {
+      long community = Util.communityStringToLong(ctx.COMMUNITY_LITERAL()
+            .getText());
+      _configuration.getAllStandardCommunities().add(community);
+      _currentAggregateRoute.getCommunities().add(community);
    }
 
    @Override
    public void exitAgt_preference(Agt_preferenceContext ctx) {
       int preference = toInt(ctx.preference);
       _currentAggregateRoute.setPreference(preference);
+   }
+
+   @Override
+   public void exitAgt_tag(Agt_tagContext ctx) {
+      int tag = toInt(ctx.tag);
+      _currentAggregateRoute.setTag(tag);
    }
 
    @Override
@@ -2339,15 +2377,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitCt_members(Ct_membersContext ctx) {
       if (ctx.community_regex() != null) {
-         _currentCommunityList.getLines().add(
-               new CommunityListLine(ctx.community_regex().getText()));
+         String text = ctx.community_regex().getText();
+         _currentCommunityList.getLines().add(new CommunityListLine(text));
+         if (text.matches("[0-9]+:[0-9]+")) {
+            long communityVal = Util.communityStringToLong(text);
+            _configuration.getAllStandardCommunities().add(communityVal);
+         }
       }
       else if (ctx.extended_community_regex() != null) {
-         _currentCommunityList.getLines().add(
-               new CommunityListLine(ctx.extended_community_regex().getText()));
+         String text = ctx.extended_community_regex().getText();
+         _currentCommunityList.getLines().add(new CommunityListLine(text));
       }
       else if (ctx.standard_community() != null) {
          long communityVal = toCommunityLong(ctx.standard_community());
+         _configuration.getAllStandardCommunities().add(communityVal);
          String communityStr = org.batfish.util.Util
                .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
@@ -2426,6 +2469,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String name = ctx.name.getText();
       if (ctx.fromt_prefix_list_filter_tail().plft_orlonger() != null) {
          PsFrom from = new PsFromPrefixListFilterOrLonger(name);
+         _currentPsTerm.getFroms().add(from);
+      }
+      else {
+         PsFrom from = new PsFromPrefixList(name);
          _currentPsTerm.getFroms().add(from);
       }
    }
@@ -3126,7 +3173,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitSect_zones(Sect_zonesContext ctx) {
-      _configuration.setDefaultCrossZoneAction(LineAction.REJECT);
+      _hasZones = true;
    }
 
    @Override
@@ -3215,10 +3262,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitSpt_default_policy_tail(Spt_default_policy_tailContext ctx) {
       if (ctx.PERMIT_ALL() != null) {
-         _configuration.setDefaultCrossZoneAction(LineAction.ACCEPT);
+         _defaultCrossZoneAction = LineAction.ACCEPT;
       }
       else if (ctx.DENY_ALL() != null) {
-         _configuration.setDefaultCrossZoneAction(LineAction.REJECT);
+         _defaultCrossZoneAction = LineAction.REJECT;
       }
    }
 
@@ -3373,7 +3420,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    public JuniperVendorConfiguration getConfiguration() {
-      return _configuration;
+      return _vendorConfiguration;
    }
 
    private String initIkeProposal(IkeProposal proposal) {

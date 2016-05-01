@@ -2716,6 +2716,16 @@ MEDIUM_LOW
    'medium-low'
 ;
 
+MEMBER
+:
+   'member'
+;
+
+MEMBERS
+:
+   'members' -> pushMode ( M_Members )
+;
+
 METRIC
 :
    'metric'
@@ -2734,16 +2744,6 @@ METRIC_OUT
 METRIC_TYPE
 :
    'metric-type' -> pushMode ( M_MetricType )
-;
-
-MEMBER
-:
-   'member'
-;
-
-MEMBERS
-:
-   'members' -> pushMode ( M_Members )
 ;
 
 MGCP_CA
