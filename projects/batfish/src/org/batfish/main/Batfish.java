@@ -113,6 +113,7 @@ import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityQuestion;
+import org.batfish.question.CompareSameNameQuestion;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.Environment;
 import org.batfish.question.ReducedReachabilityQuestion;
@@ -564,6 +565,10 @@ public class Batfish implements AutoCloseable {
          answerAclReachability((AclReachabilityQuestion) question);
          break;
 
+      case COMPARE_SAME_NAME:
+         answerCompareSameName((CompareSameNameQuestion) question);
+         break;
+
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
          break;
@@ -768,6 +773,10 @@ public class Batfish implements AutoCloseable {
          }
          Util.writeFile(jsonOutputPath, jsonOutput);
       }
+   }
+
+   private void answerCompareSameName(CompareSameNameQuestion question) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
    private void answerDestination(DestinationQuestion question) {

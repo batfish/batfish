@@ -474,6 +474,11 @@ boolean_literal
    | FALSE
 ;
 
+compare_same_name_question
+:
+   COMPARE_SAME_NAME
+;
+
 default_binding
 :
    var = VARIABLE EQUALS
@@ -1700,6 +1705,7 @@ question
    defaults?
    (
       acl_reachability_question
+      | compare_same_name_question
       | reduced_reachability_question
       | ingress_path_question
       | local_path_question
