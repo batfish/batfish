@@ -29,6 +29,8 @@ public class JuniperConfiguration implements Serializable {
 
    protected LineAction _defaultCrossZoneAction;
 
+   protected LineAction _defaultInboundAction;
+
    protected final RoutingInstance _defaultRoutingInstance;
 
    protected final Map<String, FirewallFilter> _filters;
@@ -60,8 +62,6 @@ public class JuniperConfiguration implements Serializable {
    protected final Map<String, RoutingInstance> _routingInstances;
 
    protected final Map<String, Zone> _zones;
-
-   protected LineAction _defaultInboundAction;
 
    public JuniperConfiguration() {
       _allStandardCommunities = new HashSet<Long>();
@@ -174,12 +174,12 @@ public class JuniperConfiguration implements Serializable {
       _defaultCrossZoneAction = defaultCrossZoneAction;
    }
 
-   public final void setHostname(String hostname) {
-      _defaultRoutingInstance.setHostname(hostname);
-   }
-
    public void setDefaultInboundAction(LineAction defaultInboundAction) {
       _defaultInboundAction = defaultInboundAction;
+   }
+
+   public final void setHostname(String hostname) {
+      _defaultRoutingInstance.setHostname(hostname);
    }
 
 }

@@ -19,8 +19,7 @@ public final class PsThenCommunitySet extends PsThen {
 
    private final String _name;
 
-   public PsThenCommunitySet(String name,
-         JuniperConfiguration configuration) {
+   public PsThenCommunitySet(String name, JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }

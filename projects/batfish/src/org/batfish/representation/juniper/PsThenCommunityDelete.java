@@ -17,8 +17,7 @@ public final class PsThenCommunityDelete extends PsThen {
 
    private final String _name;
 
-   public PsThenCommunityDelete(String name,
-         JuniperConfiguration configuration) {
+   public PsThenCommunityDelete(String name, JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }

@@ -1455,7 +1455,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Interface _currentZoneInterface;
 
+   private LineAction _defaultCrossZoneAction;
+
    private int _disjunctionPolicyIndex;
+
+   private boolean _hasZones;
 
    private FlatJuniperCombinedParser _parser;
 
@@ -1468,10 +1472,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private JuniperVendorConfiguration _vendorConfiguration;
 
    private final Warnings _w;
-
-   private boolean _hasZones;
-
-   private LineAction _defaultCrossZoneAction;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
@@ -1486,21 +1486,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _w = warnings;
       _conjunctionPolicyIndex = 0;
       _disjunctionPolicyIndex = 0;
-   }
-
-   @Override
-   public void exitFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      if (_hasZones) {
-         if (_defaultCrossZoneAction == null) {
-           _defaultCrossZoneAction = LineAction.REJECT;
-         }
-         _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-         _configuration.setDefaultInboundAction(LineAction.REJECT);
-      }
-      else {
-         _configuration.setDefaultInboundAction(LineAction.ACCEPT);
-      }
    }
 
    @Override
@@ -2402,6 +2387,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));
+      }
+   }
+
+   @Override
+   public void exitFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      if (_hasZones) {
+         if (_defaultCrossZoneAction == null) {
+            _defaultCrossZoneAction = LineAction.REJECT;
+         }
+         _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+         _configuration.setDefaultInboundAction(LineAction.REJECT);
+      }
+      else {
+         _configuration.setDefaultInboundAction(LineAction.ACCEPT);
       }
    }
 

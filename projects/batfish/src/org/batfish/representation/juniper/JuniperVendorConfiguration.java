@@ -1090,7 +1090,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             Interface loopback0unit0 = loopback0.getUnits().get(
                   FIRST_LOOPBACK_INTERFACE_NAME + ".0");
             if (loopback0unit0 != null) {
-               Prefix prefix =  loopback0unit0.getPrimaryPrefix();
+               Prefix prefix = loopback0unit0.getPrimaryPrefix();
                if (prefix != null) {
                   // now we should set router-id
                   Ip routerId = prefix.getAddress();
