@@ -10,7 +10,7 @@ import org.batfish.representation.Ip;
 
 public class RoutingInstance implements Serializable {
 
-   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E8;
+   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E9;
 
    private static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
 

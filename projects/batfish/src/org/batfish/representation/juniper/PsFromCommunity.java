@@ -6,7 +6,6 @@ import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchCommunityListLine;
-import org.batfish.representation.VendorConversionException;
 
 public final class PsFromCommunity extends PsFrom {
 
@@ -27,12 +26,13 @@ public final class PsFromCommunity extends PsFrom {
       org.batfish.representation.CommunityList list = c.getCommunityLists()
             .get(_name);
       if (list == null) {
-         throw new VendorConversionException("missing community list: \""
-               + _name + "\"");
+         warnings.redFlag("missing community list: \"" + _name + "\"");
       }
-      PolicyMapMatchCommunityListLine line = new PolicyMapMatchCommunityListLine(
-            Collections.singleton(list));
-      clause.getMatchLines().add(line);
+      else {
+         PolicyMapMatchCommunityListLine line = new PolicyMapMatchCommunityListLine(
+               Collections.singleton(list));
+         clause.getMatchLines().add(line);
+      }
    }
 
    public String getName() {

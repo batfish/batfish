@@ -400,9 +400,13 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Route_node'(Route, Node),
    'BgpOriginationPolicy'(Node, NeighborIp, Map),
    'BgpNeighbors'(Node, _, _, NeighborIp).
+
 % incoming transformation
 'AdvertisementCommunity'(Advert, Community) :-
-   PriorType = 'bgp_to',
+   (
+      PriorType = 'ibgp_to' ;
+      PriorType = 'bgp_to'
+   ),
    'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
    'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
@@ -552,7 +556,10 @@ need_PolicyMapMatchAdvert(Map, Advert)
    ).
 % outgoing transformation
 'AdvertisementCommunity'(Advert, Community) :-
-   PriorType = 'bgp',
+   (
+      PriorType = 'ibgp' ;
+      PriorType = 'bgp'
+   ),
    'BgpNeighborSendCommunity'(SrcNode, DstIp),
    'BgpAdvertisement_type'(PrevAdvert, PriorType),
    'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
@@ -927,40 +934,6 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'BgpOriginationPolicy'(Node, NeighborIp, Map),
    'IbgpNeighbors'(Node, _, _, NeighborIp).
 
-% incoming transformation
-'AdvertisementCommunity'(Advert, Community) :-
-   PriorType = 'ibgp_to',
-   'BgpAdvertisement_type'(PrevAdvert, PriorType),
-   'BgpAdvertisement_dstNode'(PrevAdvert, DstNode),
-   'BgpAdvertisement_srcIp'(PrevAdvert, SrcIp),
-   'ParentAdvertisement'(PrevAdvert, Advert),
-   (
-      (
-         'BgpImportPolicy'(DstNode, SrcIp, Map),
-         'PolicyMapPermitAdvert'(Map, Clause, PrevAdvert),
-         \+ 'SetPolicyMapClauseSetCommunityNone'(Map, Clause),
-         (
-            'SetPolicyMapClauseAddCommunity'(Map, Clause, Community) ;
-            'SetPolicyMapClauseSetCommunity'(Map, Clause, Community) ;
-            (
-               'AdvertisementCommunity'(PrevAdvert, Community),
-               \+ 'SetPolicyMapClauseSetCommunity'(Map, Clause, _),
-               (
-                  \+ 'SetPolicyMapClauseDeleteCommunity'(Map, Clause, _) ;
-                  (
-                     'SetPolicyMapClauseDeleteCommunity'(Map, Clause, DeleteList),
-                     \+ 'CommunityListPermit'(DeleteList, _, Community)
-                  )
-               )
-            )
-         )
-      ) ;
-      (
-         \+ 'BgpImportPolicy'(DstNode, SrcIp, _),
-         'AdvertisementCommunity'(PrevAdvert, Community)
-      )
-   ).
-
 'BestIbgpRoute'(Route),
    'Route'(Route),
    'Route_constructor'(Node, Network, NextHopIp, Protocol, Route),
@@ -1063,52 +1036,6 @@ need_PolicyMapMatchAdvert(Map, Advert)
 'IbgpNeighbors'(Node1, Ip1, Node2, Ip2) :-
    'IbgpNeighborTo'(Node1, Node2, Ip2),
    'IbgpNeighborTo'(Node2, Node1, Ip1).
-
-% outgoing transformation
-'AdvertisementCommunity'(Advert, Community) :-
-   PriorType = 'ibgp',
-   'BgpNeighborSendCommunity'(SrcNode, DstIp),
-   'BgpAdvertisement_type'(PrevAdvert, PriorType),
-   'BgpAdvertisement_srcNode'(PrevAdvert, SrcNode),
-   'BgpAdvertisement_dstIp'(PrevAdvert, DstIp),
-   'ParentAdvertisement'(PrevAdvert, Advert),
-   (
-      (
-         'BgpExportPolicy'(SrcNode, DstIp, Map),
-         'PolicyMapPermitAdvert'(Map, Clause, PrevAdvert),
-         \+ 'SetPolicyMapClauseSetCommunityNone'(Map, Clause),
-         (
-            (
-               \+ 'SetPolicyMapClauseMatchPolicy'(Map, Clause, _),
-               Clause = TransformingClause,
-               Map = TransformingMap
-            ) ;
-            (
-               'SetPolicyMapClauseMatchPolicy'(Map, Clause, TransformingMap),
-               'PolicyMapPermitAdvert'(TransformingMap, TransformingClause, PrevAdvert)
-            )
-         ),
-         (
-            'SetPolicyMapClauseAddCommunity'(TransformingMap, TransformingClause, Community) ;
-            'SetPolicyMapClauseSetCommunity'(TransformingMap, TransformingClause, Community) ;
-            (
-               'AdvertisementCommunity'(PrevAdvert, Community),
-               \+ 'SetPolicyMapClauseSetCommunity'(TransformingMap, TransformingClause, _),
-               (
-                  \+ 'SetPolicyMapClauseDeleteCommunity'(TransformingMap, TransformingClause, _) ;
-                  (
-                     'SetPolicyMapClauseDeleteCommunity'(TransformingMap, TransformingClause, DeleteList),
-                     \+ 'CommunityListPermit'(DeleteList, _, Community)
-                  )
-               )
-            )
-         )
-      ) ;
-      (
-         \+ 'BgpExportPolicy'(SrcNode, DstIp, _),
-         'AdvertisementCommunity'(PrevAdvert, Community)
-      )
-   ).
 
 % ibgp transformed outgoing
 'BgpAdvertisement'(Advert),
@@ -2599,7 +2526,13 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'SetOspfOutboundPolicyMap'(Node, Map),
    'SetPolicyMapOspfExternalRouteType'(Map, Protocol),
    'PolicyMapPermitRoute'(Map, Clause, Route),
-   'SetPolicyMapClauseSetMetric'(Map, Clause, NewCost),
+   (
+      'SetPolicyMapClauseSetMetric'(Map, Clause, NewCost) ;
+      (
+         \+ 'SetPolicyMapClauseSetMetric'(Map, Clause, _),
+         NewCost = 20
+      )
+   ),
    (
       \+ 'ConnectedRoute'(Node, Network, _) ;
       (
@@ -2938,6 +2871,25 @@ need_RouteFilterMatchNetwork(List, Network) :-
       (
          'SetPolicyMapClauseMatchPolicyConjunction'(Map, Clause, Policy),
          \+ 'PolicyMapConjunctionDenyAdvert'(Policy, Advert)
+      )
+   ),
+   (
+      \+ 'SetPolicyMapClauseMatchProtocol'(Map, Clause, _) ;
+      (
+         'SetPolicyMapClauseMatchProtocol'(Map, Clause, Protocol),
+         (
+            (
+               'OriginalBgpAdvertisementRoute'(Advert, Route),
+               'Route_protocol'(Route, Protocol)
+            ) ;
+            (
+               'ParentAdvertisement'(_, Advert),
+               (
+                  Protocol = 'bgp' ;
+                  Protocol = 'ibgp'
+               )
+            )
+         )
       )
    ),
    (
