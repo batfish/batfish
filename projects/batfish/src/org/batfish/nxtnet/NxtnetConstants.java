@@ -216,6 +216,7 @@ public class NxtnetConstants {
             "BgpNeighbors",
             "BgpNeighborSendCommunity",
             "GeneratedRouteAttributePolicy",
+            "IbgpNeighbors",
             "Ip",
             "IpAccessListMatchDscp",
             "IpAccessListMatchEcn",
