@@ -31,7 +31,7 @@
    </path>
    <property name="outputJar" value="out/allinone.jar"/>
 
-   <target name="all" depends="jar,copyconfig" description="Build everything"/>
+   <target name="all" depends="jar,copyconfig,copycertificate" description="Build everything"/>
 
    <!-- Check to see if anything that would be packaged for distribution has changed -->
    <target name="checkJarBuild" depends="compile">
@@ -65,6 +65,13 @@
 	<target name="compileclean" description="Delete all compiled Java classes and copied logic">
 		<delete dir="bin" />
 	</target>
+
+
+   <target name="copycertificate" description="Copy self-signed certificate file to output directory">
+      <copy todir="out">
+         <fileset dir="../coordinator/out" includes="selfsigned.jks"/>
+      </copy>
+   </target>
 
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="bin">
