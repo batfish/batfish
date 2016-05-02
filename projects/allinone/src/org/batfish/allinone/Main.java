@@ -1,6 +1,7 @@
 package org.batfish.allinone;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -67,7 +68,8 @@ public class Main {
 		
 		if (_settings.getCommandFile() != null) {
 			try {
-				commands = Files.readAllLines(Paths.get(_settings.getCommandFile()));
+				commands = Files.readAllLines(Paths.get(
+				      _settings.getCommandFile()), StandardCharsets.US_ASCII);
 			} catch (IOException e) {
 				_logger.errorf("Could not read command file %s: %s\n", 
 						_settings.getCommandFile(), e.getMessage());
@@ -85,7 +87,7 @@ public class Main {
 
 	private static void runBatfish() {
 
-		String[] argArray = getArgArrayFromString(_settings.getBatfishArgs());
+		final String[] argArray = getArgArrayFromString(_settings.getBatfishArgs());
 		_logger.debugf("Starting batfish worker with args: %s\n",
 				Arrays.toString(argArray));
 		
@@ -107,7 +109,7 @@ public class Main {
 
 	private static void runCoordinator() {
 
-		String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
+		final String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
 		_logger.debugf("Starting coordinator with args: %s\n" , 
 				Arrays.toString(argArray));		
 

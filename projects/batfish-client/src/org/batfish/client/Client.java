@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -188,7 +189,7 @@ public class Client {
          List<String> commands = null;
          try {
             commands = Files.readAllLines(
-                  Paths.get(_settings.getBatchCommandFile()));
+                  Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
          } catch (Exception e) {
             System.err.printf("Exception in reading command file %s: %s", 
                   _settings.getBatchCommandFile(), e.getMessage());
