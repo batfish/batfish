@@ -1,0 +1,54 @@
+<project>
+    <!--  Capture essential paths for use by other projects -->
+    <property name="one-jar.version" value="0.97" />
+    <pathconvert targetos="unix" property="basedir.unix">
+        <path location="${basedir}"/>
+    </pathconvert>
+    
+    <property name="one-jar.dir" value="${basedir}/../one-jar"/>
+    <property name="one-jar.dist.dir" value="${one-jar.dir}/dist" />
+    <property name="one-jar.build.ant" location="${one-jar.dir}/build/ant"/>   
+
+    <!-- Commonly used relative paths. -->
+    <property name="classes" value="classes" />
+    <property name="lib" value="lib" />
+    <property name="src" value="src" />
+    <property name="test" value="test" />
+    
+    <!-- Defaults: expected to be overridden as part of overall test suite for aggregation. -->
+    <property name="test.reports.dir" value="${basedir.unix}/test-reports"/>
+    <property name="test.results.dir" value="${basedir.unix}/test-results"/>
+    
+    <import file="${one-jar.dist.dir}/one-jar-ant-task.xml" optional="true" />
+    
+    <path id="one-jar.libraries">
+        <pathelement location="${one-jar.dir}/lib/junit-3.8.1.jar"/>
+        <pathelement location="${one-jar.dir}/dist/one-jar-boot-${one-jar.version}.jar"/>   
+        <pathelement location="${one-jar.ant.jar}"/>   
+    </path>
+    
+    <path id="one-jar.test.libraries">
+        <pathelement location="${one-jar.dir}/lib/junit-3.8.1.jar"/>
+        <pathelement location="${classes.dir}/test" />
+    </path>
+
+    <target name="build.init">
+        <mkdir dir="build"/>
+        <mkdir dir="${test.reports.dir}"/>
+        <mkdir dir="${test.results.dir}"/>
+    </target>
+    
+    <target name="junit.report">
+        <mkdir dir="${test.reports.dir}" />
+        <junitreport todir="${test.reports.dir}">
+            <fileset dir="${test.results.dir}" includes="*SelfTest*.xml,*Suite.xml" />
+            <report format="noframes" todir="${test.reports.dir}" />
+        </junitreport>
+        <echo>***********************************************</echo>
+        <echo>* Report is in ${test.reports.dir}/junit_noframes.html</echo>
+        <echo>***********************************************</echo>
+    </target>
+    
+    
+    
+</project>
