@@ -41,7 +41,10 @@ var COMMAND_WRITE_ROUTES = "writeroutes";
 
 var PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
 var RELPATH_BASE = "base";
-var RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
+var RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
+var RELPATH_CONFIG_FILE_NAME_BATFISH= "batfish.properties";
+var RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
+var RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
 var RELPATH_CONFIGURATIONS_DIR = "configs";
 var RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
 var RELPATH_DATA_PLANE_DIR = "dp";

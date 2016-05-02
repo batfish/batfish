@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 
@@ -18,7 +19,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
    private static final String ARG_RUN_MODE = "runmode";
-   private static final String ARG_TRIAL_CMDS_FILE = "trialcmds";  
+   private static final String ARG_TRIAL_CMDS_FILE = "trialcmds";
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
@@ -40,7 +41,8 @@ public class Settings extends BaseSettings {
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT));
 
       initConfigDefaults();
 
@@ -67,7 +69,7 @@ public class Settings extends BaseSettings {
    public int getCoordinatorWorkPort() {
       return _coordinatorWorkPort;
    }
-   
+
    public String getLogFile() {
       return _logFile;
    }
@@ -87,7 +89,7 @@ public class Settings extends BaseSettings {
    public String getTrialCmdsFile() {
       return _trialCmdsFile;
    }
-   
+
    public boolean getTrustAllSslCerts() {
       return _trustAllSslCerts;
    }
@@ -105,10 +107,12 @@ public class Settings extends BaseSettings {
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
       setDefaultProperty(ARG_RUN_MODE, "interactive");
-      setDefaultProperty(ARG_TRIAL_CMDS_FILE, 
-            Paths.get(org.batfish.common.Util.getJarOrClassDir(
-                  ConfigurationLocator.class).getAbsolutePath(), "trial.cmds")
-                  .toAbsolutePath().toString());
+      setDefaultProperty(
+            ARG_TRIAL_CMDS_FILE,
+            Paths.get(
+                  org.batfish.common.Util.getJarOrClassDir(
+                        ConfigurationLocator.class).getAbsolutePath(),
+                  "trial.cmds").toAbsolutePath().toString());
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
@@ -116,8 +120,7 @@ public class Settings extends BaseSettings {
    }
 
    private void initOptions() {
-      addOption(ARG_API_KEY,
-            "API key for the coordinator", "apikey");
+      addOption(ARG_API_KEY, "API key for the coordinator", "apikey");
 
       addOption(ARG_BATCH_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
@@ -135,10 +138,9 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_RUN_MODE, "which mode to run in (auto|batch|interactive)",
             "run_mode");
-      
-      addOption(ARG_TRIAL_CMDS_FILE, "the trial cmds file",
-            "trial_cmds_file");
-      
+
+      addOption(ARG_TRIAL_CMDS_FILE, "the trial cmds file", "trial_cmds_file");
+
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
             "base url for coordinator service");
 
@@ -148,7 +150,7 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
-      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS, 
+      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS,
             "whether we should trust any coordinator SSL certs (for testing locally)");
    }
 

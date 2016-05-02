@@ -3,6 +3,7 @@ package org.batfish.allinone;
 import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 
@@ -30,7 +31,8 @@ public class Settings extends BaseSettings {
    private String _testrigDir;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_ALLINONE));
 
       initConfigDefaults();
 
@@ -43,21 +45,21 @@ public class Settings extends BaseSettings {
    }
 
    public String getBatfishArgs() {
-	   return _batfishArgs;
+      return _batfishArgs;
    }
-   
+
    public String getCommandFile() {
       return _commandFile;
    }
 
    public String getClientArgs() {
-	   return _clientArgs;
+      return _clientArgs;
    }
-   
+
    public String getCoordinatorArgs() {
-	   return _coordinatorArgs;
+      return _coordinatorArgs;
    }
-   
+
    public String getLogFile() {
       return _logFile;
    }
@@ -67,9 +69,8 @@ public class Settings extends BaseSettings {
    }
 
    public String getTestrigDir() {
-	      return _testrigDir;
+      return _testrigDir;
    }
-
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
@@ -83,8 +84,7 @@ public class Settings extends BaseSettings {
    }
 
    private void initOptions() {
-      addOption(ARG_API_KEY,
-            "API key for the coordinator", "apikey");
+      addOption(ARG_API_KEY, "API key for the coordinator", "apikey");
 
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
@@ -99,14 +99,13 @@ public class Settings extends BaseSettings {
             "batfish_args");
 
       addOption(ARG_COORDINATOR_ARGS, "arguments for the client process",
-              "client_args");
+            "client_args");
 
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");
 
-      addOption(ARG_TESTRIG_DIR, "where the testrig sits",
-            "testrig_dir");
-      
+      addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+
    }
 
    private void parseCommandLine(String[] args) {

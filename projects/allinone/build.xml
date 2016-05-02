@@ -75,10 +75,13 @@
 
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="bin">
-         <fileset dir="src" includes="**/config.properties"/>
+         <fileset dir="src" includes="**/allinone.properties"/>
       </copy>
       <copy todir="out">
-         <fileset dir="src/org/batfish/allinone/config" includes="config.properties"/>
+         <fileset dir="src/org/batfish/allinone/config" includes="allinone.properties"/>
+         <fileset dir="../batfish/bin/org/batfish/config" includes="batfish.properties"/>
+         <fileset dir="../batfish-client/bin/org/batfish/client/config" includes="client.properties"/>
+         <fileset dir="../coordinator/bin/org/batfish/coordinator/config" includes="coordinator.properties"/>
       </copy>
    </target>
 
