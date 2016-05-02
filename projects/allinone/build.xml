@@ -39,7 +39,12 @@
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
          <srcfiles dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
-         <srcfiles dir="../coordinator/out" includes="coordinator.jar"/>
+         <srcfiles dir="../batfish/bin" includes="**/*"/>
+         <srcfiles dir="../batfish/lib" includes="**/*"/>
+         <srcfiles dir="../batfish-client/bin" includes="**/*"/>
+         <srcfiles dir="../batfish-client/lib" includes="**/*"/>
+         <srcfiles dir="../coordinator/bin" includes="**/*"/>
+         <srcfiles dir="../coordinator/lib" includes="**/*"/>
       </uptodate>
    </target>
 
@@ -116,6 +121,9 @@
          </manifest>
          <main>
             <fileset dir="bin"/>
+            <fileset dir="../batfish/bin"/>
+            <fileset dir="../batfish-client/bin"/>
+            <fileset dir="../coordinator/bin"/>
          </main>
          <lib>
             <fileset dir="lib" includes="**/*" />

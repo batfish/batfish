@@ -690,6 +690,7 @@ export -f batfish_client
 client_build() {
    bash -c '_client_build "$@"' _client_build "$@" || return 1
 }
+export -f client_build
 
 _client_build() {
    common_build || return 1
@@ -722,6 +723,12 @@ allinone_build() {
 
 _allinone_build() {
    common_build || return 1
+   cd $BATFISH_PATH
+   ant "$@" || return 1
+   cd $COORDINATOR_PATH
+   ant "$@" || return 1
+   cd $BATFISH_CLIENT_PATH
+   ant "$@" || return 1
    cd $ALLINONE_PATH
    ant "$@" || return 1
 }
