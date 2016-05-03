@@ -68,7 +68,8 @@ public class Client {
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DIFF_ENV_PREFIX = "delta";
    private static final String DEFAULT_ENV_NAME = "default";
-   private static final String DEFAULT_TESTRIG_NAME = "default_rig";
+   private static final String DEFAULT_QUESTION_PREFIX = "q";
+   private static final String DEFAULT_TESTRIG_PREFIX = "tr";
 
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
@@ -327,7 +328,13 @@ public class Client {
             }
 
             String questionFile = parameters.get(0);
-            String questionName = UUID.randomUUID().toString();
+            
+            if (! new File(questionFile).exists()) {
+               _logger.errorf("Question file not found: %s\n", questionFile);
+               break;
+            }
+            
+            String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
 
             File paramsFile = null;
 
@@ -347,7 +354,7 @@ public class Client {
             if (!resultUpload)
                 break;
 
-            _logger.output("Uploaded question. Answering now.\n");
+            _logger.debug("Uploaded question. Answering now.\n");
 
             // delete the temporary params file
             if (paramsFile != null) {
@@ -368,7 +375,13 @@ public class Client {
             }
 
             String questionFile = parameters.get(0);
-            String questionName = UUID.randomUUID().toString();
+            
+            if (! new File(questionFile).exists()) {
+               _logger.errorf("Question file not found: %s\n", questionFile);
+               break;
+            }
+            
+            String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
 
             File paramsFile = null;
 
@@ -388,7 +401,7 @@ public class Client {
             if (!resultUpload)
                break;
 
-            _logger.output("Uploaded question. Answering now.\n");
+            _logger.debug("Uploaded question. Answering now.\n");
 
                // delete the temporary params file
             if (paramsFile != null) {
@@ -541,7 +554,7 @@ public class Client {
 
             String testrigLocation = parameters.get(0);
             String testrigName = (parameters.size() > 1) ? parameters.get(1)
-                  : DEFAULT_TESTRIG_NAME;
+                  : DEFAULT_TESTRIG_PREFIX + "_" + UUID.randomUUID().toString();
 
             //initialize the container if it hasn't been init'd before
             if (!isSetContainer(false)) {
@@ -613,9 +626,11 @@ public class Client {
             break;
          }
          case COMMAND_PROMPT: {
-            _logger.output("\n\n[Press enter to proceed]\n\n");
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            in.readLine();
+            if (_settings.getRunMode() == "interactive") {
+               _logger.output("\n\n[Press enter to proceed]\n\n");
+               BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+               in.readLine();
+            }
             break;
          }
          case COMMAND_PWD: {
@@ -795,7 +810,7 @@ public class Client {
       switch (_settings.getRunMode()) {
       case "batch":
          if (_settings.getBatchCommandFile() == null) {
-            System.err.println("org.batfish.client: Command file not specified");
+            System.err.println("org.batfish.client: Command file not specified while running in batch mode. Did you mean to run in interactive mode (-runmode interactive)?");
             System.exit(1);
          }
          List<String> commands = null;
@@ -819,7 +834,7 @@ public class Client {
       }
    }
 
-   public void processCommands(List<String> commands) {
+   private void processCommands(List<String> commands) {
        
       for (String rawLine : commands) {
          String line = rawLine.trim();

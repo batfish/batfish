@@ -863,7 +863,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s or %s\n", qFileName,
+            _logger.errorf("File not found: %s (question file) or %s (temporary params file) \n", qFileName,
                   paramsFilename);
          }
          else {
