@@ -7,5 +7,5 @@ if batfish_cygwin; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
    BATFISH_CLIENT_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
 fi
-java $BATFISH_CLIENT_JAVA_ARGS -jar "$BATFISH_CLIENT_JAR" $@
+java $BATFISH_CLIENT_JAVA_ARGS -jar "$BATFISH_CLIENT_JAR" "$@"
 
