@@ -46,10 +46,9 @@ public class Main {
 
 		List<String> commands = getCommands();
 
-		String initTestrigCommand = "init-testrig -nodataplane " 
-					+ _settings.getTestrigDir();
-
-		commands.add(0, initTestrigCommand);
+		commands.add(0, "echo Will parse testrig first");
+		commands.add(1, "prompt");
+		commands.add(2, "init-testrig -nodataplane " + _settings.getTestrigDir());
 		
 		_client.runBatchMode(commands, _logger);
 	}

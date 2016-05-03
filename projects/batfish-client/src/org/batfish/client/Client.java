@@ -493,7 +493,7 @@ public class Client {
             break;
          }
          case COMMAND_ECHO: {
-            _logger.outputf("%s\n", Arrays.toString(Arrays.copyOfRange(words, 1, words.length)));
+            _logger.outputf("%s\n", Util.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
             break;
          }
          case COMMAND_GEN_DP: {
@@ -649,6 +649,10 @@ public class Client {
          case COMMAND_PWD: {
             final String dir = System.getProperty("user.dir");
             _logger.output("working directory = " + dir + "\n");
+            break;
+         }
+         case COMMAND_QUIT: {
+            System.exit(0);
             break;
          }
          case COMMAND_SET_CONTAINER: {
@@ -861,10 +865,6 @@ public class Client {
             // skip over empty lines
             if (line.length() == 0) {
                continue;
-            }
-
-            if (line.equals(COMMAND_QUIT)) {
-               break;
             }
 
             if (line.equals(COMMAND_CLEAR_SCREEN)) {

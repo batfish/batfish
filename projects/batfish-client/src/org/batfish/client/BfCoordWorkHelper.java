@@ -477,9 +477,12 @@ public class BfCoordWorkHelper {
    // }
 
    public boolean isReachabile() throws Exception {
+
+      WebTarget webTarget = null;
+
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, "");
+         webTarget = getTarget(client, "");
 
          Response response = webTarget.request().get();
 
@@ -495,8 +498,8 @@ public class BfCoordWorkHelper {
       }
       catch (ProcessingException e) {
          if (e.getMessage().contains("ConnectException")) {
-            _logger.errorf("unable to connect to coordinator at %s\n",
-                  _coordWorkMgr);
+            _logger.errorf("BF-Client: unable to connect to coordinator at %s\n",
+                  webTarget.getUri().toString());
             return false;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
