@@ -45,7 +45,7 @@ public class Client {
    private static final String COMMAND_DEL_QUESTION = "del-question";
    private static final String COMMAND_DEL_TESTRIG = "del-testrig";
    private static final String COMMAND_DIR = "dir";
-   private static final String COMMAND_ECHO = "echo";   
+   private static final String COMMAND_ECHO = "echo";
    private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
    private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_HELP = "help";
@@ -169,7 +169,7 @@ public class Client {
    private Settings _settings;
 
    private BfCoordWorkHelper _workHelper;
-   
+
    public Client(String[] args) throws Exception {
       this(new Settings(args));
    }
@@ -177,10 +177,10 @@ public class Client {
    public Client(Settings settings) {
       _settings = settings;
    }
-   
+
    public void run() {
-      switch (_settings.getRunMode()) { 
-      case "batch":      
+      switch (_settings.getRunMode()) {
+      case "batch":
          if (_settings.getBatchCommandFile() == null) {
             System.err.println("org.batfish.client: Command file not specified");
             System.exit(1);
@@ -190,20 +190,20 @@ public class Client {
             commands = Files.readAllLines(
                   Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
          } catch (Exception e) {
-            System.err.printf("Exception in reading command file %s: %s", 
+            System.err.printf("Exception in reading command file %s: %s",
                   _settings.getBatchCommandFile(), e.getMessage());
             System.exit(1);
          }
          runBatchMode(commands, null);
 
          break;
-      case "interactive":           
+      case "interactive":
          runInteractiveMode();
          break;
       default:
          System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
          System.exit(1);
-      }  
+      }
    }
 
    private File createParamsFile(String[] words, int startIndex, int endIndex)
@@ -324,7 +324,7 @@ public class Client {
       try {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
-         
+
          switch (words[0]) {
          // this is a hidden command for testing
          case "add-worker": {
@@ -398,7 +398,7 @@ public class Client {
 
             if (!resultUpload)
                break;
-            
+
             _logger.output("Uploaded question. Answering now.\n");
 
                // delete the temporary params file
@@ -522,7 +522,7 @@ public class Client {
 
             //check if we are being asked to not generate the dataplane
             boolean generateDiffDataplane = true;
-            
+
             if (options.size() == 1) {
                if (options.get(0).equals("-nodataplane"))
                   generateDiffDataplane = false;
@@ -538,7 +538,7 @@ public class Client {
 
             if (!uploadTestrigOrEnv(diffEnvLocation, diffEnvName, false))
                break;
-            
+
             _currDiffEnv = diffEnvName;
 
             _logger.outputf(
@@ -546,7 +546,7 @@ public class Client {
 
             if (generateDiffDataplane) {
                _logger.output("Generating delta dataplane\n");
-               
+
                if (!generateDiffDataplane())
                   break;
 
@@ -557,7 +557,7 @@ public class Client {
          }
          case COMMAND_INIT_TESTRIG: {
             boolean generateDataplane = true;
-            
+
             if (options.size() == 1) {
                if (options.get(0).equals("-nodataplane"))
                   generateDataplane = false;
@@ -576,19 +576,19 @@ public class Client {
                _currContainerName = _workHelper.initContainer(DEFAULT_CONTAINER_PREFIX);
                _logger.outputf("Init'ed and set active container to %s\n",
                      _currContainerName);
-            }                  
-               
-            if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) 
-               break; 
+            }
+
+            if (!uploadTestrigOrEnv(testrigLocation, testrigName, true))
+               break;
 
             _logger.output("Uploaded testrig. Parsing now.\n");
-            
+
             WorkItem wItemParse = _workHelper.getWorkItemParse(
                   _currContainerName, testrigName);
 
-            if (!execute(wItemParse)) 
+            if (!execute(wItemParse))
                break;
-            
+
             // set the name of the current testrig
             _currTestrigName = testrigName;
             _currEnv = DEFAULT_ENV_NAME;
@@ -597,13 +597,13 @@ public class Client {
 
             if (generateDataplane) {
                _logger.output("Generating dataplane now\n");
-               
+
                if (!generateDataplane())
                   break;
 
                _logger.output("Generated dataplane\n");
             }
-            
+
             break;
          }
          case COMMAND_LIST_CONTAINERS: {
@@ -729,13 +729,13 @@ public class Client {
       // unequal means we must have created a temporary file
       if (uploadFilename != fileOrDir)
          new File(uploadFilename).delete();
-      
+
       return result;
    }
 
    private List<String> getCommandParameters(String[] words, int numOptions) {
       List<String> parameters = new LinkedList<String>();
-      
+
       for (int index=numOptions+1; index < words.length; index++)
          parameters.add(words[index]);
 
@@ -744,15 +744,15 @@ public class Client {
 
    private List<String> getCommandOptions(String[] words) {
       List<String> options = new LinkedList<String>();
-      
+
       int currIndex = 1;
-      
+
       while (currIndex < words.length &&
             words[currIndex].startsWith("-")) {
          options.add(words[currIndex]);
          currIndex++;
       }
-      
+
       return options;
    }
 
@@ -780,9 +780,9 @@ public class Client {
 
       return execute(wItemGenDdp);
    }
-   
+
    private void initHelpers() {
-      
+
       String workMgr = _settings.getCoordinatorHost() + ":"
             + _settings.getCoordinatorWorkPort();
       String poolMgr = _settings.getCoordinatorHost() + ":"
@@ -849,10 +849,10 @@ public class Client {
          PrintStream ps = new PrintStream(os, true);
          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
 
-         _logger.outputf("Will use coordinator at %s://%s\n", 
-               (_settings.getUseSsl())? "https" : "http",               
+         _logger.outputf("Will use coordinator at %s://%s\n",
+               (_settings.getUseSsl())? "https" : "http",
                _settings.getCoordinatorHost());
-         
+
          initHelpers();
          
          String rawLine;

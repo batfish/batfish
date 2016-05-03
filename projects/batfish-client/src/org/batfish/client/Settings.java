@@ -1,10 +1,9 @@
 package org.batfish.client;
 
-import java.nio.file.Paths;
-
 import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 
@@ -38,7 +37,8 @@ public class Settings extends BaseSettings {
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT));
 
       initConfigDefaults();
 
@@ -65,7 +65,7 @@ public class Settings extends BaseSettings {
    public int getCoordinatorWorkPort() {
       return _coordinatorWorkPort;
    }
-   
+
    public String getLogFile() {
       return _logFile;
    }
@@ -106,8 +106,7 @@ public class Settings extends BaseSettings {
    }
 
    private void initOptions() {
-      addOption(ARG_API_KEY,
-            "API key for the coordinator", "apikey");
+      addOption(ARG_API_KEY, "API key for the coordinator", "apikey");
 
       addOption(ARG_BATCH_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
@@ -125,7 +124,7 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_RUN_MODE, "which mode to run in (auto|batch|interactive)",
             "run_mode");
-      
+
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
             "base url for coordinator service");
 
@@ -135,7 +134,7 @@ public class Settings extends BaseSettings {
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
 
-      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS, 
+      addBooleanOption(ARG_TRUST_ALL_SSL_CERTS,
             "whether we should trust any coordinator SSL certs (for testing locally)");
    }
 

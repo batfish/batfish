@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 import org.batfish.coordinator.authorizer.Authorizer;
@@ -69,7 +70,8 @@ public class Settings extends BaseSettings {
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_COORDINATOR));
 
       initConfigDefaults();
 
@@ -177,7 +179,8 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
       setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
             "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
-      setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); //15 minutes
+      setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
+                                                                             // minutes
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
