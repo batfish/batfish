@@ -10,14 +10,14 @@ import org.batfish.common.Util;
 public class Settings extends BaseSettings {
 
    private static final String ARG_API_KEY = "apikey";
-   private static final String ARG_BATCH_COMMAND_FILE = "batchcmdfile";
+   public static final String ARG_BATCH_COMMAND_FILE = "batchcmdfile";
    private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
-   private static final String ARG_LOG_FILE = "logfile";
-   private static final String ARG_LOG_LEVEL = "loglevel";
+   public static final String ARG_LOG_FILE = "logfile";
+   public static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
    private static final String ARG_RUN_MODE = "runmode";
-   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
    private static final String ARG_TRUST_ALL_SSL_CERTS = "trustallsslcerts";
@@ -98,7 +98,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-      setDefaultProperty(ARG_RUN_MODE, "interactive");
+      setDefaultProperty(ARG_RUN_MODE, "batch");
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);

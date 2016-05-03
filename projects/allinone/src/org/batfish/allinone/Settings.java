@@ -6,12 +6,10 @@ import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 
 public class Settings extends BaseSettings {
 
-   private static final String ARG_API_KEY = "apikey";
    private static final String ARG_COMMAND_FILE = "cmdfile";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
@@ -19,11 +17,10 @@ public class Settings extends BaseSettings {
    private static final String ARG_BATFISH_ARGS = "batfishargs";
    private static final String ARG_CLIENT_ARGS = "clientargs";
    private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
-   private static final String ARG_TESTRIG_DIR = "testrigdir";
+   private static final String ARG_TESTRIG_DIR = "testrig";
 
    private static final String EXECUTABLE_NAME = "allinone";
 
-   private String _apiKey;
    private String _batfishArgs;
    private String _clientArgs;
    private String _coordinatorArgs;
@@ -40,10 +37,6 @@ public class Settings extends BaseSettings {
 
       initOptions();
       parseCommandLine(args);
-   }
-
-   public String getApiKey() {
-      return _apiKey;
    }
 
    public String getBatfishArgs() {
@@ -75,7 +68,6 @@ public class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
-      setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
       setDefaultProperty(ARG_COMMAND_FILE, 
             Paths.get(org.batfish.common.Util.getJarOrClassDir(
                   ConfigurationLocator.class).getAbsolutePath(), "default_commands")
@@ -84,14 +76,12 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
-      setDefaultProperty(ARG_BATFISH_ARGS, "-servicemode -register true");
-      setDefaultProperty(ARG_CLIENT_ARGS, "-coordinatorhost localhost");
-      setDefaultProperty(ARG_COORDINATOR_ARGS, null);
+      setDefaultProperty(ARG_BATFISH_ARGS, "");
+      setDefaultProperty(ARG_CLIENT_ARGS, "");
+      setDefaultProperty(ARG_COORDINATOR_ARGS, "");
    }
 
    private void initOptions() {
-      addOption(ARG_API_KEY, "API key for the coordinator", "apikey");
-
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
 
@@ -124,8 +114,7 @@ public class Settings extends BaseSettings {
          printHelp(EXECUTABLE_NAME);
          System.exit(0);
       }
-
-      _apiKey = getStringOptionValue(ARG_API_KEY);
+      
       _commandFile = getStringOptionValue(ARG_COMMAND_FILE);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);

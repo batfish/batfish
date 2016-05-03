@@ -180,13 +180,13 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
 
-   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
    private static final String ARG_COORDINATOR_NO_SSL = "coordinator.NoSsl";
 
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
-   private static final String ARG_COORDINATOR_REGISTER = "register";
+   public static final String ARG_COORDINATOR_REGISTER = "register";
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
@@ -258,7 +258,7 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_SERVICE_HOST = "servicehost";
 
-   private static final String ARG_SERVICE_MODE = "servicemode";
+   public static final String ARG_SERVICE_MODE = "servicemode";
 
    private static final String ARG_SERVICE_PORT = "serviceport";
 

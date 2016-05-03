@@ -141,23 +141,6 @@ public class Client {
       return descs;
    }
 
-   // private static String joinStrings(String delimiter, String[] parts) {
-   // StringBuilder sb = new StringBuilder();
-   // for (String part : parts) {
-   // sb.append(part + delimiter);
-   // }
-   // String joined = sb.toString();
-   // int joinedLength = joined.length();
-   // String result;
-   // if (joinedLength > 0) {
-   // result = joined.substring(0, joinedLength - delimiter.length());
-   // }
-   // else {
-   // result = joined;
-   // }
-   // return result;
-   // }
-
    private String _currContainerName = null;
    private String _currDiffEnv = null;
    private String _currEnv = null;
@@ -165,7 +148,8 @@ public class Client {
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
-
+   private ConsoleReader _reader;
+   
    private Settings _settings;
 
    private BfCoordWorkHelper _workHelper;
@@ -176,34 +160,39 @@ public class Client {
 
    public Client(Settings settings) {
       _settings = settings;
-   }
-
-   public void run() {
+   
       switch (_settings.getRunMode()) {
       case "batch":
-         if (_settings.getBatchCommandFile() == null) {
-            System.err.println("org.batfish.client: Command file not specified");
-            System.exit(1);
-         }
-         List<String> commands = null;
-         try {
-            commands = Files.readAllLines(
-                  Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
-         } catch (Exception e) {
-            System.err.printf("Exception in reading command file %s: %s",
-                  _settings.getBatchCommandFile(), e.getMessage());
-            System.exit(1);
-         }
-         runBatchMode(commands, null);
-
+         _logger =  new BatfishLogger(_settings.getLogLevel(), false,
+               _settings.getLogFile(), false, false);
          break;
       case "interactive":
-         runInteractiveMode();
+         try {
+            _reader = new ConsoleReader();
+            _reader.setPrompt("batfish> ");
+
+            List<Completer> completors = new LinkedList<Completer>();
+            completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
+
+            for (Completer c : completors) {
+               _reader.addCompleter(c);
+            }
+
+            PrintWriter pWriter = new PrintWriter(_reader.getOutput(), true);
+            OutputStream os = new WriterOutputStream(pWriter);
+            PrintStream ps = new PrintStream(os, true);
+            _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
+         }
+         catch (Exception e) {
+            System.err.printf("Could not initialize client: %s\n", e.getMessage());
+            System.exit(1);
+         }
          break;
       default:
          System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
          System.exit(1);
       }
+   
    }
 
    private File createParamsFile(String[] words, int startIndex, int endIndex)
@@ -333,7 +322,7 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -374,7 +363,7 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER_DIFF: {
-            if (!isSetContainer(true) || !isSetTestrig() || !isSetDiffEnvironment()) {
+            if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -427,23 +416,6 @@ public class Client {
 
             break;
          }
-         // case COMMAND_CHANGE_DIR: {
-         // String dirname = words[1];
-         //
-         // File directory = new File(dirname).getAbsoluteFile();
-         // if (directory.exists())
-         // {
-         // boolean result = (System.setProperty("user.dir",
-         // directory.getAbsolutePath()) != null);
-         // _logger.output("Directory changed to " + dirname + "\n");
-         // }
-         // else
-         // {
-         // _logger.output("Specified directory does not exist\n");
-         // }
-         //
-         // break;
-         // }
          case COMMAND_DEL_CONTAINER: {
             String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
@@ -451,7 +423,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_ENVIRONMENT: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -462,7 +434,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_QUESTION: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -516,9 +488,9 @@ public class Client {
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (!isSetContainer(true) || 
-                !isSetTestrig())
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
+            }
 
             //check if we are being asked to not generate the dataplane
             boolean generateDiffDataplane = true;
@@ -612,7 +584,7 @@ public class Client {
             break;
          }
          case COMMAND_LIST_ENVIRONMENTS: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -625,7 +597,7 @@ public class Client {
 
          }
          case COMMAND_LIST_QUESTIONS: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
             String[] questionList = _workHelper.listQuestions(
@@ -687,7 +659,7 @@ public class Client {
             break;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -761,8 +733,7 @@ public class Client {
    }
 
    private boolean generateDataplane() throws Exception {
-      if (!isSetContainer(true) || 
-          !isSetTestrig())
+      if (!isSetTestrig() || !isSetContainer(true))
          return false;
 
       // generate the data plane
@@ -773,9 +744,9 @@ public class Client {
    }
 
    private boolean generateDiffDataplane() throws Exception {
-      if (!isSetContainer(true) || 
+      if (!isSetDiffEnvironment() ||
           !isSetTestrig()   || 
-          !isSetDiffEnvironment())
+          !isSetContainer(true))  
           return false;
 
       WorkItem wItemGenDdp = _workHelper
@@ -785,6 +756,10 @@ public class Client {
       return execute(wItemGenDdp);
    }
 
+   public BatfishLogger getLogger() {      
+      return _logger;
+   }
+   
    private void initHelpers() {
 
       String workMgr = _settings.getCoordinatorHost() + ":"
@@ -798,7 +773,6 @@ public class Client {
       while (true) {
          try {
             if (_workHelper.isReachabile()) {
-               _logger.debug("Coordinator appears reachable\n");
                break;
             }
             Thread.sleep(1 * 1000); // 1 second
@@ -809,14 +783,44 @@ public class Client {
       }
    }
    
-   public void runBatchMode(List<String> commands, BatfishLogger logger) {
-       
-      _logger = (logger != null)? logger :
-         new BatfishLogger(_settings.getLogLevel(), false,
-            _settings.getLogFile(), false, false);
-      
+   public void run(List<String> initialCommands) {
       initHelpers();
+
+      _logger.debugf("Will use coordinator at %s://%s\n",
+            (_settings.getUseSsl())? "https" : "http",
+            _settings.getCoordinatorHost());
+
+      processCommands(initialCommands);
       
+      switch (_settings.getRunMode()) {
+      case "batch":
+         if (_settings.getBatchCommandFile() == null) {
+            System.err.println("org.batfish.client: Command file not specified");
+            System.exit(1);
+         }
+         List<String> commands = null;
+         try {
+            commands = Files.readAllLines(
+                  Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
+         } catch (Exception e) {
+            System.err.printf("Exception in reading command file %s: %s",
+                  _settings.getBatchCommandFile(), e.getMessage());
+            System.exit(1);
+         }
+         processCommands(commands);
+
+         break;
+      case "interactive":
+         runInteractive();
+         break;
+      default:
+         System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+         System.exit(1);
+      }
+   }
+
+   public void processCommands(List<String> commands) {
+       
       for (String rawLine : commands) {
          String line = rawLine.trim();
          if (line.length() == 0 || line.startsWith("#")) {
@@ -835,40 +839,17 @@ public class Client {
       }
    }
 
-   private void runInteractiveMode() {
+   private void runInteractive() {
       try {
 
-         ConsoleReader reader = new ConsoleReader();
-         reader.setPrompt("batfish> ");
-
-         List<Completer> completors = new LinkedList<Completer>();
-         completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
-
-         for (Completer c : completors) {
-            reader.addCompleter(c);
-         }
-
-         PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
-         OutputStream os = new WriterOutputStream(pWriter);
-         PrintStream ps = new PrintStream(os, true);
-         _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
-
-         _logger.outputf("Will use coordinator at %s://%s\n",
-               (_settings.getUseSsl())? "https" : "http",
-               _settings.getCoordinatorHost());
-
-         initHelpers();
-         
          String rawLine;
-         while ((rawLine = reader.readLine()) != null) {
+         while ((rawLine = _reader.readLine()) != null) {
             String line = rawLine.trim();
-            // skip over empty lines
-            if (line.length() == 0) {
+            if (line.length() == 0)
                continue;
-            }
 
             if (line.equals(COMMAND_CLEAR_SCREEN)) {
-               reader.clearScreen();
+               _reader.clearScreen();
                continue;
             }
 
