@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.allinone.Settings;
@@ -31,7 +30,7 @@ public class Main {
 
 			runCoordinator();
 			runBatfish();
-			
+						
 			_client = runClient();
 		}
 		catch (Exception e) {
@@ -52,37 +51,28 @@ public class Main {
 
 		commands.add(0, initTestrigCommand);
 		
-		_client.runBatchMode(commands);
+		_client.runBatchMode(commands, _logger);
 	}
 
 	private static String[] getArgArrayFromString(String argString) {
-		if (argString == null)
-			return new String[0];
-		
+		 if (argString == null)
+			return new String[0];		
 		return argString.split(" ");	
 	}
 	
 	private static List<String> getCommands() {
-		
-		List<String> commands = null;
-		
-		if (_settings.getCommandFile() != null) {
-			try {
-				commands = Files.readAllLines(Paths.get(
-				      _settings.getCommandFile()), StandardCharsets.US_ASCII);
-			} catch (IOException e) {
-				_logger.errorf("Could not read command file %s: %s\n", 
-						_settings.getCommandFile(), e.getMessage());
-				System.exit(1);
-			}
-		}
-		else {
-			commands = new LinkedList<String>();
-			commands.add("echo hallelujah");
-			commands.add("prompt");
-			commands.add("echo hallelujah2");
-		}
-		return commands;		
+
+	   List<String> commands = null;
+
+	   try {
+	      commands = Files.readAllLines(Paths.get(
+	            _settings.getCommandFile()), StandardCharsets.US_ASCII);
+	   } catch (IOException e) {
+	      _logger.errorf("Could not read command file %s: %s\n", 
+	            _settings.getCommandFile(), e.getMessage());
+	      System.exit(1);
+	   }
+	   return commands;		
 	}
 
 	private static void runBatfish() {
@@ -93,7 +83,7 @@ public class Main {
 		
 		Thread thread = new Thread("batfishThread") {
 			public void run() {
-				org.batfish.main.Driver.main(argArray);
+				org.batfish.main.Driver.main(argArray, _logger);
 			}
 		};
 
@@ -115,7 +105,7 @@ public class Main {
 
 		Thread thread = new Thread("coordinatorThread") {
 			public void run() {
-				org.batfish.coordinator.Main.main(argArray);
+				org.batfish.coordinator.Main.main(argArray, _logger);
 			}
 		};
 

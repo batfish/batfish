@@ -18,7 +18,6 @@ public class Settings extends BaseSettings {
    private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
    private static final String ARG_RUN_MODE = "runmode";
-   private static final String ARG_TRIAL_CMDS_FILE = "trialcmds";  
    private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
    private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
@@ -35,7 +34,6 @@ public class Settings extends BaseSettings {
    private String _logLevel;
    private long _periodCheckWorkMs;
    private String _runMode;
-   private String _trialCmdsFile;
    private boolean _trustAllSslCerts;
    private boolean _useSsl;
 
@@ -84,10 +82,6 @@ public class Settings extends BaseSettings {
       return _runMode;
    }
 
-   public String getTrialCmdsFile() {
-      return _trialCmdsFile;
-   }
-   
    public boolean getTrustAllSslCerts() {
       return _trustAllSslCerts;
    }
@@ -105,10 +99,6 @@ public class Settings extends BaseSettings {
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
       setDefaultProperty(ARG_RUN_MODE, "interactive");
-      setDefaultProperty(ARG_TRIAL_CMDS_FILE, 
-            Paths.get(org.batfish.common.Util.getJarOrClassDir(
-                  ConfigurationLocator.class).getAbsolutePath(), "trial.cmds")
-                  .toAbsolutePath().toString());
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
@@ -135,9 +125,6 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_RUN_MODE, "which mode to run in (auto|batch|interactive)",
             "run_mode");
-      
-      addOption(ARG_TRIAL_CMDS_FILE, "the trial cmds file",
-            "trial_cmds_file");
       
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
             "base url for coordinator service");
@@ -166,7 +153,6 @@ public class Settings extends BaseSettings {
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
       _runMode = getStringOptionValue(ARG_RUN_MODE);
-      _trialCmdsFile = getStringOptionValue(ARG_TRIAL_CMDS_FILE);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);

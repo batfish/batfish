@@ -1,5 +1,7 @@
 package org.batfish.allinone;
 
+import java.nio.file.Paths;
+
 import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -73,12 +75,16 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
+      setDefaultProperty(ARG_COMMAND_FILE, 
+            Paths.get(org.batfish.common.Util.getJarOrClassDir(
+                  ConfigurationLocator.class).getAbsolutePath(), "default_commands")
+                  .toAbsolutePath().toString());
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_BATFISH_ARGS, "-servicemode -register true");
-      setDefaultProperty(ARG_CLIENT_ARGS, null);
+      setDefaultProperty(ARG_CLIENT_ARGS, "-coordinatorhost localhost");
       setDefaultProperty(ARG_COORDINATOR_ARGS, null);
    }
 
@@ -98,8 +104,11 @@ public class Settings extends BaseSettings {
       addOption(ARG_BATFISH_ARGS, "arguments for batfish process",
             "batfish_args");
 
-      addOption(ARG_COORDINATOR_ARGS, "arguments for the client process",
+      addOption(ARG_CLIENT_ARGS, "arguments for the client process",
               "client_args");
+
+      addOption(ARG_COMMAND_FILE, "which command file to use",
+            "command_file");
 
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");

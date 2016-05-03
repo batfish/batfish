@@ -3,7 +3,6 @@ package org.batfish.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -195,7 +194,7 @@ public class Client {
                   _settings.getBatchCommandFile(), e.getMessage());
             System.exit(1);
          }
-         runBatchMode(commands);
+         runBatchMode(commands, null);
 
          break;
       case "interactive":           
@@ -290,9 +289,10 @@ public class Client {
       }
    }
 
-   private boolean isSetContainer() {
+   private boolean isSetContainer(boolean printError) {
       if (_currContainerName == null) {
-         _logger.errorf("Active container is not set\n");
+         if (printError)
+            _logger.errorf("Active container is not set\n");
          return false;
       }
       return true;
@@ -333,7 +333,7 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
 
@@ -374,7 +374,7 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER_DIFF: {
-            if (!isSetContainer() || !isSetTestrig() || !isSetDiffEnvironment()) {
+            if (!isSetContainer(true) || !isSetTestrig() || !isSetDiffEnvironment()) {
                break;
             }
 
@@ -451,7 +451,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_ENVIRONMENT: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
 
@@ -462,7 +462,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_QUESTION: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
 
@@ -473,7 +473,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_TESTRIG: {
-            if (!isSetContainer()) {
+            if (!isSetContainer(true)) {
                break;
             }
 
@@ -516,7 +516,7 @@ public class Client {
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (!isSetContainer() || 
+            if (!isSetContainer(true) || 
                 !isSetTestrig())
                break;
 
@@ -572,7 +572,7 @@ public class Client {
                   : DEFAULT_TESTRIG_NAME;
 
             //initialize the container if it hasn't been init'd before
-            if (!isSetContainer()) {
+            if (!isSetContainer(false)) {
                _currContainerName = _workHelper.initContainer(DEFAULT_CONTAINER_PREFIX);
                _logger.outputf("Init'ed and set active container to %s\n",
                      _currContainerName);
@@ -612,7 +612,7 @@ public class Client {
             break;
          }
          case COMMAND_LIST_ENVIRONMENTS: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
 
@@ -625,7 +625,7 @@ public class Client {
 
          }
          case COMMAND_LIST_QUESTIONS: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
             String[] questionList = _workHelper.listQuestions(
@@ -683,7 +683,7 @@ public class Client {
             break;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
-            if (!isSetContainer() || !isSetTestrig()) {
+            if (!isSetContainer(true) || !isSetTestrig()) {
                break;
             }
 
@@ -757,7 +757,7 @@ public class Client {
    }
 
    private boolean generateDataplane() throws Exception {
-      if (!isSetContainer() || 
+      if (!isSetContainer(true) || 
           !isSetTestrig())
          return false;
 
@@ -769,7 +769,7 @@ public class Client {
    }
 
    private boolean generateDiffDataplane() throws Exception {
-      if (!isSetContainer() || 
+      if (!isSetContainer(true) || 
           !isSetTestrig()   || 
           !isSetDiffEnvironment())
           return false;
@@ -781,17 +781,8 @@ public class Client {
       return execute(wItemGenDdp);
    }
    
-   public String getTrialCmdsFile() {
-      return Paths.get(org.batfish.common.Util.getJarOrClassDir(
-                  ConfigurationLocator.class).getAbsolutePath(), "trial.cmds")
-                  .toAbsolutePath().toString();
-   }
-
-    public void runBatchMode(List<String> commands) {
-
-      _logger = new BatfishLogger(_settings.getLogLevel(), false,
-            _settings.getLogFile(), false, false);
-
+   private void initHelpers() {
+      
       String workMgr = _settings.getCoordinatorHost() + ":"
             + _settings.getCoordinatorWorkPort();
       String poolMgr = _settings.getCoordinatorHost() + ":"
@@ -800,13 +791,35 @@ public class Client {
       _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
       _poolHelper = new BfCoordPoolHelper(poolMgr);
 
+      while (true) {
+         try {
+            if (_workHelper.isReachabile()) {
+               _logger.debug("Coordinator appears reachable\n");
+               break;
+            }
+            Thread.sleep(1 * 1000); // 1 second
+         } catch (Exception e) {
+            _logger.errorf("Exeption while checking reachability to coordinator: ", e.getMessage());
+            System.exit(1);
+         }
+      }
+   }
+   
+   public void runBatchMode(List<String> commands, BatfishLogger logger) {
+       
+      _logger = (logger != null)? logger :
+         new BatfishLogger(_settings.getLogLevel(), false,
+            _settings.getLogFile(), false, false);
+      
+      initHelpers();
+      
       for (String rawLine : commands) {
          String line = rawLine.trim();
          if (line.length() == 0 || line.startsWith("#")) {
             continue;
          }
 
-         _logger.output("Doing command: " + line + "\n");
+         _logger.debug("Doing command: " + line + "\n");
 
          String[] words = line.split("\\s+");
 
@@ -840,14 +853,8 @@ public class Client {
                (_settings.getUseSsl())? "https" : "http",               
                _settings.getCoordinatorHost());
          
-         String workMgr = _settings.getCoordinatorHost() + ":"
-               + _settings.getCoordinatorWorkPort();
-         String poolMgr = _settings.getCoordinatorHost() + ":"
-               + _settings.getCoordinatorPoolPort();
-
-         _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
-         _poolHelper = new BfCoordPoolHelper(poolMgr);
-
+         initHelpers();
+         
          String rawLine;
          while ((rawLine = reader.readLine()) != null) {
             String line = rawLine.trim();
