@@ -181,16 +181,7 @@
 					<td align="left">API Key</td>
 					<td align="right"><input id="apiKey" title="apiKey" value="00000000000000000000000000000000"></td>
 					<td align="right">
-					<button id="btnLogin" onclick="login()">Login</button>
-					<script>
-						function login()
-						{
-							apiKey = $(elementApiKey).val();
-							$(elementTabs).tabs("option", "active", 1);
-							$('#btnLogin').button("disable");
-							$(elementUploadBaseTestrigBtn).button("enable");
-						}
-					</script>
+					<button id="btnLogin" onclick="startCalls('btnLogin', 'checkAPIKey::login')">Login</button>
 					</td>	
 				</tr>
 				<tr>
@@ -204,15 +195,7 @@
 				</tr>
 				<tr>
 					<td colspan="3">
-					<button id="btnGuest" onclick="guest()">Continue as guest</button>
-					<script>
-						function guest()
-						{
-							$(elementTabs).tabs("option", "active", 1);
-							$('#btnLogin').button("disable");
-							$(elementUploadBaseTestrigBtn).button("enable");
-						}
-					</script>
+					<button id="btnGuest" onclick="login()">Continue as guest</button>
 					</td>
 				</tr>
 				

@@ -9,6 +9,28 @@ var epOutput = new Object();
 var epQuestionName = new Object();
 var epHighlights = new Object();
 
+
+function checkAPIKey(entryPoint, remainingCalls) {
+	var data = new FormData();
+	apiKey = $(elementApiKey).val();
+	data.append(SVC_API_KEY, apiKey);
+	bfPostData(SVC_CHECK_API_KEY_RSC, data, checkApiKey_cb, genericFailure_cb, entryPoint, remainingCalls);
+}
+
+function checkApiKey_cb(response, entryPoint, remainingCalls)
+{
+	var status = response[SVC_API_KEY];
+	if (status) {
+		login();
+		finishEntryPoint(entryPoint, remainingCalls);
+	}
+	else {
+		finishEntryPoint(entryPoint);
+		alert("Invalid API Key");
+	}
+	
+}
+
 function checkWork(entryPoint, remainingCalls) {
    // delete any old work checker
    window.clearTimeout(epCurrWorkChecker[entryPoint]);
@@ -221,6 +243,11 @@ function makeNextCall(entryPoint, callList) {
             case "posttestriginit":
                 postTestrigInit(entryPoint, callList);
                 break;
+            case "checkAPIKey":
+            	checkAPIKey(entryPoint, callList);
+            	break;
+           	case "login":
+           		login(entryPoint, callList);
             case "updateui":
            		if (defined(fnUpdateUI)) {
             		fnUpdateUI(entryPoint, callList);
