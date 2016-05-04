@@ -16,6 +16,9 @@ export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
 
+export ALLINONE_PATH="$BATFISH_ROOT/projects/allinone"
+export ALLINONE="$ALLINONE_PATH/allinone"
+
 export COMMON_PATH="$BATFISH_ROOT/projects/batfish-common-protocol"
 export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 
@@ -42,7 +45,7 @@ batfish() {
    if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
       echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
    fi
-   $BATFISH $BATFISH_COMMON_ARGS $@
+   $BATFISH $BATFISH_COMMON_ARGS "$@"
 }
 export -f batfish
 
@@ -99,6 +102,8 @@ _batfish_build_all() {
    ant "$@" || return 1
    cd $BATFISH_CLIENT_PATH
    ant "$@" || return 1
+   cd $ALLINONE_PATH
+   ant "$@" || return 1  
 }
 export -f _batfish_build_all
 
@@ -219,6 +224,7 @@ batfish_javadocs() {
    cp -r $BATFISH_PATH/doc $BATFISH_ROOT/doc/batfish/
    cp -r $BATFISH_CLIENT_PATH/doc $BATFISH_ROOT/doc/batfish-client/
    cp -r $COORDINATOR_PATH/doc $BATFISH_ROOT/doc/coordinator/
+   cp -r $ALLINONE_PATH/doc $BATFISH_ROOT/doc/coordinator/
 }
 export -f batfish_javadocs
 
@@ -640,7 +646,7 @@ if [ -z "$(which time 2>&1)" ]; then
    }
 else
    batfish_time() {
-      time $@
+      time "$@"
    }
 fi
 export -f batfish_time
@@ -659,7 +665,7 @@ coordinator() {
    if [ "$COORDINATOR_PRINT_CMDLINE" = "yes" ]; then
       echo "$COORDINATOR $COORDINATOR_COMMON_ARGS $@"
    fi
-   $COORDINATOR $COORDINATOR_COMMON_ARGS $@
+   $COORDINATOR $COORDINATOR_COMMON_ARGS "$@"
 }
 export -f coordinator
 
@@ -677,13 +683,14 @@ batfish_client() {
    if [ "$BATFISH_CLIENT_PRINT_CMDLINE" = "yes" ]; then
       echo "$BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@"
    fi
-   $BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS $@
+   $BATFISH_CLIENT $BATFISH_CLIENT_COMMON_ARGS "$@"
 }
 export -f batfish_client
 
 client_build() {
    bash -c '_client_build "$@"' _client_build "$@" || return 1
 }
+export -f client_build
 
 _client_build() {
    common_build || return 1
@@ -691,6 +698,41 @@ _client_build() {
    ant "$@" || return 1
 }
 export -f _client_build
+
+allinone() {
+   # if cygwin, shift and replace each parameter
+   if batfish_cygwin; then
+      local NUMARGS=$#
+      for i in $(seq 1 $NUMARGS); do
+         local CURRENT_ARG=$1
+         local NEW_ARG="$(cygpath -w -- $CURRENT_ARG)"
+         set -- "$@" "$NEW_ARG"
+         shift
+      done
+   fi
+   if [ "$ALLINONE_PRINT_CMDLINE" = "yes" ]; then
+      echo "$ALLINONE $ALLINONE_COMMON_ARGS $@"
+   fi
+   $ALLINONE $ALLINONE_COMMON_ARGS "$@"
+}
+export -f allinone
+
+allinone_build() {
+   bash -c '_allinone_build "$@"' _allinone_build "$@" || return 1
+}
+
+_allinone_build() {
+   common_build || return 1
+   cd $BATFISH_PATH
+   ant "$@" || return 1
+   cd $COORDINATOR_PATH
+   ant "$@" || return 1
+   cd $BATFISH_CLIENT_PATH
+   ant "$@" || return 1
+   cd $ALLINONE_PATH
+   ant "$@" || return 1
+}
+export -f _allinone_build
 
 coordinator_build() {
    bash -c '_coordinator_build "$@"' _coordinator_build "$@" || return 1

@@ -2,10 +2,10 @@ package org.batfish.client;
 
 public class Main {
 
-   public static void main(String[] args) {
+   public static void main(String[] args) {      
       Settings _settings = null;
       try {
-         _settings = new Settings(args);
+         _settings = new Settings(args);         
       }
       catch (Exception e) {
          System.err.println("org.batfish.client: Initialization failed: "
@@ -13,6 +13,7 @@ public class Main {
          System.exit(1);
       }
 
-      new Client(_settings);
+      Client client = new Client(_settings);
+      client.run();
    }
 }

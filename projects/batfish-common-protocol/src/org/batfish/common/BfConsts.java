@@ -59,7 +59,10 @@ public class BfConsts {
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
    public static final String RELPATH_BASE = "base";
-   public static final String RELPATH_CONFIG_FILE_NAME_DIR = "config.properties";
+   public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
+   public static final String RELPATH_CONFIG_FILE_NAME_BATFISH= "batfish.properties";
+   public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
+   public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
    public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";

@@ -27,30 +27,30 @@ public final class Util {
          throws Exception {
       if (secure) {
          if (trustAll) {
-         SSLContext sslcontext = SSLContext.getInstance("TLS");
-         sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-                  throws CertificateException {
-            }
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
+               @Override
+               public void checkClientTrusted(X509Certificate[] arg0,
+                     String arg1) throws CertificateException {
+               }
 
-            @Override
-            public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-                  throws CertificateException {
-            }
+               @Override
+               public void checkServerTrusted(X509Certificate[] arg0,
+                     String arg1) throws CertificateException {
+               }
 
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-               return new X509Certificate[0];
-            }
+               @Override
+               public X509Certificate[] getAcceptedIssuers() {
+                  return new X509Certificate[0];
+               }
 
-         } }, new java.security.SecureRandom());
+            } }, new java.security.SecureRandom());
 
-         return ClientBuilder.newBuilder().sslContext(sslcontext)
-               .hostnameVerifier(new TrustAllHostNameVerifier());
+            return ClientBuilder.newBuilder().sslContext(sslcontext)
+                  .hostnameVerifier(new TrustAllHostNameVerifier());
          }
          else {
-            return ClientBuilder.newBuilder();                       
+            return ClientBuilder.newBuilder();
          }
       }
       else {
@@ -58,10 +58,10 @@ public final class Util {
       }
    }
 
-   public static File getConfigProperties(Class<?> locatorClass) {
+   public static File getConfigProperties(Class<?> locatorClass,
+         String propertiesFilename) {
       File configDir = getJarOrClassDir(locatorClass);
-      return Paths.get(configDir.toString(),
-            BfConsts.RELPATH_CONFIG_FILE_NAME_DIR).toFile();
+      return Paths.get(configDir.toString(), propertiesFilename).toFile();
    }
 
    public static File getJarOrClassDir(Class<?> locatorClass) {

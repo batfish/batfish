@@ -77,6 +77,20 @@ public class Driver {
    }
 
    public static void main(String[] args) {
+      mainInit(args);
+      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
+            _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
+            _mainSettings.getLogTee(), true);
+      mainRun();
+   }
+
+   public static void main(String[] args, BatfishLogger logger) {
+      mainInit(args);
+      _mainLogger = logger;
+      mainRun();
+   }
+   
+   private static void mainInit(String[] args) {
       _taskLog = new HashMap<String, Task>();
 
       try {
@@ -87,9 +101,9 @@ public class Driver {
                + e.getMessage());
          System.exit(1);
       }
-      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
-            _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
-            _mainSettings.getLogTee(), true);
+   }
+
+   private static void mainRun() {
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
@@ -97,7 +111,7 @@ public class Driver {
          URI baseUri = UriBuilder.fromUri(SERVICE_URL)
                .port(_mainSettings.getServicePort()).build();
 
-         _mainLogger.output(String.format("Starting server at %s\n", baseUri));
+         _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
 
          ResourceConfig rc = new ResourceConfig(Service.class)
                .register(new JettisonFeature());
@@ -167,7 +181,7 @@ public class Driver {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
-         _mainLogger.output(response.getStatus() + " "
+         _mainLogger.debug("BF: " + response.getStatus() + " "
                + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -177,7 +191,7 @@ public class Driver {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         _mainLogger.outputf("response: %s [%s] [%s]\n", array.toString(),
+         _mainLogger.debugf("BF: response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {

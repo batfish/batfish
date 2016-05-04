@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project name="Batfish" basedir="." default="all">
    <!-- import ant-contrib -->
    <taskdef resource="net/sf/antcontrib/antlib.xml">
@@ -23,10 +22,16 @@
       <fileset dir="lib" includes="**/*.jar"/>
       <fileset dir="../batfish-common-protocol/lib" includes="**/*.jar"/>
       <pathelement location="../batfish-common-protocol/bin"/>
+      <fileset dir="../coordinator/lib" includes="**/*.jar"/>
+      <pathelement location="../coordinator/bin"/>
+      <fileset dir="../batfish-client/lib" includes="**/*.jar"/>
+      <pathelement location="../batfish-client/bin"/>
+      <fileset dir="../batfish/lib" includes="**/*.jar"/>
+      <pathelement location="../batfish/bin"/>
    </path>
-   <property name="outputJar" value="out/batfish-client.jar"/>
+   <property name="outputJar" value="out/allinone.jar"/>
 
-   <target name="all" depends="jar,copyconfig" description="Build everything"/>
+   <target name="all" depends="jar,copyconfig,copycertificate" description="Build everything"/>
 
    <!-- Check to see if anything that would be packaged for distribution has changed -->
    <target name="checkJarBuild" depends="compile">
@@ -34,6 +39,12 @@
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
          <srcfiles dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+         <srcfiles dir="../batfish/bin" includes="**/*"/>
+         <srcfiles dir="../batfish/lib" includes="**/*"/>
+         <srcfiles dir="../batfish-client/bin" includes="**/*"/>
+         <srcfiles dir="../batfish-client/lib" includes="**/*"/>
+         <srcfiles dir="../coordinator/bin" includes="**/*"/>
+         <srcfiles dir="../coordinator/lib" includes="**/*"/>
       </uptodate>
    </target>
 
@@ -55,12 +66,24 @@
 		<delete dir="bin" />
 	</target>
 
+
+   <target name="copycertificate" description="Copy self-signed certificate file to output directory">
+      <copy todir="out">
+         <fileset dir="../coordinator/out" includes="selfsigned.jks"/>
+      </copy>
+   </target>
+
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="bin">
-         <fileset dir="src" includes="**/client.properties"/>
+         <fileset dir="src" includes="**/allinone.properties"/>
+         <fileset dir="src" includes="**/default_commands"/>
       </copy>
       <copy todir="out">
-         <fileset dir="src/org/batfish/client/config" includes="client.properties"/>
+         <fileset dir="src/org/batfish/allinone/config" includes="allinone.properties"/>
+         <fileset dir="../batfish/bin/org/batfish/config" includes="batfish.properties"/>
+         <fileset dir="../batfish-client/bin/org/batfish/client/config" includes="client.properties"/>
+         <fileset dir="../coordinator/bin/org/batfish/coordinator/config" includes="coordinator.properties"/>
+         <fileset dir="src/org/batfish/allinone/config" includes="default_commands"/>
       </copy>
    </target>
 
@@ -105,15 +128,21 @@
       <one-jar destfile="${outputJar}">
          <manifest>
             <attribute name="Main-Class" value="org.batfish.main.Boot"/>
-            <attribute name="One-Jar-Main-Class" value="org.batfish.client.Main"/>
+            <attribute name="One-Jar-Main-Class" value="org.batfish.allinone.Main"/>
             <attribute name="One-Jar-URL-Factory" value="com.simontuffs.onejar.JarClassLoader$OneJarURLFactory"/>
          </manifest>
          <main>
             <fileset dir="bin"/>
+            <fileset dir="../batfish/bin"/>
+            <fileset dir="../batfish-client/bin"/>
+            <fileset dir="../coordinator/bin"/>
          </main>
          <lib>
             <fileset dir="lib" includes="**/*" />
             <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+            <fileset dir="../batfish/lib" includes="**/*"/>
+            <fileset dir="../batfish-client/lib" includes="**/*"/>
+            <fileset dir="../coordinator/lib" includes="**/*"/>
          </lib>
 		</one-jar>
 		<delete dir="${temp.dir}" />

@@ -494,7 +494,8 @@ public final class Settings extends BaseSettings {
    private String _z3File;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
       _diffEnvironmentSettings = new EnvironmentSettings();
       _baseEnvironmentSettings = new EnvironmentSettings();
       _activeEnvironmentSettings = _baseEnvironmentSettings;

@@ -170,17 +170,38 @@ public class Main {
    }
 
    public static void main(String[] args) {
+      mainInit(args);
+      _logger = new BatfishLogger(_settings.getLogLevel(), false,
+            _settings.getLogFile(), false, true);
+      mainRun();      
+   }
+
+   public static void main(String[] args, BatfishLogger logger) {
+      mainInit(args);
+      _logger = logger;
+      mainRun();
+   }
+
+   public static void mainInit(String[] args) {
       _settings = null;
       try {
          _settings = new Settings(args);
-         _logger = new BatfishLogger(_settings.getLogLevel(), false,
-               _settings.getLogFile(), false, true);
+      }
+      catch (Exception e) {
+         System.err.print("org.batfish.coordinator: Initialization failed: "
+               + e.getMessage());
+         System.exit(1);
+      }
+   }
+
+   private static void mainRun() {
+      try {
          initAuthorizer();
          initPoolManager();
          initWorkManager();
       }
       catch (Exception e) {
-         System.err.print("org.batfish.coordinator: Initialization failed: "
+         System.err.print("org.batfish.coordinator: Initialization of a helper failed: "
                + e.getMessage());
          System.exit(1);
       }
