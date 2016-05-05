@@ -6352,7 +6352,7 @@ F_NonNewline
 fragment
 F_NonWhitespace
 :
-   ~( ' ' | '\t' | '\u000C' )
+   ~( ' ' | '\t' | '\u000C' | '\n' | '\r' )
 ;
 
 F_PositiveHexDigit
