@@ -166,6 +166,11 @@ DST_PORT
    'dst_port'
 ;
 
+EBGP
+:
+   'ebgp'
+;
+
 EBGP_MULTIHOP
 :
    'ebgp_multihop'
@@ -279,6 +284,11 @@ HAS_SINGLE_REMOTE_BGP_NEIGHBOR
 HAS_SINGLE_REMOTE_IPSEC_VPN
 :
    'has_single_remote_ipsec_vpn'
+;
+
+IBGP
+:
+   'ibgp'
 ;
 
 ICMP_CODE
@@ -436,6 +446,16 @@ NAME
    'name'
 ;
 
+NEIGHBORS
+:
+   'neighbors'
+;
+
+NEIGHBOR_TYPE
+:
+   'neighbor_type'
+;
+
 NETWORK
 :
    'network'
@@ -514,6 +534,11 @@ PASSIVE
 PERMIT
 :
    'permit'
+;
+
+PHYSICAL
+:
+   'physical'
 ;
 
 PRE_SHARED_KEY_HASH

@@ -492,6 +492,7 @@ default_binding
       {createTypeBinding($var.getText(), VariableType.PREFIX);}
 
       | ip_constraint_complex
+      | neighbor_type
       | range
       | REGEX
       |
@@ -1417,6 +1418,43 @@ multipath_question
    MULTIPATH
 ;
 
+neighbor_constraint
+:
+   neighbor_constraint_dst_node
+   | neighbor_constraint_neighbor_type
+   | neighbor_constraint_src_node
+;
+
+neighbor_constraint_dst_node
+:
+   DST_NODE EQUALS node_constraint
+;
+
+neighbor_constraint_neighbor_type
+:
+   NEIGHBOR_TYPE EQUALS neighbor_type
+;
+
+neighbor_constraint_src_node
+:
+   SRC_NODE EQUALS node_constraint
+;
+
+neighbor_type
+:
+	IBGP 
+	| EBGP
+	| PHYSICAL
+;
+
+neighbors_question
+:
+   NEIGHBORS OPEN_BRACE neighbor_constraint
+   (
+      COMMA neighbor_constraint
+   )* CLOSE_BRACE
+;
+
 neq_expr
 locals [VariableType varType]
 :
@@ -1704,6 +1742,7 @@ question
       | ingress_path_question
       | local_path_question
       | multipath_question
+      | neighbors_question
       | protocol_dependencies_question
       | reachability_question
       | traceroute_question
