@@ -24,7 +24,11 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    private L _lexer;
 
+   private BatfishLexerErrorListener _lexerErrorListener;
+
    protected P _parser;
+
+   private BatfishParserErrorListener _parserErrorListener;
 
    private Settings _settings;
 
@@ -80,8 +84,16 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       return _lexer;
    }
 
+   public BatfishLexerErrorListener getLexerErrorListener() {
+      return _lexerErrorListener;
+   }
+
    public P getParser() {
       return _parser;
+   }
+
+   public BatfishParserErrorListener getParserErrorListener() {
+      return _parserErrorListener;
    }
 
    public Settings getSettings() {
@@ -111,6 +123,16 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    }
 
    public abstract ParserRuleContext parse();
+
+   public void setLexerErrorListener(
+         BatfishLexerErrorListener lexerErrorListener) {
+      _lexerErrorListener = lexerErrorListener;
+   }
+
+   public void setParserErrorListener(
+         BatfishParserErrorListener parserErrorListener) {
+      _parserErrorListener = parserErrorListener;
+   }
 
    public void updateTokenModes(int mode) {
       for (int i = _currentModeStart; i <= _tokens.size(); i++) {

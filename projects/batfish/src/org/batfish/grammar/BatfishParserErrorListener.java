@@ -40,12 +40,10 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
             + ":" + tokenText + "  <== mode:" + mode;
    }
 
-   @Override
-   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
-         int line, int charPositionInLine, String msg, RecognitionException e) {
+   public void syntaxError(ParserRuleContext ctx, Object offendingSymbol,
+         int line, int charPositionInLine, String msg) {
       BatfishParser parser = _combinedParser.getParser();
       List<String> ruleNames = Arrays.asList(parser.getRuleNames());
-      ParserRuleContext ctx = parser.getContext();
       String ruleStack = ctx.toString(ruleNames);
       List<Token> tokens = _combinedParser.getTokens().getTokens();
       int startTokenIndex = parser.getInputStream().index();
@@ -108,6 +106,14 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       else {
          _combinedParser.getErrors().add(error);
       }
+   }
+
+   @Override
+   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+         int line, int charPositionInLine, String msg, RecognitionException e) {
+      BatfishParser parser = _combinedParser.getParser();
+      syntaxError(parser.getContext(), offendingSymbol, line,
+            charPositionInLine, msg);
    }
 
 }

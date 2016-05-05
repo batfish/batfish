@@ -17,10 +17,11 @@ public abstract class BatfishLexer extends Lexer {
 
    public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
       _parser = parser;
-      BatfishGrammarErrorListener errorListener = new BatfishLexerErrorListener(
+      BatfishLexerErrorListener errorListener = new BatfishLexerErrorListener(
             this.getClass().getSimpleName(), parser);
       removeErrorListeners();
       addErrorListener(errorListener);
+      _parser.setLexerErrorListener(errorListener);
    }
 
    @Override

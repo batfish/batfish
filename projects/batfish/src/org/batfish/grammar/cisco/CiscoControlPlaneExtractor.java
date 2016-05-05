@@ -2943,6 +2943,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _w.redFlag(msg);
       }
       else {
+         _parser.getParserErrorListener().syntaxError(ctx, ctx.getStart(),
+               ctx.getStart().getLine(),
+               ctx.getStart().getCharPositionInLine(), msg);
          throw new BatfishException(msg);
       }
    }
