@@ -13,8 +13,6 @@ import org.batfish.util.Util;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
-   private static final int MAX_LOOKBACK = 10;
-
    public BatfishParserErrorListener(String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
@@ -51,7 +49,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String ruleStack = ctx.toString(ruleNames);
       List<Token> tokens = _combinedParser.getTokens().getTokens();
       int startTokenIndex = parser.getInputStream().index();
-      int lookbackIndex = Math.max(0, startTokenIndex - MAX_LOOKBACK);
+      int lookbackIndex = Math.max(0,
+            startTokenIndex - _settings.getMaxParserContextTokens());
       int endTokenIndex = tokens.size();
       StringBuilder sb = new StringBuilder();
       sb.append("parser: " + _grammarName + ": line " + line + ":"
@@ -87,8 +86,11 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String text = _combinedParser.getInput();
       String[] lines = text.split("\n");
       int errorLineIndex = offendingToken.getLine() - 1;
-      int errorContextStartLine = Math.max(errorLineIndex - 10, 0);
-      int errorContextEndLine = Math.min(errorLineIndex + 10, lines.length - 1);
+      int errorContextStartLine = Math.max(
+            errorLineIndex - _settings.getMaxParserContextLines(), 0);
+      int errorContextEndLine = Math.min(
+            errorLineIndex + _settings.getMaxParserContextLines(),
+            lines.length - 1);
       sb.append("Error context lines:\n");
       for (int i = errorContextStartLine; i < errorLineIndex; i++) {
          sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
@@ -100,7 +102,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       }
 
       String error = sb.toString();
-      if (_combinedParser.getThrowOnParserError()) {
+      if (_settings.getThrowOnParserError()) {
          throw new BatfishException("\n" + error);
       }
       else {

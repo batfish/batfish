@@ -2,6 +2,7 @@ package org.batfish.grammar.topology;
 
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyParser.TopologyContext;
+import org.batfish.main.Settings;
 
 public class BatfishTopologyCombinedParser extends
       BatfishCombinedParser<BatfishTopologyParser, BatfishTopologyLexer> {
@@ -16,10 +17,9 @@ public class BatfishTopologyCombinedParser extends
       return headerText;
    }
 
-   public BatfishTopologyCombinedParser(String input,
-         boolean throwOnParserError, boolean throwOnLexerError) {
+   public BatfishTopologyCombinedParser(String input, Settings settings) {
       super(BatfishTopologyParser.class, BatfishTopologyLexer.class, input,
-            throwOnParserError, throwOnLexerError);
+            settings);
    }
 
    @Override
