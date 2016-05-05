@@ -1,5 +1,7 @@
 package org.batfish.client;
 
+import java.util.LinkedList;
+
 public class Main {
 
    public static void main(String[] args) {      
@@ -14,6 +16,6 @@ public class Main {
       }
 
       Client client = new Client(_settings);
-      client.run();
+      client.run(new LinkedList<String>());
    }
 }

@@ -15,6 +15,7 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.question.AclReachabilityQuestion;
+import org.batfish.question.CompareSameNameQuestion;
 import org.batfish.question.Expr;
 import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.ForwardingAction;
@@ -304,6 +305,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private Set<FlowBuilder> _tracerouteFlowBuilders;
 
    private VerifyProgram _verifyProgram;
+
+   @Override
+   public void enterCompare_same_name_question(
+         Compare_same_name_questionContext ctx) {
+      _question = new CompareSameNameQuestion(_parameters);
+   }
 
    public QuestionExtractor(QuestionCombinedParser parser, String flowTag,
          QuestionParameters parameters) {

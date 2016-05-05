@@ -113,6 +113,7 @@ import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityQuestion;
+import org.batfish.question.CompareSameNameQuestion;
 import org.batfish.question.DestinationQuestion;
 import org.batfish.question.Environment;
 import org.batfish.question.ReducedReachabilityQuestion;
@@ -564,6 +565,10 @@ public class Batfish implements AutoCloseable {
          answerAclReachability((AclReachabilityQuestion) question);
          break;
 
+      case COMPARE_SAME_NAME:
+         answerCompareSameName((CompareSameNameQuestion) question);
+         break;
+
       case DESTINATION:
          answerDestination((DestinationQuestion) question);
          break;
@@ -768,6 +773,10 @@ public class Batfish implements AutoCloseable {
          }
          Util.writeFile(jsonOutputPath, jsonOutput);
       }
+   }
+
+   private void answerCompareSameName(CompareSameNameQuestion question) {
+      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
    }
 
    private void answerDestination(DestinationQuestion question) {
@@ -1656,7 +1665,18 @@ public class Batfish implements AutoCloseable {
       try {
          Files.createDirectories(factsDirPath);
          for (String factsFilename : factBins.keySet()) {
-            String facts = factBins.get(factsFilename).toString();
+            String[] factsLines = factBins.get(factsFilename).toString()
+                  .split("\n");
+            Set<String> uniqueFacts = new TreeSet<String>();
+            for (int i = 1; i < factsLines.length; i++) {
+               uniqueFacts.add(factsLines[i]);
+            }
+            StringBuilder factsBuilder = new StringBuilder();
+            factsBuilder.append(factsLines[0] + "\n");
+            for (String factsLine : uniqueFacts) {
+               factsBuilder.append(factsLine + "\n");
+            }
+            String facts = factsBuilder.toString();
             Path factsFilePath = factsDirPath.resolve(factsFilename);
             _logger.info("Writing: \""
                   + factsFilePath.toAbsolutePath().toString() + "\"\n");

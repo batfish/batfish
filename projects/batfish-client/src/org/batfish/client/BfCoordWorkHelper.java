@@ -52,7 +52,7 @@ public class BfCoordWorkHelper {
       multiPart.bodyPart(new FormDataBodyPart(key, value,
             MediaType.TEXT_PLAIN_TYPE));
    }
-
+   
    public boolean delContainer(String containerName) {
       try {
          Client client = getClientBuilder().build();
@@ -476,6 +476,46 @@ public class BfCoordWorkHelper {
    // }
    // }
 
+   public boolean isReachabile() throws Exception {
+
+      WebTarget webTarget = null;
+
+      try {
+         Client client = getClientBuilder().build();
+         webTarget = getTarget(client, "");
+
+         Response response = webTarget.request().get();
+
+         _logger.info(response.getStatus() + " " + response.getStatusInfo()
+               + " " + response + "\n");
+
+         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            _logger.errorf("GetObject: Did not get an OK response\n");
+            return false;
+         }
+         
+         return true;
+      }
+      catch (ProcessingException e) {
+         if (e.getMessage().contains("ConnectException")) {
+            _logger.errorf("BF-Client: unable to connect to coordinator at %s\n",
+                  webTarget.getUri().toString());
+            return false;
+         }
+         if (e.getMessage().contains("SSLHandshakeException")) {
+            _logger
+                  .errorf("SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            return false;
+         }
+         if (e.getMessage().contains("SocketException: Unexpected end of file")) {
+            _logger
+                  .errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
+            return false;
+         }
+         throw e;
+      }      
+   }
+
    public String[] listContainers() {
       try {
          Client client = getClientBuilder().build();
@@ -823,7 +863,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s or %s\n", qFileName,
+            _logger.errorf("File not found: %s (question file) or %s (temporary params file) \n", qFileName,
                   paramsFilename);
          }
          else {

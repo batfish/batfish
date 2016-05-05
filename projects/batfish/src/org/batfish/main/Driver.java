@@ -77,6 +77,20 @@ public class Driver {
    }
 
    public static void main(String[] args) {
+      mainInit(args);
+      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
+            _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
+            _mainSettings.getLogTee(), true);
+      mainRun();
+   }
+
+   public static void main(String[] args, BatfishLogger logger) {
+      mainInit(args);
+      _mainLogger = logger;
+      mainRun();
+   }
+   
+   private static void mainInit(String[] args) {
       _taskLog = new HashMap<String, Task>();
 
       try {
@@ -87,9 +101,9 @@ public class Driver {
                + e.getMessage());
          System.exit(1);
       }
-      _mainLogger = new BatfishLogger(_mainSettings.getLogLevel(),
-            _mainSettings.getTimestamp(), _mainSettings.getLogFile(),
-            _mainSettings.getLogTee(), true);
+   }
+
+   private static void mainRun() {
       System.setErr(_mainLogger.getPrintStream());
       System.setOut(_mainLogger.getPrintStream());
       _mainSettings.setLogger(_mainLogger);
@@ -97,7 +111,7 @@ public class Driver {
          URI baseUri = UriBuilder.fromUri(SERVICE_URL)
                .port(_mainSettings.getServicePort()).build();
 
-         _mainLogger.output(String.format("Starting server at %s\n", baseUri));
+         _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
 
          ResourceConfig rc = new ResourceConfig(Service.class)
                .register(new JettisonFeature());
@@ -145,29 +159,19 @@ public class Driver {
       _idle = true;
    }
 
-   private static boolean registerWithCoordinator() {
-      String coordinatorHost = _mainSettings.getCoordinatorHost();
-      String workMgr = coordinatorHost + ":"
-            + _mainSettings.getCoordinatorWorkPort();
-      String poolMgr = coordinatorHost + ":"
-            + _mainSettings.getCoordinatorPoolPort();
+   private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
          Client client = Util.getClientBuilder(
                _mainSettings.getCoordinatorUseSsl(),
                _mainSettings.getTrustAllSslCerts()).build();
-         String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
-               : "http";
-         WebTarget webTarget = client.target(
-               String.format("%s://%s%s/%s", protocol, poolMgr,
-                     CoordConsts.SVC_BASE_POOL_MGR,
-                     CoordConsts.SVC_POOL_UPDATE_RSC)).queryParam(
-               "add",
-               _mainSettings.getServiceHost() + ":"
+         WebTarget webTarget = client.target(poolRegUrl)
+               .queryParam("add",
+                     _mainSettings.getServiceHost() + ":"
                      + _mainSettings.getServicePort());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
-         _mainLogger.output(response.getStatus() + " "
+         _mainLogger.debug("BF: " + response.getStatus() + " "
                + response.getStatusInfo() + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -177,11 +181,11 @@ public class Driver {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         _mainLogger.outputf("response: %s [%s] [%s]\n", array.toString(),
+         _mainLogger.debugf("BF: response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _mainLogger.errorf("got error while checking work status: %s %s\n",
+            _mainLogger.errorf("BF: got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -189,7 +193,7 @@ public class Driver {
          return true;
       }
       catch (ProcessingException e) {
-         _mainLogger.errorf("unable to connect to %s\n", workMgr);
+         _mainLogger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", poolRegUrl);
          return false;
       }
       catch (Exception e) {
@@ -201,12 +205,20 @@ public class Driver {
    private static void registerWithCoordinatorPersistent()
          throws InterruptedException {
       boolean registrationSuccess;
+
+      String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
+            : "http";
+      String poolRegUrl = String.format("%s://%s:%s%s/%s",  
+            protocol, 
+            _mainSettings.getCoordinatorHost(), 
+            + _mainSettings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_BASE_POOL_MGR,
+            CoordConsts.SVC_POOL_UPDATE_RSC);
+      
       do {
-         registrationSuccess = registerWithCoordinator();
+         registrationSuccess = registerWithCoordinator(poolRegUrl);
          if (!registrationSuccess) {
-            ;
-            _mainLogger.error("Unable to register  with coordinator\n");
-            Thread.sleep(10 * 1000); // 10 seconds
+            Thread.sleep(1 * 1000); // 1 seconds
          }
       } while (!registrationSuccess);
    }

@@ -2,6 +2,7 @@ package org.batfish.question;
 
 public enum QuestionType {
    ACL_REACHABILITY,
+   COMPARE_SAME_NAME,
    DESTINATION,
    INGRESS_PATH,
    LOCAL_PATH,

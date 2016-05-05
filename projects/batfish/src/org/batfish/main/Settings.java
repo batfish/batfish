@@ -180,13 +180,13 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
 
-   private static final String ARG_COORDINATOR_HOST = "coordinatorhost";
+   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
    private static final String ARG_COORDINATOR_NO_SSL = "coordinator.NoSsl";
 
    private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
-   private static final String ARG_COORDINATOR_REGISTER = "register";
+   public static final String ARG_COORDINATOR_REGISTER = "register";
 
    private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
@@ -258,7 +258,7 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_SERVICE_HOST = "servicehost";
 
-   private static final String ARG_SERVICE_MODE = "servicemode";
+   public static final String ARG_SERVICE_MODE = "servicemode";
 
    private static final String ARG_SERVICE_PORT = "serviceport";
 
@@ -494,7 +494,8 @@ public final class Settings extends BaseSettings {
    private String _z3File;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class));
+      super(Util.getConfigProperties(ConfigurationLocator.class,
+            BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
       _diffEnvironmentSettings = new EnvironmentSettings();
       _baseEnvironmentSettings = new EnvironmentSettings();
       _activeEnvironmentSettings = _baseEnvironmentSettings;

@@ -111,6 +111,11 @@ COMMUNITIES
    'communities'
 ;
 
+COMPARE_SAME_NAME
+:
+   'compare-same-name'
+;
+
 COMPATIBLE_IKE_PROPOSALS
 :
    'compatible_ike_proposals'

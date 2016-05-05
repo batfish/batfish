@@ -13,12 +13,11 @@ public final class PsThenCommunityDelete extends PsThen {
     */
    private static final long serialVersionUID = 1L;
 
-   private JuniperVendorConfiguration _configuration;
+   private JuniperConfiguration _configuration;
 
    private final String _name;
 
-   public PsThenCommunityDelete(String name,
-         JuniperVendorConfiguration configuration) {
+   public PsThenCommunityDelete(String name, JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }

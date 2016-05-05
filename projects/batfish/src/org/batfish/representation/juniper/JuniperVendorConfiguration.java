@@ -65,10 +65,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
    private Configuration _c;
 
-   private boolean _defaultAddressSelection;
-
-   private final Set<String> _ignoredPrefixLists;
-
    private transient Interface _lo0;
 
    private transient boolean _lo0Initialized;
@@ -84,7 +80,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
       _unimplementedFeatures = unimplementedFeatures;
-      _ignoredPrefixLists = new HashSet<String>();
    }
 
    private BgpProcess createBgpProcess() {
@@ -282,10 +277,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newProc;
    }
 
-   public Set<String> getIgnoredPrefixLists() {
-      return _ignoredPrefixLists;
-   }
-
    @Override
    public RoleSet getRoles() {
       return _roles;
@@ -330,7 +321,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       org.batfish.representation.Interface newIface = _c.getInterfaces().get(
             name);
       Ip ospfArea = iface.getOspfActiveArea();
+      boolean setCost = false;
       if (ospfArea != null) {
+         setCost = true;
          long ospfAreaLong = ospfArea.asLong();
          org.batfish.representation.OspfArea newArea = newAreas
                .get(ospfAreaLong);
@@ -338,6 +331,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newIface.setOspfEnabled(true);
       }
       for (Ip passiveArea : iface.getOspfPassiveAreas()) {
+         setCost = true;
          long ospfAreaLong = passiveArea.asLong();
          org.batfish.representation.OspfArea newArea = newAreas
                .get(ospfAreaLong);
@@ -345,10 +339,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          newIface.setOspfEnabled(true);
          newIface.setOspfPassive(true);
       }
-   }
-
-   public void setDefaultAddressSelection(boolean defaultAddressSelection) {
-      _defaultAddressSelection = defaultAddressSelection;
+      if (setCost) {
+         Integer ospfCost = iface.getOspfCost();
+         if (ospfCost == null
+               && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+            ospfCost = 0;
+         }
+         newIface.setOspfCost(ospfCost);
+      }
    }
 
    private void setPolicyStatementReferent(String policyName, Object referer,
@@ -1084,6 +1082,24 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          _c.getInterfaces().put(unitName, newUnitIface);
       }
 
+      // set router-id
+      if (_defaultRoutingInstance.getRouterId() == null) {
+         Interface loopback0 = _defaultRoutingInstance.getInterfaces().get(
+               FIRST_LOOPBACK_INTERFACE_NAME);
+         if (loopback0 != null) {
+            Interface loopback0unit0 = loopback0.getUnits().get(
+                  FIRST_LOOPBACK_INTERFACE_NAME + ".0");
+            if (loopback0unit0 != null) {
+               Prefix prefix = loopback0unit0.getPrimaryPrefix();
+               if (prefix != null) {
+                  // now we should set router-id
+                  Ip routerId = prefix.getAddress();
+                  _defaultRoutingInstance.setRouterId(routerId);
+               }
+            }
+         }
+      }
+
       // copy ike proposals
       _c.getIkeProposals().putAll(_ikeProposals);
 
@@ -1154,7 +1170,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // default zone behavior
       _c.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-      _c.setDefaultInboundAction(LineAction.REJECT);
+      _c.setDefaultInboundAction(_defaultInboundAction);
 
       // create ospf process
       if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
@@ -1201,6 +1217,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   + forwardingTableExportPolicyName + "\"");
          }
       }
+
+      // copy literal standard communities
+      _c.getCommunities().addAll(_allStandardCommunities);
 
       // warn about unreferenced data structures
       warnUnreferencedPolicyStatements();

@@ -15,12 +15,11 @@ public final class PsThenCommunityAdd extends PsThen {
     */
    private static final long serialVersionUID = 1L;
 
-   private JuniperVendorConfiguration _configuration;
+   private JuniperConfiguration _configuration;
 
    private final String _name;
 
-   public PsThenCommunityAdd(String name,
-         JuniperVendorConfiguration configuration) {
+   public PsThenCommunityAdd(String name, JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }

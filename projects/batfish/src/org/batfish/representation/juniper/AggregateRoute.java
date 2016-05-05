@@ -1,11 +1,13 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.batfish.representation.AsPath;
 import org.batfish.representation.Prefix;
 
-public class AggregateRoute implements Serializable {
+public final class AggregateRoute implements Serializable {
 
    /**
     *
@@ -14,16 +16,25 @@ public class AggregateRoute implements Serializable {
 
    private AsPath _asPath;
 
+   private final Set<Long> _communities;
+
    private int _preference;
 
-   private Prefix _prefix;
+   private final Prefix _prefix;
+
+   private Integer _tag;
 
    public AggregateRoute(Prefix prefix) {
+      _communities = new HashSet<Long>();
       _prefix = prefix;
    }
 
    public AsPath getAsPath() {
       return _asPath;
+   }
+
+   public Set<Long> getCommunities() {
+      return _communities;
    }
 
    public int getMetric() {
@@ -34,12 +45,20 @@ public class AggregateRoute implements Serializable {
       return _prefix;
    }
 
+   public Integer getTag() {
+      return _tag;
+   }
+
    public void setAsPath(AsPath asPath) {
       _asPath = asPath;
    }
 
    public void setPreference(int preference) {
       _preference = preference;
+   }
+
+   public void setTag(int tag) {
+      _tag = tag;
    }
 
 }

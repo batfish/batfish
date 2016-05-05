@@ -134,10 +134,10 @@
 
    <target name="copyconfig" description="Copy configuration file to output directory">
       <copy todir="bin">
-         <fileset dir="src" includes="**/config.properties"/>
+         <fileset dir="src" includes="**/batfish.properties"/>
       </copy>
       <copy todir="out">
-         <fileset dir="src/org/batfish/config" includes="config.properties"/>
+         <fileset dir="src/org/batfish/config" includes="batfish.properties"/>
       </copy>
    </target>
 

@@ -7,4 +7,4 @@ if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w $ALLINONE_JAR)"
    ALLINONE_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
 fi
-java $ALLINONE_JAVA_ARGS -jar "$ALLINONE_JAR" $@
+java $ALLINONE_JAVA_ARGS -jar "$ALLINONE_JAR" "$@"

@@ -215,7 +215,9 @@ public class NxtnetConstants {
             "BgpNeighborLocalIp",
             "BgpNeighbors",
             "BgpNeighborSendCommunity",
+            "ConnectedRoute",
             "GeneratedRouteAttributePolicy",
+            "IbgpNeighbors",
             "Ip",
             "IpAccessListMatchDscp",
             "IpAccessListMatchEcn",
@@ -235,6 +237,7 @@ public class NxtnetConstants {
             "NetworkOf",
             "need_PolicyMapMatchAdvert",
             "OriginalBgpAdvertisementRoute",
+            "OspfExport",
             "PolicyMapClauseMatchAdvert",
             "PolicyMapClauseMatchRoute",
             "PolicyMapClauseTransformAdvert",
@@ -278,6 +281,8 @@ public class NxtnetConstants {
             "SetLocalAs",
             "SetLocalAs_flat",
             "SetNetwork",
+            "SetOspfInterface",
+            "SetOspfOutboundPolicyMap",
             "SetPolicyMapClauseMatchInterface",
             "SetPolicyMapClauseMatchPolicy",
             "SetPolicyMapClauseMatchPolicyConjunction",
@@ -285,7 +290,8 @@ public class NxtnetConstants {
             "SetPolicyMapClauseAddCommunity",
             "SetPolicyMapClauseSetCommunity",
             "SetPolicyMapClauseSetLocalPreference",
-            "SetPolicyMapClauseSetMetric" };
+            "SetPolicyMapClauseSetMetric",
+            "SetPolicyMapOspfExternalRouteType" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }

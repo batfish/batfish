@@ -367,16 +367,19 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
          // set attribute map for aggregate network
          String attributeMapName = aggNet.getAttributeMap();
-         RouteMap attributeMap = _routeMaps.get(attributeMapName);
-         if (attributeMap != null) {
-            attributeMap.getReferers().put(aggNet,
-                  "attribute-map of aggregate route: " + prefix.toString());
-            PolicyMap attributePolicy = c.getPolicyMaps().get(attributeMapName);
-            gr.getAttributePolicies().put(attributeMapName, attributePolicy);
-         }
-         else {
-            _w.redFlag("Reference to undefined route-map used as attribute-map: \""
-                  + attributeMapName + "\"");
+         if (attributeMapName != null) {
+            RouteMap attributeMap = _routeMaps.get(attributeMapName);
+            if (attributeMap != null) {
+               attributeMap.getReferers().put(aggNet,
+                     "attribute-map of aggregate route: " + prefix.toString());
+               PolicyMap attributePolicy = c.getPolicyMaps().get(
+                     attributeMapName);
+               gr.getAttributePolicies().put(attributeMapName, attributePolicy);
+            }
+            else {
+               _w.redFlag("Reference to undefined route-map used as attribute-map: \""
+                     + attributeMapName + "\"");
+            }
          }
       }
 
