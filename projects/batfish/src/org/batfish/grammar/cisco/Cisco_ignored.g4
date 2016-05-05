@@ -34,6 +34,7 @@ null_block_stanza
       | CONTROLLER
       | COPY
       | CRYPTO
+      | CTL_FILE
       | DAEMON
       | DCB
       | DCB_BUFFER_THRESHOLD
@@ -118,6 +119,7 @@ null_block_stanza
       | MAP_CLASS
       | MAP_LIST
       | MAXIMUM_PATHS
+      | MEDIA_TERMINATION
       | MLAG
       | MODULE
       | MONITOR
@@ -182,11 +184,13 @@ null_block_stanza
       | TCP
       | TEMPLATE
       | TERMINAL
+      | TIMEOUT
       | TRACE
       | TRACK
       | TRANSCEIVER
       | UDF
       | USERGROUP
+      | USERNAME
       | VDC
       |
       (
@@ -258,6 +262,7 @@ null_block_substanza
          | CALL
          | CALLER_ID
          | CAS_CUSTOM
+         | CDP_URL
          | CERTIFICATE
          | CHANNEL_GROUP
          | CHANNELIZED
@@ -368,6 +373,7 @@ null_block_substanza
          | IPX
          | IPV6_ADDRESS_POOL
          | ISAKMP
+         | ISSUER_NAME
          | KEEPALIVE_ENABLE
          | KEY_STRING
          | KEYPAIR
@@ -443,6 +449,7 @@ null_block_substanza
          | PROBE
          | PROPOSAL
          | PROTOCOL
+         | PROXY_SERVER
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
          | RANDOM
@@ -496,6 +503,7 @@ null_block_substanza
          | SHUTDOWN
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
+         | SMTP
          | SORT_BY
          | SOURCE
          | SPANNING_TREE
@@ -632,7 +640,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CONSOLE
       | CONTACT_EMAIL_ADDR
       | CRL
-      | CTL_FILE
       | CTS
       | DEC
       | DEFAULT
@@ -782,7 +789,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | MAC_ADDRESS_TABLE
       | MAIL_SERVER
       | MAXIMUM
-      | MEDIA_TERMINATION
       | MEMORY_SIZE
       | MGCP
       | MICROCODE
@@ -886,7 +892,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | UPGRADE
       | USER_IDENTITY
       | USE_VRF
-      | USERNAME
       | VALIDATION_USAGE
       | VERSION
       |

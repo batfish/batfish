@@ -175,6 +175,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("ATM", "ATM");
       prefixes.put("Bundle-Ether", "Bundle-Ether");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
+      prefixes.put("Dialer", "Dialer");
       prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
@@ -201,6 +202,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("trunk", "trunk");
       prefixes.put("Tunnel", "Tunnel");
       prefixes.put("tunnel-te", "tunnel-te");
+      prefixes.put("Virtual-Template", "Virtual-Template");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }

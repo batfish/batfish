@@ -643,12 +643,17 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
+   'banner' -> pushMode ( M_DESCRIPTION )
+;
+
+BANNER_COMPLEX
+:
    'banner' ' '+
    (
       'exec'
       | 'login'
       | 'motd'
-   ) -> pushMode ( M_BANNER )
+   ) -> type ( BANNER ) , pushMode ( M_BANNER )
 ;
 
 BASH
@@ -854,6 +859,11 @@ CCM_MANAGER
 CDP
 :
    'cdp'
+;
+
+CDP_URL
+:
+   'cdp-url'
 ;
 
 CEF
@@ -2618,6 +2628,11 @@ ISPF
    'ispf'
 ;
 
+ISSUER_NAME
+:
+   'issuer-name'
+;
+
 KEEPALIVE
 :
    'keepalive'
@@ -4201,6 +4216,11 @@ PROTOCOL_OBJECT
 PROXY_ARP
 :
    'proxy-arp'
+;
+
+PROXY_SERVER
+:
+   'proxy-server'
 ;
 
 PSEUDOWIRE_CLASS
