@@ -354,6 +354,11 @@ ALLOWAS_IN
    'allowas-in'
 ;
 
+ALTERNATE_ADDRESS
+:
+   'alternate-address'
+;
+
 ALWAYS
 :
    'always'
@@ -1099,6 +1104,11 @@ CONTROL_PLANE
 CONTROLLER
 :
    'controller'
+;
+
+CONVERSION_ERROR
+:
+   'conversion-error'
 ;
 
 COPY
@@ -2280,6 +2290,11 @@ HOST
    'host'
 ;
 
+HOST_INFO
+:
+   'host-info'
+;
+
 HOST_ROUTING
 :
    'host-routing'
@@ -2340,6 +2355,16 @@ ICMP_OBJECT
    'icmp-object'
 ;
 
+ICMP_TYPE
+:
+   'icmp-type'
+;
+
+ICMP6
+:
+   'icmp6'
+;
+
 IDENT
 :
    'ident'
@@ -2368,6 +2393,11 @@ IF
 IGMP
 :
    'igmp'
+;
+
+IGRP
+:
+   'igrp'
 ;
 
 IGNORE
@@ -2423,6 +2453,16 @@ INBOUND
 INCOMPLETE
 :
    'incomplete'
+;
+
+INFORMATION_REPLY
+:
+   'information-reply'
+;
+
+INFORMATION_REQUEST
+:
+   'information-request'
 ;
 
 INGRESS
@@ -3018,6 +3058,16 @@ MASK
    'mask'
 ;
 
+MASK_REPLY
+:
+   'mask-reply'
+;
+
+MASK_REQUEST
+:
+   'mask-request'
+;
+
 MATCH
 :
    'match'
@@ -3196,6 +3246,11 @@ MLS
 MOBILE_IP
 :
    'mobile-ip'
+;
+
+MOBILE_REDIRECT
+:
+   'mobile-redirect'
 ;
 
 MOBILITY
@@ -3566,6 +3621,11 @@ NONE
 NONEGOTIATE
 :
    'nonegotiate'
+;
+
+NOS
+:
+   'nos'
 ;
 
 NOT
@@ -4503,9 +4563,19 @@ ROUTER
    'router'
 ;
 
+ROUTER_ADVERTISEMENT
+:
+   'router-advertisement'
+;
+
 ROUTER_ID
 :
    'router-id'
+;
+
+ROUTER_SOLICITATION
+:
+   'router-solicitation'
 ;
 
 ROUTING
@@ -4871,6 +4941,11 @@ SNMP_SERVER
 SNMPTRAP
 :
    'snmptrap'
+;
+
+SNP
+:
+   'snp'
 ;
 
 SORT_BY
@@ -5245,6 +5320,11 @@ TCP_CONNECT
    'tcp-connect'
 ;
 
+TCP_UDP
+:
+   'tcp-udp'
+;
+
 TELNET
 :
    'telnet'
@@ -5333,6 +5413,16 @@ TIMERS
 TIMESTAMP
 :
    'timestamp'
+;
+
+TIMESTAMP_REPLY
+:
+   'timestamp-reply'
+;
+
+TIMESTAMP_REQUEST
+:
+   'timestamp-request'
 ;
 
 TIMING
@@ -5560,6 +5650,11 @@ USE_VRF
    'use-vrf'
 ;
 
+USER
+:
+   'user'
+;
+
 USER_IDENTITY
 :
    'user-identity'
@@ -5583,6 +5678,16 @@ USERS
 UUCP
 :
    'uucp'
+;
+
+V4
+:
+   'v4'
+;
+
+V6
+:
+   'v6'
 ;
 
 VALIDATION_USAGE

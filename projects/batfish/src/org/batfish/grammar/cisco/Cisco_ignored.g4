@@ -406,7 +406,6 @@ null_block_substanza
          | NETWORK
          | NODE
          | NOTIFY
-         | OBJECT
          | OPEN
          | OPTION
          | OPTIONS
@@ -673,7 +672,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | FQDN
       | FTP
       | FTP_SERVER
-      | GROUP_OBJECT
       | HARDWARE
       | HASH
       | HISTORY
@@ -804,7 +802,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
-      | OBJECT_GROUP
       | OWNER
       | PAGER
       | PARSER

@@ -76,6 +76,30 @@ extended_community
    ec_literal
 ;
 
+icmp_object_type
+:
+   DEC
+   | ALTERNATE_ADDRESS
+   | CONVERSION_ERROR
+   | ECHO
+   | ECHO_REPLY
+   | INFORMATION_REPLY
+   | INFORMATION_REQUEST
+   | MASK_REPLY
+   | MASK_REQUEST
+   | MOBILE_REDIRECT
+   | PARAMETER_PROBLEM
+   | REDIRECT
+   | ROUTER_ADVERTISEMENT
+   | ROUTER_SOLICITATION
+   | SOURCE_QUENCH
+   | TIME_EXCEEDED
+   | TIMESTAMP_REPLY
+   | TIMESTAMP_REQUEST
+   | TRACEROUTE
+   | UNREACHABLE
+;
+
 interface_name
 :
    (
@@ -248,15 +272,22 @@ protocol
    | ESP
    | GRE
    | ICMP
+   | ICMP6
    | IGMP
+   | IGRP
    | IP
    | IPINIP
+   | IPSEC
    | IPV4
    | IPV6
+   | NOS
    | OSPF
    | PIM
+   | PPTP
    | SCTP
+   | SNP
    | TCP
+   | TCP_UDP
    | UDP
    | VRRP
 ;
