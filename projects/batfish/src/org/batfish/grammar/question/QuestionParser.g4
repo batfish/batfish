@@ -1437,7 +1437,7 @@ neighbor_constraint_dst_node
 
 neighbor_constraint_neighbor_type
 :
-   NEIGHBOR_TYPE EQUALS neighbor_type
+   NEIGHBOR_TYPE EQUALS neighbor_type_constraint
 ;
 
 neighbor_constraint_src_node
@@ -1450,6 +1450,12 @@ neighbor_type
 	IBGP 
 	| EBGP
 	| PHYSICAL
+;
+
+neighbor_type_constraint
+:
+   neighbor_type
+   | VARIABLE
 ;
 
 neighbors_question

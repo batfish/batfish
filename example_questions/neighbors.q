@@ -10,7 +10,7 @@ defaults {
    $dst_node = regex<.*>;
 }
 neighbors {
-   neighbor_type = $neighbor_type
+   neighbor_type = $neighbor_type,
    dst_node = $dst_node,
    src_node = $src_node
 }
