@@ -21,6 +21,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
 import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.Settings;
 import org.batfish.main.UndefinedGroupBatfishException;
 import org.batfish.representation.Ip;
 import org.batfish.representation.Ip6;
@@ -239,7 +240,15 @@ public class Hierarchy {
 
       }
 
+      private static Settings parserSettings() {
+         Settings settings = new Settings();
+         settings.setThrowOnLexerError(true);
+         settings.setThrowOnParserError(true);
+         return settings;
+      }
+
       private String _groupName;
+
       private HierarchyRootNode _root;
 
       private HierarchyTree(String groupName) {
@@ -278,9 +287,9 @@ public class Hierarchy {
             setLine.children.add(set);
             setLine.children.add(setLineTail);
             setLine.children.add(newline);
-
+            Settings settings = parserSettings();
             FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
-                  newStatementText, true, true);
+                  newStatementText, settings);
             Flat_juniper_configurationContext newConfiguration = parser
                   .getParser().flat_juniper_configuration();
             // StatementContext newStatement = parser.getParser().statement();
@@ -455,9 +464,9 @@ public class Hierarchy {
          setLine.children.add(set);
          setLine.children.add(setLineTail);
          setLine.children.add(newline);
-
+         Settings settings = parserSettings();
          FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
-               newStatementText, true, true);
+               newStatementText, settings);
          Flat_juniper_configurationContext newConfiguration = parser
                .getParser().flat_juniper_configuration();
          StatementContext newStatement = newConfiguration.set_line(0)

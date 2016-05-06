@@ -13,6 +13,7 @@ import org.batfish.util.SubRange;
 public enum HostSystemService {
    ALL,
    ANY_SERVICE,
+   DHCP,
    DNS,
    FINGER,
    FTP,
@@ -71,6 +72,16 @@ public enum HostSystemService {
          _lines.add(line);
          line.getProtocols().add(IpProtocol.TCP);
          line.getProtocols().add(IpProtocol.UDP);
+         break;
+      }
+
+      case DHCP: {
+         IpAccessListLine line = new IpAccessListLine();
+         _lines.add(line);
+         line.getProtocols().add(IpProtocol.UDP);
+         line.getDstPortRanges().add(
+               new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC
+                     .number()));
          break;
       }
 

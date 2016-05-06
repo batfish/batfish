@@ -397,6 +397,7 @@ it_common
 :
    it_apply_groups
    | it_apply_groups_except
+   | it_arp_resp
    | it_description
    | it_disable
    | it_enable
@@ -411,6 +412,11 @@ it_common
    | it_vlan_id
    | it_vlan_id_list
    | it_vlan_tagging
+;
+
+it_arp_resp
+:
+   ARP_RESP
 ;
 
 it_description

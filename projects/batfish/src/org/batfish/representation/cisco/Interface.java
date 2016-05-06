@@ -87,6 +87,8 @@ public class Interface implements Serializable {
 
    private Set<Prefix> _secondaryPrefixes;
 
+   private boolean _switchportAccessDynamic;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -184,6 +186,10 @@ public class Interface implements Serializable {
       return _secondaryPrefixes;
    }
 
+   public boolean getSwitchportAccessDynamic() {
+      return _switchportAccessDynamic;
+   }
+
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
@@ -250,6 +256,10 @@ public class Interface implements Serializable {
 
    public void setRoutingPolicy(String routingPolicy) {
       _routingPolicy = routingPolicy;
+   }
+
+   public void setSwitchportAccessDynamic(boolean switchportAccessDynamic) {
+      _switchportAccessDynamic = switchportAccessDynamic;
    }
 
    public void setSwitchportMode(SwitchportMode switchportMode) {

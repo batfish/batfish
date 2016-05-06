@@ -222,6 +222,10 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_LOG_TEE = "logtee";
 
+   private static final String ARG_MAX_PARSER_CONTEXT_LINES = "maxparsercontextlines";
+
+   private static final String ARG_MAX_PARSER_CONTEXT_TOKENS = "maxparsercontexttokens";
+
    private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
 
    private static final String ARG_NO_OUTPUT = "nooutput";
@@ -379,6 +383,10 @@ public final class Settings extends BaseSettings {
 
    private boolean _logTee;
 
+   private int _maxParserContextLines;
+
+   private int _maxParserContextTokens;
+
    private int _maxRuntimeMs;
 
    private String _nodeRolesPath;
@@ -493,15 +501,17 @@ public final class Settings extends BaseSettings {
 
    private String _z3File;
 
-   public Settings(String[] args) throws Exception {
+   public Settings() {
+      this(new String[] {});
+   }
+
+   public Settings(String[] args) {
       super(Util.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
       _diffEnvironmentSettings = new EnvironmentSettings();
       _baseEnvironmentSettings = new EnvironmentSettings();
       _activeEnvironmentSettings = _baseEnvironmentSettings;
-
       initConfigDefaults();
-
       initOptions();
       parseCommandLine(args);
    }
@@ -664,6 +674,14 @@ public final class Settings extends BaseSettings {
 
    public boolean getLogTee() {
       return _logTee;
+   }
+
+   public int getMaxParserContextLines() {
+      return _maxParserContextLines;
+   }
+
+   public int getMaxParserContextTokens() {
+      return _maxParserContextTokens;
    }
 
    public int getMaxRuntimeMs() {
@@ -917,6 +935,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
       setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
+      setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
+      setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
@@ -1070,6 +1090,14 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_LOG_TEE,
             "print output to both logfile and standard out");
+
+      addOption(ARG_MAX_PARSER_CONTEXT_LINES,
+            "max number of surrounding lines to print on parser error",
+            ARGNAME_NUMBER);
+
+      addOption(ARG_MAX_PARSER_CONTEXT_TOKENS,
+            "max number of context tokens to print on parser error",
+            ARGNAME_NUMBER);
 
       addOption(ARG_MAX_RUNTIME_MS,
             "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
@@ -1278,6 +1306,8 @@ public final class Settings extends BaseSettings {
       _jobs = getIntOptionValue(ARG_JOBS);
       _keepBlocks = getBooleanOptionValue(BfConsts.COMMAND_KEEP_BLOCKS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
+      _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
+      _maxParserContextTokens = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
       _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
@@ -1368,6 +1398,14 @@ public final class Settings extends BaseSettings {
       _logger = logger;
    }
 
+   public void setMaxParserContextLines(int maxParserContextLines) {
+      _maxParserContextLines = maxParserContextLines;
+   }
+
+   public void setMaxParserContextTokens(int maxParserContextTokens) {
+      _maxParserContextTokens = maxParserContextTokens;
+   }
+
    public void setMaxRuntimeMs(int runtimeMs) {
       _maxRuntimeMs = runtimeMs;
    }
@@ -1402,6 +1440,14 @@ public final class Settings extends BaseSettings {
 
    public void setTestRigPath(String path) {
       _testRigPath = path;
+   }
+
+   public void setThrowOnLexerError(boolean throwOnLexerError) {
+      _throwOnLexerError = throwOnLexerError;
+   }
+
+   public void setThrowOnParserError(boolean throwOnParserError) {
+      _throwOnParserError = throwOnParserError;
    }
 
    public void setZ3DataPlaneFile(String path) {

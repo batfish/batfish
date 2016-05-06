@@ -37,12 +37,15 @@ tokens {
    ACL_NUM_OTHER,
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
+   CHAIN,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
+   HEX_FRAGMENT,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
-   PIPE
+   PIPE,
+   SELF_SIGNED
 }
 
 // Cisco Keywords
@@ -354,6 +357,11 @@ ALLOWAS_IN
    'allowas-in'
 ;
 
+ALTERNATE_ADDRESS
+:
+   'alternate-address'
+;
+
 ALWAYS
 :
    'always'
@@ -638,12 +646,17 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
+   'banner' -> pushMode ( M_DESCRIPTION )
+;
+
+BANNER_COMPLEX
+:
    'banner' ' '+
    (
       'exec'
       | 'login'
       | 'motd'
-   ) -> pushMode ( M_BANNER )
+   ) -> type ( BANNER ) , pushMode ( M_BANNER )
 ;
 
 BASH
@@ -851,6 +864,11 @@ CDP
    'cdp'
 ;
 
+CDP_URL
+:
+   'cdp-url'
+;
+
 CEF
 :
    'cef'
@@ -858,7 +876,7 @@ CEF
 
 CERTIFICATE
 :
-   'certificate' -> pushMode ( M_CERTIFICATE )
+   'certificate' -> pushMode ( M_Certificate )
 ;
 
 CFS
@@ -1101,6 +1119,11 @@ CONTROLLER
    'controller'
 ;
 
+CONVERSION_ERROR
+:
+   'conversion-error'
+;
+
 COPY
 :
    'copy'
@@ -1119,6 +1142,11 @@ COUNT
 COUNTER
 :
    'counter'
+;
+
+CPD
+:
+   'cpd'
 ;
 
 CPTONE
@@ -1301,6 +1329,11 @@ DEFAULT_INFORMATION_ORIGINATE
    'default-information-originate'
 ;
 
+DEFAULT_MAX_FRAME_SIZE
+:
+   'default-max-frame-size'
+;
+
 DEFAULT_METRIC
 :
    'default-metric'
@@ -1369,6 +1402,11 @@ DESIRABLE
 DESTINATION
 :
    'destination'
+;
+
+DESTINATION_PATTERN
+:
+   'destination-pattern'
 ;
 
 DESTINATION_VRF
@@ -1581,6 +1619,11 @@ DSU
    'dsu'
 ;
 
+DTMF_RELAY
+:
+   'dtmf-relay'
+;
+
 DUPLEX
 :
    'duplex'
@@ -1614,6 +1657,11 @@ EBGP_MULTIHOP
 ECHO
 :
    'echo'
+;
+
+ECHO_CANCEL
+:
+   'echo-cancel'
 ;
 
 ECHO_REPLY
@@ -1818,7 +1866,7 @@ EXEC_TIMEOUT
 
 EXECUTE
 :
-   'execute'
+   'execute' -> pushMode ( M_Execute )
 ;
 
 EXIT
@@ -1834,6 +1882,11 @@ EXIT_ADDRESS_FAMILY
 EXIT_PEER_SESSION
 :
    'exit-peer-session'
+;
+
+EXIT_VRF
+:
+   'exit-vrf'
 ;
 
 EXPECT
@@ -2025,6 +2078,11 @@ FORCE
    'force'
 ;
 
+FORWARD_DIGITS
+:
+   'forward-digits'
+;
+
 FORWARD_PROTOCOL
 :
    'forward-protocol'
@@ -2115,6 +2173,11 @@ GID
    'gid'
 ;
 
+GIG_DEFAULT
+:
+   'gig-default'
+;
+
 GLBP
 :
    'glbp'
@@ -2178,6 +2241,11 @@ GT
 H323
 :
    'h323'
+;
+
+H323_GATEWAY
+:
+   'h323-gateway'
 ;
 
 HALF_DUPLEX
@@ -2280,6 +2348,11 @@ HOST
    'host'
 ;
 
+HOST_INFO
+:
+   'host-info'
+;
+
 HOST_ROUTING
 :
    'host-routing'
@@ -2320,6 +2393,11 @@ HW_MODULE
    'hw-module'
 ;
 
+HW_SWITCH
+:
+   'hw-switch'
+;
+
 ICMP
 :
    'icmp'
@@ -2338,6 +2416,16 @@ ICMP_ERRORS
 ICMP_OBJECT
 :
    'icmp-object'
+;
+
+ICMP_TYPE
+:
+   'icmp-type'
+;
+
+ICMP6
+:
+   'icmp6'
 ;
 
 IDENT
@@ -2368,6 +2456,11 @@ IF
 IGMP
 :
    'igmp'
+;
+
+IGRP
+:
+   'igrp'
 ;
 
 IGNORE
@@ -2420,9 +2513,24 @@ INBOUND
    'inbound'
 ;
 
+INCOMING
+:
+   'incoming'
+;
+
 INCOMPLETE
 :
    'incomplete'
+;
+
+INFORMATION_REPLY
+:
+   'information-reply'
+;
+
+INFORMATION_REQUEST
+:
+   'information-request'
 ;
 
 INGRESS
@@ -2576,6 +2684,11 @@ ISL
 ISPF
 :
    'ispf'
+;
+
+ISSUER_NAME
+:
+   'issuer-name'
 ;
 
 KEEPALIVE
@@ -2803,6 +2916,11 @@ LINECODE
    'linecode'
 ;
 
+LINK_FAULT_SIGNALING
+:
+   'link-fault-signaling'
+;
+
 LISTEN
 :
    'listen'
@@ -3018,6 +3136,16 @@ MASK
    'mask'
 ;
 
+MASK_REPLY
+:
+   'mask-reply'
+;
+
+MASK_REQUEST
+:
+   'mask-request'
+;
+
 MATCH
 :
    'match'
@@ -3196,6 +3324,11 @@ MLS
 MOBILE_IP
 :
    'mobile-ip'
+;
+
+MOBILE_REDIRECT
+:
+   'mobile-redirect'
 ;
 
 MOBILITY
@@ -3498,6 +3631,11 @@ NHOP_ONLY
    'nhop-only'
 ;
 
+NLS
+:
+   'nls'
+;
+
 NNTP
 :
    'nntp'
@@ -3568,6 +3706,11 @@ NONEGOTIATE
    'nonegotiate'
 ;
 
+NOS
+:
+   'nos'
+;
+
 NOT
 :
    'not'
@@ -3576,6 +3719,11 @@ NOT
 NOT_ADVERTISE
 :
    'not-advertise'
+;
+
+NOTIFICATION_TIMER
+:
+   'notification-timer'
 ;
 
 NOTIFY
@@ -3973,6 +4121,11 @@ PORT_CHANNEL_PROTOCOL
    'port-channel-protocol'
 ;
 
+PORT_NAME
+:
+   'port-name'
+;
+
 PORT_OBJECT
 :
    'port-object'
@@ -4141,6 +4294,11 @@ PROTOCOL_OBJECT
 PROXY_ARP
 :
    'proxy-arp'
+;
+
+PROXY_SERVER
+:
+   'proxy-server'
 ;
 
 PSEUDOWIRE_CLASS
@@ -4503,9 +4661,19 @@ ROUTER
    'router'
 ;
 
+ROUTER_ADVERTISEMENT
+:
+   'router-advertisement'
+;
+
 ROUTER_ID
 :
    'router-id'
+;
+
+ROUTER_SOLICITATION
+:
+   'router-solicitation'
 ;
 
 ROUTING
@@ -4818,6 +4986,11 @@ SHUTDOWN
    'shutdown'
 ;
 
+SIGNAL
+:
+   'signal'
+;
+
 SIGNALLED_BANDWIDTH
 :
    'signalled-bandwidth'
@@ -4871,6 +5044,11 @@ SNMP_SERVER
 SNMPTRAP
 :
    'snmptrap'
+;
+
+SNP
+:
+   'snp'
 ;
 
 SORT_BY
@@ -4976,6 +5154,11 @@ SSH_KEYDIR
 SSL
 :
    'ssl'
+;
+
+STACK_MAC
+:
+   'stack-mac'
 ;
 
 STACK_MIB
@@ -5170,6 +5353,16 @@ SYSTEM
    'system'
 ;
 
+SYSTEM_INIT
+:
+   'system-init'
+;
+
+SYSTEM_MAX
+:
+   'system-max'
+;
+
 SYSTEM_PRIORITY
 :
    'system-priority'
@@ -5183,6 +5376,11 @@ TABLE_MAP
 TACACS
 :
    'tacacs'
+;
+
+TACACS_DS
+:
+   'tacacs-ds'
 ;
 
 TACACS_PLUS
@@ -5243,6 +5441,11 @@ TCP
 TCP_CONNECT
 :
    'tcp-connect'
+;
+
+TCP_UDP
+:
+   'tcp-udp'
 ;
 
 TELNET
@@ -5333,6 +5536,16 @@ TIMERS
 TIMESTAMP
 :
    'timestamp'
+;
+
+TIMESTAMP_REPLY
+:
+   'timestamp-reply'
+;
+
+TIMESTAMP_REQUEST
+:
+   'timestamp-request'
 ;
 
 TIMING
@@ -5560,6 +5773,11 @@ USE_VRF
    'use-vrf'
 ;
 
+USER
+:
+   'user'
+;
+
 USER_IDENTITY
 :
    'user-identity'
@@ -5585,6 +5803,21 @@ UUCP
    'uucp'
 ;
 
+V4
+:
+   'v4'
+;
+
+V6
+:
+   'v6'
+;
+
+VAD
+:
+   'vad'
+;
+
 VALIDATION_USAGE
 :
    'validation-usage'
@@ -5593,6 +5826,11 @@ VALIDATION_USAGE
 VDC
 :
    'vdc'
+;
+
+VER
+:
+   'ver'
 ;
 
 VERIFY
@@ -6352,7 +6590,7 @@ F_NonNewline
 fragment
 F_NonWhitespace
 :
-   ~( ' ' | '\t' | '\u000C' )
+   ~( ' ' | '\t' | '\u000C' | '\n' | '\r' )
 ;
 
 F_PositiveHexDigit
@@ -6599,30 +6837,51 @@ M_BANNER_NEWLINE
    F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
 ;
 
-mode M_CERTIFICATE;
+mode M_Certificate;
 
-M_CERTIFICATE_QUIT
+M_Certificate_CA
 :
-   'quit' -> type ( QUIT ) , popMode
+   'ca' -> type ( CA ) , pushMode ( M_CertificateText )
 ;
 
-M_CERTIFICATE_TEXT
+M_Certificate_CHAIN
+:
+   'chain' -> type ( CHAIN ) , popMode
+;
+
+M_Certificate_SELF_SIGNED
+:
+   'self-signed' -> type ( SELF_SIGNED ) , pushMode ( M_CertificateText )
+;
+
+M_Cerficate_HEX_FRAGMENT
+:
+   [A-Fa-f0-9]+ -> type ( HEX_FRAGMENT ) , pushMode ( M_CertificateText )
+;
+
+M_Certificate_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_CertificateText;
+
+M_CertificateText_QUIT
+:
+   'quit' -> type ( QUIT ) , mode ( DEFAULT_MODE )
+;
+
+M_CertificateText_HEX_FRAGMENT
+:
+   [A-Fa-f0-9]+ -> type ( HEX_FRAGMENT )
+;
+
+M_CertificateText_WS
 :
    (
-      ~'q'
-      |
-      (
-         'q' ~'u'
-      )
-      |
-      (
-         'qu' ~'i'
-      )
-      |
-      (
-         'qui' ~'t'
-      )
-   )+
+      F_Whitespace
+      | F_Newline
+   )+ -> channel ( HIDDEN )
 ;
 
 mode M_COMMENT;
@@ -6664,6 +6923,18 @@ M_DESCRIPTION_NEWLINE
 M_DESCRIPTION_NON_NEWLINE
 :
    F_NonNewline+
+;
+
+mode M_Execute;
+
+M_Execute_TEXT
+:
+   ~'}'+
+;
+
+M_Execute_BRACE_RIGHT
+:
+   '}' -> type ( BRACE_RIGHT ) , popMode
 ;
 
 mode M_Extcommunity;
@@ -6771,6 +7042,7 @@ M_Interface_PREFIX
    (
       F_Letter
       | '-'
+      | '_'
    )*
 ;
 

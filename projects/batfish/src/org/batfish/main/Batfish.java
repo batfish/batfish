@@ -424,8 +424,7 @@ public class Batfish implements AutoCloseable {
       switch (format) {
       case JUNIPER: {
          JuniperCombinedParser parser = new JuniperCombinedParser(input,
-               settings.getThrowOnParserError(),
-               settings.getThrowOnLexerError());
+               settings);
          ParserRuleContext tree = parse(parser, logger, settings);
          JuniperFlattener flattener = new JuniperFlattener(header);
          ParseTreeWalker walker = new ParseTreeWalker();
@@ -434,9 +433,7 @@ public class Batfish implements AutoCloseable {
       }
 
       case VYOS: {
-         VyosCombinedParser parser = new VyosCombinedParser(input,
-               settings.getThrowOnParserError(),
-               settings.getThrowOnLexerError());
+         VyosCombinedParser parser = new VyosCombinedParser(input, settings);
          ParserRuleContext tree = parse(parser, logger, settings);
          VyosFlattener flattener = new VyosFlattener(header);
          ParseTreeWalker walker = new ParseTreeWalker();
@@ -787,7 +784,9 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerCompareSameName(CompareSameNameQuestion question) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    private void answerDestination(DestinationQuestion question) {
@@ -1225,8 +1224,7 @@ public class Batfish implements AutoCloseable {
       for (Path logicFilePath : logicFiles) {
          String input = Util.readFile(logicFilePath.toFile());
          LogiQLCombinedParser parser = new LogiQLCombinedParser(input,
-               _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+               _settings);
          ParserRuleContext tree = parse(parser, logicFilePath.toString());
          trees.add(tree);
       }
@@ -2767,7 +2765,7 @@ public class Batfish implements AutoCloseable {
       String roleFileText = Util.readFile(rolePath.toFile());
       _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
       BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText,
-            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
+            _settings);
       RoleExtractor extractor = new RoleExtractor();
       ParserRuleContext tree = parse(parser);
       ParseTreeWalker walker = new ParseTreeWalker();
@@ -2784,7 +2782,7 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       QuestionParameters parameters = parseQuestionParameters();
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
-            _settings.getThrowOnParserError(), _settings.getThrowOnLexerError());
+            _settings);
       QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag(),
             parameters);
       try {
@@ -2820,8 +2818,7 @@ public class Batfish implements AutoCloseable {
       String questionText = Util.readFile(questionParametersFile);
       _logger.info("OK\n");
       QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
-            questionText, _settings.getThrowOnParserError(),
-            _settings.getThrowOnLexerError());
+            questionText, _settings);
       QuestionParametersExtractor extractor = new QuestionParametersExtractor();
       ParserRuleContext tree = null;
       try {
@@ -2854,16 +2851,12 @@ public class Batfish implements AutoCloseable {
       _logger.info("Parsing: \""
             + topologyFilePath.getAbsolutePath().toString() + "\" ...");
       if (topologyFileText.startsWith("autostart")) {
-         parser = new GNS3TopologyCombinedParser(topologyFileText,
-               _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+         parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
          extractor = new GNS3TopologyExtractor();
       }
       else if (topologyFileText
             .startsWith(BatfishTopologyCombinedParser.HEADER)) {
-         parser = new BatfishTopologyCombinedParser(topologyFileText,
-               _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+         parser = new BatfishTopologyCombinedParser(topologyFileText, _settings);
          extractor = new BatfishTopologyExtractor();
       }
       else if (topologyFileText.equals("")) {

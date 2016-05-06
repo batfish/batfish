@@ -2,14 +2,15 @@ package org.batfish.grammar.question;
 
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.question.QuestionParametersParser.ParametersContext;
+import org.batfish.main.Settings;
 
 public class QuestionParametersCombinedParser extends
       BatfishCombinedParser<QuestionParametersParser, QuestionParametersLexer> {
 
    public QuestionParametersCombinedParser(String questionText,
-         boolean throwOnParserError, boolean throwOnLexerError) {
+         Settings settings) {
       super(QuestionParametersParser.class, QuestionParametersLexer.class,
-            questionText, throwOnParserError, throwOnLexerError);
+            questionText, settings);
    }
 
    @Override
