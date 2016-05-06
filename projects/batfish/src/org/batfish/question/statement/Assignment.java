@@ -140,6 +140,8 @@ public class Assignment implements Statement {
          break;
 
       case ACTION:
+      case NEIGHBOR_TYPE:
+      case NODE_TYPE:
       case RANGE:
       case REGEX:
       case SET_BGP_ADVERTISEMENT:

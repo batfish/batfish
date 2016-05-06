@@ -2200,6 +2200,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
       case ACTION:
       case BOOLEAN:
+      case NEIGHBOR_TYPE:
+      case NODE_TYPE:
       case PROTOCOL:
       case RANGE:
       case REGEX:
