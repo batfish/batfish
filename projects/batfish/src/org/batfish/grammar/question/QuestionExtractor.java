@@ -23,6 +23,10 @@ import org.batfish.question.GeneratedRoutePrefixExpr;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
+import org.batfish.question.NeighborType;
+import org.batfish.question.NeighborsQuestion;
+import org.batfish.question.NodeType;
+import org.batfish.question.NodesQuestion;
 import org.batfish.question.ProtocolDependenciesQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.QuestionParameters;
@@ -300,6 +304,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private Question _question;
 
+   private NeighborsQuestion _neighborsQuestion;
+   
+   private NodesQuestion _nodesQuestion;
+
    private ReachabilityQuestion _reachabilityQuestion;
 
    private Set<FlowBuilder> _tracerouteFlowBuilders;
@@ -357,6 +365,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.IP_PREFIX() != null) {
          type = VariableType.PREFIX;
          value = new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else if (ctx.neighbor_type() != null) {
+    	  type = VariableType.NEIGHBOR_TYPE;
+    	  value = NeighborType.fromName(ctx.neighbor_type().getText());
+      }
+      else if (ctx.node_type() != null) {
+    	  type = VariableType.NODE_TYPE;
+    	  value = NodeType.fromName(ctx.node_type().getText());
       }
       else if (ctx.range() != null) {
          type = VariableType.RANGE;
@@ -496,6 +512,55 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterMultipath_question(Multipath_questionContext ctx) {
       MultipathQuestion multipathQuestion = new MultipathQuestion(_parameters);
       _question = multipathQuestion;
+   }
+
+   @Override
+   public void enterNeighbors_constraint_neighbor_type(
+         Neighbors_constraint_neighbor_typeContext ctx) {
+      _neighborsQuestion.getNeighborTypes().clear();
+      NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
+      _neighborsQuestion.getNeighborTypes().add(nType);
+   }
+
+   @Override
+   public void enterNeighbors_constraint_dst_node(
+         Neighbors_constraint_dst_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _neighborsQuestion.setDstNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNeighbors_constraint_src_node(
+         Neighbors_constraint_src_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _neighborsQuestion.setSrcNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNeighbors_question(Neighbors_questionContext ctx) {
+      _neighborsQuestion = new NeighborsQuestion(_parameters);
+      _question = _neighborsQuestion;
+   }
+
+   @Override
+   public void enterNodes_constraint_node_type(
+         Nodes_constraint_node_typeContext ctx) {
+      _nodesQuestion.getNodeTypes().clear();
+      NodeType nType = toNodeType(ctx.node_type_constraint());
+      _nodesQuestion.getNodeTypes().add(nType);
+   }
+
+   @Override
+   public void enterNodes_constraint_node(
+         Nodes_constraint_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _nodesQuestion.setNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNodes_question(Nodes_questionContext ctx) {
+      _nodesQuestion = new NodesQuestion(_parameters);
+      _question = _nodesQuestion;
    }
 
    @Override
@@ -1620,6 +1685,34 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          throw conversionError(ERR_CONVERT_NODE, ctx);
       }
 
+   }
+
+   private NeighborType toNeighborType(Neighbor_type_constraintContext ctx) {
+	   NeighborType nType;
+	   if (ctx.neighbor_type() != null) {
+		   nType = NeighborType.fromName(ctx.neighbor_type().getText());
+	   }
+	   else if (ctx.VARIABLE() != null) {
+		   nType = _parameters.getNeighborType(ctx.VARIABLE().getText().substring(1));
+	   }
+	   else {
+		   throw conversionError(ERR_CONVERT_ACTION, ctx);
+	   }
+	   return nType;
+   }
+
+   private NodeType toNodeType(Node_type_constraintContext ctx) {
+	   NodeType nType;
+	   if (ctx.node_type() != null) {
+		   nType = NodeType.fromName(ctx.node_type().getText());
+	   }
+	   else if (ctx.VARIABLE() != null) {
+		   nType = _parameters.getNodeType(ctx.VARIABLE().getText().substring(1));
+	   }
+	   else {
+		   throw conversionError(ERR_CONVERT_ACTION, ctx);
+	   }
+	   return nType;
    }
 
    private PolicyMapClauseExpr toPolicyMapClauseExpr(

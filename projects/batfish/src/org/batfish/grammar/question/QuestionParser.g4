@@ -498,6 +498,7 @@ default_binding
 
       | ip_constraint_complex
       | neighbor_type
+      | node_type
       | range
       | REGEX
       |
@@ -1423,24 +1424,24 @@ multipath_question
    MULTIPATH
 ;
 
-neighbor_constraint
+neighbors_constraint
 :
-   neighbor_constraint_dst_node
-   | neighbor_constraint_neighbor_type
-   | neighbor_constraint_src_node
+   neighbors_constraint_dst_node
+   | neighbors_constraint_neighbor_type
+   | neighbors_constraint_src_node
 ;
 
-neighbor_constraint_dst_node
+neighbors_constraint_dst_node
 :
    DST_NODE EQUALS node_constraint
 ;
 
-neighbor_constraint_neighbor_type
+neighbors_constraint_neighbor_type
 :
    NEIGHBOR_TYPE EQUALS neighbor_type_constraint
 ;
 
-neighbor_constraint_src_node
+neighbors_constraint_src_node
 :
    SRC_NODE EQUALS node_constraint
 ;
@@ -1460,9 +1461,9 @@ neighbor_type_constraint
 
 neighbors_question
 :
-   NEIGHBORS OPEN_BRACE neighbor_constraint
+   NEIGHBORS OPEN_BRACE neighbors_constraint
    (
-      COMMA neighbor_constraint
+      COMMA neighbors_constraint
    )* CLOSE_BRACE
 ;
 
@@ -1480,6 +1481,30 @@ locals [VariableType varType]
 new_map_expr
 :
    NEW_MAP
+;
+
+nodes_constraint
+:
+   nodes_constraint_node
+   | nodes_constraint_node_type
+;
+
+nodes_constraint_node
+:
+   NODE EQUALS node_constraint
+;
+
+nodes_constraint_node_type
+:
+   NODE_TYPE EQUALS node_type_constraint
+;
+
+nodes_question
+:
+   NODES OPEN_BRACE nodes_constraint
+   (
+      COMMA nodes_constraint
+   )* CLOSE_BRACE
 ;
 
 node_bgp_boolean_expr
@@ -1587,6 +1612,20 @@ node_static_configured_boolean_expr
 node_string_expr
 :
    caller = node_expr PERIOD node_name_string_expr
+;
+
+node_type
+:
+	ANY 
+	| BGP
+	| ISIS
+	| OSPF
+;
+
+node_type_constraint
+:
+   node_type
+   | VARIABLE
 ;
 
 not_expr
@@ -1755,6 +1794,7 @@ question
       | local_path_question
       | multipath_question
       | neighbors_question
+      | nodes_question
       | protocol_dependencies_question
       | reachability_question
       | traceroute_question

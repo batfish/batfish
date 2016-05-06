@@ -66,6 +66,11 @@ AND
    'and'
 ;
 
+ANY
+:
+   'any'
+;
+
 AS_PATH
 :
    'as_path'
@@ -491,9 +496,19 @@ NODE
    'node'
 ;
 
+NODES
+:
+   'nodes'
+;
+
 NODE_BGP_GENERATED_ROUTE
 :
    'node_bgp_generated_route'
+;
+
+NODE_TYPE
+:
+   'node_type'
 ;
 
 NOT

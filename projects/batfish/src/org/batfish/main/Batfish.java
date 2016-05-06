@@ -69,6 +69,7 @@ import org.batfish.collections.RouteSet;
 import org.batfish.collections.TreeMultiSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.BfJson;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
@@ -120,6 +121,8 @@ import org.batfish.question.ReducedReachabilityQuestion;
 import org.batfish.question.IngressPathQuestion;
 import org.batfish.question.LocalPathQuestion;
 import org.batfish.question.MultipathQuestion;
+import org.batfish.question.NeighborsQuestion;
+import org.batfish.question.NodesQuestion;
 import org.batfish.question.ProtocolDependenciesQuestion;
 import org.batfish.question.Question;
 import org.batfish.question.QuestionParameters;
@@ -585,6 +588,14 @@ public class Batfish implements AutoCloseable {
          answerMultipath((MultipathQuestion) question);
          break;
 
+      case NEIGHBORS:
+    	  answerNeighbors((NeighborsQuestion) question);
+    	  break;
+    	  
+      case NODES:
+    	  answerNodes((NodesQuestion) question);
+    	  break;
+    	  
       case PROTOCOL_DEPENDENCIES:
          answerProtocolDependencies((ProtocolDependenciesQuestion) question);
          break;
@@ -916,6 +927,51 @@ public class Batfish implements AutoCloseable {
          wSetFlowOriginate.append(flow.toLBLine());
       }
       dumpTrafficFacts(trafficFactBins);
+   }
+
+   private void answerNeighbors(NeighborsQuestion question) {
+	   _logger.output("Boohoo bohoo neighbors\n");
+   }
+
+   private void answerNodes(NodesQuestion question) {
+	   checkConfigurations();
+	   Map<String, Configuration> configurations = loadConfigurations();
+
+	   // collect nodes nodes
+	   Pattern nodeRegex = question.getNodeRegex();
+	   Set<String> nodes = new TreeSet<String>();
+	   if (nodeRegex != null) {
+		   for (String node : configurations.keySet()) {
+			   Matcher nodeMatcher = nodeRegex.matcher(node);
+			   if (nodeMatcher.matches()) {
+				   nodes.add(node);
+			   }
+		   }
+	   }
+	   else {
+		   nodes.addAll(configurations.keySet());
+	   }
+
+	   try {
+		   JSONObject jObj = new JSONObject();	   
+
+		   JSONArray nodeList = new JSONArray();	   
+		   jObj.put(BfJson.KEY_NODES, nodeList);
+
+		   for (String node : nodes) {
+			   JSONObject nodeObject = new JSONObject();
+			   nodeObject.put(BfJson.KEY_NODE, configurations.get(node).toJson());
+			   nodeList.put(nodeObject);
+		   }
+		   
+		   _logger.output(jObj.toString(4));
+	   }
+	   catch (JSONException e) {
+		   throw new BatfishException(
+				   "Error converting node list to json",
+				   e);
+	   }
+
    }
 
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
