@@ -33,12 +33,14 @@ null_block_stanza
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
+      | CPD
       | CRYPTO
       | CTL_FILE
       | DAEMON
       | DCB
       | DCB_BUFFER_THRESHOLD
       | DEBUG
+      | DEFAULT_MAX_FRAME_SIZE
       | DIAL_PEER
       | DOMAIN
       | DO STOP
@@ -52,6 +54,7 @@ null_block_stanza
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | HW_SWITCH
       | INTERFACE BREAKOUT
       |
       (
@@ -65,6 +68,7 @@ null_block_stanza
             | BOOTP_RELAY
             | DECAP_GROUP
             | DHCP
+            | DNS
             | ECMP_GROUP
             | FLOW_TOP_TALKERS
             | HARDWARE
@@ -142,6 +146,7 @@ null_block_stanza
             IP AS_PATH
          )
       )
+      | NLS
       | NO_BANNER
       | NSR
       | NTP
@@ -179,6 +184,9 @@ null_block_stanza
       | SVCLC
       | SWITCH_PROFILE
       | SWITCH_TYPE
+      | SYSTEM_INIT
+      | SYSTEM_MAX
+      | TABLE_MAP
       | TACACS
       | TACACS_SERVER
       | TCP
@@ -192,6 +200,7 @@ null_block_stanza
       | USERGROUP
       | USERNAME
       | VDC
+      | VER
       |
       (
          VLAN
@@ -269,6 +278,7 @@ null_block_substanza
          | CLASS
          | CLIENT_GROUP
          | CLOCK
+         | CODEC
          | COLLECT
          | COMMAND
          | CONFORM_ACTION
@@ -281,6 +291,7 @@ null_block_substanza
          | CRYPTOGRAPHIC_ALGORITHM
          | DATABITS
          | DBL
+         | DEFAULT
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
@@ -289,15 +300,18 @@ null_block_substanza
          | DENY
          | DESCRIPTION
          | DESTINATION
+         | DESTINATION_PATTERN
          | DEVICE
          | DIAGNOSTIC
          | DISABLE
          | DNS_SERVER
          | DOMAIN_ID
+         | DOMAIN_NAME
          | DROP
          | DS0_GROUP
-         | DOMAIN_NAME
+         | DTMF_RELAY
          | ECHO
+         | ECHO_CANCEL
          | EGRESS
          | ENABLE
          | ENCAPSULATION
@@ -324,6 +338,7 @@ null_block_substanza
          | FILE_ENTRY
          | FILE_SIZE
          | FLUSH_AT_ACTIVATION
+         | FORWARD_DIGITS
          | FQDN
          | FRAMING
          | FREQUENCY
@@ -346,6 +361,7 @@ null_block_substanza
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
+         | INCOMING
          | INGRESS
          | INSERVICE
          | INSPECT
@@ -395,6 +411,7 @@ null_block_substanza
          | LOGIN
          | LPTS
          | MAIN_CPU
+         | MAP
          | MATCH
          | MAXIMUM
          | MEMBER
@@ -411,11 +428,13 @@ null_block_substanza
          | NEGOTIATE
          | NETWORK
          | NODE
+         | NOTIFICATION_TIMER
          | NOTIFY
          | OPEN
          | OPTION
          | OPTIONS
          | OPS
+         | OUI
          | PARAMETERS
          | PARENT
          | PARITY
@@ -501,6 +520,7 @@ null_block_substanza
          | SHAPE
          | SHUT
          | SHUTDOWN
+         | SIGNAL
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SMTP
@@ -542,9 +562,11 @@ null_block_substanza
          | TUNNEL_GROUP
          | UDP_JITTER
          | UID
+         | UNTAGGED
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
+         | VAD
          | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
@@ -877,7 +899,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SWITCH
       | SYSOPT
       | SYSTEM
-      | TABLE_MAP
       | TAG_SWITCHING
       | TELNET
       | TFTP_SERVER

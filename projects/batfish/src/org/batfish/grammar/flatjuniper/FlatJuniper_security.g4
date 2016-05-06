@@ -114,6 +114,7 @@ hib_system_service
 :
    ALL
    | ANY_SERVICE
+   | DHCP
    | DNS
    | FINGER
    | FTP
@@ -792,6 +793,7 @@ natrsrtt_source_nat
 natrsrtt_source_nat_tail
 :
    tsnt_interface
+   | tsnt_off
    | tsnt_pool
 ;
 
@@ -1140,6 +1142,7 @@ sp_then
 sp_then_tail
 :
    sptt_deny
+   | sptt_log
    | sptt_permit
 ;
 
@@ -1223,6 +1226,11 @@ sptt_deny
 :
    DENY
    | REJECT
+;
+
+sptt_log
+:
+   LOG s_null_filler
 ;
 
 sptt_permit
@@ -1357,6 +1365,11 @@ tsnpt_persistent_nat_tail
 tsnt_interface
 :
    INTERFACE
+;
+
+tsnt_off
+:
+   OFF
 ;
 
 tsnt_pool

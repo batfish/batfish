@@ -82,7 +82,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
       // collect context from text
       String text = _combinedParser.getInput();
-      String[] lines = text.split("\n");
+      String[] lines = text.split("\n", -1);
       int errorLineIndex = offendingToken.getLine() - 1;
       int errorContextStartLine = Math.max(
             errorLineIndex - _settings.getMaxParserContextLines(), 0);
