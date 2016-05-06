@@ -83,6 +83,8 @@ import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco.RouteMapSetMetricLine;
 import org.batfish.representation.cisco.RouteMapSetNextHopLine;
 import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
+import org.batfish.representation.cisco.RoutePolicy;
+import org.batfish.representation.cisco.RoutePolicyClause;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
@@ -805,6 +807,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private RouteMapClause _currentRouteMapClause;
 
+   private RoutePolicy _currentRoutePolicy;
+
+   private RoutePolicyClause _currentRoutePolicyClause;
+
    private StandardAccessList _currentStandardAcl;
 
    private StandardCommunityList _currentStandardCommunityList;
@@ -1189,6 +1195,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                + "'. Duplicate clause will be merged with original clause.");
       }
    }
+
+   @Override
+   public void enterRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      _currentRoutePolicy = _configuration.getRoutePolicies().get(name);
+      if (_currentRoutePolicy == null) {
+         _currentRoutePolicy = new RoutePolicy(name);
+         _configuration.getRoutePolicies().put(name, _currentRoutePolicy);
+      }
+   }
+
 
    @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
@@ -2561,6 +2578,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitRoute_map_stanza(Route_map_stanzaContext ctx) {
       _currentRouteMap = null;
       _currentRouteMapClause = null;
+   }
+
+   @Override
+   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+      _currentRoutePolicy = null;
+      _currentRoutePolicyClause = null;
    }
 
    @Override
