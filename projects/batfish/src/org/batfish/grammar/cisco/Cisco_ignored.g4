@@ -21,6 +21,7 @@ null_block_stanza
       | BFD
       | BGP DISABLE_ADVERTISEMENT
       | BSD_USERNAME
+      | CALL_HOME
       | CAM_ACL
       | CAM_PROFILE
       | CEF
@@ -41,6 +42,7 @@ null_block_stanza
       | DCB_BUFFER_THRESHOLD
       | DEBUG
       | DEFAULT_MAX_FRAME_SIZE
+      | DEFAULT_VALUE
       | DIAL_PEER
       | DOMAIN
       | DO STOP
@@ -184,6 +186,7 @@ null_block_stanza
       | STACK_UNIT
       | STCAPP
       | SVCLC
+      | SWITCH
       | SWITCH_PROFILE
       | SWITCH_TYPE
       | SYSTEM_INIT
@@ -244,6 +247,7 @@ null_block_substanza
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
+         | ALERT_GROUP
          | ANYCONNECT
          | APPLICATION
          | ARCHIVE_LENGTH
@@ -287,6 +291,8 @@ null_block_substanza
          | CONGESTION_CONTROL
          | CONNECT_SOURCE
          | CONTEXT
+         | CONTACT_EMAIL_ADDR
+         | CONTRACT_ID
          | CPTONE
          | CREDENTIALS
          | CRL
@@ -312,6 +318,7 @@ null_block_substanza
          | DROP
          | DS0_GROUP
          | DTMF_RELAY
+         | DUAL_ACTIVE
          | ECHO
          | ECHO_CANCEL
          | EGRESS
@@ -453,6 +460,7 @@ null_block_substanza
          | PEER_LINK
          | PERMIT
          | PERSISTENT
+         | PHONE_NUMBER
          | PICKUP
          | PINNING
          | POLICE
@@ -507,6 +515,7 @@ null_block_substanza
          | SCHEME
          | SECRET
          | SEND_LIFETIME
+         | SENDER
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -526,6 +535,8 @@ null_block_substanza
          | SIGNAL
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
+         | SITE_ID
+         | SLOT
          | SMTP
          | SORT_BY
          | SOURCE
@@ -537,6 +548,7 @@ null_block_substanza
          | STICKY
          | STOPBITS
          | STP
+         | STREET_ADDRESS
          | SUBJECT_NAME
          | SWITCHBACK
          | SWITCHPORT
@@ -632,7 +644,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ACCOUNTING_PORT
       | ACTION
       | ACTIVE
-      | ALERT_GROUP
       | ALIAS
       | ANYCONNECT
       | ANYCONNECT_ESSENTIALS
@@ -651,7 +662,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | BOOT_START_MARKER
       | BRIDGE
       | CALL
-      | CALL_HOME
       | CARD
       | CCM_MANAGER
       | CDP
@@ -663,7 +673,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CODEC
       | CONFIG_REGISTER
       | CONSOLE
-      | CONTACT_EMAIL_ADDR
       | CRL
       | CTS
       | DEC
@@ -872,7 +881,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SCRIPTING
       | SDM
       | SECURITY
-      | SENDER
       | SERIAL_NUMBER
       | SERVER
       | SERVER_TYPE
@@ -899,7 +907,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SUBSCRIBER
       | SUBSCRIBE_TO
       | SUBSCRIBE_TO_ALERT_GROUP
-      | SWITCH
       | SYSOPT
       | SYSTEM
       | TAG_SWITCHING

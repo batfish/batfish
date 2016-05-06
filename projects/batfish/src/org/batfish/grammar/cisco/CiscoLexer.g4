@@ -187,6 +187,11 @@ ADDRESS_POOL
    'address-pool'
 ;
 
+ADDRGROUP
+:
+   'addrgroup'
+;
+
 ADJACENCY
 :
    'adjacency'
@@ -1104,6 +1109,11 @@ CONTEXT
    'context'
 ;
 
+CONTRACT_ID
+:
+   'contract-id'
+;
+
 CONTROL_APPS_USE_MGMT_PORT
 :
    'control-apps-use-mgmt-port'
@@ -1352,6 +1362,11 @@ DEFAULT_ORIGINATE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_VALUE
+:
+   'default-value'
 ;
 
 DEFINITION
@@ -1622,6 +1637,11 @@ DSU
 DTMF_RELAY
 :
    'dtmf-relay'
+;
+
+DUAL_ACTIVE
+:
+   'dual-active'
 ;
 
 DUPLEX
@@ -4011,6 +4031,11 @@ PFC
    'pfc'
 ;
 
+PHONE_NUMBER
+:
+   'phone-number'
+;
+
 PHONE_PROXY
 :
    'phone-proxy'
@@ -5016,9 +5041,19 @@ SINGLE_TOPOLOGY
    'single-topology'
 ;
 
+SITE_ID
+:
+   'site-id'
+;
+
 SLA
 :
    'sla'
+;
+
+SLOT
+:
+   'slot'
 ;
 
 SMTP
@@ -5221,6 +5256,11 @@ STORM_CONTROL
 STP
 :
    'stp'
+;
+
+STREET_ADDRESS
+:
+   'street-address'
 ;
 
 STRING
