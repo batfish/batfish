@@ -2848,10 +2848,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSwitchport_access_if_stanza(
          Switchport_access_if_stanzaContext ctx) {
-      int vlan = toInteger(ctx.vlan);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-         currentInterface.setAccessVlan(vlan);
+      if (ctx.vlan != null) {
+         int vlan = toInteger(ctx.vlan);
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setAccessVlan(vlan);
+         }
+      }
+      else {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setSwitchportAccessDynamic(true);
+         }
       }
    }
 

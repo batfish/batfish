@@ -507,7 +507,11 @@ shutdown_if_stanza
 
 switchport_access_if_stanza
 :
-   SWITCHPORT ACCESS VLAN vlan = DEC NEWLINE
+   SWITCHPORT ACCESS VLAN
+   (
+      vlan = DEC
+      | DYNAMIC
+   ) NEWLINE
 ;
 
 switchport_mode_access_stanza
