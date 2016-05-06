@@ -212,11 +212,6 @@ l2vpn_stanza
    L2VPN NEWLINE xconnect_stanza*
 ;
 
-macro_stanza
-:
-   MACRO ~NEWLINE* NEWLINE
-;
-
 management_plane_stanza
 :
    MANAGEMENT_PLANE NEWLINE mgp_stanza*
@@ -246,7 +241,6 @@ null_stanza
    | banner_stanza
    | certificate_stanza
    | del_stanza
-   | macro_stanza
    | management_plane_stanza
    | no_ip_access_list_stanza
    | null_block_stanza

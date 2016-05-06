@@ -119,6 +119,7 @@ null_block_stanza
       | LOGGING
       | MAC
       | MAC_LEARN
+      | MACRO
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
@@ -179,6 +180,7 @@ null_block_stanza
       | SERVICE_CLASS
       | SFLOW
       | SPANNING_TREE
+      | STACK_MAC
       | STACK_UNIT
       | STCAPP
       | SVCLC
@@ -410,6 +412,7 @@ null_block_substanza
          | LOGGING
          | LOGIN
          | LPTS
+         | MAC_ADDRESS
          | MAIN_CPU
          | MAP
          | MATCH

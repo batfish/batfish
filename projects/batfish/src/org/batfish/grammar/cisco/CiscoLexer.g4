@@ -5156,6 +5156,11 @@ SSL
    'ssl'
 ;
 
+STACK_MAC
+:
+   'stack-mac'
+;
+
 STACK_MIB
 :
    'stack-mib'
