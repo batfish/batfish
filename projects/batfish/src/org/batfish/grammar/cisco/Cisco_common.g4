@@ -230,6 +230,7 @@ port
    | SUNRPC
    | SYSLOG
    | TACACS
+   | TACACS_DS
    | TALK
    | TELNET
    | TFTP

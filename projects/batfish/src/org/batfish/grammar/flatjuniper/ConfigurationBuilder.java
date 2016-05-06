@@ -1057,6 +1057,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.ANY_SERVICE() != null) {
          return HostSystemService.ANY_SERVICE;
       }
+      else if (ctx.DHCP() != null) {
+         return HostSystemService.DHCP;
+      }
       else if (ctx.DNS() != null) {
          return HostSystemService.DNS;
       }

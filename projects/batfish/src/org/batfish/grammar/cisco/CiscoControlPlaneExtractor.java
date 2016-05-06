@@ -406,6 +406,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.TACACS() != null) {
          return NamedPort.TACACS;
       }
+      else if (ctx.TACACS_DS() != null) {
+         return NamedPort.TACACS_DS;
+      }
       else if (ctx.TALK() != null) {
          return NamedPort.TALK;
       }

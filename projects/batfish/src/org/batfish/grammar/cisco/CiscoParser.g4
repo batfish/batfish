@@ -664,6 +664,9 @@ vrf_context_stanza
 vrf_definition_stanza
 :
    VRF DEFINITION? name = variable NEWLINE vrfd_stanza*
+   (
+      EXIT_VRF NEWLINE
+   )?
 ;
 
 vrfc_stanza
