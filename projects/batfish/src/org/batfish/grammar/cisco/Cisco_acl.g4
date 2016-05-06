@@ -18,6 +18,10 @@ access_list_ip_range
    )
    | prefix = IP_PREFIX
    | ipv6_prefix = IPV6_PREFIX
+   |
+   (
+      ADDRGROUP address_group = variable
+   )
 ;
 
 appletalk_access_list_null_tail
