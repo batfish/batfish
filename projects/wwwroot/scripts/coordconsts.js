@@ -64,3 +64,4 @@ var SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
 var SVC_GET_OBJECT_RSC = "getobject";
 var SVC_GET_WORKSTATUS_RSC = "getworkstatus";
 var SVC_GETSTATUS_RSC = "getstatus";
+var SVC_LIST_TESTRIGS_RSC = "listtestrigs";

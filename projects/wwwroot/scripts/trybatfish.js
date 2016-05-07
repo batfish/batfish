@@ -27,13 +27,13 @@ var spinOpts = {
 , position: 'absolute' // Element positioning
 };
 
-
-function login()
+function login(entryPoint, remainingCalls)
 {
 	console.log(apiKey);
 	$(elementTabs).tabs("option", "active", 1);
 	$('#btnLogin').button("disable");
 	$(elementUploadBaseTestrigBtn).button("enable");
+	finishEntryPoint(entryPoint, remainingCalls);
 }
 						
 var questions = [];
