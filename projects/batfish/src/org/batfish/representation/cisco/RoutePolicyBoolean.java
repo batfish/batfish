@@ -8,5 +8,4 @@ public abstract class RoutePolicyBoolean implements Serializable {
 
    public abstract RoutePolicyBooleanType getType();
 
-
 }

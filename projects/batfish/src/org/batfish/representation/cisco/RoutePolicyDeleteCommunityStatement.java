@@ -1,23 +1,30 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
-
-public class RoutePolicyDeleteCommunityStatement extends RoutePolicyDeleteStatement {
-
-	private boolean negated;
-	private RoutePolicyCommunitySet commset;
-
-	public RoutePolicyDeleteCommunityStatement(boolean negated, RoutePolicyCommunitySet commset) {
-		this.negated = negated;
-		this.commset = commset;
-	}
+public class RoutePolicyDeleteCommunityStatement extends
+      RoutePolicyDeleteStatement {
 
    private static final long serialVersionUID = 1L;
+   private RoutePolicyCommunitySet commset;
 
-   public RoutePolicyDeleteType getDeleteType() { return RoutePolicyDeleteType.COMMUNITY; }
+   private boolean negated;
 
-   public boolean getNegated() { return negated; }
+   public RoutePolicyDeleteCommunityStatement(boolean negated,
+         RoutePolicyCommunitySet commset) {
+      this.negated = negated;
+      this.commset = commset;
+   }
 
-   public RoutePolicyCommunitySet getCommSet() { return commset; }
+   public RoutePolicyCommunitySet getCommSet() {
+      return commset;
+   }
+
+   @Override
+   public RoutePolicyDeleteType getDeleteType() {
+      return RoutePolicyDeleteType.COMMUNITY;
+   }
+
+   public boolean getNegated() {
+      return negated;
+   }
 
 }

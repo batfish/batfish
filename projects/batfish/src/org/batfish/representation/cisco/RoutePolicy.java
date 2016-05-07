@@ -9,8 +9,8 @@ public class RoutePolicy extends ReferenceCountedStructure {
 
    private static final long serialVersionUID = 1L;
 
-   private List<RoutePolicyStatement> _stmtList;
    private String _policyName;
+   private List<RoutePolicyStatement> _stmtList;
 
    public RoutePolicy(String name) {
       _policyName = name;
@@ -21,6 +21,8 @@ public class RoutePolicy extends ReferenceCountedStructure {
       return _policyName;
    }
 
-   public List<RoutePolicyStatement> getStatements() { return _stmtList; }
+   public List<RoutePolicyStatement> getStatements() {
+      return _stmtList;
+   }
 
 }

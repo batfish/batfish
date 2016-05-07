@@ -1,7 +1,5 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
-
 public class RoutePolicySetMED extends RoutePolicySetStatement {
 
    private static final long serialVersionUID = 1L;
@@ -9,12 +7,16 @@ public class RoutePolicySetMED extends RoutePolicySetStatement {
    private int _pref;
 
    public RoutePolicySetMED(int pref) {
-   	_pref = pref;
+      _pref = pref;
    }
 
+   public int getLocalPref() {
+      return _pref;
+   }
 
-   public RoutePolicySetType getSetType() { return RoutePolicySetType.MED; }
-
-   public int getLocalPref() { return _pref; }
+   @Override
+   public RoutePolicySetType getSetType() {
+      return RoutePolicySetType.MED;
+   }
 
 }

@@ -98,7 +98,6 @@ import org.batfish.representation.cisco.RoutePolicyBooleanRIBHasRoute;
 import org.batfish.representation.cisco.RoutePolicyCommunitySet;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetNumber;
-import org.batfish.representation.cisco.RoutePolicyDeleteStatement;
 import org.batfish.representation.cisco.RoutePolicyDeleteAllStatement;
 import org.batfish.representation.cisco.RoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco.RoutePolicyDispositionStatement;
@@ -121,7 +120,6 @@ import org.batfish.representation.cisco.RoutePolicySetCommunity;
 import org.batfish.representation.cisco.RoutePolicySetLocalPref;
 import org.batfish.representation.cisco.RoutePolicySetMED;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
-import org.batfish.representation.cisco.RoutePolicySetStatement;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -1253,10 +1251,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
 
       List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
-      
+
       stmts.addAll(toRoutePolicyStatementList(ctx.route_policy_tail().stanzas));
    }
-
 
    @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
@@ -3152,213 +3149,258 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_and_rp_stanzaContext ctxt) {
-      if (ctxt.AND() == null)
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_and_rp_stanzaContext ctxt) {
+      if (ctxt.AND() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza());
-      else 
+      }
+      else {
          return new RoutePolicyBooleanAnd(
-            toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()),
-            toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza()));
+               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()),
+               toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza()));
+      }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_not_rp_stanzaContext ctxt) {
-      if (ctxt.NOT() == null)
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_not_rp_stanzaContext ctxt) {
+      if (ctxt.NOT() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza());
-      else 
+      }
+      else {
          return new RoutePolicyBooleanNot(
-            toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza()));
+               toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza()));
+      }
    }
 
    public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rp_stanzaContext ctxt) {
-      if (ctxt.OR() == null)
+      if (ctxt.OR() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza());
-      else 
-         return new RoutePolicyBooleanOr(
-            toRoutePolicyBoolean(ctxt.boolean_rp_stanza()),
-            toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()));
-   }
-
-   public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_simple_rp_stanzaContext ctxt) {
-      Boolean_rp_stanzaContext bctxt = ctxt.boolean_rp_stanza();
-      if (bctxt != null)
-         return toRoutePolicyBoolean(bctxt);
-
-      Boolean_community_matches_any_rp_stanzaContext mactxt = 
-         ctxt.boolean_community_matches_any_rp_stanza();
-      if(mactxt != null)
-         return new RoutePolicyBooleanCommunityMatchesAny(
-            toRoutePolicyCommunitySet(mactxt.rp_community_set()));
-
-      Boolean_community_matches_every_rp_stanzaContext mectxt = 
-         ctxt.boolean_community_matches_every_rp_stanza();
-      if(mectxt != null)
-         return new RoutePolicyBooleanCommunityMatchesEvery(
-            toRoutePolicyCommunitySet(mectxt.rp_community_set()));
-
-      Boolean_destination_rp_stanzaContext dctxt = 
-         ctxt.boolean_destination_rp_stanza();
-      if(dctxt != null)
-         return new RoutePolicyBooleanDestination(
-            toRoutePolicyPrefixSet(dctxt.rp_prefix_set()));
-
-      Boolean_rib_has_route_rp_stanzaContext rctxt = 
-         ctxt.boolean_rib_has_route_rp_stanza();
-      if(rctxt != null)
-         return new RoutePolicyBooleanRIBHasRoute(
-            toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
-
-
-      return null;            
-
-   }
-
-   public RoutePolicyCommunitySet toRoutePolicyCommunitySet(Rp_community_setContext ctxt) {
-      if (ctxt.name != null)
-         return new RoutePolicyCommunitySetName(ctxt.name.getText());
+      }
       else {
-         return new RoutePolicyCommunitySetNumber(ctxt.COMMUNITY_NUMBER().getText());
+         return new RoutePolicyBooleanOr(
+               toRoutePolicyBoolean(ctxt.boolean_rp_stanza()),
+               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()));
+      }
+   }
+
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_simple_rp_stanzaContext ctxt) {
+      Boolean_rp_stanzaContext bctxt = ctxt.boolean_rp_stanza();
+      if (bctxt != null) {
+         return toRoutePolicyBoolean(bctxt);
+      }
+
+      Boolean_community_matches_any_rp_stanzaContext mactxt = ctxt
+            .boolean_community_matches_any_rp_stanza();
+      if (mactxt != null) {
+         return new RoutePolicyBooleanCommunityMatchesAny(
+               toRoutePolicyCommunitySet(mactxt.rp_community_set()));
+      }
+
+      Boolean_community_matches_every_rp_stanzaContext mectxt = ctxt
+            .boolean_community_matches_every_rp_stanza();
+      if (mectxt != null) {
+         return new RoutePolicyBooleanCommunityMatchesEvery(
+               toRoutePolicyCommunitySet(mectxt.rp_community_set()));
+      }
+
+      Boolean_destination_rp_stanzaContext dctxt = ctxt
+            .boolean_destination_rp_stanza();
+      if (dctxt != null) {
+         return new RoutePolicyBooleanDestination(
+               toRoutePolicyPrefixSet(dctxt.rp_prefix_set()));
+      }
+
+      Boolean_rib_has_route_rp_stanzaContext rctxt = ctxt
+            .boolean_rib_has_route_rp_stanza();
+      if (rctxt != null) {
+         return new RoutePolicyBooleanRIBHasRoute(
+               toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
+      }
+
+      return null;
+
+   }
+
+   public RoutePolicyCommunitySet toRoutePolicyCommunitySet(
+         Rp_community_setContext ctxt) {
+      if (ctxt.name != null) {
+         return new RoutePolicyCommunitySetName(ctxt.name.getText());
+      }
+      else {
+         return new RoutePolicyCommunitySetNumber(ctxt.COMMUNITY_NUMBER()
+               .getText());
       }
    }
 
    public RoutePolicyElseBlock toRoutePolicyElseBlock(Else_rp_stanzaContext ctxt) {
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt.rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
       return new RoutePolicyElseBlock(stmts);
 
-   }   
+   }
 
-   public RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(Elseif_rp_stanzaContext ctxt) {
+   public RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(
+         Elseif_rp_stanzaContext ctxt) {
       RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt.rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
       return new RoutePolicyElseIfBlock(b, stmts);
 
-   }   
+   }
 
    public RoutePolicyPrefixSet toRoutePolicyPrefixSet(Rp_prefix_setContext ctxt) {
-      if(ctxt.name != null)
+      if (ctxt.name != null) {
          return new RoutePolicyPrefixSetName(ctxt.name.getText());
+      }
       else {
          Prefix_set_elemContext pctxt = ctxt.prefix_set_elem();
-         
+
          Integer lower = null;
          Integer upper = null;
-         if (pctxt.minpl != null)
+         if (pctxt.minpl != null) {
             lower = new Integer(toInteger(pctxt.minpl));
-         if (pctxt.maxpl != null)
+         }
+         if (pctxt.maxpl != null) {
             upper = new Integer(toInteger(pctxt.maxpl));
+         }
          if (pctxt.eqpl != null) {
             lower = new Integer(toInteger(pctxt.eqpl));
             upper = new Integer(lower);
          }
 
-         if(pctxt.ipa != null)
+         if (pctxt.ipa != null) {
             return new RoutePolicyPrefixSetIp(toIp(pctxt.ipa), lower, upper);
-         if(pctxt.prefix != null)
-            return new RoutePolicyPrefixSetNumber(
-               new Prefix(pctxt.prefix.getText()), lower, upper);
-         if(pctxt.ipv6a != null)
-            return new RoutePolicyPrefixSetIpV6(toIp6(pctxt.ipv6a),
-                  lower, upper);
-         if(pctxt.ipv6_prefix != null)
-            return new RoutePolicyPrefixSetNumberV6(
-               new Prefix6(pctxt.ipv6_prefix.getText()), lower, upper);
-         
+         }
+         if (pctxt.prefix != null) {
+            return new RoutePolicyPrefixSetNumber(new Prefix(
+                  pctxt.prefix.getText()), lower, upper);
+         }
+         if (pctxt.ipv6a != null) {
+            return new RoutePolicyPrefixSetIpV6(toIp6(pctxt.ipv6a), lower,
+                  upper);
+         }
+         if (pctxt.ipv6_prefix != null) {
+            return new RoutePolicyPrefixSetNumberV6(new Prefix6(
+                  pctxt.ipv6_prefix.getText()), lower, upper);
+         }
+
          return null;
       }
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Apply_rp_stanzaContext ctxt) {
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Apply_rp_stanzaContext ctxt) {
       return new RoutePolicyApplyStatement(ctxt.name.getText());
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Delete_rp_stanzaContext ctxt) {
-      if(ctxt.ALL() != null)
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Delete_rp_stanzaContext ctxt) {
+      if (ctxt.ALL() != null) {
          return new RoutePolicyDeleteAllStatement();
+      }
       else {
          boolean negated = (ctxt.NOT() != null);
-         return new RoutePolicyDeleteCommunityStatement(
-            negated, 
-            toRoutePolicyCommunitySet(ctxt.rp_community_set()));
+         return new RoutePolicyDeleteCommunityStatement(negated,
+               toRoutePolicyCommunitySet(ctxt.rp_community_set()));
       }
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Disposition_rp_stanzaContext ctxt) {
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Disposition_rp_stanzaContext ctxt) {
       RoutePolicyDispositionType t = null;
-      if(ctxt.DONE() != null)
+      if (ctxt.DONE() != null) {
          t = RoutePolicyDispositionType.DONE;
-      else if(ctxt.DROP() != null)
+      }
+      else if (ctxt.DROP() != null) {
          t = RoutePolicyDispositionType.DROP;
-      else if (ctxt.PASS() != null)
+      }
+      else if (ctxt.PASS() != null) {
          t = RoutePolicyDispositionType.PASS;
+      }
       return new RoutePolicyDispositionStatement(t);
-   }   
+   }
 
    public RoutePolicyStatement toRoutePolicyStatement(If_rp_stanzaContext ctxt) {
       RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt.rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
       List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<RoutePolicyElseIfBlock>();
-      for(Elseif_rp_stanzaContext ectxt : ctxt.elseif_rp_stanza())
+      for (Elseif_rp_stanzaContext ectxt : ctxt.elseif_rp_stanza()) {
          elseIfs.add(toRoutePolicyElseIfBlock(ectxt));
+      }
       RoutePolicyElseBlock els = null;
       Else_rp_stanzaContext elctxt = ctxt.else_rp_stanza();
-      if (elctxt != null)
+      if (elctxt != null) {
          els = toRoutePolicyElseBlock(elctxt);
+      }
 
       return new RoutePolicyIfStatement(b, stmts, elseIfs, els);
 
-   }   
+   }
 
    public RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctxt) {
       Apply_rp_stanzaContext actxt = ctxt.apply_rp_stanza();
-      if (actxt != null)
+      if (actxt != null) {
          return toRoutePolicyStatement(actxt);
+      }
 
       Delete_rp_stanzaContext dctxt = ctxt.delete_rp_stanza();
-      if (dctxt != null)
+      if (dctxt != null) {
          return toRoutePolicyStatement(dctxt);
-         
+      }
+
       Disposition_rp_stanzaContext pctxt = ctxt.disposition_rp_stanza();
-      if (pctxt != null)
+      if (pctxt != null) {
          return toRoutePolicyStatement(pctxt);
-         
+      }
+
       If_rp_stanzaContext ictxt = ctxt.if_rp_stanza();
-      if (ictxt != null)
+      if (ictxt != null) {
          return toRoutePolicyStatement(ictxt);
+      }
 
       Set_rp_stanzaContext sctxt = ctxt.set_rp_stanza();
-      if (sctxt != null)
+      if (sctxt != null) {
          return toRoutePolicyStatement(sctxt);
-         
+      }
+
       return null;
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctxt) {
-      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctxt.rp_community_set());
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_community_rp_stanzaContext ctxt) {
+      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctxt
+            .rp_community_set());
       boolean additive = (ctxt.ADDITIVE() != null);
       return new RoutePolicySetCommunity(cset, additive);
    }
 
    public RoutePolicyStatement toRoutePolicyStatement(
-      Set_local_preference_rp_stanzaContext ctxt) {
+         Set_local_preference_rp_stanzaContext ctxt) {
       return new RoutePolicySetLocalPref(toInteger(ctxt.pref));
    }
 
    public RoutePolicyStatement toRoutePolicyStatement(
-      Set_med_rp_stanzaContext ctxt) {
+         Set_med_rp_stanzaContext ctxt) {
       return new RoutePolicySetMED(toInteger(ctxt.med));
    }
 
-
    public RoutePolicyStatement toRoutePolicyStatement(
-      Set_next_hop_rp_stanzaContext ctxt) {
+         Set_next_hop_rp_stanzaContext ctxt) {
       RoutePolicyNextHop hop = null;
-      if(ctxt.IP_ADDRESS() != null)
+      if (ctxt.IP_ADDRESS() != null) {
          hop = new RoutePolicyNextHopIP(toIp(ctxt.IP_ADDRESS()));
-      else if(ctxt.IPV6_ADDRESS() != null)
+      }
+      else if (ctxt.IPV6_ADDRESS() != null) {
          hop = new RoutePolicyNextHopIP6(toIp6(ctxt.IPV6_ADDRESS()));
-      else if(ctxt.PEER_ADDRESS() != null)
+      }
+      else if (ctxt.PEER_ADDRESS() != null) {
          hop = new RoutePolicyNextHopPeerAddress();
-      else if(ctxt.SELF() != null)
+      }
+      else if (ctxt.SELF() != null) {
          hop = new RoutePolicyNextHopSelf();
+      }
 
       boolean dest_vrf = (ctxt.DESTINATION_VRF() != null);
       return new RoutePolicySetNextHop(hop, dest_vrf);
@@ -3367,32 +3409,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public RoutePolicyStatement toRoutePolicyStatement(Set_rp_stanzaContext ctxt) {
       Set_community_rp_stanzaContext cctxt = ctxt.set_community_rp_stanza();
-      if(cctxt != null)
+      if (cctxt != null) {
          return toRoutePolicyStatement(cctxt);
+      }
 
-      Set_local_preference_rp_stanzaContext lpctxt = 
-         ctxt.set_local_preference_rp_stanza();
-      if(lpctxt != null)
+      Set_local_preference_rp_stanzaContext lpctxt = ctxt
+            .set_local_preference_rp_stanza();
+      if (lpctxt != null) {
          return toRoutePolicyStatement(lpctxt);
+      }
 
       Set_med_rp_stanzaContext mctxt = ctxt.set_med_rp_stanza();
-      if(mctxt != null)
+      if (mctxt != null) {
          return toRoutePolicyStatement(mctxt);
+      }
 
       Set_next_hop_rp_stanzaContext hctxt = ctxt.set_next_hop_rp_stanza();
-      if(hctxt != null)
+      if (hctxt != null) {
          return toRoutePolicyStatement(hctxt);
+      }
 
       return null;
    }
 
    public List<RoutePolicyStatement> toRoutePolicyStatementList(
-      List<Rp_stanzaContext> ctxts) {
+         List<Rp_stanzaContext> ctxts) {
       List<RoutePolicyStatement> stmts = new ArrayList<RoutePolicyStatement>();
-      for(Rp_stanzaContext ctxt : ctxts) {
+      for (Rp_stanzaContext ctxt : ctxts) {
          RoutePolicyStatement stmt = toRoutePolicyStatement(ctxt);
-         if (stmt != null)
+         if (stmt != null) {
             stmts.add(stmt);
+         }
       }
       return stmts;
    }
