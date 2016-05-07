@@ -106,12 +106,22 @@ import org.batfish.representation.cisco.RoutePolicyDispositionType;
 import org.batfish.representation.cisco.RoutePolicyElseBlock;
 import org.batfish.representation.cisco.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco.RoutePolicyIfStatement;
+import org.batfish.representation.cisco.RoutePolicyNextHop;
+import org.batfish.representation.cisco.RoutePolicyNextHopIP;
+import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
+import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
+import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
 import org.batfish.representation.cisco.RoutePolicyPrefixSet;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetIp;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetIpV6;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetNumber;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetNumberV6;
+import org.batfish.representation.cisco.RoutePolicySetCommunity;
+import org.batfish.representation.cisco.RoutePolicySetLocalPref;
+import org.batfish.representation.cisco.RoutePolicySetMED;
+import org.batfish.representation.cisco.RoutePolicySetNextHop;
+import org.batfish.representation.cisco.RoutePolicySetStatement;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -672,6 +682,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public static Ip toIp(Token t) {
       return new Ip(t.getText());
+   }
+
+   public static Ip6 toIp6(TerminalNode t) {
+      return new Ip6(t.getText());
+   }
+
+   public static Ip6 toIp6(Token t) {
+      return new Ip6(t.getText());
    }
 
    public static IpProtocol toIpProtocol(ProtocolContext ctx) {
@@ -3238,7 +3256,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             return new RoutePolicyPrefixSetNumber(
                new Prefix(pctxt.prefix.getText()), lower, upper);
          if(pctxt.ipv6a != null)
-            return new RoutePolicyPrefixSetIpV6(new Ip6(pctxt.ipv6a.getText()), 
+            return new RoutePolicyPrefixSetIpV6(toIp6(pctxt.ipv6a),
                   lower, upper);
          if(pctxt.ipv6_prefix != null)
             return new RoutePolicyPrefixSetNumberV6(
@@ -3305,7 +3323,66 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       If_rp_stanzaContext ictxt = ctxt.if_rp_stanza();
       if (ictxt != null)
          return toRoutePolicyStatement(ictxt);
+
+      Set_rp_stanzaContext sctxt = ctxt.set_rp_stanza();
+      if (sctxt != null)
+         return toRoutePolicyStatement(sctxt);
          
+      return null;
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctxt) {
+      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctxt.rp_community_set());
+      boolean additive = (ctxt.ADDITIVE() != null);
+      return new RoutePolicySetCommunity(cset, additive);
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+      Set_local_preference_rp_stanzaContext ctxt) {
+      return new RoutePolicySetLocalPref(toInteger(ctxt.pref));
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+      Set_med_rp_stanzaContext ctxt) {
+      return new RoutePolicySetMED(toInteger(ctxt.med));
+   }
+
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+      Set_next_hop_rp_stanzaContext ctxt) {
+      RoutePolicyNextHop hop = null;
+      if(ctxt.IP_ADDRESS() != null)
+         hop = new RoutePolicyNextHopIP(toIp(ctxt.IP_ADDRESS()));
+      else if(ctxt.IPV6_ADDRESS() != null)
+         hop = new RoutePolicyNextHopIP6(toIp6(ctxt.IPV6_ADDRESS()));
+      else if(ctxt.PEER_ADDRESS() != null)
+         hop = new RoutePolicyNextHopPeerAddress();
+      else if(ctxt.SELF() != null)
+         hop = new RoutePolicyNextHopSelf();
+
+      boolean dest_vrf = (ctxt.DESTINATION_VRF() != null);
+      return new RoutePolicySetNextHop(hop, dest_vrf);
+
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(Set_rp_stanzaContext ctxt) {
+      Set_community_rp_stanzaContext cctxt = ctxt.set_community_rp_stanza();
+      if(cctxt != null)
+         return toRoutePolicyStatement(cctxt);
+
+      Set_local_preference_rp_stanzaContext lpctxt = 
+         ctxt.set_local_preference_rp_stanza();
+      if(lpctxt != null)
+         return toRoutePolicyStatement(lpctxt);
+
+      Set_med_rp_stanzaContext mctxt = ctxt.set_med_rp_stanza();
+      if(mctxt != null)
+         return toRoutePolicyStatement(mctxt);
+
+      Set_next_hop_rp_stanzaContext hctxt = ctxt.set_next_hop_rp_stanza();
+      if(hctxt != null)
+         return toRoutePolicyStatement(hctxt);
+
       return null;
    }
 
