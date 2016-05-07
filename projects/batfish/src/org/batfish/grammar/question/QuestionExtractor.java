@@ -306,12 +306,6 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private VerifyProgram _verifyProgram;
 
-   @Override
-   public void enterCompare_same_name_question(
-         Compare_same_name_questionContext ctx) {
-      _question = new CompareSameNameQuestion(_parameters);
-   }
-
    public QuestionExtractor(QuestionCombinedParser parser, String flowTag,
          QuestionParameters parameters) {
       _parser = parser;
@@ -327,6 +321,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private BatfishException conversionError(String error, ParserRuleContext ctx) {
       String parseTree = ParseTreePrettyPrinter.print(ctx, _parser);
       return new BatfishException(error + ": \n" + parseTree);
+   }
+
+   @Override
+   public void enterCompare_same_name_question(
+         Compare_same_name_questionContext ctx) {
+      _question = new CompareSameNameQuestion(_parameters);
    }
 
    @Override

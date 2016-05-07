@@ -280,8 +280,10 @@ null_block_if_stanza
       | FRAME_RELAY
       | FRAMING
       | FULL_DUPLEX
+      | GIG_DEFAULT
       | GLBP
       | GROUP_RANGE
+      | H323_GATEWAY
       | HALF_DUPLEX
       | HOLD_QUEUE
       |
@@ -370,6 +372,7 @@ null_block_if_stanza
       | LANE
       | LAPB
       | LACP
+      | LINK_FAULT_SIGNALING
       | LLDP
       | LOAD_BALANCING
       | LOAD_INTERVAL
@@ -398,12 +401,14 @@ null_block_if_stanza
       (
          NTP BROADCAST
       )
+      | OPENFLOW
       | PATH_OPTION
       | PEER
       | PFC PRIORITY
       | PHYSICAL_LAYER
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL
+      | PORT_NAME
       | PORTMODE
       | POS
       | POWER
@@ -502,7 +507,11 @@ shutdown_if_stanza
 
 switchport_access_if_stanza
 :
-   SWITCHPORT ACCESS VLAN vlan = DEC NEWLINE
+   SWITCHPORT ACCESS VLAN
+   (
+      vlan = DEC
+      | DYNAMIC
+   ) NEWLINE
 ;
 
 switchport_mode_access_stanza

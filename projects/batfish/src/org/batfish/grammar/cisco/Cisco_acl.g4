@@ -18,6 +18,10 @@ access_list_ip_range
    )
    | prefix = IP_PREFIX
    | ipv6_prefix = IPV6_PREFIX
+   |
+   (
+      ADDRGROUP address_group = variable
+   )
 ;
 
 appletalk_access_list_null_tail
@@ -122,7 +126,10 @@ extended_access_list_additional_feature
 extended_access_list_null_tail
 :
    (
-      SEQ? num = DEC
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
    )?
    (
       (
@@ -174,7 +181,10 @@ extended_access_list_stanza
 extended_access_list_tail
 :
    (
-      SEQ? num = DEC
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
    )? ala = access_list_action prot = protocol srcipr = access_list_ip_range
    (
       alps_src = port_specifier
@@ -414,7 +424,10 @@ standard_access_list_additional_feature
 standard_access_list_null_tail
 :
    (
-      SEQ? num = DEC
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
    )?
    (
       REMARK remark = M_REMARK_REMARK NEWLINE
@@ -453,7 +466,10 @@ standard_access_list_stanza
 standard_access_list_tail
 :
    (
-      SEQ? num = DEC
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
    )? ala = access_list_action ipr = access_list_ip_range
    (
       features += standard_access_list_additional_feature

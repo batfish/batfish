@@ -2,14 +2,13 @@ package org.batfish.grammar.juniper;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.main.Settings;
 
 public class JuniperCombinedParser extends
       BatfishCombinedParser<JuniperParser, JuniperLexer> {
 
-   public JuniperCombinedParser(String input, boolean throwOnParserError,
-         boolean throwOnLexerError) {
-      super(JuniperParser.class, JuniperLexer.class, input, throwOnParserError,
-            throwOnLexerError);
+   public JuniperCombinedParser(String input, Settings settings) {
+      super(JuniperParser.class, JuniperLexer.class, input, settings);
    }
 
    @Override

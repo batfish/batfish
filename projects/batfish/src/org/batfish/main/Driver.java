@@ -89,7 +89,7 @@ public class Driver {
       _mainLogger = logger;
       mainRun();
    }
-   
+
    private static void mainInit(String[] args) {
       _taskLog = new HashMap<String, Task>();
 

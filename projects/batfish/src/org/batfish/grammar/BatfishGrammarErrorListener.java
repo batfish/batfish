@@ -6,16 +6,21 @@ import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.batfish.main.Settings;
 
 public abstract class BatfishGrammarErrorListener implements ANTLRErrorListener {
 
    protected final BatfishCombinedParser<?, ?> _combinedParser;
+
    protected final String _grammarName;
+
+   protected final Settings _settings;
 
    public BatfishGrammarErrorListener(String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       _grammarName = grammarName;
       _combinedParser = parser;
+      _settings = _combinedParser.getSettings();
    }
 
    @Override

@@ -68,8 +68,7 @@ public class ParseVendorConfigurationJob extends
       case CISCO:
       case CISCO_IOS_XR:
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText,
-               _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+               _settings);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser,
                _warnings, _settings.getUnrecognizedAsRedFlag());
@@ -95,8 +94,7 @@ public class ParseVendorConfigurationJob extends
          // MISSING BREAK IS INTENTIONAL
       case FLAT_VYOS:
          FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(
-               _fileText, _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+               _fileText, _settings);
          combinedParser = flatVyosParser;
          extractor = new FlatVyosControlPlaneExtractor(_fileText,
                flatVyosParser, _warnings);
@@ -122,8 +120,7 @@ public class ParseVendorConfigurationJob extends
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
          FlatJuniperCombinedParser flatJuniperParser = new FlatJuniperCombinedParser(
-               _fileText, _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+               _fileText, _settings);
          combinedParser = flatJuniperParser;
          extractor = new FlatJuniperControlPlaneExtractor(_fileText,
                flatJuniperParser, _warnings);
@@ -131,8 +128,7 @@ public class ParseVendorConfigurationJob extends
 
       case MRV:
          MrvCombinedParser mrvParser = new MrvCombinedParser(_fileText,
-               _settings.getThrowOnParserError(),
-               _settings.getThrowOnLexerError());
+               _settings);
          combinedParser = mrvParser;
          extractor = new MrvControlPlaneExtractor(_fileText, mrvParser,
                _warnings);

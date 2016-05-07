@@ -12,24 +12,35 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.batfish.common.BatfishException;
+import org.batfish.main.Settings;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
    private int _currentModeStart;
+
    private final List<String> _errors;
+
    private String _input;
+
    private L _lexer;
+
+   private BatfishLexerErrorListener _lexerErrorListener;
+
    protected P _parser;
-   private boolean _throwOnLexerError;
-   private boolean _throwOnParserError;
+
+   private BatfishParserErrorListener _parserErrorListener;
+
+   private Settings _settings;
+
    private List<Integer> _tokenModes;
+
    protected CommonTokenStream _tokens;
+
    private final List<String> _warnings;
 
    public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input,
-         boolean throwOnParserError, boolean throwOnLexerError) {
-      _throwOnParserError = throwOnParserError;
-      _throwOnLexerError = throwOnLexerError;
+         Settings settings) {
+      _settings = settings;
       _tokenModes = new ArrayList<Integer>();
       _currentModeStart = 0;
       _warnings = new ArrayList<String>();
@@ -73,16 +84,20 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       return _lexer;
    }
 
+   public BatfishLexerErrorListener getLexerErrorListener() {
+      return _lexerErrorListener;
+   }
+
    public P getParser() {
       return _parser;
    }
 
-   public boolean getThrowOnLexerError() {
-      return _throwOnLexerError;
+   public BatfishParserErrorListener getParserErrorListener() {
+      return _parserErrorListener;
    }
 
-   public boolean getThrowOnParserError() {
-      return _throwOnParserError;
+   public Settings getSettings() {
+      return _settings;
    }
 
    public int getTokenMode(Token t) {
@@ -108,6 +123,16 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    }
 
    public abstract ParserRuleContext parse();
+
+   public void setLexerErrorListener(
+         BatfishLexerErrorListener lexerErrorListener) {
+      _lexerErrorListener = lexerErrorListener;
+   }
+
+   public void setParserErrorListener(
+         BatfishParserErrorListener parserErrorListener) {
+      _parserErrorListener = parserErrorListener;
+   }
 
    public void updateTokenModes(int mode) {
       for (int i = _currentModeStart; i <= _tokens.size(); i++) {

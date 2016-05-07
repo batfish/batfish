@@ -21,6 +21,7 @@ null_block_stanza
       | BFD
       | BGP DISABLE_ADVERTISEMENT
       | BSD_USERNAME
+      | CALL_HOME
       | CAM_ACL
       | CAM_PROFILE
       | CEF
@@ -33,11 +34,15 @@ null_block_stanza
       | CONTROL_PLANE
       | CONTROLLER
       | COPY
+      | CPD
       | CRYPTO
+      | CTL_FILE
       | DAEMON
       | DCB
       | DCB_BUFFER_THRESHOLD
       | DEBUG
+      | DEFAULT_MAX_FRAME_SIZE
+      | DEFAULT_VALUE
       | DIAL_PEER
       | DOMAIN
       | DO STOP
@@ -51,6 +56,7 @@ null_block_stanza
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | HW_SWITCH
       | INTERFACE BREAKOUT
       |
       (
@@ -64,6 +70,7 @@ null_block_stanza
             | BOOTP_RELAY
             | DECAP_GROUP
             | DHCP
+            | DNS
             | ECMP_GROUP
             | FLOW_TOP_TALKERS
             | HARDWARE
@@ -114,10 +121,12 @@ null_block_stanza
       | LOGGING
       | MAC
       | MAC_LEARN
+      | MACRO
       | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
       | MAXIMUM_PATHS
+      | MEDIA_TERMINATION
       | MLAG
       | MODULE
       | MONITOR
@@ -140,6 +149,7 @@ null_block_stanza
             IP AS_PATH
          )
       )
+      | NLS
       | NO_BANNER
       | NSR
       | NTP
@@ -172,22 +182,30 @@ null_block_stanza
       | SERVICE_CLASS
       | SFLOW
       | SPANNING_TREE
+      | STACK_MAC
       | STACK_UNIT
       | STCAPP
       | SVCLC
+      | SWITCH
       | SWITCH_PROFILE
       | SWITCH_TYPE
+      | SYSTEM_INIT
+      | SYSTEM_MAX
+      | TABLE_MAP
       | TACACS
       | TACACS_SERVER
       | TCP
       | TEMPLATE
       | TERMINAL
+      | TIMEOUT
       | TRACE
       | TRACK
       | TRANSCEIVER
       | UDF
       | USERGROUP
+      | USERNAME
       | VDC
+      | VER
       |
       (
          VLAN
@@ -229,6 +247,7 @@ null_block_substanza
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
+         | ALERT_GROUP
          | ANYCONNECT
          | APPLICATION
          | ARCHIVE_LENGTH
@@ -258,24 +277,29 @@ null_block_substanza
          | CALL
          | CALLER_ID
          | CAS_CUSTOM
+         | CDP_URL
          | CERTIFICATE
          | CHANNEL_GROUP
          | CHANNELIZED
          | CLASS
          | CLIENT_GROUP
          | CLOCK
+         | CODEC
          | COLLECT
          | COMMAND
          | CONFORM_ACTION
          | CONGESTION_CONTROL
          | CONNECT_SOURCE
          | CONTEXT
+         | CONTACT_EMAIL_ADDR
+         | CONTRACT_ID
          | CPTONE
          | CREDENTIALS
          | CRL
          | CRYPTOGRAPHIC_ALGORITHM
          | DATABITS
          | DBL
+         | DEFAULT
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
          | DEFAULT_GROUP_POLICY
@@ -284,15 +308,19 @@ null_block_substanza
          | DENY
          | DESCRIPTION
          | DESTINATION
+         | DESTINATION_PATTERN
          | DEVICE
          | DIAGNOSTIC
          | DISABLE
          | DNS_SERVER
          | DOMAIN_ID
+         | DOMAIN_NAME
          | DROP
          | DS0_GROUP
-         | DOMAIN_NAME
+         | DTMF_RELAY
+         | DUAL_ACTIVE
          | ECHO
+         | ECHO_CANCEL
          | EGRESS
          | ENABLE
          | ENCAPSULATION
@@ -319,6 +347,7 @@ null_block_substanza
          | FILE_ENTRY
          | FILE_SIZE
          | FLUSH_AT_ACTIVATION
+         | FORWARD_DIGITS
          | FQDN
          | FRAMING
          | FREQUENCY
@@ -341,6 +370,7 @@ null_block_substanza
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
+         | INCOMING
          | INGRESS
          | INSERVICE
          | INSPECT
@@ -368,6 +398,7 @@ null_block_substanza
          | IPX
          | IPV6_ADDRESS_POOL
          | ISAKMP
+         | ISSUER_NAME
          | KEEPALIVE_ENABLE
          | KEY_STRING
          | KEYPAIR
@@ -388,7 +419,9 @@ null_block_substanza
          | LOGGING
          | LOGIN
          | LPTS
+         | MAC_ADDRESS
          | MAIN_CPU
+         | MAP
          | MATCH
          | MAXIMUM
          | MEMBER
@@ -405,12 +438,13 @@ null_block_substanza
          | NEGOTIATE
          | NETWORK
          | NODE
+         | NOTIFICATION_TIMER
          | NOTIFY
-         | OBJECT
          | OPEN
          | OPTION
          | OPTIONS
          | OPS
+         | OUI
          | PARAMETERS
          | PARENT
          | PARITY
@@ -426,6 +460,7 @@ null_block_substanza
          | PEER_LINK
          | PERMIT
          | PERSISTENT
+         | PHONE_NUMBER
          | PICKUP
          | PINNING
          | POLICE
@@ -444,6 +479,7 @@ null_block_substanza
          | PROBE
          | PROPOSAL
          | PROTOCOL
+         | PROXY_SERVER
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
          | RANDOM
@@ -479,6 +515,7 @@ null_block_substanza
          | SCHEME
          | SECRET
          | SEND_LIFETIME
+         | SENDER
          | SEQUENCE
          | SERVER
          | SERVERFARM
@@ -495,8 +532,12 @@ null_block_substanza
          | SHAPE
          | SHUT
          | SHUTDOWN
+         | SIGNAL
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
+         | SITE_ID
+         | SLOT
+         | SMTP
          | SORT_BY
          | SOURCE
          | SPANNING_TREE
@@ -507,6 +548,7 @@ null_block_substanza
          | STICKY
          | STOPBITS
          | STP
+         | STREET_ADDRESS
          | SUBJECT_NAME
          | SWITCHBACK
          | SWITCHPORT
@@ -535,9 +577,11 @@ null_block_substanza
          | TUNNEL_GROUP
          | UDP_JITTER
          | UID
+         | UNTAGGED
          | UPDATE_CALENDAR
          | USE_VRF
          | USERS
+         | VAD
          | VERSION
          | VIOLATE_ACTION
          | VIRTUAL
@@ -600,7 +644,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ACCOUNTING_PORT
       | ACTION
       | ACTIVE
-      | ALERT_GROUP
       | ALIAS
       | ANYCONNECT
       | ANYCONNECT_ESSENTIALS
@@ -619,7 +662,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | BOOT_START_MARKER
       | BRIDGE
       | CALL
-      | CALL_HOME
       | CARD
       | CCM_MANAGER
       | CDP
@@ -631,9 +673,7 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CODEC
       | CONFIG_REGISTER
       | CONSOLE
-      | CONTACT_EMAIL_ADDR
       | CRL
-      | CTL_FILE
       | CTS
       | DEC
       | DEFAULT
@@ -673,7 +713,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | FQDN
       | FTP
       | FTP_SERVER
-      | GROUP_OBJECT
       | HARDWARE
       | HASH
       | HISTORY
@@ -784,7 +823,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | MAC_ADDRESS_TABLE
       | MAIL_SERVER
       | MAXIMUM
-      | MEDIA_TERMINATION
       | MEMORY_SIZE
       | MGCP
       | MICROCODE
@@ -804,7 +842,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
-      | OBJECT_GROUP
       | OWNER
       | PAGER
       | PARSER
@@ -844,7 +881,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SCRIPTING
       | SDM
       | SECURITY
-      | SENDER
       | SERIAL_NUMBER
       | SERVER
       | SERVER_TYPE
@@ -871,10 +907,8 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SUBSCRIBER
       | SUBSCRIBE_TO
       | SUBSCRIBE_TO_ALERT_GROUP
-      | SWITCH
       | SYSOPT
       | SYSTEM
-      | TABLE_MAP
       | TAG_SWITCHING
       | TELNET
       | TFTP_SERVER
@@ -889,7 +923,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | UPGRADE
       | USER_IDENTITY
       | USE_VRF
-      | USERNAME
       | VALIDATION_USAGE
       | VERSION
       |

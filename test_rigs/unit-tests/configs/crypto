@@ -37,8 +37,9 @@ crypto isakmp profile UPM
 crypto keyring VRF:ABC:DEF:GHI:1234
   pre-shared-key address 1.1.1.1 key 9Aa9#A%X9AaAAAAAa
 !
-crypto pki certificate chain xxx
-  xxx
+crypto pki certificate chain fff
+  certificate fff
+   fffff fffff
   quit
 !
 no crypto isakmp enable

@@ -2,14 +2,13 @@ package org.batfish.grammar.cisco;
 
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
+import org.batfish.main.Settings;
 
 public class CiscoCombinedParser extends
       BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
-   public CiscoCombinedParser(String input, boolean throwOnParserError,
-         boolean throwOnLexerError) {
-      super(CiscoParser.class, CiscoLexer.class, input, throwOnParserError,
-            throwOnParserError);
+   public CiscoCombinedParser(String input, Settings settings) {
+      super(CiscoParser.class, CiscoLexer.class, input, settings);
    }
 
    @Override

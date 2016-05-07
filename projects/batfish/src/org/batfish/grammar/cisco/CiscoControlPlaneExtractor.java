@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.main.RedFlagBatfishException;
@@ -175,6 +176,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("ATM", "ATM");
       prefixes.put("Bundle-Ether", "Bundle-Ether");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
+      prefixes.put("Dialer", "Dialer");
       prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
@@ -201,6 +203,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("trunk", "trunk");
       prefixes.put("Tunnel", "Tunnel");
       prefixes.put("tunnel-te", "tunnel-te");
+      prefixes.put("Virtual-Template", "Virtual-Template");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
    }
@@ -404,6 +407,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.TACACS() != null) {
          return NamedPort.TACACS;
       }
+      else if (ctx.TACACS_DS() != null) {
+         return NamedPort.TACACS_DS;
+      }
       else if (ctx.TALK() != null) {
          return NamedPort.TALK;
       }
@@ -512,7 +518,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.wildcard != null) {
          return toIp(ctx.wildcard);
       }
-      else if (ctx.ANY() != null) {
+      else if (ctx.ANY() != null || ctx.address_group != null) {
          return new Ip(0xFFFFFFFFl);
       }
       else if (ctx.HOST() != null) {
@@ -1498,6 +1504,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip srcWildcard = getWildcard(ctx.srcipr);
       Ip dstIp = getIp(ctx.dstipr);
       Ip dstWildcard = getWildcard(ctx.dstipr);
+      String srcAddressGroup = getAddressGroup(ctx.srcipr);
+      String dstAddressGroup = getAddressGroup(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null ? getPortRanges(ctx.alps_src)
             : Collections.<SubRange> emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
@@ -1603,8 +1611,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
-            protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
-            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
+            protocol, srcIp, srcWildcard, srcAddressGroup, dstIp, dstWildcard,
+            dstAddressGroup, srcPortRanges, dstPortRanges, dscps, ecns,
+            icmpType, icmpCode, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 
@@ -2843,10 +2852,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSwitchport_access_if_stanza(
          Switchport_access_if_stanzaContext ctx) {
-      int vlan = toInteger(ctx.vlan);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-         currentInterface.setAccessVlan(vlan);
+      if (ctx.vlan != null) {
+         int vlan = toInteger(ctx.vlan);
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setAccessVlan(vlan);
+         }
+      }
+      else {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setSwitchportAccessDynamic(true);
+         }
       }
    }
 
@@ -2943,6 +2960,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _w.redFlag(msg);
       }
       else {
+         _parser.getParserErrorListener().syntaxError(ctx, ctx.getStart(),
+               ctx.getStart().getLine(),
+               ctx.getStart().getCharPositionInLine(), msg);
          throw new BatfishException(msg);
       }
    }
@@ -2995,6 +3015,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.name.getText();
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setVrf(name);
+      }
+   }
+
+   private String getAddressGroup(Access_list_ip_rangeContext ctx) {
+      if (ctx.address_group != null) {
+         return ctx.address_group.getText();
+      }
+      else {
+         return null;
       }
    }
 

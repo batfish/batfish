@@ -13,8 +13,6 @@ import org.batfish.util.Util;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
-   private static final int MAX_LOOKBACK = 10;
-
    public BatfishParserErrorListener(String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       super(grammarName, parser);
@@ -42,16 +40,15 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
             + ":" + tokenText + "  <== mode:" + mode;
    }
 
-   @Override
-   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
-         int line, int charPositionInLine, String msg, RecognitionException e) {
+   public void syntaxError(ParserRuleContext ctx, Object offendingSymbol,
+         int line, int charPositionInLine, String msg) {
       BatfishParser parser = _combinedParser.getParser();
       List<String> ruleNames = Arrays.asList(parser.getRuleNames());
-      ParserRuleContext ctx = parser.getContext();
       String ruleStack = ctx.toString(ruleNames);
       List<Token> tokens = _combinedParser.getTokens().getTokens();
       int startTokenIndex = parser.getInputStream().index();
-      int lookbackIndex = Math.max(0, startTokenIndex - MAX_LOOKBACK);
+      int lookbackIndex = Math.max(0,
+            startTokenIndex - _settings.getMaxParserContextTokens());
       int endTokenIndex = tokens.size();
       StringBuilder sb = new StringBuilder();
       sb.append("parser: " + _grammarName + ": line " + line + ":"
@@ -85,10 +82,13 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
       // collect context from text
       String text = _combinedParser.getInput();
-      String[] lines = text.split("\n");
+      String[] lines = text.split("\n", -1);
       int errorLineIndex = offendingToken.getLine() - 1;
-      int errorContextStartLine = Math.max(errorLineIndex - 10, 0);
-      int errorContextEndLine = Math.min(errorLineIndex + 10, lines.length - 1);
+      int errorContextStartLine = Math.max(
+            errorLineIndex - _settings.getMaxParserContextLines(), 0);
+      int errorContextEndLine = Math.min(
+            errorLineIndex + _settings.getMaxParserContextLines(),
+            lines.length - 1);
       sb.append("Error context lines:\n");
       for (int i = errorContextStartLine; i < errorLineIndex; i++) {
          sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
@@ -100,12 +100,20 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       }
 
       String error = sb.toString();
-      if (_combinedParser.getThrowOnParserError()) {
+      if (_settings.getThrowOnParserError()) {
          throw new BatfishException("\n" + error);
       }
       else {
          _combinedParser.getErrors().add(error);
       }
+   }
+
+   @Override
+   public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+         int line, int charPositionInLine, String msg, RecognitionException e) {
+      BatfishParser parser = _combinedParser.getParser();
+      syntaxError(parser.getContext(), offendingSymbol, line,
+            charPositionInLine, msg);
    }
 
 }
