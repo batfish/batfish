@@ -1,8 +1,8 @@
 package org.batfish.representation.vyos;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
-import org.batfish.util.ComparableStructure;
 
 public class IkeProposal extends ComparableStructure<Integer> {
 

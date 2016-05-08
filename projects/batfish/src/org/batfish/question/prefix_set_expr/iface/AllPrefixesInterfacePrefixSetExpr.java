@@ -2,10 +2,10 @@ package org.batfish.question.prefix_set_expr.iface;
 
 import java.util.Set;
 
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.question.Environment;
 import org.batfish.question.interface_expr.InterfaceExpr;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Prefix;
 
 public class AllPrefixesInterfacePrefixSetExpr extends InterfacePrefixSetExpr {
 

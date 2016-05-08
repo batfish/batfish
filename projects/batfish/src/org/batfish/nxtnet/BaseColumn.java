@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.BgpAdvertisement;
-import org.batfish.representation.Flow;
-import org.batfish.representation.Ip;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.BgpAdvertisement;
+import org.batfish.common.datamodel.Flow;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.common.datamodel.Prefix;
 
 import com.google.common.collect.ImmutableList;
 

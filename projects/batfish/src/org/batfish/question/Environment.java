@@ -7,34 +7,35 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.batfish.collections.AdvertisementSet;
-import org.batfish.collections.RouteSet;
 import org.batfish.common.BatfishException;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.common.collections.AdvertisementSet;
+import org.batfish.common.collections.RouteSet;
+import org.batfish.common.datamodel.BgpAdvertisement;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.common.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.common.datamodel.questions.QuestionParameters;
+import org.batfish.common.datamodel.questions.VariableType;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
-import org.batfish.representation.BgpAdvertisement.BgpAdvertisementType;
 
 public class Environment {
 

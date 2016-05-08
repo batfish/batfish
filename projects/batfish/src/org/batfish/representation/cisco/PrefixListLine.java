@@ -2,9 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
 
 public class PrefixListLine implements Serializable {
 

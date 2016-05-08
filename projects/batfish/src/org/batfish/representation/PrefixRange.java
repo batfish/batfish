@@ -1,7 +1,8 @@
 package org.batfish.representation;
 
 import org.batfish.common.Pair;
-import org.batfish.util.SubRange;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 
 public class PrefixRange extends Pair<Prefix, SubRange> {
 

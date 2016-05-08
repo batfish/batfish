@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.representation.Ip;
+import org.batfish.common.datamodel.Ip;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

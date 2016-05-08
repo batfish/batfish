@@ -11,8 +11,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.batfish.collections.RoleSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.collections.RoleSet;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.common.util.SubRange;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
@@ -21,10 +27,8 @@ import org.batfish.representation.CommunityList;
 import org.batfish.representation.CommunityListLine;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
@@ -47,16 +51,12 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetLevelLine;
 import org.batfish.representation.PolicyMapSetType;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration
       implements VendorConfiguration {
@@ -858,7 +858,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          Ip srcIp = fromLine.getSourceIp();
          if (srcIp != null) {
             Ip srcWildcard = fromLine.getSourceWildcard();
-            if (Util.isValidWildcard(srcWildcard)) {
+            if (CommonUtil.isValidWildcard(srcWildcard)) {
                int srcPrefixLength = 32 - srcWildcard.numWildcardBits();
                if (srcPrefixLength > 0) {
                   Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
@@ -872,7 +872,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          Ip dstIp = fromLine.getDestinationIp();
          if (dstIp != null) {
             Ip dstWildcard = fromLine.getDestinationWildcard();
-            if (Util.isValidWildcard(dstWildcard)) {
+            if (CommonUtil.isValidWildcard(dstWildcard)) {
                int dstPrefixLength = 32 - dstWildcard.numWildcardBits();
                if (dstPrefixLength > 0) {
                   Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);

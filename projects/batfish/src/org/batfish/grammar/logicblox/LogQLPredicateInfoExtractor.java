@@ -1,10 +1,10 @@
 package org.batfish.grammar.logicblox;
 
-import org.batfish.collections.LBValueTypeList;
-import org.batfish.collections.PredicateValueTypeMap;
 import org.batfish.grammar.logicblox.LogiQLParser.*;
-import org.batfish.nxtnet.LBValueType;
 import org.batfish.common.BatfishException;
+import org.batfish.common.collections.LBValueTypeList;
+import org.batfish.common.collections.PredicateValueTypeMap;
+import org.batfish.common.datamodel.LBValueType;
 
 public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
 

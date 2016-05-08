@@ -2,8 +2,8 @@ package org.batfish.question.prefix_set_expr;
 
 import java.util.Set;
 
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.question.Environment;
-import org.batfish.representation.Prefix;
 
 public final class VarPrefixSetExpr extends BasePrefixSetExpr {
 

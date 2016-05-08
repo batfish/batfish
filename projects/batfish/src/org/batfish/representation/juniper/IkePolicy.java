@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public final class IkePolicy extends ComparableStructure<String> {
 

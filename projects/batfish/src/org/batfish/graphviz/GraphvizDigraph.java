@@ -3,7 +3,7 @@ package org.batfish.graphviz;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.Prefix;
 
 public class GraphvizDigraph extends GraphvizInput {
 

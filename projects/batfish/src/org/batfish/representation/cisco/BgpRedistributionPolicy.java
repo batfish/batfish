@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.datamodel.RoutingProtocol;
 
 public class BgpRedistributionPolicy extends RedistributionPolicy implements
       Serializable {

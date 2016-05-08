@@ -2,7 +2,7 @@ package org.batfish.representation.mrv;
 
 import java.util.Set;
 
-import org.batfish.collections.RoleSet;
+import org.batfish.common.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;

@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
 
 public class StaticRoute implements Serializable {
 

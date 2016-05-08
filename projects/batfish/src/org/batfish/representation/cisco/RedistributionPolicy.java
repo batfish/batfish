@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.datamodel.RoutingProtocol;
 
 public abstract class RedistributionPolicy implements Serializable {
 

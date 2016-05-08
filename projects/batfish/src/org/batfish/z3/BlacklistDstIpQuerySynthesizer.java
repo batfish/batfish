@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.collections.EdgeSet;
-import org.batfish.collections.NodeInterfacePair;
+import org.batfish.common.collections.EdgeSet;
+import org.batfish.common.collections.NodeInterfacePair;
+import org.batfish.common.datamodel.Edge;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.representation.Configuration;
-import org.batfish.representation.Edge;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
 import org.batfish.z3.node.EqExpr;

@@ -2,11 +2,12 @@ package org.batfish.nxtnet;
 
 import java.util.List;
 
-import org.batfish.representation.BgpAdvertisement;
-import org.batfish.representation.Flow;
-import org.batfish.representation.Ip;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.BgpAdvertisement;
+import org.batfish.common.datamodel.Flow;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.LBValueType;
+import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.common.datamodel.Prefix;
 
 public interface Column {
 

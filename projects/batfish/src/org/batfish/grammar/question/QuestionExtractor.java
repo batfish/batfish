@@ -14,24 +14,31 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
-import org.batfish.question.AclReachabilityQuestion;
-import org.batfish.question.CompareSameNameQuestion;
+import org.batfish.common.datamodel.FlowBuilder;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.NeighborType;
+import org.batfish.common.datamodel.NodeType;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.common.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.common.datamodel.questions.ForwardingAction;
+import org.batfish.common.datamodel.questions.IngressPathQuestion;
+import org.batfish.common.datamodel.questions.LocalPathQuestion;
+import org.batfish.common.datamodel.questions.MultipathQuestion;
+import org.batfish.common.datamodel.questions.NeighborsQuestion;
+import org.batfish.common.datamodel.questions.NodesQuestion;
+import org.batfish.common.datamodel.questions.ProtocolDependenciesQuestion;
+import org.batfish.common.datamodel.questions.Question;
+import org.batfish.common.datamodel.questions.QuestionParameters;
+import org.batfish.common.datamodel.questions.ReachabilityQuestion;
+import org.batfish.common.datamodel.questions.ReducedReachabilityQuestion;
+import org.batfish.common.datamodel.questions.TracerouteQuestion;
+import org.batfish.common.datamodel.questions.VariableType;
+import org.batfish.common.util.SubRange;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.question.Expr;
-import org.batfish.question.ReducedReachabilityQuestion;
-import org.batfish.question.ForwardingAction;
 import org.batfish.question.GeneratedRoutePrefixExpr;
-import org.batfish.question.IngressPathQuestion;
-import org.batfish.question.LocalPathQuestion;
-import org.batfish.question.MultipathQuestion;
-import org.batfish.question.NeighborType;
-import org.batfish.question.NeighborsQuestion;
-import org.batfish.question.NodeType;
-import org.batfish.question.NodesQuestion;
-import org.batfish.question.ProtocolDependenciesQuestion;
-import org.batfish.question.Question;
-import org.batfish.question.QuestionParameters;
-import org.batfish.question.ReachabilityQuestion;
-import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.question.bgp_advertisement_expr.BaseCaseBgpAdvertisementExpr;
@@ -236,12 +243,6 @@ import org.batfish.question.string_expr.static_route.StaticRouteStringExpr;
 import org.batfish.question.string_set_expr.StringSetExpr;
 import org.batfish.question.string_set_expr.bgp_advertisement.CommunitiesBgpAdvertisementStringSetExpr;
 import org.batfish.question.string_set_expr.map.KeysMapStringSetExpr;
-import org.batfish.representation.FlowBuilder;
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public class QuestionExtractor extends QuestionParserBaseListener implements
       BatfishExtractor {
@@ -2690,7 +2691,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private StringExpr toStringExpr(String_literal_string_exprContext ctx) {
       String withEscapes = ctx.text;
-      String processed = Util.unescapeJavaString(withEscapes);
+      String processed = CommonUtil.unescapeJavaString(withEscapes);
       return new StringLiteralStringExpr(processed);
    }
 

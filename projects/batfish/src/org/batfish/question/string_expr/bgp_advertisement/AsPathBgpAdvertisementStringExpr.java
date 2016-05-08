@@ -1,8 +1,8 @@
 package org.batfish.question.string_expr.bgp_advertisement;
 
+import org.batfish.common.datamodel.BgpAdvertisement;
 import org.batfish.question.Environment;
 import org.batfish.question.bgp_advertisement_expr.BgpAdvertisementExpr;
-import org.batfish.representation.BgpAdvertisement;
 
 public final class AsPathBgpAdvertisementStringExpr extends
       BgpAdvertisementStringExpr {

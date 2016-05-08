@@ -1,5 +1,8 @@
 package org.batfish.representation;
 
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
+
 public class ConnectedRoute extends Route {
 
    private static final long serialVersionUID = 1L;

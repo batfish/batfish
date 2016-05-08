@@ -3,8 +3,8 @@ package org.batfish.representation.cisco;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
 
 public class NamedBgpPeerGroup extends BgpPeerGroup {
 

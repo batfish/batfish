@@ -3,8 +3,9 @@ package org.batfish.nxtnet;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.OriginType;
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.datamodel.LBValueType;
+import org.batfish.common.datamodel.OriginType;
+import org.batfish.common.datamodel.RoutingProtocol;
 
 public final class StringColumn extends BaseColumn<String> {
 

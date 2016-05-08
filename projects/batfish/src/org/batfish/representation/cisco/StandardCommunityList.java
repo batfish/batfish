@@ -31,7 +31,7 @@ public final class StandardCommunityList implements Serializable {
          List<Long> standardCommunities = line.getCommunities();
          String regex = "(";
          for (Long l : standardCommunities) {
-            regex += org.batfish.util.Util.longToCommunity(l) + "|";
+            regex += org.batfish.common.util.CommonUtil.longToCommunity(l) + "|";
          }
          regex = regex.substring(0, regex.length() - 1) + ")";
          ExpandedCommunityListLine newLine = new ExpandedCommunityListLine(

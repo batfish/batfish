@@ -1,7 +1,7 @@
 package org.batfish.representation;
 
-import org.batfish.representation.Ip;
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.util.ComparableStructure;
 
 public class IkeGateway extends ComparableStructure<String> {
 

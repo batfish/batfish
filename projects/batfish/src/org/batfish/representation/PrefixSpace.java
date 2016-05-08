@@ -6,6 +6,9 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
+
 public class PrefixSpace {
 
    private static class BitTrie {

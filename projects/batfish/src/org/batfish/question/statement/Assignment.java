@@ -4,26 +4,26 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.common.datamodel.BgpAdvertisement;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.common.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.QMap;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 
 public class Assignment implements Statement {

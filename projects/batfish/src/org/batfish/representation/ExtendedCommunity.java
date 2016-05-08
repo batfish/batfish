@@ -3,6 +3,7 @@ package org.batfish.representation;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.Ip;
 
 public class ExtendedCommunity implements Serializable {
 

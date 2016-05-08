@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.util.SubRange;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.TcpFlags;
-import org.batfish.util.SubRange;
 
 public class ExtendedAccessListLine implements Serializable {
 

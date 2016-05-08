@@ -10,8 +10,8 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.job.BatfishJob;
-import org.batfish.representation.Prefix;
 
 public class GraphvizJob extends BatfishJob<GraphvizResult> {
 

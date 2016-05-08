@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.datamodel.Ip;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
-import org.batfish.representation.Ip;
 
 public class ClearIpsStatement implements Statement {
 

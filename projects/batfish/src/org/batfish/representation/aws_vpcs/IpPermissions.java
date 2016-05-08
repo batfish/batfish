@@ -6,11 +6,11 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

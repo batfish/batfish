@@ -1,7 +1,7 @@
 package org.batfish.question.int_expr;
 
 import org.batfish.common.BatfishException;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.common.datamodel.questions.VariableType;
 import org.batfish.question.Environment;
 
 public class SetSizeIntExpr extends BaseIntExpr {

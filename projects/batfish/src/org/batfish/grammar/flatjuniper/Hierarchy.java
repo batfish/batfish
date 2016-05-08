@@ -20,12 +20,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.StatementContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.Settings;
 import org.batfish.main.UndefinedGroupBatfishException;
-import org.batfish.representation.Ip;
 import org.batfish.representation.Ip6;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.Prefix6;
 
 public class Hierarchy {

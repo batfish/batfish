@@ -2,9 +2,9 @@ package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
 
-import org.batfish.representation.Ip;
-import org.batfish.util.JuniperUtils;
-import org.batfish.util.Util;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.util.JuniperUtils;
+import org.batfish.common.util.CommonUtil;
 import org.w3c.dom.Element;
 
 public class IpsecTunnel implements Serializable {
@@ -127,7 +127,7 @@ public class IpsecTunnel implements Serializable {
       _ikePerfectForwardSecrecy = getText(ikeElement,
             AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
       _ikeMode = getText(ikeElement, AwsVpcEntity.XML_KEY_MODE);
-      _ikePreSharedKeyHash = Util.md5Digest(getText(ikeElement,
+      _ikePreSharedKeyHash = CommonUtil.md5Digest(getText(ikeElement,
             AwsVpcEntity.XML_KEY_PRE_SHARED_KEY) + JuniperUtils.SALT);
 
       Element ipsecElement = (Element) ipsecTunnel.getElementsByTagName(

@@ -1,9 +1,9 @@
 package org.batfish.representation;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.IpsecAuthenticationAlgorithm;
 import org.batfish.representation.IpsecProtocol;
-import org.batfish.util.ComparableStructure;
 
 public class IpsecProposal extends ComparableStructure<String> {
 

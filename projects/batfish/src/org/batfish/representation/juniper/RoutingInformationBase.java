@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.Prefix;
 
 public class RoutingInformationBase implements Serializable {
 

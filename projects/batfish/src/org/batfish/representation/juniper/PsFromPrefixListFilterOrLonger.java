@@ -2,15 +2,15 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.util.SubRange;
 
 public final class PsFromPrefixListFilterOrLonger extends PsFrom {
 

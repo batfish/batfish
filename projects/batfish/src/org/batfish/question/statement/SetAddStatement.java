@@ -2,7 +2,9 @@ package org.batfish.question.statement;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
@@ -13,8 +15,6 @@ import org.batfish.question.prefix_expr.PrefixExpr;
 import org.batfish.question.route_filter_expr.RouteFilterExpr;
 import org.batfish.question.string_expr.StringExpr;
 import org.batfish.representation.Configuration;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 
 public class SetAddStatement implements Statement {

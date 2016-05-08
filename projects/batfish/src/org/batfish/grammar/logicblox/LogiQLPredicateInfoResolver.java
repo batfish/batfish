@@ -4,14 +4,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.antlr.v4.runtime.Token;
-import org.batfish.collections.FunctionSet;
-import org.batfish.collections.LBValueTypeList;
-import org.batfish.collections.PredicateSemantics;
-import org.batfish.collections.PredicateValueTypeMap;
-import org.batfish.collections.QualifiedNameMap;
 import org.batfish.grammar.logicblox.LogiQLParser.*;
-import org.batfish.nxtnet.LBValueType;
 import org.batfish.common.BatfishException;
+import org.batfish.common.collections.FunctionSet;
+import org.batfish.common.collections.LBValueTypeList;
+import org.batfish.common.collections.PredicateSemantics;
+import org.batfish.common.collections.PredicateValueTypeMap;
+import org.batfish.common.collections.QualifiedNameMap;
+import org.batfish.common.datamodel.LBValueType;
 
 public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
 

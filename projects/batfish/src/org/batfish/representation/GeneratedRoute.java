@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.batfish.common.datamodel.AsPath;
+import org.batfish.common.datamodel.Prefix;
+
 public final class GeneratedRoute extends Route {
 
    private static final long serialVersionUID = 1L;

@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
 
 public class DependentRoute implements Comparable<DependentRoute> {
 

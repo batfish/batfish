@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.common.datamodel.RoutingProtocol;
 import org.batfish.representation.OspfMetricType;
-import org.batfish.representation.RoutingProtocol;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
 

@@ -1,10 +1,10 @@
 package org.batfish.representation;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.IkeAuthenticationAlgorithm;
 import org.batfish.representation.IkeAuthenticationMethod;
-import org.batfish.util.ComparableStructure;
 
 public final class IkeProposal extends ComparableStructure<String> {
 

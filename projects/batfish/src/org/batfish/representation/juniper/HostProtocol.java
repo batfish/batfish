@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.NamedPort;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.NamedPort;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
 
 public enum HostProtocol {
    ALL,

@@ -1,10 +1,10 @@
 package org.batfish.question.string_expr.protocol;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.RoutingProtocol;
 import org.batfish.question.Environment;
 import org.batfish.question.string_expr.BaseStringExpr;
 import org.batfish.question.string_expr.StringExpr;
-import org.batfish.representation.RoutingProtocol;
 
 public enum ProtocolStringExpr implements StringExpr {
    PROTOCOL_NAME;

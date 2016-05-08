@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.util.ReferenceCountedStructure;
+import org.batfish.common.util.ReferenceCountedStructure;
 
 public class RouteMap extends ReferenceCountedStructure {
 

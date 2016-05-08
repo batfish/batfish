@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.common.datamodel.BgpAdvertisement;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.Configuration;
 
 public final class ForEachSentEbgpAdvertisementStatement extends

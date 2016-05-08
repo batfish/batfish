@@ -14,23 +14,26 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
+import org.batfish.common.datamodel.AsPath;
+import org.batfish.common.datamodel.AsSet;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.NamedPort;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.common.util.JuniperUtils;
+import org.batfish.common.util.SubRange;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.main.Warnings;
-import org.batfish.representation.AsPath;
-import org.batfish.representation.AsSet;
 import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.ExtendedCommunity;
 import org.batfish.representation.IkeAuthenticationAlgorithm;
 import org.batfish.representation.IkeAuthenticationMethod;
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.IpsecAuthenticationAlgorithm;
 import org.batfish.representation.IpsecProtocol;
 import org.batfish.representation.IsoAddress;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.NamedPort;
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.TcpFlags;
 import org.batfish.representation.juniper.AggregateRoute;
 import org.batfish.representation.juniper.BgpGroup;
@@ -125,9 +128,6 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.util.JuniperUtils;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -937,7 +937,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private static long toCommunityLong(Sc_literalContext sc_literal) {
       String text = sc_literal.COMMUNITY_LITERAL().getText();
-      return Util.communityStringToLong(text);
+      return CommonUtil.communityStringToLong(text);
    }
 
    private static long toCommunityLong(Sc_namedContext ctx) {
@@ -2235,7 +2235,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitAgt_community(Agt_communityContext ctx) {
-      long community = Util.communityStringToLong(ctx.COMMUNITY_LITERAL()
+      long community = CommonUtil.communityStringToLong(ctx.COMMUNITY_LITERAL()
             .getText());
       _configuration.getAllStandardCommunities().add(community);
       _currentAggregateRoute.getCommunities().add(community);
@@ -2369,7 +2369,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          String text = ctx.community_regex().getText();
          _currentCommunityList.getLines().add(new CommunityListLine(text));
          if (text.matches("[0-9]+:[0-9]+")) {
-            long communityVal = Util.communityStringToLong(text);
+            long communityVal = CommonUtil.communityStringToLong(text);
             _configuration.getAllStandardCommunities().add(communityVal);
          }
       }
@@ -2380,14 +2380,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.standard_community() != null) {
          long communityVal = toCommunityLong(ctx.standard_community());
          _configuration.getAllStandardCommunities().add(communityVal);
-         String communityStr = org.batfish.util.Util
+         String communityStr = org.batfish.common.util.CommonUtil
                .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));
       }
       else if (ctx.extended_community() != null) {
          long communityVal = toCommunityLong(ctx.extended_community());
-         String communityStr = org.batfish.util.Util
+         String communityStr = org.batfish.common.util.CommonUtil
                .longToCommunity(communityVal);
          _currentCommunityList.getLines().add(
                new CommunityListLine(communityStr));

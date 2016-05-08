@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.datamodel.RoutingProtocol;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
-import org.batfish.representation.RoutingProtocol;
 
 public final class PsFromProtocol extends PsFrom {
 

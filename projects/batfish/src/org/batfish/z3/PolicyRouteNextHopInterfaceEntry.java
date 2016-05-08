@@ -2,7 +2,7 @@ package org.batfish.z3;
 
 import java.util.List;
 
-import org.batfish.representation.Ip;
+import org.batfish.common.datamodel.Ip;
 
 public class PolicyRouteNextHopInterfaceEntry {
 

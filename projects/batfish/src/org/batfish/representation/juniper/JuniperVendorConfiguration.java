@@ -13,7 +13,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.batfish.collections.RoleSet;
+import org.batfish.common.collections.RoleSet;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;
@@ -21,7 +25,6 @@ import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IkeProposal;
 import org.batfish.representation.InterfaceType;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpsecProposal;
@@ -39,13 +42,10 @@ import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public final class JuniperVendorConfiguration extends JuniperConfiguration
       implements VendorConfiguration {
@@ -948,7 +948,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
-      String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
+      String nextHopInterface = route.getDrop() ? CommonUtil.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
       int administrativeCost = route.getMetric();
       Integer oldTag = route.getTag();

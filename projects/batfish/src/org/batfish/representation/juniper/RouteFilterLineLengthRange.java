@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.util.SubRange;
 
 public final class RouteFilterLineLengthRange extends RouteFilterLine {
 

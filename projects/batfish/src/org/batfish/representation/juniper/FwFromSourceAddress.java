@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.datamodel.Prefix;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.Prefix;
 
 public final class FwFromSourceAddress extends FwFrom {
 

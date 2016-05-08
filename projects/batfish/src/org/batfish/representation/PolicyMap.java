@@ -6,7 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.util.SubRange;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
 
 public class PolicyMap implements Serializable {
 

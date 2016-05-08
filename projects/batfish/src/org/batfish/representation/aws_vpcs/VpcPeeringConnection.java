@@ -3,7 +3,7 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.Prefix;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 

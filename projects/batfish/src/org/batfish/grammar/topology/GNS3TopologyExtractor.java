@@ -1,8 +1,8 @@
 package org.batfish.grammar.topology;
 
-import org.batfish.collections.EdgeSet;
+import org.batfish.common.collections.EdgeSet;
+import org.batfish.common.datamodel.Edge;
 import org.batfish.grammar.topology.GNS3TopologyParser.*;
-import org.batfish.representation.Edge;
 import org.batfish.representation.Topology;
 
 public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener

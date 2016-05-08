@@ -7,7 +7,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.util.Util;
+import org.batfish.common.datamodel.Edge;
+import org.batfish.common.datamodel.Flow;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -159,7 +161,7 @@ public class FlowHistory {
                i++;
                sb.append("  Trace: " + i + "\n");
                String rawTraceString = trace.toString();
-               String traceString = Util.getIndentedString(rawTraceString, 3);
+               String traceString = CommonUtil.getIndentedString(rawTraceString, 3);
                sb.append(traceString);
             }
          }

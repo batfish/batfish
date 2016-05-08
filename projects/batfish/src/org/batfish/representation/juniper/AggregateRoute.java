@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.batfish.representation.AsPath;
-import org.batfish.representation.Prefix;
+import org.batfish.common.datamodel.AsPath;
+import org.batfish.common.datamodel.Prefix;
 
 public final class AggregateRoute implements Serializable {
 

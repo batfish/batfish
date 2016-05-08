@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.common.datamodel.PrecomputedRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.PrecomputedRoute;
 
 public final class ForEachRouteStatement extends
       ForEachStatement<PrecomputedRoute> {

@@ -1,5 +1,6 @@
 package org.batfish.representation;
 
+import org.batfish.common.datamodel.Ip;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchType;
 

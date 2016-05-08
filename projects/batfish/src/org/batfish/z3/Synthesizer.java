@@ -11,26 +11,29 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.batfish.collections.EdgeSet;
-import org.batfish.collections.FibMap;
-import org.batfish.collections.FibRow;
-import org.batfish.collections.InterfaceSet;
-import org.batfish.collections.NodeInterfacePair;
-import org.batfish.collections.NodeSet;
-import org.batfish.collections.PolicyRouteFibIpMap;
-import org.batfish.collections.PolicyRouteFibNodeMap;
-import org.batfish.collections.RoleSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.collections.EdgeSet;
+import org.batfish.common.collections.FibMap;
+import org.batfish.common.collections.FibRow;
+import org.batfish.common.collections.InterfaceSet;
+import org.batfish.common.collections.NodeInterfacePair;
+import org.batfish.common.collections.NodeSet;
+import org.batfish.common.collections.PolicyRouteFibIpMap;
+import org.batfish.common.collections.PolicyRouteFibNodeMap;
+import org.batfish.common.collections.RoleSet;
+import org.batfish.common.datamodel.Edge;
+import org.batfish.common.datamodel.IcmpCode;
+import org.batfish.common.datamodel.IcmpType;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.IpProtocol;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.SubRange;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
-import org.batfish.representation.Edge;
-import org.batfish.representation.IcmpCode;
-import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
@@ -41,11 +44,8 @@ import org.batfish.representation.PolicyMapMatchType;
 import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetType;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AclDenyExpr;
 import org.batfish.z3.node.AclMatchExpr;
@@ -393,7 +393,7 @@ public class Synthesizer {
             PacketRelExpr action;
             if (ifaceOutName.equals(FibRow.DROP_INTERFACE)
                   || isLoopbackInterface(ifaceOutName)
-                  || Util.isNullInterface(ifaceOutName)) {
+                  || CommonUtil.isNullInterface(ifaceOutName)) {
                action = new NodeDropExpr(hostname);
             }
             else {
@@ -1212,7 +1212,7 @@ public class Synthesizer {
                                  forwardConditions.addConjunct(postInInterface);
                                  forwardConditions.addConjunct(preOut);
                                  forwardConditions.addConjunct(match);
-                                 if (Util.isNullInterface(outInterface)) {
+                                 if (CommonUtil.isNullInterface(outInterface)) {
                                     NodeDropExpr nodeDrop = new NodeDropExpr(
                                           hostname);
                                     RuleExpr dropRule = new RuleExpr(

@@ -3,8 +3,8 @@ package org.batfish.representation.vyos;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.representation.Ip;
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.util.ComparableStructure;
 
 public class BgpProcess extends ComparableStructure<Integer> {
 

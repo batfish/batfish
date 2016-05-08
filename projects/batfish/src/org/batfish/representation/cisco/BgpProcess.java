@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.RoutingProtocol;
 
 public class BgpProcess implements Serializable {
 

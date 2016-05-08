@@ -1,7 +1,7 @@
 package org.batfish.question.statement;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.common.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;

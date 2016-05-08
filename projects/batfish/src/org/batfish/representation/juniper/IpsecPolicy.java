@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.DiffieHellmanGroup;
-import org.batfish.util.ComparableStructure;
 
 public class IpsecPolicy extends ComparableStructure<String> {
 

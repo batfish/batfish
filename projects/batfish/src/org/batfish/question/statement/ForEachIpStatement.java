@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.common.datamodel.Ip;
 import org.batfish.question.Environment;
-import org.batfish.representation.Ip;
 
 public class ForEachIpStatement extends ForEachStatement<Ip> {
 

@@ -3,7 +3,7 @@ package org.batfish.representation;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public final class IkePolicy extends ComparableStructure<String> {
 

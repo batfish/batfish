@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.question.ForwardingAction;
-import org.batfish.representation.IcmpCode;
-import org.batfish.representation.IcmpType;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
+import org.batfish.common.datamodel.IcmpCode;
+import org.batfish.common.datamodel.IcmpType;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.datamodel.questions.ForwardingAction;
+import org.batfish.common.util.SubRange;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.DebugExpr;

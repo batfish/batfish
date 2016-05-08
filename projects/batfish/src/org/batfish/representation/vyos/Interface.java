@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.Prefix;
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.datamodel.Prefix;
+import org.batfish.common.util.ComparableStructure;
 
 public class Interface extends ComparableStructure<String> {
 
