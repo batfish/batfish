@@ -36,9 +36,9 @@ import jline.console.completer.StringsCompleter;
 public class Client {
 
    private static final String COMMAND_ANSWER = "answer";
+   private static final String COMMAND_ANSWER_BYTYPE = "answer-bytype";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
    private static final String COMMAND_CAT = "cat";
-   // private static final String COMMAND_CHANGE_DIR = "cd";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
    private static final String COMMAND_DEL_CONTAINER = "del-container";
    private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
@@ -63,6 +63,10 @@ public class Client {
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
+   private static final String COMMAND_SHOW_API_KEY = "show-api-key";
+   private static final String COMMAND_SHOW_CONTAINER = "show-container";
+   private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
+   private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
@@ -78,6 +82,9 @@ public class Client {
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the default environment");
+      descs.put(COMMAND_ANSWER_BYTYPE, COMMAND_ANSWER_BYTYPE
+              + " <question-type>  [param1=value1 [param2=value2] ...]\n"
+              + "\t Answer the question for the differential environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-file>  [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question for the differential environment");
@@ -137,6 +144,14 @@ public class Client {
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
+      descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n" 
+    		+ "\t Show API Key");
+      descs.put(COMMAND_SHOW_CONTAINER, COMMAND_SHOW_CONTAINER + "\n" 
+    		+ "\t Show active container");
+      descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
+    		+ "\t Show coordinator host");
+      descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
+    		+ "\t Show active testrig");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
@@ -196,14 +211,29 @@ public class Client {
    
    }
 
-   private void answer(String questionFile, String paramsLine, boolean isDiff) throws Exception {
+   private void answerType(String questionType, String paramsLine, boolean isDiff) 
+		   throws Exception {
+	   
+	   String questionString = QuestionHelper.getQuestionString(questionType);
+	   
+	   File questionFile = createTempFile("question", questionString);
+	   
+	   answerFile(questionFile.getAbsolutePath(), paramsLine, isDiff);
+	   
+       if (questionFile != null) {
+           questionFile.delete();
+       }	   
+   }
+
+   private void answerFile(String questionFile, String paramsLine, boolean isDiff) 
+		   throws Exception {
 	   
        if (! new File(questionFile).exists()) 
           throw new FileNotFoundException("Question file not found: " + questionFile);
        
        String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
 
-       File paramsFile = createParamsFile(paramsLine);
+       File paramsFile = createTempFile("parameters", paramsLine);
        
        // upload the question
        boolean resultUpload = _workHelper.uploadQuestion(
@@ -232,21 +262,18 @@ public class Client {
        execute(wItemAs);
    }
    
-   private File createParamsFile(String paramsLine)
+   private File createTempFile(String filePrefix, String content)
          throws IOException {
 
-      File paramFile = Files.createTempFile("params", null).toFile();
-      _logger.debugf("Creating temporary params file: %s\n",
-            paramFile.getAbsolutePath());
+      File tempFile = Files.createTempFile(filePrefix, null).toFile();
+      _logger.debugf("Creating temporary %s file: %s\n",
+            filePrefix, tempFile.getAbsolutePath());
 
-      BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
-      writer.write("#parameters for the question\n");
-
-      writer.write(paramsLine + "\n");
-
+      BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+      writer.write(content + "\n");
       writer.close();
 
-      return paramFile;
+      return tempFile;
    }
 
    private boolean execute(WorkItem wItem) throws Exception {
@@ -360,9 +387,21 @@ public class Client {
             String paramsLine = Util.joinStrings(" ",
                     Arrays.copyOfRange(words, 2 + options.size(), words.length));
   
-            answer(questionFile, paramsLine, false);            	
+            answerFile(questionFile, paramsLine, false);            	
             break;
          }
+         case COMMAND_ANSWER_BYTYPE: {
+             if (!isSetTestrig() || !isSetContainer(true)) {
+                break;
+             }
+             
+             String questionType = parameters.get(0);
+             String paramsLine = Util.joinStrings(" ",
+                     Arrays.copyOfRange(words, 2 + options.size(), words.length));
+   
+             answerType(questionType, paramsLine, false);            	
+             break;
+          }
          case COMMAND_ANSWER_DIFF: {
             if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
                break;
@@ -372,7 +411,7 @@ public class Client {
             String paramsLine = Util.joinStrings(" ",
                     Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            answer(questionFile, paramsLine, true);
+            answerFile(questionFile, paramsLine, true);
             
             break;
          }
@@ -632,6 +671,22 @@ public class Client {
                _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
             }
             break;
+         }
+         case COMMAND_SHOW_API_KEY: {
+        	 _logger.outputf("Current API Key is %s\n", _settings.getApiKey());
+        	 break;
+         }
+         case COMMAND_SHOW_CONTAINER: {
+        	 _logger.outputf("Current container is %s\n", _currContainerName);
+        	 break;
+         }
+         case COMMAND_SHOW_COORDINATOR_HOST: {
+        	 _logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
+        	 break;
+         }
+         case COMMAND_SHOW_TESTRIG: {
+        	 _logger.outputf("Current testrig is %s\n", _currTestrigName);
+        	 break;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
             if (!isSetTestrig() || !isSetContainer(true)) {

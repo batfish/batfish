@@ -185,6 +185,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -2781,6 +2782,16 @@ public class Batfish implements AutoCloseable {
       _logger.info("Reading question file: \"" + questionPath + "\"...");
       String questionText = Util.readFile(questionFile);
       _logger.info("OK\n");
+      
+      try {
+    	  ObjectMapper mapper = new ObjectMapper();
+    	  Question question = mapper.readValue(questionText, Question.class);
+    	  return question;
+
+      } catch (IOException e1) {
+    	  _logger.debugf("BF: could not parse as Json question: %s\nWill try old, custom parser.", e1.getMessage());
+      }
+
       QuestionParameters parameters = parseQuestionParameters();
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings);
