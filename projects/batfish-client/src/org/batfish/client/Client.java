@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,7 +22,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
@@ -196,11 +196,44 @@ public class Client {
    
    }
 
-   private File createParamsFile(String[] words, int startIndex, int endIndex)
-         throws IOException {
+   private void answer(String questionFile, String paramsLine, boolean isDiff) throws Exception {
+	   
+       if (! new File(questionFile).exists()) 
+          throw new FileNotFoundException("Question file not found: " + questionFile);
+       
+       String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
 
-      String paramsLine = Util.joinStrings(" ",
-            Arrays.copyOfRange(words, startIndex, endIndex + 1));
+       File paramsFile = createParamsFile(paramsLine);
+       
+       // upload the question
+       boolean resultUpload = _workHelper.uploadQuestion(
+             _currContainerName, _currTestrigName, questionName,
+             questionFile, paramsFile.getAbsolutePath());
+
+       if (!resultUpload)
+    	   return;
+    	   
+       _logger.debug("Uploaded question. Answering now.\n");
+
+       // delete the temporary params file
+       if (paramsFile != null) {
+          paramsFile.delete();
+       }
+
+       // answer the question       
+       WorkItem wItemAs = (isDiff) ?
+    		   _workHelper.getWorkItemAnswerDiffQuestion(
+    		             questionName, _currContainerName, _currTestrigName, _currEnv,
+    		             _currDiffEnv) 
+    		   : 
+    		   _workHelper.getWorkItemAnswerQuestion(
+             questionName, _currContainerName, _currTestrigName, _currEnv,
+             _currDiffEnv);
+       execute(wItemAs);
+   }
+   
+   private File createParamsFile(String paramsLine)
+         throws IOException {
 
       File paramFile = Files.createTempFile("params", null).toFile();
       _logger.debugf("Creating temporary params file: %s\n",
@@ -210,10 +243,6 @@ public class Client {
       writer.write("#parameters for the question\n");
 
       writer.write(paramsLine + "\n");
-
-      // for (int index = startIndex; index <= endIndex; index++) {
-      // writer.write(words[index] + "\n");
-      // }
 
       writer.close();
 
@@ -328,45 +357,10 @@ public class Client {
             }
 
             String questionFile = parameters.get(0);
-            
-            if (! new File(questionFile).exists()) {
-               _logger.errorf("Question file not found: %s\n", questionFile);
-               break;
-            }
-            
-            String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
-
-            File paramsFile = null;
-
-            try {
-               paramsFile = createParamsFile(words, 2 + options.size(), words.length - 1);
-            }
-            catch (Exception e) {
-               _logger.error("Could not create params file\n");
-               break;
-            }
-
-            // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(
-                  _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile.getAbsolutePath());
-
-            if (!resultUpload)
-                break;
-
-            _logger.debug("Uploaded question. Answering now.\n");
-
-            // delete the temporary params file
-            if (paramsFile != null) {
-               paramsFile.delete();
-            }
-
-            // answer the question
-            WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv,
-                  _currDiffEnv);
-            execute(wItemAs);
-
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
+  
+            answer(questionFile, paramsLine, false);            	
             break;
          }
          case COMMAND_ANSWER_DIFF: {
@@ -375,45 +369,11 @@ public class Client {
             }
 
             String questionFile = parameters.get(0);
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
+
+            answer(questionFile, paramsLine, true);
             
-            if (! new File(questionFile).exists()) {
-               _logger.errorf("Question file not found: %s\n", questionFile);
-               break;
-            }
-            
-            String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
-
-            File paramsFile = null;
-
-            try {
-               paramsFile = createParamsFile(words, options.size() + 2, words.length - 1);
-            }
-            catch (Exception e) {
-               _logger.error("Could not create params file\n");
-               break;
-            }
-
-            // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(
-                  _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile.getAbsolutePath());
-
-            if (!resultUpload)
-               break;
-
-            _logger.debug("Uploaded question. Answering now.\n");
-
-               // delete the temporary params file
-            if (paramsFile != null) {
-               paramsFile.delete();
-            }
-
-            // answer the question
-            WorkItem wItemAs = _workHelper.getWorkItemAnswerDiffQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv,
-                  _currDiffEnv);
-            execute(wItemAs);
-
             break;
          }
          case COMMAND_CAT: {
