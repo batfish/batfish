@@ -1,8 +1,8 @@
 package org.batfish.client;
 
+import org.batfish.common.datamodel.questions.NeighborsQuestion;
 import org.batfish.common.datamodel.questions.NodesQuestion;
 import org.batfish.common.datamodel.questions.Question;
-import org.batfish.common.datamodel.questions.QuestionParameters;
 import org.batfish.common.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,8 +15,10 @@ public class QuestionHelper {
 		QuestionType qType = QuestionType.valueOf(questionType);
 		
 		switch (qType) {
+      case NEIGHBORS:
+         return new NeighborsQuestion();
 		case NODES:
-			return new NodesQuestion(new QuestionParameters());
+			return new NodesQuestion();
 		case ACL_REACHABILITY:
 			break;
 		case COMPARE_SAME_NAME:
@@ -28,8 +30,6 @@ public class QuestionHelper {
 		case LOCAL_PATH:
 			break;
 		case MULTIPATH:
-			break;
-		case NEIGHBORS:
 			break;
 		case PROTOCOL_DEPENDENCIES:
 			break;

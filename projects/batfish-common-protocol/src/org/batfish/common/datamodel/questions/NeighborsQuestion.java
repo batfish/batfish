@@ -8,60 +8,78 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.datamodel.NeighborType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class NeighborsQuestion extends Question {
 
-   private Set<NeighborType> _neighborTypes;
-   
-   private Pattern _dstNodeRegex;
+   private static final String DST_NODE_REGEX_VAR = "dstNodeRegex";
+   private static final String NEIGHBOR_TYPE_VAR = "neighborType";
+   private static final String SRC_NODE_REGEX_VAR = "srcNodeRegex";
 
-   private Pattern _srcNodeRegex;
+   private String _dstNodeRegex = ".*";
+   private NeighborType _neighborType = NeighborType.PHYSICAL;   
+   private String _srcNodeRegex = ".*";
 
-   public NeighborsQuestion(QuestionParameters parameters) {
-      super(QuestionType.NEIGHBORS, parameters);
-      _neighborTypes = EnumSet.noneOf(NeighborType.class);
+   public NeighborsQuestion() {
+      super(QuestionType.NEIGHBORS);
    }
 
-   public Set<NeighborType> getNeighborTypes() {
-      return _neighborTypes;
+   public NeighborsQuestion(QuestionParameters parameters) {
+      this();
+      setParameters(parameters);
    }
 
    @Override
+   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
+   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
 
-   public Pattern getDstNodeRegex() {
+   @JsonProperty(DST_NODE_REGEX_VAR)
+   public String getDstNodeRegex() {
       return _dstNodeRegex;
    }
 
-   public Pattern getSrcNodeRegex() {
-	      return _srcNodeRegex;
+   @JsonProperty(NEIGHBOR_TYPE_VAR)
+   public NeighborType getNeighborType() {
+      return _neighborType;
+   }
+
+   @JsonProperty(SRC_NODE_REGEX_VAR)
+   public String getSrcNodeRegex() {
+      return _srcNodeRegex;
    }
 
    public void setDstNodeRegex(String regex) {
-      try {
-         _dstNodeRegex = Pattern.compile(regex);
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for dst node is not a valid java regex: \""
-                     + regex + "\"", e);
-      }
+      _dstNodeRegex = regex;
+   }
+
+   public void setNeighborType(NeighborType neighborType) {
+      _neighborType = neighborType;
    }
 
    public void setSrcNodeRegex(String regex) {
-      try {
-         _srcNodeRegex = Pattern.compile(regex);
+      _srcNodeRegex = regex;
+   }
+
+   @Override
+   public void setParameters(QuestionParameters parameters) {
+      super.setParameters(parameters);
+      if (parameters.getTypeBindings().get(NEIGHBOR_TYPE_VAR) == VariableType.NODE_TYPE) {
+         setNeighborType(parameters.getNeighborType(NEIGHBOR_TYPE_VAR));
       }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for src node is not a valid java regex: \""
-                     + regex + "\"", e);
+      if (parameters.getTypeBindings().get(DST_NODE_REGEX_VAR) == VariableType.STRING) {
+         setSrcNodeRegex(parameters.getString(DST_NODE_REGEX_VAR));
+      }
+      if (parameters.getTypeBindings().get(SRC_NODE_REGEX_VAR) == VariableType.STRING) {
+         setDstNodeRegex(parameters.getString(SRC_NODE_REGEX_VAR));
       }
    }
 }

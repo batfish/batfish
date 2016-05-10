@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -939,7 +940,17 @@ public class Batfish implements AutoCloseable {
 	   Map<String, Configuration> configurations = loadConfigurations();
 
 	   // collect nodes nodes
-	   Pattern nodeRegex = question.getNodeRegex();
+	   Pattern nodeRegex;
+	   
+	   try {
+	      nodeRegex = Pattern.compile(question.getNodeRegex());
+	   }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
+
 	   Set<String> nodes = new TreeSet<String>();
 	   if (nodeRegex != null) {
 		   for (String node : configurations.keySet()) {
@@ -2786,8 +2797,9 @@ public class Batfish implements AutoCloseable {
       try {
     	  ObjectMapper mapper = new ObjectMapper();
     	  Question question = mapper.readValue(questionText, Question.class);
+    	  QuestionParameters parameters = parseQuestionParameters();
+    	  question.setParameters(parameters);
     	  return question;
-
       } catch (IOException e1) {
     	  _logger.debugf("BF: could not parse as Json question: %s\nWill try old, custom parser.", e1.getMessage());
       }

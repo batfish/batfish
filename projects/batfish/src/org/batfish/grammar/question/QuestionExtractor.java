@@ -518,9 +518,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void enterNeighbors_constraint_neighbor_type(
          Neighbors_constraint_neighbor_typeContext ctx) {
-      _neighborsQuestion.getNeighborTypes().clear();
       NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
-      _neighborsQuestion.getNeighborTypes().add(nType);
+      _neighborsQuestion.setNeighborType(nType);
    }
 
    @Override
@@ -546,9 +545,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    @Override
    public void enterNodes_constraint_node_type(
          Nodes_constraint_node_typeContext ctx) {
-      _nodesQuestion.getNodeTypes().clear();
       NodeType nType = toNodeType(ctx.node_type_constraint());
-      _nodesQuestion.getNodeTypes().add(nType);
+      _nodesQuestion.setNodeType(nType);
    }
 
    @Override
