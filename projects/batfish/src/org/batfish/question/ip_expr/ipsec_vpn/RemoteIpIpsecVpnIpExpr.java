@@ -1,6 +1,6 @@
 package org.batfish.question.ip_expr.ipsec_vpn;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.question.Environment;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
 import org.batfish.representation.IpsecVpn;

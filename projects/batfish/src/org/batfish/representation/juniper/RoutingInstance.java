@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 
 public class RoutingInstance implements Serializable {
 

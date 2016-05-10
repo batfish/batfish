@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.collections.EdgeSet;
-import org.batfish.common.collections.NodeInterfacePair;
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.EdgeSet;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Topology implements Serializable {
 

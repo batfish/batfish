@@ -1,6 +1,6 @@
 package org.batfish.question.prefix_expr.iface;
 
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Prefix;
 import org.batfish.question.Environment;
 import org.batfish.question.interface_expr.InterfaceExpr;
 import org.batfish.representation.Interface;

@@ -1,7 +1,7 @@
 package org.batfish.representation;
 
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 public class ConnectedRoute extends Route {
 

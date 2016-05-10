@@ -1,8 +1,8 @@
 package org.batfish.question;
 
-import org.batfish.common.datamodel.questions.Question;
-import org.batfish.common.datamodel.questions.QuestionParameters;
-import org.batfish.common.datamodel.questions.QuestionType;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.QuestionType;
 
 
 public class VerifyQuestion extends Question {

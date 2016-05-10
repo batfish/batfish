@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Prefix;
 
 public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
 

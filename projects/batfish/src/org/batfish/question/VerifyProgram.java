@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.collections.AdvertisementSet;
-import org.batfish.common.collections.RouteSet;
-import org.batfish.common.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.RouteSet;
+import org.batfish.datamodel.questions.QuestionParameters;
 import org.batfish.main.Settings;
 import org.batfish.question.statement.Statement;
 import org.batfish.representation.Configuration;

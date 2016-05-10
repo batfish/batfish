@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.IpProtocol;
-import org.batfish.common.datamodel.NamedPort;
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.LineAction;
 

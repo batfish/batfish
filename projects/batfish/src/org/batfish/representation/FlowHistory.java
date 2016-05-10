@@ -7,9 +7,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Edge;
-import org.batfish.common.datamodel.Flow;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
 import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;

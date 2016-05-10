@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Prefix;
 
 public class OspfNetwork implements Comparable<OspfNetwork>, Serializable {
 

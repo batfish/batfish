@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;

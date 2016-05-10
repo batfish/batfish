@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.datamodel.Ip;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
 
 public class IkeGateway extends ComparableStructure<String> {
 

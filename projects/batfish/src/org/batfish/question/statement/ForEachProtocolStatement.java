@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.question.Environment;
 
 public class ForEachProtocolStatement extends ForEachStatement<RoutingProtocol> {

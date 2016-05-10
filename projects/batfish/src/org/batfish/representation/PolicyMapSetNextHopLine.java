@@ -2,7 +2,7 @@ package org.batfish.representation;
 
 import java.util.List;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 
 public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 

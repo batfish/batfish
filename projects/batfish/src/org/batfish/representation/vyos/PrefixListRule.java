@@ -1,9 +1,9 @@
 package org.batfish.representation.vyos;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.LineAction;
 
 public class PrefixListRule extends ComparableStructure<Integer> {

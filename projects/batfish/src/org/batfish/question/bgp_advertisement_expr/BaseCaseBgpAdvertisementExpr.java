@@ -1,7 +1,7 @@
 package org.batfish.question.bgp_advertisement_expr;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.question.Environment;
 
 public enum BaseCaseBgpAdvertisementExpr implements BgpAdvertisementExpr {

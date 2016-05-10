@@ -10,8 +10,8 @@ import java.util.Set;
 
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
-import org.batfish.common.collections.NodeSet;
-import org.batfish.common.datamodel.Flow;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.collections.NodeSet;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;

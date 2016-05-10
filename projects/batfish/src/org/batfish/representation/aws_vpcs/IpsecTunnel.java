@@ -2,9 +2,9 @@ package org.batfish.representation.aws_vpcs;
 
 import java.io.Serializable;
 
-import org.batfish.common.datamodel.Ip;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
 import org.w3c.dom.Element;
 
 public class IpsecTunnel implements Serializable {

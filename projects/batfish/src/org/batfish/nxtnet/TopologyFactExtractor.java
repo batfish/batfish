@@ -2,7 +2,7 @@ package org.batfish.nxtnet;
 
 import java.util.Map;
 
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
 import org.batfish.representation.Topology;
 
 public class TopologyFactExtractor {

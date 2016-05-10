@@ -1,6 +1,6 @@
 package org.batfish.question.ip_expr.bgp_neighbor;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.question.Environment;
 import org.batfish.question.bgp_neighbor_expr.BgpNeighborExpr;
 import org.batfish.representation.BgpNeighbor;

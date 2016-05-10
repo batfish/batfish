@@ -6,9 +6,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

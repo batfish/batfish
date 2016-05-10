@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.datamodel.Ip6;
+import org.batfish.datamodel.Ip6;
 
 public class RoutePolicyNextHopIP6 extends RoutePolicyNextHop {
 

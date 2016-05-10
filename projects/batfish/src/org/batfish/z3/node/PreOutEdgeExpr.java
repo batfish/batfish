@@ -1,6 +1,6 @@
 package org.batfish.z3.node;
 
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
 
 public class PreOutEdgeExpr extends PacketRelExpr {
 

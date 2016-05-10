@@ -1,7 +1,7 @@
 package org.batfish.protocoldependency;
 
-import org.batfish.common.datamodel.Prefix;
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 
 public final class OspfIntraAreaPotentialExport extends PotentialExport {
 

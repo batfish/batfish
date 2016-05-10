@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 
 public class CommonUtil {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"

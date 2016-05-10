@@ -1,8 +1,8 @@
 package org.batfish.grammar.topology;
 
 import org.antlr.v4.runtime.Token;
-import org.batfish.common.collections.NodeRoleMap;
-import org.batfish.common.collections.RoleSet;
+import org.batfish.datamodel.collections.NodeRoleMap;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.grammar.topology.RoleParser.Node_role_declarations_lineContext;
 import org.batfish.grammar.topology.RoleParser.Role_declarationsContext;
 

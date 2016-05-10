@@ -1,9 +1,9 @@
 package org.batfish.question.boolean_expr;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
-import org.batfish.common.datamodel.questions.VariableType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.int_expr.IntExpr;

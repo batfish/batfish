@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.batfish.common.collections.CommunitySet;
-import org.batfish.common.datamodel.AsPath;
-import org.batfish.common.datamodel.BgpAdvertisement;
-import org.batfish.common.datamodel.Flow;
-import org.batfish.common.datamodel.FlowBuilder;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.IpProtocol;
-import org.batfish.common.datamodel.OriginType;
-import org.batfish.common.datamodel.PrecomputedRoute;
-import org.batfish.common.datamodel.Prefix;
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowBuilder;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.collections.CommunitySet;
 
 public class EntityTable {
 

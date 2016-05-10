@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 
 public class BgpGroup implements Serializable {
 

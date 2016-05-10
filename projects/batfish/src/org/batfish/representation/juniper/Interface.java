@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.IsoAddress;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;

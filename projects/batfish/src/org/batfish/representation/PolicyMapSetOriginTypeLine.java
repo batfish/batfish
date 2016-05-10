@@ -1,6 +1,6 @@
 package org.batfish.representation;
 
-import org.batfish.common.datamodel.OriginType;
+import org.batfish.datamodel.OriginType;
 
 public class PolicyMapSetOriginTypeLine extends PolicyMapSetLine {
 

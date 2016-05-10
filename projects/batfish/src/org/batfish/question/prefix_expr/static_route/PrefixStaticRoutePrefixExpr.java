@@ -1,6 +1,6 @@
 package org.batfish.question.prefix_expr.static_route;
 
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Prefix;
 import org.batfish.question.Environment;
 import org.batfish.question.static_route_expr.StaticRouteExpr;
 import org.batfish.representation.StaticRoute;

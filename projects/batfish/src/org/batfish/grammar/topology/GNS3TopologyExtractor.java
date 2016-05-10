@@ -1,7 +1,7 @@
 package org.batfish.grammar.topology;
 
-import org.batfish.common.collections.EdgeSet;
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.grammar.topology.GNS3TopologyParser.*;
 import org.batfish.representation.Topology;
 

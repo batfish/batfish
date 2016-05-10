@@ -7,7 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 
 public class OspfProcess implements Serializable {
 

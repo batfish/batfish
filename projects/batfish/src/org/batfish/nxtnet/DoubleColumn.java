@@ -1,7 +1,7 @@
 package org.batfish.nxtnet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.LBValueType;
+import org.batfish.datamodel.LBValueType;
 
 public final class DoubleColumn extends BaseColumn<Double> {
 

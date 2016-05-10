@@ -1,6 +1,6 @@
 package org.batfish.question.route_expr;
 
-import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.question.Environment;
 
 public final class VarRouteExpr extends BaseRouteExpr {

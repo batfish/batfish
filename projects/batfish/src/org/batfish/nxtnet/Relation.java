@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.collections.LBValueTypeList;
-import org.batfish.common.datamodel.LBValueType;
+import org.batfish.datamodel.LBValueType;
+import org.batfish.datamodel.collections.LBValueTypeList;
 
 import com.google.common.collect.ImmutableList;
 

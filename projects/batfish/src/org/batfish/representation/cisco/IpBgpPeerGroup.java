@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 public class IpBgpPeerGroup extends LeafBgpPeerGroup {
 

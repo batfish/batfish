@@ -1,10 +1,10 @@
 package org.batfish.client;
 
-import org.batfish.common.datamodel.questions.CompareSameNameQuestion;
-import org.batfish.common.datamodel.questions.NeighborsQuestion;
-import org.batfish.common.datamodel.questions.NodesQuestion;
-import org.batfish.common.datamodel.questions.Question;
-import org.batfish.common.datamodel.questions.QuestionType;
+import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.NeighborsQuestion;
+import org.batfish.datamodel.questions.NodesQuestion;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

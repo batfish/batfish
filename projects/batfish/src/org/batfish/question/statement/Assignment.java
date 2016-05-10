@@ -4,12 +4,12 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.datamodel.BgpAdvertisement;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.PrecomputedRoute;
-import org.batfish.common.datamodel.Prefix;
-import org.batfish.common.datamodel.RoutingProtocol;
-import org.batfish.common.datamodel.questions.VariableType;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;

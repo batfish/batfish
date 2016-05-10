@@ -1,7 +1,7 @@
 package org.batfish.question.string_expr.protocol;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.question.Environment;
 import org.batfish.question.string_expr.BaseStringExpr;
 import org.batfish.question.string_expr.StringExpr;

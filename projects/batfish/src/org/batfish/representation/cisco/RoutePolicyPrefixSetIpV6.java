@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.datamodel.Ip6;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Ip6;
 
 public class RoutePolicyPrefixSetIpV6 extends RoutePolicyPrefixSetInline {
 

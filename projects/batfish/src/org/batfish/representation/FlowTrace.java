@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.collections.NodeInterfacePair;
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 

@@ -8,10 +8,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BfJson;
-import org.batfish.common.collections.RoleSet;
-import org.batfish.common.datamodel.BgpAdvertisement;
-import org.batfish.common.datamodel.PrecomputedRoute;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

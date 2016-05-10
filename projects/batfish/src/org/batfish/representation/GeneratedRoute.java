@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.common.datamodel.AsPath;
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.Prefix;
 
 public final class GeneratedRoute extends Route {
 

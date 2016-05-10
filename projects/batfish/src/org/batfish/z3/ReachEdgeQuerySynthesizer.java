@@ -2,7 +2,7 @@ package org.batfish.z3;
 
 import java.util.List;
 
-import org.batfish.common.datamodel.Edge;
+import org.batfish.datamodel.Edge;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.OriginateExpr;

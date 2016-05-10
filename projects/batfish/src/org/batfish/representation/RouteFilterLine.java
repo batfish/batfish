@@ -2,8 +2,8 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.SubRange;
+import org.batfish.datamodel.Prefix;
 
 public class RouteFilterLine implements Serializable {
 

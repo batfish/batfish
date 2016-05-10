@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;

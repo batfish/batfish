@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
 
 public final class AddressBook extends ComparableStructure<String> {

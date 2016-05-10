@@ -1,7 +1,7 @@
 package org.batfish.protocoldependency;
 
 import org.batfish.common.Pair;
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.RoutingProtocol;
 
 public class ProtocolDependency extends Pair<RoutingProtocol, Integer> {
 

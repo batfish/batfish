@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Ip6;
+import org.batfish.datamodel.Ip6;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
 

@@ -2,11 +2,11 @@ package org.batfish.nxtnet;
 
 import java.io.Serializable;
 
-import org.batfish.common.collections.FunctionSet;
-import org.batfish.common.collections.LBValueTypeList;
-import org.batfish.common.collections.PredicateSemantics;
-import org.batfish.common.collections.PredicateValueTypeMap;
-import org.batfish.common.collections.QualifiedNameMap;
+import org.batfish.datamodel.collections.FunctionSet;
+import org.batfish.datamodel.collections.LBValueTypeList;
+import org.batfish.datamodel.collections.PredicateSemantics;
+import org.batfish.datamodel.collections.PredicateValueTypeMap;
+import org.batfish.datamodel.collections.QualifiedNameMap;
 
 public class PredicateInfo implements Serializable {
 

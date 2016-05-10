@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
 import org.batfish.representation.StaticRoute;

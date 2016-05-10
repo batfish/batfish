@@ -1,6 +1,6 @@
 package org.batfish.question.int_expr.route;
 
-import org.batfish.common.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.question.Environment;
 import org.batfish.question.route_expr.RouteExpr;
 

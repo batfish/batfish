@@ -1,6 +1,6 @@
 package org.batfish.question.ip_expr;
 
-import org.batfish.common.datamodel.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.question.Environment;
 
 public class VarIpExpr extends BaseIpExpr {

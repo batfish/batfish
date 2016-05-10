@@ -13,11 +13,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.batfish.common.collections.RoleSet;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
 import org.batfish.common.util.SubRange;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;

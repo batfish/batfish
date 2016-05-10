@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.questions.VariableType;
+import org.batfish.datamodel.questions.VariableType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 

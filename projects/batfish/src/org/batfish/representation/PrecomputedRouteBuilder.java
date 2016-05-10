@@ -1,9 +1,9 @@
 package org.batfish.representation;
 
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.PrecomputedRoute;
-import org.batfish.common.datamodel.Prefix;
-import org.batfish.common.datamodel.RoutingProtocol;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 
 public class PrecomputedRouteBuilder {
 

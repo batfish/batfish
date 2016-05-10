@@ -6,8 +6,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.datamodel.Ip;
-import org.batfish.common.datamodel.Prefix;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
