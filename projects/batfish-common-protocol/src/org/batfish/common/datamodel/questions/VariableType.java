@@ -16,6 +16,7 @@ public enum VariableType {
    IP("ip"),
    IPSEC_VPN("ipsec_vpn"),
    MAP("map"),
+   NAMED_STRUCT_TYPE("named_struct_type"),
    NEIGHBOR_TYPE("neighbor_type"),
    NODE("node"),
    NODE_TYPE("node_type"),

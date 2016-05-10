@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.NamedStructType;
 import org.batfish.common.datamodel.NeighborType;
 import org.batfish.common.datamodel.NodeType;
 import org.batfish.common.datamodel.Prefix;
@@ -56,6 +57,11 @@ public class QuestionParameters {
 		confirmTypeBinding(var, VariableType.IP);
 		return (Ip) _store.get(var);
 	}
+
+   public NamedStructType getNamedStructType(String var) {
+      confirmTypeBinding(var, VariableType.NAMED_STRUCT_TYPE);
+      return (NamedStructType) _store.get(var);
+   }
 
 	public NeighborType getNeighborType(String var) {
 		confirmTypeBinding(var, VariableType.NEIGHBOR_TYPE);

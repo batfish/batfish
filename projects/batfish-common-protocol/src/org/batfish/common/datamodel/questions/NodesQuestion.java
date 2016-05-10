@@ -1,9 +1,5 @@
 package org.batfish.common.datamodel.questions;
 
-import java.util.Set;
-
-import org.batfish.common.BatfishException;
-import org.batfish.common.collections.NodeInterfacePair;
 import org.batfish.common.datamodel.NodeType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

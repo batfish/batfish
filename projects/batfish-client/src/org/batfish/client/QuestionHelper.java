@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import org.batfish.common.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.common.datamodel.questions.NeighborsQuestion;
 import org.batfish.common.datamodel.questions.NodesQuestion;
 import org.batfish.common.datamodel.questions.Question;
@@ -15,13 +16,13 @@ public class QuestionHelper {
 		QuestionType qType = QuestionType.valueOf(questionType);
 		
 		switch (qType) {
+      case COMPARE_SAME_NAME:
+         return new CompareSameNameQuestion();
       case NEIGHBORS:
          return new NeighborsQuestion();
 		case NODES:
 			return new NodesQuestion();
 		case ACL_REACHABILITY:
-			break;
-		case COMPARE_SAME_NAME:
 			break;
 		case DESTINATION:
 			break;
