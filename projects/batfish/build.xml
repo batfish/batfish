@@ -286,6 +286,7 @@
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_acl.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_bgp.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_common.g4"/>
+               <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_eigrp.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_ignored.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_interface.g4"/>
                <fileset dir="src/org/batfish/grammar/cisco" includes="Cisco_isis.g4"/>

@@ -883,6 +883,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                newLine.setInvalidMessage("Unsupported ip wildcard format");
             }
          }
+         // TODO: src/dst address group
          IpProtocol protocol = fromLine.getProtocol();
          if (protocol != IpProtocol.IP) {
             newLine.getProtocols().add(protocol);

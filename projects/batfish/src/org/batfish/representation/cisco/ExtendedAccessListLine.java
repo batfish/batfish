@@ -18,6 +18,8 @@ public class ExtendedAccessListLine implements Serializable {
 
    private Set<Integer> _dscps;
 
+   private String _dstAddressGroup;
+
    private Ip _dstIp;
 
    private List<SubRange> _dstPortRanges;
@@ -32,6 +34,8 @@ public class ExtendedAccessListLine implements Serializable {
 
    private IpProtocol _protocol;
 
+   private String _srcAddressGroup;
+
    private Ip _srcIp;
 
    private List<SubRange> _srcPortRanges;
@@ -41,17 +45,19 @@ public class ExtendedAccessListLine implements Serializable {
    private List<TcpFlags> _tcpFlags;
 
    public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
-         Ip srcIp, Ip srcWildcard, Ip dstIp, Ip dstWildcard,
-         List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
-         Set<Integer> dscps, Set<Integer> ecns, Integer icmpType,
-         Integer icmpCode, List<TcpFlags> tcpFlags) {
+         Ip srcIp, Ip srcWildcard, String srcAddressGroup, Ip dstIp,
+         Ip dstWildcard, String dstAddressGroup, List<SubRange> srcPortRanges,
+         List<SubRange> dstPortRanges, Set<Integer> dscps, Set<Integer> ecns,
+         Integer icmpType, Integer icmpCode, List<TcpFlags> tcpFlags) {
       _action = action;
       _protocol = protocol;
       _srcIp = srcIp;
       _srcWildcard = srcWildcard;
+      _srcAddressGroup = srcAddressGroup;
       _dscps = dscps;
       _dstIp = dstIp;
       _dstWildcard = dstWildcard;
+      _dstAddressGroup = dstAddressGroup;
       _ecns = ecns;
       _srcPortRanges = srcPortRanges;
       _dstPortRanges = dstPortRanges;
@@ -74,6 +80,10 @@ public class ExtendedAccessListLine implements Serializable {
 
    public Set<Integer> getDscps() {
       return _dscps;
+   }
+
+   public String getDstAddressGroup() {
+      return _dstAddressGroup;
    }
 
    public List<SubRange> getDstPortRanges() {
@@ -102,6 +112,10 @@ public class ExtendedAccessListLine implements Serializable {
 
    public Ip getSourceWildcard() {
       return _srcWildcard;
+   }
+
+   public String getSrcAddressGroup() {
+      return _srcAddressGroup;
    }
 
    public List<SubRange> getSrcPortRanges() {

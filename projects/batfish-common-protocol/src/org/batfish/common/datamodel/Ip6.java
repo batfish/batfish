@@ -1,4 +1,4 @@
-package org.batfish.representation;
+package org.batfish.common.datamodel;
 
 import java.io.Serializable;
 import java.math.BigInteger;

@@ -15,7 +15,9 @@ public class StandardAccessListLine implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private LineAction _action;
+
    private Set<Integer> _dscps;
+
    private Set<Integer> _ecns;
 
    private Ip _ip;
@@ -35,7 +37,7 @@ public class StandardAccessListLine implements Serializable {
       return _action;
    }
 
-   public Ip getIP() {
+   public Ip getIp() {
       return _ip;
    }
 
@@ -45,7 +47,7 @@ public class StandardAccessListLine implements Serializable {
 
    public ExtendedAccessListLine toExtendedAccessListLine() {
       return new ExtendedAccessListLine(_action, IpProtocol.IP, _ip, _wildcard,
-            Ip.ZERO, Ip.MAX, Collections.<SubRange> emptyList(),
+            null, Ip.ZERO, Ip.MAX, null, Collections.<SubRange> emptyList(),
             Collections.<SubRange> emptyList(), _dscps, _ecns, null, null,
             Collections.<TcpFlags> emptyList());
    }

@@ -34,6 +34,8 @@ public class CiscoConfiguration implements Serializable {
 
    protected final Map<String, RouteMap> _routeMaps;
 
+   protected final Map<String, RoutePolicy> _routePolicies;
+
    protected final Map<String, StandardAccessList> _standardAccessLists;
 
    protected final Map<String, StandardCommunityList> _standardCommunityLists;
@@ -48,6 +50,7 @@ public class CiscoConfiguration implements Serializable {
       _interfaces = new HashMap<String, Interface>();
       _prefixLists = new HashMap<String, PrefixList>();
       _routeMaps = new HashMap<String, RouteMap>();
+      _routePolicies = new HashMap<String, RoutePolicy>();
       _standardAccessLists = new HashMap<String, StandardAccessList>();
       _standardCommunityLists = new HashMap<String, StandardCommunityList>();
       _staticRoutes = new HashSet<StaticRoute>();
@@ -91,6 +94,10 @@ public class CiscoConfiguration implements Serializable {
 
    public final Map<String, RouteMap> getRouteMaps() {
       return _routeMaps;
+   }
+
+   public final Map<String, RoutePolicy> getRoutePolicies() {
+      return _routePolicies;
    }
 
    public final Map<String, StandardAccessList> getStandardAcls() {

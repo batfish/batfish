@@ -16,11 +16,13 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.cisco.CiscoParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.common.datamodel.IcmpCode;
 import org.batfish.common.datamodel.IcmpType;
 import org.batfish.common.datamodel.Ip;
+import org.batfish.common.datamodel.Ip6;
 import org.batfish.common.datamodel.IpProtocol;
 import org.batfish.common.datamodel.NamedPort;
 import org.batfish.common.datamodel.OriginType;
@@ -84,6 +86,42 @@ import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco.RouteMapSetMetricLine;
 import org.batfish.representation.cisco.RouteMapSetNextHopLine;
 import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
+import org.batfish.representation.cisco.RoutePolicy;
+import org.batfish.representation.cisco.RoutePolicyApplyStatement;
+import org.batfish.representation.cisco.RoutePolicyBoolean;
+import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
+import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
+import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
+import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
+import org.batfish.representation.cisco.RoutePolicyBooleanNot;
+import org.batfish.representation.cisco.RoutePolicyBooleanOr;
+import org.batfish.representation.cisco.RoutePolicyBooleanRIBHasRoute;
+import org.batfish.representation.cisco.RoutePolicyCommunitySet;
+import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
+import org.batfish.representation.cisco.RoutePolicyCommunitySetNumber;
+import org.batfish.representation.cisco.RoutePolicyDeleteAllStatement;
+import org.batfish.representation.cisco.RoutePolicyDeleteCommunityStatement;
+import org.batfish.representation.cisco.RoutePolicyDispositionStatement;
+import org.batfish.representation.cisco.RoutePolicyDispositionType;
+import org.batfish.representation.cisco.RoutePolicyElseBlock;
+import org.batfish.representation.cisco.RoutePolicyElseIfBlock;
+import org.batfish.representation.cisco.RoutePolicyIfStatement;
+import org.batfish.representation.cisco.RoutePolicyNextHop;
+import org.batfish.representation.cisco.RoutePolicyNextHopIP;
+import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
+import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
+import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
+import org.batfish.representation.cisco.RoutePolicyPrefixSet;
+import org.batfish.representation.cisco.RoutePolicyPrefixSetIp;
+import org.batfish.representation.cisco.RoutePolicyPrefixSetIpV6;
+import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
+import org.batfish.representation.cisco.RoutePolicyPrefixSetNumber;
+import org.batfish.representation.cisco.RoutePolicyPrefixSetNumberV6;
+import org.batfish.representation.cisco.RoutePolicySetCommunity;
+import org.batfish.representation.cisco.RoutePolicySetLocalPref;
+import org.batfish.representation.cisco.RoutePolicySetMED;
+import org.batfish.representation.cisco.RoutePolicySetNextHop;
+import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
@@ -517,7 +555,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.wildcard != null) {
          return toIp(ctx.wildcard);
       }
-      else if (ctx.ANY() != null) {
+      else if (ctx.ANY() != null || ctx.address_group != null) {
          return new Ip(0xFFFFFFFFl);
       }
       else if (ctx.HOST() != null) {
@@ -642,6 +680,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public static Ip toIp(Token t) {
       return new Ip(t.getText());
+   }
+
+   public static Ip6 toIp6(TerminalNode t) {
+      return new Ip6(t.getText());
+   }
+
+   public static Ip6 toIp6(Token t) {
+      return new Ip6(t.getText());
    }
 
    public static IpProtocol toIpProtocol(ProtocolContext ctx) {
@@ -807,6 +853,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private RouteMap _currentRouteMap;
 
    private RouteMapClause _currentRouteMapClause;
+
+   private RoutePolicy _currentRoutePolicy;
 
    private StandardAccessList _currentStandardAcl;
 
@@ -1194,6 +1242,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      _currentRoutePolicy = _configuration.getRoutePolicies().get(name);
+      if (_currentRoutePolicy == null) {
+         _currentRoutePolicy = new RoutePolicy(name);
+         _configuration.getRoutePolicies().put(name, _currentRoutePolicy);
+      }
+
+      List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
+
+      stmts.addAll(toRoutePolicyStatementList(ctx.route_policy_tail().stanzas));
+   }
+
+   @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
       int procNum = toInteger(ctx.procnum);
       BgpProcess proc = new BgpProcess(procNum);
@@ -1503,6 +1565,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip srcWildcard = getWildcard(ctx.srcipr);
       Ip dstIp = getIp(ctx.dstipr);
       Ip dstWildcard = getWildcard(ctx.dstipr);
+      String srcAddressGroup = getAddressGroup(ctx.srcipr);
+      String dstAddressGroup = getAddressGroup(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null ? getPortRanges(ctx.alps_src)
             : Collections.<SubRange> emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
@@ -1608,8 +1672,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
-            protocol, srcIp, srcWildcard, dstIp, dstWildcard, srcPortRanges,
-            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
+            protocol, srcIp, srcWildcard, srcAddressGroup, dstIp, dstWildcard,
+            dstAddressGroup, srcPortRanges, dstPortRanges, dscps, ecns,
+            icmpType, icmpCode, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 
@@ -2567,6 +2632,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+      _currentRoutePolicy = null;
+   }
+
+   @Override
    public void exitRoute_reflector_client_bgp_tail(
          Route_reflector_client_bgp_tailContext ctx) {
       _currentPeerGroup.setRouteReflectorClient(true);
@@ -3014,6 +3084,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private String getAddressGroup(Access_list_ip_rangeContext ctx) {
+      if (ctx.address_group != null) {
+         return ctx.address_group.getText();
+      }
+      else {
+         return null;
+      }
+   }
+
    public CiscoConfiguration getConfiguration() {
       return _configuration;
    }
@@ -3068,6 +3147,301 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("bad encapsulation");
       }
+   }
+
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_and_rp_stanzaContext ctxt) {
+      if (ctxt.AND() == null) {
+         return toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza());
+      }
+      else {
+         return new RoutePolicyBooleanAnd(
+               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()),
+               toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza()));
+      }
+   }
+
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_not_rp_stanzaContext ctxt) {
+      if (ctxt.NOT() == null) {
+         return toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza());
+      }
+      else {
+         return new RoutePolicyBooleanNot(
+               toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza()));
+      }
+   }
+
+   public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rp_stanzaContext ctxt) {
+      if (ctxt.OR() == null) {
+         return toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza());
+      }
+      else {
+         return new RoutePolicyBooleanOr(
+               toRoutePolicyBoolean(ctxt.boolean_rp_stanza()),
+               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()));
+      }
+   }
+
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_simple_rp_stanzaContext ctxt) {
+      Boolean_rp_stanzaContext bctxt = ctxt.boolean_rp_stanza();
+      if (bctxt != null) {
+         return toRoutePolicyBoolean(bctxt);
+      }
+
+      Boolean_community_matches_any_rp_stanzaContext mactxt = ctxt
+            .boolean_community_matches_any_rp_stanza();
+      if (mactxt != null) {
+         return new RoutePolicyBooleanCommunityMatchesAny(
+               toRoutePolicyCommunitySet(mactxt.rp_community_set()));
+      }
+
+      Boolean_community_matches_every_rp_stanzaContext mectxt = ctxt
+            .boolean_community_matches_every_rp_stanza();
+      if (mectxt != null) {
+         return new RoutePolicyBooleanCommunityMatchesEvery(
+               toRoutePolicyCommunitySet(mectxt.rp_community_set()));
+      }
+
+      Boolean_destination_rp_stanzaContext dctxt = ctxt
+            .boolean_destination_rp_stanza();
+      if (dctxt != null) {
+         return new RoutePolicyBooleanDestination(
+               toRoutePolicyPrefixSet(dctxt.rp_prefix_set()));
+      }
+
+      Boolean_rib_has_route_rp_stanzaContext rctxt = ctxt
+            .boolean_rib_has_route_rp_stanza();
+      if (rctxt != null) {
+         return new RoutePolicyBooleanRIBHasRoute(
+               toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
+      }
+
+      return null;
+
+   }
+
+   public RoutePolicyCommunitySet toRoutePolicyCommunitySet(
+         Rp_community_setContext ctxt) {
+      if (ctxt.name != null) {
+         return new RoutePolicyCommunitySetName(ctxt.name.getText());
+      }
+      else {
+         return new RoutePolicyCommunitySetNumber(ctxt.COMMUNITY_NUMBER()
+               .getText());
+      }
+   }
+
+   public RoutePolicyElseBlock toRoutePolicyElseBlock(Else_rp_stanzaContext ctxt) {
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
+      return new RoutePolicyElseBlock(stmts);
+
+   }
+
+   public RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(
+         Elseif_rp_stanzaContext ctxt) {
+      RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
+      return new RoutePolicyElseIfBlock(b, stmts);
+
+   }
+
+   public RoutePolicyPrefixSet toRoutePolicyPrefixSet(Rp_prefix_setContext ctxt) {
+      if (ctxt.name != null) {
+         return new RoutePolicyPrefixSetName(ctxt.name.getText());
+      }
+      else {
+         Prefix_set_elemContext pctxt = ctxt.prefix_set_elem();
+
+         Integer lower = null;
+         Integer upper = null;
+         if (pctxt.minpl != null) {
+            lower = new Integer(toInteger(pctxt.minpl));
+         }
+         if (pctxt.maxpl != null) {
+            upper = new Integer(toInteger(pctxt.maxpl));
+         }
+         if (pctxt.eqpl != null) {
+            lower = new Integer(toInteger(pctxt.eqpl));
+            upper = new Integer(lower);
+         }
+
+         if (pctxt.ipa != null) {
+            return new RoutePolicyPrefixSetIp(toIp(pctxt.ipa), lower, upper);
+         }
+         if (pctxt.prefix != null) {
+            return new RoutePolicyPrefixSetNumber(new Prefix(
+                  pctxt.prefix.getText()), lower, upper);
+         }
+         if (pctxt.ipv6a != null) {
+            return new RoutePolicyPrefixSetIpV6(toIp6(pctxt.ipv6a), lower,
+                  upper);
+         }
+         if (pctxt.ipv6_prefix != null) {
+            return new RoutePolicyPrefixSetNumberV6(new Prefix6(
+                  pctxt.ipv6_prefix.getText()), lower, upper);
+         }
+
+         return null;
+      }
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Apply_rp_stanzaContext ctxt) {
+      return new RoutePolicyApplyStatement(ctxt.name.getText());
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Delete_rp_stanzaContext ctxt) {
+      if (ctxt.ALL() != null) {
+         return new RoutePolicyDeleteAllStatement();
+      }
+      else {
+         boolean negated = (ctxt.NOT() != null);
+         return new RoutePolicyDeleteCommunityStatement(negated,
+               toRoutePolicyCommunitySet(ctxt.rp_community_set()));
+      }
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Disposition_rp_stanzaContext ctxt) {
+      RoutePolicyDispositionType t = null;
+      if (ctxt.DONE() != null) {
+         t = RoutePolicyDispositionType.DONE;
+      }
+      else if (ctxt.DROP() != null) {
+         t = RoutePolicyDispositionType.DROP;
+      }
+      else if (ctxt.PASS() != null) {
+         t = RoutePolicyDispositionType.PASS;
+      }
+      return new RoutePolicyDispositionStatement(t);
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(If_rp_stanzaContext ctxt) {
+      RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
+            .rp_stanza());
+      List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<RoutePolicyElseIfBlock>();
+      for (Elseif_rp_stanzaContext ectxt : ctxt.elseif_rp_stanza()) {
+         elseIfs.add(toRoutePolicyElseIfBlock(ectxt));
+      }
+      RoutePolicyElseBlock els = null;
+      Else_rp_stanzaContext elctxt = ctxt.else_rp_stanza();
+      if (elctxt != null) {
+         els = toRoutePolicyElseBlock(elctxt);
+      }
+
+      return new RoutePolicyIfStatement(b, stmts, elseIfs, els);
+
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctxt) {
+      Apply_rp_stanzaContext actxt = ctxt.apply_rp_stanza();
+      if (actxt != null) {
+         return toRoutePolicyStatement(actxt);
+      }
+
+      Delete_rp_stanzaContext dctxt = ctxt.delete_rp_stanza();
+      if (dctxt != null) {
+         return toRoutePolicyStatement(dctxt);
+      }
+
+      Disposition_rp_stanzaContext pctxt = ctxt.disposition_rp_stanza();
+      if (pctxt != null) {
+         return toRoutePolicyStatement(pctxt);
+      }
+
+      If_rp_stanzaContext ictxt = ctxt.if_rp_stanza();
+      if (ictxt != null) {
+         return toRoutePolicyStatement(ictxt);
+      }
+
+      Set_rp_stanzaContext sctxt = ctxt.set_rp_stanza();
+      if (sctxt != null) {
+         return toRoutePolicyStatement(sctxt);
+      }
+
+      return null;
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_community_rp_stanzaContext ctxt) {
+      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctxt
+            .rp_community_set());
+      boolean additive = (ctxt.ADDITIVE() != null);
+      return new RoutePolicySetCommunity(cset, additive);
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_local_preference_rp_stanzaContext ctxt) {
+      return new RoutePolicySetLocalPref(toInteger(ctxt.pref));
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_med_rp_stanzaContext ctxt) {
+      return new RoutePolicySetMED(toInteger(ctxt.med));
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_next_hop_rp_stanzaContext ctxt) {
+      RoutePolicyNextHop hop = null;
+      if (ctxt.IP_ADDRESS() != null) {
+         hop = new RoutePolicyNextHopIP(toIp(ctxt.IP_ADDRESS()));
+      }
+      else if (ctxt.IPV6_ADDRESS() != null) {
+         hop = new RoutePolicyNextHopIP6(toIp6(ctxt.IPV6_ADDRESS()));
+      }
+      else if (ctxt.PEER_ADDRESS() != null) {
+         hop = new RoutePolicyNextHopPeerAddress();
+      }
+      else if (ctxt.SELF() != null) {
+         hop = new RoutePolicyNextHopSelf();
+      }
+
+      boolean dest_vrf = (ctxt.DESTINATION_VRF() != null);
+      return new RoutePolicySetNextHop(hop, dest_vrf);
+
+   }
+
+   public RoutePolicyStatement toRoutePolicyStatement(Set_rp_stanzaContext ctxt) {
+      Set_community_rp_stanzaContext cctxt = ctxt.set_community_rp_stanza();
+      if (cctxt != null) {
+         return toRoutePolicyStatement(cctxt);
+      }
+
+      Set_local_preference_rp_stanzaContext lpctxt = ctxt
+            .set_local_preference_rp_stanza();
+      if (lpctxt != null) {
+         return toRoutePolicyStatement(lpctxt);
+      }
+
+      Set_med_rp_stanzaContext mctxt = ctxt.set_med_rp_stanza();
+      if (mctxt != null) {
+         return toRoutePolicyStatement(mctxt);
+      }
+
+      Set_next_hop_rp_stanzaContext hctxt = ctxt.set_next_hop_rp_stanza();
+      if (hctxt != null) {
+         return toRoutePolicyStatement(hctxt);
+      }
+
+      return null;
+   }
+
+   public List<RoutePolicyStatement> toRoutePolicyStatementList(
+         List<Rp_stanzaContext> ctxts) {
+      List<RoutePolicyStatement> stmts = new ArrayList<RoutePolicyStatement>();
+      for (Rp_stanzaContext ctxt : ctxts) {
+         RoutePolicyStatement stmt = toRoutePolicyStatement(ctxt);
+         if (stmt != null) {
+            stmts.add(stmt);
+         }
+      }
+      return stmts;
    }
 
 }
