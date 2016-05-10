@@ -38,6 +38,7 @@ public class Client {
    private static final String COMMAND_ANSWER = "answer";
    private static final String COMMAND_ANSWER_BYTYPE = "answer-bytype";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
+   private static final String COMMAND_ANSWER_DIFF_BYTYPE = "answer-diff-bytype";
    private static final String COMMAND_CAT = "cat";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
    private static final String COMMAND_DEL_CONTAINER = "del-container";
@@ -81,13 +82,16 @@ public class Client {
       Map<String, String> descs = new TreeMap<String, String>();
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question for the default environment");
+            + "\t Answer the question in the file for the default environment");
       descs.put(COMMAND_ANSWER_BYTYPE, COMMAND_ANSWER_BYTYPE
               + " <question-type>  [param1=value1 [param2=value2] ...]\n"
-              + "\t Answer the question for the differential environment");
+              + "\t Answer the question by type for the differential environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question for the differential environment");
+            + "\t Answer the question in the file for the differential environment");
+      descs.put(COMMAND_ANSWER_DIFF_BYTYPE, COMMAND_ANSWER_DIFF_BYTYPE
+            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
+            + "\t Answer the question by type for the differential environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
       // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
@@ -412,6 +416,19 @@ public class Client {
                     Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
             answerFile(questionFile, paramsLine, true);
+            
+            break;
+         }
+         case COMMAND_ANSWER_DIFF_BYTYPE: {
+            if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
+               break;
+            }
+
+            String questionType = parameters.get(0);
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
+
+            answerType(questionType, paramsLine, true);
             
             break;
          }
