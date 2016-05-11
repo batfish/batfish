@@ -73,6 +73,12 @@ public class QuestionParameters {
 		return (NodeType) _store.get(var);
 	}
 
+   @SuppressWarnings("unchecked")
+   public Set<NodeType> getSetNodeType(String var) {
+      confirmTypeBinding(var, VariableType.SET_NODE_TYPE);
+      return (Set<NodeType>) _store.get(var);
+   }
+
 	public Prefix getPrefix(String var) {
 		confirmTypeBinding(var, VariableType.PREFIX);
 		return (Prefix) _store.get(var);

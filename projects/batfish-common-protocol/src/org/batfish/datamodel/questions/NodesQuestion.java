@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import org.batfish.datamodel.NodeType;
+import org.batfish.datamodel.collections.NodeTypeSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +11,7 @@ public class NodesQuestion extends Question {
    private static final String NODE_REGEX_VAR = "nodeRegex";
    private static final String NODE_TYPE_VAR = "nodeType";
    
-   private NodeType _nodeType = NodeType.ANY;   
+   private NodeTypeSet _nodeType = new NodeTypeSet(NodeType.ANY);   
    private String _nodeRegex = ".*";
 
    public NodesQuestion() {
@@ -40,7 +41,7 @@ public class NodesQuestion extends Question {
    }
 
    @JsonProperty(NODE_TYPE_VAR)
-   public NodeType getNodeType() {
+   public NodeTypeSet getNodeType() {
       return _nodeType;
    }
 
@@ -48,7 +49,7 @@ public class NodesQuestion extends Question {
          _nodeRegex = regex;
    }
    
-   public void setNodeType(NodeType nType) {
+   public void setNodeType(NodeTypeSet nType) {
       _nodeType = nType;
    }
    
@@ -59,7 +60,7 @@ public class NodesQuestion extends Question {
          setNodeRegex(parameters.getString(NODE_REGEX_VAR));
       }
       if (parameters.getTypeBindings().get(NODE_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNodeType(parameters.getNodeType(NODE_TYPE_VAR));
+         //setNodeType(parameters.getSetNodeType(NODE_TYPE_VAR));
       }
    }
 }

@@ -1,6 +1,7 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -552,7 +553,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterNodes_constraint_node_type(
          Nodes_constraint_node_typeContext ctx) {
       NodeType nType = toNodeType(ctx.node_type_constraint());
-      _nodesQuestion.setNodeType(nType);
+      _nodesQuestion.setNodeType(new HashSet<NodeType>(Arrays.asList(nType)));
    }
 
    @Override

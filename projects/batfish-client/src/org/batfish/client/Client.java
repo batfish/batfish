@@ -15,11 +15,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.common.BfConsts;
@@ -218,7 +221,11 @@ public class Client {
    private void answerType(String questionType, String paramsLine, boolean isDiff) 
 		   throws Exception {
 	   
-	   String questionString = QuestionHelper.getQuestionString(questionType);
+      Map<String, String> parameters = parseParams(paramsLine);
+      
+	   String questionString = QuestionHelper.getQuestionString(questionType, parameters);
+	   
+	   _logger.debugf("Question Json:\n%s\n", questionString);
 	   
 	   File questionFile = createTempFile("question", questionString);
 	   
@@ -227,6 +234,30 @@ public class Client {
        if (questionFile != null) {
            questionFile.delete();
        }	   
+   }
+
+   private Map<String, String> parseParams(String paramsLine) {
+      Map<String,String> parameters = new HashMap<String, String>();
+
+      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
+
+      String[] params = paramsLine.split("\\|");
+            
+      _logger.debugf("Found %d parameters\n", params.length);
+      
+      for (String param : params) {
+         Matcher matcher = pattern.matcher(param);
+
+         while (matcher.find()) {
+            String key = matcher.group(1).trim();
+            String value = matcher.group(2).trim();
+            _logger.debugf("key=%s value=%s\n", key, value);
+            
+            parameters.put(key,  value);
+         }
+      }
+      
+      return parameters;
    }
 
    private void answerFile(String questionFile, String paramsLine, boolean isDiff) 
