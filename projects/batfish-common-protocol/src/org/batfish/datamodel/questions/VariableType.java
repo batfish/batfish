@@ -36,6 +36,7 @@ public enum VariableType {
    SET_INTERFACE("set<integer>"),
    SET_IP("set<ip>"),
    SET_IPSEC_VPN("set<ipsec_vpn>"),
+   SET_NEIGHBOR_TYPE("set<neighbor_type>"),
    SET_NODE("set<node>"),
    SET_NODE_TYPE("set<node_type>"),
    SET_POLICY_MAP("set<policy_map>"),

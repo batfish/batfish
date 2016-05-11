@@ -223,13 +223,15 @@ public class Client {
 	   
       Map<String, String> parameters = parseParams(paramsLine);
       
-	   String questionString = QuestionHelper.getQuestionString(questionType, parameters);
-	   
+	   String questionString = QuestionHelper.getQuestionString(questionType);	   
 	   _logger.debugf("Question Json:\n%s\n", questionString);
-	   
+
+     String parametersString = QuestionHelper.getParametersString(parameters);    
+      _logger.debugf("Parameters Json:\n%s\n", parametersString);
+	      
 	   File questionFile = createTempFile("question", questionString);
 	   
-	   answerFile(questionFile.getAbsolutePath(), paramsLine, isDiff);
+	   answerFile(questionFile.getAbsolutePath(), parametersString, isDiff);
 	   
        if (questionFile != null) {
            questionFile.delete();
@@ -371,15 +373,22 @@ public class Client {
    }
 
    private boolean isSetContainer(boolean printError) {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currContainerName == null) {
          if (printError)
             _logger.errorf("Active container is not set\n");
          return false;
       }
+
       return true;
    }
 
    private boolean isSetDiffEnvironment() {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currDiffEnv == null) {
          _logger.errorf("Active diff environment is not set\n");
          return false;
@@ -388,6 +397,9 @@ public class Client {
    }
 
    private boolean isSetTestrig() {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currTestrigName == null) {
          _logger.errorf("Active testrig is not set\n");
          return false;

@@ -11,6 +11,8 @@ import org.batfish.datamodel.NamedStructType;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NeighborTypeSet;
+import org.batfish.datamodel.collections.NodeTypeSet;
 
 public class QuestionParameters {
 
@@ -68,15 +70,19 @@ public class QuestionParameters {
 		return (NeighborType) _store.get(var);
 	}
 
+   public NeighborTypeSet getNeighborTypeSet(String var) {
+      confirmTypeBinding(var, VariableType.SET_NEIGHBOR_TYPE);
+      return (NeighborTypeSet) _store.get(var);
+   }
+
 	public NodeType getNodeType(String var) {
 		confirmTypeBinding(var, VariableType.NODE_TYPE);
 		return (NodeType) _store.get(var);
 	}
 
-   @SuppressWarnings("unchecked")
-   public Set<NodeType> getSetNodeType(String var) {
+   public NodeTypeSet getNodeTypeSet(String var) {
       confirmTypeBinding(var, VariableType.SET_NODE_TYPE);
-      return (Set<NodeType>) _store.get(var);
+      return (NodeTypeSet) _store.get(var);
    }
 
 	public Prefix getPrefix(String var) {

@@ -2,20 +2,20 @@ package org.batfish.datamodel.collections;
 
 import java.util.TreeSet;
 
-import org.batfish.datamodel.NodeType;
+import org.batfish.datamodel.NeighborType;
 
-public class NodeTypeSet extends TreeSet<NodeType>{
+public class NeighborTypeSet extends TreeSet<NeighborType>{
 
    /**
     * 
     */
    private static final long serialVersionUID = 1L;
    
-   public NodeTypeSet() {
+   public NeighborTypeSet() {
       
    }
    
-   public NodeTypeSet(NodeType nType) {
+   public NeighborTypeSet(NeighborType nType) {
       add(nType);
    }
 }

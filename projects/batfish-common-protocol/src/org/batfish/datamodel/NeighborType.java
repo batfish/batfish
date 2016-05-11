@@ -7,9 +7,10 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 
 public enum NeighborType {
-	PHYSICAL("physical"),
+   ANY("any"),
 	EBGP("ebgp"),
-	IBGP("ibgp");
+	IBGP("ibgp"),
+   PHYSICAL("physical");
 	
 	   private final static Map<String, NeighborType> _map = buildMap();
 

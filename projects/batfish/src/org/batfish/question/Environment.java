@@ -309,6 +309,8 @@ public class Environment {
          case SET_STATIC_ROUTE:
          case STATIC_ROUTE:
          case STRING:
+         case SET_NODE_TYPE:
+         case SET_NEIGHBOR_TYPE:
          default:
             throw new BatfishException("Unsupported variable type: "
                   + type.toString());

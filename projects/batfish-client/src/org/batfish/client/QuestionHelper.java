@@ -52,8 +52,19 @@ public class QuestionHelper {
 		throw new Exception("Unsupported question type " + questionType);
 	}
 
-	public static String getQuestionString(String questionType, 
-	      Map<String, String> parameters) throws Exception {
+	public static String getParametersString(Map<String, String> parameters) throws Exception {
+	   String retString = "{\n";
+	   
+	   for (String paramKey : parameters.keySet()) {
+	      retString += String.format("\"%s\" : %s,\n", paramKey, parameters.get(paramKey));	      
+	   }
+	   
+	   retString += "}\n";
+	   
+	   return retString;
+	}
+	  
+	public static String getQuestionString(String questionType) throws Exception {
 		Question question = getQuestion(questionType);
 				
 		ObjectMapper mapper = new ObjectMapper();		
@@ -61,9 +72,9 @@ public class QuestionHelper {
 		
 		String jsonString = mapper.writeValueAsString(question);
 		
-		String newJson = applyParametersToQuestionJson(jsonString, parameters);
+		//String newJson = applyParametersToQuestionJson(jsonString, parameters);
 		      
-		return newJson;
+		return jsonString;
 	}
 
    private static String applyParametersToQuestionJson(String inputJsonString,
