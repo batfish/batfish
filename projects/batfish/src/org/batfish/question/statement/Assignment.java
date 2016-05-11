@@ -140,6 +140,7 @@ public class Assignment implements Statement {
          break;
 
       case ACTION:
+      case NAMED_STRUCT_TYPE:
       case NEIGHBOR_TYPE:
       case NODE_TYPE:
       case RANGE:

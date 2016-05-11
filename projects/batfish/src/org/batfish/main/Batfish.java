@@ -64,6 +64,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LBValueType;
 import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.StringAnswer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -187,6 +190,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -964,6 +968,9 @@ public class Batfish implements AutoCloseable {
 		   nodes.addAll(configurations.keySet());
 	   }
 
+      Answer answer = new Answer();
+      answer.setQuestion(question);
+      
 	   try {
 		   JSONObject jObj = new JSONObject();	   
 
@@ -976,16 +983,40 @@ public class Batfish implements AutoCloseable {
 			   nodeList.put(nodeObject);
 		   }
 		   
-		   _logger.output(jObj.toString(4));
+		   answer.setStatus(AnswerStatus.SUCCESS);
+		   answer.addAnswerElement(new StringAnswer(jObj.toString()));		   
 	   }
-	   catch (JSONException e) {
-		   throw new BatfishException(
-				   "Error converting node list to json",
+	   catch (Exception e) {
+		   BatfishException be =  new BatfishException(
+				   "Error in answering NodesQuestion",
 				   e);
+		   
+		   answer.setStatus(AnswerStatus.FAILURE); 
+		   answer.addAnswerElement(new StringAnswer(be.getMessage()));
 	   }
+	   
+      outputAnswer(answer);
 
    }
 
+   private void outputAnswer(Answer answer) {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      try {
+         String jsonString = mapper.writeValueAsString(answer);         
+         _logger.output(jsonString);   
+      } catch (Exception e) {
+         BatfishException be = new BatfishException("Error in sending answer", e);
+         Answer failureAnswer = Answer.failureAnswer(be.getMessage());
+         try {
+            String failureJsonString = mapper.writeValueAsString(failureAnswer);         
+            _logger.output(failureJsonString);   
+         } catch (Exception e1) {
+            _logger.errorf("Could not serialize failure answer.", e1);
+         }
+      }
+   }
+   
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();

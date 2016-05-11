@@ -2199,6 +2199,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
       case ACTION:
       case BOOLEAN:
+      case NAMED_STRUCT_TYPE:
       case NEIGHBOR_TYPE:
       case NODE_TYPE:
       case PROTOCOL:

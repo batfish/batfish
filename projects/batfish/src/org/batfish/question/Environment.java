@@ -278,6 +278,7 @@ public class Environment {
          case IP:
          case IPSEC_VPN:
          case MAP:
+         case NAMED_STRUCT_TYPE:
          case NODE:
          case NEIGHBOR_TYPE:
          case NODE_TYPE:            

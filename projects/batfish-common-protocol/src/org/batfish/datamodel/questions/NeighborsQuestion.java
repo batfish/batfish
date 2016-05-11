@@ -1,11 +1,5 @@
 package org.batfish.datamodel.questions;
 
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NeighborType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
