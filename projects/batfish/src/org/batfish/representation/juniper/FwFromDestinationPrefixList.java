@@ -4,6 +4,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
@@ -38,7 +39,7 @@ public final class FwFromDestinationPrefixList extends FwFrom {
                      "Expected accept action for routerfilterlist from juniper");
             }
             else {
-               line.getDestinationIpRanges().add(rfLine.getPrefix());
+               line.getDstIpWildcards().add(new IpWildcard(rfLine.getPrefix()));
             }
          }
       }

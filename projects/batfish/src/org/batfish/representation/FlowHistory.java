@@ -161,7 +161,8 @@ public class FlowHistory {
                i++;
                sb.append("  Trace: " + i + "\n");
                String rawTraceString = trace.toString();
-               String traceString = CommonUtil.getIndentedString(rawTraceString, 3);
+               String traceString = CommonUtil.getIndentedString(
+                     rawTraceString, 3);
                sb.append(traceString);
             }
          }

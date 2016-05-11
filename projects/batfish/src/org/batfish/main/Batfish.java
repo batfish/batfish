@@ -593,13 +593,13 @@ public class Batfish implements AutoCloseable {
          break;
 
       case NEIGHBORS:
-    	  answerNeighbors((NeighborsQuestion) question);
-    	  break;
-    	  
+         answerNeighbors((NeighborsQuestion) question);
+         break;
+
       case NODES:
-    	  answerNodes((NodesQuestion) question);
-    	  break;
-    	  
+         answerNodes((NodesQuestion) question);
+         break;
+
       case PROTOCOL_DEPENDENCIES:
          answerProtocolDependencies((ProtocolDependenciesQuestion) question);
          break;
@@ -936,87 +936,68 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerNeighbors(NeighborsQuestion question) {
-	   _logger.output("Boohoo bohoo neighbors\n");
+      _logger.output("Boohoo bohoo neighbors\n");
    }
 
    private void answerNodes(NodesQuestion question) {
-	   checkConfigurations();
-	   Map<String, Configuration> configurations = loadConfigurations();
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
 
-	   // collect nodes nodes
-	   Pattern nodeRegex;
-	   
-	   try {
-	      nodeRegex = Pattern.compile(question.getNodeRegex());
-	   }
+      // collect nodes nodes
+      Pattern nodeRegex;
+
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
                      + question.getNodeRegex() + "\"", e);
       }
 
-	   Set<String> nodes = new TreeSet<String>();
-	   if (nodeRegex != null) {
-		   for (String node : configurations.keySet()) {
-			   Matcher nodeMatcher = nodeRegex.matcher(node);
-			   if (nodeMatcher.matches()) {
-				   nodes.add(node);
-			   }
-		   }
-	   }
-	   else {
-		   nodes.addAll(configurations.keySet());
-	   }
+      Set<String> nodes = new TreeSet<String>();
+      if (nodeRegex != null) {
+         for (String node : configurations.keySet()) {
+            Matcher nodeMatcher = nodeRegex.matcher(node);
+            if (nodeMatcher.matches()) {
+               nodes.add(node);
+            }
+         }
+      }
+      else {
+         nodes.addAll(configurations.keySet());
+      }
 
       Answer answer = new Answer();
       answer.setQuestion(question);
-      
-	   try {
-		   JSONObject jObj = new JSONObject();	   
 
-		   JSONArray nodeList = new JSONArray();	   
-		   jObj.put(BfJson.KEY_NODES, nodeList);
+      try {
+         JSONObject jObj = new JSONObject();
 
-		   for (String node : nodes) {
-			   JSONObject nodeObject = new JSONObject();
-			   nodeObject.put(BfJson.KEY_NODE, configurations.get(node).toJson());
-			   nodeList.put(nodeObject);
-		   }
-		   
-		   answer.setStatus(AnswerStatus.SUCCESS);
-		   answer.addAnswerElement(new StringAnswer(jObj.toString()));		   
-	   }
-	   catch (Exception e) {
-		   BatfishException be =  new BatfishException(
-				   "Error in answering NodesQuestion",
-				   e);
-		   
-		   answer.setStatus(AnswerStatus.FAILURE); 
-		   answer.addAnswerElement(new StringAnswer(be.getMessage()));
-	   }
-	   
+         JSONArray nodeList = new JSONArray();
+         jObj.put(BfJson.KEY_NODES, nodeList);
+
+         for (String node : nodes) {
+            JSONObject nodeObject = new JSONObject();
+            nodeObject.put(BfJson.KEY_NODE, configurations.get(node).toJson());
+            nodeList.put(nodeObject);
+         }
+
+         answer.setStatus(AnswerStatus.SUCCESS);
+         answer.addAnswerElement(new StringAnswer(jObj.toString()));
+      }
+      catch (Exception e) {
+         BatfishException be = new BatfishException(
+               "Error in answering NodesQuestion", e);
+
+         answer.setStatus(AnswerStatus.FAILURE);
+         answer.addAnswerElement(new StringAnswer(be.getMessage()));
+      }
+
       outputAnswer(answer);
 
    }
 
-   private void outputAnswer(Answer answer) {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.enable(SerializationFeature.INDENT_OUTPUT);
-      try {
-         String jsonString = mapper.writeValueAsString(answer);         
-         _logger.output(jsonString);   
-      } catch (Exception e) {
-         BatfishException be = new BatfishException("Error in sending answer", e);
-         Answer failureAnswer = Answer.failureAnswer(be.getMessage());
-         try {
-            String failureJsonString = mapper.writeValueAsString(failureAnswer);         
-            _logger.output(failureJsonString);   
-         } catch (Exception e1) {
-            _logger.errorf("Could not serialize failure answer.", e1);
-         }
-      }
-   }
-   
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
@@ -2725,6 +2706,27 @@ public class Batfish implements AutoCloseable {
             envSettings.getNxtnetTrafficOutputDir());
    }
 
+   private void outputAnswer(Answer answer) {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      try {
+         String jsonString = mapper.writeValueAsString(answer);
+         _logger.output(jsonString);
+      }
+      catch (Exception e) {
+         BatfishException be = new BatfishException("Error in sending answer",
+               e);
+         Answer failureAnswer = Answer.failureAnswer(be.getMessage());
+         try {
+            String failureJsonString = mapper.writeValueAsString(failureAnswer);
+            _logger.output(failureJsonString);
+         }
+         catch (Exception e1) {
+            _logger.errorf("Could not serialize failure answer.", e1);
+         }
+      }
+   }
+
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
       return parse(parser, _logger, _settings);
    }
@@ -2824,15 +2826,19 @@ public class Batfish implements AutoCloseable {
       _logger.info("Reading question file: \"" + questionPath + "\"...");
       String questionText = Util.readFile(questionFile);
       _logger.info("OK\n");
-      
+
       try {
-    	  ObjectMapper mapper = new ObjectMapper();
-    	  Question question = mapper.readValue(questionText, Question.class);
-    	  QuestionParameters parameters = parseQuestionParameters();
-    	  question.setParameters(parameters);
-    	  return question;
-      } catch (IOException e1) {
-    	  _logger.debugf("BF: could not parse as Json question: %s\nWill try old, custom parser.", e1.getMessage());
+         ObjectMapper mapper = new ObjectMapper();
+         Question question = mapper.readValue(questionText, Question.class);
+         QuestionParameters parameters = parseQuestionParameters();
+         question.setParameters(parameters);
+         return question;
+      }
+      catch (IOException e1) {
+         _logger
+               .debugf(
+                     "BF: could not parse as Json question: %s\nWill try old, custom parser.",
+                     e1.getMessage());
       }
 
       QuestionParameters parameters = parseQuestionParameters();

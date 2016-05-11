@@ -281,7 +281,7 @@ public class Environment {
          case NAMED_STRUCT_TYPE:
          case NODE:
          case NEIGHBOR_TYPE:
-         case NODE_TYPE:            
+         case NODE_TYPE:
          case POLICY_MAP:
          case POLICY_MAP_CLAUSE:
          case PREFIX:

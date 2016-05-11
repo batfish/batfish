@@ -9,6 +9,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
 
 public enum HostProtocol {
@@ -183,7 +184,8 @@ public enum HostProtocol {
          line.getProtocols().add(IpProtocol.UDP);
          line.getDstPortRanges().add(
                new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number()));
-         line.getDestinationIpRanges().add(new Prefix("224.2.127.285/32"));
+         line.getDstIpWildcards().add(
+               new IpWildcard(new Prefix("224.2.127.285/32")));
          break;
       }
 

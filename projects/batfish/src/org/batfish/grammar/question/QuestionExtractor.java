@@ -299,15 +299,15 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private String _flowTag;
 
+   private NeighborsQuestion _neighborsQuestion;
+
+   private NodesQuestion _nodesQuestion;
+
    private QuestionParameters _parameters;
 
    private QuestionCombinedParser _parser;
 
    private Question _question;
-
-   private NeighborsQuestion _neighborsQuestion;
-   
-   private NodesQuestion _nodesQuestion;
 
    private ReachabilityQuestion _reachabilityQuestion;
 
@@ -368,12 +368,12 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          value = new Prefix(ctx.IP_PREFIX().getText());
       }
       else if (ctx.neighbor_type() != null) {
-    	  type = VariableType.NEIGHBOR_TYPE;
-    	  value = NeighborType.fromName(ctx.neighbor_type().getText());
+         type = VariableType.NEIGHBOR_TYPE;
+         value = NeighborType.fromName(ctx.neighbor_type().getText());
       }
       else if (ctx.node_type() != null) {
-    	  type = VariableType.NODE_TYPE;
-    	  value = NodeType.fromName(ctx.node_type().getText());
+         type = VariableType.NODE_TYPE;
+         value = NodeType.fromName(ctx.node_type().getText());
       }
       else if (ctx.range() != null) {
          type = VariableType.RANGE;
@@ -516,17 +516,17 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    @Override
-   public void enterNeighbors_constraint_neighbor_type(
-         Neighbors_constraint_neighbor_typeContext ctx) {
-      NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
-      _neighborsQuestion.setNeighborType(nType);
-   }
-
-   @Override
    public void enterNeighbors_constraint_dst_node(
          Neighbors_constraint_dst_nodeContext ctx) {
       String regex = toRegex(ctx.node_constraint());
       _neighborsQuestion.setDstNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNeighbors_constraint_neighbor_type(
+         Neighbors_constraint_neighbor_typeContext ctx) {
+      NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
+      _neighborsQuestion.setNeighborType(nType);
    }
 
    @Override
@@ -543,17 +543,16 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    }
 
    @Override
+   public void enterNodes_constraint_node(Nodes_constraint_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _nodesQuestion.setNodeRegex(regex);
+   }
+
+   @Override
    public void enterNodes_constraint_node_type(
          Nodes_constraint_node_typeContext ctx) {
       NodeType nType = toNodeType(ctx.node_type_constraint());
       _nodesQuestion.setNodeType(nType);
-   }
-
-   @Override
-   public void enterNodes_constraint_node(
-         Nodes_constraint_nodeContext ctx) {
-      String regex = toRegex(ctx.node_constraint());
-      _nodesQuestion.setNodeRegex(regex);
    }
 
    @Override
@@ -1647,6 +1646,21 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private NeighborType toNeighborType(Neighbor_type_constraintContext ctx) {
+      NeighborType nType;
+      if (ctx.neighbor_type() != null) {
+         nType = NeighborType.fromName(ctx.neighbor_type().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         nType = _parameters.getNeighborType(ctx.VARIABLE().getText()
+               .substring(1));
+      }
+      else {
+         throw conversionError(ERR_CONVERT_ACTION, ctx);
+      }
+      return nType;
+   }
+
    private NodeExpr toNodeExpr(Bgp_neighbor_node_exprContext ctx) {
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
       if (ctx.bgp_neighbor_owner_node_expr() != null) {
@@ -1686,32 +1700,18 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    }
 
-   private NeighborType toNeighborType(Neighbor_type_constraintContext ctx) {
-	   NeighborType nType;
-	   if (ctx.neighbor_type() != null) {
-		   nType = NeighborType.fromName(ctx.neighbor_type().getText());
-	   }
-	   else if (ctx.VARIABLE() != null) {
-		   nType = _parameters.getNeighborType(ctx.VARIABLE().getText().substring(1));
-	   }
-	   else {
-		   throw conversionError(ERR_CONVERT_ACTION, ctx);
-	   }
-	   return nType;
-   }
-
    private NodeType toNodeType(Node_type_constraintContext ctx) {
-	   NodeType nType;
-	   if (ctx.node_type() != null) {
-		   nType = NodeType.fromName(ctx.node_type().getText());
-	   }
-	   else if (ctx.VARIABLE() != null) {
-		   nType = _parameters.getNodeType(ctx.VARIABLE().getText().substring(1));
-	   }
-	   else {
-		   throw conversionError(ERR_CONVERT_ACTION, ctx);
-	   }
-	   return nType;
+      NodeType nType;
+      if (ctx.node_type() != null) {
+         nType = NodeType.fromName(ctx.node_type().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         nType = _parameters.getNodeType(ctx.VARIABLE().getText().substring(1));
+      }
+      else {
+         throw conversionError(ERR_CONVERT_ACTION, ctx);
+      }
+      return nType;
    }
 
    private PolicyMapClauseExpr toPolicyMapClauseExpr(

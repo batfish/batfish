@@ -29,6 +29,7 @@ import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
@@ -855,33 +856,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
          IpAccessListLine newLine = new IpAccessListLine();
          newLine.setAction(fromLine.getAction());
-         Ip srcIp = fromLine.getSourceIp();
-         if (srcIp != null) {
-            Ip srcWildcard = fromLine.getSourceWildcard();
-            if (CommonUtil.isValidWildcard(srcWildcard)) {
-               int srcPrefixLength = 32 - srcWildcard.numWildcardBits();
-               if (srcPrefixLength > 0) {
-                  Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
-                  newLine.getSourceIpRanges().add(srcPrefix);
-               }
-            }
-            else {
-               newLine.setInvalidMessage("Unsupported ip wildcard format");
-            }
+         IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
+         if (srcIpWildcard != null) {
+            newLine.getSrcIpWildcards().add(srcIpWildcard);
          }
-         Ip dstIp = fromLine.getDestinationIp();
-         if (dstIp != null) {
-            Ip dstWildcard = fromLine.getDestinationWildcard();
-            if (CommonUtil.isValidWildcard(dstWildcard)) {
-               int dstPrefixLength = 32 - dstWildcard.numWildcardBits();
-               if (dstPrefixLength > 0) {
-                  Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);
-                  newLine.getDestinationIpRanges().add(dstPrefix);
-               }
-            }
-            else {
-               newLine.setInvalidMessage("Unsupported ip wildcard format");
-            }
+         IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
+         if (dstIpWildcard != null) {
+            newLine.getDstIpWildcards().add(dstIpWildcard);
          }
          // TODO: src/dst address group
          IpProtocol protocol = fromLine.getProtocol();
@@ -1654,13 +1635,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip ip = fromLine.getSourceIp();
-      long minSubnet = fromLine.getDestinationIp().asLong();
-      long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
-      int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
-      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-      int statedPrefixLength = fromLine.getSourceWildcard().inverted()
+      Ip ip = fromLine.getSourceIpWildcard().getIp();
+      long minSubnet = fromLine.getDestinationIpWildcard().getIp().asLong();
+      long maxSubnet = minSubnet
+            | fromLine.getDestinationIpWildcard().getWildcard().asLong();
+      int minPrefixLength = fromLine.getDestinationIpWildcard().getIp()
             .numSubnetBits();
+      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
+      int statedPrefixLength = fromLine.getSourceIpWildcard().getWildcard()
+            .inverted().numSubnetBits();
       int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
       Prefix prefix = new Prefix(ip, prefixLength);
       return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,

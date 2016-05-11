@@ -164,9 +164,9 @@ public class Driver {
          Client client = Util.getClientBuilder(
                _mainSettings.getCoordinatorUseSsl(),
                _mainSettings.getTrustAllSslCerts()).build();
-         WebTarget webTarget = client.target(poolRegUrl)
-               .queryParam("add",
-                     _mainSettings.getServiceHost() + ":"
+         WebTarget webTarget = client.target(poolRegUrl).queryParam(
+               "add",
+               _mainSettings.getServiceHost() + ":"
                      + _mainSettings.getServicePort());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
@@ -185,7 +185,8 @@ public class Driver {
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _mainLogger.errorf("BF: got error while checking work status: %s %s\n",
+            _mainLogger.errorf(
+                  "BF: got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -193,7 +194,9 @@ public class Driver {
          return true;
       }
       catch (ProcessingException e) {
-         _mainLogger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", poolRegUrl);
+         _mainLogger.errorf(
+               "BF: unable to connect to coordinator pool mgr at %s\n",
+               poolRegUrl);
          return false;
       }
       catch (Exception e) {
@@ -208,13 +211,11 @@ public class Driver {
 
       String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
             : "http";
-      String poolRegUrl = String.format("%s://%s:%s%s/%s",  
-            protocol, 
-            _mainSettings.getCoordinatorHost(), 
-            + _mainSettings.getCoordinatorPoolPort(),
-            CoordConsts.SVC_BASE_POOL_MGR,
-            CoordConsts.SVC_POOL_UPDATE_RSC);
-      
+      String poolRegUrl = String.format("%s://%s:%s%s/%s", protocol,
+            _mainSettings.getCoordinatorHost(),
+            +_mainSettings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_BASE_POOL_MGR, CoordConsts.SVC_POOL_UPDATE_RSC);
+
       do {
          registrationSuccess = registerWithCoordinator(poolRegUrl);
          if (!registrationSuccess) {

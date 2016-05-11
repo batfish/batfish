@@ -300,10 +300,10 @@ public final class Configuration extends ComparableStructure<String> {
    public void setVendor(ConfigurationFormat vendor) {
       _vendor = vendor;
    }
-   
+
    public JSONObject toJson() throws JSONException {
-	   JSONObject jObj = new JSONObject();
-	   jObj.put(BfJson.KEY_NODE_NAME, getHostname());
-	   return jObj;
+      JSONObject jObj = new JSONObject();
+      jObj.put(BfJson.KEY_NODE_NAME, getHostname());
+      return jObj;
    }
 }

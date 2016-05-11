@@ -11,7 +11,6 @@ import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.Prefix;
 
 public final class IpAccessListLine implements Serializable {
 
@@ -21,7 +20,7 @@ public final class IpAccessListLine implements Serializable {
 
    private final Set<Integer> _dscps;
 
-   private final Set<Prefix> _dstIpRanges;
+   private final Set<IpWildcard> _dstIpWildcards;
 
    private final List<SubRange> _dstPortRanges;
 
@@ -35,9 +34,9 @@ public final class IpAccessListLine implements Serializable {
 
    private final Set<IpProtocol> _protocols;
 
-   private final Set<Prefix> _srcIpRanges;
+   private final Set<IpWildcard> _srcIpWildcards;
 
-   private final Set<Prefix> _srcOrDstIpRanges;
+   private final Set<IpWildcard> _srcOrDstIpWildcards;
 
    private final List<SubRange> _srcOrDstPortRanges;
 
@@ -48,11 +47,11 @@ public final class IpAccessListLine implements Serializable {
    public IpAccessListLine() {
       _dscps = new TreeSet<Integer>();
       _protocols = EnumSet.noneOf(IpProtocol.class);
-      _dstIpRanges = new TreeSet<Prefix>();
+      _dstIpWildcards = new TreeSet<IpWildcard>();
       _dstPortRanges = new ArrayList<SubRange>();
       _ecns = new TreeSet<Integer>();
-      _srcIpRanges = new TreeSet<Prefix>();
-      _srcOrDstIpRanges = new TreeSet<Prefix>();
+      _srcIpWildcards = new TreeSet<IpWildcard>();
+      _srcOrDstIpWildcards = new TreeSet<IpWildcard>();
       _srcOrDstPortRanges = new ArrayList<SubRange>();
       _srcPortRanges = new ArrayList<SubRange>();
       _icmpType = IcmpType.UNSET;
@@ -64,15 +63,15 @@ public final class IpAccessListLine implements Serializable {
       IpAccessListLine line = new IpAccessListLine();
       line._action = _action;
       line._dscps.addAll(_dscps);
-      line._dstIpRanges.addAll(_dstIpRanges);
+      line._dstIpWildcards.addAll(_dstIpWildcards);
       line._dstPortRanges.addAll(_dstPortRanges);
       line._ecns.addAll(_ecns);
       line._icmpCode = _icmpCode;
       line._icmpType = _icmpType;
       line._invalidMessage = _invalidMessage;
       line._protocols.addAll(_protocols);
-      line._srcIpRanges.addAll(_srcIpRanges);
-      line._srcOrDstIpRanges.addAll(_srcOrDstIpRanges);
+      line._srcIpWildcards.addAll(_srcIpWildcards);
+      line._srcOrDstIpWildcards.addAll(_srcOrDstIpWildcards);
       line._srcOrDstPortRanges.addAll(_srcOrDstPortRanges);
       line._srcPortRanges.addAll(_srcPortRanges);
       line._tcpFlags.addAll(_tcpFlags);
@@ -83,12 +82,12 @@ public final class IpAccessListLine implements Serializable {
       return _action;
    }
 
-   public Set<Prefix> getDestinationIpRanges() {
-      return _dstIpRanges;
-   }
-
    public Set<Integer> getDscps() {
       return _dscps;
+   }
+
+   public Set<IpWildcard> getDstIpWildcards() {
+      return _dstIpWildcards;
    }
 
    public List<SubRange> getDstPortRanges() {
@@ -115,12 +114,12 @@ public final class IpAccessListLine implements Serializable {
       return _protocols;
    }
 
-   public Set<Prefix> getSourceIpRanges() {
-      return _srcIpRanges;
+   public Set<IpWildcard> getSrcIpWildcards() {
+      return _srcIpWildcards;
    }
 
-   public Set<Prefix> getSrcOrDstIpRanges() {
-      return _srcOrDstIpRanges;
+   public Set<IpWildcard> getSrcOrDstIpWildcards() {
+      return _srcOrDstIpWildcards;
    }
 
    public List<SubRange> getSrcOrDstPortRanges() {
@@ -154,8 +153,9 @@ public final class IpAccessListLine implements Serializable {
    @Override
    public String toString() {
       return "[Action:" + _action + ", Protocols:" + _protocols.toString()
-            + ", SourceIpRanges:" + _srcIpRanges + ", DestinationIpRanges:"
-            + _dstIpRanges + ", SrcOrDstIpRanges:" + _srcOrDstIpRanges
+            + ", SourceIpWildcards:" + _srcIpWildcards
+            + ", DestinationIpWildcards:" + _dstIpWildcards
+            + ", SrcOrDstIpWildcards:" + _srcOrDstIpWildcards
             + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
             + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
             + ", Dscps: " + _dscps.toString() + ", IcmpType:" + _icmpType

@@ -27,6 +27,7 @@ import org.batfish.representation.IkeProposal;
 import org.batfish.representation.InterfaceType;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IpsecProposal;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
@@ -900,9 +901,15 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                || !sourcePrefixes.isEmpty() || !sourcePortRanges.isEmpty()) {
             String termIpAccessListName = "~" + name + ":" + termName + "~";
             IpAccessListLine line = new IpAccessListLine();
-            line.getDestinationIpRanges().addAll(destinationPrefixes);
+            for (Prefix dstPrefix : destinationPrefixes) {
+               IpWildcard dstWildcard = new IpWildcard(dstPrefix);
+               line.getDstIpWildcards().add(dstWildcard);
+            }
             line.getDstPortRanges().addAll(destinationPortRanges);
-            line.getSourceIpRanges().addAll(sourcePrefixes);
+            for (Prefix srcPrefix : sourcePrefixes) {
+               IpWildcard srcWildcard = new IpWildcard(srcPrefix);
+               line.getSrcIpWildcards().add(srcWildcard);
+            }
             line.getDstPortRanges().addAll(sourcePortRanges);
             line.setAction(LineAction.ACCEPT);
             IpAccessList termIpAccessList = new IpAccessList(

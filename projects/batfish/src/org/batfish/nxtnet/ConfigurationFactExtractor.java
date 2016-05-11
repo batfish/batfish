@@ -29,6 +29,7 @@ import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsisProcess;
@@ -604,7 +605,8 @@ public class ConfigurationFactExtractor {
             default:
                throw new BatfishException("bad action");
             }
-            for (Prefix dstIpRange : line.getDestinationIpRanges()) {
+            for (IpWildcard dstIpWildcard : line.getDstIpWildcards()) {
+               Prefix dstIpRange = dstIpWildcard.toPrefix();
                long dstIpStart = dstIpRange.getAddress().asLong();
                long dstIpEnd = dstIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_dstIpRange.append(name + "|" + i + "|"
@@ -628,13 +630,15 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
                      + protocol.number() + "\n");
             }
-            for (Prefix srcIpRange : line.getSourceIpRanges()) {
+            for (IpWildcard srcIpWildcard : line.getSrcIpWildcards()) {
+               Prefix srcIpRange = srcIpWildcard.toPrefix();
                long srcIpStart = srcIpRange.getAddress().asLong();
                long srcIpEnd = srcIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
             }
-            for (Prefix srcOrDstIpRange : line.getSrcOrDstIpRanges()) {
+            for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIpWildcards()) {
+               Prefix srcOrDstIpRange = srcOrDstIpWildcard.toPrefix();
                long srcOrDstIpStart = srcOrDstIpRange.getAddress().asLong();
                long srcOrDstIpEnd = srcOrDstIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcOrDstIpRange.append(name + "|" + i + "|"

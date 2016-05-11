@@ -31,6 +31,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.DscpType;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsoAddress;
@@ -1671,9 +1672,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       ExtendedAccessListLine line = new ExtendedAccessListLine(action,
-            protocol, srcIp, srcWildcard, srcAddressGroup, dstIp, dstWildcard,
-            dstAddressGroup, srcPortRanges, dstPortRanges, dscps, ecns,
-            icmpType, icmpCode, tcpFlags);
+            protocol, new IpWildcard(srcIp, srcWildcard), srcAddressGroup,
+            new IpWildcard(dstIp, dstWildcard), dstAddressGroup, srcPortRanges,
+            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 
@@ -2859,8 +2860,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ecns.add(ecn);
          }
       }
-      StandardAccessListLine line = new StandardAccessListLine(action, srcIp,
-            srcWildcard, dscps, ecns);
+      StandardAccessListLine line = new StandardAccessListLine(action,
+            new IpWildcard(srcIp, srcWildcard), dscps, ecns);
       _currentStandardAcl.addLine(line);
    }
 

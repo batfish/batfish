@@ -6,6 +6,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
 
@@ -29,7 +30,10 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
          Warnings w, Configuration c) {
       Set<Prefix> prefixes = _localAddressBook.getPrefixes(
             _addressBookEntryName, w);
-      line.getDestinationIpRanges().addAll(prefixes);
+      for (Prefix prefix : prefixes) {
+         IpWildcard wildcard = new IpWildcard(prefix);
+         line.getDstIpWildcards().add(wildcard);
+      }
    }
 
 }

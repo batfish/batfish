@@ -14,7 +14,7 @@ public class Util {
       int stop = ctx.stop.getStopIndex();
       return srcText.substring(start, stop);
    }
-   
+
    public static String readFile(File file) {
       String text = null;
       try {
@@ -26,7 +26,7 @@ public class Util {
       }
       return text;
    }
-   
+
    public static void writeFile(String outputPath, String output) {
       File outputFile = new File(outputPath);
       try {

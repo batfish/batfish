@@ -4,6 +4,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 
 public final class FwFromDestinationAddress extends FwFrom {
 
@@ -21,7 +22,7 @@ public final class FwFromDestinationAddress extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      line.getDestinationIpRanges().add(_prefix);
+      line.getDstIpWildcards().add(new IpWildcard(_prefix));
    }
 
    public Prefix getPrefix() {
