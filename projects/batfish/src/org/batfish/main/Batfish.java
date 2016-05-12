@@ -2830,8 +2830,8 @@ public class Batfish implements AutoCloseable {
       try {
          ObjectMapper mapper = new ObjectMapper();
          Question question = mapper.readValue(questionText, Question.class);
-         QuestionParameters parameters = parseQuestionParameters();
-         question.setParameters(parameters);
+         JSONObject parameters = (JSONObject) parseQuestionParameters();
+         question.setJsonParameters(parameters);
          return question;
       }
       catch (IOException e1) {
@@ -2841,7 +2841,7 @@ public class Batfish implements AutoCloseable {
                      e1.getMessage());
       }
 
-      QuestionParameters parameters = parseQuestionParameters();
+      QuestionParameters parameters = (QuestionParameters) parseQuestionParameters();
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings);
       QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag(),
@@ -2867,7 +2867,7 @@ public class Batfish implements AutoCloseable {
       return extractor.getQuestion();
    }
 
-   private QuestionParameters parseQuestionParameters() {
+   private Object parseQuestionParameters() {
       String questionParametersPath = _settings.getQuestionParametersPath();
       File questionParametersFile = new File(questionParametersPath);
       if (!questionParametersFile.exists()) {
@@ -2878,6 +2878,18 @@ public class Batfish implements AutoCloseable {
             + questionParametersPath + "\"...");
       String questionText = Util.readFile(questionParametersFile);
       _logger.info("OK\n");
+      
+      try {
+         JSONObject jObj = new JSONObject(questionText);
+         return jObj;
+      }
+      catch (JSONException e1) {         
+         _logger
+         .debugf(
+               "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
+               e1.getMessage());
+      }
+      
       QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
             questionText, _settings);
       QuestionParametersExtractor extractor = new QuestionParametersExtractor();

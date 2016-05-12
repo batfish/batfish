@@ -1,6 +1,7 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeTypeSet;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.ForwardingAction;
@@ -552,7 +554,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterNodes_constraint_node_type(
          Nodes_constraint_node_typeContext ctx) {
       NodeType nType = toNodeType(ctx.node_type_constraint());
-      _nodesQuestion.setNodeType(nType);
+      _nodesQuestion.setNodeTypeSet(new NodeTypeSet(nType));
    }
 
    @Override
@@ -2221,6 +2223,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
       case SET_STRING:
+      case SET_NODE_TYPE:
+      case SET_NEIGHBOR_TYPE:
       default:
          throw new BatfishException("element type not implemented: "
                + elementType);

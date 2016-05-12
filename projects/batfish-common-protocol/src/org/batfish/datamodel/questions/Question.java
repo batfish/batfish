@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -57,6 +58,10 @@ public abstract class Question {
       return _type;
    }
 
+   public void setJsonParameters(JSONObject parameters) {
+      
+   }
+   
    public void setParameters(QuestionParameters parameters) {
       if (parameters.getTypeBindings().get(NODE_BLACKLIST_VAR) == VariableType.SET_STRING) {
          Set<String> nodeBlacklist = parameters

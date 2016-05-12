@@ -152,6 +152,7 @@ public class Assignment implements Statement {
       case SET_IP:
       case SET_IPSEC_VPN:
       case SET_NODE:
+      case SET_NODE_TYPE:
       case SET_POLICY_MAP:
       case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX_SPACE:
@@ -159,6 +160,7 @@ public class Assignment implements Statement {
       case SET_ROUTE_FILTER:
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
+      case SET_NEIGHBOR_TYPE:
       default:
          throw new BatfishException("Unsupported variable type: " + _type);
 

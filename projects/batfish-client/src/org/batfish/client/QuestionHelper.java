@@ -1,10 +1,13 @@
 package org.batfish.client;
 
+import java.util.Map;
+
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
 import org.batfish.datamodel.questions.NodesQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.QuestionType;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -49,6 +52,18 @@ public class QuestionHelper {
 		throw new Exception("Unsupported question type " + questionType);
 	}
 
+	public static String getParametersString(Map<String, String> parameters) throws Exception {
+	   String retString = "{\n";
+	   
+	   for (String paramKey : parameters.keySet()) {
+	      retString += String.format("\"%s\" : %s,\n", paramKey, parameters.get(paramKey));	      
+	   }
+	   
+	   retString += "}\n";
+	   
+	   return retString;
+	}
+	  
 	public static String getQuestionString(String questionType) throws Exception {
 		Question question = getQuestion(questionType);
 				
@@ -57,6 +72,25 @@ public class QuestionHelper {
 		
 		String jsonString = mapper.writeValueAsString(question);
 		
+		//String newJson = applyParametersToQuestionJson(jsonString, parameters);
+		      
 		return jsonString;
-	}	
+	}
+
+   private static String applyParametersToQuestionJson(String inputJsonString,
+         Map<String, String> parameters) throws Exception {
+
+      JSONObject jObj = new JSONObject(inputJsonString);
+      
+      for (String paramkey : parameters.keySet()) {
+         if (!jObj.has(paramkey)) 
+            throw new Exception("Parameter key " + paramkey + " does not exist in question");
+         
+         jObj.put(paramkey, parameters.get(paramkey));
+      }
+      
+      return jObj.toString(4);
+   }	
+	
+	
 }
