@@ -14,7 +14,11 @@ access_list_ip_range
    | ANY
    |
    (
-      HOST? ip = IP_ADDRESS
+      HOST?
+      (
+         ip = IP_ADDRESS
+         | ipv6 = IPV6_ADDRESS
+      )
    )
    | prefix = IP_PREFIX
    | ipv6_prefix = IPV6_PREFIX
@@ -93,18 +97,27 @@ extended_access_list_additional_feature
    (
       DSCP dscp_type
    )
-   | ECHO_REPLY
+   |
+   (
+      icmpv6_message_type = DEC icmpv6_message_code = DEC?
+   )
    | ECHO
+   | ECHO_REPLY
+   | ECHO_REQUEST
    |
    (
       ECN ecn = DEC
    )
    | ESTABLISHED
    | FRAGMENTS
+   | HOP_LIMIT
    | HOST_UNKNOWN
    | HOST_UNREACHABLE
    | LOG
    | LOG_INPUT
+   | MLD_QUERY
+   | MLD_REDUCTION
+   | MLD_REPORT
    | ND_NA
    | ND_NS
    | NETWORK_UNKNOWN
@@ -113,6 +126,8 @@ extended_access_list_additional_feature
    | PARAMETER_PROBLEM
    | PORT_UNREACHABLE
    | REDIRECT
+   | ROUTER_ADVERTISEMENT
+   | ROUTER_SOLICITATION
    | RST
    | SOURCE_QUENCH
    | TIME_EXCEEDED
@@ -193,9 +208,27 @@ extended_access_list_tail
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
    (
-      NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
+      NEXTHOP1 
       (
-         NEXTHOP2 IPV4 nexthop2 = IP_ADDRESS
+         (
+            nh4 = IPV4 nexthop1 = IP_ADDRESS
+         )
+         |
+         (
+            nh6 = IPV6 nexthop1 = IPV6_ADDRESS
+         )
+      )
+      (
+         NEXTHOP2
+         (
+            (
+               nh4 = IPV4 nexthop2 = IP_ADDRESS
+            )
+            |
+            (
+               nh6 = IPV6 nexthop2 = IPV6_ADDRESS
+            )
+         )
       )?
    )? NEWLINE
 ;

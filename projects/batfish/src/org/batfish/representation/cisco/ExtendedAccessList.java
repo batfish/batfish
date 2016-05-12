@@ -1,49 +1,52 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExtendedAccessList implements Serializable {
+import org.batfish.common.util.ComparableStructure;
+
+public class ExtendedAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
-   private String _id;
-
-   private boolean _isIpV6;
+   private boolean _ipv6;
 
    private List<ExtendedAccessListLine> _lines;
 
-   public ExtendedAccessList(String id) {
-      _id = id;
-      _lines = new ArrayList<ExtendedAccessListLine>();
-      _isIpV6 = false;
-   }
+   private StandardAccessList _parent;
 
-   public ExtendedAccessList(String id, boolean isIpV6) {
-      this(id);
-      _isIpV6 = isIpV6;
+   public ExtendedAccessList(String id) {
+      super(id);
+      _lines = new ArrayList<ExtendedAccessListLine>();
    }
 
    public void addLine(ExtendedAccessListLine all) {
       _lines.add(all);
    }
 
-   public String getId() {
-      return _id;
+   public boolean getIpv6() {
+      return _ipv6;
    }
 
    public List<ExtendedAccessListLine> getLines() {
       return _lines;
    }
 
-   public boolean isIpV6() {
-      return _isIpV6;
+   public StandardAccessList getParent() {
+      return _parent;
+   }
+
+   public void setIpv6(boolean ipv6) {
+      _ipv6 = ipv6;
+   }
+
+   public void setParent(StandardAccessList parent) {
+      _parent = parent;
    }
 
    @Override
    public String toString() {
-      String output = super.toString() + "\n" + "Identifier: " + _id;
+      String output = super.toString() + "\n" + "Identifier: " + _key;
       for (ExtendedAccessListLine line : _lines) {
          output += "\n" + line;
       }

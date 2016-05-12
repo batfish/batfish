@@ -2574,10 +2574,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private StringExpr toStringExpr(Interface_string_exprContext ctx) {
       InterfaceExpr caller = toInterfaceExpr(ctx.caller);
       if (ctx.interface_description_string_expr() != null) {
-         return new NameInterfaceStringExpr(caller);
+         return new DescriptionInterfaceStringExpr(caller);
       }
       else if (ctx.interface_name_string_expr() != null) {
-         return new DescriptionInterfaceStringExpr(caller);
+         return new NameInterfaceStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);

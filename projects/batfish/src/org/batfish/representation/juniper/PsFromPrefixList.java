@@ -31,6 +31,9 @@ public final class PsFromPrefixList extends PsFrom {
       }
       else {
          PrefixList prefixList = jc.getPrefixLists().get(_name);
+         if (prefixList.getIpv6()) {
+            ps.setIpv6(true);
+         }
          prefixList.getReferers().put(this,
                "policy-statement match prefix-list");
          PolicyMapMatchRouteFilterListLine line = new PolicyMapMatchRouteFilterListLine(

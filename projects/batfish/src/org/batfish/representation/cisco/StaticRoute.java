@@ -10,11 +10,17 @@ public class StaticRoute implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private int _distance;
+
    private String _nextHopInterface;
+
    private Ip _nextHopIp;
+
    private boolean _permanent;
+
    private Prefix _prefix;
+
    private Integer _tag;
+
    private Integer _track;
 
    public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,

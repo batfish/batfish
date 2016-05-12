@@ -1668,6 +1668,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String name = ctx.name.getText();
       Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
       _currentFilter = filters.get(name);
+      if (_currentFirewallFamily == null) {
+         _currentFirewallFamily = Family.INET;
+      }
       if (_currentFilter == null) {
          _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
          filters.put(name, _currentFilter);

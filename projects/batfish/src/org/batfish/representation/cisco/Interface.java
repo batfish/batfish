@@ -1,19 +1,19 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
 
-public class Interface implements Serializable {
+public class Interface extends ComparableStructure<String> {
 
    private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
 
@@ -69,8 +69,6 @@ public class Interface implements Serializable {
 
    private IsisInterfaceMode _isisInterfaceMode;
 
-   private String _name;
-
    private int _nativeVlan;
 
    private Integer _ospfCost;
@@ -96,7 +94,7 @@ public class Interface implements Serializable {
    private String _vrf;
 
    public Interface(String name) {
-      _name = name;
+      super(name);
       _active = true;
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
@@ -148,10 +146,6 @@ public class Interface implements Serializable {
 
    public IsisInterfaceMode getIsisInterfaceMode() {
       return _isisInterfaceMode;
-   }
-
-   public String getName() {
-      return _name;
    }
 
    public int getNativeVlan() {

@@ -26,12 +26,10 @@ null_block_stanza
       | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
-      | CLASS_MAP
       | CLI
       | CLOCK
       | CONFDCONFIG
       | CONFIGURATION
-      | CONTROL_PLANE
       | CONTROLLER
       | COPY
       | CPD
@@ -107,8 +105,7 @@ null_block_stanza
       (
          IPV6
          (
-            ACCESS_LIST
-            | CONFLICT_POLICY
+            CONFLICT_POLICY
             | HARDWARE
          )
       )
@@ -116,13 +113,11 @@ null_block_stanza
       | KRON
       | L2TP_CLASS
       | LACP
-      | LINE
       | LINECARD
       | LOGGING
       | MAC
       | MAC_LEARN
       | MACRO
-      | MANAGEMENT
       | MAP_CLASS
       | MAP_LIST
       | MAXIMUM_PATHS
@@ -152,7 +147,6 @@ null_block_stanza
       | NLS
       | NO_BANNER
       | NSR
-      | NTP
       | ONE
       | OPENFLOW
       | PLAT
@@ -237,7 +231,6 @@ null_block_substanza
          ABSOLUTE_TIMEOUT
          | ACCEPT_DIALIN
          | ACCEPT_LIFETIME
-         | ACCESS_CLASS
          | ACCOUNTING
          | ACCOUNTING_SERVER_GROUP
          | ACTION
@@ -325,7 +318,6 @@ null_block_substanza
          | ENABLE
          | ENCAPSULATION
          | ENCRYPTION
-         | END_CLASS_MAP
          | END_POLICY_MAP
          | ENROLLMENT
          | ERSPAN_ID
@@ -452,7 +444,6 @@ null_block_substanza
          | PASSWORD_STORAGE
          | PATH_JITTER
          | PAUSE
-         | PEER
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
@@ -511,7 +502,6 @@ null_block_substanza
          | ROUTE
          | ROUTE_TARGET
          | RULE
-         | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -578,7 +568,6 @@ null_block_substanza
          | UDP_JITTER
          | UID
          | UNTAGGED
-         | UPDATE_CALENDAR
          | USE_VRF
          | USERS
          | VAD
@@ -765,7 +754,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | MULTICAST_ROUTING
             | NAME_SERVER
             | NAT
-            | PIM
             | RADIUS
             | RCMD
             | ROUTING //might want to use this eventually

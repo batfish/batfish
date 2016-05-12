@@ -9,6 +9,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
    public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
+   public static final int DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
+
    public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
 
    public static final int DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;

@@ -1231,10 +1231,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       // warn about unreferenced data structures
       warnUnreferencedPolicyStatements();
       warnUnreferencedFirewallFilters();
-      warnUnreferencedIkePropsals();
+      warnUnreferencedIkeProposals();
       warnUnreferencedIkePolicies();
       warnUnreferencedIkeGateways();
-      warnUnreferencedIpsecPropsals();
+      warnUnreferencedIpsecProposals();
       warnUnreferencedIpsecPolicies();
       warnUnusedPrefixLists();
       warnEmptyPrefixLists();
@@ -1354,7 +1354,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
          String name = e.getKey();
          FirewallFilter filter = e.getValue();
-         if (filter.isUnused()) {
+         if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
             _w.redFlag("Unused firewall-filter: \"" + name + "\"");
          }
       }
@@ -1380,7 +1380,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
    }
 
-   private void warnUnreferencedIkePropsals() {
+   private void warnUnreferencedIkeProposals() {
       for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
          String name = e.getKey();
          IkeProposal ikeProposal = e.getValue();
@@ -1400,7 +1400,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
    }
 
-   private void warnUnreferencedIpsecPropsals() {
+   private void warnUnreferencedIpsecProposals() {
       for (Entry<String, IpsecProposal> e : _ipsecProposals.entrySet()) {
          String name = e.getKey();
          IpsecProposal ipsecProposal = e.getValue();
