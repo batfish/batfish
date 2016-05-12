@@ -1,18 +1,18 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IpAsPathAccessList implements Serializable {
+import org.batfish.common.util.ComparableStructure;
+
+public class IpAsPathAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
    private List<IpAsPathAccessListLine> _lines;
-   private String _name;
 
    public IpAsPathAccessList(String name) {
-      _name = name;
+      super(name);
       _lines = new ArrayList<IpAsPathAccessListLine>();
    }
 
@@ -22,10 +22,6 @@ public class IpAsPathAccessList implements Serializable {
 
    public List<IpAsPathAccessListLine> getLines() {
       return _lines;
-   }
-
-   public String getName() {
-      return _name;
    }
 
 }

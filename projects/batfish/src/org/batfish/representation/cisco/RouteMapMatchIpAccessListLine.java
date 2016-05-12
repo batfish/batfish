@@ -8,6 +8,8 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
    private Set<String> _listNames;
 
+   private boolean _routing;
+
    public RouteMapMatchIpAccessListLine(Set<String> names) {
       _listNames = names;
    }
@@ -16,9 +18,17 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
       return _listNames;
    }
 
+   public boolean getRouting() {
+      return _routing;
+   }
+
    @Override
    public RouteMapMatchType getType() {
       return RouteMapMatchType.IP_ACCESS_LIST;
+   }
+
+   public void setRouting(boolean routing) {
+      _routing = routing;
    }
 
 }

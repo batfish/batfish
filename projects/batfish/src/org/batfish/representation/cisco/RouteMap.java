@@ -3,36 +3,31 @@ package org.batfish.representation.cisco;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.common.util.ReferenceCountedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class RouteMap extends ReferenceCountedStructure {
+public class RouteMap extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
    private Map<Integer, RouteMapClause> _clauses;
-   private boolean _ignore;
-   private String _mapName;
+
+   private boolean _ipv6;
 
    public RouteMap(String name) {
-      _mapName = name;
+      super(name);
       _clauses = new TreeMap<Integer, RouteMapClause>();
-      _ignore = false;
    }
 
    public Map<Integer, RouteMapClause> getClauses() {
       return _clauses;
    }
 
-   public boolean getIgnore() {
-      return _ignore;
+   public boolean getIpv6() {
+      return _ipv6;
    }
 
-   public String getMapName() {
-      return _mapName;
-   }
-
-   public void setIgnore(boolean b) {
-      _ignore = b;
+   public void setIpv6(boolean ipv6) {
+      _ipv6 = ipv6;
    }
 
 }

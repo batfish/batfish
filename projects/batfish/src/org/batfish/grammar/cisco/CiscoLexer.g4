@@ -80,6 +80,16 @@ ACCEPT_OWN
    'accept-own'
 ;
 
+ACCEPT_REGISTER
+:
+   'accept-register'
+;
+
+ACCEPT_RP
+:
+   'accept-rp'
+;
+
 ACCESS
 :
    'access'
@@ -594,6 +604,11 @@ AUTO_RECOVERY
    'auto-recovery'
 ;
 
+AUTO_RP
+:
+   'auto-rp'
+;
+
 AUTO_SUMMARY
 :
    'auto-summary'
@@ -612,6 +627,11 @@ AUTO_TUNNEL
 AUTOROUTE
 :
    'autoroute'
+;
+
+AUTORP
+:
+   'autorp'
 ;
 
 AUTOSELECT
@@ -692,6 +712,21 @@ BGP
 BGP_COMMUNITY
 :
    'bgp-community'
+;
+
+BIDIR_ENABLE
+:
+   'bidir-enable'
+;
+
+BIDIR_OFFER_INTERVAL
+:
+   'bidir-offer-interval'
+;
+
+BIDIR_OFFER_LIMIT
+:
+   'bidir-offer-limit'
 ;
 
 BIFF
@@ -777,6 +812,11 @@ BSD_USERNAME
 BSR_BORDER
 :
    'bsr-border'
+;
+
+BSR_CANDIDATE
+:
+   'bsr-candidate'
 ;
 
 BUNDLE
@@ -1139,6 +1179,11 @@ COPY
    'copy'
 ;
 
+COS
+:
+   'cos'
+;
+
 COST
 :
    'cost'
@@ -1339,6 +1384,11 @@ DEFAULT_INFORMATION_ORIGINATE
    'default-information-originate'
 ;
 
+DEFAULT_INSPECTION_TRAFFIC
+:
+   'default-inspection-traffic'
+;
+
 DEFAULT_MAX_FRAME_SIZE
 :
    'default-max-frame-size'
@@ -1529,6 +1579,11 @@ DISTRIBUTE_LIST
    'distribute-list'
 ;
 
+DM_FALLBACK
+:
+   'dm-fallback'
+;
+
 DNS
 :
    'dns'
@@ -1687,6 +1742,11 @@ ECHO_CANCEL
 ECHO_REPLY
 :
    'echo-reply'
+;
+
+ECHO_REQUEST
+:
+   'echo-request'
 ;
 
 ECMP_GROUP
@@ -2233,6 +2293,11 @@ GROUP_ALIAS
    'group-alias'
 ;
 
+GROUP_LIST
+:
+   'group-list'
+;
+
 GROUP_OBJECT
 :
    'group-object'
@@ -2361,6 +2426,11 @@ HOLD_QUEUE
 HOMEDIR
 :
    'homedir'
+;
+
+HOP_LIMIT
+:
+   'hop-limit'
 ;
 
 HOST
@@ -2543,6 +2613,11 @@ INCOMPLETE
    'incomplete'
 ;
 
+INFINITY
+:
+   'infinity'
+;
+
 INFORMATION_REPLY
 :
    'information-reply'
@@ -2561,6 +2636,11 @@ INGRESS
 INHERIT
 :
    'inherit'
+;
+
+INPUT
+:
+   'input'
 ;
 
 INSERVICE
@@ -2941,6 +3021,11 @@ LINK_FAULT_SIGNALING
    'link-fault-signaling'
 ;
 
+LIST
+:
+   'list'
+;
+
 LISTEN
 :
    'listen'
@@ -3171,6 +3256,16 @@ MATCH
    'match'
 ;
 
+MATCH_ALL
+:
+   'match-all'
+;
+
+MATCH_ANY
+:
+   'match-any'
+;
+
 MATCHES_ANY
 :
    'matches-any'
@@ -3336,6 +3431,21 @@ MLD
    'mld'
 ;
 
+MLD_QUERY
+:
+   'mld-query'
+;
+
+MLD_REDUCTION
+:
+   'mld-reduction'
+;
+
+MLD_REPORT
+:
+   'mld-report'
+;
+
 MLS
 :
    'mls'
@@ -3466,6 +3576,11 @@ MVR
    'mvr'
 ;
 
+NAME
+:
+   'name' -> pushMode ( M_Name )
+;
+
 NAME_LOOKUP
 :
    'name-lookup'
@@ -3484,11 +3599,6 @@ NAMEIF
 NAMESPACE
 :
    'namespace'
-;
-
-NAME
-:
-   'name' -> pushMode ( M_NAME )
 ;
 
 NAMES
@@ -3711,6 +3821,11 @@ NON_BROADCAST
    'non-broadcast'
 ;
 
+NON_CLIENT_NRT
+:
+   'non-client-nrt'
+;
+
 NON_DETERMINISTIC_MED
 :
    'non-deterministic-med'
@@ -3869,6 +3984,16 @@ OUT
 OUT_OF_BAND
 :
    'out-of-band'
+;
+
+OUTPUT
+:
+   'output'
+;
+
+OVERRIDE
+:
+   'override'
 ;
 
 OWNER
@@ -4351,6 +4476,11 @@ QOS_POLICY_OUTPUT
    'qos-policy-output'
 ;
 
+QUERY_ONLY
+:
+   'query-only'
+;
+
 QUEUE_BUFFERS
 :
    'queue-buffers'
@@ -4499,6 +4629,16 @@ REFLECT
 REGEX_MODE
 :
    'regex-mode'
+;
+
+REGISTER_RATE_LIMIT
+:
+   'register-rate-limit'
+;
+
+REGISTER_SOURCE
+:
+   'register-source'
 ;
 
 RELOAD
@@ -4706,6 +4846,26 @@ ROUTING
    'routing'
 ;
 
+RP_ADDRESS
+:
+   'rp-address'
+;
+
+RP_ANNOUNCE_FILTER
+:
+   'rp-announce-filter'
+;
+
+RP_CANDIDATE
+:
+   'rp-candidate'
+;
+
+RP_LIST
+:
+   'rp-list'
+;
+
 RSAKEYPAIR
 :
    'rsakeypair'
@@ -4784,6 +4944,11 @@ SCHEDULER
 SCHEME
 :
    'scheme'
+;
+
+SCOPE
+:
+   'scope'
 ;
 
 SCP
@@ -4866,6 +5031,16 @@ SEND_LIFETIME
    'send-lifetime'
 ;
 
+SEND_RP_ANNOUNCE
+:
+   'send-rp-announce'
+;
+
+SEND_RP_DISCOVERY
+:
+   'send-rp-discovery'
+;
+
 SENDER
 :
    'sender'
@@ -4889,6 +5064,16 @@ SERIAL
 SERIAL_NUMBER
 :
    'serial-number'
+;
+
+SERVE
+:
+   'serve'
+;
+
+SERVE_ONLY
+:
+   'serve-only'
 ;
 
 SERVER
@@ -5161,6 +5346,11 @@ SPLIT_TUNNEL_POLICY
    'split-tunnel-policy'
 ;
 
+SPT_THRESHOLD
+:
+   'spt-threshold'
+;
+
 SQLNET
 :
    'sqlnet'
@@ -5191,6 +5381,11 @@ SSL
    'ssl'
 ;
 
+SSM
+:
+   'ssm'
+;
+
 STACK_MAC
 :
    'stack-mac'
@@ -5216,6 +5411,11 @@ STANDARD
 STANDBY
 :
    'standby'
+;
+
+STATE_REFRESH
+:
+   'state-refresh'
 ;
 
 STATIC
@@ -5843,6 +6043,11 @@ UUCP
    'uucp'
 ;
 
+V1_RP_REACHABILITY
+:
+   'v1-rp-reachability'
+;
+
 V4
 :
    'v4'
@@ -6008,6 +6213,11 @@ VRF
    'vrf'
    {enableIPV6_ADDRESS = false;}
 
+;
+
+VRF_ALSO
+:
+   'vrf-also'
 ;
 
 VRRP
@@ -7186,14 +7396,14 @@ M_MOTD_HASH_MOTD
    ~'#'+
 ;
 
-mode M_NAME;
+mode M_Name;
 
-M_NAME_WS
+M_Name_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-M_NAME_NAME
+M_Name_NAME
 :
    F_NonWhitespace+ -> type ( VARIABLE ) , popMode
 ;
