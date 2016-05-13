@@ -85,7 +85,6 @@ public class NodesQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
-
    }
 
    @Override

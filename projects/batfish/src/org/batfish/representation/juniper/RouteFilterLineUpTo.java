@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.RouteFilterList;
 

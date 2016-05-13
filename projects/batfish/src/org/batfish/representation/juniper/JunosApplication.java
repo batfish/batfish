@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.SubRange;
 import org.batfish.main.Warnings;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.juniper.BaseApplication.Term;

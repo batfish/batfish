@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
 
 public final class IpAccessListLine implements Serializable {
 

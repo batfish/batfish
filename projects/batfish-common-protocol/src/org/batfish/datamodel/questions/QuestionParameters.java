@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.common.CleanBatfishException;
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NamedStructType;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.NeighborTypeSet;
 import org.batfish.datamodel.collections.NodeTypeSet;
 

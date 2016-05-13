@@ -51,7 +51,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.util.StringFilter;
-import org.batfish.common.util.SubRange;
 import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPath;
@@ -64,6 +63,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LBValueType;
 import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.StringAnswer;
@@ -1017,7 +1017,7 @@ public class Batfish implements AutoCloseable {
             dataPlanePath);
 
       // collect ingress nodes
-      Pattern ingressNodeRegex = question.getIngressNodeRegex();
+      Pattern ingressNodeRegex = Pattern.compile(question.getIngressNodeRegex());
       Set<String> activeIngressNodes = new TreeSet<String>();
       if (ingressNodeRegex != null) {
          for (String node : configurations.keySet()) {
@@ -1032,7 +1032,7 @@ public class Batfish implements AutoCloseable {
       }
 
       // collect final nodes
-      Pattern finalNodeRegex = question.getFinalNodeRegex();
+      Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
       Set<String> activeFinalNodes = new TreeSet<String>();
       if (finalNodeRegex != null) {
          for (String node : configurations.keySet()) {

@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.TcpFlags;
