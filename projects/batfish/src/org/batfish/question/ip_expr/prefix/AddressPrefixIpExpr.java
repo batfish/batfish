@@ -1,9 +1,9 @@
 package org.batfish.question.ip_expr.prefix;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.question.Environment;
 import org.batfish.question.prefix_expr.PrefixExpr;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
 
 public final class AddressPrefixIpExpr extends PrefixIpExpr {
 

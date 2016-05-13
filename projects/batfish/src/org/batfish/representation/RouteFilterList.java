@@ -3,7 +3,7 @@ package org.batfish.representation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public class RouteFilterList extends ComparableStructure<String> {
 

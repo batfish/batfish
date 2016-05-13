@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.Prefix;
 import org.batfish.question.Environment;
-import org.batfish.representation.Prefix;
 
 public class ForEachPrefixStatement extends ForEachStatement<Prefix> {
 

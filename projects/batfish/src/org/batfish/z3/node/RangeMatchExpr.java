@@ -2,7 +2,7 @@ package org.batfish.z3.node;
 
 import java.util.Set;
 
-import org.batfish.util.SubRange;
+import org.batfish.datamodel.SubRange;
 import org.batfish.z3.NodProgram;
 
 import com.microsoft.z3.BoolExpr;

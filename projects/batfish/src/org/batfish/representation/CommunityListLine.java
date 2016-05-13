@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.batfish.util.Util;
+import org.batfish.common.util.CommonUtil;
 
 public class CommunityListLine implements Serializable {
 
@@ -28,7 +28,7 @@ public class CommunityListLine implements Serializable {
       Pattern p = Pattern.compile(_regex);
       Set<Long> matchingCommunitites = new LinkedHashSet<Long>();
       for (long candidateCommunity : allCommunities) {
-         String candidateCommunityStr = Util
+         String candidateCommunityStr = CommonUtil
                .longToCommunity(candidateCommunity);
          Matcher matcher = p.matcher(candidateCommunityStr);
          if (matcher.matches()) {
@@ -42,7 +42,7 @@ public class CommunityListLine implements Serializable {
       Pattern p = Pattern.compile(_regex);
       Set<Long> matchingCommunitites = new LinkedHashSet<Long>();
       for (long candidateCommunity : allCommunities) {
-         String candidateCommunityStr = Util
+         String candidateCommunityStr = CommonUtil
                .longToCommunity(candidateCommunity);
          Matcher matcher = p.matcher(candidateCommunityStr);
          if (matcher.find()) {

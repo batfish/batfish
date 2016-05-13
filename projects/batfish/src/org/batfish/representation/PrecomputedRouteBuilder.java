@@ -1,5 +1,10 @@
 package org.batfish.representation;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+
 public class PrecomputedRouteBuilder {
 
    private int _administrativeCost;

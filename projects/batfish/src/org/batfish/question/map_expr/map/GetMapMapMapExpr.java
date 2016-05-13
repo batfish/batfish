@@ -3,7 +3,7 @@ package org.batfish.question.map_expr.map;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.QMap;

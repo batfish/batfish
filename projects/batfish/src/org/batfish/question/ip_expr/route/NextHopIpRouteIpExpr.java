@@ -1,9 +1,9 @@
 package org.batfish.question.ip_expr.route;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.question.Environment;
 import org.batfish.question.route_expr.RouteExpr;
-import org.batfish.representation.Ip;
-import org.batfish.representation.PrecomputedRoute;
 
 public class NextHopIpRouteIpExpr extends RouteIpExpr {
 

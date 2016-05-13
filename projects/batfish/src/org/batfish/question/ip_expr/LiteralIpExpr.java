@@ -1,7 +1,7 @@
 package org.batfish.question.ip_expr;
 
+import org.batfish.datamodel.Ip;
 import org.batfish.question.Environment;
-import org.batfish.representation.Ip;
 
 public final class LiteralIpExpr extends BaseIpExpr {
 

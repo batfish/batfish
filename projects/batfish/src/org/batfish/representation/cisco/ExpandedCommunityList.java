@@ -1,18 +1,18 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpandedCommunityList implements Serializable {
+import org.batfish.common.util.ComparableStructure;
+
+public class ExpandedCommunityList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
    private List<ExpandedCommunityListLine> _lines;
-   private String _name;
 
    public ExpandedCommunityList(String name) {
-      _name = name;
+      super(name);
       _lines = new ArrayList<ExpandedCommunityListLine>();
    }
 
@@ -22,10 +22,6 @@ public class ExpandedCommunityList implements Serializable {
 
    public List<ExpandedCommunityListLine> getLines() {
       return _lines;
-   }
-
-   public String getName() {
-      return _name;
    }
 
 }

@@ -27,3 +27,4 @@ RoleLexer*.java
 RoleParser*.java
 VyosLexer*.java
 VyosParser*.java
+/bin/

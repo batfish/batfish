@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.OriginType;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
-import org.batfish.representation.OriginType;
 import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetOriginTypeLine;
 

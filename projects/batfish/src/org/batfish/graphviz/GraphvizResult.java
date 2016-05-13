@@ -3,8 +3,8 @@ package org.batfish.graphviz;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Prefix;
 import org.batfish.job.BatfishJobResult;
-import org.batfish.representation.Prefix;
 
 public final class GraphvizResult extends BatfishJobResult<Map<String, byte[]>> {
 

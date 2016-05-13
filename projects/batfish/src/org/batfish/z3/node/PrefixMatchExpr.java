@@ -1,6 +1,6 @@
 package org.batfish.z3.node;
 
-import org.batfish.representation.Prefix;
+import org.batfish.datamodel.Prefix;
 import org.batfish.z3.NodProgram;
 import org.batfish.z3.Synthesizer;
 

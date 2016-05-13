@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.representation.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.AssertExpr;
 import org.batfish.z3.node.BooleanExpr;

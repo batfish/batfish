@@ -2,11 +2,11 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.common.util.CommonUtil;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapSetCommunityLine;
-import org.batfish.util.Util;
 
 public final class PsThenCommunitySet extends PsThen {
 
@@ -38,7 +38,7 @@ public final class PsThenCommunitySet extends PsThen {
          String regex = list.getLines().get(0).getRegex();
          // assuming this is a valid community list for setting, the regex value
          // just retrieved should just be an explicit community
-         long community = Util.communityStringToLong(regex);
+         long community = CommonUtil.communityStringToLong(regex);
          PolicyMapSetCommunityLine line = new PolicyMapSetCommunityLine(
                Collections.singletonList(community));
          clause.getSetLines().add(line);

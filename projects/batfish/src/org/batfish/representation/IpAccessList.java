@@ -2,7 +2,7 @@ package org.batfish.representation;
 
 import java.util.List;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public class IpAccessList extends ComparableStructure<String> {
 

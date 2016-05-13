@@ -2,6 +2,8 @@ package org.batfish.representation;
 
 import java.util.List;
 
+import org.batfish.datamodel.Ip;
+
 public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;

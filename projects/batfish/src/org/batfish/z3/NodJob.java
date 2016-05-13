@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.batfish.collections.NodeSet;
 import org.batfish.job.BatfishJob;
 import org.batfish.common.BatfishException;
-import org.batfish.representation.Flow;
-import org.batfish.representation.FlowBuilder;
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowBuilder;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.collections.NodeSet;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;

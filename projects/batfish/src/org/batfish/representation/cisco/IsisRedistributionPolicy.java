@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.representation.IsisLevel;
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
 
 public class IsisRedistributionPolicy extends RedistributionPolicy {
 

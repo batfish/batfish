@@ -3,8 +3,8 @@ package org.batfish.representation.vyos;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.LineAction;
-import org.batfish.util.ComparableStructure;
 
 public class RouteMapRule extends ComparableStructure<Integer> {
 

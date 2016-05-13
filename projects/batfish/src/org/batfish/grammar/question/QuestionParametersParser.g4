@@ -7,6 +7,7 @@ options {
 
 @header {
 package org.batfish.grammar.question;
+import org.batfish.datamodel.questions.VariableType;
 }
 
 @members {

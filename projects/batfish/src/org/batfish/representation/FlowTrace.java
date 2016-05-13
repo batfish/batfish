@@ -3,8 +3,9 @@ package org.batfish.representation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.collections.NodeInterfacePair;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class FlowTrace implements Comparable<FlowTrace> {
 

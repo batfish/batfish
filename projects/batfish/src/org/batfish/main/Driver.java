@@ -159,22 +159,12 @@ public class Driver {
       _idle = true;
    }
 
-   private static boolean registerWithCoordinator() {
-      String coordinatorHost = _mainSettings.getCoordinatorHost();
-      String workMgr = coordinatorHost + ":"
-            + _mainSettings.getCoordinatorWorkPort();
-      String poolMgr = coordinatorHost + ":"
-            + _mainSettings.getCoordinatorPoolPort();
+   private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
          Client client = Util.getClientBuilder(
                _mainSettings.getCoordinatorUseSsl(),
                _mainSettings.getTrustAllSslCerts()).build();
-         String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
-               : "http";
-         WebTarget webTarget = client.target(
-               String.format("%s://%s%s/%s", protocol, poolMgr,
-                     CoordConsts.SVC_BASE_POOL_MGR,
-                     CoordConsts.SVC_POOL_UPDATE_RSC)).queryParam(
+         WebTarget webTarget = client.target(poolRegUrl).queryParam(
                "add",
                _mainSettings.getServiceHost() + ":"
                      + _mainSettings.getServicePort());
@@ -195,7 +185,8 @@ public class Driver {
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {
-            _mainLogger.errorf("got error while checking work status: %s %s\n",
+            _mainLogger.errorf(
+                  "BF: got error while checking work status: %s %s\n",
                   array.get(0), array.get(1));
             return false;
          }
@@ -203,7 +194,9 @@ public class Driver {
          return true;
       }
       catch (ProcessingException e) {
-         _mainLogger.errorf("unable to connect to %s\n", workMgr);
+         _mainLogger.errorf(
+               "BF: unable to connect to coordinator pool mgr at %s\n",
+               poolRegUrl);
          return false;
       }
       catch (Exception e) {
@@ -215,12 +208,18 @@ public class Driver {
    private static void registerWithCoordinatorPersistent()
          throws InterruptedException {
       boolean registrationSuccess;
+
+      String protocol = (_mainSettings.getCoordinatorUseSsl()) ? "https"
+            : "http";
+      String poolRegUrl = String.format("%s://%s:%s%s/%s", protocol,
+            _mainSettings.getCoordinatorHost(),
+            +_mainSettings.getCoordinatorPoolPort(),
+            CoordConsts.SVC_BASE_POOL_MGR, CoordConsts.SVC_POOL_UPDATE_RSC);
+
       do {
-         registrationSuccess = registerWithCoordinator();
+         registrationSuccess = registerWithCoordinator(poolRegUrl);
          if (!registrationSuccess) {
-            ;
-            _mainLogger.error("Unable to register  with coordinator\n");
-            Thread.sleep(10 * 1000); // 10 seconds
+            Thread.sleep(1 * 1000); // 1 seconds
          }
       } while (!registrationSuccess);
    }

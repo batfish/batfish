@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
-import org.batfish.representation.Prefix;
+import org.batfish.datamodel.Prefix;
 
 public class BgpAggregateNetwork implements Serializable {
 

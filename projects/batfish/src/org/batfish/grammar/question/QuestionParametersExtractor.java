@@ -7,13 +7,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.questions.ForwardingAction;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.question.QuestionParametersParser.BindingContext;
 import org.batfish.grammar.question.QuestionParametersParser.ParametersContext;
-import org.batfish.question.ForwardingAction;
-import org.batfish.question.QuestionParameters;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
 
 public class QuestionParametersExtractor extends
       QuestionParametersParserBaseListener implements BatfishExtractor {

@@ -6,12 +6,12 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.StaticRoute;
-import org.batfish.util.Util;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -70,7 +70,7 @@ public class Route implements Serializable {
       StaticRoute staticRoute;
       if (_state.equals("blackhole")) {
          staticRoute = new StaticRoute(_destinationCidrBlock, null,
-               Util.NULL_INTERFACE_NAME, DEFAULT_STATIC_ROUTE_ADMIN,
+               CommonUtil.NULL_INTERFACE_NAME, DEFAULT_STATIC_ROUTE_ADMIN,
                DEFAULT_STATIC_ROUTE_COST);
       }
       else {

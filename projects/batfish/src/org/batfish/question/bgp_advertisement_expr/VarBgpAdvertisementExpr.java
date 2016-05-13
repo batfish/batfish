@@ -1,8 +1,8 @@
 package org.batfish.question.bgp_advertisement_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpAdvertisement;
 
 public final class VarBgpAdvertisementExpr extends BaseBgpAdvertisementExpr {
 

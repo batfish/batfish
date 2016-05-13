@@ -4,26 +4,26 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
 import org.batfish.question.QMap;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 
 public class Assignment implements Statement {
@@ -140,6 +140,9 @@ public class Assignment implements Statement {
          break;
 
       case ACTION:
+      case NAMED_STRUCT_TYPE:
+      case NEIGHBOR_TYPE:
+      case NODE_TYPE:
       case RANGE:
       case REGEX:
       case SET_BGP_ADVERTISEMENT:
@@ -149,6 +152,7 @@ public class Assignment implements Statement {
       case SET_IP:
       case SET_IPSEC_VPN:
       case SET_NODE:
+      case SET_NODE_TYPE:
       case SET_POLICY_MAP:
       case SET_POLICY_MAP_CLAUSE:
       case SET_PREFIX_SPACE:
@@ -156,6 +160,7 @@ public class Assignment implements Statement {
       case SET_ROUTE_FILTER:
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
+      case SET_NEIGHBOR_TYPE:
       default:
          throw new BatfishException("Unsupported variable type: " + _type);
 

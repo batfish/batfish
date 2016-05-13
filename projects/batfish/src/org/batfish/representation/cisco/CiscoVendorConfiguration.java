@@ -11,8 +11,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.batfish.collections.RoleSet;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
@@ -21,10 +26,9 @@ import org.batfish.representation.CommunityList;
 import org.batfish.representation.CommunityListLine;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.LineAction;
@@ -47,16 +51,12 @@ import org.batfish.representation.PolicyMapSetLine;
 import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetLevelLine;
 import org.batfish.representation.PolicyMapSetType;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration
       implements VendorConfiguration {
@@ -78,6 +78,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static final String ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME = "~ISIS_SUPPRESS_SUMMARIZED_FILTER~";
 
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
+
+   private static final String OSPF_EXPORT_BGP_POLICY_NAME = "~OSPF_EXPORT_BGP_POLICY~";
+
+   private static final String OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER~";
 
    private static final String OSPF_EXPORT_CONNECTED_POLICY_NAME = "~OSPF_EXPORT_CONNECTED_POLICY~";
 
@@ -194,11 +198,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             for (int i = 0; i < matchList.size(); i++) {
                RouteMapMatchLine line = matchList.get(i);
                if (line.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
-                  RouteMapMatchIpAccessListLine oldLine = (RouteMapMatchIpAccessListLine) line;
-                  matchList.remove(i);
-                  RouteMapMatchIpPrefixListLine newLine = new RouteMapMatchIpPrefixListLine(
-                        oldLine.getListNames());
-                  matchList.add(newLine);
+                  RouteMapMatchIpAccessListLine matchIpAccessListLine = (RouteMapMatchIpAccessListLine) line;
+                  matchIpAccessListLine.setRouting(true);
                }
             }
          }
@@ -308,6 +309,82 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    @Override
    public Warnings getWarnings() {
       return _w;
+   }
+
+   private void markAcls(Set<String> acls, String type, Configuration c) {
+      for (String listName : acls) {
+         boolean exists = _extendedAccessLists.containsKey(listName)
+               || _standardAccessLists.containsKey(listName);
+         if (exists) {
+            String msg = type;
+            ExtendedAccessList extendedAccessList = _extendedAccessLists
+                  .get(listName);
+            if (extendedAccessList != null) {
+               extendedAccessList.getReferers().put(this, msg);
+            }
+            StandardAccessList standardAccessList = _standardAccessLists
+                  .get(listName);
+            if (standardAccessList != null) {
+               standardAccessList.getReferers().put(this, msg);
+            }
+         }
+         else {
+            _w.redFlag("Reference to undefined " + type + ": " + listName);
+         }
+      }
+   }
+
+   private void markRouteMaps(Set<String> routeMaps, String type,
+         Configuration c) {
+      for (String routeMapName : routeMaps) {
+         RouteMap routeMap = _routeMaps.get(routeMapName);
+         if (routeMap != null) {
+            String msg = type;
+            routeMap.getReferers().put(this, msg);
+         }
+         else {
+            _w.redFlag("Reference to undefined " + type + ": " + routeMapName);
+         }
+      }
+   }
+
+   private boolean modifyRejectDefault(PolicyMapClause clause) {
+      boolean containsRouteFilterList = false;
+      for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+         switch (matchLine.getType()) {
+         case ROUTE_FILTER_LIST:
+            PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
+            for (RouteFilterList list : rLine.getLists()) {
+               containsRouteFilterList = true;
+               list.getLines().add(
+                     0,
+                     new RouteFilterLine(LineAction.REJECT, Prefix.ZERO,
+                           new SubRange(0, 0)));
+            }
+            break;
+         // allowed match lines
+         case PROTOCOL:
+         case TAG:
+            break;
+
+         // disallowed match lines
+         case AS_PATH_ACCESS_LIST:
+         case COMMUNITY_LIST:
+         case IP_ACCESS_LIST:
+         case NEIGHBOR:
+         case POLICY:
+         case COLOR:
+         case INTERFACE:
+         case POLICY_CONJUNCTION:
+         default:
+            // note: don't allow ip access lists in policies that
+            // are for prefix matching
+            // i.e. convert them, or throw error if they are used
+            // ambiguously
+            throw new VendorConversionException("Unexpected match line type");
+         }
+      }
+      return containsRouteFilterList;
    }
 
    @Override
@@ -434,6 +511,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (redistributeStaticPolicy != null) {
          String mapName = redistributeStaticPolicy.getMap();
          if (mapName != null) {
+            RouteMap resistributeStaticRouteMap = _routeMaps.get(mapName);
+            resistributeStaticRouteMap.getReferers().put(proc,
+                  "static redistribution route-map");
             redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
          }
          else {
@@ -537,13 +617,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      + inboundRouteMapName + "\"";
                _w.redFlag(msg);
             }
+            else {
+               RouteMap inboundRouteMap = _routeMaps.get(inboundRouteMapName);
+               inboundRouteMap.getReferers().put(lpg,
+                     "inbound route-map for leaf peer-group: " + lpg.getName());
+            }
          }
          PolicyMap newOutboundPolicyMap = null;
          String outboundRouteMapName = lpg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
-            PolicyMap outboundRouteMap = c.getPolicyMaps().get(
+            PolicyMap outboundPolicyMap = c.getPolicyMaps().get(
                   outboundRouteMapName);
-            if (outboundRouteMap == null) {
+            if (outboundPolicyMap == null) {
                String msg = "neighbor: \"" + lpg.getName() + "\": ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
@@ -553,8 +638,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      + outboundRouteMapName + "\"";
                _w.redFlag(msg);
             }
+            else {
+               RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
+               outboundRouteMap.getReferers()
+                     .put(lpg,
+                           "outbound route-map for leaf peer-group: "
+                                 + lpg.getName());
+            }
             if (suppressSummaryOnly == null) {
-               newOutboundPolicyMap = outboundRouteMap;
+               newOutboundPolicyMap = outboundPolicyMap;
             }
             else {
                String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
@@ -570,7 +662,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                PolicyMapClause permitClause = new PolicyMapClause();
                permitClause.setAction(PolicyMapAction.PERMIT);
                PolicyMapMatchPolicyLine matchOutboundPolicyLine = new PolicyMapMatchPolicyLine(
-                     outboundRouteMap);
+                     outboundPolicyMap);
                permitClause.getMatchLines().add(matchOutboundPolicyLine);
                newOutboundPolicyMap.getClauses().add(permitClause);
             }
@@ -665,6 +757,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                         "undefined reference to generated route policy map: "
                               + defaultOriginateMapName);
                }
+               else {
+                  RouteMap defaultRouteGenerationRouteMap = _routeMaps
+                        .get(defaultOriginateMapName);
+                  defaultRouteGenerationRouteMap.getReferers().put(
+                        lpg,
+                        "default route generation policy for leaf peer-group: "
+                              + lpg.getName());
+               }
                defaultRoute.getGenerationPolicies().add(
                      defaultRouteGenerationPolicy);
             }
@@ -682,6 +782,38 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          boolean ebgpMultihop = lpg.getEbgpMultihop();
          boolean allowasIn = lpg.getAllowAsIn();
          boolean disablePeerAsCheck = lpg.getDisablePeerAsCheck();
+         String inboundPrefixListName = lpg.getInboundPrefixList();
+         if (inboundPrefixListName != null) {
+            PrefixList inboundPrefixList = _prefixLists
+                  .get(inboundPrefixListName);
+            if (inboundPrefixList != null) {
+               inboundPrefixList.getReferers().put(
+                     lpg,
+                     "inbound prefix-list for neighbor: \"" + lpg.getName()
+                           + "\"");
+            }
+            else {
+               _w.redFlag("Reference to undefined inbound prefix-list: \""
+                     + inboundPrefixListName + "\" at neighbor: \""
+                     + lpg.getName() + "\"");
+            }
+         }
+         String outboundPrefixListName = lpg.getOutboundPrefixList();
+         if (outboundPrefixListName != null) {
+            PrefixList outboundPrefixList = _prefixLists
+                  .get(outboundPrefixListName);
+            if (outboundPrefixList != null) {
+               outboundPrefixList.getReferers().put(
+                     lpg,
+                     "outbound prefix-list for neighbor: \"" + lpg.getName()
+                           + "\"");
+            }
+            else {
+               _w.redFlag("Reference to undefined outbound prefix-list: \""
+                     + outboundPrefixListName + "\" at neighbor: \""
+                     + lpg.getName() + "\"");
+            }
+         }
          String description = lpg.getDescription();
          if (lpg.getActive() && !lpg.getShutdown()) {
             if (lpg.getRemoteAs() == null) {
@@ -722,7 +854,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (newInboundPolicyMap != null) {
                newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
             }
-            newNeighbor.setLocalAs(proc.getPid());
+            newNeighbor.setLocalAs(proc.getName());
             newNeighbor.setLocalIp(updateSource);
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             if (newOutboundPolicyMap != null) {
@@ -824,6 +956,19 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   + "' configured with non-existent incoming acl '"
                   + incomingFilterName + "'");
          }
+         else {
+            String msg = "incoming acl for interface: " + iface.getName();
+            ExtendedAccessList incomingExtendedAccessList = _extendedAccessLists
+                  .get(incomingFilterName);
+            if (incomingExtendedAccessList != null) {
+               incomingExtendedAccessList.getReferers().put(iface, msg);
+            }
+            StandardAccessList incomingStandardAccessList = _standardAccessLists
+                  .get(incomingFilterName);
+            if (incomingStandardAccessList != null) {
+               incomingStandardAccessList.getReferers().put(iface, msg);
+            }
+         }
          newIface.setIncomingFilter(incomingFilter);
       }
       String outgoingFilterName = iface.getOutgoingFilter();
@@ -833,6 +978,19 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             _w.redFlag("Interface: '" + iface.getName()
                   + "' configured with non-existent outgoing acl '"
                   + outgoingFilterName + "'");
+         }
+         else {
+            String msg = "outgoing acl for interface: " + iface.getName();
+            ExtendedAccessList outgoingExtendedAccessList = _extendedAccessLists
+                  .get(outgoingFilterName);
+            if (outgoingExtendedAccessList != null) {
+               outgoingExtendedAccessList.getReferers().put(iface, msg);
+            }
+            StandardAccessList outgoingStandardAccessList = _standardAccessLists
+                  .get(outgoingFilterName);
+            if (outgoingStandardAccessList != null) {
+               outgoingStandardAccessList.getReferers().put(iface, msg);
+            }
          }
          newIface.setOutgoingFilter(outgoingFilter);
       }
@@ -844,44 +1002,29 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   + "' configured with non-existent policy-routing route-map '"
                   + routingPolicyName + "'");
          }
+         else {
+            RouteMap routingPolicyRouteMap = _routeMaps.get(routingPolicyName);
+            routingPolicyRouteMap.getReferers().put(iface,
+                  "routing policy for interface: " + iface.getName());
+         }
          newIface.setRoutingPolicy(routingPolicy);
       }
       return newIface;
    }
 
    private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
-      String name = eaList.getId();
+      String name = eaList.getName();
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
          IpAccessListLine newLine = new IpAccessListLine();
          newLine.setAction(fromLine.getAction());
-         Ip srcIp = fromLine.getSourceIp();
-         if (srcIp != null) {
-            Ip srcWildcard = fromLine.getSourceWildcard();
-            if (Util.isValidWildcard(srcWildcard)) {
-               int srcPrefixLength = 32 - srcWildcard.numWildcardBits();
-               if (srcPrefixLength > 0) {
-                  Prefix srcPrefix = new Prefix(srcIp, srcPrefixLength);
-                  newLine.getSourceIpRanges().add(srcPrefix);
-               }
-            }
-            else {
-               newLine.setInvalidMessage("Unsupported ip wildcard format");
-            }
+         IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
+         if (srcIpWildcard != null) {
+            newLine.getSrcIpWildcards().add(srcIpWildcard);
          }
-         Ip dstIp = fromLine.getDestinationIp();
-         if (dstIp != null) {
-            Ip dstWildcard = fromLine.getDestinationWildcard();
-            if (Util.isValidWildcard(dstWildcard)) {
-               int dstPrefixLength = 32 - dstWildcard.numWildcardBits();
-               if (dstPrefixLength > 0) {
-                  Prefix dstPrefix = new Prefix(dstIp, dstPrefixLength);
-                  newLine.getDestinationIpRanges().add(dstPrefix);
-               }
-            }
-            else {
-               newLine.setInvalidMessage("Unsupported ip wildcard format");
-            }
+         IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
+         if (dstIpWildcard != null) {
+            newLine.getDstIpWildcards().add(dstIpWildcard);
          }
          // TODO: src/dst address group
          IpProtocol protocol = fromLine.getProtocol();
@@ -1030,6 +1173,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                throw new VendorConversionException(
                      "undefined reference to policy map: " + mapName);
             }
+            else {
+               RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
+               exportConnectedRouteMap.getReferers().put(proc,
+                     "is-is export connected route-map");
+            }
             // crash if both an explicit metric is set and one exists in the
             // route map
             for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
@@ -1094,96 +1242,66 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy == null) {
-               throw new VendorConversionException(
-                     "undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName);
             }
-            // crash if both an explicit metric is set and one exists in the
-            // route map
-            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-               for (PolicyMapSetLine line : clause.getSetLines()) {
-                  if (line.getType() == PolicyMapSetType.METRIC) {
-                     if (explicitMetric) {
-                        throw new Error(
-                              "Explicit redistribution metric set while route map also contains set metric line");
-                     }
-                     else {
-                        routeMapMetric = true;
-                        break;
+            else {
+               RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
+               exportStaticRouteMap.getReferers().put(proc,
+                     "is-is static redistribution route-map");
+               // crash if both an explicit metric is set and one exists in the
+               // route map
+               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+                  for (PolicyMapSetLine line : clause.getSetLines()) {
+                     if (line.getType() == PolicyMapSetType.METRIC) {
+                        if (explicitMetric) {
+                           throw new Error(
+                                 "Explicit redistribution metric set while route map also contains set metric line");
+                        }
+                        else {
+                           routeMapMetric = true;
+                           break;
+                        }
                      }
                   }
                }
-            }
-            PolicyMapSetLine setMetricLine = null;
-            // add a set metric line if no metric provided by route map
-            if (!routeMapMetric) {
-               // use default metric if no explicit metric is set
-               setMetricLine = new PolicyMapSetMetricLine(metric);
-            }
-
-            PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                  RoutingProtocol.STATIC);
-            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-               boolean containsRouteFilterList = false;
-               for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                  switch (matchLine.getType()) {
-                  case ROUTE_FILTER_LIST:
-                     PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-                     for (RouteFilterList list : rLine.getLists()) {
-                        containsRouteFilterList = true;
-                        list.getLines().add(
-                              0,
-                              new RouteFilterLine(LineAction.REJECT,
-                                    Prefix.ZERO, new SubRange(0, 0)));
-                     }
-                     break;
-                  // allowed match lines
-                  case PROTOCOL:
-                  case TAG:
-                     break;
-
-                  // disallowed match lines
-                  case AS_PATH_ACCESS_LIST:
-                  case COMMUNITY_LIST:
-                  case IP_ACCESS_LIST:
-                  case NEIGHBOR:
-                  case POLICY:
-                  case COLOR:
-                  case INTERFACE:
-                  case POLICY_CONJUNCTION:
-                  default:
-                     // note: don't allow ip access lists in policies that
-                     // are for prefix matching
-                     // i.e. convert them, or throw error if they are used
-                     // ambiguously
-                     throw new VendorConversionException(
-                           "Unexpected match line type");
-                  }
-               }
-               if (!containsRouteFilterList) {
-                  RouteFilterList generatedRejectDefaultRouteList = c
-                        .getRouteFilterLists()
-                        .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-                  if (generatedRejectDefaultRouteList == null) {
-                     generatedRejectDefaultRouteList = makeRouteFilter(
-                           ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                           Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT);
-                  }
-                  Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
-                  lists.add(generatedRejectDefaultRouteList);
-                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-                        lists);
-                  clause.getMatchLines().add(line);
-               }
-               Set<PolicyMapSetLine> setList = clause.getSetLines();
-               clause.getMatchLines().add(matchStaticLine);
+               PolicyMapSetLine setMetricLine = null;
+               // add a set metric line if no metric provided by route map
                if (!routeMapMetric) {
-                  setList.add(setMetricLine);
+                  // use default metric if no explicit metric is set
+                  setMetricLine = new PolicyMapSetMetricLine(metric);
                }
-            }
-            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyExportLevels().put(exportStaticPolicy,
-                  exportLevel);
 
+               PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
+                     RoutingProtocol.STATIC);
+               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+                  boolean containsRouteFilterList = modifyRejectDefault(clause);
+                  if (!containsRouteFilterList) {
+                     RouteFilterList generatedRejectDefaultRouteList = c
+                           .getRouteFilterLists()
+                           .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+                     if (generatedRejectDefaultRouteList == null) {
+                        generatedRejectDefaultRouteList = makeRouteFilter(
+                              ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                              Prefix.ZERO, new SubRange(0, 0),
+                              LineAction.REJECT);
+                     }
+                     Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
+                     lists.add(generatedRejectDefaultRouteList);
+                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                           lists);
+                     clause.getMatchLines().add(line);
+                  }
+                  Set<PolicyMapSetLine> setList = clause.getSetLines();
+                  clause.getMatchLines().add(matchStaticLine);
+                  if (!routeMapMetric) {
+                     setList.add(setMetricLine);
+                  }
+               }
+               newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+               newProcess.getPolicyExportLevels().put(exportStaticPolicy,
+                     exportLevel);
+
+            }
          }
          else { // export static routes without named policy
             exportStaticPolicy = makeRouteExportPolicy(c,
@@ -1266,10 +1384,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             PolicyMap generationPolicy = c.getPolicyMaps().get(mapName);
             if (generationPolicy == null) {
-               throw new VendorConversionException(
-                     "undefined reference to generation policy map: " + mapName);
+               _w.redFlag("undefined reference to generation policy map: "
+                     + mapName);
             }
             else {
+               RouteMap generationRouteMap = _routeMaps.get(mapName);
+               generationRouteMap.getReferers().put(proc,
+                     "ospf default-originate route-map");
                exportDefaultPolicy = makeRouteExportPolicy(c,
                      OSPF_EXPORT_DEFAULT_POLICY_NAME,
                      DEFAULT_ROUTE_FILTER_NAME, Prefix.ZERO,
@@ -1332,42 +1453,46 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportConnectedPolicy = c.getPolicyMaps().get(mapName);
             if (exportConnectedPolicy == null) {
-               throw new VendorConversionException(
-                     "undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName);
             }
-            // crash if both an explicit metric is set and one exists in the
-            // route map
-            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
-               for (PolicyMapSetLine line : clause.getSetLines()) {
-                  if (line.getType() == PolicyMapSetType.METRIC) {
-                     if (explicitMetric) {
-                        throw new Error(
-                              "Explicit redistribution metric set while route map also contains set metric line");
-                     }
-                     else {
-                        routeMapMetric = true;
-                        break;
+            else {
+               RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
+               exportConnectedRouteMap.getReferers().put(proc,
+                     "ospf redistribute connected route-map");
+               // crash if both an explicit metric is set and one exists in the
+               // route map
+               for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+                  for (PolicyMapSetLine line : clause.getSetLines()) {
+                     if (line.getType() == PolicyMapSetType.METRIC) {
+                        if (explicitMetric) {
+                           throw new Error(
+                                 "Explicit redistribution metric set while route map also contains set metric line");
+                        }
+                        else {
+                           routeMapMetric = true;
+                           break;
+                        }
                      }
                   }
                }
-            }
-            PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                  RoutingProtocol.CONNECTED);
-            PolicyMapSetLine setMetricLine = null;
-            // add a set metric line if no metric provided by route map
-            if (!routeMapMetric) {
-               // use default metric if no explicit metric is set
-               setMetricLine = new PolicyMapSetMetricLine(metric);
-            }
-            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
-               clause.getMatchLines().add(matchConnectedLine);
+               PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
+                     RoutingProtocol.CONNECTED);
+               PolicyMapSetLine setMetricLine = null;
+               // add a set metric line if no metric provided by route map
                if (!routeMapMetric) {
-                  clause.getSetLines().add(setMetricLine);
+                  // use default metric if no explicit metric is set
+                  setMetricLine = new PolicyMapSetMetricLine(metric);
                }
+               for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+                  clause.getMatchLines().add(matchConnectedLine);
+                  if (!routeMapMetric) {
+                     clause.getSetLines().add(setMetricLine);
+                  }
+               }
+               newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+               newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
+                     metricType);
             }
-            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
-                  metricType);
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
@@ -1399,96 +1524,66 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy == null) {
-               throw new VendorConversionException(
-                     "undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName);
             }
-            // crash if both an explicit metric is set and one exists in the
-            // route map
-            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-               for (PolicyMapSetLine line : clause.getSetLines()) {
-                  if (line.getType() == PolicyMapSetType.METRIC) {
-                     if (explicitMetric) {
-                        throw new Error(
-                              "Explicit redistribution metric set while route map also contains set metric line");
-                     }
-                     else {
-                        routeMapMetric = true;
-                        break;
+            else {
+               RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
+               exportStaticRouteMap.getReferers().put(proc,
+                     "ospf redistribute static route-map");
+               // crash if both an explicit metric is set and one exists in the
+               // route map
+               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+                  for (PolicyMapSetLine line : clause.getSetLines()) {
+                     if (line.getType() == PolicyMapSetType.METRIC) {
+                        if (explicitMetric) {
+                           throw new Error(
+                                 "Explicit redistribution metric set while route map also contains set metric line");
+                        }
+                        else {
+                           routeMapMetric = true;
+                           break;
+                        }
                      }
                   }
                }
-            }
-            PolicyMapSetLine setMetricLine = null;
-            // add a set metric line if no metric provided by route map
-            if (!routeMapMetric) {
-               // use default metric if no explicit metric is set
-               setMetricLine = new PolicyMapSetMetricLine(metric);
-            }
-
-            PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                  RoutingProtocol.STATIC);
-            for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-               boolean containsRouteFilterList = false;
-               for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                  switch (matchLine.getType()) {
-                  case ROUTE_FILTER_LIST:
-                     PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-                     for (RouteFilterList list : rLine.getLists()) {
-                        containsRouteFilterList = true;
-                        list.getLines().add(
-                              0,
-                              new RouteFilterLine(LineAction.REJECT,
-                                    Prefix.ZERO, new SubRange(0, 0)));
-                     }
-                     break;
-                  // allowed match lines
-                  case PROTOCOL:
-                  case TAG:
-                     break;
-
-                  // disallowed match lines
-                  case AS_PATH_ACCESS_LIST:
-                  case COMMUNITY_LIST:
-                  case IP_ACCESS_LIST:
-                  case NEIGHBOR:
-                  case POLICY:
-                  case COLOR:
-                  case INTERFACE:
-                  case POLICY_CONJUNCTION:
-                  default:
-                     // note: don't allow ip access lists in policies that
-                     // are for prefix matching
-                     // i.e. convert them, or throw error if they are used
-                     // ambiguously
-                     throw new VendorConversionException(
-                           "Unexpected match line type");
-                  }
-               }
-               if (!containsRouteFilterList) {
-                  RouteFilterList generatedRejectDefaultRouteList = c
-                        .getRouteFilterLists()
-                        .get(OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-                  if (generatedRejectDefaultRouteList == null) {
-                     generatedRejectDefaultRouteList = makeRouteFilter(
-                           OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                           Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT);
-                  }
-                  Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
-                  lists.add(generatedRejectDefaultRouteList);
-                  PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-                        lists);
-                  clause.getMatchLines().add(line);
-               }
-               Set<PolicyMapSetLine> setList = clause.getSetLines();
-               clause.getMatchLines().add(matchStaticLine);
+               PolicyMapSetLine setMetricLine = null;
+               // add a set metric line if no metric provided by route map
                if (!routeMapMetric) {
-                  setList.add(setMetricLine);
+                  // use default metric if no explicit metric is set
+                  setMetricLine = new PolicyMapSetMetricLine(metric);
                }
-            }
-            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
-                  metricType);
 
+               PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
+                     RoutingProtocol.STATIC);
+               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+                  boolean containsRouteFilterList = modifyRejectDefault(clause);
+                  if (!containsRouteFilterList) {
+                     RouteFilterList generatedRejectDefaultRouteList = c
+                           .getRouteFilterLists()
+                           .get(OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+                     if (generatedRejectDefaultRouteList == null) {
+                        generatedRejectDefaultRouteList = makeRouteFilter(
+                              OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                              Prefix.ZERO, new SubRange(0, 0),
+                              LineAction.REJECT);
+                     }
+                     Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
+                     lists.add(generatedRejectDefaultRouteList);
+                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                           lists);
+                     clause.getMatchLines().add(line);
+                  }
+                  Set<PolicyMapSetLine> setList = clause.getSetLines();
+                  clause.getMatchLines().add(matchStaticLine);
+                  if (!routeMapMetric) {
+                     setList.add(setMetricLine);
+                  }
+               }
+               newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+               newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+                     metricType);
+
+            }
          }
          else { // export static routes without named policy
             exportStaticPolicy = makeRouteExportPolicy(c,
@@ -1501,6 +1596,98 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   metricType);
          }
       }
+
+      // policy map for redistributing bgp routes
+      // policy map for redistributing static routes
+      // TODO: honor subnets option
+      OspfRedistributionPolicy rbp = proc.getRedistributionPolicies().get(
+            RoutingProtocol.BGP);
+      if (rbp != null) {
+         Integer metric = rbp.getMetric();
+         OspfMetricType metricType = rbp.getMetricType();
+         boolean explicitMetric = metric != null;
+         boolean routeMapMetric = false;
+         if (!explicitMetric) {
+            metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_BGP_METRIC;
+         }
+         // add export map with metric
+         PolicyMap exportBgpPolicy;
+         String mapName = rbp.getMap();
+         if (mapName != null) {
+            exportBgpPolicy = c.getPolicyMaps().get(mapName);
+            if (exportBgpPolicy == null) {
+               _w.redFlag("undefined reference to policy map: " + mapName);
+            }
+            else {
+               RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
+               exportBgpRouteMap.getReferers().put(proc,
+                     "ospf redistribute bgp route-map");
+               // crash if both an explicit metric is set and one exists in the
+               // route map
+               for (PolicyMapClause clause : exportBgpPolicy.getClauses()) {
+                  for (PolicyMapSetLine line : clause.getSetLines()) {
+                     if (line.getType() == PolicyMapSetType.METRIC) {
+                        if (explicitMetric) {
+                           throw new Error(
+                                 "Explicit redistribution metric set while route map also contains set metric line");
+                        }
+                        else {
+                           routeMapMetric = true;
+                           break;
+                        }
+                     }
+                  }
+               }
+               PolicyMapSetLine setMetricLine = null;
+               // add a set metric line if no metric provided by route map
+               if (!routeMapMetric) {
+                  // use default metric if no explicit metric is set
+                  setMetricLine = new PolicyMapSetMetricLine(metric);
+               }
+
+               PolicyMapMatchLine matchBgpLine = new PolicyMapMatchProtocolLine(
+                     RoutingProtocol.BGP);
+               for (PolicyMapClause clause : exportBgpPolicy.getClauses()) {
+                  boolean containsRouteFilterList = modifyRejectDefault(clause);
+                  if (!containsRouteFilterList) {
+                     RouteFilterList generatedRejectDefaultRouteList = c
+                           .getRouteFilterLists()
+                           .get(OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+                     if (generatedRejectDefaultRouteList == null) {
+                        generatedRejectDefaultRouteList = makeRouteFilter(
+                              OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                              Prefix.ZERO, new SubRange(0, 0),
+                              LineAction.REJECT);
+                     }
+                     Set<RouteFilterList> lists = new HashSet<RouteFilterList>();
+                     lists.add(generatedRejectDefaultRouteList);
+                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+                           lists);
+                     clause.getMatchLines().add(line);
+                  }
+                  Set<PolicyMapSetLine> setList = clause.getSetLines();
+                  clause.getMatchLines().add(matchBgpLine);
+                  if (!routeMapMetric) {
+                     setList.add(setMetricLine);
+                  }
+               }
+               newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
+               newProcess.getPolicyMetricTypes().put(exportBgpPolicy,
+                     metricType);
+
+            }
+         }
+         else { // export bgp routes without named policy
+            exportBgpPolicy = makeRouteExportPolicy(c,
+                  OSPF_EXPORT_BGP_POLICY_NAME,
+                  OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+                  Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
+                  RoutingProtocol.BGP, PolicyMapAction.PERMIT);
+            newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
+            newProcess.getPolicyMetricTypes().put(exportBgpPolicy, metricType);
+         }
+      }
+
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
       Ip routerId = proc.getRouterId();
       if (routerId == null) {
@@ -1542,7 +1729,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private PolicyMap toPolicyMap(final Configuration c, RouteMap map) {
-      PolicyMap output = new PolicyMap(map.getMapName());
+      PolicyMap output = new PolicyMap(map.getName());
       for (RouteMapClause rmClause : map.getClauses().values()) {
          output.getClauses().add(toPolicyMapClause(c, rmClause));
       }
@@ -1581,9 +1768,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (list == null) {
                _w.redFlag("Reference to nonexistent as-path access-list: "
                      + pathListName);
-               continue;
             }
-            newAsPathMatchSet.add(list);
+            else {
+               IpAsPathAccessList ipAsPathAccessList = _asPathAccessLists
+                     .get(pathListName);
+               ipAsPathAccessList.getReferers().put(pathLine,
+                     "route-map match ip as-path access-list");
+               newAsPathMatchSet.add(list);
+            }
          }
          newLine = new PolicyMapMatchAsPathAccessListLine(newAsPathMatchSet);
          break;
@@ -1596,27 +1788,75 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (list == null) {
                _w.redFlag("Reference to nonexistent community list: "
                      + listName);
-               continue;
             }
-            newCommunityMatchSet.add(list);
+            else {
+               String msg = "match community line";
+               StandardCommunityList standardCommunityList = _standardCommunityLists
+                     .get(listName);
+               if (standardCommunityList != null) {
+                  standardCommunityList.getReferers().put(communityLine, msg);
+               }
+               ExpandedCommunityList expandedCommunityList = _expandedCommunityLists
+                     .get(listName);
+               if (expandedCommunityList != null) {
+                  expandedCommunityList.getReferers().put(communityLine, msg);
+               }
+               newCommunityMatchSet.add(list);
+            }
          }
          newLine = new PolicyMapMatchCommunityListLine(newCommunityMatchSet);
          break;
 
-      case IP_ACCESS_LIST:
+      case IP_ACCESS_LIST: {
          RouteMapMatchIpAccessListLine accessLine = (RouteMapMatchIpAccessListLine) matchLine;
          Set<IpAccessList> newIpAccessMatchSet = new LinkedHashSet<IpAccessList>();
+         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<RouteFilterList>();
+         boolean routing = accessLine.getRouting();
          for (String listName : accessLine.getListNames()) {
-            IpAccessList list = c.getIpAccessLists().get(listName);
+            Object list;
+            IpAccessList ipAccessList = null;
+            RouteFilterList routeFilterList = null;
+            if (routing) {
+               routeFilterList = c.getRouteFilterLists().get(listName);
+               list = routeFilterList;
+            }
+            else {
+               ipAccessList = c.getIpAccessLists().get(listName);
+               list = ipAccessList;
+            }
             if (list == null) {
                _w.redFlag("Reference to nonexistent ip access list: "
                      + listName);
-               continue;
             }
-            newIpAccessMatchSet.add(list);
+            else {
+               String msg = "route-map match ip access-list line";
+               ExtendedAccessList extendedAccessList = _extendedAccessLists
+                     .get(listName);
+               if (extendedAccessList != null) {
+                  extendedAccessList.getReferers().put(accessLine, msg);
+               }
+               StandardAccessList standardAccessList = _standardAccessLists
+                     .get(listName);
+               if (standardAccessList != null) {
+                  standardAccessList.getReferers().put(accessLine, msg);
+               }
+               if (routing) {
+                  newRouteFilterMatchSet.add(routeFilterList);
+               }
+               else {
+                  newIpAccessMatchSet.add(ipAccessList);
+               }
+            }
          }
-         newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);
+         if (routing) {
+            newLine = new PolicyMapMatchRouteFilterListLine(
+                  newRouteFilterMatchSet);
+         }
+         else {
+            newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);
+         }
          break;
+      }
 
       case IP_PREFIX_LIST:
          RouteMapMatchIpPrefixListLine prefixLine = (RouteMapMatchIpPrefixListLine) matchLine;
@@ -1626,9 +1866,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (list == null) {
                _w.redFlag("undefined reference to route filter list: "
                      + prefixListName);
-               continue;
             }
-            newRouteFilterMatchSet.add(list);
+            else {
+               PrefixList prefixList = _prefixLists.get(prefixListName);
+               prefixList.getReferers().put(prefixLine,
+                     "route-map match prefix-list");
+               newRouteFilterMatchSet.add(list);
+            }
          }
          newLine = new PolicyMapMatchRouteFilterListLine(newRouteFilterMatchSet);
          break;
@@ -1654,13 +1898,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
-      Ip ip = fromLine.getSourceIp();
-      long minSubnet = fromLine.getDestinationIp().asLong();
-      long maxSubnet = minSubnet | fromLine.getDestinationWildcard().asLong();
-      int minPrefixLength = fromLine.getDestinationIp().numSubnetBits();
-      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-      int statedPrefixLength = fromLine.getSourceWildcard().inverted()
+      Ip ip = fromLine.getSourceIpWildcard().getIp();
+      long minSubnet = fromLine.getDestinationIpWildcard().getIp().asLong();
+      long maxSubnet = minSubnet
+            | fromLine.getDestinationIpWildcard().getWildcard().asLong();
+      int minPrefixLength = fromLine.getDestinationIpWildcard().getIp()
             .numSubnetBits();
+      int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
+      int statedPrefixLength = fromLine.getSourceIpWildcard().getWildcard()
+            .inverted().numSubnetBits();
       int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
       Prefix prefix = new Prefix(ip, prefixLength);
       return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength,
@@ -1668,7 +1914,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    }
 
    private RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
-      String name = eaList.getId();
+      String name = eaList.getName();
       RouteFilterList newList = new RouteFilterList(name);
       List<RouteFilterLine> lines = new ArrayList<RouteFilterLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
@@ -1746,26 +1992,27 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       allACLs.addAll(_extendedAccessLists.values());
       for (ExtendedAccessList eaList : allACLs) {
          if (usedForRouting(eaList)) {
+            String msg = "used for routing";
+            StandardAccessList parent = eaList.getParent();
+            if (parent != null) {
+               parent.getReferers().put(this, msg);
+            }
+            else {
+               eaList.getReferers().put(this, msg);
+            }
             RouteFilterList rfList = toRouteFilterList(eaList);
             c.getRouteFilterLists().put(rfList.getName(), rfList);
          }
-         else {
-            IpAccessList ipaList = toIpAccessList(eaList);
-            c.getIpAccessLists().put(ipaList.getName(), ipaList);
-         }
+         IpAccessList ipaList = toIpAccessList(eaList);
+         c.getIpAccessLists().put(ipaList.getName(), ipaList);
       }
 
       // convert route maps to policy maps
       Set<RouteMap> routingRouteMaps = getRoutingRouteMaps();
       for (RouteMap map : _routeMaps.values()) {
-         if (map.getIgnore()) {
+         if (map.getIpv6()) {
             continue;
          }
-         // TODO: replace UCLA-SPECIFIC code
-         if (map.getMapName().toLowerCase().endsWith("ipv6")) {
-            continue;
-         }
-
          convertForPurpose(routingRouteMaps, map);
          PolicyMap newMap = toPolicyMap(c, map);
          c.getPolicyMaps().put(newMap.getMapName(), newMap);
@@ -1838,12 +2085,25 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
       }
-
+      markAcls(_lineAccessClassLists, "line access-class list", c);
+      markAcls(_classMapAccessGroups, "class-map access-group", c);
+      markAcls(_ntpAccessGroups, "ntp access-group", c);
+      markAcls(_pimAcls, "pim acl", c);
+      markAcls(_controlPlaneAccessGroups, "control-plane ip access-group", c);
+      markAcls(_managementAccessGroups, "management ip access-group", c);
+      markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
+      markRouteMaps(_pimRouteMaps, "pim route-map", c);
+      // warn about unreferenced data structures
+      warnUnusedRouteMaps();
+      warnUnusedIpAccessLists();
+      warnUnusedPrefixLists();
+      warnUnusedIpAsPathAccessLists();
+      warnUnusedCommunityLists();
       return c;
    }
 
    private boolean usedForRouting(ExtendedAccessList eaList) {
-      String eaListName = eaList.getId();
+      String eaListName = eaList.getName();
       String currentMapName;
       // check ospf policies
       if (_ospfProcess != null) {
@@ -1883,12 +2143,97 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                return true;
             }
          }
-         /*
-          * currentMapName = _bgpProcess.getDefaultInformationOriginateMap(); if
-          * (containsIpAccessList(eaListName, currentMapName)) { return true; }
-          */
       }
       return false;
+   }
+
+   private void warnUnusedCommunityLists() {
+      for (Entry<String, ExpandedCommunityList> e : _expandedCommunityLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         ExpandedCommunityList list = e.getValue();
+         if (list.isUnused()) {
+            _w.redFlag("Unused expanded community-list: \"" + name + "\"");
+         }
+      }
+      for (Entry<String, StandardCommunityList> e : _standardCommunityLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         StandardCommunityList list = e.getValue();
+         if (list.isUnused()) {
+            _w.redFlag("Unused standard community-list: \"" + name + "\"");
+         }
+      }
+   }
+
+   private void warnUnusedIpAccessLists() {
+      for (Entry<String, ExtendedAccessList> e : _extendedAccessLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         ExtendedAccessList acl = e.getValue();
+         if (!acl.getIpv6() && acl.isUnused()) {
+            _w.redFlag("Unused extended access-list: \"" + name + "\"");
+         }
+      }
+      for (Entry<String, StandardAccessList> e : _standardAccessLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         StandardAccessList acl = e.getValue();
+         if (acl.isUnused()) {
+            _w.redFlag("Unused standard access-list: \"" + name + "\"");
+         }
+      }
+   }
+
+   private void warnUnusedIpAsPathAccessLists() {
+      for (Entry<String, IpAsPathAccessList> e : _asPathAccessLists.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         IpAsPathAccessList asPathAccessList = e.getValue();
+         if (asPathAccessList.isUnused()) {
+            _w.redFlag("Unused as-path access-list: \"" + name + "\"");
+         }
+      }
+   }
+
+   private void warnUnusedPrefixLists() {
+      for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         PrefixList prefixList = e.getValue();
+         if (prefixList.isUnused()) {
+            _w.redFlag("Unused prefix-list: \"" + name + "\"");
+         }
+      }
+   }
+
+   private void warnUnusedRouteMaps() {
+      for (Entry<String, RouteMap> e : _routeMaps.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         RouteMap routeMap = e.getValue();
+         if (!routeMap.getIpv6() && routeMap.isUnused()) {
+            _w.redFlag("Unused route-map: \"" + name + "\"");
+         }
+      }
    }
 
 }

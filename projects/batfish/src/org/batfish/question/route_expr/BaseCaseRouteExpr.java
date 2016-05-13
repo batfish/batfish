@@ -1,8 +1,8 @@
 package org.batfish.question.route_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.PrecomputedRoute;
 
 public enum BaseCaseRouteExpr implements RouteExpr {
    ROUTE;

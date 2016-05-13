@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.SubRange;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
 import org.batfish.representation.TcpFlags;
-import org.batfish.util.SubRange;
 
 public class ExtendedAccessListLine implements Serializable {
 
@@ -20,11 +20,9 @@ public class ExtendedAccessListLine implements Serializable {
 
    private String _dstAddressGroup;
 
-   private Ip _dstIp;
+   private IpWildcard _dstIpWildcard;
 
    private List<SubRange> _dstPortRanges;
-
-   private Ip _dstWildcard;
 
    private Set<Integer> _ecns;
 
@@ -36,27 +34,24 @@ public class ExtendedAccessListLine implements Serializable {
 
    private String _srcAddressGroup;
 
-   private Ip _srcIp;
+   private IpWildcard _srcIpWildcard;
 
    private List<SubRange> _srcPortRanges;
-
-   private Ip _srcWildcard;
 
    private List<TcpFlags> _tcpFlags;
 
    public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
-         Ip srcIp, Ip srcWildcard, String srcAddressGroup, Ip dstIp,
-         Ip dstWildcard, String dstAddressGroup, List<SubRange> srcPortRanges,
-         List<SubRange> dstPortRanges, Set<Integer> dscps, Set<Integer> ecns,
-         Integer icmpType, Integer icmpCode, List<TcpFlags> tcpFlags) {
+         IpWildcard srcIpWildcard, String srcAddressGroup,
+         IpWildcard dstIpWildcard, String dstAddressGroup,
+         List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
+         Set<Integer> dscps, Set<Integer> ecns, Integer icmpType,
+         Integer icmpCode, List<TcpFlags> tcpFlags) {
       _action = action;
       _protocol = protocol;
-      _srcIp = srcIp;
-      _srcWildcard = srcWildcard;
+      _srcIpWildcard = srcIpWildcard;
       _srcAddressGroup = srcAddressGroup;
       _dscps = dscps;
-      _dstIp = dstIp;
-      _dstWildcard = dstWildcard;
+      _dstIpWildcard = dstIpWildcard;
       _dstAddressGroup = dstAddressGroup;
       _ecns = ecns;
       _srcPortRanges = srcPortRanges;
@@ -70,12 +65,8 @@ public class ExtendedAccessListLine implements Serializable {
       return _action;
    }
 
-   public Ip getDestinationIp() {
-      return _dstIp;
-   }
-
-   public Ip getDestinationWildcard() {
-      return _dstWildcard;
+   public IpWildcard getDestinationIpWildcard() {
+      return _dstIpWildcard;
    }
 
    public Set<Integer> getDscps() {
@@ -106,12 +97,8 @@ public class ExtendedAccessListLine implements Serializable {
       return _protocol;
    }
 
-   public Ip getSourceIp() {
-      return _srcIp;
-   }
-
-   public Ip getSourceWildcard() {
-      return _srcWildcard;
+   public IpWildcard getSourceIpWildcard() {
+      return _srcIpWildcard;
    }
 
    public String getSrcAddressGroup() {
@@ -130,9 +117,8 @@ public class ExtendedAccessListLine implements Serializable {
    public String toString() {
       String protocolName = _protocol.name();
       return "[Action:" + _action + ", Protocol:" + protocolName + "("
-            + _protocol.number() + ")" + ", SourceIp:" + _srcIp
-            + ", SourceWildcard:" + _srcWildcard + ", DestinationIp:" + _dstIp
-            + ", DestinationWildcard:" + _dstWildcard + ", PortRange:"
+            + _protocol.number() + ")" + ", SourceIpWildcard:" + _srcIpWildcard
+            + ", DestinationIpWildcard:" + _dstIpWildcard + ", PortRange:"
             + _srcPortRanges + "]";
    }
 

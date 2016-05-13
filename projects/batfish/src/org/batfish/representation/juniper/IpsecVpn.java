@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public final class IpsecVpn extends ComparableStructure<String> {
 

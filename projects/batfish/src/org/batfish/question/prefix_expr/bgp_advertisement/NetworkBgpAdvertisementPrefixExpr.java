@@ -1,9 +1,9 @@
 package org.batfish.question.prefix_expr.bgp_advertisement;
 
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Prefix;
 import org.batfish.question.Environment;
 import org.batfish.question.bgp_advertisement_expr.BgpAdvertisementExpr;
-import org.batfish.representation.BgpAdvertisement;
-import org.batfish.representation.Prefix;
 
 public final class NetworkBgpAdvertisementPrefixExpr extends
       BgpAdvertisementPrefixExpr {

@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.batfish.collections.AdvertisementSet;
-import org.batfish.collections.RouteSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.RouteSet;
+import org.batfish.datamodel.questions.QuestionParameters;
 import org.batfish.main.Settings;
 import org.batfish.question.statement.Statement;
 import org.batfish.representation.Configuration;

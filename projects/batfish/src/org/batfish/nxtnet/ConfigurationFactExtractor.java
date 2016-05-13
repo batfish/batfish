@@ -6,8 +6,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.batfish.collections.RoleSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.AsPathAccessList;
 import org.batfish.representation.AsPathAccessListLine;
@@ -17,18 +26,14 @@ import org.batfish.representation.CommunityList;
 import org.batfish.representation.CommunityListLine;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
-import org.batfish.representation.IcmpCode;
-import org.batfish.representation.IcmpType;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
 import org.batfish.representation.IsisProcess;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.OriginType;
 import org.batfish.representation.OspfArea;
 import org.batfish.representation.OspfMetricType;
 import org.batfish.representation.OspfProcess;
@@ -56,16 +61,12 @@ import org.batfish.representation.PolicyMapSetMetricLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 import org.batfish.representation.PolicyMapSetOriginTypeLine;
 import org.batfish.representation.PolicyMapSetLevelLine;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.TcpFlags;
 import org.batfish.representation.Zone;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public class ConfigurationFactExtractor {
 
@@ -604,7 +605,8 @@ public class ConfigurationFactExtractor {
             default:
                throw new BatfishException("bad action");
             }
-            for (Prefix dstIpRange : line.getDestinationIpRanges()) {
+            for (IpWildcard dstIpWildcard : line.getDstIpWildcards()) {
+               Prefix dstIpRange = dstIpWildcard.toPrefix();
                long dstIpStart = dstIpRange.getAddress().asLong();
                long dstIpEnd = dstIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_dstIpRange.append(name + "|" + i + "|"
@@ -628,13 +630,15 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
                      + protocol.number() + "\n");
             }
-            for (Prefix srcIpRange : line.getSourceIpRanges()) {
+            for (IpWildcard srcIpWildcard : line.getSrcIpWildcards()) {
+               Prefix srcIpRange = srcIpWildcard.toPrefix();
                long srcIpStart = srcIpRange.getAddress().asLong();
                long srcIpEnd = srcIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
             }
-            for (Prefix srcOrDstIpRange : line.getSrcOrDstIpRanges()) {
+            for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIpWildcards()) {
+               Prefix srcOrDstIpRange = srcOrDstIpWildcard.toPrefix();
                long srcOrDstIpStart = srcOrDstIpRange.getAddress().asLong();
                long srcOrDstIpEnd = srcOrDstIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcOrDstIpRange.append(name + "|" + i + "|"
@@ -1374,8 +1378,8 @@ public class ConfigurationFactExtractor {
          wSetNetwork.append(network_start + "|" + network_start + "|"
                + network_end + "|" + prefix_length + "\n");
          if (nextHopInt != null) { // use next hop interface instead
-            if (Util.isNullInterface(nextHopInt)) {
-               nextHopInt = Util.NULL_INTERFACE_NAME;
+            if (CommonUtil.isNullInterface(nextHopInt)) {
+               nextHopInt = CommonUtil.NULL_INTERFACE_NAME;
             }
             wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "|"
@@ -1446,7 +1450,7 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetVlanInterface = _factBins.get("SetVlanInterface");
       String hostname = _configuration.getHostname();
       for (String ifaceName : _configuration.getInterfaces().keySet()) {
-         Integer vlan = Util.getInterfaceVlanNumber(ifaceName);
+         Integer vlan = CommonUtil.getInterfaceVlanNumber(ifaceName);
          if (vlan != null) {
             wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan
                   + "\n");

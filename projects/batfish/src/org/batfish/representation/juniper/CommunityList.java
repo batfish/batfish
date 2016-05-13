@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public final class CommunityList extends ComparableStructure<String> implements
       Serializable {

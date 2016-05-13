@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.representation.Prefix;
-import org.batfish.util.ReferenceCountedStructure;
+import org.batfish.common.util.ReferenceCountedStructure;
+import org.batfish.datamodel.Prefix;
 
 public class PrefixList extends ReferenceCountedStructure {
 

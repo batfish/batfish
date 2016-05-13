@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -9,32 +8,45 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.Ip;
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 
-public class BgpProcess implements Serializable {
+public class BgpProcess extends ComparableStructure<Integer> {
 
    private static final int DEFAULT_BGP_DEFAULT_METRIC = 0;
+
    private static final long serialVersionUID = 1L;
 
    private Map<Prefix, BgpAggregateNetwork> _aggregateNetworks;
+
    private Set<BgpPeerGroup> _allPeerGroups;
+
    private boolean _alwaysCompareMed;
+
    private Ip _clusterId;
+
    private boolean _defaultIpv4Activate;
+
    private Map<Prefix, DynamicBgpPeerGroup> _dynamicPeerGroups;
+
    private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
+
    private MasterBgpPeerGroup _masterBgpPeerGroup;
+
    private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
+
    private Set<Prefix> _networks;
+
    private Map<String, NamedBgpPeerGroup> _peerSessions;
-   private int _pid;
+
    private Map<RoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
+
    private Ip _routerId;
 
    public BgpProcess(int procnum) {
-      _pid = procnum;
+      super(procnum);
       _allPeerGroups = new HashSet<BgpPeerGroup>();
       _defaultIpv4Activate = true;
       _dynamicPeerGroups = new HashMap<Prefix, DynamicBgpPeerGroup>();
@@ -137,10 +149,6 @@ public class BgpProcess implements Serializable {
 
    public Map<String, NamedBgpPeerGroup> getPeerSessions() {
       return _peerSessions;
-   }
-
-   public int getPid() {
-      return _pid;
    }
 
    public Map<RoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {

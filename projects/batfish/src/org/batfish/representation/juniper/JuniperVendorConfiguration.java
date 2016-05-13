@@ -13,7 +13,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.batfish.collections.RoleSet;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.BgpNeighbor;
@@ -21,9 +25,9 @@ import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.IkeProposal;
 import org.batfish.representation.InterfaceType;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.IpsecProposal;
 import org.batfish.representation.IsisInterfaceMode;
 import org.batfish.representation.IsisLevel;
@@ -39,13 +43,10 @@ import org.batfish.representation.PolicyMapMatchIpAccessListLine;
 import org.batfish.representation.PolicyMapMatchLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
 import org.batfish.representation.PolicyMapSetNextHopLine;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.VendorConversionException;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public final class JuniperVendorConfiguration extends JuniperConfiguration
       implements VendorConfiguration {
@@ -900,9 +901,15 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                || !sourcePrefixes.isEmpty() || !sourcePortRanges.isEmpty()) {
             String termIpAccessListName = "~" + name + ":" + termName + "~";
             IpAccessListLine line = new IpAccessListLine();
-            line.getDestinationIpRanges().addAll(destinationPrefixes);
+            for (Prefix dstPrefix : destinationPrefixes) {
+               IpWildcard dstWildcard = new IpWildcard(dstPrefix);
+               line.getDstIpWildcards().add(dstWildcard);
+            }
             line.getDstPortRanges().addAll(destinationPortRanges);
-            line.getSourceIpRanges().addAll(sourcePrefixes);
+            for (Prefix srcPrefix : sourcePrefixes) {
+               IpWildcard srcWildcard = new IpWildcard(srcPrefix);
+               line.getSrcIpWildcards().add(srcWildcard);
+            }
             line.getDstPortRanges().addAll(sourcePortRanges);
             line.setAction(LineAction.ACCEPT);
             IpAccessList termIpAccessList = new IpAccessList(
@@ -948,7 +955,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
-      String nextHopInterface = route.getDrop() ? Util.NULL_INTERFACE_NAME
+      String nextHopInterface = route.getDrop() ? CommonUtil.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
       int administrativeCost = route.getMetric();
       Integer oldTag = route.getTag();
@@ -1224,10 +1231,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       // warn about unreferenced data structures
       warnUnreferencedPolicyStatements();
       warnUnreferencedFirewallFilters();
-      warnUnreferencedIkePropsals();
+      warnUnreferencedIkeProposals();
       warnUnreferencedIkePolicies();
       warnUnreferencedIkeGateways();
-      warnUnreferencedIpsecPropsals();
+      warnUnreferencedIpsecProposals();
       warnUnreferencedIpsecPolicies();
       warnUnusedPrefixLists();
       warnEmptyPrefixLists();
@@ -1347,7 +1354,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
          String name = e.getKey();
          FirewallFilter filter = e.getValue();
-         if (filter.isUnused()) {
+         if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
             _w.redFlag("Unused firewall-filter: \"" + name + "\"");
          }
       }
@@ -1373,7 +1380,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
    }
 
-   private void warnUnreferencedIkePropsals() {
+   private void warnUnreferencedIkeProposals() {
       for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
          String name = e.getKey();
          IkeProposal ikeProposal = e.getValue();
@@ -1393,7 +1400,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       }
    }
 
-   private void warnUnreferencedIpsecPropsals() {
+   private void warnUnreferencedIpsecProposals() {
       for (Entry<String, IpsecProposal> e : _ipsecProposals.entrySet()) {
          String name = e.getKey();
          IpsecProposal ipsecProposal = e.getValue();

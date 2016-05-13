@@ -1,8 +1,8 @@
 package org.batfish.representation.vyos;
 
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
 import org.batfish.representation.IkeAuthenticationMethod;
-import org.batfish.representation.Ip;
-import org.batfish.util.ComparableStructure;
 
 public class IpsecPeer extends ComparableStructure<Ip> {
 

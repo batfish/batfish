@@ -1,8 +1,8 @@
 package org.batfish.question.bgp_advertisement_expr;
 
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
-import org.batfish.representation.BgpAdvertisement;
 
 public interface BgpAdvertisementExpr extends Expr {
 

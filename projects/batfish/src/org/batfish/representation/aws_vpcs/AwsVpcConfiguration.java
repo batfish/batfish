@@ -6,14 +6,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

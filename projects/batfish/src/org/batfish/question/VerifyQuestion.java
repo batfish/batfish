@@ -1,5 +1,9 @@
 package org.batfish.question;
 
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.QuestionType;
+
 public class VerifyQuestion extends Question {
 
    private VerifyProgram _program;

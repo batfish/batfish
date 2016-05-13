@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import java.util.Collections;
 import java.util.Set;
 
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Prefix;
 
 public final class AddressAddressBookEntry extends AddressBookEntry {
 

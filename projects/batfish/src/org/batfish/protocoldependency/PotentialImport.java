@@ -1,7 +1,7 @@
 package org.batfish.protocoldependency;
 
-import org.batfish.representation.Prefix;
-import org.batfish.representation.RoutingProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 
 public class PotentialImport implements Comparable<PotentialImport> {
 

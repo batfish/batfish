@@ -1,6 +1,6 @@
 package org.batfish.graphviz;
 
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
 
 public class GraphvizNode extends ComparableStructure<String> {
 

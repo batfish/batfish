@@ -1,13 +1,15 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.representation.OspfMetricType;
-import org.batfish.representation.RoutingProtocol;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
 
    public static final String BGP_AS = "BGP_AS";
 
    public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
+
+   public static final int DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
 
    public static final int DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
 

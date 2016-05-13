@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -59,10 +60,10 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             Prefix prefix = entry.getCidrBlock();
             if (!prefix.equals(Prefix.ZERO)) {
                if (isEgress) {
-                  line.getDestinationIpRanges().add(prefix);
+                  line.getDstIpWildcards().add(new IpWildcard(prefix));
                }
                else {
-                  line.getSourceIpRanges().add(prefix);
+                  line.getSrcIpWildcards().add(new IpWildcard(prefix));
                }
             }
             IpProtocol protocol = IpPermissions.toIpProtocol(entry

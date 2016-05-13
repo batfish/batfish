@@ -3,7 +3,7 @@ package org.batfish.representation;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.batfish.collections.RoleSet;
+import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
 

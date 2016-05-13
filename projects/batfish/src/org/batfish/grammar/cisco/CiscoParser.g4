@@ -103,6 +103,104 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
+cm_end_class_map
+:
+   END_CLASS_MAP NEWLINE
+;
+
+cm_match
+:
+   MATCH cm_match_tail
+;
+
+cm_match_tail
+:
+   cmm_access_group
+   | cmm_cos
+   | cmm_default_inspection_traffic
+   | cmm_dscp
+   | cmm_non_client_nrt
+   | cmm_port
+;
+
+cmm_access_group
+:
+   ACCESS_GROUP
+   (
+      num = DEC
+      |
+      (
+         NAME name = variable
+      )
+   )
+   NEWLINE
+;
+
+cmm_cos
+:
+   COS DEC NEWLINE
+;
+
+cmm_default_inspection_traffic
+:
+   DEFAULT_INSPECTION_TRAFFIC NEWLINE
+;
+
+cmm_dscp
+:
+   IP? DSCP 
+   (
+      dscp_types += dscp_type
+   )+ NEWLINE
+;
+
+cmm_non_client_nrt
+:
+   NON_CLIENT_NRT NEWLINE
+;
+
+cmm_port
+:
+   PORT
+   (
+      TCP
+      | UDP
+   )
+   port_specifier NEWLINE
+;
+
+cp_ip_access_group
+:
+   IP ACCESS_GROUP name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
+;
+
+cp_ip_flow
+:
+   IP FLOW MONITOR name = variable
+   (
+      INPUT
+      | OUTPUT
+   ) NEWLINE
+;
+
+cp_management_plane
+:
+   MANAGEMENT_PLANE NEWLINE mgp_stanza*
+;
+
+cp_service_policy
+:
+   SERVICE_POLICY
+   (
+      INPUT
+      | OUTPUT
+   ) name = variable NEWLINE
+;
+
 del_stanza
 :
    DEL ~NEWLINE* NEWLINE
@@ -165,6 +263,27 @@ ip_default_gateway_stanza
    IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
 ;
 
+ip_pim
+:
+   PIM
+   (
+      VRF vrf = variable
+   )? ip_pim_tail
+;
+
+ip_pim_tail
+:
+   pim_accept_register
+   | pim_accept_rp
+   | pim_null
+   | pim_rp_address
+   | pim_rp_announce_filter
+   | pim_rp_candidate
+   | pim_send_rp_announce
+   | pim_spt_threshold
+   | pim_ssm
+;
+
 ip_route_stanza
 :
    IP ROUTE
@@ -207,14 +326,48 @@ ip_route_vrfc_stanza
    IP ROUTE ip_route_tail
 ;
 
+l_access_class
+:
+   ACCESS_CLASS
+   (
+      (
+         (
+            EGRESS
+            | INGRESS
+         ) name = variable
+      )
+      |
+      (
+         name = variable
+         (
+            IN
+            | OUT
+         )
+      )
+   ) VRF_ALSO? NEWLINE
+;
+
 l2vpn_stanza
 :
    L2VPN NEWLINE xconnect_stanza*
 ;
 
-management_plane_stanza
+mgmt_ip_access_group
 :
-   MANAGEMENT_PLANE NEWLINE mgp_stanza*
+   IP ACCESS_GROUP name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
+;
+
+mgmt_null
+:
+   NO?
+   (
+      IDLE_TIMEOUT
+      | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
 ;
 
 mgp_stanza
@@ -235,13 +388,82 @@ no_ip_access_list_stanza
    NO IP ACCESS_LIST ~NEWLINE* NEWLINE
 ;
 
+ntp_access_group
+:
+   ACCESS_GROUP
+   (
+      IPV4
+      | IPV6
+      |
+      (
+         PEER
+         (
+            name = variable
+         )
+      )
+      |
+      (
+         QUERY_ONLY
+         (
+            name = variable
+         )
+      )
+      |
+      (
+         SERVE
+         (
+            name = variable
+         )
+      )
+      |
+      (
+         SERVE_ONLY
+         (
+            name = variable
+         )
+      )
+      |
+      (
+         VRF vrf = variable
+      )
+   )+ NEWLINE
+;
+
+ntp_common
+:
+   ntp_access_group
+   | ntp_peer
+   | ntp_server
+   | ntp_source
+   | ntp_update_calendar
+;
+
+ntp_peer
+:
+   PEER ~NEWLINE* NEWLINE
+;
+
+ntp_server
+:
+   SERVER ~NEWLINE* NEWLINE
+;
+
+ntp_source
+:
+   SOURCE ~NEWLINE* NEWLINE
+;
+
+ntp_update_calendar
+:
+   UPDATE_CALENDAR ~NEWLINE* NEWLINE
+;
+
 null_stanza
 :
    asa_comment_stanza
    | banner_stanza
    | certificate_stanza
    | del_stanza
-   | management_plane_stanza
    | no_ip_access_list_stanza
    | null_block_stanza
    | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
@@ -529,6 +751,247 @@ os_service
 
 ;
 
+p2p_stanza
+:
+   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
+;
+
+peer_sa_filter
+:
+   SA_FILTER
+   (
+      IN
+      | OUT
+   )
+   (
+      LIST
+      | RP_LIST
+   ) name = variable NEWLINE
+;
+
+peer_stanza
+:
+   PEER IP_ADDRESS NEWLINE
+   (
+      null_block_substanza
+      | peer_sa_filter
+   )*
+;
+
+pim_accept_register
+:
+   ACCEPT_REGISTER
+   (
+      (
+         LIST name = variable
+      )
+      |
+      (
+         ROUTE_MAP name = variable
+      )
+   ) NEWLINE
+;
+
+pim_accept_rp
+:
+   ACCEPT_RP
+   (
+      AUTO_RP
+      | IP_ADDRESS
+   ) name = variable NEWLINE
+;
+
+pim_null
+:
+   (
+      AUTORP
+      | BIDIR_ENABLE
+      | BIDIR_OFFER_INTERVAL
+      | BIDIR_OFFER_LIMIT
+      | BSR_CANDIDATE
+      | DM_FALLBACK
+      | LOG_NEIGHBOR_CHANGES
+      | REGISTER_RATE_LIMIT
+      | REGISTER_SOURCE
+      | SEND_RP_DISCOVERY
+      | V1_RP_REACHABILITY
+   ) ~NEWLINE* NEWLINE
+;
+
+pim_rp_address
+:
+   RP_ADDRESS IP_ADDRESS
+   (
+      OVERRIDE
+      | name = variable
+   ) NEWLINE
+;
+
+pim_rp_announce_filter
+:
+   RP_ANNOUNCE_FILTER
+   (
+      GROUP_LIST
+      | RP_LIST
+   ) name = variable NEWLINE
+;
+
+pim_rp_candidate
+:
+   RP_CANDIDATE interface_name
+   (
+      (
+         GROUP_LIST name = variable
+      )
+      |
+      (
+         INTERVAL DEC
+      )
+      |
+      (
+         PRIORITY DEC
+      )
+   )+ NEWLINE
+;
+
+pim_send_rp_announce
+:
+   SEND_RP_ANNOUNCE interface_name SCOPE ttl = DEC
+   (
+      (
+         GROUP_LIST name = variable
+      )
+      |
+      (
+         INTERVAL DEC
+      )
+   )+ NEWLINE
+;
+
+pim_spt_threshold
+:
+   SPT_THRESHOLD
+   (
+      DEC
+      | INFINITY
+   )
+   (
+      GROUP_LIST name = variable
+   )? NEWLINE
+;
+
+pim_ssm
+:
+   (
+      DEFAULT
+      |
+      (
+         RANGE name = variable
+      )
+   ) NEWLINE
+;
+
+router_multicast_stanza
+:
+   ROUTER
+   (
+      IGMP
+      | MLD
+      | MSDP
+      | PIM
+   ) NEWLINE router_multicast_tail
+;
+
+router_multicast_tail
+:
+   (
+      address_family_multicast_stanza
+      | null_block_substanza
+      | peer_stanza
+   )*
+;
+
+s_class_map
+:
+   CLASS_MAP 
+   (
+      MATCH_ALL 
+      | MATCH_ANY
+   )?
+   name = variable NEWLINE s_class_map_tail*
+;
+
+s_class_map_tail
+:
+   cm_end_class_map
+   | cm_match
+;
+
+s_control_plane
+:
+   CONTROL_PLANE NEWLINE s_control_plane_tail*
+;
+
+s_control_plane_tail
+:
+   cp_ip_access_group
+   | cp_ip_flow
+   | cp_management_plane
+   | cp_service_policy
+;
+
+s_ip
+:
+   IP s_ip_tail
+;
+
+s_ip_tail
+:
+   ip_pim
+;
+
+s_line
+:
+   LINE ~NEWLINE* NEWLINE
+   (
+      l_access_class
+      | description_line
+      | null_block_substanza
+      | null_block_substanza_full
+      | unrecognized_line
+   )*
+;
+
+s_management
+:
+   MANAGEMENT
+   (
+      CONSOLE
+      | SSH
+      | TELNET
+   ) NEWLINE s_management_tail*
+;
+
+s_management_tail
+:
+   mgmt_ip_access_group
+   | mgmt_null
+;
+
+s_ntp
+:
+   NTP s_ntp_tail
+;
+
+s_ntp_tail
+:
+   ntp_common
+   |
+   (
+      NEWLINE ntp_common*
+   )
+;
+
 s_object
 :
    OBJECT s_object_tail
@@ -553,39 +1016,6 @@ s_object_group_tail
    | og_protocol
    | og_service
    | og_user
-;
-
-peer_stanza
-:
-   PEER IP_ADDRESS NEWLINE
-   (
-      null_block_substanza
-   )*
-;
-
-p2p_stanza
-:
-   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
-;
-
-router_multicast_stanza
-:
-   ROUTER
-   (
-      IGMP
-      | MLD
-      | MSDP
-      | PIM
-   ) NEWLINE router_multicast_tail
-;
-
-router_multicast_tail
-:
-   (
-      address_family_multicast_stanza
-      | null_block_substanza
-      | peer_stanza
-   )*
 ;
 
 srlg_interface_numeric_stanza
@@ -624,14 +1054,11 @@ stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
    | null_stanza
-   | s_object
-   | s_object_group
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
    | route_policy_stanza
    | router_bgp_stanza
-   | s_router_eigrp
    | router_isis_stanza
    | router_multicast_stanza
    | router_ospf_stanza
@@ -639,6 +1066,15 @@ stanza
    | router_rip_stanza
    | router_static_stanza
    | rsvp_stanza
+   | s_class_map
+   | s_control_plane
+   | s_ip
+   | s_line
+   | s_management
+   | s_ntp
+   | s_object
+   | s_object_group
+   | s_router_eigrp
    | standard_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza

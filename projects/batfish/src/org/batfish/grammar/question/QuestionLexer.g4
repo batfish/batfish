@@ -66,6 +66,11 @@ AND
    'and'
 ;
 
+ANY
+:
+   'any'
+;
+
 AS_PATH
 :
    'as_path'
@@ -169,6 +174,11 @@ DST_NODE
 DST_PORT
 :
    'dst_port'
+;
+
+EBGP
+:
+   'ebgp'
 ;
 
 EBGP_MULTIHOP
@@ -284,6 +294,11 @@ HAS_SINGLE_REMOTE_BGP_NEIGHBOR
 HAS_SINGLE_REMOTE_IPSEC_VPN
 :
    'has_single_remote_ipsec_vpn'
+;
+
+IBGP
+:
+   'ibgp'
 ;
 
 ICMP_CODE
@@ -441,6 +456,16 @@ NAME
    'name'
 ;
 
+NEIGHBORS
+:
+   'neighbors'
+;
+
+NEIGHBOR_TYPE
+:
+   'neighbor_type'
+;
+
 NETWORK
 :
    'network'
@@ -471,9 +496,19 @@ NODE
    'node'
 ;
 
+NODES
+:
+   'nodes'
+;
+
 NODE_BGP_GENERATED_ROUTE
 :
    'node_bgp_generated_route'
+;
+
+NODE_TYPE
+:
+   'node_type'
 ;
 
 NOT
@@ -519,6 +554,11 @@ PASSIVE
 PERMIT
 :
    'permit'
+;
+
+PHYSICAL
+:
+   'physical'
 ;
 
 PRE_SHARED_KEY_HASH

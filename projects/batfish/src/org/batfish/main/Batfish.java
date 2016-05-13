@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -43,35 +44,67 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.collections.AdvertisementSet;
-import org.batfish.collections.CommunitySet;
-import org.batfish.collections.EdgeSet;
-import org.batfish.collections.FibMap;
-import org.batfish.collections.FibRow;
-import org.batfish.collections.FibSet;
-import org.batfish.collections.InterfaceSet;
-import org.batfish.collections.FunctionSet;
-import org.batfish.collections.IbgpTopology;
-import org.batfish.collections.IpEdge;
-import org.batfish.collections.LBValueTypeList;
-import org.batfish.collections.MultiSet;
-import org.batfish.collections.NodeInterfacePair;
-import org.batfish.collections.NodeIpPair;
-import org.batfish.collections.NodeRoleMap;
-import org.batfish.collections.NodeSet;
-import org.batfish.collections.PolicyRouteFibIpMap;
-import org.batfish.collections.PolicyRouteFibNodeMap;
-import org.batfish.collections.PredicateSemantics;
-import org.batfish.collections.PredicateValueTypeMap;
-import org.batfish.collections.QualifiedNameMap;
-import org.batfish.collections.RoleSet;
-import org.batfish.collections.RouteSet;
-import org.batfish.collections.TreeMultiSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.BfJson;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
+import org.batfish.common.util.StringFilter;
+import org.batfish.common.util.UrlZipExplorer;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowBuilder;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LBValueType;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.StringAnswer;
+import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.CommunitySet;
+import org.batfish.datamodel.collections.EdgeSet;
+import org.batfish.datamodel.collections.FibMap;
+import org.batfish.datamodel.collections.FibRow;
+import org.batfish.datamodel.collections.FibSet;
+import org.batfish.datamodel.collections.FunctionSet;
+import org.batfish.datamodel.collections.IbgpTopology;
+import org.batfish.datamodel.collections.InterfaceSet;
+import org.batfish.datamodel.collections.IpEdge;
+import org.batfish.datamodel.collections.LBValueTypeList;
+import org.batfish.datamodel.collections.MultiSet;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.collections.NodeIpPair;
+import org.batfish.datamodel.collections.NodeRoleMap;
+import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.collections.PolicyRouteFibIpMap;
+import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
+import org.batfish.datamodel.collections.PredicateSemantics;
+import org.batfish.datamodel.collections.PredicateValueTypeMap;
+import org.batfish.datamodel.collections.QualifiedNameMap;
+import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.datamodel.collections.RouteSet;
+import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.DestinationQuestion;
+import org.batfish.datamodel.questions.IngressPathQuestion;
+import org.batfish.datamodel.questions.LocalPathQuestion;
+import org.batfish.datamodel.questions.MultipathQuestion;
+import org.batfish.datamodel.questions.NeighborsQuestion;
+import org.batfish.datamodel.questions.NodesQuestion;
+import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.ReachabilityQuestion;
+import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
+import org.batfish.datamodel.questions.TracerouteQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -106,42 +139,22 @@ import org.batfish.nxtnet.Column;
 import org.batfish.nxtnet.ConfigurationFactExtractor;
 import org.batfish.nxtnet.EntityTable;
 import org.batfish.nxtnet.Facts;
-import org.batfish.nxtnet.LBValueType;
 import org.batfish.nxtnet.NxtnetConstants;
 import org.batfish.nxtnet.PredicateInfo;
 import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
-import org.batfish.question.AclReachabilityQuestion;
-import org.batfish.question.CompareSameNameQuestion;
-import org.batfish.question.DestinationQuestion;
 import org.batfish.question.Environment;
-import org.batfish.question.ReducedReachabilityQuestion;
-import org.batfish.question.IngressPathQuestion;
-import org.batfish.question.LocalPathQuestion;
-import org.batfish.question.MultipathQuestion;
-import org.batfish.question.ProtocolDependenciesQuestion;
-import org.batfish.question.Question;
-import org.batfish.question.QuestionParameters;
-import org.batfish.question.ReachabilityQuestion;
-import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
-import org.batfish.representation.AsPath;
-import org.batfish.representation.AsSet;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.DataPlane;
-import org.batfish.representation.Edge;
-import org.batfish.representation.Flow;
-import org.batfish.representation.FlowBuilder;
 import org.batfish.representation.FlowHistory;
 import org.batfish.representation.FlowTrace;
 import org.batfish.representation.GenericConfigObject;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpsecVpn;
@@ -152,16 +165,11 @@ import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapAction;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
-import org.batfish.util.StringFilter;
-import org.batfish.util.SubRange;
-import org.batfish.util.UrlZipExplorer;
 import org.batfish.util.Util;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -181,6 +189,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -484,7 +494,7 @@ public class Batfish implements AutoCloseable {
          for (int i = 0; i < numErrors; i++) {
             String prefix = "ERROR " + (i + 1) + ": ";
             String msg = errors.get(i);
-            String prefixedMsg = Util.applyPrefix(prefix, msg);
+            String prefixedMsg = CommonUtil.applyPrefix(prefix, msg);
             logger.error(prefixedMsg + "\n");
          }
          throw new ParserBatfishException("Parser error(s)");
@@ -580,6 +590,14 @@ public class Batfish implements AutoCloseable {
 
       case MULTIPATH:
          answerMultipath((MultipathQuestion) question);
+         break;
+
+      case NEIGHBORS:
+         answerNeighbors((NeighborsQuestion) question);
+         break;
+
+      case NODES:
+         answerNodes((NodesQuestion) question);
          break;
 
       case PROTOCOL_DEPENDENCIES:
@@ -917,6 +935,69 @@ public class Batfish implements AutoCloseable {
       dumpTrafficFacts(trafficFactBins);
    }
 
+   private void answerNeighbors(NeighborsQuestion question) {
+      _logger.output("Boohoo bohoo neighbors\n");
+   }
+
+   private void answerNodes(NodesQuestion question) {
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+
+      // collect nodes nodes
+      Pattern nodeRegex;
+
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
+
+      Set<String> nodes = new TreeSet<String>();
+      if (nodeRegex != null) {
+         for (String node : configurations.keySet()) {
+            Matcher nodeMatcher = nodeRegex.matcher(node);
+            if (nodeMatcher.matches()) {
+               nodes.add(node);
+            }
+         }
+      }
+      else {
+         nodes.addAll(configurations.keySet());
+      }
+
+      Answer answer = new Answer();
+      answer.setQuestion(question);
+
+      try {
+         JSONObject jObj = new JSONObject();
+
+         JSONArray nodeList = new JSONArray();
+         jObj.put(BfJson.KEY_NODES, nodeList);
+
+         for (String node : nodes) {
+            JSONObject nodeObject = new JSONObject();
+            nodeObject.put(BfJson.KEY_NODE, configurations.get(node).toJson());
+            nodeList.put(nodeObject);
+         }
+
+         answer.setStatus(AnswerStatus.SUCCESS);
+         answer.addAnswerElement(new StringAnswer(jObj.toString()));
+      }
+      catch (Exception e) {
+         BatfishException be = new BatfishException(
+               "Error in answering NodesQuestion", e);
+
+         answer.setStatus(AnswerStatus.FAILURE);
+         answer.addAnswerElement(new StringAnswer(be.getMessage()));
+      }
+
+      outputAnswer(answer);
+
+   }
+
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
@@ -936,7 +1017,7 @@ public class Batfish implements AutoCloseable {
             dataPlanePath);
 
       // collect ingress nodes
-      Pattern ingressNodeRegex = question.getIngressNodeRegex();
+      Pattern ingressNodeRegex = Pattern.compile(question.getIngressNodeRegex());
       Set<String> activeIngressNodes = new TreeSet<String>();
       if (ingressNodeRegex != null) {
          for (String node : configurations.keySet()) {
@@ -951,7 +1032,7 @@ public class Batfish implements AutoCloseable {
       }
 
       // collect final nodes
-      Pattern finalNodeRegex = question.getFinalNodeRegex();
+      Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
       Set<String> activeFinalNodes = new TreeSet<String>();
       if (finalNodeRegex != null) {
          for (String node : configurations.keySet()) {
@@ -2625,6 +2706,27 @@ public class Batfish implements AutoCloseable {
             envSettings.getNxtnetTrafficOutputDir());
    }
 
+   private void outputAnswer(Answer answer) {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      try {
+         String jsonString = mapper.writeValueAsString(answer);
+         _logger.output(jsonString);
+      }
+      catch (Exception e) {
+         BatfishException be = new BatfishException("Error in sending answer",
+               e);
+         Answer failureAnswer = Answer.failureAnswer(be.getMessage());
+         try {
+            String failureJsonString = mapper.writeValueAsString(failureAnswer);
+            _logger.output(failureJsonString);
+         }
+         catch (Exception e1) {
+            _logger.errorf("Could not serialize failure answer.", e1);
+         }
+      }
+   }
+
    private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
       return parse(parser, _logger, _settings);
    }
@@ -2724,7 +2826,22 @@ public class Batfish implements AutoCloseable {
       _logger.info("Reading question file: \"" + questionPath + "\"...");
       String questionText = Util.readFile(questionFile);
       _logger.info("OK\n");
-      QuestionParameters parameters = parseQuestionParameters();
+
+      try {
+         ObjectMapper mapper = new ObjectMapper();
+         Question question = mapper.readValue(questionText, Question.class);
+         JSONObject parameters = (JSONObject) parseQuestionParameters();
+         question.setJsonParameters(parameters);
+         return question;
+      }
+      catch (IOException e1) {
+         _logger
+               .debugf(
+                     "BF: could not parse as Json question: %s\nWill try old, custom parser.",
+                     e1.getMessage());
+      }
+
+      QuestionParameters parameters = (QuestionParameters) parseQuestionParameters();
       QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
             _settings);
       QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag(),
@@ -2750,7 +2867,7 @@ public class Batfish implements AutoCloseable {
       return extractor.getQuestion();
    }
 
-   private QuestionParameters parseQuestionParameters() {
+   private Object parseQuestionParameters() {
       String questionParametersPath = _settings.getQuestionParametersPath();
       File questionParametersFile = new File(questionParametersPath);
       if (!questionParametersFile.exists()) {
@@ -2761,6 +2878,19 @@ public class Batfish implements AutoCloseable {
             + questionParametersPath + "\"...");
       String questionText = Util.readFile(questionParametersFile);
       _logger.info("OK\n");
+      
+      try {
+         JSONObject jObj = (questionText.trim().isEmpty())? new JSONObject() 
+            : new JSONObject(questionText);               
+         return jObj;   
+      }
+      catch (JSONException e1) {         
+         _logger
+         .debugf(
+               "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
+               e1.getMessage());
+      }
+      
       QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
             questionText, _settings);
       QuestionParametersExtractor extractor = new QuestionParametersExtractor();

@@ -2,9 +2,9 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.datamodel.Ip;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
-import org.batfish.representation.Ip;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapSetNextHopLine;
 

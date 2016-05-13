@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+
 /**
  * Represents a peering with a single router (by ip address) acting as a bgp
  * peer to the router whose configuration's BGP process contains this object

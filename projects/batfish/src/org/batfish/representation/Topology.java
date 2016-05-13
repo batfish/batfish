@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.batfish.collections.EdgeSet;
-import org.batfish.collections.NodeInterfacePair;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.collections.EdgeSet;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Topology implements Serializable {
 

@@ -1,0 +1,39 @@
+#NB: prompt only works in interactive mode
+echo [Will check for unique IP assignments now]
+prompt
+answer example_questions/unique_ip_assignments.q
+
+echo [Will check for self adjacencies now]
+prompt
+answer example_questions/no_self_adjacencies.q
+
+echo [Will check for BGP sessions now]
+prompt
+answer example_questions/bgp_session_check.q
+
+echo [Will check for ACL reachability now]
+prompt
+answer example_questions/acl_reachability.q
+
+echo [Will check for VPN sessions now]
+prompt
+answer example_questions/ipsec_vpn_check.q
+
+echo [Will check for ISIS loopbacks now]
+prompt
+answer example_questions/isis_loopbacks.q
+
+echo [Will check for OSPF loopbacks now]
+prompt
+answer example_questions/ospf_loopbacks.q
+
+echo [Will list nodes with EBGP neighbors]
+prompt
+answer example_questions/print_ebgp_nodes.q
+
+echo [Will check that nodes originate mutually exclusive prefix spaces]
+prompt
+answer example_questions/unique_bgp_prefix_origination.q
+
+
+

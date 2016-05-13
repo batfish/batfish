@@ -3,6 +3,7 @@ package org.batfish.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,14 +15,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
-import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
@@ -36,9 +39,10 @@ import jline.console.completer.StringsCompleter;
 public class Client {
 
    private static final String COMMAND_ANSWER = "answer";
+   private static final String COMMAND_ANSWER_BYTYPE = "answer-bytype";
    private static final String COMMAND_ANSWER_DIFF = "answer-diff";
+   private static final String COMMAND_ANSWER_DIFF_BYTYPE = "answer-diff-bytype";
    private static final String COMMAND_CAT = "cat";
-   // private static final String COMMAND_CHANGE_DIR = "cd";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
    private static final String COMMAND_DEL_CONTAINER = "del-container";
    private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
@@ -64,12 +68,17 @@ public class Client {
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
+   private static final String COMMAND_SHOW_API_KEY = "show-api-key";
+   private static final String COMMAND_SHOW_CONTAINER = "show-container";
+   private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
+   private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DIFF_ENV_PREFIX = "delta";
    private static final String DEFAULT_ENV_NAME = "default";
-   private static final String DEFAULT_TESTRIG_NAME = "default_rig";
+   private static final String DEFAULT_QUESTION_PREFIX = "q";
+   private static final String DEFAULT_TESTRIG_PREFIX = "tr";
 
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
@@ -77,10 +86,16 @@ public class Client {
       Map<String, String> descs = new TreeMap<String, String>();
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question for the default environment");
+            + "\t Answer the question in the file for the default environment");
+      descs.put(COMMAND_ANSWER_BYTYPE, COMMAND_ANSWER_BYTYPE
+              + " <question-type>  [param1=value1 [param2=value2] ...]\n"
+              + "\t Answer the question by type for the differential environment");
       descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
             + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question for the differential environment");
+            + "\t Answer the question in the file for the differential environment");
+      descs.put(COMMAND_ANSWER_DIFF_BYTYPE, COMMAND_ANSWER_DIFF_BYTYPE
+            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
+            + "\t Answer the question by type for the differential environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
       // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
@@ -139,27 +154,18 @@ public class Client {
             + "\t Set the loglevel. Default is output");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
             + "\t Set the current testrig");
+      descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n" 
+    		+ "\t Show API Key");
+      descs.put(COMMAND_SHOW_CONTAINER, COMMAND_SHOW_CONTAINER + "\n" 
+    		+ "\t Show active container");
+      descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
+    		+ "\t Show coordinator host");
+      descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
+    		+ "\t Show active testrig");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
    }
-
-   // private static String joinStrings(String delimiter, String[] parts) {
-   // StringBuilder sb = new StringBuilder();
-   // for (String part : parts) {
-   // sb.append(part + delimiter);
-   // }
-   // String joined = sb.toString();
-   // int joinedLength = joined.length();
-   // String result;
-   // if (joinedLength > 0) {
-   // result = joined.substring(0, joinedLength - delimiter.length());
-   // }
-   // else {
-   // result = joined;
-   // }
-   // return result;
-   // }
 
    private String _currContainerName = null;
    private String _currDiffEnv = null;
@@ -168,7 +174,8 @@ public class Client {
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
-
+   private ConsoleReader _reader;
+   
    private Settings _settings;
 
    private BfCoordWorkHelper _workHelper;
@@ -179,58 +186,134 @@ public class Client {
 
    public Client(Settings settings) {
       _settings = settings;
-   }
-
-   public void run() {
+   
       switch (_settings.getRunMode()) {
       case "batch":
-         if (_settings.getBatchCommandFile() == null) {
-            System.err.println("org.batfish.client: Command file not specified");
-            System.exit(1);
-         }
-         List<String> commands = null;
-         try {
-            commands = Files.readAllLines(
-                  Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
-         } catch (Exception e) {
-            System.err.printf("Exception in reading command file %s: %s",
-                  _settings.getBatchCommandFile(), e.getMessage());
-            System.exit(1);
-         }
-         runBatchMode(commands, null);
-
+         _logger =  new BatfishLogger(_settings.getLogLevel(), false,
+               _settings.getLogFile(), false, false);
          break;
       case "interactive":
-         runInteractiveMode();
+         try {
+            _reader = new ConsoleReader();
+            _reader.setPrompt("batfish> ");
+
+            List<Completer> completors = new LinkedList<Completer>();
+            completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
+
+            for (Completer c : completors) {
+               _reader.addCompleter(c);
+            }
+
+            PrintWriter pWriter = new PrintWriter(_reader.getOutput(), true);
+            OutputStream os = new WriterOutputStream(pWriter);
+            PrintStream ps = new PrintStream(os, true);
+            _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
+         }
+         catch (Exception e) {
+            System.err.printf("Could not initialize client: %s\n", e.getMessage());
+            System.exit(1);
+         }
          break;
       default:
          System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
          System.exit(1);
       }
+   
    }
 
-   private File createParamsFile(String[] words, int startIndex, int endIndex)
+   private void answerType(String questionType, String paramsLine, boolean isDiff) 
+		   throws Exception {
+	   
+      Map<String, String> parameters = parseParams(paramsLine);
+      
+	   String questionString = QuestionHelper.getQuestionString(questionType);	   
+	   _logger.debugf("Question Json:\n%s\n", questionString);
+
+     String parametersString = QuestionHelper.getParametersString(parameters);    
+      _logger.debugf("Parameters Json:\n%s\n", parametersString);
+	      
+	   File questionFile = createTempFile("question", questionString);
+	   
+	   answerFile(questionFile.getAbsolutePath(), parametersString, isDiff);
+	   
+       if (questionFile != null) {
+           questionFile.delete();
+       }	   
+   }
+
+   private Map<String, String> parseParams(String paramsLine) {
+      Map<String,String> parameters = new HashMap<String, String>();
+
+      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
+
+      String[] params = paramsLine.split("\\|");
+            
+      _logger.debugf("Found %d parameters\n", params.length);
+      
+      for (String param : params) {
+         Matcher matcher = pattern.matcher(param);
+
+         while (matcher.find()) {
+            String key = matcher.group(1).trim();
+            String value = matcher.group(2).trim();
+            _logger.debugf("key=%s value=%s\n", key, value);
+            
+            parameters.put(key,  value);
+         }
+      }
+      
+      return parameters;
+   }
+
+   private void answerFile(String questionFile, String paramsLine, boolean isDiff) 
+		   throws Exception {
+	   
+       if (! new File(questionFile).exists()) 
+          throw new FileNotFoundException("Question file not found: " + questionFile);
+       
+       String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID().toString();
+
+       File paramsFile = createTempFile("parameters", paramsLine);
+       
+       // upload the question
+       boolean resultUpload = _workHelper.uploadQuestion(
+             _currContainerName, _currTestrigName, questionName,
+             questionFile, paramsFile.getAbsolutePath());
+
+       if (!resultUpload)
+    	   return;
+    	   
+       _logger.debug("Uploaded question. Answering now.\n");
+
+       // delete the temporary params file
+       if (paramsFile != null) {
+          paramsFile.delete();
+       }
+
+       // answer the question       
+       WorkItem wItemAs = (isDiff) ?
+    		   _workHelper.getWorkItemAnswerDiffQuestion(
+    		             questionName, _currContainerName, _currTestrigName, _currEnv,
+    		             _currDiffEnv) 
+    		   : 
+    		   _workHelper.getWorkItemAnswerQuestion(
+             questionName, _currContainerName, _currTestrigName, _currEnv,
+             _currDiffEnv);
+       execute(wItemAs);
+   }
+   
+   private File createTempFile(String filePrefix, String content)
          throws IOException {
 
-      String paramsLine = Util.joinStrings(" ",
-            Arrays.copyOfRange(words, startIndex, endIndex + 1));
+      File tempFile = Files.createTempFile(filePrefix, null).toFile();
+      _logger.debugf("Creating temporary %s file: %s\n",
+            filePrefix, tempFile.getAbsolutePath());
 
-      File paramFile = Files.createTempFile("params", null).toFile();
-      _logger.debugf("Creating temporary params file: %s\n",
-            paramFile.getAbsolutePath());
-
-      BufferedWriter writer = new BufferedWriter(new FileWriter(paramFile));
-      writer.write("#parameters for the question\n");
-
-      writer.write(paramsLine + "\n");
-
-      // for (int index = startIndex; index <= endIndex; index++) {
-      // writer.write(words[index] + "\n");
-      // }
-
+      BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+      writer.write(content + "\n");
       writer.close();
 
-      return paramFile;
+      return tempFile;
    }
 
    private boolean execute(WorkItem wItem) throws Exception {
@@ -293,15 +376,22 @@ public class Client {
    }
 
    private boolean isSetContainer(boolean printError) {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currContainerName == null) {
          if (printError)
             _logger.errorf("Active container is not set\n");
          return false;
       }
+
       return true;
    }
 
    private boolean isSetDiffEnvironment() {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currDiffEnv == null) {
          _logger.errorf("Active diff environment is not set\n");
          return false;
@@ -310,6 +400,9 @@ public class Client {
    }
 
    private boolean isSetTestrig() {
+      if (!_settings.getSanityCheck()) 
+         return true;
+      
       if (_currTestrigName == null) {
          _logger.errorf("Active testrig is not set\n");
          return false;
@@ -336,85 +429,53 @@ public class Client {
             break;
          }
          case COMMAND_ANSWER: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
             String questionFile = parameters.get(0);
-            String questionName = UUID.randomUUID().toString();
-
-            File paramsFile = null;
-
-            try {
-               paramsFile = createParamsFile(words, 2 + options.size(), words.length - 1);
-            }
-            catch (Exception e) {
-               _logger.error("Could not create params file\n");
-               break;
-            }
-
-            // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(
-                  _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile.getAbsolutePath());
-
-            if (!resultUpload)
-                break;
-
-            _logger.output("Uploaded question. Answering now.\n");
-
-            // delete the temporary params file
-            if (paramsFile != null) {
-               paramsFile.delete();
-            }
-
-            // answer the question
-            WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv,
-                  _currDiffEnv);
-            execute(wItemAs);
-
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
+  
+            answerFile(questionFile, paramsLine, false);            	
             break;
          }
+         case COMMAND_ANSWER_BYTYPE: {
+             if (!isSetTestrig() || !isSetContainer(true)) {
+                break;
+             }
+             
+             String questionType = parameters.get(0);
+             String paramsLine = Util.joinStrings(" ",
+                     Arrays.copyOfRange(words, 2 + options.size(), words.length));
+   
+             answerType(questionType, paramsLine, false);            	
+             break;
+          }
          case COMMAND_ANSWER_DIFF: {
-            if (!isSetContainer(true) || !isSetTestrig() || !isSetDiffEnvironment()) {
+            if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
             String questionFile = parameters.get(0);
-            String questionName = UUID.randomUUID().toString();
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            File paramsFile = null;
-
-            try {
-               paramsFile = createParamsFile(words, options.size() + 2, words.length - 1);
-            }
-            catch (Exception e) {
-               _logger.error("Could not create params file\n");
+            answerFile(questionFile, paramsLine, true);
+            
+            break;
+         }
+         case COMMAND_ANSWER_DIFF_BYTYPE: {
+            if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
-            // upload the question
-            boolean resultUpload = _workHelper.uploadQuestion(
-                  _currContainerName, _currTestrigName, questionName,
-                  questionFile, paramsFile.getAbsolutePath());
+            String questionType = parameters.get(0);
+            String paramsLine = Util.joinStrings(" ",
+                    Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            if (!resultUpload)
-               break;
-
-            _logger.output("Uploaded question. Answering now.\n");
-
-               // delete the temporary params file
-            if (paramsFile != null) {
-               paramsFile.delete();
-            }
-
-            // answer the question
-            WorkItem wItemAs = _workHelper.getWorkItemAnswerDiffQuestion(
-                  questionName, _currContainerName, _currTestrigName, _currEnv,
-                  _currDiffEnv);
-            execute(wItemAs);
-
+            answerType(questionType, paramsLine, true);
+            
             break;
          }
          case COMMAND_CAT: {
@@ -430,23 +491,6 @@ public class Client {
 
             break;
          }
-         // case COMMAND_CHANGE_DIR: {
-         // String dirname = words[1];
-         //
-         // File directory = new File(dirname).getAbsoluteFile();
-         // if (directory.exists())
-         // {
-         // boolean result = (System.setProperty("user.dir",
-         // directory.getAbsolutePath()) != null);
-         // _logger.output("Directory changed to " + dirname + "\n");
-         // }
-         // else
-         // {
-         // _logger.output("Specified directory does not exist\n");
-         // }
-         //
-         // break;
-         // }
          case COMMAND_DEL_CONTAINER: {
             String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
@@ -454,7 +498,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_ENVIRONMENT: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -465,7 +509,7 @@ public class Client {
             break;
          }
          case COMMAND_DEL_QUESTION: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -496,7 +540,7 @@ public class Client {
             break;
          }
          case COMMAND_ECHO: {
-            _logger.outputf("%s\n", Arrays.toString(Arrays.copyOfRange(words, 1, words.length)));
+            _logger.outputf("%s\n", Util.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
             break;
          }
          case COMMAND_GEN_DP: {
@@ -524,9 +568,9 @@ public class Client {
             break;
          }
          case COMMAND_INIT_DIFF_ENV: {
-            if (!isSetContainer(true) || 
-                !isSetTestrig())
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
+            }
 
             //check if we are being asked to not generate the dataplane
             boolean generateDiffDataplane = true;
@@ -577,7 +621,7 @@ public class Client {
 
             String testrigLocation = parameters.get(0);
             String testrigName = (parameters.size() > 1) ? parameters.get(1)
-                  : DEFAULT_TESTRIG_NAME;
+                  : DEFAULT_TESTRIG_PREFIX + "_" + UUID.randomUUID().toString();
 
             //initialize the container if it hasn't been init'd before
             if (!isSetContainer(false)) {
@@ -620,7 +664,7 @@ public class Client {
             break;
          }
          case COMMAND_LIST_ENVIRONMENTS: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -633,7 +677,7 @@ public class Client {
 
          }
          case COMMAND_LIST_QUESTIONS: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
             String[] questionList = _workHelper.listQuestions(
@@ -649,14 +693,20 @@ public class Client {
             break;
          }
          case COMMAND_PROMPT: {
-            _logger.output("\n\n[Press enter to proceed]\n\n");
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            in.readLine();
+            if (_settings.getRunMode() == "interactive") {
+               _logger.output("\n\n[Press enter to proceed]\n\n");
+               BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+               in.readLine();
+            }
             break;
          }
          case COMMAND_PWD: {
             final String dir = System.getProperty("user.dir");
             _logger.output("working directory = " + dir + "\n");
+            break;
+         }
+         case COMMAND_QUIT: {
+            System.exit(0);
             break;
          }
          case COMMAND_SET_CONTAINER: {
@@ -690,8 +740,24 @@ public class Client {
             }
             break;
          }
+         case COMMAND_SHOW_API_KEY: {
+        	 _logger.outputf("Current API Key is %s\n", _settings.getApiKey());
+        	 break;
+         }
+         case COMMAND_SHOW_CONTAINER: {
+        	 _logger.outputf("Current container is %s\n", _currContainerName);
+        	 break;
+         }
+         case COMMAND_SHOW_COORDINATOR_HOST: {
+        	 _logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
+        	 break;
+         }
+         case COMMAND_SHOW_TESTRIG: {
+        	 _logger.outputf("Current testrig is %s\n", _currTestrigName);
+        	 break;
+         }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
-            if (!isSetContainer(true) || !isSetTestrig()) {
+            if (!isSetTestrig() || !isSetContainer(true)) {
                break;
             }
 
@@ -765,8 +831,7 @@ public class Client {
    }
 
    private boolean generateDataplane() throws Exception {
-      if (!isSetContainer(true) || 
-          !isSetTestrig())
+      if (!isSetTestrig() || !isSetContainer(true))
          return false;
 
       // generate the data plane
@@ -777,9 +842,9 @@ public class Client {
    }
 
    private boolean generateDiffDataplane() throws Exception {
-      if (!isSetContainer(true) || 
+      if (!isSetDiffEnvironment() ||
           !isSetTestrig()   || 
-          !isSetDiffEnvironment())
+          !isSetContainer(true))  
           return false;
 
       WorkItem wItemGenDdp = _workHelper
@@ -789,6 +854,10 @@ public class Client {
       return execute(wItemGenDdp);
    }
 
+   public BatfishLogger getLogger() {      
+      return _logger;
+   }
+   
    private void initHelpers() {
 
       String workMgr = _settings.getCoordinatorHost() + ":"
@@ -802,7 +871,6 @@ public class Client {
       while (true) {
          try {
             if (_workHelper.isReachabile()) {
-               _logger.debug("Coordinator appears reachable\n");
                break;
             }
             Thread.sleep(1 * 1000); // 1 second
@@ -813,14 +881,44 @@ public class Client {
       }
    }
    
-   public void runBatchMode(List<String> commands, BatfishLogger logger) {
-       
-      _logger = (logger != null)? logger :
-         new BatfishLogger(_settings.getLogLevel(), false,
-            _settings.getLogFile(), false, false);
-      
+   public void run(List<String> initialCommands) {
       initHelpers();
+
+      _logger.debugf("Will use coordinator at %s://%s\n",
+            (_settings.getUseSsl())? "https" : "http",
+            _settings.getCoordinatorHost());
+
+      processCommands(initialCommands);
       
+      switch (_settings.getRunMode()) {
+      case "batch":
+         if (_settings.getBatchCommandFile() == null) {
+            System.err.println("org.batfish.client: Command file not specified while running in batch mode. Did you mean to run in interactive mode (-runmode interactive)?");
+            System.exit(1);
+         }
+         List<String> commands = null;
+         try {
+            commands = Files.readAllLines(
+                  Paths.get(_settings.getBatchCommandFile()), StandardCharsets.US_ASCII);
+         } catch (Exception e) {
+            System.err.printf("Exception in reading command file %s: %s",
+                  _settings.getBatchCommandFile(), e.getMessage());
+            System.exit(1);
+         }
+         processCommands(commands);
+
+         break;
+      case "interactive":
+         runInteractive();
+         break;
+      default:
+         System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+         System.exit(1);
+      }
+   }
+
+   private void processCommands(List<String> commands) {
+       
       for (String rawLine : commands) {
          String line = rawLine.trim();
          if (line.length() == 0 || line.startsWith("#")) {
@@ -839,44 +937,17 @@ public class Client {
       }
    }
 
-   private void runInteractiveMode() {
+   private void runInteractive() {
       try {
 
-         ConsoleReader reader = new ConsoleReader();
-         reader.setPrompt("batfish> ");
-
-         List<Completer> completors = new LinkedList<Completer>();
-         completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
-
-         for (Completer c : completors) {
-            reader.addCompleter(c);
-         }
-
-         PrintWriter pWriter = new PrintWriter(reader.getOutput(), true);
-         OutputStream os = new WriterOutputStream(pWriter);
-         PrintStream ps = new PrintStream(os, true);
-         _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
-
-         _logger.outputf("Will use coordinator at %s://%s\n",
-               (_settings.getUseSsl())? "https" : "http",
-               _settings.getCoordinatorHost());
-
-         initHelpers();
-         
          String rawLine;
-         while ((rawLine = reader.readLine()) != null) {
+         while ((rawLine = _reader.readLine()) != null) {
             String line = rawLine.trim();
-            // skip over empty lines
-            if (line.length() == 0) {
+            if (line.length() == 0)
                continue;
-            }
-
-            if (line.equals(COMMAND_QUIT)) {
-               break;
-            }
 
             if (line.equals(COMMAND_CLEAR_SCREEN)) {
-               reader.clearScreen();
+               _reader.clearScreen();
                continue;
             }
 

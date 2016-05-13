@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Ip;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
 import org.batfish.question.ip_expr.IpExpr;
-import org.batfish.representation.Ip;
 
 public class AddIpStatement implements Statement {
 

@@ -7,15 +7,16 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.*;
 import org.batfish.main.Warnings;
 import org.batfish.representation.DiffieHellmanGroup;
 import org.batfish.representation.EncryptionAlgorithm;
 import org.batfish.representation.IkeAuthenticationMethod;
-import org.batfish.representation.Ip;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.vyos.BgpNeighbor;
 import org.batfish.representation.vyos.BgpProcess;
@@ -36,7 +37,6 @@ import org.batfish.representation.vyos.RouteMapRule;
 import org.batfish.representation.vyos.StaticNextHopRoute;
 import org.batfish.representation.vyos.VyosConfiguration;
 import org.batfish.representation.vyos.VyosVendorConfiguration;
-import org.batfish.util.Util;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       implements ControlPlaneExtractor {
@@ -661,7 +661,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitS2sat_pre_shared_secret(S2sat_pre_shared_secretContext ctx) {
       String secret = ctx.secret.getText();
       String saltedSecret = secret + SALT;
-      String secretHash = Util.md5Digest(saltedSecret);
+      String secretHash = CommonUtil.md5Digest(saltedSecret);
       _currentIpsecPeer.setAuthenticationPreSharedSecretHash(secretHash);
    }
 

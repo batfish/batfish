@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.batfish.representation.Prefix;
+import org.batfish.datamodel.Prefix;
 import org.batfish.representation.RouteFilterList;
 
 public abstract class RouteFilterLine implements Serializable {

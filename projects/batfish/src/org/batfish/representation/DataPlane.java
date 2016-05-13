@@ -2,10 +2,10 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
-import org.batfish.collections.EdgeSet;
-import org.batfish.collections.FibMap;
-import org.batfish.collections.InterfaceSet;
-import org.batfish.collections.PolicyRouteFibNodeMap;
+import org.batfish.datamodel.collections.EdgeSet;
+import org.batfish.datamodel.collections.FibMap;
+import org.batfish.datamodel.collections.InterfaceSet;
+import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 
 public class DataPlane implements Serializable {
 

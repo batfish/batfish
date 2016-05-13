@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+
 /**
  * Represents a bgp process on a router
  */

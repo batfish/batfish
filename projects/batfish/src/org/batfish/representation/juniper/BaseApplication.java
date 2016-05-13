@@ -6,9 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.main.Warnings;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.util.ComparableStructure;
 
 public class BaseApplication extends ComparableStructure<String> implements
       Application {
@@ -68,9 +68,8 @@ public class BaseApplication extends ComparableStructure<String> implements
       }
       for (Term term : terms) {
          IpAccessListLine newLine = new IpAccessListLine();
-         newLine.getDestinationIpRanges().addAll(
-               srcLine.getDestinationIpRanges());
-         newLine.getSourceIpRanges().addAll(srcLine.getSourceIpRanges());
+         newLine.getDstIpWildcards().addAll(srcLine.getDstIpWildcards());
+         newLine.getSrcIpWildcards().addAll(srcLine.getSrcIpWildcards());
          newLine.setAction(srcLine.getAction());
          term.applyTo(newLine);
          lines.add(newLine);

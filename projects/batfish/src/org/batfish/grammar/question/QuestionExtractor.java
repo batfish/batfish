@@ -14,20 +14,33 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
-import org.batfish.question.AclReachabilityQuestion;
-import org.batfish.question.CompareSameNameQuestion;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.FlowBuilder;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NeighborType;
+import org.batfish.datamodel.NodeType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.NeighborTypeSet;
+import org.batfish.datamodel.collections.NodeTypeSet;
+import org.batfish.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.ForwardingAction;
+import org.batfish.datamodel.questions.IngressPathQuestion;
+import org.batfish.datamodel.questions.LocalPathQuestion;
+import org.batfish.datamodel.questions.MultipathQuestion;
+import org.batfish.datamodel.questions.NeighborsQuestion;
+import org.batfish.datamodel.questions.NodesQuestion;
+import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.ReachabilityQuestion;
+import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
+import org.batfish.datamodel.questions.TracerouteQuestion;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.question.Expr;
-import org.batfish.question.ReducedReachabilityQuestion;
-import org.batfish.question.ForwardingAction;
 import org.batfish.question.GeneratedRoutePrefixExpr;
-import org.batfish.question.IngressPathQuestion;
-import org.batfish.question.LocalPathQuestion;
-import org.batfish.question.MultipathQuestion;
-import org.batfish.question.ProtocolDependenciesQuestion;
-import org.batfish.question.Question;
-import org.batfish.question.QuestionParameters;
-import org.batfish.question.ReachabilityQuestion;
-import org.batfish.question.TracerouteQuestion;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
 import org.batfish.question.bgp_advertisement_expr.BaseCaseBgpAdvertisementExpr;
@@ -232,12 +245,6 @@ import org.batfish.question.string_expr.static_route.StaticRouteStringExpr;
 import org.batfish.question.string_set_expr.StringSetExpr;
 import org.batfish.question.string_set_expr.bgp_advertisement.CommunitiesBgpAdvertisementStringSetExpr;
 import org.batfish.question.string_set_expr.map.KeysMapStringSetExpr;
-import org.batfish.representation.FlowBuilder;
-import org.batfish.representation.Ip;
-import org.batfish.representation.IpProtocol;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
-import org.batfish.util.Util;
 
 public class QuestionExtractor extends QuestionParserBaseListener implements
       BatfishExtractor {
@@ -293,6 +300,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private FlowBuilder _currentFlowBuilder;
 
    private String _flowTag;
+
+   private NeighborsQuestion _neighborsQuestion;
+
+   private NodesQuestion _nodesQuestion;
 
    private QuestionParameters _parameters;
 
@@ -357,6 +368,14 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       else if (ctx.IP_PREFIX() != null) {
          type = VariableType.PREFIX;
          value = new Prefix(ctx.IP_PREFIX().getText());
+      }
+      else if (ctx.neighbor_type() != null) {
+         type = VariableType.NEIGHBOR_TYPE;
+         value = NeighborType.fromName(ctx.neighbor_type().getText());
+      }
+      else if (ctx.node_type() != null) {
+         type = VariableType.NODE_TYPE;
+         value = NodeType.fromName(ctx.node_type().getText());
       }
       else if (ctx.range() != null) {
          type = VariableType.RANGE;
@@ -496,6 +515,52 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterMultipath_question(Multipath_questionContext ctx) {
       MultipathQuestion multipathQuestion = new MultipathQuestion(_parameters);
       _question = multipathQuestion;
+   }
+
+   @Override
+   public void enterNeighbors_constraint_dst_node(
+         Neighbors_constraint_dst_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _neighborsQuestion.setDstNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNeighbors_constraint_neighbor_type(
+         Neighbors_constraint_neighbor_typeContext ctx) {
+      NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
+      _neighborsQuestion.setNeighborTypeSet(new NeighborTypeSet(nType));
+   }
+
+   @Override
+   public void enterNeighbors_constraint_src_node(
+         Neighbors_constraint_src_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _neighborsQuestion.setSrcNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNeighbors_question(Neighbors_questionContext ctx) {
+      _neighborsQuestion = new NeighborsQuestion(_parameters);
+      _question = _neighborsQuestion;
+   }
+
+   @Override
+   public void enterNodes_constraint_node(Nodes_constraint_nodeContext ctx) {
+      String regex = toRegex(ctx.node_constraint());
+      _nodesQuestion.setNodeRegex(regex);
+   }
+
+   @Override
+   public void enterNodes_constraint_node_type(
+         Nodes_constraint_node_typeContext ctx) {
+      NodeType nType = toNodeType(ctx.node_type_constraint());
+      _nodesQuestion.setNodeTypeSet(new NodeTypeSet(nType));
+   }
+
+   @Override
+   public void enterNodes_question(Nodes_questionContext ctx) {
+      _nodesQuestion = new NodesQuestion(_parameters);
+      _question = _nodesQuestion;
    }
 
    @Override
@@ -1583,6 +1648,21 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       }
    }
 
+   private NeighborType toNeighborType(Neighbor_type_constraintContext ctx) {
+      NeighborType nType;
+      if (ctx.neighbor_type() != null) {
+         nType = NeighborType.fromName(ctx.neighbor_type().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         nType = _parameters.getNeighborType(ctx.VARIABLE().getText()
+               .substring(1));
+      }
+      else {
+         throw conversionError(ERR_CONVERT_ACTION, ctx);
+      }
+      return nType;
+   }
+
    private NodeExpr toNodeExpr(Bgp_neighbor_node_exprContext ctx) {
       BgpNeighborExpr caller = toBgpNeighborExpr(ctx.caller);
       if (ctx.bgp_neighbor_owner_node_expr() != null) {
@@ -1620,6 +1700,20 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
          throw conversionError(ERR_CONVERT_NODE, ctx);
       }
 
+   }
+
+   private NodeType toNodeType(Node_type_constraintContext ctx) {
+      NodeType nType;
+      if (ctx.node_type() != null) {
+         nType = NodeType.fromName(ctx.node_type().getText());
+      }
+      else if (ctx.VARIABLE() != null) {
+         nType = _parameters.getNodeType(ctx.VARIABLE().getText().substring(1));
+      }
+      else {
+         throw conversionError(ERR_CONVERT_ACTION, ctx);
+      }
+      return nType;
    }
 
    private PolicyMapClauseExpr toPolicyMapClauseExpr(
@@ -2107,6 +2201,9 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
       case ACTION:
       case BOOLEAN:
+      case NAMED_STRUCT_TYPE:
+      case NEIGHBOR_TYPE:
+      case NODE_TYPE:
       case PROTOCOL:
       case RANGE:
       case REGEX:
@@ -2126,6 +2223,8 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
       case SET_ROUTE_FILTER_LINE:
       case SET_STATIC_ROUTE:
       case SET_STRING:
+      case SET_NODE_TYPE:
+      case SET_NEIGHBOR_TYPE:
       default:
          throw new BatfishException("element type not implemented: "
                + elementType);
@@ -2475,10 +2574,10 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    private StringExpr toStringExpr(Interface_string_exprContext ctx) {
       InterfaceExpr caller = toInterfaceExpr(ctx.caller);
       if (ctx.interface_description_string_expr() != null) {
-         return new NameInterfaceStringExpr(caller);
+         return new DescriptionInterfaceStringExpr(caller);
       }
       else if (ctx.interface_name_string_expr() != null) {
-         return new DescriptionInterfaceStringExpr(caller);
+         return new NameInterfaceStringExpr(caller);
       }
       else {
          throw conversionError(ERR_CONVERT_STRING, ctx);
@@ -2595,7 +2694,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
 
    private StringExpr toStringExpr(String_literal_string_exprContext ctx) {
       String withEscapes = ctx.text;
-      String processed = Util.unescapeJavaString(withEscapes);
+      String processed = CommonUtil.unescapeJavaString(withEscapes);
       return new StringLiteralStringExpr(processed);
    }
 

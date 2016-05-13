@@ -1,7 +1,7 @@
 package org.batfish.representation.vyos;
 
-import org.batfish.representation.Ip;
-import org.batfish.util.ComparableStructure;
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
 
 public class BgpNeighbor extends ComparableStructure<Ip> {
 

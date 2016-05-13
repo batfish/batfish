@@ -1,6 +1,6 @@
 package org.batfish.z3.node;
 
-import org.batfish.representation.Ip;
+import org.batfish.datamodel.Ip;
 import org.batfish.z3.NodProgram;
 
 import com.microsoft.z3.BitVecExpr;

@@ -11,8 +11,8 @@ import java.util.concurrent.Future;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.main.Settings;
-import org.batfish.util.Util;
 
 public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult extends BatfishJobResult<Output>, Output> {
 
@@ -68,7 +68,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
                catch (InterruptedException | ExecutionException e) {
                   throw new BatfishException("Error executing nod job", e);
                }
-               String time = Util.getTime(result.getElapsedTime());
+               String time = CommonUtil.getTime(result.getElapsedTime());
                Throwable failureCause = result.getFailureCause();
                if (failureCause == null) {
                   result.applyTo(output, _logger);

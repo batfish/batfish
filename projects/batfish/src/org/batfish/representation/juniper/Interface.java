@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.representation.Ip;
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IsoAddress;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.SwitchportEncapsulationType;
 import org.batfish.representation.SwitchportMode;
-import org.batfish.util.ComparableStructure;
-import org.batfish.util.SubRange;
 
 public class Interface extends ComparableStructure<String> {
 

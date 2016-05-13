@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.batfish.collections.RoleSet;
-import org.batfish.representation.Ip;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.collections.RoleSet;
 
 public class VyosConfiguration implements Serializable {
 

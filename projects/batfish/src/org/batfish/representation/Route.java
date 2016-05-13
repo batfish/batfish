@@ -2,6 +2,9 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+
 public abstract class Route implements Serializable {
 
    private static final long serialVersionUID = 1L;

@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.representation.Ip;
+import org.batfish.datamodel.Ip;
 
 public class IpBgpGroup extends BgpGroup {
 

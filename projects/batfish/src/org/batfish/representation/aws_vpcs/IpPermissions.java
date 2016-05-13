@@ -6,11 +6,12 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
+import org.batfish.representation.IpWildcard;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.Prefix;
-import org.batfish.util.SubRange;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -70,13 +71,19 @@ public class IpPermissions implements Serializable {
 
    public IpAccessListLine toEgressIpAccessListLine() {
       IpAccessListLine line = toIpAccessListLine();
-      line.getDestinationIpRanges().addAll(_ipRanges);
+      for (Prefix ipRange : _ipRanges) {
+         IpWildcard wildcard = new IpWildcard(ipRange);
+         line.getDstIpWildcards().add(wildcard);
+      }
       return line;
    }
 
    public IpAccessListLine toIngressIpAccessListLine() {
       IpAccessListLine line = toIpAccessListLine();
-      line.getSourceIpRanges().addAll(_ipRanges);
+      for (Prefix ipRange : _ipRanges) {
+         IpWildcard wildcard = new IpWildcard(ipRange);
+         line.getSrcIpWildcards().add(wildcard);
+      }
       return line;
    }
 

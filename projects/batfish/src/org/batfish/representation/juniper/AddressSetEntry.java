@@ -2,9 +2,9 @@ package org.batfish.representation.juniper;
 
 import java.util.Set;
 
+import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Prefix;
-import org.batfish.util.ComparableStructure;
 
 public final class AddressSetEntry extends ComparableStructure<String> {
 

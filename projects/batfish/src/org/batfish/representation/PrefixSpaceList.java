@@ -3,6 +3,8 @@ package org.batfish.representation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.batfish.datamodel.Prefix;
+
 public class PrefixSpaceList {
 
    public static PrefixSpaceList fromRouteFilter(RouteFilterList rf) {

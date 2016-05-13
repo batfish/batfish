@@ -3,8 +3,8 @@ package org.batfish.representation;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.DiffieHellmanGroup;
-import org.batfish.util.ComparableStructure;
 
 public class IpsecPolicy extends ComparableStructure<String> {
 

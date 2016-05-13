@@ -7,34 +7,35 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.batfish.collections.AdvertisementSet;
-import org.batfish.collections.RouteSet;
 import org.batfish.common.BatfishException;
-import org.batfish.grammar.question.VariableType;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.datamodel.collections.AdvertisementSet;
+import org.batfish.datamodel.collections.RouteSet;
+import org.batfish.datamodel.questions.QuestionParameters;
+import org.batfish.datamodel.questions.VariableType;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
-import org.batfish.representation.BgpAdvertisement;
 import org.batfish.representation.BgpNeighbor;
 import org.batfish.representation.BgpProcess;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.GeneratedRoute;
 import org.batfish.representation.Interface;
-import org.batfish.representation.Ip;
 import org.batfish.representation.IpsecVpn;
 import org.batfish.representation.PolicyMap;
 import org.batfish.representation.PolicyMapClause;
 import org.batfish.representation.PolicyMapMatchProtocolLine;
 import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PrecomputedRoute;
-import org.batfish.representation.Prefix;
 import org.batfish.representation.PrefixSpace;
 import org.batfish.representation.RouteFilterLine;
 import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.RoutingProtocol;
 import org.batfish.representation.StaticRoute;
-import org.batfish.representation.BgpAdvertisement.BgpAdvertisementType;
 
 public class Environment {
 
@@ -277,7 +278,10 @@ public class Environment {
          case IP:
          case IPSEC_VPN:
          case MAP:
+         case NAMED_STRUCT_TYPE:
          case NODE:
+         case NEIGHBOR_TYPE:
+         case NODE_TYPE:
          case POLICY_MAP:
          case POLICY_MAP_CLAUSE:
          case PREFIX:
@@ -305,6 +309,8 @@ public class Environment {
          case SET_STATIC_ROUTE:
          case STATIC_ROUTE:
          case STRING:
+         case SET_NODE_TYPE:
+         case SET_NEIGHBOR_TYPE:
          default:
             throw new BatfishException("Unsupported variable type: "
                   + type.toString());

@@ -24,7 +24,7 @@ boolean_community_matches_any_rp_stanza
 
 boolean_community_matches_every_rp_stanza
 :
-   COMMUNITY MATCHES_EVERY name = variable
+   COMMUNITY MATCHES_EVERY rp_community_set
 ;
 
 boolean_destination_rp_stanza
@@ -238,7 +238,7 @@ route_policy_stanza
 route_policy_tail
 :
    (
-      rp_stanza
+      stanzas += rp_stanza
    )* END_POLICY NEWLINE
 ;
 

@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpProtocol;
 import org.batfish.representation.LineAction;
-import org.batfish.representation.NamedPort;
-import org.batfish.util.SubRange;
 
 public enum HostSystemService {
    ALL,

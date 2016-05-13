@@ -502,9 +502,12 @@ public class BfCoordWorkHelper {
    // }
 
    public boolean isReachabile() throws Exception {
+
+      WebTarget webTarget = null;
+
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, "");
+         webTarget = getTarget(client, "");
 
          Response response = webTarget.request().get();
 
@@ -520,8 +523,8 @@ public class BfCoordWorkHelper {
       }
       catch (ProcessingException e) {
          if (e.getMessage().contains("ConnectException")) {
-            _logger.errorf("unable to connect to coordinator at %s\n",
-                  _coordWorkMgr);
+            _logger.errorf("BF-Client: unable to connect to coordinator at %s\n",
+                  webTarget.getUri().toString());
             return false;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
@@ -885,7 +888,7 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger.errorf("File not found: %s or %s\n", qFileName,
+            _logger.errorf("File not found: %s (question file) or %s (temporary params file) \n", qFileName,
                   paramsFilename);
          }
          else {

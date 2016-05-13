@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.Ip;
+
 public class OspfProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
