@@ -2880,8 +2880,9 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
       
       try {
-         JSONObject jObj = new JSONObject(questionText);
-         return jObj;
+         JSONObject jObj = (questionText.trim().isEmpty())? new JSONObject() 
+            : new JSONObject(questionText);               
+         return jObj;   
       }
       catch (JSONException e1) {         
          _logger
