@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.representation.IpAccessList;
 import org.batfish.representation.IpAccessListLine;
 import org.batfish.representation.IpWildcard;

@@ -2,12 +2,7 @@ package org.batfish.client;
 
 import java.util.Map;
 
-import org.batfish.datamodel.questions.CompareSameNameQuestion;
-import org.batfish.datamodel.questions.NeighborsQuestion;
-import org.batfish.datamodel.questions.NodesQuestion;
-import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.QuestionType;
-import org.codehaus.jettison.json.JSONObject;
+import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,32 +14,24 @@ public class QuestionHelper {
 		QuestionType qType = QuestionType.valueOf(questionType);
 		
 		switch (qType) {
+      case ACL_REACHABILITY:
+         return new AclReachabilityQuestion();
       case COMPARE_SAME_NAME:
          return new CompareSameNameQuestion();
       case NEIGHBORS:
          return new NeighborsQuestion();
 		case NODES:
 			return new NodesQuestion();
-		case ACL_REACHABILITY:
-			break;
+      case REACHABILITY:
+         return new ReachabilityQuestion();
 		case DESTINATION:
-			break;
 		case INGRESS_PATH:
-			break;
 		case LOCAL_PATH:
-			break;
 		case MULTIPATH:
-			break;
 		case PROTOCOL_DEPENDENCIES:
-			break;
-		case REACHABILITY:
-			break;
 		case REDUCED_REACHABILITY:
-			break;
 		case TRACEROUTE:
-			break;
 		case VERIFY:
-			break;
 		default:
 			break;
 		}
@@ -70,27 +57,6 @@ public class QuestionHelper {
 		ObjectMapper mapper = new ObjectMapper();		
 		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		
-		String jsonString = mapper.writeValueAsString(question);
-		
-		//String newJson = applyParametersToQuestionJson(jsonString, parameters);
-		      
-		return jsonString;
+		return mapper.writeValueAsString(question);		
 	}
-
-   private static String applyParametersToQuestionJson(String inputJsonString,
-         Map<String, String> parameters) throws Exception {
-
-      JSONObject jObj = new JSONObject(inputJsonString);
-      
-      for (String paramkey : parameters.keySet()) {
-         if (!jObj.has(paramkey)) 
-            throw new Exception("Parameter key " + paramkey + " does not exist in question");
-         
-         jObj.put(paramkey, parameters.get(paramkey));
-      }
-      
-      return jObj.toString(4);
-   }	
-	
-	
 }

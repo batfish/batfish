@@ -1,4 +1,4 @@
-package org.batfish.common.util;
+package org.batfish.datamodel;
 
 import java.io.Serializable;
 

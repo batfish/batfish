@@ -2,8 +2,8 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
-import org.batfish.common.util.SubRange;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.main.Warnings;
 import org.batfish.representation.Configuration;
 import org.batfish.representation.LineAction;

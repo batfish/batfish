@@ -1,7 +1,6 @@
 package org.batfish.grammar.question;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -15,7 +14,6 @@ import org.batfish.grammar.BatfishExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.question.QuestionParser.*;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.SubRange;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.Ip;
@@ -23,6 +21,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.NeighborTypeSet;
 import org.batfish.datamodel.collections.NodeTypeSet;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
@@ -528,7 +528,7 @@ public class QuestionExtractor extends QuestionParserBaseListener implements
    public void enterNeighbors_constraint_neighbor_type(
          Neighbors_constraint_neighbor_typeContext ctx) {
       NeighborType nType = toNeighborType(ctx.neighbor_type_constraint());
-      _neighborsQuestion.setNeighborType(nType);
+      _neighborsQuestion.setNeighborTypeSet(new NeighborTypeSet(nType));
    }
 
    @Override

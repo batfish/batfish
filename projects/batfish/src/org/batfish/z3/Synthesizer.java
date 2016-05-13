@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.SubRange;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IcmpCode;
@@ -20,6 +19,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.FibRow;
