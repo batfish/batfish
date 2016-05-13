@@ -2393,7 +2393,7 @@ HELPER_ADDRESS
    'helper-address'
 ;
 
-HIDDEN
+HIDDEN_LITERAL
 :
    'hidden'
 ;
