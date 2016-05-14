@@ -8,12 +8,12 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.Interface;
-import org.batfish.representation.IpAccessList;
-import org.batfish.representation.IpAccessListLine;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

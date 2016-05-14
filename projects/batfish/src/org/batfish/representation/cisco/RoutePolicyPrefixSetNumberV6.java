@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.representation.Prefix6;
+import org.batfish.datamodel.Prefix6;
 
 public class RoutePolicyPrefixSetNumberV6 extends RoutePolicyPrefixSetInline {
 

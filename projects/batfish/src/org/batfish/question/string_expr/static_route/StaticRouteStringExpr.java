@@ -1,10 +1,10 @@
 package org.batfish.question.string_expr.static_route;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.question.Environment;
 import org.batfish.question.string_expr.BaseStringExpr;
 import org.batfish.question.string_expr.StringExpr;
-import org.batfish.representation.StaticRoute;
 
 public enum StaticRouteStringExpr implements StringExpr {
    STATICROUTE_NEXT_HOP_INTERFACE;

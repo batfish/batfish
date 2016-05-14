@@ -2,11 +2,11 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapSetNextHopLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapSetNextHopLine;
 
 public final class PsThenNextHopIp extends PsThen {
 

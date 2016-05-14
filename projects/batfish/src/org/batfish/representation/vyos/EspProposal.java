@@ -1,7 +1,7 @@
 package org.batfish.representation.vyos;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.representation.EncryptionAlgorithm;
+import org.batfish.datamodel.EncryptionAlgorithm;
 
 public class EspProposal extends ComparableStructure<Integer> {
 

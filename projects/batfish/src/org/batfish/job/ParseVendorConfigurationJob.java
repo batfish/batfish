@@ -16,7 +16,7 @@ import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.main.ConfigurationFormat;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;

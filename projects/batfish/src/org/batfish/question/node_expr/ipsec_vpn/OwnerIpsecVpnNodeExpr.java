@@ -1,9 +1,9 @@
 package org.batfish.question.node_expr.ipsec_vpn;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.question.Environment;
 import org.batfish.question.ipsec_vpn_expr.IpsecVpnExpr;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.IpsecVpn;
 
 public final class OwnerIpsecVpnNodeExpr extends IpsecVpnNodeExpr {
 

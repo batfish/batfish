@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.List;
 
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.IpAccessListLine;
 
 public class FwFromHostService implements Serializable {
 

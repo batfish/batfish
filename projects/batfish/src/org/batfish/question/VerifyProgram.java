@@ -6,12 +6,12 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.questions.QuestionParameters;
 import org.batfish.main.Settings;
 import org.batfish.question.statement.Statement;
-import org.batfish.representation.Configuration;
 
 public class VerifyProgram {
 

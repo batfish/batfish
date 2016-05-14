@@ -3,10 +3,10 @@ package org.batfish.representation.juniper;
 import java.util.Collections;
 
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapSetCommunityLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapSetCommunityLine;
 
 public final class PsThenCommunitySet extends PsThen {
 
@@ -33,7 +33,7 @@ public final class PsThenCommunitySet extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.representation.CommunityList list = c.getCommunityLists()
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
                .get(_name);
          String regex = list.getLines().get(0).getRegex();
          // assuming this is a valid community list for setting, the regex value

@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.representation.DiffieHellmanGroup;
+import org.batfish.datamodel.DiffieHellmanGroup;
 
 public class IpsecPolicy extends ComparableStructure<String> {
 

@@ -1,9 +1,9 @@
 package org.batfish.grammar.topology;
 
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.grammar.topology.BatfishTopologyParser.*;
-import org.batfish.representation.Topology;
 
 public class BatfishTopologyExtractor extends BatfishTopologyParserBaseListener
       implements TopologyExtractor {

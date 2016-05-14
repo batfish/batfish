@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpProcess;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.GeneratedRoute;
 
 public class ForEachNodeBgpGeneratedRouteStatement extends
       ForEachStatement<GeneratedRoute> {

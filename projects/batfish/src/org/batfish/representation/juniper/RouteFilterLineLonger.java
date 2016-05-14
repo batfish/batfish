@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.RouteFilterList;
 
 public class RouteFilterLineLonger extends RouteFilterLine {
 
@@ -24,7 +24,7 @@ public class RouteFilterLineLonger extends RouteFilterLine {
          throw new BatfishException(
                "Route filter prefix length cannot be 'longer' than 32");
       }
-      org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
+      org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
             LineAction.ACCEPT, _prefix, new SubRange(prefixLength + 1, 32));
       rfl.addLine(line);
    }

@@ -2,10 +2,10 @@ package org.batfish.representation.vyos;
 
 import java.io.Serializable;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
 
 public interface RouteMapMatch extends Serializable {
 

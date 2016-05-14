@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapClauseMatchInterfaceLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapClauseMatchInterfaceLine;
 
 public final class PsFromInterface extends PsFrom {
 

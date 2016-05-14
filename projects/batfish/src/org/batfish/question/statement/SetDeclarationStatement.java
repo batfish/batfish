@@ -4,21 +4,21 @@ import java.util.HashSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.questions.VariableType;
 import org.batfish.main.Settings;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.Interface;
-import org.batfish.representation.IpsecVpn;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PrefixSpace;
-import org.batfish.representation.RouteFilterLine;
-import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.StaticRoute;
 
 public class SetDeclarationStatement implements Statement {
 

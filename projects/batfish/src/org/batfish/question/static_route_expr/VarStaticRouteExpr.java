@@ -1,7 +1,7 @@
 package org.batfish.question.static_route_expr;
 
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.StaticRoute;
 
 public final class VarStaticRouteExpr extends BaseStaticRouteExpr {
 

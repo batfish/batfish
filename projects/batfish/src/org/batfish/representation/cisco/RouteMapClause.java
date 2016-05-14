@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.representation.LineAction;
+import org.batfish.datamodel.LineAction;
 
 public class RouteMapClause implements Serializable {
 

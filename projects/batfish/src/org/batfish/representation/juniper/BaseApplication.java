@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.IpAccessListLine;
 
 public class BaseApplication extends ComparableStructure<String> implements
       Application {

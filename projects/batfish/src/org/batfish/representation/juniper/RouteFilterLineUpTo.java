@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.RouteFilterList;
 
 public final class RouteFilterLineUpTo extends RouteFilterLine {
 
@@ -22,7 +22,7 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
    @Override
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
-      org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
+      org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
             LineAction.ACCEPT, _prefix, new SubRange(prefixLength,
                   _maxPrefixLength));
       rfl.addLine(line);

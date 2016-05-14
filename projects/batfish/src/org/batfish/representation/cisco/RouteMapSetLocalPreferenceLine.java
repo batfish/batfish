@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.PolicyMapSetLocalPreferenceLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapSetLine;
-import org.batfish.representation.PolicyMapSetLocalPreferenceLine;
 
 public class RouteMapSetLocalPreferenceLine extends RouteMapSetLine {
 

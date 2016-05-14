@@ -3,7 +3,7 @@ package org.batfish.job;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.batfish.main.ConfigurationFormat;
+import org.batfish.datamodel.ConfigurationFormat;
 
 public final class Format {
 

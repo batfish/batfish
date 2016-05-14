@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.representation.DiffieHellmanGroup;
+import org.batfish.datamodel.DiffieHellmanGroup;
 
 public class EspGroup extends ComparableStructure<String> {
 

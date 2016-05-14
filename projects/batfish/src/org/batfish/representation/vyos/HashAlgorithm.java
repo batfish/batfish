@@ -1,8 +1,8 @@
 package org.batfish.representation.vyos;
 
 import org.batfish.common.BatfishException;
-import org.batfish.representation.IkeAuthenticationAlgorithm;
-import org.batfish.representation.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 
 public enum HashAlgorithm {
    MD5,

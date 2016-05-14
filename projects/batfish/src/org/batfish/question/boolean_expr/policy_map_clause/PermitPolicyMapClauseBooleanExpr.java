@@ -1,9 +1,9 @@
 package org.batfish.question.boolean_expr.policy_map_clause;
 
+import org.batfish.datamodel.PolicyMapAction;
+import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.question.Environment;
 import org.batfish.question.policy_map_clause_expr.PolicyMapClauseExpr;
-import org.batfish.representation.PolicyMapAction;
-import org.batfish.representation.PolicyMapClause;
 
 public class PermitPolicyMapClauseBooleanExpr extends
       PolicyMapClauseBooleanExpr {

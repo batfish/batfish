@@ -2,10 +2,10 @@ package org.batfish.representation.cisco;
 
 import java.util.List;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapSetAsPathPrependLine;
+import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapSetAsPathPrependLine;
-import org.batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 

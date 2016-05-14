@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.PolicyMap;
 import org.batfish.question.Environment;
-import org.batfish.representation.OspfProcess;
-import org.batfish.representation.PolicyMap;
 
 public class ForEachOspfOutboundPolicyStatement extends
       ForEachStatement<PolicyMap> {

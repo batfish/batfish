@@ -2,12 +2,12 @@ package org.batfish.representation.mrv;
 
 import java.util.Set;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.VendorConversionException;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.VendorConversionException;
 
 public class MrvVendorConfiguration extends MrvConfiguration implements
       VendorConfiguration {

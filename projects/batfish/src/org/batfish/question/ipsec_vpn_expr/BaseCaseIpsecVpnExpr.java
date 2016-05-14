@@ -1,8 +1,8 @@
 package org.batfish.question.ipsec_vpn_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.question.Environment;
-import org.batfish.representation.IpsecVpn;
 
 public enum BaseCaseIpsecVpnExpr implements IpsecVpnExpr {
    IPSEC_VPN,

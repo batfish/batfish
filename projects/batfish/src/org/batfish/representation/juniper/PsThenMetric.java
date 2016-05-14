@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapSetMetricLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapSetMetricLine;
 
 public final class PsThenMetric extends PsThen {
 

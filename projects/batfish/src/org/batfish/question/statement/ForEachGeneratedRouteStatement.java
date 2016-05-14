@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.GeneratedRoute;
 
 public class ForEachGeneratedRouteStatement extends
       ForEachStatement<GeneratedRoute> {

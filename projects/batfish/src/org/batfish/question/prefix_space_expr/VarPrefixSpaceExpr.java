@@ -1,7 +1,7 @@
 package org.batfish.question.prefix_space_expr;
 
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.question.Environment;
-import org.batfish.representation.PrefixSpace;
 
 public final class VarPrefixSpaceExpr extends BasePrefixSpaceExpr {
 

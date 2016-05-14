@@ -1,8 +1,8 @@
 package org.batfish.question.policy_map_expr;
 
+import org.batfish.datamodel.PolicyMap;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
-import org.batfish.representation.PolicyMap;
 
 public interface PolicyMapExpr extends Expr {
 

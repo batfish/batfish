@@ -6,25 +6,25 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapAction;
+import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.Prefix;
-import org.batfish.main.ConfigurationFormat;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.VendorConversionException;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.IkeGateway;
-import org.batfish.representation.IkePolicy;
-import org.batfish.representation.IpsecPolicy;
-import org.batfish.representation.IpsecProposal;
-import org.batfish.representation.IpsecProtocol;
-import org.batfish.representation.IpsecVpn;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapAction;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.RouteFilterLine;
-import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.VendorConversionException;
 
 public class VyosVendorConfiguration extends VyosConfiguration implements
       VendorConfiguration {
@@ -38,7 +38,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
 
    private ConfigurationFormat _format;
 
-   private transient Map<Ip, org.batfish.representation.Interface> _ipToInterfaceMap;
+   private transient Map<Ip, org.batfish.datamodel.Interface> _ipToInterfaceMap;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -48,7 +48,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       for (Entry<String, Interface> e : _interfaces.entrySet()) {
          String name = e.getKey();
          Interface iface = e.getValue();
-         org.batfish.representation.Interface newIface = toInterface(iface);
+         org.batfish.datamodel.Interface newIface = toInterface(iface);
          _c.getInterfaces().put(name, newIface);
       }
    }
@@ -88,7 +88,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
          newIkeGateway.setAddress(peerAddress);
          Ip localAddress = ipsecPeer.getLocalAddress();
-         org.batfish.representation.Interface externalInterface = _ipToInterfaceMap
+         org.batfish.datamodel.Interface externalInterface = _ipToInterfaceMap
                .get(localAddress);
          if (externalInterface == null) {
             _w.redFlag("Could not determine external interface for vpn \""
@@ -101,7 +101,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
 
          // bind interface
          String bindInterfaceName = ipsecPeer.getBindInterface();
-         org.batfish.representation.Interface newBindInterface = _c
+         org.batfish.datamodel.Interface newBindInterface = _c
                .getInterfaces().get(bindInterfaceName);
          if (newBindInterface != null) {
             Interface bindInterface = _interfaces.get(bindInterfaceName);
@@ -140,7 +140,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
                String newIkeProposalName = ikeGroupName + ":"
                      + Integer.toString(ikeProposalEntry.getKey());
                IkeProposal ikeProposal = ikeProposalEntry.getValue();
-               org.batfish.representation.IkeProposal newIkeProposal = new org.batfish.representation.IkeProposal(
+               org.batfish.datamodel.IkeProposal newIkeProposal = new org.batfish.datamodel.IkeProposal(
                      newIkeProposalName);
                _c.getIkeProposals().put(newIkeProposalName, newIkeProposal);
                newIkePolicy.getProposals().put(newIkeProposalName,
@@ -230,9 +230,9 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       _format = format;
    }
 
-   private org.batfish.representation.Interface toInterface(Interface iface) {
+   private org.batfish.datamodel.Interface toInterface(Interface iface) {
       String name = iface.getName();
-      org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
+      org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             name, _c);
       newIface.setActive(true); // TODO: may have to change
       newIface.setBandwidth(iface.getBandwidth());
@@ -279,7 +279,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
-      _ipToInterfaceMap = new HashMap<Ip, org.batfish.representation.Interface>();
+      _ipToInterfaceMap = new HashMap<Ip, org.batfish.datamodel.Interface>();
       _w = warnings;
       _c = new Configuration(_hostname);
       _c.setVendor(_format);

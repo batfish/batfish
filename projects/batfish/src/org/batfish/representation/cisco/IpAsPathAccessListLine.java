@@ -3,10 +3,10 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.List;
 
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.AsPathAccessList;
-import org.batfish.representation.AsPathAccessListLine;
-import org.batfish.representation.LineAction;
 
 public class IpAsPathAccessListLine implements Serializable {
 

@@ -1,8 +1,8 @@
 package org.batfish.question.bgp_neighbor_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpNeighbor;
 
 public enum BaseCaseBgpNeighborExpr implements BgpNeighborExpr {
    BGP_NEIGHBOR,

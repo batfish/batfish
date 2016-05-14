@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.PolicyMapSetCommunityLine;
+import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.CommunityList;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.PolicyMapSetCommunityLine;
-import org.batfish.representation.PolicyMapSetLine;
 
 public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
 

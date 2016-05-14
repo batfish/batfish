@@ -1,8 +1,8 @@
 package org.batfish.question.route_filter_line_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.question.Environment;
-import org.batfish.representation.RouteFilterLine;
 
 public enum BaseCaseRouterFilterLineExpr implements RouteFilterLineExpr {
    LINE;

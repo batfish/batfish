@@ -2,12 +2,12 @@ package org.batfish.grammar.flatvyos;
 
 import java.util.Collections;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.RouteFilterList;
 import org.batfish.representation.vyos.RouteMapMatch;
 
 public class RouteMapMatchPrefixList implements RouteMapMatch {

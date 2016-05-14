@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -46,7 +45,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.BfJson;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
@@ -56,17 +54,37 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
+import org.batfish.datamodel.FlowHistory;
+import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.GenericConfigObject;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LBValueType;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapAction;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.StringAnswer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -145,29 +163,9 @@ import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.Environment;
+import org.batfish.question.NodesAnswer;
 import org.batfish.question.VerifyProgram;
 import org.batfish.question.VerifyQuestion;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.BgpProcess;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.DataPlane;
-import org.batfish.representation.FlowHistory;
-import org.batfish.representation.FlowTrace;
-import org.batfish.representation.GenericConfigObject;
-import org.batfish.representation.Interface;
-import org.batfish.representation.IpAccessList;
-import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpsecVpn;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.OspfArea;
-import org.batfish.representation.OspfProcess;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapAction;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.RouteFilterLine;
-import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.Topology;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.Util;
@@ -597,7 +595,7 @@ public class Batfish implements AutoCloseable {
          break;
 
       case NODES:
-         answerNodes((NodesQuestion) question);
+         outputAnswer(new NodesAnswer(this, (NodesQuestion) question));
          break;
 
       case PROTOCOL_DEPENDENCIES:
@@ -939,65 +937,6 @@ public class Batfish implements AutoCloseable {
       _logger.output("Boohoo bohoo neighbors\n");
    }
 
-   private void answerNodes(NodesQuestion question) {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-
-      // collect nodes nodes
-      Pattern nodeRegex;
-
-      try {
-         nodeRegex = Pattern.compile(question.getNodeRegex());
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
-      }
-
-      Set<String> nodes = new TreeSet<String>();
-      if (nodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher nodeMatcher = nodeRegex.matcher(node);
-            if (nodeMatcher.matches()) {
-               nodes.add(node);
-            }
-         }
-      }
-      else {
-         nodes.addAll(configurations.keySet());
-      }
-
-      Answer answer = new Answer();
-      answer.setQuestion(question);
-
-      try {
-         JSONObject jObj = new JSONObject();
-
-         JSONArray nodeList = new JSONArray();
-         jObj.put(BfJson.KEY_NODES, nodeList);
-
-         for (String node : nodes) {
-            JSONObject nodeObject = new JSONObject();
-            nodeObject.put(BfJson.KEY_NODE, configurations.get(node).toJson());
-            nodeList.put(nodeObject);
-         }
-
-         answer.setStatus(AnswerStatus.SUCCESS);
-         answer.addAnswerElement(new StringAnswer(jObj.toString()));
-      }
-      catch (Exception e) {
-         BatfishException be = new BatfishException(
-               "Error in answering NodesQuestion", e);
-
-         answer.setStatus(AnswerStatus.FAILURE);
-         answer.addAnswerElement(new StringAnswer(be.getMessage()));
-      }
-
-      outputAnswer(answer);
-
-   }
-
    private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
@@ -1293,7 +1232,7 @@ public class Batfish implements AutoCloseable {
       checkControlPlaneFacts(envSettings);
    }
 
-   private void checkConfigurations() {
+   public void checkConfigurations() {
       String serializedConfigPath = _settings.getSerializeIndependentPath();
       File dir = new File(serializedConfigPath);
       File[] serializedConfigs = dir.listFiles();
@@ -2716,7 +2655,7 @@ public class Batfish implements AutoCloseable {
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
-         Answer failureAnswer = Answer.failureAnswer(be.getMessage());
+         Answer failureAnswer = Answer.failureAnswer(e.getMessage());
          try {
             String failureJsonString = mapper.writeValueAsString(failureAnswer);
             _logger.output(failureJsonString);
@@ -2724,6 +2663,7 @@ public class Batfish implements AutoCloseable {
          catch (Exception e1) {
             _logger.errorf("Could not serialize failure answer.", e1);
          }
+         throw be;
       }
    }
 
@@ -2878,19 +2818,19 @@ public class Batfish implements AutoCloseable {
             + questionParametersPath + "\"...");
       String questionText = Util.readFile(questionParametersFile);
       _logger.info("OK\n");
-      
+
       try {
-         JSONObject jObj = (questionText.trim().isEmpty())? new JSONObject() 
-            : new JSONObject(questionText);               
-         return jObj;   
+         JSONObject jObj = (questionText.trim().isEmpty())? new JSONObject()
+            : new JSONObject(questionText);
+         return jObj;
       }
-      catch (JSONException e1) {         
+      catch (JSONException e1) {
          _logger
          .debugf(
                "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
                e1.getMessage());
       }
-      
+
       QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
             questionText, _settings);
       QuestionParametersExtractor extractor = new QuestionParametersExtractor();
