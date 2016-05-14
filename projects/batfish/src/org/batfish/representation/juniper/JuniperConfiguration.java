@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.representation.IkeProposal;
-import org.batfish.representation.IpsecProposal;
-import org.batfish.representation.LineAction;
+import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.LineAction;
 
 public class JuniperConfiguration implements Serializable {
 

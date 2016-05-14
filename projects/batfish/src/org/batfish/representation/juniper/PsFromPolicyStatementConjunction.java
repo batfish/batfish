@@ -3,11 +3,11 @@ package org.batfish.representation.juniper;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchPolicyConjunctionLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchPolicyConjunctionLine;
 
 public final class PsFromPolicyStatementConjunction extends PsFrom {
 

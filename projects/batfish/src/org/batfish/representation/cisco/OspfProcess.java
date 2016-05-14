@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.representation.OspfMetricType;
 
 public class OspfProcess implements Serializable {
 

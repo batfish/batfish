@@ -1,8 +1,8 @@
 package org.batfish.question.node_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
 import org.batfish.question.Environment;
-import org.batfish.representation.Configuration;
 
 public class VarNodeExpr extends BaseNodeExpr {
 

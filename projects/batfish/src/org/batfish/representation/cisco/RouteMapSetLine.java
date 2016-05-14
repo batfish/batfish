@@ -2,9 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapSetLine;
 
 public abstract class RouteMapSetLine implements Serializable {
 

@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishLogger;
-import org.batfish.representation.IpAccessListLine;
+import org.batfish.datamodel.IpAccessListLine;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

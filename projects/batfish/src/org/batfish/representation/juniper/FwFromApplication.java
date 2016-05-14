@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.IpAccessListLine;
 
 public final class FwFromApplication implements Serializable {
 

@@ -1,8 +1,8 @@
 package org.batfish.question.prefix_space_expr.prefix_space;
 
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.question.Environment;
 import org.batfish.question.prefix_space_expr.PrefixSpaceExpr;
-import org.batfish.representation.PrefixSpace;
 
 public class IntersectionPrefixSpacePrefixSpaceExpr extends
       PrefixSpacePrefixSpaceExpr {

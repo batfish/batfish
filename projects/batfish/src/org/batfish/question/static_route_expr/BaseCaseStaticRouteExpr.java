@@ -1,8 +1,8 @@
 package org.batfish.question.static_route_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.question.Environment;
-import org.batfish.representation.StaticRoute;
 
 public enum BaseCaseStaticRouteExpr implements StaticRouteExpr {
    STATIC_ROUTE;

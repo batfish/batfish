@@ -1,8 +1,8 @@
 package org.batfish.question.node_expr;
 
+import org.batfish.datamodel.Configuration;
 import org.batfish.question.Environment;
 import org.batfish.question.Expr;
-import org.batfish.representation.Configuration;
 
 public interface NodeExpr extends Expr {
 

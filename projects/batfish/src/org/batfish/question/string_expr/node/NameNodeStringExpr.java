@@ -1,9 +1,9 @@
 package org.batfish.question.string_expr.node;
 
+import org.batfish.datamodel.Configuration;
 import org.batfish.question.Environment;
 import org.batfish.question.node_expr.NodeExpr;
 import org.batfish.question.string_expr.BaseStringExpr;
-import org.batfish.representation.Configuration;
 
 public class NameNodeStringExpr extends BaseStringExpr {
 

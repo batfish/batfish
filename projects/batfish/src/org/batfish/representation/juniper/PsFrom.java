@@ -2,9 +2,9 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
 
 public abstract class PsFrom implements Serializable {
 

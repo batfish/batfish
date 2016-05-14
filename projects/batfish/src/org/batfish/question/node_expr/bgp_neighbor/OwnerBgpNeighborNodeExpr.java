@@ -1,9 +1,9 @@
 package org.batfish.question.node_expr.bgp_neighbor;
 
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.Configuration;
 import org.batfish.question.Environment;
 import org.batfish.question.bgp_neighbor_expr.BgpNeighborExpr;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.Configuration;
 
 public final class OwnerBgpNeighborNodeExpr extends BgpNeighborNodeExpr {
 

@@ -1,7 +1,7 @@
 package org.batfish.question.route_filter_expr;
 
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.question.Environment;
-import org.batfish.representation.RouteFilterList;
 
 public final class VarRouteFilterExpr extends BaseRouteFilterExpr {
 

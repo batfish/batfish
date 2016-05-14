@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.IsisInterfaceMode;
-import org.batfish.representation.SwitchportEncapsulationType;
-import org.batfish.representation.SwitchportMode;
+import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 
 public class Interface extends ComparableStructure<String> {
 

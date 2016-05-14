@@ -1,8 +1,8 @@
 package org.batfish.question.interface_expr;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Interface;
 import org.batfish.question.Environment;
-import org.batfish.representation.Interface;
 
 public class VarInterfaceExpr extends BaseInterfaceExpr {
 

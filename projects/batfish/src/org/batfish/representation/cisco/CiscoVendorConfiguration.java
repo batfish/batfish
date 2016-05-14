@@ -12,51 +12,51 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.CommunityList;
+import org.batfish.datamodel.CommunityListLine;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.IsisLevel;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfMetricType;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapAction;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchAsPathAccessListLine;
+import org.batfish.datamodel.PolicyMapMatchCommunityListLine;
+import org.batfish.datamodel.PolicyMapMatchIpAccessListLine;
+import org.batfish.datamodel.PolicyMapMatchLine;
+import org.batfish.datamodel.PolicyMapMatchPolicyLine;
+import org.batfish.datamodel.PolicyMapMatchProtocolLine;
+import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
+import org.batfish.datamodel.PolicyMapMatchTagLine;
+import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
+import org.batfish.datamodel.PolicyMapSetCommunityLine;
+import org.batfish.datamodel.PolicyMapSetLevelLine;
+import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.PolicyMapSetMetricLine;
+import org.batfish.datamodel.PolicyMapSetType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.VendorConversionException;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.main.ConfigurationFormat;
 import org.batfish.main.Warnings;
-import org.batfish.representation.AsPathAccessList;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.CommunityList;
-import org.batfish.representation.CommunityListLine;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.GeneratedRoute;
-import org.batfish.representation.IpAccessList;
-import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpWildcard;
-import org.batfish.representation.IsisInterfaceMode;
-import org.batfish.representation.IsisLevel;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.OspfArea;
-import org.batfish.representation.OspfMetricType;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapAction;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchAsPathAccessListLine;
-import org.batfish.representation.PolicyMapMatchCommunityListLine;
-import org.batfish.representation.PolicyMapMatchIpAccessListLine;
-import org.batfish.representation.PolicyMapMatchLine;
-import org.batfish.representation.PolicyMapMatchPolicyLine;
-import org.batfish.representation.PolicyMapMatchProtocolLine;
-import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PolicyMapMatchTagLine;
-import org.batfish.representation.PolicyMapSetAddCommunityLine;
-import org.batfish.representation.PolicyMapSetCommunityLine;
-import org.batfish.representation.PolicyMapSetLine;
-import org.batfish.representation.PolicyMapSetMetricLine;
-import org.batfish.representation.PolicyMapSetLevelLine;
-import org.batfish.representation.PolicyMapSetType;
-import org.batfish.representation.RouteFilterLine;
-import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.SwitchportEncapsulationType;
-import org.batfish.representation.TcpFlags;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.VendorConversionException;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration
       implements VendorConfiguration {
@@ -223,7 +223,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          if (processRouterId.asLong() == 0) {
-            for (org.batfish.representation.Interface currentInterface : c
+            for (org.batfish.datamodel.Interface currentInterface : c
                   .getInterfaces().values()) {
                Prefix prefix = currentInterface.getPrefix();
                if (prefix != null) {
@@ -406,9 +406,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newList;
    }
 
-   private org.batfish.representation.BgpProcess toBgpProcess(
+   private org.batfish.datamodel.BgpProcess toBgpProcess(
          final Configuration c, BgpProcess proc) {
-      org.batfish.representation.BgpProcess newBgpProcess = new org.batfish.representation.BgpProcess();
+      org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
       Ip bgpRouterId = getBgpRouterId(c, proc);
@@ -568,7 +568,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          String updateSourceInterface = lpg.getUpdateSource();
          Ip updateSource = null;
          if (updateSourceInterface != null) {
-            org.batfish.representation.Interface sourceInterface = c
+            org.batfish.datamodel.Interface sourceInterface = c
                   .getInterfaces().get(updateSourceInterface);
             if (sourceInterface != null) {
                Prefix prefix = c.getInterfaces().get(updateSourceInterface)
@@ -887,10 +887,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return new CommunityListLine(eclLine.getAction(), javaRegex);
    }
 
-   private org.batfish.representation.Interface toInterface(Interface iface,
+   private org.batfish.datamodel.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists,
          Map<String, PolicyMap> policyMaps, Configuration c) {
-      org.batfish.representation.Interface newIface = new org.batfish.representation.Interface(
+      org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             iface.getName(), c);
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
@@ -1052,10 +1052,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return new IpAccessList(name, lines);
    }
 
-   private org.batfish.representation.IsisProcess toIsisProcess(
+   private org.batfish.datamodel.IsisProcess toIsisProcess(
          Configuration c, CiscoConfiguration oldConfig) {
       IsisProcess proc = oldConfig.getIsisProcess();
-      org.batfish.representation.IsisProcess newProcess = new org.batfish.representation.IsisProcess();
+      org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
 
       newProcess.setNetAddress(proc.getNetAddress());
       newProcess.setLevel(proc.getLevel());
@@ -1100,7 +1100,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
             Integer summaryMetric = rp.getMetric();
             if (summaryMetric == null) {
-               summaryMetric = org.batfish.representation.IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
+               summaryMetric = org.batfish.datamodel.IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
             }
             allowSummaryClause.getSetLines().add(
                   new PolicyMapSetMetricLine(summaryMetric));
@@ -1317,10 +1317,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newProcess;
    }
 
-   private org.batfish.representation.OspfProcess toOspfProcess(
+   private org.batfish.datamodel.OspfProcess toOspfProcess(
          Configuration c, CiscoConfiguration oldConfig) {
       OspfProcess proc = oldConfig.getOspfProcess();
-      org.batfish.representation.OspfProcess newProcess = new org.batfish.representation.OspfProcess();
+      org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
 
       // establish areas and associated interfaces
       Map<Long, OspfArea> areas = newProcess.getAreas();
@@ -1341,7 +1341,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             return result;
          }
       });
-      for (org.batfish.representation.Interface i : c.getInterfaces().values()) {
+      for (org.batfish.datamodel.Interface i : c.getInterfaces().values()) {
          Prefix interfacePrefix = i.getPrefix();
          if (interfacePrefix == null) {
             continue;
@@ -1937,7 +1937,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newRouteFilterList;
    }
 
-   private org.batfish.representation.StaticRoute toStaticRoute(
+   private org.batfish.datamodel.StaticRoute toStaticRoute(
          Configuration c, StaticRoute staticRoute) {
       Ip nextHopIp = staticRoute.getNextHopIp();
       Prefix prefix = staticRoute.getPrefix();
@@ -1945,7 +1945,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       Integer oldTag = staticRoute.getTag();
       int tag;
       tag = oldTag != null ? oldTag : -1;
-      return new org.batfish.representation.StaticRoute(prefix, nextHopIp,
+      return new org.batfish.datamodel.StaticRoute(prefix, nextHopIp,
             nextHopInterface, staticRoute.getDistance(), tag);
    }
 
@@ -2024,7 +2024,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (!iface.getVrf().equals(MASTER_VRF_NAME)) {
             continue;
          }
-         org.batfish.representation.Interface newInterface = toInterface(iface,
+         org.batfish.datamodel.Interface newInterface = toInterface(iface,
                c.getIpAccessLists(), c.getPolicyMaps(), c);
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
@@ -2036,14 +2036,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       // convert ospf process
       if (_ospfProcess != null) {
-         org.batfish.representation.OspfProcess newOspfProcess = toOspfProcess(
+         org.batfish.datamodel.OspfProcess newOspfProcess = toOspfProcess(
                c, this);
          c.setOspfProcess(newOspfProcess);
       }
 
       // convert isis process
       if (_isisProcess != null) {
-         org.batfish.representation.IsisProcess newIsisProcess = toIsisProcess(
+         org.batfish.datamodel.IsisProcess newIsisProcess = toIsisProcess(
                c, this);
          c.setIsisProcess(newIsisProcess);
       }
@@ -2052,7 +2052,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       // TODO: process vrf bgp processes
       BgpProcess bgpProcess = _bgpProcesses.get(MASTER_VRF_NAME);
       if (bgpProcess != null) {
-         org.batfish.representation.BgpProcess newBgpProcess = toBgpProcess(c,
+         org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c,
                bgpProcess);
          c.setBgpProcess(newBgpProcess);
       }

@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.question.Environment;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.BgpProcess;
 
 public class ForEachBgpNeighborStatement extends ForEachStatement<BgpNeighbor> {
 

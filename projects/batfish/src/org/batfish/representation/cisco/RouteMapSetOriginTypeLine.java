@@ -1,10 +1,10 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.PolicyMapSetOriginTypeLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapSetLine;
-import org.batfish.representation.PolicyMapSetOriginTypeLine;
 
 public class RouteMapSetOriginTypeLine extends RouteMapSetLine {
 

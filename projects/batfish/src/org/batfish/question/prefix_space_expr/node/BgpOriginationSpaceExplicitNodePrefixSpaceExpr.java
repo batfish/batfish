@@ -1,9 +1,9 @@
 package org.batfish.question.prefix_space_expr.node;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.question.Environment;
 import org.batfish.question.node_expr.NodeExpr;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PrefixSpace;
 
 public class BgpOriginationSpaceExplicitNodePrefixSpaceExpr extends
       NodePrefixSpaceExpr {

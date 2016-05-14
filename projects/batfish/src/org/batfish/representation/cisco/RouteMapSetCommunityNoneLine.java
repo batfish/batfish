@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapSetCommunityNoneLine;
+import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapSetCommunityNoneLine;
-import org.batfish.representation.PolicyMapSetLine;
 
 public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
 

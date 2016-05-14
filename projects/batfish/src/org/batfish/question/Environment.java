@@ -9,10 +9,24 @@ import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchProtocolLine;
+import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.RouteSet;
@@ -22,20 +36,6 @@ import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
-import org.batfish.representation.BgpNeighbor;
-import org.batfish.representation.BgpProcess;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.GeneratedRoute;
-import org.batfish.representation.Interface;
-import org.batfish.representation.IpsecVpn;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchProtocolLine;
-import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PrefixSpace;
-import org.batfish.representation.RouteFilterLine;
-import org.batfish.representation.RouteFilterList;
-import org.batfish.representation.StaticRoute;
 
 public class Environment {
 

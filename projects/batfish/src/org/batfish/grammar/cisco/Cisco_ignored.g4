@@ -352,7 +352,7 @@ null_block_substanza
          | GROUP_URL
          | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
-         | HIDDEN
+         | HIDDEN_LITERAL
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY

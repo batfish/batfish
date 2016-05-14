@@ -5,7 +5,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
-import org.batfish.representation.Configuration;
+import org.batfish.datamodel.Configuration;
 
 public class ConvertConfigurationResult extends
       BatfishJobResult<Map<String, Configuration>> {

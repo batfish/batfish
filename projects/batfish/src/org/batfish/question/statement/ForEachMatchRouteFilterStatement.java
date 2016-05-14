@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchLine;
+import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
+import org.batfish.datamodel.PolicyMapMatchType;
 import org.batfish.question.Environment;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchLine;
-import org.batfish.representation.PolicyMapMatchRouteFilterListLine;
-import org.batfish.representation.PolicyMapMatchType;
 
 public class ForEachMatchRouteFilterStatement extends
       ForEachStatement<PolicyMapMatchRouteFilterListLine> {

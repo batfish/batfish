@@ -1,9 +1,9 @@
 package org.batfish.question.boolean_expr.iface;
 
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.question.Environment;
 import org.batfish.question.interface_expr.InterfaceExpr;
-import org.batfish.representation.Interface;
-import org.batfish.representation.IsisInterfaceMode;
 
 public final class IsisL2ActiveInterfaceBooleanExpr extends
       InterfaceBooleanExpr {

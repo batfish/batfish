@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchLine;
+import org.batfish.datamodel.PolicyMapMatchProtocolLine;
+import org.batfish.datamodel.PolicyMapMatchType;
 import org.batfish.question.Environment;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchLine;
-import org.batfish.representation.PolicyMapMatchProtocolLine;
-import org.batfish.representation.PolicyMapMatchType;
 
 public class ForEachMatchProtocolStatement extends
       ForEachStatement<PolicyMapMatchProtocolLine> {

@@ -1,0 +1,14 @@
+package org.batfish.datamodel;
+
+public enum PolicyMapSetType {
+   ADDITIVE_COMMUNITY,
+   AS_PATH_PREPEND,
+   COMMUNITY,
+   COMMUNITY_NONE,
+   DELETE_COMMUNITY,
+   LEVEL,
+   LOCAL_PREFERENCE,
+   METRIC,
+   NEXT_HOP,
+   ORIGIN_TYPE
+}

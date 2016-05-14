@@ -1,8 +1,8 @@
 package org.batfish.question.boolean_expr.static_route;
 
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.question.Environment;
 import org.batfish.question.static_route_expr.StaticRouteExpr;
-import org.batfish.representation.StaticRoute;
 
 public class HasNextHopIpStaticRouteBooleanExpr extends StaticRouteBooleanExpr {
 

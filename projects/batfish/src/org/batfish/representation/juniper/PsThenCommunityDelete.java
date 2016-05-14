@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapSetDeleteCommunityLine;
+import org.batfish.datamodel.VendorConversionException;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapSetDeleteCommunityLine;
-import org.batfish.representation.VendorConversionException;
 
 public final class PsThenCommunityDelete extends PsThen {
 
@@ -31,7 +31,7 @@ public final class PsThenCommunityDelete extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.representation.CommunityList list = c.getCommunityLists()
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
                .get(_name);
          if (list == null) {
             throw new VendorConversionException("missing community list: \""

@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.batfish.datamodel.IsisLevel;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.representation.IsisLevel;
-import org.batfish.representation.IsoAddress;
 
 public class IsisProcess implements Serializable {
 

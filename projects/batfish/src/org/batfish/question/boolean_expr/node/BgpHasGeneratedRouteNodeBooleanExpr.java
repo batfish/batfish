@@ -1,9 +1,9 @@
 package org.batfish.question.boolean_expr.node;
 
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Configuration;
 import org.batfish.question.Environment;
 import org.batfish.question.node_expr.NodeExpr;
-import org.batfish.representation.BgpProcess;
-import org.batfish.representation.Configuration;
 
 public final class BgpHasGeneratedRouteNodeBooleanExpr extends NodeBooleanExpr {
 

@@ -2,11 +2,11 @@ package org.batfish.representation.juniper;
 
 import java.util.Set;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.IpAccessListLine;
-import org.batfish.representation.IpWildcard;
 
 public final class FwFromSourceAddressBookEntry extends FwFrom {
 

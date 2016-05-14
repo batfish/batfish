@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 

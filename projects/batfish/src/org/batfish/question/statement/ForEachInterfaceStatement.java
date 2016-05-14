@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.datamodel.Interface;
 import org.batfish.question.Environment;
-import org.batfish.representation.Interface;
 
 public class ForEachInterfaceStatement extends ForEachStatement<Interface> {
 

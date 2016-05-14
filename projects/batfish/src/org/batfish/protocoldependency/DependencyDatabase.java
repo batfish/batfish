@@ -9,10 +9,10 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.representation.Configuration;
 
 public class DependencyDatabase {
 

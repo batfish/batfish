@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.RouteFilterList;
 
 public final class RouteFilterLineThrough extends RouteFilterLine {
 
@@ -28,7 +28,7 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
          Ip currentNetworkAddress = _throughPrefix.getAddress()
                .getNetworkAddress(i);
          Prefix currentPrefix = new Prefix(currentNetworkAddress, i);
-         org.batfish.representation.RouteFilterLine line = new org.batfish.representation.RouteFilterLine(
+         org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
                LineAction.ACCEPT, currentPrefix, new SubRange(i, i));
          rfl.addLine(line);
       }

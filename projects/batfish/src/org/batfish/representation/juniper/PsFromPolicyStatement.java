@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PolicyMap;
+import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.PolicyMapMatchPolicyLine;
 import org.batfish.main.Warnings;
-import org.batfish.representation.Configuration;
-import org.batfish.representation.PolicyMap;
-import org.batfish.representation.PolicyMapClause;
-import org.batfish.representation.PolicyMapMatchPolicyLine;
 
 public final class PsFromPolicyStatement extends PsFrom {
 

@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.representation.LineAction;
+import org.batfish.datamodel.LineAction;
 
 public class RouteMapRule extends ComparableStructure<Integer> {
 

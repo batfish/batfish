@@ -1,10 +1,10 @@
 package org.batfish.question.string_expr.route_filter;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.question.Environment;
 import org.batfish.question.string_expr.BaseStringExpr;
 import org.batfish.question.string_expr.StringExpr;
-import org.batfish.representation.RouteFilterList;
 
 public enum RouteFilterStringExpr implements StringExpr {
    NAME;

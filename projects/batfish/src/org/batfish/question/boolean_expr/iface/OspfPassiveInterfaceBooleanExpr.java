@@ -1,8 +1,8 @@
 package org.batfish.question.boolean_expr.iface;
 
+import org.batfish.datamodel.Interface;
 import org.batfish.question.Environment;
 import org.batfish.question.interface_expr.InterfaceExpr;
-import org.batfish.representation.Interface;
 
 public final class OspfPassiveInterfaceBooleanExpr extends InterfaceBooleanExpr {
 

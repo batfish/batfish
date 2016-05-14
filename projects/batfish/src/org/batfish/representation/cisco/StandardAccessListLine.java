@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
-import org.batfish.representation.IpWildcard;
-import org.batfish.representation.LineAction;
-import org.batfish.representation.TcpFlags;
+import org.batfish.datamodel.TcpFlags;
 
 public class StandardAccessListLine implements Serializable {
 
