@@ -584,12 +584,6 @@ public class ConfigurationFactExtractor {
          List<IpAccessListLine> lines = ipAccessList.getLines();
          for (int i = 0; i < lines.size(); i++) {
             IpAccessListLine line = lines.get(i);
-            String invalidMessage = line.getInvalidMessage();
-            if (invalidMessage != null) {
-               _w.redFlag("IpAccessList " + name + " line " + i
-                     + ": disabled: " + invalidMessage + "\n");
-               continue;
-            }
             switch (line.getAction()) {
             case ACCEPT:
                wSetIpAccessListLine_permit.append(name + "|" + i + "\n");

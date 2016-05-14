@@ -48,7 +48,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
-import org.batfish.common.Pair;
 import org.batfish.common.util.StringFilter;
 import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.common.util.CommonUtil;
@@ -68,8 +67,6 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LBValueType;
 import org.batfish.datamodel.LineAction;
@@ -163,6 +160,7 @@ import org.batfish.nxtnet.PredicateInfo;
 import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
+import org.batfish.question.AclReachabilityAnswer;
 import org.batfish.question.Environment;
 import org.batfish.question.NodesAnswer;
 import org.batfish.question.VerifyProgram;
@@ -170,8 +168,6 @@ import org.batfish.question.VerifyQuestion;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.Util;
-import org.batfish.z3.AclLine;
-import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
@@ -568,7 +564,8 @@ public class Batfish implements AutoCloseable {
       initQuestionEnvironments(question, diff, diffActive, dp);
       switch (question.getType()) {
       case ACL_REACHABILITY:
-         answerAclReachability((AclReachabilityQuestion) question);
+         outputAnswer(new AclReachabilityAnswer(this,
+               (AclReachabilityQuestion) question));
          break;
 
       case COMPARE_SAME_NAME:
@@ -621,171 +618,6 @@ public class Batfish implements AutoCloseable {
 
       default:
          throw new BatfishException("Unknown question type");
-      }
-   }
-
-   private void answerAclReachability(AclReachabilityQuestion question) {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-      Synthesizer aclSynthesizer = synthesizeAcls(configurations);
-      List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-         String hostname = e.getKey();
-         Configuration c = e.getValue();
-         for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
-            String aclName = e2.getKey();
-            // skip juniper srx inbound filters, as they can't really contain
-            // operator error
-            if (aclName.contains("~ZONE_INTERFACE_FILTER~")
-                  || aclName.contains("~INBOUND_ZONE_FILTER~")) {
-               continue;
-            }
-            IpAccessList acl = e2.getValue();
-            int numLines = acl.getLines().size();
-            if (numLines == 0) {
-               _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName
-                     + "\" contains no lines\n");
-               continue;
-            }
-            AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
-                  hostname, aclName, numLines);
-            NodSatJob<AclLine> job = new NodSatJob<AclLine>(aclSynthesizer,
-                  query);
-            jobs.add(job);
-         }
-      }
-      Map<AclLine, Boolean> output = new TreeMap<AclLine, Boolean>();
-      computeNodSatOutput(jobs, output);
-      Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<Pair<String, String>>();
-      Set<Pair<String, String>> allAcls = new TreeSet<Pair<String, String>>();
-      int numUnreachableLines = 0;
-      int numLines = output.entrySet().size();
-      for (Entry<AclLine, Boolean> e : output.entrySet()) {
-         AclLine aclLine = e.getKey();
-         boolean sat = e.getValue();
-         String hostname = aclLine.getHostname();
-         String aclName = aclLine.getAclName();
-         Pair<String, String> qualifiedAclName = new Pair<String, String>(
-               hostname, aclName);
-         allAcls.add(qualifiedAclName);
-         if (!sat) {
-            numUnreachableLines++;
-            aclsWithUnreachableLines.add(qualifiedAclName);
-         }
-      }
-      for (Entry<AclLine, Boolean> e : output.entrySet()) {
-         AclLine aclLine = e.getKey();
-         boolean sat = e.getValue();
-         String hostname = aclLine.getHostname();
-         String aclName = aclLine.getAclName();
-         Pair<String, String> qualifiedAclName = new Pair<String, String>(
-               hostname, aclName);
-         if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
-            int line = aclLine.getLine();
-            if (sat) {
-               _logger.outputf("%s:%s:%d is REACHABLE\n", hostname, aclName,
-                     line);
-            }
-            else {
-               Configuration c = configurations.get(aclLine.getHostname());
-               IpAccessList acl = c.getIpAccessLists()
-                     .get(aclLine.getAclName());
-               IpAccessListLine ipAccessListLine = acl.getLines().get(line);
-               _logger.outputf("%s:%s:%d is UNREACHABLE\n\t%s\n", hostname,
-                     aclName, line, ipAccessListLine.toString());
-               aclsWithUnreachableLines.add(qualifiedAclName);
-            }
-         }
-      }
-      for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
-         String hostname = qualfiedAcl.getFirst();
-         String aclName = qualfiedAcl.getSecond();
-         _logger.outputf("%s:%s has at least 1 unreachable line\n", hostname,
-               aclName);
-      }
-      int numAclsWithUnreachableLines = aclsWithUnreachableLines.size();
-      int numAcls = allAcls.size();
-      double percentUnreachableAcls = 100d * numAclsWithUnreachableLines
-            / numAcls;
-      double percentUnreachableLines = 100d * numUnreachableLines / numLines;
-      _logger.outputf("SUMMARY:\n");
-      _logger.outputf("\t%d/%d (%.1f%%) acls have unreachable lines\n",
-            numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
-      _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
-            numUnreachableLines, numLines, percentUnreachableLines);
-      String jsonOutputPath = _settings.getAnswerJsonPath();
-      if (jsonOutputPath != null) {
-         String jsonOutput = null;
-         try {
-            JSONObject query = new JSONObject();
-            Map<String, StringBuilder> nodeDescriptions = new HashMap<String, StringBuilder>();
-            Map<String, JSONObject> nodeObjects = new HashMap<String, JSONObject>();
-            query.put("name", _settings.getQuestionName());
-            query.put("type", "query");
-            JSONObject views = new JSONObject();
-            query.put("views", views);
-            String viewName = "Nodes with unreachable ACL lines";
-            JSONObject view = new JSONObject();
-            views.put(viewName, view);
-            view.put("name", viewName);
-            view.put("type", "view");
-            view.put("color", "error");
-            JSONObject nodes = new JSONObject();
-            view.put("nodes", nodes);
-            for (Entry<AclLine, Boolean> e : output.entrySet()) {
-               AclLine aclLine = e.getKey();
-               boolean sat = e.getValue();
-               String hostname = aclLine.getHostname();
-               String aclName = aclLine.getAclName();
-               Pair<String, String> qualifiedAclName = new Pair<String, String>(
-                     hostname, aclName);
-               if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
-                  int line = aclLine.getLine();
-                  JSONObject node;
-                  if (nodeObjects.containsKey(hostname)) {
-                     node = nodes.getJSONObject(hostname);
-                  }
-                  else {
-                     node = new JSONObject();
-                     nodes.put(hostname, node);
-                     node.put("name", hostname);
-                     node.put("type", "node");
-                     StringBuilder nodeDescriptionBuilder = new StringBuilder();
-                     nodeObjects.put(hostname, node);
-                     nodeDescriptions.put(hostname, nodeDescriptionBuilder);
-                  }
-                  StringBuilder nodeDescriptionBuilder = nodeDescriptions
-                        .get(hostname);
-                  if (!sat) {
-                     Configuration c = configurations
-                           .get(aclLine.getHostname());
-                     IpAccessList acl = c.getIpAccessLists().get(
-                           aclLine.getAclName());
-                     IpAccessListLine ipAccessListLine = acl.getLines().get(
-                           line);
-                     nodeDescriptionBuilder
-                           .append(String
-                                 .format(
-                                       "ACL: \"%s\", line: %d is UNREACHABLE<br>&nbsp;%s<br>",
-                                       aclName, line,
-                                       ipAccessListLine.toString()));
-                  }
-               }
-            }
-            for (String hostname : nodeObjects.keySet()) {
-               JSONObject node = nodeObjects.get(hostname);
-               StringBuilder descriptionBuilder = nodeDescriptions
-                     .get(hostname);
-               node.put("description", descriptionBuilder.toString());
-            }
-            jsonOutput = query.toString(3);
-         }
-         catch (JSONException e) {
-            throw new BatfishException(
-                  "Error converting acl reachability analysis output to json",
-                  e);
-         }
-         Util.writeFile(jsonOutputPath, jsonOutput);
       }
    }
 
@@ -1541,7 +1373,7 @@ public class Batfish implements AutoCloseable {
       return flows;
    }
 
-   private <Key> void computeNodSatOutput(List<NodSatJob<Key>> jobs,
+   public <Key> void computeNodSatOutput(List<NodSatJob<Key>> jobs,
          Map<Key, Boolean> output) {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
@@ -2244,6 +2076,10 @@ public class Batfish implements AutoCloseable {
       return blacklistInterfaces;
    }
 
+   public BatfishLogger getLogger() {
+      return _logger;
+   }
+
    private NodeSet getNodeBlacklist(EnvironmentSettings envSettings) {
       NodeSet blacklistNodes = null;
       String nodeBlacklistPath = envSettings.getNodeBlacklistPath();
@@ -2453,6 +2289,10 @@ public class Batfish implements AutoCloseable {
       }
       cleanupLogicDir();
       return semanticsFiles;
+   }
+
+   public Settings getSettings() {
+      return _settings;
    }
 
    private Set<Edge> getSymmetricEdgePairs(EdgeSet edges) {
@@ -2679,7 +2519,8 @@ public class Batfish implements AutoCloseable {
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
       try {
          String jsonString = mapper.writeValueAsString(answer);
-         _logger.output(jsonString);
+         _logger.debug(jsonString);
+         writeJsonAnswer(jsonString);
       }
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
@@ -2687,10 +2528,14 @@ public class Batfish implements AutoCloseable {
          Answer failureAnswer = Answer.failureAnswer(e.getMessage());
          try {
             String failureJsonString = mapper.writeValueAsString(failureAnswer);
-            _logger.output(failureJsonString);
+            _logger.error(failureJsonString);
+            writeJsonAnswer(failureJsonString);
          }
          catch (Exception e1) {
-            _logger.errorf("Could not serialize failure answer.", e1);
+            String errorMessage = String.format(
+                  "Could not serialize failure answer.",
+                  ExceptionUtils.getStackTrace(e1));
+            _logger.error(errorMessage);
          }
          throw be;
       }
@@ -3217,7 +3062,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void printElapsedTime() {
+   public void printElapsedTime() {
       double seconds = getElapsedTime(_timerCount);
       _logger.info("Time taken for this task: " + seconds + " seconds\n");
    }
@@ -3471,7 +3316,7 @@ public class Batfish implements AutoCloseable {
       // lbFrontend.removeBlocks(qualifiedBlockNames);
    }
 
-   private void resetTimer() {
+   public void resetTimer() {
       _timerCount = System.currentTimeMillis();
    }
 
@@ -3928,27 +3773,6 @@ public class Batfish implements AutoCloseable {
       _terminatedWithException = terminatedWithException;
    }
 
-   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
-      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-      resetTimer();
-
-      _logger.info("Synthesizing Z3 ACL logic...");
-      Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
-
-      List<String> warnings = s.getWarnings();
-      int numWarnings = warnings.size();
-      if (numWarnings == 0) {
-         _logger.info("OK\n");
-      }
-      else {
-         for (String warning : warnings) {
-            _logger.warn(warning);
-         }
-      }
-      printElapsedTime();
-      return s;
-   }
-
    private Synthesizer synthesizeDataPlane(
          Map<String, Configuration> configurations, File dataPlanePath) {
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
@@ -4054,6 +3878,13 @@ public class Batfish implements AutoCloseable {
             + "\"...");
       serializeObject(topology, ibgpTopologyFile);
       _logger.info("OK\n");
+   }
+
+   private void writeJsonAnswer(String jsonAnswer) {
+      String jsonPath = _settings.getAnswerJsonPath();
+      if (jsonPath != null) {
+         Util.writeFile(jsonPath, jsonAnswer);
+      }
    }
 
    private void writeJsonTopology() {
