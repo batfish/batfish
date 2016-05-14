@@ -59,6 +59,7 @@ public class CoordConsts {
     * Constants for endpoints of various service calls
     */
 
+   public static final String SVC_CHECK_API_KEY_RSC = "checkapikey";
    public static final String SVC_DEL_CONTAINER_RSC = "delcontainer";
    public static final String SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
    public static final String SVC_DEL_QUESTION_RSC = "delquestion";

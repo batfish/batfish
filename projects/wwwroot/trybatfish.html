@@ -114,6 +114,9 @@
         //this variable holds the zip'd contents or base or differential testrig
         var testrigZip = "";
 
+		// ........... api key
+		var elementApiKey = "#apiKey";
+		
 		// ........... tabs
 		var elementTabs = '#tabs';
 		
@@ -140,6 +143,7 @@
         var elementQuestionText = '#txtQuestion';
         var elementQuestionSelect = '#questionSelect';
         var elementPrevQuestionSelect = "#prevQuestions";
+        var elementPrevTestrigSelect = "#prevTestrigs";
 
         //............buttons for triggering various actions
         var elementUploadBaseTestrigBtn = '#btnUploadConfig';
@@ -176,19 +180,26 @@
 			<table>
 				<tr>
 					<td align="left">API Key</td>
-					<td align="right"><input id="apikey" title="apikey" value="00000000000000000000000000000000"></td>
+					<td align="right"><input id="apiKey" title="apiKey" value="00000000000000000000000000000000"></td>
 					<td align="right">
-					<button id="btnLogin" onclick="login()">Login</button>
-					<script>
-						function login()
-						{
-							$(elementTabs).tabs("option", "active", 1);
-							$('#btnLogin').button("disable");
-							$(elementUploadBaseTestrigBtn).button("enable");
-						}
-					</script>
+					<button id="btnLogin" onclick="startCalls('btnLogin', 'checkAPIKey::getTestrigs::login')">Login</button>
 					</td>	
 				</tr>
+				<tr>
+					<td>&nbsp</td>
+				</tr>
+				<tr>
+					<td colspan="3">-- or -- </td>
+				</tr>
+					<tr>
+					<td>&nbsp</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+					<button id="btnGuest" onclick="startCalls('btnGuest', 'login')">Continue as guest</button>
+					</td>
+				</tr>
+				
 				</table>
 		</div>
 		
@@ -215,6 +226,11 @@
 										configSelect : elementConfigSelect
 									}, loadConfigText);
 									</script>
+									&nbsp or &nbsp
+									<select id="prevTestrigs" onchange="startCalls('prevTestrigs', 'showOldTestrig::drawtopology::posttestriginit')" style="width:250px">
+										<option disabled selected>-- select a previously uploaded testrig --</option>
+									</select>
+									
 								</td>
 							</tr>
 							<tr>

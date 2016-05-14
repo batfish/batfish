@@ -53,6 +53,7 @@ public class Client {
    private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
    private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_HELP = "help";
+   private static final String COMMAND_CHECK_API_KEY = "checkapikey";
    private static final String COMMAND_INIT_CONTAINER = "init-container";
    private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
@@ -120,6 +121,8 @@ public class Client {
             + "\t Generate dataplane for the default environment");
       descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
             + "\t Print the list of supported commands");
+      descs.put(COMMAND_CHECK_API_KEY, COMMAND_CHECK_API_KEY 
+            + "\t Check if API Key is valid");
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
             + " [<container-name-prefix>]\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DIFF_ENV, COMMAND_INIT_DIFF_ENV
@@ -550,6 +553,11 @@ public class Client {
          }
          case COMMAND_HELP: {
             printUsage();
+            break;
+         }
+         case COMMAND_CHECK_API_KEY: {
+             String isValid = _workHelper.checkApiKey();
+            _logger.outputf("Api key validitiy: %s\n", isValid);
             break;
          }
          case COMMAND_INIT_CONTAINER: {

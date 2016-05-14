@@ -86,7 +86,27 @@ function HighlightNodes(nodes, onoff, parentColor, parentDescription) {
 	}
 }
 
-function HighlightLinks(links, onoff, parentColor, parentDescription) {
+function AddArrow(linkId, from, to)
+{
+	var link = cy.getElementById(linkId);
+	var endPoints = linkId.split("#");
+	var arrowColor = '#00f';
+	var arrowShape = 'triangle';
+	bfUpdateDebugInfo("endpoints" + endPoints);
+	if (endPoints[0].includes(from)) {
+		link.style('target-arrow-color', arrowColor);
+		link.style('target-arrow-shape', arrowShape);
+	}
+	else if (endPoints[1].includes(from)){
+		link.style('source-arrow-color', arrowColor);
+		link.style('source-arrow-shape', arrowShape);
+	}
+	else {
+		bfUpdateDebugInfo("AddArrow error: no valid endpoint " + linkId + " " + from + " " + to);
+	}
+}
+
+function HighlightLinks(links, onoff, parentColor, parentDescription, addArrow) {
 	for (var i in links) {
 		if (links.hasOwnProperty(i)) {
 			var link = links[i];
@@ -94,17 +114,15 @@ function HighlightLinks(links, onoff, parentColor, parentDescription) {
 			HighlightElement(linkId, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
 			HighlightElement(link.interface1.node, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
 			HighlightElement(link.interface2.node, onoff, defined(link.description) ? link.description : parentDescription, defined(link.color) ? link.color : parentColor);
+			if (addArrow) {
+				AddArrow(linkId, link.interface1.node, link.interface2.node);
+			}
 		}
 	}
 }
 
-function HighlightPaths(paths, onoff, parentColor, parentDescription) {
-	for (var i in paths) {
-		if (paths.hasOwnProperty(i)) {
-			var path = paths[i];
-			HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor);
-		}
-	}
+function HighlightPaths(path, onoff, parentColor, parentDescription) {
+	HighlightLinks(path.links, onoff, defined(path.color) ? path.color : parentColor, parentDescription, true);
 }
 
 function HighlightView(viewId, onoff) {
@@ -121,8 +139,8 @@ function HighlightView(viewId, onoff) {
 				HighlightNodes(view.views[viewId].nodes, onoff, parentColor, parentDescription);
 			if (defined(thisView.links))
 				HighlightLinks(view.views[viewId].links, onoff, parentColor, parentDescription);
-			if (defined(thisView.paths))
-				HighlightPaths(view.views[viewId].paths, onoff, parentColor, parentDescription);
+			if (defined(thisView.path))
+				HighlightPaths(view.views[viewId].path, onoff, parentColor, parentDescription);
 		}
 	}
 }
@@ -135,6 +153,8 @@ function ClearHighlights()
 	});
 	cy.edges().forEach(function( e ){
 		e.style('line-color', ColorEnum.default);
+		e.style('source-arrow-shape', 'none');
+		e.style('target-arrow-shape', 'none');
 		e.data('vtt', '');
 	});
 }
@@ -171,7 +191,7 @@ function SetupHighlightsMenu(data) {
 			$('#hs').selectmenu({
 				select : function(event, ui) {
 					console.log(ui.item.value);
-					HighlightView(previousView, "off");
+					ClearHighlights();
 					HighlightView(ui.item.value, 'on');
 					previousView = ui.item.value;
 				}

@@ -27,6 +27,15 @@ var spinOpts = {
 , position: 'absolute' // Element positioning
 };
 
+function login(entryPoint, remainingCalls)
+{
+	console.log(apiKey);
+	$(elementTabs).tabs("option", "active", 1);
+	$('#btnLogin').button("disable");
+	$(elementUploadBaseTestrigBtn).button("enable");
+	finishEntryPoint(entryPoint, remainingCalls);
+}
+						
 var questions = [];
 
 function questionInfo(_id, _questionText, _output, _highlights) {

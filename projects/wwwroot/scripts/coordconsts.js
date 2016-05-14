@@ -43,7 +43,8 @@ var SVC_ZIPFILE_KEY = "zipfile";
 /**
  * Constants for endpoints of various service calls
  */   
-   
+
+var SVC_CHECK_API_KEY_RSC = "checkapikey";
 var SVC_DEL_CONTAINER_RSC = "delcontainer";
 var SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
 var SVC_DEL_QUESTION_RSC = "delquestion";
@@ -63,3 +64,4 @@ var SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
 var SVC_GET_OBJECT_RSC = "getobject";
 var SVC_GET_WORKSTATUS_RSC = "getworkstatus";
 var SVC_GETSTATUS_RSC = "getstatus";
+var SVC_LIST_TESTRIGS_RSC = "listtestrigs";
