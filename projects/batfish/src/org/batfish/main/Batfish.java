@@ -789,9 +789,36 @@ public class Batfish implements AutoCloseable {
    }
 
    private void answerCompareSameName(CompareSameNameQuestion question) {
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+      
+      // collect nodes nodes
+      Pattern nodeRegex;
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
+      
+      Set<String> nodes = new TreeSet<String>();
+      if (nodeRegex != null) {
+         for (String node : configurations.keySet()) {
+            Matcher nodeMatcher = nodeRegex.matcher(node);
+            if (nodeMatcher.matches()) {
+               nodes.add(node);
+            }
+         }
+      }
+      else {
+         nodes.addAll(configurations.keySet());
+      }
+      
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      
    }
 
    private void answerDestination(DestinationQuestion question) {
