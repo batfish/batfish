@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -791,7 +792,7 @@ public class Batfish implements AutoCloseable {
    private void answerCompareSameName(CompareSameNameQuestion question) {
       checkConfigurations();
       Map<String, Configuration> configurations = loadConfigurations();
-      
+
       // collect nodes nodes
       Pattern nodeRegex;
       try {
@@ -802,7 +803,7 @@ public class Batfish implements AutoCloseable {
                "Supplied regex for nodes is not a valid java regex: \""
                      + question.getNodeRegex() + "\"", e);
       }
-      
+
       Set<String> nodes = new TreeSet<String>();
       if (nodeRegex != null) {
          for (String node : configurations.keySet()) {
@@ -815,10 +816,10 @@ public class Batfish implements AutoCloseable {
       else {
          nodes.addAll(configurations.keySet());
       }
-      
+
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
-      
+
    }
 
    private void answerDestination(DestinationQuestion question) {
