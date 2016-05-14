@@ -9,14 +9,14 @@ public final class CompareSameNameQuestion extends Question {
 
    private static final String NODE_REGEX_VAR = "nodeRegex";
    private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
-   
-   private NamedStructType _namedStructType = NamedStructType.ANY;   
+
+   private NamedStructType _namedStructType = NamedStructType.ANY;
    private String _nodeRegex = ".*";
-   
+
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
    }
-   
+
    public CompareSameNameQuestion(QuestionParameters parameters) {
       this();
       setParameters(parameters);
@@ -44,14 +44,14 @@ public final class CompareSameNameQuestion extends Question {
       return _namedStructType;
    }
 
-   public void setNodeRegex(String regex) {
-         _nodeRegex = regex;
-   }
-   
    public void setNamedStructType(NamedStructType nType) {
       _namedStructType = nType;
    }
-   
+
+   public void setNodeRegex(String regex) {
+      _nodeRegex = regex;
+   }
+
    @Override
    public void setParameters(QuestionParameters parameters) {
       super.setParameters(parameters);
@@ -59,7 +59,8 @@ public final class CompareSameNameQuestion extends Question {
          setNodeRegex(parameters.getString(NODE_REGEX_VAR));
       }
       if (parameters.getTypeBindings().get(NAMED_STRUCT_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNamedStructType(parameters.getNamedStructType(NAMED_STRUCT_TYPE_VAR));
+         setNamedStructType(parameters
+               .getNamedStructType(NAMED_STRUCT_TYPE_VAR));
       }
    }
 }

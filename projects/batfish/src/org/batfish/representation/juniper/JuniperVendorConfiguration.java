@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -42,7 +43,6 @@ import org.batfish.datamodel.PolicyMapSetNextHopLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.VendorConversionException;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -245,12 +245,12 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   "OSPF export policies");
             newProc.getOutboundPolicyMaps().add(exportPolicy);
             // TODO: support type E1
-            newProc.getPolicyMetricTypes().put(exportPolicy, OspfMetricType.E2);
+            newProc.getPolicyMetricTypes().put(exportPolicy.getName(),
+                  OspfMetricType.E2);
          }
       }
       // areas
-      Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc
-            .getAreas();
+      Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc.getAreas();
       for (Entry<Ip, OspfArea> e : _defaultRoutingInstance.getOspfAreas()
             .entrySet()) {
          Ip areaIp = e.getKey();
@@ -319,23 +319,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private void placeInterfaceIntoArea(
          Map<Long, org.batfish.datamodel.OspfArea> newAreas, String name,
          Interface iface) {
-      org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(
-            name);
+      org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(name);
       Ip ospfArea = iface.getOspfActiveArea();
       boolean setCost = false;
       if (ospfArea != null) {
          setCost = true;
          long ospfAreaLong = ospfArea.asLong();
-         org.batfish.datamodel.OspfArea newArea = newAreas
-               .get(ospfAreaLong);
+         org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
          newIface.setOspfEnabled(true);
       }
       for (Ip passiveArea : iface.getOspfPassiveAreas()) {
          setCost = true;
          long ospfAreaLong = passiveArea.asLong();
-         org.batfish.datamodel.OspfArea newArea = newAreas
-               .get(ospfAreaLong);
+         org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
          newIface.setOspfEnabled(true);
          newIface.setOspfPassive(true);
@@ -417,8 +414,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newRoute;
    }
 
-   private org.batfish.datamodel.CommunityList toCommunityList(
-         CommunityList cl) {
+   private org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
       String name = cl.getName();
       List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<org.batfish.datamodel.CommunityListLine>();
       for (CommunityListLine line : cl.getLines()) {
@@ -492,8 +488,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // ike policy
       String ikePolicyName = oldIkeGateway.getIkePolicy();
-      org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies()
-            .get(ikePolicyName);
+      org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(
+            ikePolicyName);
       if (newIkePolicy == null) {
          _w.redFlag("Reference to undefined ike policy: \"" + ikePolicyName
                + "\" in ike gateway: \"" + name + "\"");
@@ -510,8 +506,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return newIkeGateway;
    }
 
-   private org.batfish.datamodel.IkePolicy toIkePolicy(
-         IkePolicy oldIkePolicy) {
+   private org.batfish.datamodel.IkePolicy toIkePolicy(IkePolicy oldIkePolicy) {
       String name = oldIkePolicy.getName();
       org.batfish.datamodel.IkePolicy newIkePolicy = new org.batfish.datamodel.IkePolicy(
             name);
@@ -762,8 +757,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       Interface oldBindInterface = oldIpsecVpn.getBindInterface();
       if (oldBindInterface != null) {
          String bindInterfaceName = oldBindInterface.getName();
-         org.batfish.datamodel.Interface newBindInterface = _c
-               .getInterfaces().get(bindInterfaceName);
+         org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces()
+               .get(bindInterfaceName);
          if (newBindInterface == null) {
             _w.redFlag("Reference to undefined interface: \""
                   + bindInterfaceName + "\" in ipsec vpn: \"" + name + "\"");
@@ -780,8 +775,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // ike gateway
       String ikeGatewayName = oldIpsecVpn.getGateway();
-      org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways()
-            .get(ikeGatewayName);
+      org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(
+            ikeGatewayName);
       if (ikeGateway == null) {
          _w.redFlag("Reference to undefined ike gateway: \"" + ikeGatewayName
                + "\" in ipsec vpn: \"" + name + "\"");
@@ -794,8 +789,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       // ipsec policy
       String ipsecPolicyName = oldIpsecVpn.getIpsecPolicy();
-      org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c
-            .getIpsecPolicies().get(ipsecPolicyName);
+      org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c.getIpsecPolicies()
+            .get(ipsecPolicyName);
       if (ipsecPolicy == null) {
          _w.redFlag("Reference to undefined ipsec policy: \"" + ipsecPolicyName
                + "\" in ipsec vpn: \"" + name + "\"");
@@ -951,8 +946,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       return routingPolicy;
    }
 
-   private org.batfish.datamodel.StaticRoute toStaticRoute(
-         StaticRoute route) {
+   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
       String nextHopInterface = route.getDrop() ? CommonUtil.NULL_INTERFACE_NAME
@@ -1282,8 +1276,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                "inbound interface filter for zone: \"" + zone.getName()
                      + "\", interface: \"" + inboundInterfaceName + "\"");
          String inboundInterfaceFilterName = inboundInterfaceFilter.getName();
-         org.batfish.datamodel.Interface newIface = _c.getInterfaces()
-               .get(inboundInterfaceName);
+         org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(
+               inboundInterfaceName);
          IpAccessList inboundInterfaceFilterList = _c.getIpAccessLists().get(
                inboundInterfaceFilterName);
          newZone.getInboundInterfaceFilters().put(newIface,
@@ -1306,8 +1300,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
 
       for (Interface iface : zone.getInterfaces()) {
          String ifaceName = iface.getName();
-         org.batfish.datamodel.Interface newIface = _c.getInterfaces()
-               .get(ifaceName);
+         org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(
+               ifaceName);
          newIface.setZone(newZone);
          FirewallFilter inboundInterfaceFilter = zone
                .getInboundInterfaceFilters().get(iface);

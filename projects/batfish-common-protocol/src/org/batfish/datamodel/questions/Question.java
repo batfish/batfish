@@ -11,7 +11,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Question {
 
    private static final String INTERFACE_BLACKLIST_VAR = "interface_blacklist";
@@ -59,9 +59,9 @@ public abstract class Question {
    }
 
    public void setJsonParameters(JSONObject parameters) {
-      
+
    }
-   
+
    public void setParameters(QuestionParameters parameters) {
       if (parameters.getTypeBindings().get(NODE_BLACKLIST_VAR) == VariableType.SET_STRING) {
          Set<String> nodeBlacklist = parameters

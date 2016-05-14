@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions;
 
-
 public class ProtocolDependenciesQuestion extends Question {
 
    public ProtocolDependenciesQuestion(QuestionParameters parameters) {

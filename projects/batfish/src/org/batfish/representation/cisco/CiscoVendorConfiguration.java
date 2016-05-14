@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.CommunityList;
@@ -53,7 +54,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.VendorConversionException;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -129,7 +129,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       clause.setName("");
       PolicyMap output = new PolicyMap(name);
       output.getClauses().add(clause);
-      c.getPolicyMaps().put(output.getMapName(), output);
+      c.getPolicyMaps().put(output.getName(), output);
       return output;
    }
 
@@ -406,8 +406,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newList;
    }
 
-   private org.batfish.datamodel.BgpProcess toBgpProcess(
-         final Configuration c, BgpProcess proc) {
+   private org.batfish.datamodel.BgpProcess toBgpProcess(final Configuration c,
+         BgpProcess proc) {
       org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
@@ -568,8 +568,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          String updateSourceInterface = lpg.getUpdateSource();
          Ip updateSource = null;
          if (updateSourceInterface != null) {
-            org.batfish.datamodel.Interface sourceInterface = c
-                  .getInterfaces().get(updateSourceInterface);
+            org.batfish.datamodel.Interface sourceInterface = c.getInterfaces()
+                  .get(updateSourceInterface);
             if (sourceInterface != null) {
                Prefix prefix = c.getInterfaces().get(updateSourceInterface)
                      .getPrefix();
@@ -723,7 +723,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                localAdvertisedNetworksClause);
          explicitOriginationPolicyMap.getClauses().add(
                aggregatedAdvertisedNetworksClause);
-         c.getPolicyMaps().put(explicitOriginationPolicyMap.getMapName(),
+         c.getPolicyMaps().put(explicitOriginationPolicyMap.getName(),
                explicitOriginationPolicyMap);
          originationPolicies.add(explicitOriginationPolicyMap);
 
@@ -1052,8 +1052,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return new IpAccessList(name, lines);
    }
 
-   private org.batfish.datamodel.IsisProcess toIsisProcess(
-         Configuration c, CiscoConfiguration oldConfig) {
+   private org.batfish.datamodel.IsisProcess toIsisProcess(Configuration c,
+         CiscoConfiguration oldConfig) {
       IsisProcess proc = oldConfig.getIsisProcess();
       org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
 
@@ -1219,7 +1219,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
             newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
                   exportLevel);
-            c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
+            c.getPolicyMaps().put(exportConnectedPolicy.getName(),
                   exportConnectedPolicy);
          }
       }
@@ -1317,8 +1317,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newProcess;
    }
 
-   private org.batfish.datamodel.OspfProcess toOspfProcess(
-         Configuration c, CiscoConfiguration oldConfig) {
+   private org.batfish.datamodel.OspfProcess toOspfProcess(Configuration c,
+         CiscoConfiguration oldConfig) {
       OspfProcess proc = oldConfig.getOspfProcess();
       org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
 
@@ -1397,8 +1397,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      defaultPrefixRange, LineAction.ACCEPT, metric,
                      RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
                newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-               newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
-                     metricType);
+               newProcess.getPolicyMetricTypes().put(
+                     exportDefaultPolicy.getName(), metricType);
                generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
                      MAX_ADMINISTRATIVE_COST, generationPolicies);
@@ -1411,11 +1411,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
                   Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
                   RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-            c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
+            c.getPolicyMaps().put(exportDefaultPolicy.getName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
-                  metricType);
+            newProcess.getPolicyMetricTypes().put(
+                  exportDefaultPolicy.getName(), metricType);
             GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, null);
             newProcess.getGeneratedRoutes().add(route);
@@ -1427,11 +1427,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
                   Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
                   null, PolicyMapAction.PERMIT);
-            c.getPolicyMaps().put(exportDefaultPolicy.getMapName(),
+            c.getPolicyMaps().put(exportDefaultPolicy.getName(),
                   exportDefaultPolicy);
             newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy,
-                  metricType);
+            newProcess.getPolicyMetricTypes().put(
+                  exportDefaultPolicy.getName(), metricType);
          }
       }
 
@@ -1490,8 +1490,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
                newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-               newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
-                     metricType);
+               newProcess.getPolicyMetricTypes().put(
+                     exportConnectedPolicy.getName(), metricType);
             }
          }
          else {
@@ -1499,9 +1499,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
                   metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyMetricTypes().put(exportConnectedPolicy,
-                  metricType);
-            c.getPolicyMaps().put(exportConnectedPolicy.getMapName(),
+            newProcess.getPolicyMetricTypes().put(
+                  exportConnectedPolicy.getName(), metricType);
+            c.getPolicyMaps().put(exportConnectedPolicy.getName(),
                   exportConnectedPolicy);
          }
       }
@@ -1580,8 +1580,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
                newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-               newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
-                     metricType);
+               newProcess.getPolicyMetricTypes().put(
+                     exportStaticPolicy.getName(), metricType);
 
             }
          }
@@ -1592,7 +1592,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
                   RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyMetricTypes().put(exportStaticPolicy,
+            newProcess.getPolicyMetricTypes().put(exportStaticPolicy.getName(),
                   metricType);
          }
       }
@@ -1672,7 +1672,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
                newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
-               newProcess.getPolicyMetricTypes().put(exportBgpPolicy,
+               newProcess.getPolicyMetricTypes().put(exportBgpPolicy.getName(),
                      metricType);
 
             }
@@ -1684,7 +1684,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
                   RoutingProtocol.BGP, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
-            newProcess.getPolicyMetricTypes().put(exportBgpPolicy, metricType);
+            newProcess.getPolicyMetricTypes().put(exportBgpPolicy.getName(),
+                  metricType);
          }
       }
 
@@ -1937,8 +1938,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newRouteFilterList;
    }
 
-   private org.batfish.datamodel.StaticRoute toStaticRoute(
-         Configuration c, StaticRoute staticRoute) {
+   private org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c,
+         StaticRoute staticRoute) {
       Ip nextHopIp = staticRoute.getNextHopIp();
       Prefix prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
@@ -2015,7 +2016,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          convertForPurpose(routingRouteMaps, map);
          PolicyMap newMap = toPolicyMap(c, map);
-         c.getPolicyMaps().put(newMap.getMapName(), newMap);
+         c.getPolicyMaps().put(newMap.getName(), newMap);
       }
 
       // convert interfaces
@@ -2036,15 +2037,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
       // convert ospf process
       if (_ospfProcess != null) {
-         org.batfish.datamodel.OspfProcess newOspfProcess = toOspfProcess(
-               c, this);
+         org.batfish.datamodel.OspfProcess newOspfProcess = toOspfProcess(c,
+               this);
          c.setOspfProcess(newOspfProcess);
       }
 
       // convert isis process
       if (_isisProcess != null) {
-         org.batfish.datamodel.IsisProcess newIsisProcess = toIsisProcess(
-               c, this);
+         org.batfish.datamodel.IsisProcess newIsisProcess = toIsisProcess(c,
+               this);
          c.setIsisProcess(newIsisProcess);
       }
 

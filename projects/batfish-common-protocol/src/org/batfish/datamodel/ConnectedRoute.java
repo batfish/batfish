@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-
 public class ConnectedRoute extends Route {
 
    private static final long serialVersionUID = 1L;

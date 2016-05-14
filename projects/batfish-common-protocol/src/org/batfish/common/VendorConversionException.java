@@ -1,6 +1,4 @@
-package org.batfish.datamodel;
-
-import org.batfish.common.BatfishException;
+package org.batfish.common;
 
 public class VendorConversionException extends BatfishException {
 

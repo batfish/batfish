@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions;
 
-
 public class IngressPathQuestion extends Question {
 
    public IngressPathQuestion(QuestionParameters parameters) {

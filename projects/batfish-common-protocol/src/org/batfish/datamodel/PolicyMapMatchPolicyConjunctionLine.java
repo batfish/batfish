@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 public final class PolicyMapMatchPolicyConjunctionLine extends
       PolicyMapMatchLine {
 
@@ -16,6 +18,7 @@ public final class PolicyMapMatchPolicyConjunctionLine extends
       _conjuncts = conjuncts;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<PolicyMap> getConjuncts() {
       return _conjuncts;
    }

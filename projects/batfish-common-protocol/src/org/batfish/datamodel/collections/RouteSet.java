@@ -4,7 +4,6 @@ import java.util.TreeSet;
 
 import org.batfish.datamodel.PrecomputedRoute;
 
-
 public class RouteSet extends TreeSet<PrecomputedRoute> {
 
    /**

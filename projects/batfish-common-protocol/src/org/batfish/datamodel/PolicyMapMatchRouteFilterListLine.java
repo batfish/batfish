@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -12,6 +14,7 @@ public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
       _lists = lists;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<RouteFilterList> getLists() {
       return _lists;
    }

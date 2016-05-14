@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
@@ -22,7 +23,6 @@ import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.VendorConversionException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -101,8 +101,8 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
 
          // bind interface
          String bindInterfaceName = ipsecPeer.getBindInterface();
-         org.batfish.datamodel.Interface newBindInterface = _c
-               .getInterfaces().get(bindInterfaceName);
+         org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces()
+               .get(bindInterfaceName);
          if (newBindInterface != null) {
             Interface bindInterface = _interfaces.get(bindInterfaceName);
             bindInterface.getReferers().put(

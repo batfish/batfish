@@ -20,7 +20,7 @@ public class NeighborsQuestion extends Question {
    private static final String SRC_NODE_REGEX_VAR = "srcNodeRegex";
 
    private String _dstNodeRegex = ".*";
-   private NeighborTypeSet _neighborType = new NeighborTypeSet(NeighborType.ANY);   
+   private NeighborTypeSet _neighborType = new NeighborTypeSet(NeighborType.ANY);
    private String _srcNodeRegex = ".*";
 
    public NeighborsQuestion() {
@@ -63,21 +63,13 @@ public class NeighborsQuestion extends Question {
       _dstNodeRegex = regex;
    }
 
-   public void setNeighborTypeSet(NeighborTypeSet neighborType) {
-      _neighborType = neighborType;
-   }
-
-   public void setSrcNodeRegex(String regex) {
-      _srcNodeRegex = regex;
-   }
-
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
 
       Iterator<?> paramKeys = parameters.keys();
-      
-      while ( paramKeys.hasNext()) {
+
+      while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
          try {
@@ -87,19 +79,26 @@ public class NeighborsQuestion extends Question {
                break;
             case NEIGHBOR_TYPE_VAR:
                ObjectMapper mapper = new ObjectMapper();
-               NeighborTypeSet nset = mapper.readValue(parameters.getString(paramKey), NeighborTypeSet.class);               
-               setNeighborTypeSet(nset);               
+               NeighborTypeSet nset = mapper.readValue(
+                     parameters.getString(paramKey), NeighborTypeSet.class);
+               setNeighborTypeSet(nset);
                break;
             case SRC_NODE_REGEX_VAR:
                setSrcNodeRegex(parameters.getString(paramKey));
                break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: " + paramKey);
+               throw new BatfishException("Unknown key in NodesQuestion: "
+                     + paramKey);
             }
-         } catch (JSONException | IOException e) {
+         }
+         catch (JSONException | IOException e) {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   public void setNeighborTypeSet(NeighborTypeSet neighborType) {
+      _neighborType = neighborType;
    }
 
    @Override
@@ -114,5 +113,9 @@ public class NeighborsQuestion extends Question {
       if (parameters.getTypeBindings().get(SRC_NODE_REGEX_VAR) == VariableType.STRING) {
          setDstNodeRegex(parameters.getString(SRC_NODE_REGEX_VAR));
       }
+   }
+
+   public void setSrcNodeRegex(String regex) {
+      _srcNodeRegex = regex;
    }
 }

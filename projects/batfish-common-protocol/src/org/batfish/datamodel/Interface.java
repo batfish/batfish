@@ -11,6 +11,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 public class Interface extends ComparableStructure<String> {
 
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
@@ -251,10 +253,12 @@ public class Interface extends ComparableStructure<String> {
       return _description;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IpAccessList getInboundFilter() {
       return _inboundFilter;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
    }
@@ -275,6 +279,7 @@ public class Interface extends ComparableStructure<String> {
       return _nativeVlan;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public OspfArea getOspfArea() {
       return _ospfArea;
    }
@@ -299,10 +304,12 @@ public class Interface extends ComparableStructure<String> {
       return _ospfPassive;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IpAccessList getOutgoingFilter() {
       return _outgoingFilter;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Configuration getOwner() {
       return _owner;
    }
@@ -311,6 +318,7 @@ public class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public PolicyMap getRoutingPolicy() {
       return _routingPolicy;
    }
@@ -323,6 +331,7 @@ public class Interface extends ComparableStructure<String> {
       return _switchportTrunkEncapsulation;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Zone getZone() {
       return _zone;
    }

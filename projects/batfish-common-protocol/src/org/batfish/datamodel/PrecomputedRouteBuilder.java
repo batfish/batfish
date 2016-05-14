@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-
 public class PrecomputedRouteBuilder {
 
    private int _administrativeCost;

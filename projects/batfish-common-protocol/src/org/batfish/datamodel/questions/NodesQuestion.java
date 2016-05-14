@@ -18,7 +18,7 @@ public class NodesQuestion extends Question {
    private static final String NODE_REGEX_VAR = "nodeRegex";
    private static final String NODE_TYPE_VAR = "nodeType";
 
-   private NodeTypeSet _nodeType = new NodeTypeSet(NodeType.ANY);   
+   private NodeTypeSet _nodeType = new NodeTypeSet(NodeType.ANY);
    private String _nodeRegex = ".*";
 
    public NodesQuestion() {
@@ -52,20 +52,13 @@ public class NodesQuestion extends Question {
       return _nodeType;
    }
 
-   public void setNodeRegex(String regex) {
-      _nodeRegex = regex;
-   }
-
-   public void setNodeTypeSet(NodeTypeSet nType) {
-      _nodeType = nType;
-   }
-
+   @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
 
       Iterator<?> paramKeys = parameters.keys();
 
-      while ( paramKeys.hasNext()) {
+      while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
          try {
@@ -75,16 +68,27 @@ public class NodesQuestion extends Question {
                break;
             case NODE_TYPE_VAR:
                ObjectMapper mapper = new ObjectMapper();
-               NodeTypeSet nset = mapper.readValue(parameters.getString(paramKey), NodeTypeSet.class);               
+               NodeTypeSet nset = mapper.readValue(
+                     parameters.getString(paramKey), NodeTypeSet.class);
                setNodeTypeSet(nset);
                break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: " + paramKey);
+               throw new BatfishException("Unknown key in NodesQuestion: "
+                     + paramKey);
             }
-         } catch (JSONException | IOException e) {
+         }
+         catch (JSONException | IOException e) {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   public void setNodeRegex(String regex) {
+      _nodeRegex = regex;
+   }
+
+   public void setNodeTypeSet(NodeTypeSet nType) {
+      _nodeType = nType;
    }
 
    @Override
@@ -94,7 +98,7 @@ public class NodesQuestion extends Question {
          setNodeRegex(parameters.getString(NODE_REGEX_VAR));
       }
       if (parameters.getTypeBindings().get(NODE_TYPE_VAR) == VariableType.NODE_TYPE) {
-         //setNodeType(parameters.getSetNodeType(NODE_TYPE_VAR));
+         // setNodeType(parameters.getSetNodeType(NODE_TYPE_VAR));
       }
    }
 }
