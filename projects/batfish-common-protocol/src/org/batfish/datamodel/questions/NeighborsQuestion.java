@@ -27,19 +27,12 @@ public class NeighborsQuestion extends Question {
       super(QuestionType.NEIGHBORS);
    }
 
-   public NeighborsQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
-   }
-
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -57,6 +50,11 @@ public class NeighborsQuestion extends Question {
    @JsonProperty(SRC_NODE_REGEX_VAR)
    public String getSrcNodeRegex() {
       return _srcNodeRegex;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    public void setDstNodeRegex(String regex) {
@@ -101,21 +99,8 @@ public class NeighborsQuestion extends Question {
       _neighborType = neighborType;
    }
 
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NEIGHBOR_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNeighborTypeSet(parameters.getNeighborTypeSet(NEIGHBOR_TYPE_VAR));
-      }
-      if (parameters.getTypeBindings().get(DST_NODE_REGEX_VAR) == VariableType.STRING) {
-         setSrcNodeRegex(parameters.getString(DST_NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(SRC_NODE_REGEX_VAR) == VariableType.STRING) {
-         setDstNodeRegex(parameters.getString(SRC_NODE_REGEX_VAR));
-      }
-   }
-
    public void setSrcNodeRegex(String regex) {
       _srcNodeRegex = regex;
    }
+
 }

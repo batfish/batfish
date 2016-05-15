@@ -9,8 +9,8 @@ public class TracerouteQuestion extends Question {
 
    private Set<FlowBuilder> _flowBuilders;
 
-   public TracerouteQuestion(QuestionParameters parameters) {
-      super(QuestionType.TRACEROUTE, parameters);
+   public TracerouteQuestion() {
+      super(QuestionType.TRACEROUTE);
       _flowBuilders = new HashSet<FlowBuilder>();
    }
 
@@ -26,6 +26,11 @@ public class TracerouteQuestion extends Question {
 
    public Set<FlowBuilder> getFlowBuilders() {
       return _flowBuilders;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return true;
    }
 
 }

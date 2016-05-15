@@ -21,19 +21,12 @@ public class AclReachabilityQuestion extends Question {
       super(QuestionType.ACL_REACHABILITY);
    }
 
-   public AclReachabilityQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
-   }
-
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -46,6 +39,11 @@ public class AclReachabilityQuestion extends Question {
    @JsonProperty(ACL_NAME_REGEX_VAR)
    public String getNodeType() {
       return _aclNameRegex;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    public void setAclNameRegex(String regex) {

@@ -61,7 +61,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
@@ -78,10 +77,13 @@ import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.PrecomputedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
@@ -108,16 +110,14 @@ import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
-import org.batfish.datamodel.questions.DestinationQuestion;
-import org.batfish.datamodel.questions.IngressPathQuestion;
 import org.batfish.datamodel.questions.LocalPathQuestion;
 import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
 import org.batfish.datamodel.questions.NodesQuestion;
 import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.QuestionParameters;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
 import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
 import org.batfish.datamodel.questions.TracerouteQuestion;
@@ -128,10 +128,6 @@ import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.logicblox.LogQLPredicateInfoExtractor;
 import org.batfish.grammar.logicblox.LogiQLCombinedParser;
 import org.batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
-import org.batfish.grammar.question.QuestionCombinedParser;
-import org.batfish.grammar.question.QuestionExtractor;
-import org.batfish.grammar.question.QuestionParametersCombinedParser;
-import org.batfish.grammar.question.QuestionParametersExtractor;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
 import org.batfish.grammar.topology.BatfishTopologyExtractor;
 import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
@@ -159,26 +155,27 @@ import org.batfish.nxtnet.NxtnetConstants;
 import org.batfish.nxtnet.PredicateInfo;
 import org.batfish.nxtnet.Relation;
 import org.batfish.nxtnet.TopologyFactExtractor;
+import org.batfish.protocoldependency.DependencyDatabase;
+import org.batfish.protocoldependency.DependentRoute;
+import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityAnswer;
-import org.batfish.question.Environment;
+import org.batfish.question.BgpAdvertisementsAnswer;
+import org.batfish.question.LocalPathAnswer;
+import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NodesAnswer;
-import org.batfish.question.VerifyProgram;
-import org.batfish.question.VerifyQuestion;
+import org.batfish.question.ProtocolDependenciesAnswer;
+import org.batfish.question.ReachabilityAnswer;
+import org.batfish.question.ReducedReachabilityAnswer;
+import org.batfish.question.TracerouteAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.Util;
-import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
-import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
 import org.batfish.z3.NodSatResult;
-import org.batfish.z3.QuerySynthesizer;
-import org.batfish.z3.ReachEdgeQuerySynthesizer;
-import org.batfish.z3.ReachabilityQuerySynthesizer;
-import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -469,7 +466,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
+   public static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins, true);
    }
 
@@ -554,10 +551,11 @@ public class Batfish implements AutoCloseable {
       boolean diff = question.getDifferential();
       boolean diffActive = (question.getDiffActive() || _settings
             .getDiffActive()) && !diff;
+      boolean traffic = question.getTraffic();
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
       // TODO: fix hack for verify questions
-      if (!dp || question instanceof VerifyQuestion) {
+      if (!dp || !traffic) {
          _settings.setNxtnetTraffic(false);
          _settings.setHistory(false);
       }
@@ -568,24 +566,21 @@ public class Batfish implements AutoCloseable {
                (AclReachabilityQuestion) question));
          break;
 
+      case BGP_ADVERTISEMENTS:
+         outputAnswer(new BgpAdvertisementsAnswer(this,
+               (BgpAdvertisementsQuestion) question));
+         break;
+
       case COMPARE_SAME_NAME:
          answerCompareSameName((CompareSameNameQuestion) question);
          break;
 
-      case DESTINATION:
-         answerDestination((DestinationQuestion) question);
-         break;
-
-      case INGRESS_PATH:
-         answerIngressPath((IngressPathQuestion) question);
-         break;
-
       case LOCAL_PATH:
-         answerLocalPath((LocalPathQuestion) question);
+         outputAnswer(new LocalPathAnswer(this, (LocalPathQuestion) question));
          break;
 
       case MULTIPATH:
-         answerMultipath((MultipathQuestion) question);
+         outputAnswer(new MultipathAnswer(this, (MultipathQuestion) question));
          break;
 
       case NEIGHBORS:
@@ -597,23 +592,22 @@ public class Batfish implements AutoCloseable {
          break;
 
       case PROTOCOL_DEPENDENCIES:
-         answerProtocolDependencies((ProtocolDependenciesQuestion) question);
+         outputAnswer(new ProtocolDependenciesAnswer(this,
+               (ProtocolDependenciesQuestion) question));
          break;
 
       case REACHABILITY:
-         answerReachability((ReachabilityQuestion) question);
+         outputAnswer(new ReachabilityAnswer(this,
+               (ReachabilityQuestion) question));
          break;
 
       case REDUCED_REACHABILITY:
-         answerReducedReachability((ReducedReachabilityQuestion) question);
+         outputAnswer(new ReducedReachabilityAnswer(this,
+               (ReducedReachabilityQuestion) question));
          break;
 
       case TRACEROUTE:
-         answerTraceroute((TracerouteQuestion) question);
-         break;
-
-      case VERIFY:
-         answerVerify((VerifyQuestion) question);
+         outputAnswer(new TracerouteAnswer(this, (TracerouteQuestion) question));
          break;
 
       default:
@@ -654,344 +648,8 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private void answerDestination(DestinationQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-      // method stub
-   }
-
-   private void answerIngressPath(IngressPathQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-      // method stub
-   }
-
-   private void answerLocalPath(LocalPathQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      String tag = getDifferentialFlowTag();
-
-      // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
-      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
-      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
-
-      // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
-      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
-      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
-
-      Set<String> commonNodes = new TreeSet<String>();
-      commonNodes.addAll(baseConfigurations.keySet());
-      commonNodes.retainAll(diffConfigurations.keySet());
-
-      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
-      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
-
-      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
-            baseConfigurations);
-
-      // compute composite program and flows
-      List<Synthesizer> commonEdgeSynthesizers = new ArrayList<Synthesizer>();
-      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-      commonEdgeSynthesizers.add(diffDataPlaneSynthesizer);
-      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
-
-      // generate local edge reachability and black hole queries
-      Topology diffTopology = loadTopology(_diffEnvSettings);
-      EdgeSet diffEdges = diffTopology.getEdges();
-      for (Edge edge : diffEdges) {
-         String ingressNode = edge.getNode1();
-         ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true);
-         ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true);
-         noReachQuery.setNegate(true);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-         queries.add(reachQuery);
-         queries.add(noReachQuery);
-         queries.add(blacklistQuery);
-         NodeSet nodes = new NodeSet();
-         nodes.add(ingressNode);
-         CompositeNodJob job = new CompositeNodJob(commonEdgeSynthesizers,
-               queries, nodes, tag);
-         jobs.add(job);
-      }
-
-      // we also need queries for nodes next to edges that are now missing, in
-      // the case that those nodes still exist
-      List<Synthesizer> missingEdgeSynthesizers = new ArrayList<Synthesizer>();
-      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-      Topology baseTopology = loadTopology(_baseEnvSettings);
-      EdgeSet baseEdges = baseTopology.getEdges();
-      EdgeSet missingEdges = new EdgeSet();
-      missingEdges.addAll(baseEdges);
-      missingEdges.removeAll(diffEdges);
-      for (Edge missingEdge : missingEdges) {
-         String ingressNode = missingEdge.getNode1();
-         if (diffConfigurations.containsKey(ingressNode)) {
-            ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-                  ingressNode, missingEdge, true);
-            List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-            queries.add(reachQuery);
-            queries.add(blacklistQuery);
-            NodeSet nodes = new NodeSet();
-            nodes.add(ingressNode);
-            CompositeNodJob job = new CompositeNodJob(missingEdgeSynthesizers,
-                  queries, nodes, tag);
-            jobs.add(job);
-         }
-
-      }
-
-      Set<Flow> flows = computeCompositeNodOutput(jobs);
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.output(flow.toString() + "\n");
-      }
-      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
-      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
-   }
-
-   private void answerMultipath(MultipathQuestion question) {
-      checkDataPlaneQuestionDependencies();
-      String tag = getFlowTag();
-      Map<String, Configuration> configurations = loadConfigurations();
-      File dataPlanePath = new File(_envSettings.getDataPlanePath());
-      Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations,
-            dataPlanePath);
-      List<NodJob> jobs = new ArrayList<NodJob>();
-      for (String node : configurations.keySet()) {
-         MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
-               node);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
-         jobs.add(job);
-      }
-
-      flows = computeNodOutput(jobs);
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-      }
-      dumpTrafficFacts(trafficFactBins);
-   }
-
    private void answerNeighbors(NeighborsQuestion question) {
       _logger.output("Boohoo bohoo neighbors\n");
-   }
-
-   private void answerProtocolDependencies(ProtocolDependenciesQuestion question) {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-      ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
-            configurations);
-      analysis.printDependencies(_logger);
-      analysis.writeGraphs(_settings, _logger);
-   }
-
-   private void answerReachability(ReachabilityQuestion question) {
-      checkDataPlaneQuestionDependencies();
-      String tag = getFlowTag();
-      Map<String, Configuration> configurations = loadConfigurations();
-      File dataPlanePath = new File(_envSettings.getDataPlanePath());
-      Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations,
-            dataPlanePath);
-
-      // collect ingress nodes
-      Pattern ingressNodeRegex = Pattern
-            .compile(question.getIngressNodeRegex());
-      Set<String> activeIngressNodes = new TreeSet<String>();
-      if (ingressNodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
-            if (ingressNodeMatcher.matches()) {
-               activeIngressNodes.add(node);
-            }
-         }
-      }
-      else {
-         activeIngressNodes.addAll(configurations.keySet());
-      }
-
-      // collect final nodes
-      Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
-      Set<String> activeFinalNodes = new TreeSet<String>();
-      if (finalNodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
-            if (finalNodeMatcher.matches()) {
-               activeFinalNodes.add(node);
-            }
-         }
-      }
-      else {
-         activeFinalNodes.addAll(configurations.keySet());
-      }
-
-      // build query jobs
-      List<NodJob> jobs = new ArrayList<NodJob>();
-      for (String ingressNode : activeIngressNodes) {
-         ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
-               question.getActions(), question.getDstPrefixes(),
-               question.getDstPortRange(), activeFinalNodes,
-               Collections.singleton(ingressNode),
-               question.getIpProtocolRange(), question.getSrcPrefixes(),
-               question.getSrcPortRange(), question.getIcmpType(),
-               question.getIcmpCode(), 0 /*
-                                          * TODO: allow constraining tcpFlags
-                                          * question.getTcpFlags()
-                                          */);
-         NodeSet nodes = new NodeSet();
-         nodes.add(ingressNode);
-         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
-         jobs.add(job);
-      }
-
-      // run jobs and get resulting flows
-      flows = computeNodOutput(jobs);
-
-      // dump flows to disk
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-      }
-      dumpTrafficFacts(trafficFactBins);
-   }
-
-   private void answerReducedReachability(ReducedReachabilityQuestion question) {
-      checkDifferentialDataPlaneQuestionDependencies();
-      String tag = getDifferentialFlowTag();
-
-      // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
-      File baseDataPlanePath = new File(_baseEnvSettings.getDataPlanePath());
-      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
-
-      // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
-      File diffDataPlanePath = new File(_diffEnvSettings.getDataPlanePath());
-      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
-
-      Set<String> commonNodes = new TreeSet<String>();
-      commonNodes.addAll(baseConfigurations.keySet());
-      commonNodes.retainAll(diffConfigurations.keySet());
-
-      NodeSet blacklistNodes = getNodeBlacklist(_diffEnvSettings);
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(_diffEnvSettings);
-      EdgeSet blacklistEdges = getEdgeBlacklist(_diffEnvSettings);
-
-      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
-            baseConfigurations);
-
-      // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
-      synthesizers.add(baseDataPlaneSynthesizer);
-      synthesizers.add(diffDataPlaneSynthesizer);
-      synthesizers.add(baseDataPlaneSynthesizer);
-
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
-
-      // generate base reachability and diff blackhole and blacklist queries
-      for (String node : commonNodes) {
-         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
-               node, null);
-         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
-               node, null);
-         blackHoleQuery.setNegate(true);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-         queries.add(reachableQuery);
-         queries.add(blackHoleQuery);
-         queries.add(blacklistQuery);
-         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
-               nodes, tag);
-         jobs.add(job);
-      }
-
-      Set<Flow> flows = computeCompositeNodOutput(jobs);
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.debug("Found: " + flow.toString() + "\n");
-      }
-      dumpTrafficFacts(trafficFactBins, _baseEnvSettings);
-      dumpTrafficFacts(trafficFactBins, _diffEnvSettings);
-   }
-
-   private void answerTraceroute(TracerouteQuestion question) {
-      checkDataPlaneQuestionDependencies();
-      Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      String tag = getFlowTag();
-      for (FlowBuilder flowBuilder : flowBuilders) {
-         flowBuilder.setTag(tag);
-         Flow flow = flowBuilder.build();
-         wSetFlowOriginate.append(flow.toLBLine());
-      }
-      dumpTrafficFacts(trafficFactBins);
-   }
-
-   private void answerVerify(VerifyQuestion question) {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-      VerifyProgram program = question.getProgram();
-      if (program.getDataPlane()) {
-         if (program.getDataPlaneBgpAdvertisements()) {
-            AdvertisementSet bgpAdvertisements = getAdvertisements(_envSettings);
-            program.setBgpAdvertisements(bgpAdvertisements);
-         }
-         if (program.getDataPlaneRoutes()) {
-            RouteSet routes = getRoutes(_envSettings);
-            program.setRoutes(routes);
-         }
-      }
-      program.execute(configurations, _logger, _settings);
-      if (program.getAssertions()) {
-         int totalAssertions = program.getTotalAssertions();
-         int failedAssertions = program.getFailedAssertions();
-         int passedAssertions = totalAssertions - failedAssertions;
-         double percentPassed = 100 * ((double) passedAssertions)
-               / totalAssertions;
-         _logger.outputf("%d/%d (%.1f%%) assertions passed.\n",
-               passedAssertions, totalAssertions, percentPassed);
-         if (!program.getUnsafe()) {
-            _logger.output("No violations detected\n");
-         }
-      }
-      String jsonPath = _settings.getAnswerJsonPath();
-      if (jsonPath != null) {
-         String jsonOutput = program.getJson();
-         Util.writeFile(jsonPath, jsonOutput);
-      }
    }
 
    /**
@@ -1136,7 +794,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void checkDataPlaneQuestionDependencies() {
+   public void checkDataPlaneQuestionDependencies() {
       checkDataPlaneQuestionDependencies(_envSettings);
    }
 
@@ -1158,7 +816,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void checkDifferentialDataPlaneQuestionDependencies() {
+   public void checkDifferentialDataPlaneQuestionDependencies() {
       checkDiffEnvironmentSpecified();
       checkConfigurations();
       checkDataPlane(_baseEnvSettings);
@@ -1216,7 +874,7 @@ public class Batfish implements AutoCloseable {
    public void close() throws Exception {
    }
 
-   private Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
+   public Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
       _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
@@ -1362,7 +1020,7 @@ public class Batfish implements AutoCloseable {
       return flowSinks;
    }
 
-   private Set<Flow> computeNodOutput(List<NodJob> jobs) {
+   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
       _logger.info("\n*** EXECUTING NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
@@ -1511,9 +1169,7 @@ public class Batfish implements AutoCloseable {
    private void disableUnusableVpnInterfaces(
          Map<String, Configuration> configurations,
          EnvironmentSettings envSettings) {
-      Environment environment = new Environment();
-      environment.setConfigurations(configurations);
-      environment.initRemoteIpsecVpns();
+      initRemoteIpsecVpns(configurations);
       for (Configuration c : configurations.values()) {
          for (IpsecVpn vpn : c.getIpsecVpns().values()) {
             if (vpn.getRemoteIpsecVpn() == null) {
@@ -1568,11 +1224,11 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   private void dumpTrafficFacts(Map<String, StringBuilder> factBins) {
+   public void dumpTrafficFacts(Map<String, StringBuilder> factBins) {
       dumpTrafficFacts(factBins, _envSettings);
    }
 
-   private void dumpTrafficFacts(Map<String, StringBuilder> factBins,
+   public void dumpTrafficFacts(Map<String, StringBuilder> factBins,
          EnvironmentSettings envSettings) {
       _logger.info("\n*** DUMPING TRAFFIC FACTS ***\n");
       dumpFacts(factBins, envSettings.getTrafficFactsDir());
@@ -1902,6 +1558,10 @@ public class Batfish implements AutoCloseable {
       return adverts;
    }
 
+   public EnvironmentSettings getBaseEnvSettings() {
+      return _baseEnvSettings;
+   }
+
    public Map<String, Configuration> getConfigurations(
          String serializedVendorConfigPath) {
       Map<String, GenericConfigObject> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
@@ -1934,12 +1594,16 @@ public class Batfish implements AutoCloseable {
       return Collections.<String, Configuration> emptyMap();
    }
 
-   private String getDifferentialFlowTag() {
+   public EnvironmentSettings getDiffEnvSettings() {
+      return _diffEnvSettings;
+   }
+
+   public String getDifferentialFlowTag() {
       return _settings.getQuestionName() + ":" + _baseEnvSettings.getName()
             + ":" + _diffEnvSettings.getName();
    }
 
-   private EdgeSet getEdgeBlacklist(EnvironmentSettings envSettings) {
+   public EdgeSet getEdgeBlacklist(EnvironmentSettings envSettings) {
       EdgeSet blacklistEdges = null;
       String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
       if (edgeBlacklistPath != null) {
@@ -1956,6 +1620,10 @@ public class Batfish implements AutoCloseable {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
       return seconds;
+   }
+
+   public EnvironmentSettings getEnvSettings() {
+      return _envSettings;
    }
 
    private InterfaceSet getFlowSinkSet(EnvironmentSettings envSettings) {
@@ -1980,7 +1648,7 @@ public class Batfish implements AutoCloseable {
       return dataPlane.getFlowSinks();
    }
 
-   private String getFlowTag() {
+   public String getFlowTag() {
       return _settings.getQuestionName() + ":" + _envSettings.getName();
    }
 
@@ -2063,7 +1731,7 @@ public class Batfish implements AutoCloseable {
       return topology;
    }
 
-   private Set<NodeInterfacePair> getInterfaceBlacklist(
+   public Set<NodeInterfacePair> getInterfaceBlacklist(
          EnvironmentSettings envSettings) {
       Set<NodeInterfacePair> blacklistInterfaces = null;
       String interfaceBlacklistPath = envSettings.getInterfaceBlacklistPath();
@@ -2080,7 +1748,7 @@ public class Batfish implements AutoCloseable {
       return _logger;
    }
 
-   private NodeSet getNodeBlacklist(EnvironmentSettings envSettings) {
+   public NodeSet getNodeBlacklist(EnvironmentSettings envSettings) {
       NodeSet blacklistNodes = null;
       String nodeBlacklistPath = envSettings.getNodeBlacklistPath();
       if (nodeBlacklistPath != null) {
@@ -2329,6 +1997,133 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
+      AdvertisementSet globalBgpAdvertisements = getAdvertisements(_envSettings);
+      for (Configuration node : configurations.values()) {
+         node.initBgpAdvertisements();
+      }
+      for (BgpAdvertisement bgpAdvertisement : globalBgpAdvertisements) {
+         BgpAdvertisementType type = BgpAdvertisementType
+               .fromNxtnetTypeName(bgpAdvertisement.getType());
+         switch (type) {
+         case EBGP_ORIGINATED: {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = configurations
+                  .get(originationNodeName);
+            if (originationNode != null) {
+               originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+               originationNode.getOriginatedAdvertisements().add(
+                     bgpAdvertisement);
+               originationNode.getOriginatedEbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            else {
+               throw new BatfishException(
+                     "Originated bgp advertisement refers to missing node: \""
+                           + originationNodeName + "\"");
+            }
+            break;
+         }
+
+         case IBGP_ORIGINATED: {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = configurations
+                  .get(originationNodeName);
+            if (originationNode != null) {
+               originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+               originationNode.getOriginatedAdvertisements().add(
+                     bgpAdvertisement);
+               originationNode.getOriginatedIbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            else {
+               throw new BatfishException(
+                     "Originated bgp advertisement refers to missing node: \""
+                           + originationNodeName + "\"");
+            }
+            break;
+         }
+
+         case EBGP_RECEIVED: {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+               receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedEbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            break;
+         }
+
+         case IBGP_RECEIVED: {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+               receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingNode.getReceivedIbgpAdvertisements().add(
+                     bgpAdvertisement);
+            }
+            break;
+         }
+
+         case EBGP_SENT: {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+               sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+         }
+
+         case IBGP_SENT: {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+               sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+         }
+
+         default:
+            throw new BatfishException("Invalid bgp advertisement type");
+         }
+      }
+   }
+
+   public void initBgpOriginationSpaceExplicit(
+         Map<String, Configuration> configurations) {
+      ProtocolDependencyAnalysis protocolDependencyAnalysis = new ProtocolDependencyAnalysis(
+            configurations);
+      DependencyDatabase database = protocolDependencyAnalysis
+            .getDependencyDatabase();
+
+      for (Entry<String, Configuration> e : configurations.entrySet()) {
+         PrefixSpace ebgpExportSpace = new PrefixSpace();
+         String name = e.getKey();
+         Configuration node = e.getValue();
+         BgpProcess proc = node.getBgpProcess();
+         if (proc != null) {
+            Set<PotentialExport> bgpExports = database.getPotentialExports(
+                  name, RoutingProtocol.BGP);
+            for (PotentialExport export : bgpExports) {
+               DependentRoute exportSourceRoute = export.getDependency();
+               if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
+                     && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
+                  Prefix prefix = export.getPrefix();
+                  ebgpExportSpace.addPrefix(prefix);
+               }
+            }
+            proc.setOriginationSpace(ebgpExportSpace);
+         }
+      }
+   }
+
    private EntityTable initEntityTable(EnvironmentSettings envSettings) {
       EntityTable entityTable = _entityTables.get(envSettings);
       if (entityTable == null) {
@@ -2412,6 +2207,131 @@ public class Batfish implements AutoCloseable {
       }
    }
 
+   public void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
+      Map<BgpNeighbor, Ip> remoteAddresses = new HashMap<BgpNeighbor, Ip>();
+      Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<Ip, Set<BgpNeighbor>>();
+      for (Configuration node : configurations.values()) {
+         String hostname = node.getHostname();
+         BgpProcess proc = node.getBgpProcess();
+         if (proc != null) {
+            for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+               bgpNeighbor.initCandidateRemoteBgpNeighbors();
+               if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
+                  throw new BatfishException(
+                        hostname
+                              + ": Do not support dynamic bgp sessions at this time: "
+                              + bgpNeighbor.getPrefix());
+               }
+               Ip remoteAddress = bgpNeighbor.getAddress();
+               if (remoteAddress == null) {
+                  throw new BatfishException(
+                        hostname
+                              + ": Could not determine remote address of bgp neighbor: "
+                              + bgpNeighbor);
+               }
+               Ip localAddress = bgpNeighbor.getLocalIp();
+               if (localAddress == null) {
+                  continue;
+               }
+               remoteAddresses.put(bgpNeighbor, remoteAddress);
+               Set<BgpNeighbor> localAddressOwners = localAddresses
+                     .get(localAddress);
+               if (localAddressOwners == null) {
+                  localAddressOwners = new HashSet<BgpNeighbor>();
+                  localAddresses.put(localAddress, localAddressOwners);
+               }
+               localAddressOwners.add(bgpNeighbor);
+            }
+         }
+      }
+      for (Entry<BgpNeighbor, Ip> e : remoteAddresses.entrySet()) {
+         BgpNeighbor bgpNeighbor = e.getKey();
+         Ip remoteAddress = e.getValue();
+         Ip localAddress = bgpNeighbor.getLocalIp();
+         Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses
+               .get(remoteAddress);
+         if (remoteBgpNeighborCandidates != null) {
+            for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
+               Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
+               if (localAddress.equals(reciprocalRemoteIp)) {
+                  bgpNeighbor.getCandidateRemoteBgpNeighbors().add(
+                        remoteBgpNeighborCandidate);
+                  bgpNeighbor.setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
+               }
+            }
+         }
+      }
+   }
+
+   public void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
+      Map<IpsecVpn, Ip> remoteAddresses = new HashMap<IpsecVpn, Ip>();
+      Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<Ip, Set<IpsecVpn>>();
+      for (Configuration c : configurations.values()) {
+         for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
+            Ip remoteAddress = ipsecVpn.getGateway().getAddress();
+            remoteAddresses.put(ipsecVpn, remoteAddress);
+            Set<Prefix> externalPrefixes = ipsecVpn.getGateway()
+                  .getExternalInterface().getAllPrefixes();
+            for (Prefix externalPrefix : externalPrefixes) {
+               Ip externalAddress = externalPrefix.getAddress();
+               Set<IpsecVpn> vpnsUsingExternalAddress = externalAddresses
+                     .get(externalAddress);
+               if (vpnsUsingExternalAddress == null) {
+                  vpnsUsingExternalAddress = new HashSet<IpsecVpn>();
+                  externalAddresses.put(externalAddress,
+                        vpnsUsingExternalAddress);
+               }
+               vpnsUsingExternalAddress.add(ipsecVpn);
+            }
+         }
+      }
+      for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
+         IpsecVpn ipsecVpn = e.getKey();
+         Ip remoteAddress = e.getValue();
+         ipsecVpn.initCandidateRemoteVpns();
+         Set<IpsecVpn> remoteIpsecVpnCandidates = externalAddresses
+               .get(remoteAddress);
+         if (remoteIpsecVpnCandidates != null) {
+            for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
+               Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate
+                     .getGateway().getLocalAddress();
+               if (remoteIpsecVpnLocalAddress != null
+                     && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
+                  continue;
+               }
+               Ip reciprocalRemoteAddress = remoteAddresses
+                     .get(remoteIpsecVpnCandidate);
+               Set<IpsecVpn> reciprocalVpns = externalAddresses
+                     .get(reciprocalRemoteAddress);
+               if (reciprocalVpns != null && reciprocalVpns.contains(ipsecVpn)) {
+                  ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
+                  ipsecVpn.getCandidateRemoteIpsecVpns().add(
+                        remoteIpsecVpnCandidate);
+               }
+            }
+         }
+      }
+   }
+
+   public void initRoutes(Map<String, Configuration> configurations) {
+      Set<PrecomputedRoute> globalRoutes = getRoutes(_envSettings);
+      for (Configuration node : configurations.values()) {
+         node.initRoutes();
+      }
+      for (PrecomputedRoute route : globalRoutes) {
+         String nodeName = route.getNode();
+         Configuration node = configurations.get(nodeName);
+         if (node != null) {
+            node.getRoutes().add(route);
+         }
+         else {
+            throw new BatfishException(
+                  "Precomputed route refers to missing node: \"" + nodeName
+                        + "\"");
+         }
+      }
+   }
+
    private boolean isJavaSerializationData(File inputFile) {
       try (FileInputStream i = new FileInputStream(inputFile)) {
          int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
@@ -2467,7 +2387,7 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   private Topology loadTopology(EnvironmentSettings envSettings) {
+   public Topology loadTopology(EnvironmentSettings envSettings) {
       String topologyPath = envSettings.getSerializedTopologyPath();
       File topologyPathFile = new File(topologyPath);
       _logger.info("Deserializing topology...");
@@ -2648,37 +2568,9 @@ public class Batfish implements AutoCloseable {
          question.setJsonParameters(parameters);
          return question;
       }
-      catch (IOException e1) {
-         _logger
-               .debugf(
-                     "BF: could not parse as Json question: %s\nWill try old, custom parser.",
-                     e1.getMessage());
+      catch (IOException e) {
+         throw new BatfishException("Could not parse JSON question", e);
       }
-
-      QuestionParameters parameters = (QuestionParameters) parseQuestionParameters();
-      QuestionCombinedParser parser = new QuestionCombinedParser(questionText,
-            _settings);
-      QuestionExtractor extractor = new QuestionExtractor(parser, getFlowTag(),
-            parameters);
-      try {
-         ParserRuleContext tree = parse(parser, questionPath);
-         _logger.info("\tPost-processing...");
-         extractor.processParseTree(tree);
-         _logger.info("OK\n");
-      }
-      catch (CleanBatfishException e) {
-         throw e;
-      }
-      catch (ParserBatfishException e) {
-         String error = "Error parsing question: \"" + questionPath + "\"";
-         throw new BatfishException(error, e);
-      }
-      catch (Exception e) {
-         String error = "Error post-processing parse tree of question file: \""
-               + questionPath + "\"";
-         throw new BatfishException(error, e);
-      }
-      return extractor.getQuestion();
    }
 
    private Object parseQuestionParameters() {
@@ -2698,36 +2590,9 @@ public class Batfish implements AutoCloseable {
                : new JSONObject(questionText);
          return jObj;
       }
-      catch (JSONException e1) {
-         _logger
-               .debugf(
-                     "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
-                     e1.getMessage());
+      catch (JSONException e) {
+         throw new BatfishException("Could not parse JSON parameters", e);
       }
-
-      QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(
-            questionText, _settings);
-      QuestionParametersExtractor extractor = new QuestionParametersExtractor();
-      ParserRuleContext tree = null;
-      try {
-         tree = parse(parser, questionParametersPath);
-      }
-      catch (ParserBatfishException e) {
-         String error = "Error parsing question parameters: \""
-               + questionParametersPath + "\"";
-         throw new BatfishException(error, e);
-      }
-      try {
-         _logger.info("\tPost-processing...");
-         extractor.processParseTree(tree);
-         _logger.info("OK\n");
-      }
-      catch (Exception e) {
-         String error = "Error post-processing parse tree of question parameters file: \""
-               + questionParametersPath + "\"";
-         throw new BatfishException(error, e);
-      }
-      return extractor.getParameters();
    }
 
    private Topology parseTopology(File topologyFilePath) {
@@ -3773,7 +3638,7 @@ public class Batfish implements AutoCloseable {
       _terminatedWithException = terminatedWithException;
    }
 
-   private Synthesizer synthesizeDataPlane(
+   public Synthesizer synthesizeDataPlane(
          Map<String, Configuration> configurations, File dataPlanePath) {
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();

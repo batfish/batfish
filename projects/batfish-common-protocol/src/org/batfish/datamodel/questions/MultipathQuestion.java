@@ -2,8 +2,8 @@ package org.batfish.datamodel.questions;
 
 public class MultipathQuestion extends Question {
 
-   public MultipathQuestion(QuestionParameters parameters) {
-      super(QuestionType.MULTIPATH, parameters);
+   public MultipathQuestion() {
+      super(QuestionType.MULTIPATH);
    }
 
    @Override
@@ -14,6 +14,11 @@ public class MultipathQuestion extends Question {
    @Override
    public boolean getDifferential() {
       return false;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return true;
    }
 
 }

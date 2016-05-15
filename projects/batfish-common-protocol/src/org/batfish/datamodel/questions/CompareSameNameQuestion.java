@@ -17,19 +17,12 @@ public final class CompareSameNameQuestion extends Question {
       super(QuestionType.COMPARE_SAME_NAME);
    }
 
-   public CompareSameNameQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
-   }
-
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -44,6 +37,11 @@ public final class CompareSameNameQuestion extends Question {
       return _namedStructType;
    }
 
+   @Override
+   public boolean getTraffic() {
+      return false;
+   }
+
    public void setNamedStructType(NamedStructType nType) {
       _namedStructType = nType;
    }
@@ -52,15 +50,4 @@ public final class CompareSameNameQuestion extends Question {
       _nodeRegex = regex;
    }
 
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NODE_REGEX_VAR) == VariableType.STRING) {
-         setNodeRegex(parameters.getString(NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(NAMED_STRUCT_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNamedStructType(parameters
-               .getNamedStructType(NAMED_STRUCT_TYPE_VAR));
-      }
-   }
 }

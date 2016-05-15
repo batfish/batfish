@@ -215,10 +215,6 @@
          <fileset dir="src" includes="org/batfish/grammar/mrv/MrvParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/vyos/VyosLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/vyos/VyosParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParser*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersLexer*.java"/>
-         <fileset dir="src" includes="org/batfish/grammar/question/QuestionParametersParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/RoleLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/RoleParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/topology/BatfishTopologyLexer*.java"/>
@@ -261,8 +257,6 @@
          <antlr4lexer grammar.name="JuniperLexer" grammar.packagedir="org/batfish/grammar/juniper"/>
          <antlr4lexer grammar.name="LogiQLLexer" grammar.packagedir="org/batfish/grammar/logicblox"/>
          <antlr4lexer grammar.name="MrvLexer" grammar.packagedir="org/batfish/grammar/mrv"/>
-         <antlr4lexer grammar.name="QuestionLexer" grammar.packagedir="org/batfish/grammar/question"/>
-         <antlr4lexer grammar.name="QuestionParametersLexer" grammar.packagedir="org/batfish/grammar/question"/>
          <antlr4lexer grammar.name="RoleLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="VyosLexer" grammar.packagedir="org/batfish/grammar/vyos"/>
       </parallel>
@@ -361,20 +355,6 @@
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_interface.g4"/>
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_subscriber.g4"/>
                <fileset dir="src/org/batfish/grammar/mrv" includes="Mrv_system.g4"/>
-            </dependencies>
-         </antlr4parser>
-         <antlr4parser grammar.name="QuestionParser" grammar.packagedir="org/batfish/grammar/question">
-            <dependencies>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionParser.g4"/>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionLexer.g4"/>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionLexer.tokens"/>
-            </dependencies>
-         </antlr4parser>
-         <antlr4parser grammar.name="QuestionParametersParser" grammar.packagedir="org/batfish/grammar/question">
-            <dependencies>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionParametersParser.g4"/>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionParametersLexer.g4"/>
-               <fileset dir="src/org/batfish/grammar/question" includes="QuestionParametersLexer.tokens"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="RoleParser" grammar.packagedir="org/batfish/grammar/topology">
