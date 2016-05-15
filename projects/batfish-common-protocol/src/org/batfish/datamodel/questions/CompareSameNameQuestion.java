@@ -2,19 +2,15 @@ package org.batfish.datamodel.questions;
 
 import org.batfish.datamodel.NamedStructType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public final class CompareSameNameQuestion extends Question {
 
-   private static final String NODE_REGEX_VAR = "nodeRegex";
-   private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
-
-   private NamedStructType _namedStructType = NamedStructType.ANY;
-   private String _nodeRegex = ".*";
+   private NamedStructType _namedStructType;
+   private String _nodeRegex;
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
+      _namedStructType = NamedStructType.ANY;
+      _nodeRegex = ".*";
    }
 
    @Override
@@ -27,12 +23,10 @@ public final class CompareSameNameQuestion extends Question {
       return false;
    }
 
-   @JsonProperty(NODE_REGEX_VAR)
    public String getNodeRegex() {
       return _nodeRegex;
    }
 
-   @JsonProperty(NAMED_STRUCT_TYPE_VAR)
    public NamedStructType getNodeType() {
       return _namedStructType;
    }

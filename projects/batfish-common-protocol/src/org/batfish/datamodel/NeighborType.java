@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum NeighborType {
    ANY("any"),
    EBGP("ebgp"),
@@ -23,8 +26,9 @@ public enum NeighborType {
       return Collections.unmodifiableMap(map);
    }
 
+   @JsonCreator
    public static NeighborType fromName(String name) {
-      NeighborType ntype = _map.get(name);
+      NeighborType ntype = _map.get(name.toLowerCase());
       if (ntype == null) {
          throw new BatfishException("No neighbor type with name: \"" + name
                + "\"");
@@ -38,6 +42,7 @@ public enum NeighborType {
       _ntypeName = ntypeName;
    }
 
+   @JsonValue
    public String neighborTypeName() {
       return _ntypeName;
    }

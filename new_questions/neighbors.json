@@ -4,6 +4,6 @@
   "nodeBlacklist" : [ ],
   "srcNodeRegex" : ".*",
   "dstNodeRegex" : ".*",
-  "neighborType" : [ "ANY" ]
+  "neighborType" : [ "EBGP" ]
 }
 

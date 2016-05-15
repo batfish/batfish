@@ -111,6 +111,7 @@ import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
+import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.LocalPathQuestion;
 import org.batfish.datamodel.questions.MultipathQuestion;
@@ -161,8 +162,10 @@ import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityAnswer;
 import org.batfish.question.BgpAdvertisementsAnswer;
+import org.batfish.question.BgpSessionCheckAnswer;
 import org.batfish.question.LocalPathAnswer;
 import org.batfish.question.MultipathAnswer;
+import org.batfish.question.NeighborsAnswer;
 import org.batfish.question.NodesAnswer;
 import org.batfish.question.ProtocolDependenciesAnswer;
 import org.batfish.question.ReachabilityAnswer;
@@ -571,6 +574,11 @@ public class Batfish implements AutoCloseable {
                (BgpAdvertisementsQuestion) question));
          break;
 
+      case BGP_SESSION_CHECK:
+         outputAnswer(new BgpSessionCheckAnswer(this,
+               (BgpSessionCheckQuestion) question));
+         break;
+
       case COMPARE_SAME_NAME:
          answerCompareSameName((CompareSameNameQuestion) question);
          break;
@@ -584,7 +592,7 @@ public class Batfish implements AutoCloseable {
          break;
 
       case NEIGHBORS:
-         answerNeighbors((NeighborsQuestion) question);
+         outputAnswer(new NeighborsAnswer(this, (NeighborsQuestion) question));
          break;
 
       case NODES:
@@ -646,10 +654,6 @@ public class Batfish implements AutoCloseable {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
 
-   }
-
-   private void answerNeighbors(NeighborsQuestion question) {
-      _logger.output("Boohoo bohoo neighbors\n");
    }
 
    /**

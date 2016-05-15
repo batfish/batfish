@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 public enum QuestionType {
    ACL_REACHABILITY,
    BGP_ADVERTISEMENTS,
+   BGP_SESSION_CHECK,
    COMPARE_SAME_NAME,
    LOCAL_PATH,
    MULTIPATH,
