@@ -182,13 +182,13 @@ public class ConfigurationFactExtractor {
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
             for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
-               String apName = hostname + ":" + attributePolicy.getMapName();
+               String apName = hostname + ":" + attributePolicy.getName();
                wSetBgpGeneratedRouteAttributePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + apName + "\n");
             }
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
-               String gpName = hostname + ":" + generationPolicy.getMapName();
+               String gpName = hostname + ":" + generationPolicy.getName();
                wSetBgpGeneratedRoutePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + gpName + "\n");
@@ -222,7 +222,7 @@ public class ConfigurationFactExtractor {
                      + network_end + "|" + prefix_length + "\n");
                for (PolicyMap attributePolicy : gr.getAttributePolicies()
                      .values()) {
-                  String apName = hostname + ":" + attributePolicy.getMapName();
+                  String apName = hostname + ":" + attributePolicy.getName();
                   wSetBgpNeighborGeneratedRouteAttributePolicy_flat
                         .append(hostname + "|" + neighborPrefixStart + "|"
                               + neighborPrefixEnd + "|" + neighborPrefixLength
@@ -230,8 +230,7 @@ public class ConfigurationFactExtractor {
                               + prefix_length + "|" + apName + "\n");
                }
                for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
-                  String gpName = hostname + ":"
-                        + generationPolicy.getMapName();
+                  String gpName = hostname + ":" + generationPolicy.getName();
                   wSetBgpNeighborGeneratedRoutePolicy_flat.append(hostname
                         + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
                         + "|" + neighborPrefixLength + "|" + network_start
@@ -257,14 +256,13 @@ public class ConfigurationFactExtractor {
             long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
             for (PolicyMap inboundMap : neighbor.getInboundPolicyMaps()) {
-               String inboundMapName = hostname + ":" + inboundMap.getMapName();
+               String inboundMapName = hostname + ":" + inboundMap.getName();
                wSetBgpImportPolicy.append(hostname + "|" + neighborPrefixStart
                      + "|" + neighborPrefixEnd + "|" + neighborPrefixLength
                      + "|" + inboundMapName + "\n");
             }
             for (PolicyMap outboundMap : neighbor.getOutboundPolicyMaps()) {
-               String outboundMapName = hostname + ":"
-                     + outboundMap.getMapName();
+               String outboundMapName = hostname + ":" + outboundMap.getName();
                wSetBgpExportPolicy.append(hostname + "|" + neighborPrefixStart
                      + "|" + neighborPrefixEnd + "|" + neighborPrefixLength
                      + "|" + outboundMapName + "\n");
@@ -364,8 +362,7 @@ public class ConfigurationFactExtractor {
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
             for (PolicyMap originationPolicy : neighbor
                   .getOriginationPolicies()) {
-               String policyName = hostname + ":"
-                     + originationPolicy.getMapName();
+               String policyName = hostname + ":" + originationPolicy.getName();
                wSetBgpOriginationPolicy.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "|" + policyName + "\n");
@@ -470,13 +467,13 @@ public class ConfigurationFactExtractor {
                   + "\n");
          }
          for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
-            String policyName = hostname + ":" + attributePolicy.getMapName();
+            String policyName = hostname + ":" + attributePolicy.getName();
             wSetGeneratedRouteAttributePolicy_flat.append(hostname + "|"
                   + network_start + "|" + network_end + "|" + prefix_length
                   + "|" + policyName + "\n");
          }
          for (PolicyMap grPolicy : gr.getGenerationPolicies()) {
-            String policyName = hostname + ":" + grPolicy.getMapName();
+            String policyName = hostname + ":" + grPolicy.getName();
             wSetGeneratedRoutePolicy_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "|" + policyName
                   + "\n");
@@ -528,7 +525,7 @@ public class ConfigurationFactExtractor {
          }
          PolicyMap routingPolicy = i.getRoutingPolicy();
          if (routingPolicy != null) {
-            String policyName = hostname + ":" + routingPolicy.getMapName();
+            String policyName = hostname + ":" + routingPolicy.getName();
             wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName
                   + "|" + policyName + "\n");
          }
@@ -824,7 +821,7 @@ public class ConfigurationFactExtractor {
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
-               String gpName = hostname + ":" + generationPolicy.getMapName();
+               String gpName = hostname + ":" + generationPolicy.getName();
                wSetIsisGeneratedRoutePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + gpName + "\n");
@@ -842,7 +839,7 @@ public class ConfigurationFactExtractor {
       IsisProcess proc = _configuration.getIsisProcess();
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
-            String mapName = hostname + ":" + map.getMapName();
+            String mapName = hostname + ":" + map.getName();
             wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
             IsisLevel exportLevel = proc.getPolicyExportLevels().get(map);
             if (exportLevel == null) {
@@ -906,7 +903,7 @@ public class ConfigurationFactExtractor {
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
-               String gpName = hostname + ":" + generationPolicy.getMapName();
+               String gpName = hostname + ":" + generationPolicy.getName();
                wSetOspfGeneratedRoutePolicy_flat.append(hostname + "|"
                      + network_start + "|" + network_end + "|" + prefix_length
                      + "|" + gpName + "\n");
@@ -939,8 +936,9 @@ public class ConfigurationFactExtractor {
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
-            String mapName = hostname + ":" + map.getMapName();
-            OspfMetricType metricType = proc.getPolicyMetricTypes().get(map);
+            String mapName = hostname + ":" + map.getName();
+            OspfMetricType metricType = proc.getPolicyMetricTypes().get(
+                  map.getName());
             String protocol = null;
             switch (metricType) {
             case E1:
@@ -1018,7 +1016,7 @@ public class ConfigurationFactExtractor {
             .get("SetPolicyMapClauseMatchInterface");
       String hostname = _configuration.getHostname();
       for (PolicyMap map : _configuration.getPolicyMaps().values()) {
-         String mapName = hostname + ":" + map.getMapName();
+         String mapName = hostname + ":" + map.getName();
          List<PolicyMapClause> clauses = map.getClauses();
          for (int i = 0; i < clauses.size(); i++) {
             PolicyMapClause clause = clauses.get(i);
@@ -1085,7 +1083,7 @@ public class ConfigurationFactExtractor {
                case POLICY: {
                   PolicyMapMatchPolicyLine matchPolicyLine = (PolicyMapMatchPolicyLine) matchLine;
                   PolicyMap policy = matchPolicyLine.getPolicy();
-                  String policyName = hostname + ":" + policy.getMapName();
+                  String policyName = hostname + ":" + policy.getName();
                   wSetPolicyMapClauseMatchPolicy.append(mapName + "|" + i + "|"
                         + policyName + "\n");
                   break;
@@ -1096,7 +1094,7 @@ public class ConfigurationFactExtractor {
                   Set<PolicyMap> policies = matchPolicyConjunctionLine
                         .getConjuncts();
                   for (PolicyMap policy : policies) {
-                     String policyName = hostname + ":" + policy.getMapName();
+                     String policyName = hostname + ":" + policy.getName();
                      wSetPolicyMapClauseMatchPolicyConjunction.append(mapName
                            + "|" + i + "|" + policyName + "\n");
                   }

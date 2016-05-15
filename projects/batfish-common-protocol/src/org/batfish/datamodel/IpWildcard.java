@@ -4,6 +4,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class IpWildcard extends Pair<Ip, Ip> {
 
    public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, Ip.MAX);
@@ -29,6 +31,7 @@ public class IpWildcard extends Pair<Ip, Ip> {
       return _second;
    }
 
+   @JsonIgnore
    public boolean isPrefix() {
       return CommonUtil.isValidWildcard(_second);
    }

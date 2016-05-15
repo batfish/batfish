@@ -2,11 +2,11 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 
+import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.VendorConversionException;
 import org.batfish.main.Warnings;
 
 public final class PsFromRouteFilter extends PsFrom {

@@ -48,20 +48,17 @@ public class AclReachabilityQuestion extends Question {
       return _aclNameRegex;
    }
 
-   public void setNodeRegex(String regex) {
-      _nodeRegex = regex;
-   }
-
    public void setAclNameRegex(String regex) {
       _aclNameRegex = regex;
    }
- 
+
+   @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
 
       Iterator<?> paramKeys = parameters.keys();
 
-      while ( paramKeys.hasNext()) {
+      while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
          try {
@@ -73,11 +70,17 @@ public class AclReachabilityQuestion extends Question {
                setAclNameRegex(parameters.getString(paramKey));
                break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: " + paramKey);
+               throw new BatfishException("Unknown key in NodesQuestion: "
+                     + paramKey);
             }
-         } catch (JSONException e) {
+         }
+         catch (JSONException e) {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   public void setNodeRegex(String regex) {
+      _nodeRegex = regex;
    }
 }

@@ -5,6 +5,11 @@ import java.util.TreeSet;
 
 import org.batfish.common.Pair;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class IpsecVpn extends Pair<Configuration, String> {
 
    /**
@@ -80,6 +85,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return _bindInterface;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<IpsecVpn> getCandidateRemoteIpsecVpns() {
       return _candidateRemoteIpsecVpns;
    }
@@ -88,10 +94,12 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return _first;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IkeGateway getGateway() {
       return _gateway;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IpsecPolicy getIpsecPolicy() {
       return _ipsecPolicy;
    }
@@ -100,6 +108,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return _second;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IpsecVpn getRemoteIpsecVpn() {
       return _remoteIpsecVpn;
    }

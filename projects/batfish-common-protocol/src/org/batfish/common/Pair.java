@@ -2,6 +2,8 @@ package org.batfish.common;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
       implements Serializable, Comparable<Pair<T1, T2>> {
 
@@ -55,10 +57,12 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
       return true;
    }
 
+   @JsonIgnore
    public final T1 getFirst() {
       return _first;
    }
 
+   @JsonIgnore
    public final T2 getSecond() {
       return _second;
    }

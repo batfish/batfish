@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 /**
  * Represents a peering with a single router (by ip address) acting as a bgp
  * peer to the router whose configuration's BGP process contains this object
@@ -157,6 +159,7 @@ public final class BgpNeighbor implements Serializable {
       return _allowRemoteAsOut;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
       return _candidateRemoteBgpNeighbors;
    }
@@ -200,6 +203,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_inboundPolicyMaps}
     */
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<PolicyMap> getInboundPolicyMaps() {
       return _inboundPolicyMaps;
    }
@@ -221,6 +225,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_originationPolicies}
     */
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<PolicyMap> getOriginationPolicies() {
       return _originationPolicies;
    }
@@ -228,10 +233,12 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_outboundPolicyMaps}
     */
+   @JsonIdentityReference(alwaysAsId = true)
    public Set<PolicyMap> getOutboundPolicyMaps() {
       return _outboundPolicyMaps;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Configuration getOwner() {
       return _owner;
    }
@@ -255,6 +262,7 @@ public final class BgpNeighbor implements Serializable {
       return _remoteAs;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public BgpNeighbor getRemoteBgpNeighbor() {
       return _remoteBgpNeighbor;
    }

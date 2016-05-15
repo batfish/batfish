@@ -1,14 +1,15 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.common.util.ComparableStructure;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class PolicyMap implements Serializable {
+public class PolicyMap extends ComparableStructure<String> {
 
    /**
     *
@@ -24,11 +25,6 @@ public class PolicyMap implements Serializable {
     */
    private final List<PolicyMapClause> _clauses;
 
-   /**
-    * The configuration-local name identifying this policy.
-    */
-   private String _mapName;
-
    private transient PrefixSpace _prefixSpace;
 
    /**
@@ -38,7 +34,7 @@ public class PolicyMap implements Serializable {
     * @param name
     */
    public PolicyMap(String name) {
-      _mapName = name;
+      super(name);
       _clauses = new ArrayList<PolicyMapClause>();
    }
 
@@ -47,13 +43,6 @@ public class PolicyMap implements Serializable {
     */
    public List<PolicyMapClause> getClauses() {
       return _clauses;
-   }
-
-   /**
-    * @return {@link #_mapName}
-    */
-   public String getMapName() {
-      return _mapName;
    }
 
    @JsonIgnore

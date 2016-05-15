@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 public class PolicyMapMatchPolicyLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -10,6 +12,7 @@ public class PolicyMapMatchPolicyLine extends PolicyMapMatchLine {
       _policy = policy;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public PolicyMap getPolicy() {
       return _policy;
    }

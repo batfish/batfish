@@ -1,10 +1,47 @@
 package org.batfish.datamodel;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonSerialize(using = Ip.IpSerializer.class)
+@JsonDeserialize(using = Ip.IpDeserializer.class)
 public class Ip implements Comparable<Ip>, Serializable {
+
+   public static class IpDeserializer extends JsonDeserializer<Ip> {
+
+      @Override
+      public Ip deserialize(JsonParser parser, DeserializationContext ctxt)
+            throws IOException, JsonProcessingException {
+         JsonNode node = parser.getCodec().readTree(parser);
+         String ipAsString = node.textValue();
+         return new Ip(ipAsString);
+      }
+
+   }
+
+   public static class IpSerializer extends JsonSerializer<Ip> {
+
+      @Override
+      public void serialize(Ip value, JsonGenerator jgen,
+            SerializerProvider provider) throws IOException,
+            JsonProcessingException {
+         jgen.writeString(value.toString());
+      }
+
+   }
 
    public static final Ip MAX = new Ip(0xFFFFFFFFl);
 

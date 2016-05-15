@@ -4,12 +4,15 @@ import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public abstract class ComparableStructure<Key extends Comparable<Key>> extends
       ReferenceCountedStructure implements
       Comparable<ComparableStructure<Key>>, Serializable {
 
    private static final long serialVersionUID = 1L;
-
    protected Key _key;
 
    public ComparableStructure(Key name) {

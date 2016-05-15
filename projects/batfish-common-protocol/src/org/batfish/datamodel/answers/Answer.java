@@ -7,16 +7,23 @@ import org.batfish.datamodel.questions.Question;
 
 public class Answer {
 
+   public static Answer failureAnswer(String message) {
+      Answer answer = new Answer();
+      answer.setStatus(AnswerStatus.FAILURE);
+      answer.addAnswerElement(new StringAnswerElement(message));
+      return answer;
+   }
    private Question _question;
    private AnswerStatus _status;
-   protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
 
-   public List<AnswerElement> getAnswerElements() {
-      return _answerElements;
-   }
+   protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
 
    public void addAnswerElement(StringAnswerElement stringAnswer) {
       _answerElements.add(stringAnswer);
+   }
+
+   public List<AnswerElement> getAnswerElements() {
+      return _answerElements;
    }
 
    public Question getQuestion() {
@@ -37,12 +44,5 @@ public class Answer {
 
    public void setStatus(AnswerStatus status) {
       _status = status;
-   }
-
-   public static Answer failureAnswer(String message) {
-      Answer answer = new Answer();
-      answer.setStatus(AnswerStatus.FAILURE);
-      answer.addAnswerElement(new StringAnswerElement(message));
-      return answer;
    }
 }

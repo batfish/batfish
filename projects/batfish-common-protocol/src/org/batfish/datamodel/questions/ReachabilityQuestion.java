@@ -28,8 +28,9 @@ public class ReachabilityQuestion extends Question {
    private static final String IP_PROTO_RANGE_VAR = "ipProtoRange";
    private static final String SRC_PORT_RANGE_VAR = "srcPortRange";
    private static final String SRC_PREFIXES_VAR = "srcPrefixes";
-   
-   private ForwardingActionSet _actions = new ForwardingActionSet(ForwardingAction.ACCEPT);
+
+   private ForwardingActionSet _actions = new ForwardingActionSet(
+         ForwardingAction.ACCEPT);
    private SubRangeSet _dstPortRange = new SubRangeSet();
    private PrefixSet _dstPrefixes = new PrefixSet();
    private String _finalNodeRegex = ".*";
@@ -43,15 +44,14 @@ public class ReachabilityQuestion extends Question {
    // private int _tcpFlags;
 
    public ReachabilityQuestion() {
-      super(QuestionType.REACHABILITY);   
+      super(QuestionType.REACHABILITY);
    }
-   
+
    public ReachabilityQuestion(QuestionParameters parameters) {
       this();
       setParameters(parameters);
    }
 
-   
    @JsonProperty(ACTIONS_VAR)
    public ForwardingActionSet getActions() {
       return _actions;
@@ -117,15 +117,15 @@ public class ReachabilityQuestion extends Question {
    public void setActions(ForwardingActionSet actionSet) {
       _actions = actionSet;
    }
-   
+
    public void setDstPortRange(SubRangeSet rangeSet) {
       _dstPortRange = rangeSet;
    }
-   
+
    public void setDstPrefixes(PrefixSet prefixSet) {
       _dstPrefixes = prefixSet;
    }
-   
+
    public void setFinalNodeRegex(String regex) {
       _finalNodeRegex = regex;
    }
@@ -145,37 +145,30 @@ public class ReachabilityQuestion extends Question {
    public void setIpProtocolRange(SubRangeSet rangeSet) {
       _ipProtocolRange = rangeSet;
    }
-   
-   public void setSrcPortRange(SubRangeSet rangeSet) {
-      _srcPortRange = rangeSet;
-   }
 
-   public void setSrcPrefixes(PrefixSet prefixSet) {
-      _srcPrefixes = prefixSet;
-   }   
-
+   @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
 
       Iterator<?> paramKeys = parameters.keys();
       ObjectMapper mapper = new ObjectMapper();
 
-      while ( paramKeys.hasNext()) {
+      while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
          try {
             switch (paramKey) {
             case ACTIONS_VAR:
-               setActions(mapper.readValue(parameters.getString(paramKey), 
-                     ForwardingActionSet.class));               
+               setActions(mapper.readValue(parameters.getString(paramKey),
+                     ForwardingActionSet.class));
                break;
             case DST_PORT_RANGE_VAR:
-               setDstPortRange(mapper.readValue(parameters.getString(paramKey), 
-                     SubRangeSet.class));               
+               setDstPortRange(mapper.readValue(parameters.getString(paramKey),
+                     SubRangeSet.class));
                break;
             case DST_PREFIXES_VAR:
-               setDstPrefixes(mapper.readValue(parameters.getString(paramKey), 
-                     PrefixSet.class));               
+               setDstPrefixes(mapper.readValue(parameters.getString(paramKey),
+                     PrefixSet.class));
                break;
             case FINAL_NODE_REGEX_VAR:
                setFinalNodeRegex(parameters.getString(paramKey));
@@ -190,26 +183,34 @@ public class ReachabilityQuestion extends Question {
                setIngressNodeRegex(parameters.getString(paramKey));
                break;
             case IP_PROTO_RANGE_VAR:
-               setIpProtocolRange(mapper.readValue(parameters.getString(paramKey), 
-                     SubRangeSet.class));               
+               setIpProtocolRange(mapper.readValue(
+                     parameters.getString(paramKey), SubRangeSet.class));
                break;
             case SRC_PORT_RANGE_VAR:
-               setSrcPortRange(mapper.readValue(parameters.getString(paramKey), 
-                     SubRangeSet.class));               
+               setSrcPortRange(mapper.readValue(parameters.getString(paramKey),
+                     SubRangeSet.class));
                break;
             case SRC_PREFIXES_VAR:
-               setSrcPrefixes(mapper.readValue(parameters.getString(paramKey), 
-                     PrefixSet.class));               
+               setSrcPrefixes(mapper.readValue(parameters.getString(paramKey),
+                     PrefixSet.class));
                break;
             default:
-               throw new BatfishException("Unknown key in ReachabilityQuestion: " + paramKey);
+               throw new BatfishException(
+                     "Unknown key in ReachabilityQuestion: " + paramKey);
             }
-         } catch (JSONException | IOException e) {
+         }
+         catch (JSONException | IOException e) {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
    }
 
+   public void setSrcPortRange(SubRangeSet rangeSet) {
+      _srcPortRange = rangeSet;
+   }
 
+   public void setSrcPrefixes(PrefixSet prefixSet) {
+      _srcPrefixes = prefixSet;
+   }
 
 }

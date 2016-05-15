@@ -823,6 +823,9 @@ public class Batfish implements AutoCloseable {
       answer.setQuestion(question);
      
       
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+
    }
 
    private void answerDestination(DestinationQuestion question) {
@@ -987,7 +990,8 @@ public class Batfish implements AutoCloseable {
             dataPlanePath);
 
       // collect ingress nodes
-      Pattern ingressNodeRegex = Pattern.compile(question.getIngressNodeRegex());
+      Pattern ingressNodeRegex = Pattern
+            .compile(question.getIngressNodeRegex());
       Set<String> activeIngressNodes = new TreeSet<String>();
       if (ingressNodeRegex != null) {
          for (String node : configurations.keySet()) {
@@ -2851,15 +2855,15 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
 
       try {
-         JSONObject jObj = (questionText.trim().isEmpty())? new JSONObject()
-            : new JSONObject(questionText);
+         JSONObject jObj = (questionText.trim().isEmpty()) ? new JSONObject()
+               : new JSONObject(questionText);
          return jObj;
       }
       catch (JSONException e1) {
          _logger
-         .debugf(
-               "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
-               e1.getMessage());
+               .debugf(
+                     "BF: could not parse as Json parameters: %s\nWill try old, custom parser.",
+                     e1.getMessage());
       }
 
       QuestionParametersCombinedParser parser = new QuestionParametersCombinedParser(

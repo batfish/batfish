@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions;
 
-
 public class DestinationQuestion extends Question {
 
    public DestinationQuestion(QuestionParameters parameters) {

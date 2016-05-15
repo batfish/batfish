@@ -8,37 +8,37 @@ import org.batfish.common.BatfishException;
 
 public enum NeighborType {
    ANY("any"),
-	EBGP("ebgp"),
-	IBGP("ibgp"),
+   EBGP("ebgp"),
+   IBGP("ibgp"),
    PHYSICAL("physical");
-	
-	   private final static Map<String, NeighborType> _map = buildMap();
 
-	   private static Map<String, NeighborType> buildMap() {
-	      Map<String, NeighborType> map = new HashMap<String, NeighborType>();
-	      for (NeighborType ntype : NeighborType.values()) {
-	         String ntypeName = ntype._ntypeName;
-	         map.put(ntypeName, ntype);
-	      }
-	      return Collections.unmodifiableMap(map);
-	   }
+   private final static Map<String, NeighborType> _map = buildMap();
 
-	   public static NeighborType fromName(String name) {
-	      NeighborType ntype = _map.get(name);
-	      if (ntype == null) {
-	         throw new BatfishException("No neighbor type with name: \"" + name
-	               + "\"");
-	      }
-	      return ntype;
-	   }
+   private static Map<String, NeighborType> buildMap() {
+      Map<String, NeighborType> map = new HashMap<String, NeighborType>();
+      for (NeighborType ntype : NeighborType.values()) {
+         String ntypeName = ntype._ntypeName;
+         map.put(ntypeName, ntype);
+      }
+      return Collections.unmodifiableMap(map);
+   }
 
-	   private final String _ntypeName;
+   public static NeighborType fromName(String name) {
+      NeighborType ntype = _map.get(name);
+      if (ntype == null) {
+         throw new BatfishException("No neighbor type with name: \"" + name
+               + "\"");
+      }
+      return ntype;
+   }
 
-	   private NeighborType(String ntypeName) {
-	      _ntypeName = ntypeName;
-	   }
+   private final String _ntypeName;
 
-	   public String neighborTypeName() {
-	      return _ntypeName;
-	   }
+   private NeighborType(String ntypeName) {
+      _ntypeName = ntypeName;
+   }
+
+   public String neighborTypeName() {
+      return _ntypeName;
+   }
 }

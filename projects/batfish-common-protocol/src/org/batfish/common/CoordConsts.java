@@ -27,7 +27,7 @@ public class CoordConsts {
    public static final boolean SVC_DISABLE_SSL = false;
 
    public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
-   
+
    /**
     * Various constants used as keys on multi-part form data
     */

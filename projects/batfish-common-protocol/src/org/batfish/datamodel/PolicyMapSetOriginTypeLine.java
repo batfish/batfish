@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-
 public class PolicyMapSetOriginTypeLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;

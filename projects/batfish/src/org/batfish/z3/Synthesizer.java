@@ -1250,7 +1250,7 @@ public class Synthesizer {
                   hostname, ifaceName);
             PolicyMap p = iface.getRoutingPolicy();
             if (p != null) {
-               String policyName = p.getMapName();
+               String policyName = p.getName();
                PolicyPermitExpr permit = new PolicyPermitExpr(hostname,
                      policyName);
                PolicyDenyExpr deny = new PolicyDenyExpr(hostname, policyName);
@@ -1813,7 +1813,7 @@ public class Synthesizer {
             receivedDestRouteConditions.addConjunct(preOut);
             PolicyMap policy = i.getRoutingPolicy();
             if (policy != null) {
-               String policyName = policy.getMapName();
+               String policyName = policy.getName();
                PolicyDenyExpr policyDeny = new PolicyDenyExpr(hostname,
                      policyName);
                receivedDestRouteConditions.addConjunct(policyDeny);
