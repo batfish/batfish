@@ -17,6 +17,15 @@ public final class AsPathAccessList implements Serializable {
       _name = name;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      AsPathAccessList other = (AsPathAccessList) obj;
+      return other._lines.equals(_lines);
+   }
+   
    public List<AsPathAccessListLine> getLines() {
       return _lines;
    }
@@ -25,4 +34,5 @@ public final class AsPathAccessList implements Serializable {
       return _name;
    }
 
+   
 }
