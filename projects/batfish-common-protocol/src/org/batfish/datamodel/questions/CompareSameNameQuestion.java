@@ -1,16 +1,28 @@
 package org.batfish.datamodel.questions;
 
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NamedStructType;
+import org.batfish.datamodel.collections.NamedStructTypeSet;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class CompareSameNameQuestion extends Question {
 
-   private NamedStructType _namedStructType;
-   private String _nodeRegex;
+   private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
+   private static final String NODE_REGEX_VAR = "nodeRegex";
+
+   private NamedStructTypeSet _namedStructType = 
+         new NamedStructTypeSet(NamedStructType.ANY);
+   private String _nodeRegex = ".*";
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
-      _namedStructType = NamedStructType.ANY;
-      _nodeRegex = ".*";
    }
 
    @Override
@@ -23,12 +35,14 @@ public final class CompareSameNameQuestion extends Question {
       return false;
    }
 
-   public String getNodeRegex() {
-      return _nodeRegex;
+   @JsonProperty(NAMED_STRUCT_TYPE_VAR)
+   public NamedStructTypeSet getNodeType() {
+      return _namedStructType;
    }
 
-   public NamedStructType getNodeType() {
-      return _namedStructType;
+   @JsonProperty(NODE_REGEX_VAR)
+   public String getNodeRegex() {
+      return _nodeRegex;
    }
 
    @Override
@@ -36,7 +50,38 @@ public final class CompareSameNameQuestion extends Question {
       return false;
    }
 
-   public void setNamedStructType(NamedStructType nType) {
+   @Override
+   public void setJsonParameters(JSONObject parameters) {
+      super.setJsonParameters(parameters);
+
+      Iterator<?> paramKeys = parameters.keys();
+
+      while (paramKeys.hasNext()) {
+         String paramKey = (String) paramKeys.next();
+
+         try {
+            switch (paramKey) {
+            case NAMED_STRUCT_TYPE_VAR:
+               ObjectMapper mapper = new ObjectMapper();
+               NamedStructTypeSet nset = mapper.readValue(
+                     parameters.getString(paramKey), NamedStructTypeSet.class);
+               setNamedStructTypeSet(nset);
+               break;
+            case NODE_REGEX_VAR:
+               setNodeRegex(parameters.getString(paramKey));
+               break;
+            default:
+               throw new BatfishException("Unknown key in CompareSameNameQuestion: "
+                     + paramKey);
+            }
+         }
+         catch (JSONException | IOException e) {
+            throw new BatfishException("JSONException in parameters", e);
+         }
+      }
+   }
+
+   public void setNamedStructTypeSet(NamedStructTypeSet nType) {
       _namedStructType = nType;
    }
 
@@ -44,4 +89,5 @@ public final class CompareSameNameQuestion extends Question {
       _nodeRegex = regex;
    }
 
+   
 }
