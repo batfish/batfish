@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -163,6 +162,7 @@ import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.question.AclReachabilityAnswer;
 import org.batfish.question.BgpAdvertisementsAnswer;
 import org.batfish.question.BgpSessionCheckAnswer;
+import org.batfish.question.CompareSameNameAnswer;
 import org.batfish.question.LocalPathAnswer;
 import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
@@ -580,7 +580,8 @@ public class Batfish implements AutoCloseable {
          break;
 
       case COMPARE_SAME_NAME:
-         answerCompareSameName((CompareSameNameQuestion) question);
+         outputAnswer(new CompareSameNameAnswer(this,
+               (CompareSameNameQuestion) question));
          break;
 
       case LOCAL_PATH:
@@ -621,39 +622,6 @@ public class Batfish implements AutoCloseable {
       default:
          throw new BatfishException("Unknown question type");
       }
-   }
-
-   private void answerCompareSameName(CompareSameNameQuestion question) {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-
-      // collect nodes nodes
-      Pattern nodeRegex;
-      try {
-         nodeRegex = Pattern.compile(question.getNodeRegex());
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
-      }
-
-      Set<String> nodes = new TreeSet<String>();
-      if (nodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher nodeMatcher = nodeRegex.matcher(node);
-            if (nodeMatcher.matches()) {
-               nodes.add(node);
-            }
-         }
-      }
-      else {
-         nodes.addAll(configurations.keySet());
-      }
-
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-
    }
 
    /**
