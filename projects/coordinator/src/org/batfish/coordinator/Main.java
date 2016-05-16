@@ -4,6 +4,8 @@ package org.batfish.coordinator;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -25,6 +27,9 @@ public class Main {
    private static PoolMgr _poolManager;
    private static Settings _settings;
    private static WorkMgr _workManager;
+
+   static Logger networkListenerLogger = Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
+   static Logger httpServerLogger = Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
 
    public static Authorizer getAuthorizer() {
       return _authorizer;
@@ -185,7 +190,9 @@ public class Main {
    public static void mainInit(String[] args) {
       _settings = null;
       try {
-         _settings = new Settings(args);
+         _settings = new Settings(args);         
+         networkListenerLogger.setLevel(Level.WARNING);                  
+         httpServerLogger.setLevel(Level.WARNING);                  
       }
       catch (Exception e) {
          System.err.print("org.batfish.coordinator: Initialization failed: "
