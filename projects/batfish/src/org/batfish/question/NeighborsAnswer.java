@@ -9,8 +9,8 @@ public class NeighborsAnswer extends Answer {
 
    public NeighborsAnswer(Batfish batfish, NeighborsQuestion question) {
       setQuestion(question);
-      if (question.getNeighborType().isEmpty()) {
-         question.getNeighborType().add(NeighborType.ANY);
+      if (question.getNeighborTypes().isEmpty()) {
+         question.getNeighborTypes().add(NeighborType.ANY);
       }
    }
 
