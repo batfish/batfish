@@ -501,7 +501,7 @@ public class BfCoordWorkHelper {
    // }
    // }
 
-   public boolean isReachabile() throws Exception {
+   public boolean isReachable() throws Exception {
 
       WebTarget webTarget = null;
 
