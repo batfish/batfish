@@ -64,7 +64,6 @@ import org.batfish.z3.node.EqExpr;
 import org.batfish.z3.node.ExternalDestinationIpExpr;
 import org.batfish.z3.node.ExternalSourceIpExpr;
 import org.batfish.z3.node.ExtractExpr;
-import org.batfish.z3.node.FalseExpr;
 import org.batfish.z3.node.InboundInterfaceExpr;
 import org.batfish.z3.node.IntExpr;
 import org.batfish.z3.node.LitIntExpr;
@@ -808,14 +807,6 @@ public class Synthesizer {
             List<IpAccessListLine> lines = acl.getLines();
             for (int i = 0; i < lines.size(); i++) {
                IpAccessListLine line = lines.get(i);
-               // TODO: fix
-               String invalidMessage = line.getInvalidMessage();
-               boolean valid = invalidMessage == null;
-               if (!valid) {
-                  _warnings.add("WARNING: IpAccessList " + aclName + " line "
-                        + i + ": disabled: " + invalidMessage + "\n");
-               }
-
                Set<IpWildcard> srcIpWildcards = line.getSrcIpWildcards();
                Set<IpWildcard> srcOrDstIpWildcards = line
                      .getSrcOrDstIpWildcards();
@@ -1052,8 +1043,7 @@ public class Synthesizer {
 
                AclMatchExpr match = new AclMatchExpr(hostname, aclName, i);
 
-               RuleExpr matchRule = new RuleExpr(valid ? matchConditions
-                     : FalseExpr.INSTANCE, match);
+               RuleExpr matchRule = new RuleExpr(matchConditions, match);
                statements.add(matchRule);
 
                // match dscp
@@ -1154,8 +1144,7 @@ public class Synthesizer {
                }
                // no match rule
                AndExpr noMatchConditions = new AndExpr();
-               BooleanExpr noMatchLineCriteria = valid ? new NotExpr(
-                     matchLineCriteria) : TrueExpr.INSTANCE;
+               BooleanExpr noMatchLineCriteria = new NotExpr(matchLineCriteria);
                noMatchConditions.addConjunct(noMatchLineCriteria);
                noMatchConditions.addConjunct(prevNoMatch);
                AclNoMatchExpr noMatch = new AclNoMatchExpr(hostname, aclName, i);

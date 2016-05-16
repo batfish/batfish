@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.DscpType;
@@ -1705,7 +1706,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
          }
       }
-      ExtendedAccessListLine line = new ExtendedAccessListLine(action,
+      String name;
+      if (ctx.num != null) {
+         name = ctx.num.getText();
+      }
+      else {
+         name = getFullText(ctx).trim();
+      }
+      ExtendedAccessListLine line = new ExtendedAccessListLine(name, action,
             protocol, new IpWildcard(srcIp, srcWildcard), srcAddressGroup,
             new IpWildcard(dstIp, dstWildcard), dstAddressGroup, srcPortRanges,
             dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
@@ -2982,7 +2990,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ecns.add(ecn);
          }
       }
-      StandardAccessListLine line = new StandardAccessListLine(action,
+      String name;
+      if (ctx.num != null) {
+         name = ctx.num.getText();
+      }
+      else {
+         name = getFullText(ctx).trim();
+      }
+      StandardAccessListLine line = new StandardAccessListLine(name, action,
             new IpWildcard(srcIp, srcWildcard), dscps, ecns);
       _currentStandardAcl.addLine(line);
    }
@@ -3217,6 +3232,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public CiscoConfiguration getConfiguration() {
       return _configuration;
+   }
+
+   private String getFullText(ParserRuleContext ctx) {
+      int start = ctx.getStart().getStartIndex();
+      int end = ctx.getStop().getStopIndex();
+      String text = _text.substring(start, end + 1);
+      return text;
    }
 
    public String getText() {

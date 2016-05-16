@@ -1017,6 +1017,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
       for (ExtendedAccessListLine fromLine : eaList.getLines()) {
          IpAccessListLine newLine = new IpAccessListLine();
+         newLine.setName(fromLine.getName());
          newLine.setAction(fromLine.getAction());
          IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
          if (srcIpWildcard != null) {

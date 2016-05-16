@@ -13,6 +13,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 /**
  * Instances of this class represent hypothetical BGP advertisements used for
  * testing, or where the config of an advertising border router is unavailable
@@ -21,6 +24,7 @@ import org.codehaus.jettison.json.JSONObject;
  *
  */
 
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       Serializable {
 

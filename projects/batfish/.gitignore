@@ -19,10 +19,6 @@ LogiQLLexer*.java
 LogiQLParser*.java
 MrvLexer*.java
 MrvParser*.java
-QuestionLexer*.java
-QuestionParser*.java
-QuestionParametersLexer*.java
-QuestionParametersParser*.java
 RoleLexer*.java
 RoleParser*.java
 VyosLexer*.java

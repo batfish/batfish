@@ -2,9 +2,9 @@ package org.batfish.datamodel.questions;
 
 public enum QuestionType {
    ACL_REACHABILITY,
+   BGP_ADVERTISEMENTS,
+   BGP_SESSION_CHECK,
    COMPARE_SAME_NAME,
-   DESTINATION,
-   INGRESS_PATH,
    LOCAL_PATH,
    MULTIPATH,
    NEIGHBORS,
@@ -12,6 +12,5 @@ public enum QuestionType {
    PROTOCOL_DEPENDENCIES,
    REACHABILITY,
    REDUCED_REACHABILITY,
-   TRACEROUTE,
-   VERIFY
+   TRACEROUTE
 }

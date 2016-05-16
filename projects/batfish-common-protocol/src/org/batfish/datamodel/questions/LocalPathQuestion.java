@@ -2,8 +2,8 @@ package org.batfish.datamodel.questions;
 
 public class LocalPathQuestion extends Question {
 
-   public LocalPathQuestion(QuestionParameters parameters) {
-      super(QuestionType.LOCAL_PATH, parameters);
+   public LocalPathQuestion() {
+      super(QuestionType.LOCAL_PATH);
    }
 
    @Override
@@ -13,6 +13,11 @@ public class LocalPathQuestion extends Question {
 
    @Override
    public boolean getDifferential() {
+      return true;
+   }
+
+   @Override
+   public boolean getTraffic() {
       return true;
    }
 

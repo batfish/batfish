@@ -9,7 +9,6 @@ import org.batfish.datamodel.collections.NodeTypeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,19 +24,12 @@ public class NodesQuestion extends Question {
       super(QuestionType.NODES);
    }
 
-   public NodesQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
-   }
-
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -50,6 +42,11 @@ public class NodesQuestion extends Question {
    @JsonProperty(NODE_TYPE_VAR)
    public NodeTypeSet getNodeType() {
       return _nodeType;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    @Override
@@ -91,14 +88,4 @@ public class NodesQuestion extends Question {
       _nodeType = nType;
    }
 
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NODE_REGEX_VAR) == VariableType.STRING) {
-         setNodeRegex(parameters.getString(NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(NODE_TYPE_VAR) == VariableType.NODE_TYPE) {
-         // setNodeType(parameters.getSetNodeType(NODE_TYPE_VAR));
-      }
-   }
 }

@@ -12,7 +12,6 @@ import org.batfish.datamodel.collections.SubRangeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -47,24 +46,17 @@ public class ReachabilityQuestion extends Question {
       super(QuestionType.REACHABILITY);
    }
 
-   public ReachabilityQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
-   }
-
    @JsonProperty(ACTIONS_VAR)
    public ForwardingActionSet getActions() {
       return _actions;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return true;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -112,6 +104,11 @@ public class ReachabilityQuestion extends Question {
    @JsonProperty(SRC_PREFIXES_VAR)
    public PrefixSet getSrcPrefixes() {
       return _srcPrefixes;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return true;
    }
 
    public void setActions(ForwardingActionSet actionSet) {

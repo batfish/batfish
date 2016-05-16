@@ -14,6 +14,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public final class Configuration extends ComparableStructure<String> {
 
    public static final String NODE_NONE_NAME = "(none)";
@@ -116,6 +118,7 @@ public final class Configuration extends ComparableStructure<String> {
       return _asPathAccessLists;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getBgpAdvertisements() {
       return _bgpAdvertisements;
    }
@@ -208,14 +211,17 @@ public final class Configuration extends ComparableStructure<String> {
       return _policyMaps;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getReceivedAdvertisements() {
       return _receivedAdvertisements;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getReceivedEbgpAdvertisements() {
       return _receivedEbgpAdvertisements;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getReceivedIbgpAdvertisements() {
       return _receivedIbgpAdvertisements;
    }
@@ -232,14 +238,17 @@ public final class Configuration extends ComparableStructure<String> {
       return _routes;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getSentAdvertisements() {
       return _sentAdvertisements;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getSentEbgpAdvertisements() {
       return _sentEbgpAdvertisements;
    }
 
+   @JsonIgnore
    public Set<BgpAdvertisement> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
    }
