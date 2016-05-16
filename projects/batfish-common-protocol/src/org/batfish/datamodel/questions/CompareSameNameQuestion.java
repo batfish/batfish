@@ -1,28 +1,33 @@
 package org.batfish.datamodel.questions;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NamedStructType;
-import org.batfish.datamodel.collections.NamedStructTypeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class CompareSameNameQuestion extends Question {
 
    private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
+
    private static final String NODE_REGEX_VAR = "nodeRegex";
 
-   private NamedStructTypeSet _namedStructType = 
-         new NamedStructTypeSet(NamedStructType.ANY);
-   private String _nodeRegex = ".*";
+   private Set<NamedStructType> _namedStructTypes;
+
+   private String _nodeRegex;
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
+      _namedStructTypes = EnumSet.of(NamedStructType.ANY);
+      _nodeRegex = ".*";
    }
 
    @Override
@@ -36,8 +41,8 @@ public final class CompareSameNameQuestion extends Question {
    }
 
    @JsonProperty(NAMED_STRUCT_TYPE_VAR)
-   public NamedStructTypeSet getNodeType() {
-      return _namedStructType;
+   public Set<NamedStructType> getNamedStructTypes() {
+      return _namedStructTypes;
    }
 
    @JsonProperty(NODE_REGEX_VAR)
@@ -62,17 +67,18 @@ public final class CompareSameNameQuestion extends Question {
          try {
             switch (paramKey) {
             case NAMED_STRUCT_TYPE_VAR:
-               ObjectMapper mapper = new ObjectMapper();
-               NamedStructTypeSet nset = mapper.readValue(
-                     parameters.getString(paramKey), NamedStructTypeSet.class);
-               setNamedStructTypeSet(nset);
+               setNamedStructTypes(new ObjectMapper()
+                     .<Set<NamedStructType>> readValue(
+                           parameters.getString(paramKey),
+                           new TypeReference<Set<NamedStructType>>() {
+                           }));
                break;
             case NODE_REGEX_VAR:
                setNodeRegex(parameters.getString(paramKey));
                break;
             default:
-               throw new BatfishException("Unknown key in CompareSameNameQuestion: "
-                     + paramKey);
+               throw new BatfishException("Unknown key in "
+                     + getClass().getSimpleName() + ": " + paramKey);
             }
          }
          catch (JSONException | IOException e) {
@@ -81,13 +87,12 @@ public final class CompareSameNameQuestion extends Question {
       }
    }
 
-   public void setNamedStructTypeSet(NamedStructTypeSet nType) {
-      _namedStructType = nType;
+   public void setNamedStructTypes(Set<NamedStructType> nType) {
+      _namedStructTypes = nType;
    }
 
    public void setNodeRegex(String regex) {
       _nodeRegex = regex;
    }
 
-   
 }

@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum NodeType {
    ANY("any"),
    BGP("bgp"),
@@ -16,28 +18,29 @@ public enum NodeType {
 
    private static Map<String, NodeType> buildMap() {
       Map<String, NodeType> map = new HashMap<String, NodeType>();
-      for (NodeType ntype : NodeType.values()) {
-         String ntypeName = ntype._ntypeName;
-         map.put(ntypeName, ntype);
+      for (NodeType value : NodeType.values()) {
+         String name = value._name;
+         map.put(name, value);
       }
       return Collections.unmodifiableMap(map);
    }
 
+   @JsonCreator
    public static NodeType fromName(String name) {
-      NodeType ntype = _map.get(name);
-      if (ntype == null) {
-         throw new BatfishException("Not a valid node type: \"" + name + "\"");
+      NodeType instance = _map.get(name);
+      if (instance == null) {
+         throw new BatfishException("Not a valid NodeType: \"" + name + "\"");
       }
-      return ntype;
+      return instance;
    }
 
-   private final String _ntypeName;
+   private final String _name;
 
-   private NodeType(String ntypeName) {
-      _ntypeName = ntypeName;
+   private NodeType(String name) {
+      _name = name;
    }
 
    public String nodeTypeName() {
-      return _ntypeName;
+      return _name;
    }
 }

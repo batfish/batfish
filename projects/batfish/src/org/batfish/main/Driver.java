@@ -39,10 +39,13 @@ public class Driver {
 
    private static HashMap<String, Task> _taskLog;
 
-   private static final String SERVICE_URL = "http://0.0.0.0";
+   static Logger httpServerLogger = Logger
+         .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
+               .getName());
 
-   static Logger networkListenerLogger = Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
-   static Logger httpServerLogger = Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
+   static Logger networkListenerLogger = Logger
+         .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
+   private static final String SERVICE_URL = "http://0.0.0.0";
 
    private static synchronized boolean claimIdle() {
       if (_idle) {
@@ -100,8 +103,8 @@ public class Driver {
 
       try {
          _mainSettings = new Settings(args);
-         networkListenerLogger.setLevel(Level.WARNING);                  
-         httpServerLogger.setLevel(Level.WARNING);                  
+         networkListenerLogger.setLevel(Level.WARNING);
+         httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
          System.err.println("batfish: Initialization failed. Reason: "

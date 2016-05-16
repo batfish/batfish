@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum NamedStructType {
    ANY("any"),
    ACL("acl"),
@@ -16,29 +18,30 @@ public enum NamedStructType {
 
    private static Map<String, NamedStructType> buildMap() {
       Map<String, NamedStructType> map = new HashMap<String, NamedStructType>();
-      for (NamedStructType ntype : NamedStructType.values()) {
-         String ntypeName = ntype._ntypeName;
-         map.put(ntypeName, ntype);
+      for (NamedStructType value : NamedStructType.values()) {
+         String name = value._name;
+         map.put(name, value);
       }
       return Collections.unmodifiableMap(map);
    }
 
+   @JsonCreator
    public static NamedStructType fromName(String name) {
-      NamedStructType ntype = _map.get(name);
-      if (ntype == null) {
-         throw new BatfishException("Not a valid named struct type: \"" + name
+      NamedStructType instance = _map.get(name);
+      if (instance == null) {
+         throw new BatfishException("Not a valid NamedStructType: \"" + name
                + "\"");
       }
-      return ntype;
+      return instance;
    }
 
-   private final String _ntypeName;
+   private final String _name;
 
-   private NamedStructType(String ntypeName) {
-      _ntypeName = ntypeName;
+   private NamedStructType(String name) {
+      _name = name;
    }
 
    public String namedStructTypeName() {
-      return _ntypeName;
+      return _name;
    }
 }
