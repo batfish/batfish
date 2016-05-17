@@ -16,5 +16,6 @@ public enum QuestionType {
    REACHABILITY,
    REDUCED_REACHABILITY,
    ROUTES,
+   SELF_ADJACENCIES,
    TRACEROUTE
 }

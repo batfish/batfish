@@ -124,6 +124,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
 import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
 import org.batfish.datamodel.questions.RoutesQuestion;
+import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
 import org.batfish.datamodel.questions.TracerouteQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -178,6 +179,7 @@ import org.batfish.question.ProtocolDependenciesAnswer;
 import org.batfish.question.ReachabilityAnswer;
 import org.batfish.question.ReducedReachabilityAnswer;
 import org.batfish.question.RoutesAnswer;
+import org.batfish.question.SelfAdjacenciesAnswer;
 import org.batfish.question.TracerouteAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
@@ -634,6 +636,11 @@ public class Batfish implements AutoCloseable {
 
       case ROUTES:
          outputAnswer(new RoutesAnswer(this, (RoutesQuestion) question));
+         break;
+
+      case SELF_ADJACENCIES:
+         outputAnswer(new SelfAdjacenciesAnswer(this,
+               (SelfAdjacenciesQuestion) question));
          break;
 
       case TRACEROUTE:

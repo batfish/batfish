@@ -58,6 +58,8 @@ public class QuestionHelper {
          return new ReducedReachabilityQuestion();
       case ROUTES:
          return new RoutesQuestion();
+      case SELF_ADJACENCIES:
+         return new SelfAdjacenciesQuestion();
       case TRACEROUTE:
          return new TracerouteQuestion();
       default:
