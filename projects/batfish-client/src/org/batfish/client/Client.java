@@ -50,6 +50,7 @@ public class Client {
 	private static final String COMMAND_DEL_TESTRIG = "del-testrig";
 	private static final String COMMAND_DIR = "dir";
 	private static final String COMMAND_ECHO = "echo";
+   private static final String COMMAND_EXIT = "exit";
 	private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
 	private static final String COMMAND_GEN_DP = "generate-dataplane";
 	private static final String COMMAND_HELP = "help";
@@ -115,6 +116,7 @@ public class Client {
 				+ "\t List directory contents");
 		descs.put(COMMAND_ECHO, COMMAND_ECHO + "<message>"
 				+ "\t Echo the message");
+      descs.put(COMMAND_EXIT, COMMAND_EXIT + "\n" + "\t Terminate interactive client session");
 		descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
 				+ "\t Generate dataplane for the differential environment");
 		descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
@@ -143,7 +145,7 @@ public class Client {
 				+ "\t Prompts for user to press enter");
 		descs.put(COMMAND_PWD, COMMAND_PWD + "\n"
 				+ "\t Prints the working directory");
-		descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Clear screen");
+		descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Terminate interactive client session");
 		descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
 				+ " <container-name>\n" + "\t Set the current container");
 		descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
@@ -619,6 +621,11 @@ public class Client {
 				_logger.outputf("%s\n", Util.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
 				return true;
 			}
+         case COMMAND_EXIT:
+         case COMMAND_QUIT: {
+            System.exit(0);
+            return true;
+         }
 			case COMMAND_GEN_DP: {
 				return generateDataplane();
 			}
@@ -776,10 +783,6 @@ public class Client {
 			case COMMAND_PWD: {
 				final String dir = System.getProperty("user.dir");
 				_logger.output("working directory = " + dir + "\n");
-				return true;
-			}
-			case COMMAND_QUIT: {
-				System.exit(0);
 				return true;
 			}
 			case COMMAND_SET_CONTAINER: {
