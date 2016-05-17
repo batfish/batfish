@@ -81,6 +81,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return null;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Interface getBindInterface() {
       return _bindInterface;
    }
@@ -90,6 +91,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return _candidateRemoteIpsecVpns;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Configuration getConfiguration() {
       return _first;
    }

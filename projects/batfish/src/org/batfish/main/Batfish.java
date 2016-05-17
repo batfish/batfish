@@ -112,6 +112,7 @@ import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
 import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
 import org.batfish.datamodel.questions.LocalPathQuestion;
 import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
@@ -164,6 +165,7 @@ import org.batfish.question.AclReachabilityAnswer;
 import org.batfish.question.BgpAdvertisementsAnswer;
 import org.batfish.question.BgpSessionCheckAnswer;
 import org.batfish.question.CompareSameNameAnswer;
+import org.batfish.question.IpsecVpnCheckAnswer;
 import org.batfish.question.LocalPathAnswer;
 import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
@@ -578,6 +580,11 @@ public class Batfish implements AutoCloseable {
       case COMPARE_SAME_NAME:
          outputAnswer(new CompareSameNameAnswer(this,
                (CompareSameNameQuestion) question));
+         break;
+
+      case IPSEC_VPN_CHECK:
+         outputAnswer(new IpsecVpnCheckAnswer(this,
+               (IpsecVpnCheckQuestion) question));
          break;
 
       case LOCAL_PATH:

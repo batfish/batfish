@@ -36,6 +36,8 @@ public class QuestionHelper {
          return new BgpSessionCheckQuestion();
       case COMPARE_SAME_NAME:
          return new CompareSameNameQuestion();
+      case IPSEC_VPN_CHECK:
+         return new IpsecVpnCheckQuestion();
       case LOCAL_PATH:
          return new LocalPathQuestion();
       case MULTIPATH:

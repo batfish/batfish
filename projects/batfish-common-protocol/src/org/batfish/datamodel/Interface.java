@@ -245,7 +245,7 @@ public class Interface extends ComparableStructure<String> {
       return _allPrefixes;
    }
 
-   public double getBandwidth() {
+   public Double getBandwidth() {
       return _bandwidth;
    }
 
