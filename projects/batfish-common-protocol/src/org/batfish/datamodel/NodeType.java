@@ -27,7 +27,7 @@ public enum NodeType {
 
    @JsonCreator
    public static NodeType fromName(String name) {
-      NodeType instance = _map.get(name);
+      NodeType instance = _map.get(name.toLowerCase());
       if (instance == null) {
          throw new BatfishException("Not a valid NodeType: \"" + name + "\"");
       }

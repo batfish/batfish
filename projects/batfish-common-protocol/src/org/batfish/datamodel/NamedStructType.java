@@ -27,7 +27,7 @@ public enum NamedStructType {
 
    @JsonCreator
    public static NamedStructType fromName(String name) {
-      NamedStructType instance = _map.get(name);
+      NamedStructType instance = _map.get(name.toLowerCase());
       if (instance == null) {
          throw new BatfishException("Not a valid NamedStructType: \"" + name
                + "\"");
