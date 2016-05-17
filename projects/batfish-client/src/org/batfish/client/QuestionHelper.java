@@ -50,6 +50,8 @@ public class QuestionHelper {
          return new ReachabilityQuestion();
       case REDUCED_REACHABILITY:
          return new ReducedReachabilityQuestion();
+      case ROUTES:
+         return new RoutesQuestion();
       case TRACEROUTE:
          return new TracerouteQuestion();
       default:
