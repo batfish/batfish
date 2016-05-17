@@ -554,14 +554,8 @@ public class Batfish implements AutoCloseable {
       boolean diff = question.getDifferential();
       boolean diffActive = (question.getDiffActive() || _settings
             .getDiffActive()) && !diff;
-      boolean traffic = question.getTraffic();
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
-      // TODO: fix hack for verify questions
-      if (!dp || !traffic) {
-         _settings.setNxtnetTraffic(false);
-         _settings.setHistory(false);
-      }
       initQuestionEnvironments(question, diff, diffActive, dp);
       switch (question.getType()) {
       case ACL_REACHABILITY:
@@ -1639,7 +1633,7 @@ public class Batfish implements AutoCloseable {
       return helpPredicates;
    }
 
-   private void getHistory() {
+   public FlowHistory getHistory() {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
          checkTrafficFacts(_baseEnvSettings);
@@ -1656,24 +1650,8 @@ public class Batfish implements AutoCloseable {
          populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
                tag);
       }
-      String jsonOutputPath = _settings.getAnswerJsonPath();
-      if (jsonOutputPath != null) {
-         String jsonOutput;
-         if (_settings.getDiffQuestion()) {
-            Map<String, Configuration> baseConfigurations = loadConfigurations(_baseEnvSettings);
-            Map<String, Configuration> diffConfigurations = loadConfigurations(_diffEnvSettings);
-            jsonOutput = flowHistory.toJsonString(_settings.getQuestionName(),
-                  baseConfigurations, _baseEnvSettings.getName(),
-                  diffConfigurations, _diffEnvSettings.getName());
-         }
-         else {
-            Map<String, Configuration> configurations = loadConfigurations();
-            jsonOutput = flowHistory.toJsonString(_settings.getQuestionName(),
-                  configurations, _envSettings.getName(), null, null);
-         }
-         Util.writeFile(jsonOutputPath, jsonOutput);
-      }
       _logger.output(flowHistory.toString());
+      return flowHistory;
    }
 
    private IbgpTopology getIbgpNeighbors() {
@@ -2379,7 +2357,7 @@ public class Batfish implements AutoCloseable {
       writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
    }
 
-   private void nxtnetTraffic() {
+   public void nxtnetTraffic() {
       if (_settings.getDiffQuestion()) {
          nxtnetTraffic(_baseEnvSettings);
          nxtnetTraffic(_diffEnvSettings);
@@ -3372,16 +3350,10 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
-      if (_settings.getNxtnetTraffic()) {
-         nxtnetTraffic();
-         action = true;
-      }
-
-      if (_settings.getHistory()) {
-         getHistory();
-         action = true;
-      }
-
+      /*
+       * if (_settings.getNxtnetTraffic()) { nxtnetTraffic(); action = true; }
+       * if (_settings.getHistory()) { getHistory(); action = true; }
+       */
       if (_settings.getWriteRoutes()) {
          writeRoutes(_settings.getPrecomputedRoutesPath(), _envSettings);
          action = true;

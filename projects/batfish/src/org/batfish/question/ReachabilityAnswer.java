@@ -14,6 +14,8 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
 import org.batfish.main.Batfish;
@@ -93,7 +95,11 @@ public class ReachabilityAnswer extends Answer {
          wSetFlowOriginate.append(flow.toLBLine());
       }
       batfish.dumpTrafficFacts(trafficFactBins);
-
+      batfish.nxtnetTraffic();
+      AnswerElement answerElement = batfish.getHistory();
+      addAnswerElement(answerElement);
+      setStatus(AnswerStatus.SUCCESS);
+      setQuestion(question);
    }
 
 }

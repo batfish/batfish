@@ -13,6 +13,8 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
@@ -130,6 +132,11 @@ public class LocalPathAnswer extends Answer {
       }
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getBaseEnvSettings());
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getDiffEnvSettings());
+      batfish.nxtnetTraffic();
+      AnswerElement answerElement = batfish.getHistory();
+      addAnswerElement(answerElement);
+      setStatus(AnswerStatus.SUCCESS);
+      setQuestion(question);
    }
 
 }
