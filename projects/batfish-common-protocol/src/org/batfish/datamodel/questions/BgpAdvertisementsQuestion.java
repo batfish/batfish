@@ -14,6 +14,8 @@ public class BgpAdvertisementsQuestion extends Question {
 
    private static final String IBGP_VAR = "ibgp";
 
+   private static final String NODE_REGEX_VAR = "nodeRegex";
+   
    private static final String RECEIVED_VAR = "received";
 
    private static final String SENT_VAR = "sent";
@@ -21,6 +23,8 @@ public class BgpAdvertisementsQuestion extends Question {
    private boolean _ebgp;
 
    private boolean _ibgp;
+   
+   private String _nodeRegex;
 
    private boolean _received;
 
@@ -52,6 +56,11 @@ public class BgpAdvertisementsQuestion extends Question {
    @JsonProperty(IBGP_VAR)
    public boolean getIbgp() {
       return _ibgp;
+   }
+
+   @JsonProperty(NODE_REGEX_VAR)
+   public String getNodeRegex() {
+      return _nodeRegex;
    }
 
    @JsonProperty(RECEIVED_VAR)
@@ -91,6 +100,9 @@ public class BgpAdvertisementsQuestion extends Question {
             case IBGP_VAR:
                setIbgp(parameters.getBoolean(paramKey));
                break;
+            case NODE_REGEX_VAR:
+               setNodeRegex(parameters.getString(paramKey));
+               break;
             case RECEIVED_VAR:
                setReceived(parameters.getBoolean(paramKey));
                break;
@@ -106,6 +118,10 @@ public class BgpAdvertisementsQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   public void setNodeRegex(String nodeRegex) {
+      _nodeRegex = nodeRegex;
    }
 
    public void setReceived(boolean received) {

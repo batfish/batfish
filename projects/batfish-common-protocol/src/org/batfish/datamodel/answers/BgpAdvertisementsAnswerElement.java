@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -24,8 +26,8 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    private final Map<String, Set<BgpAdvertisement>> _sentIbgpAdvertisements;
 
    public BgpAdvertisementsAnswerElement(
-         Map<String, Configuration> configurations, boolean ebgp, boolean ibgp,
-         boolean received, boolean sent) {
+         Map<String, Configuration> configurations, Pattern nodeRegex, 
+         boolean ebgp, boolean ibgp, boolean received, boolean sent) {
       _allRequestedAdvertisements = new TreeSet<BgpAdvertisement>();
       _receivedEbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
       _sentEbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
@@ -33,6 +35,10 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       _sentIbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
+         Matcher nodeMatcher = nodeRegex.matcher(hostname);
+         if (!nodeMatcher.matches()) {
+            break;
+         }
          Configuration configuration = e.getValue();
          if (received) {
             if (ebgp) {
