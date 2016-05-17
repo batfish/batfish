@@ -26,7 +26,7 @@ public class NodesQuestion extends Question {
 
    public NodesQuestion() {
       super(QuestionType.NODES);
-      _nodeType = EnumSet.of(NodeType.ANY);
+      _nodeType = EnumSet.noneOf(NodeType.class);
       _nodeRegex = ".*";
    }
 

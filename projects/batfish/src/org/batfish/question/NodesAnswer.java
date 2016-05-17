@@ -59,7 +59,7 @@ public class NodesAnswer extends Answer {
       }
       catch (Exception e) {
          BatfishException be = new BatfishException(
-               "Error in answering NodesQuestion", e);
+               "Error in answering NodesQuestion: " + e.getMessage(), e);
 
          setStatus(AnswerStatus.FAILURE);
          addAnswerElement(new StringAnswerElement(be.getMessage()));

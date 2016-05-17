@@ -10,10 +10,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum NeighborType {
-   ANY("any"),
    EBGP("ebgp"),
    IBGP("ibgp"),
-   PHYSICAL("physical");
+   IP("ip");
 
    private final static Map<String, NeighborType> _map = buildMap();
 

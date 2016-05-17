@@ -32,7 +32,7 @@ public class NeighborsQuestion extends Question {
       super(QuestionType.NEIGHBORS);
       _dstNodeRegex = ".*";
       _srcNodeRegex = ".*";
-      _neighborTypes = EnumSet.of(NeighborType.ANY);
+      _neighborTypes = EnumSet.noneOf(NeighborType.class);
    }
 
    @Override

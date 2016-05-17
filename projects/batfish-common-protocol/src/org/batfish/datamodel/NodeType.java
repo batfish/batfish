@@ -9,7 +9,6 @@ import org.batfish.common.BatfishException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum NodeType {
-   ANY("any"),
    BGP("bgp"),
    ISIS("isis"),
    OSPF("ospf");

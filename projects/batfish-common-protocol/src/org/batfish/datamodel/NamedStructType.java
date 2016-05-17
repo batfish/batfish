@@ -9,7 +9,6 @@ import org.batfish.common.BatfishException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum NamedStructType {
-   ANY("any"),
    ACL("acl"),
    PREFIX_LIST("prefix_list"),
    ROUTE_POLICY("route_policy");
