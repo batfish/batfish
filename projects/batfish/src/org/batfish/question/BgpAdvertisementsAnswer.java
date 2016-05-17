@@ -16,7 +16,7 @@ public class BgpAdvertisementsAnswer extends Answer {
 
    public BgpAdvertisementsAnswer(Batfish batfish,
          BgpAdvertisementsQuestion question) {
-      
+
       Pattern nodeRegex;
 
       try {

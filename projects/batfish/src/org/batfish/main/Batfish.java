@@ -119,6 +119,7 @@ import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
 import org.batfish.datamodel.questions.NodesQuestion;
 import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
+import org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion;
 import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
@@ -126,6 +127,8 @@ import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
 import org.batfish.datamodel.questions.RoutesQuestion;
 import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
 import org.batfish.datamodel.questions.TracerouteQuestion;
+import org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion;
+import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -175,12 +178,15 @@ import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
 import org.batfish.question.NodesAnswer;
 import org.batfish.question.OspfLoopbacksAnswer;
+import org.batfish.question.PairwiseVpnConnectivityAnswer;
 import org.batfish.question.ProtocolDependenciesAnswer;
 import org.batfish.question.ReachabilityAnswer;
 import org.batfish.question.ReducedReachabilityAnswer;
 import org.batfish.question.RoutesAnswer;
 import org.batfish.question.SelfAdjacenciesAnswer;
 import org.batfish.question.TracerouteAnswer;
+import org.batfish.question.UniqueBgpPrefixOriginationAnswer;
+import org.batfish.question.UniqueIpAssignmentsAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.Util;
@@ -301,6 +307,8 @@ public class Batfish implements AutoCloseable {
                BfConsts.RELPATH_TEST_RIG_DIR).toString());
          settings.setProtocolDependencyGraphPath(Paths.get(baseDir,
                BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH).toString());
+         settings.setProtocolDependencyGraphZipPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH_ZIP).toString());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
             envSettings.setName(envName);
@@ -619,6 +627,11 @@ public class Batfish implements AutoCloseable {
                (OspfLoopbacksQuestion) question));
          break;
 
+      case PAIRWISE_VPN_CONNECTIVITY:
+         outputAnswer(new PairwiseVpnConnectivityAnswer(this,
+               (PairwiseVpnConnectivityQuestion) question));
+         break;
+
       case PROTOCOL_DEPENDENCIES:
          outputAnswer(new ProtocolDependenciesAnswer(this,
                (ProtocolDependenciesQuestion) question));
@@ -645,6 +658,16 @@ public class Batfish implements AutoCloseable {
 
       case TRACEROUTE:
          outputAnswer(new TracerouteAnswer(this, (TracerouteQuestion) question));
+         break;
+
+      case UNIQUE_BGP_PREFIX_ORIGINATION:
+         outputAnswer(new UniqueBgpPrefixOriginationAnswer(this,
+               (UniqueBgpPrefixOriginationQuestion) question));
+         break;
+
+      case UNIQUE_IP_ASSIGNMENTS:
+         outputAnswer(new UniqueIpAssignmentsAnswer(this,
+               (UniqueIpAssignmentsQuestion) question));
          break;
 
       default:
