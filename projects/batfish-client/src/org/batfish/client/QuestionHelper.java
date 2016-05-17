@@ -38,6 +38,8 @@ public class QuestionHelper {
          return new CompareSameNameQuestion();
       case IPSEC_VPN_CHECK:
          return new IpsecVpnCheckQuestion();
+      case ISIS_LOOPBACKS:
+         return new IsisLoopbacksQuestion();
       case LOCAL_PATH:
          return new LocalPathQuestion();
       case MULTIPATH:

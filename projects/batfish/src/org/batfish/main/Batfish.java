@@ -113,6 +113,7 @@ import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
 import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
+import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
 import org.batfish.datamodel.questions.LocalPathQuestion;
 import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
@@ -166,6 +167,7 @@ import org.batfish.question.BgpAdvertisementsAnswer;
 import org.batfish.question.BgpSessionCheckAnswer;
 import org.batfish.question.CompareSameNameAnswer;
 import org.batfish.question.IpsecVpnCheckAnswer;
+import org.batfish.question.IsisLoopbacksAnswer;
 import org.batfish.question.LocalPathAnswer;
 import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
@@ -585,6 +587,11 @@ public class Batfish implements AutoCloseable {
       case IPSEC_VPN_CHECK:
          outputAnswer(new IpsecVpnCheckAnswer(this,
                (IpsecVpnCheckQuestion) question));
+         break;
+
+      case ISIS_LOOPBACKS:
+         outputAnswer(new IsisLoopbacksAnswer(this,
+               (IsisLoopbacksQuestion) question));
          break;
 
       case LOCAL_PATH:
