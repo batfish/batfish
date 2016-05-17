@@ -905,43 +905,9 @@ public class Batfish implements AutoCloseable {
       CommunitySet allCommunities = new CommunitySet();
       processExternalBgpAnnouncements(configurations, envSettings, cpFactBins,
             allCommunities);
-      Topology topology = computeTopology(_settings.getTestRigPath(),
-            configurations, cpFactBins);
-      String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
-      String serializedTopologyPath = envSettings.getSerializedTopologyPath();
-      InterfaceSet flowSinks = null;
-      if (differentialContext) {
-         flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
-      }
-      EdgeSet blacklistEdges = getEdgeBlacklist(envSettings);
-      if (edgeBlacklistPath != null) {
-         File edgeBlacklistPathAsFile = new File(edgeBlacklistPath);
-         if (edgeBlacklistPathAsFile.exists()) {
-            EdgeSet edges = topology.getEdges();
-            edges.removeAll(blacklistEdges);
-         }
-      }
-      NodeSet blacklistNodes = getNodeBlacklist(envSettings);
-      if (blacklistNodes != null) {
-         if (differentialContext) {
-            flowSinks.removeNodes(blacklistNodes);
-         }
-         for (String blacklistNode : blacklistNodes) {
-            topology.removeNode(blacklistNode);
-         }
-      }
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(envSettings);
-      if (blacklistInterfaces != null) {
-         for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-            topology.removeInterface(blacklistInterface);
-            if (differentialContext) {
-               flowSinks.remove(blacklistInterface);
-            }
-         }
-      }
-      if (!differentialContext) {
-         flowSinks = computeFlowSinks(configurations, topology);
-      }
+      Topology topology = computeTopology(configurations, envSettings);
+      InterfaceSet flowSinks = computeFlowSinks(configurations, envSettings,
+            differentialContext, topology);
       writeTopologyFacts(topology, cpFactBins);
       populateConfigurationFactBins(configurations.values(), allCommunities,
             cpFactBins);
@@ -953,6 +919,7 @@ public class Batfish implements AutoCloseable {
          dumpControlPlaneFacts(envSettings, cpFactBins);
       }
       // serialize topology
+      String serializedTopologyPath = envSettings.getSerializedTopologyPath();
       File topologyPath = new File(serializedTopologyPath);
       _logger.info("Serializing topology...");
       serializeObject(topology, topologyPath);
@@ -999,6 +966,34 @@ public class Batfish implements AutoCloseable {
    }
 
    private InterfaceSet computeFlowSinks(
+         Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings, boolean differentialContext,
+         Topology topology) {
+      InterfaceSet flowSinks = null;
+      if (differentialContext) {
+         flowSinks = getFlowSinkSet(_baseEnvSettings.getDataPlanePath());
+      }
+      NodeSet blacklistNodes = getNodeBlacklist(envSettings);
+      if (blacklistNodes != null) {
+         if (differentialContext) {
+            flowSinks.removeNodes(blacklistNodes);
+         }
+      }
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(envSettings);
+      if (blacklistInterfaces != null) {
+         for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+            if (differentialContext) {
+               flowSinks.remove(blacklistInterface);
+            }
+         }
+      }
+      if (!differentialContext) {
+         flowSinks = computeFlowSinks(configurations, topology);
+      }
+      return flowSinks;
+   }
+
+   private InterfaceSet computeFlowSinks(
          Map<String, Configuration> configurations, Topology topology) {
       InterfaceSet flowSinks = new InterfaceSet();
       InterfaceSet topologyInterfaces = new InterfaceSet();
@@ -1041,14 +1036,41 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   public Topology computeTopology(String testRigPath,
-         Map<String, Configuration> configurations,
-         Map<String, StringBuilder> factBins) {
+   public Topology computeTopology(Map<String, Configuration> configurations,
+         EnvironmentSettings envSettings) {
+      Topology topology = computeTopology(_settings.getTestRigPath(),
+            configurations);
+      String edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
+      EdgeSet blacklistEdges = getEdgeBlacklist(envSettings);
+      if (edgeBlacklistPath != null) {
+         File edgeBlacklistPathAsFile = new File(edgeBlacklistPath);
+         if (edgeBlacklistPathAsFile.exists()) {
+            EdgeSet edges = topology.getEdges();
+            edges.removeAll(blacklistEdges);
+         }
+      }
+      NodeSet blacklistNodes = getNodeBlacklist(envSettings);
+      if (blacklistNodes != null) {
+         for (String blacklistNode : blacklistNodes) {
+            topology.removeNode(blacklistNode);
+         }
+      }
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(envSettings);
+      if (blacklistInterfaces != null) {
+         for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+            topology.removeInterface(blacklistInterface);
+         }
+      }
+      return topology;
+   }
+
+   private Topology computeTopology(String testRigPath,
+         Map<String, Configuration> configurations) {
       Path topologyFilePath = Paths.get(testRigPath, TOPOLOGY_FILENAME);
       Topology topology;
       // Get generated facts from topology file
       if (Files.exists(topologyFilePath)) {
-         topology = processTopologyFile(topologyFilePath.toFile(), factBins);
+         topology = processTopologyFile(topologyFilePath.toFile());
       }
       else {
          // guess adjacencies based on interface subnetworks
@@ -3083,8 +3105,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private Topology processTopologyFile(File topologyFilePath,
-         Map<String, StringBuilder> factBins) {
+   private Topology processTopologyFile(File topologyFilePath) {
       Topology topology = parseTopology(topologyFilePath);
       return topology;
    }
