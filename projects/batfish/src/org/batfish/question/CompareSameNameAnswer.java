@@ -10,15 +10,11 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
 
 public class CompareSameNameAnswer extends Answer {
-
-   public class CompareSameNameAnswerElement implements AnswerElement {
-
-   }
 
    public CompareSameNameAnswer(Batfish batfish,
          CompareSameNameQuestion question) {
