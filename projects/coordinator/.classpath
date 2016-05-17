@@ -36,8 +36,6 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/jersey-media-multipart-2.17.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/mimepull-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/log4j/log4j-api-2.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j/log4j-core-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-logging-1.1.1.jar"/>
