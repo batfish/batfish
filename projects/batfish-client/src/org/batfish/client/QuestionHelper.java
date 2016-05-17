@@ -48,6 +48,8 @@ public class QuestionHelper {
          return new NeighborsQuestion();
       case NODES:
          return new NodesQuestion();
+      case OSPF_LOOPBACKS:
+         return new OspfLoopbacksQuestion();
       case PROTOCOL_DEPENDENCIES:
          return new ProtocolDependenciesQuestion();
       case REACHABILITY:

@@ -118,6 +118,7 @@ import org.batfish.datamodel.questions.LocalPathQuestion;
 import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
 import org.batfish.datamodel.questions.NodesQuestion;
+import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
 import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
@@ -172,6 +173,7 @@ import org.batfish.question.LocalPathAnswer;
 import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
 import org.batfish.question.NodesAnswer;
+import org.batfish.question.OspfLoopbacksAnswer;
 import org.batfish.question.ProtocolDependenciesAnswer;
 import org.batfish.question.ReachabilityAnswer;
 import org.batfish.question.ReducedReachabilityAnswer;
@@ -608,6 +610,11 @@ public class Batfish implements AutoCloseable {
 
       case NODES:
          outputAnswer(new NodesAnswer(this, (NodesQuestion) question));
+         break;
+
+      case OSPF_LOOPBACKS:
+         outputAnswer(new OspfLoopbacksAnswer(this,
+               (OspfLoopbacksQuestion) question));
          break;
 
       case PROTOCOL_DEPENDENCIES:
