@@ -423,7 +423,7 @@ public class Client {
 	         String questionString = QuestionHelper.getQuestionString(qType);
 	         
 	         String qFile = Paths.get(_settings.getQuestionsDir(), 
-	               qType.questionTypeName() + ".q").toFile().getAbsolutePath();	   
+	               qType.questionTypeName() + ".json").toFile().getAbsolutePath();	   
 	         
 	         PrintWriter writer = new PrintWriter(qFile);
 	         writer.write(questionString);
