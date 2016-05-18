@@ -44,10 +44,6 @@ public class AclReachabilityQuestion extends Question {
       return _nodeRegex;
    }
 
-   public String getNodeType() {
-      return _aclNameRegex;
-   }
-
    @Override
    public boolean getTraffic() {
       return false;
