@@ -23,11 +23,14 @@ public class QuestionHelper {
       return retString;
    }
 
-   public static Question getQuestion(String questionType) throws Exception {
-
-      QuestionType qType = QuestionType.valueOf(questionType);
-
-      switch (qType) {
+   public static Question getQuestion(String questionTypeStr) throws Exception {
+      QuestionType qType = QuestionType.fromName(questionTypeStr);
+      return getQuestion(qType);
+   }
+   
+   public static Question getQuestion(QuestionType questionType) throws Exception {
+      
+      switch (questionType) {
       case ACL_REACHABILITY:
          return new AclReachabilityQuestion();
       case BGP_ADVERTISEMENTS:
@@ -78,11 +81,14 @@ public class QuestionHelper {
    }
 
    public static String getQuestionString(String questionType) throws Exception {
-      Question question = getQuestion(questionType);
-
       ObjectMapper mapper = new ObjectMapper();
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      return mapper.writeValueAsString(getQuestion(questionType));
+   }
 
-      return mapper.writeValueAsString(question);
+   public static String getQuestionString(QuestionType questionType) throws Exception {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      return mapper.writeValueAsString(getQuestion(questionType));
    }
 }

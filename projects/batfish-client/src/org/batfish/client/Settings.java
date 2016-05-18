@@ -8,7 +8,13 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Util;
 
 public class Settings extends BaseSettings {
-
+   
+   public enum RunMode {
+      batch,
+      genquestions,
+      interactive
+   }
+   
    private static final String ARG_API_KEY = "apikey";
    public static final String ARG_BATCH_COMMAND_FILE = "batchcmdfile";
    private static final String ARG_DISABLE_SSL = "disablessl";
@@ -17,6 +23,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_NO_SANITY_CHECK = "nosanitycheck";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
+   private static final String ARG_QUESTIONS_DIR = "questionsdir";   
    public static final String ARG_RUN_MODE = "runmode";
    
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
@@ -35,7 +42,8 @@ public class Settings extends BaseSettings {
    private String _logLevel;
    private boolean _sanityCheck;
    private long _periodCheckWorkMs;
-   private String _runMode;
+   private String _questionsDir;
+   private RunMode _runMode;
    private boolean _trustAllSslCerts;
    private boolean _useSsl;
 
@@ -81,7 +89,11 @@ public class Settings extends BaseSettings {
       return _periodCheckWorkMs;
    }
 
-   public String getRunMode() {
+   public String getQuestionsDir() {
+      return _questionsDir;
+   }
+
+   public RunMode getRunMode() {
       return _runMode;
    }
 
@@ -103,10 +115,11 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
-            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
+            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_NO_SANITY_CHECK, false);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-      setDefaultProperty(ARG_RUN_MODE, "batch");
+      setDefaultProperty(ARG_QUESTIONS_DIR, "questions_lib");
+      setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
@@ -132,7 +145,10 @@ public class Settings extends BaseSettings {
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
 
-      addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
+      addOption(ARG_QUESTIONS_DIR, "directory to output questions in",
+            "questions_dir");
+
+      addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive|genquestions)",
             "run_mode");
 
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
@@ -161,7 +177,8 @@ public class Settings extends BaseSettings {
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
-      _runMode = getStringOptionValue(ARG_RUN_MODE);
+      _questionsDir = getStringOptionValue(ARG_QUESTIONS_DIR);
+      _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
       _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
 
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);

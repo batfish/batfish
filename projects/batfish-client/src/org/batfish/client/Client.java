@@ -25,12 +25,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.ZipUtility;
+import org.batfish.datamodel.questions.QuestionType;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -72,6 +74,7 @@ public class Client {
 	private static final String COMMAND_SHOW_API_KEY = "show-api-key";
 	private static final String COMMAND_SHOW_CONTAINER = "show-container";
 	private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
+   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
 	private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
 	private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
@@ -162,6 +165,8 @@ public class Client {
 				+ "\t Show active container");
 		descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
 				+ "\t Show coordinator host");
+      descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n" 
+            + "\t Show current loglevel");
 		descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
 				+ "\t Show active testrig");
 		descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
@@ -190,11 +195,12 @@ public class Client {
 		_settings = settings;
 
 		switch (_settings.getRunMode()) {
-		case "batch":
+		case batch:
+      case genquestions:
 			_logger =  new BatfishLogger(_settings.getLogLevel(), false,
 					_settings.getLogFile(), false, false);
-			break;
-		case "interactive":
+			break;		   
+      case interactive:
 			try {
 				_reader = new ConsoleReader();
 				_reader.setPrompt("batfish> ");
@@ -217,7 +223,7 @@ public class Client {
 			}
 			break;
 		default:
-			System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+			System.err.println("org.batfish.client: Unknown run mode.");
 			System.exit(1);
 		}
 
@@ -243,30 +249,6 @@ public class Client {
 		}	   
 
 		return result;
-	}
-
-	private Map<String, String> parseParams(String paramsLine) {
-		Map<String,String> parameters = new HashMap<String, String>();
-
-		Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
-
-		String[] params = paramsLine.split("\\|");
-
-		_logger.debugf("Found %d parameters\n", params.length);
-
-		for (String param : params) {
-			Matcher matcher = pattern.matcher(param);
-
-			while (matcher.find()) {
-				String key = matcher.group(1).trim();
-				String value = matcher.group(2).trim();
-				_logger.debugf("key=%s value=%s\n", key, value);
-
-				parameters.put(key,  value);
-			}
-		}
-
-		return parameters;
 	}
 
 	private boolean answerFile(String questionFile, String paramsLine, boolean isDiff) 
@@ -423,6 +405,36 @@ public class Client {
 
 		return execute(wItemGenDdp);
 	}
+	
+	private void generateQuestions() {
+	   
+      File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
+
+      if (!questionsDir.exists()) {
+         if (!questionsDir.mkdirs()) {
+            _logger.errorf("Could not create questions dir %s\n", 
+                  _settings.getQuestionsDir());
+            System.exit(1);
+         }
+      }
+
+	   for (QuestionType qType : QuestionType.values()) {
+	      try {
+	         String questionString = QuestionHelper.getQuestionString(qType);
+	         
+	         String qFile = Paths.get(_settings.getQuestionsDir(), 
+	               qType.questionTypeName() + ".json").toFile().getAbsolutePath();	   
+	         
+	         PrintWriter writer = new PrintWriter(qFile);
+	         writer.write(questionString);
+	         writer.close();	         
+	      }
+	      catch (Exception e) {
+	         _logger.errorf("Could not write question %s: %s\n", 
+	               qType.questionTypeName(), e.getMessage());
+	      }
+	   }
+	}
 
 	private List<String> getCommandParameters(String[] words, int numOptions) {
 		List<String> parameters = new LinkedList<String>();
@@ -515,6 +527,31 @@ public class Client {
 		return true;
 	}
 
+   private Map<String, String> parseParams(String paramsLine) {
+      Map<String,String> parameters = new HashMap<String, String>();
+
+      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
+
+      String[] params = paramsLine.split("\\|");
+
+      _logger.debugf("Found %d parameters\n", params.length);
+
+      for (String param : params) {
+         Matcher matcher = pattern.matcher(param);
+
+         while (matcher.find()) {
+            String key = matcher.group(1).trim();
+            String value = matcher.group(2).trim();
+            _logger.debugf("key=%s value=%s\n", key, value);
+
+            parameters.put(key,  value);
+         }
+      }
+
+      return parameters;
+   }
+
+   
 	private void printUsage() {
 		for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
 			_logger.output(entry.getValue() + "\n\n");
@@ -794,7 +831,7 @@ public class Client {
 				return true;
 			}
 			case COMMAND_PROMPT: {
-				if (_settings.getRunMode() == "interactive") {
+				if (_settings.getRunMode() == RunMode.interactive) {
 					_logger.output("\n\n[Press enter to proceed]\n\n");
 					BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 					in.readLine();
@@ -849,6 +886,10 @@ public class Client {
 			case COMMAND_SHOW_COORDINATOR_HOST: {
 				_logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
 				return true;
+			}
+			case COMMAND_SHOW_LOGLEVEL: {		   
+			   _logger.outputf("Current log level is %s\n", _logger.getLogLevelStr());
+			   return true;
 			}
 			case COMMAND_SHOW_TESTRIG: {
 				_logger.outputf("Current testrig is %s\n", _currTestrigName);
@@ -912,7 +953,7 @@ public class Client {
 			return;
 
 		switch (_settings.getRunMode()) {
-		case "batch":
+		case batch:
 			if (_settings.getBatchCommandFile() == null) {
 				System.err.println("org.batfish.client: Command file not specified while running in batch mode. Did you mean to run in interactive mode (-runmode interactive)?");
 				System.exit(1);
@@ -929,11 +970,14 @@ public class Client {
 			processCommands(commands);
 
 			break;
-		case "interactive":
+		case genquestions:
+		   generateQuestions();
+		   break;
+		case interactive:
 			runInteractive();
 			break;
 		default:
-			System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+			System.err.println("org.batfish.client: Unknown run mode.");
 			System.exit(1);
 		}
 	}
