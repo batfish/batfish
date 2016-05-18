@@ -25,12 +25,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.ZipUtility;
+import org.batfish.datamodel.questions.QuestionType;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -193,11 +195,12 @@ public class Client {
 		_settings = settings;
 
 		switch (_settings.getRunMode()) {
-		case "batch":
+		case batch:
+      case genquestions:
 			_logger =  new BatfishLogger(_settings.getLogLevel(), false,
 					_settings.getLogFile(), false, false);
-			break;
-		case "interactive":
+			break;		   
+      case interactive:
 			try {
 				_reader = new ConsoleReader();
 				_reader.setPrompt("batfish> ");
@@ -220,7 +223,7 @@ public class Client {
 			}
 			break;
 		default:
-			System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+			System.err.println("org.batfish.client: Unknown run mode.");
 			System.exit(1);
 		}
 
@@ -401,6 +404,36 @@ public class Client {
 						_currTestrigName, _currEnv, _currDiffEnv);
 
 		return execute(wItemGenDdp);
+	}
+	
+	private void generateQuestions() {
+	   
+      File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
+
+      if (!questionsDir.exists()) {
+         if (!questionsDir.mkdirs()) {
+            _logger.errorf("Could not create questions dir %s\n", 
+                  _settings.getQuestionsDir());
+            System.exit(1);
+         }
+      }
+
+	   for (QuestionType qType : QuestionType.values()) {
+	      try {
+	         String questionString = QuestionHelper.getQuestionString(qType);
+	         
+	         String qFile = Paths.get(_settings.getQuestionsDir(), 
+	               qType.questionTypeName() + ".q").toFile().getAbsolutePath();	   
+	         
+	         PrintWriter writer = new PrintWriter(qFile);
+	         writer.write(questionString);
+	         writer.close();	         
+	      }
+	      catch (Exception e) {
+	         _logger.errorf("Could not write question %s: %s\n", 
+	               qType.questionTypeName(), e.getMessage());
+	      }
+	   }
 	}
 
 	private List<String> getCommandParameters(String[] words, int numOptions) {
@@ -798,7 +831,7 @@ public class Client {
 				return true;
 			}
 			case COMMAND_PROMPT: {
-				if (_settings.getRunMode() == "interactive") {
+				if (_settings.getRunMode() == RunMode.interactive) {
 					_logger.output("\n\n[Press enter to proceed]\n\n");
 					BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 					in.readLine();
@@ -920,7 +953,7 @@ public class Client {
 			return;
 
 		switch (_settings.getRunMode()) {
-		case "batch":
+		case batch:
 			if (_settings.getBatchCommandFile() == null) {
 				System.err.println("org.batfish.client: Command file not specified while running in batch mode. Did you mean to run in interactive mode (-runmode interactive)?");
 				System.exit(1);
@@ -937,11 +970,14 @@ public class Client {
 			processCommands(commands);
 
 			break;
-		case "interactive":
+		case genquestions:
+		   generateQuestions();
+		   break;
+		case interactive:
 			runInteractive();
 			break;
 		default:
-			System.err.println("org.batfish.client: Unknown run mode. Expect {batch, interactive}");
+			System.err.println("org.batfish.client: Unknown run mode.");
 			System.exit(1);
 		}
 	}
