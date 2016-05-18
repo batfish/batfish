@@ -234,6 +234,10 @@ public class BatfishLogger {
       return _history;
    }
 
+   public int getLogLevel() {
+      return _level;
+   }
+
    public String getLogLevelStr() {
       return LOG_LEVELSTRS.get(_level);
    }

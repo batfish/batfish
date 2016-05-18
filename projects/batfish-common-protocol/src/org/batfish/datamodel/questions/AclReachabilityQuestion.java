@@ -6,34 +6,35 @@ import org.batfish.common.BatfishException;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AclReachabilityQuestion extends Question {
 
-   private static final String NODE_REGEX_VAR = "nodeRegex";
    private static final String ACL_NAME_REGEX_VAR = "aclNameRegex";
 
-   private String _nodeRegex = ".*";
-   private String _aclNameRegex = ".*";
+   private static final String NODE_REGEX_VAR = "nodeRegex";
+
+   private String _aclNameRegex;
+
+   private String _nodeRegex;
 
    public AclReachabilityQuestion() {
       super(QuestionType.ACL_REACHABILITY);
+      _nodeRegex = ".*";
+      _aclNameRegex = ".*";
    }
 
-   public AclReachabilityQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
+   @JsonProperty(ACL_NAME_REGEX_VAR)
+   public String getAclNameRegex() {
+      return _aclNameRegex;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -43,9 +44,13 @@ public class AclReachabilityQuestion extends Question {
       return _nodeRegex;
    }
 
-   @JsonProperty(ACL_NAME_REGEX_VAR)
    public String getNodeType() {
       return _aclNameRegex;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    public void setAclNameRegex(String regex) {
@@ -55,23 +60,20 @@ public class AclReachabilityQuestion extends Question {
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
-
       Iterator<?> paramKeys = parameters.keys();
-
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
-
          try {
             switch (paramKey) {
-            case NODE_REGEX_VAR:
-               setNodeRegex(parameters.getString(paramKey));
-               break;
             case ACL_NAME_REGEX_VAR:
                setAclNameRegex(parameters.getString(paramKey));
                break;
+            case NODE_REGEX_VAR:
+               setNodeRegex(parameters.getString(paramKey));
+               break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: "
-                     + paramKey);
+               throw new BatfishException("Unknown key in "
+                     + getClass().getSimpleName() + ": " + paramKey);
             }
          }
          catch (JSONException e) {
@@ -83,4 +85,5 @@ public class AclReachabilityQuestion extends Question {
    public void setNodeRegex(String regex) {
       _nodeRegex = regex;
    }
+
 }

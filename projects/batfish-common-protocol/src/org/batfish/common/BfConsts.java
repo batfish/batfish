@@ -83,6 +83,7 @@ public class BfConsts {
    public static final String RELPATH_NXTNET_OUTPUT_DIR = "nxtnet_output";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH = "pdgraphs";
+   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH_ZIP = "pdgraphs.zip";
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";
@@ -93,7 +94,7 @@ public class BfConsts {
    public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
    public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
-   public static final String SUFFIX_ANSWER_JSON_FILE = ".ans";
+   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
    public static final String SUFFIX_LOG_FILE = ".log";
 
    public static final String SVC_BASE_RSC = "/batfishservice";

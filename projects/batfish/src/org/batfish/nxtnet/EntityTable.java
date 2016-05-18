@@ -240,28 +240,28 @@ public class EntityTable {
       currentFlowProperty = _relations.get("Flow_icmpCode");
       List<Long> flowIcmpCodes = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsCwr");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsCWR");
       List<Long> flowTcpFlagsCwr = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsEce");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsECE");
       List<Long> flowTcpFlagsEce = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsUrg");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsURG");
       List<Long> flowTcpFlagsUrg = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsAck");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsACK");
       List<Long> flowTcpFlagsAck = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsPsh");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsPSH");
       List<Long> flowTcpFlagsPsh = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsRst");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsRST");
       List<Long> flowTcpFlagsRst = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsSyn");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsSYN");
       List<Long> flowTcpFlagsSyn = getLongColumn(currentFlowProperty, 1);
 
-      currentFlowProperty = _relations.get("Flow_tcpFlagsFin");
+      currentFlowProperty = _relations.get("Flow_tcpFlagsFIN");
       List<Long> flowTcpFlagsFin = getLongColumn(currentFlowProperty, 1);
 
       currentFlowProperty = _relations.get("Flow_tag");

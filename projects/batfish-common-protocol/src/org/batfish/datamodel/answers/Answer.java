@@ -13,13 +13,14 @@ public class Answer {
       answer.addAnswerElement(new StringAnswerElement(message));
       return answer;
    }
+
    private Question _question;
    private AnswerStatus _status;
 
    protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
 
-   public void addAnswerElement(StringAnswerElement stringAnswer) {
-      _answerElements.add(stringAnswer);
+   public void addAnswerElement(AnswerElement answerElement) {
+      _answerElements.add(answerElement);
    }
 
    public List<AnswerElement> getAnswerElements() {

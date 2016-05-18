@@ -24,9 +24,11 @@ public class Main {
 	      System.exit(1);
 	   }
 
-	   String argString = String.format("%s -%s %s -%s %s", _settings.getClientArgs(),			      
+	   String argString = String.format("%s -%s %s -%s %s -%s %s", 
+			  _settings.getClientArgs(),			      
 	         org.batfish.client.Settings.ARG_COORDINATOR_HOST, "localhost",
-	         org.batfish.client.Settings.ARG_LOG_LEVEL, _settings.getLogLevel());
+	         org.batfish.client.Settings.ARG_LOG_LEVEL, _settings.getLogLevel(),
+	         org.batfish.client.Settings.ARG_RUN_MODE, _settings.getRunMode());
 
 	   if (_settings.getLogFile() != null)
 	      argString += String.format(" -%s %s",

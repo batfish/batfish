@@ -17,7 +17,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_NO_SANITY_CHECK = "nosanitycheck";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
-   private static final String ARG_RUN_MODE = "runmode";
+   public static final String ARG_RUN_MODE = "runmode";
    
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
@@ -132,7 +132,7 @@ public class Settings extends BaseSettings {
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
 
-      addOption(ARG_RUN_MODE, "which mode to run in (auto|batch|interactive)",
+      addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
             "run_mode");
 
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
@@ -163,6 +163,7 @@ public class Settings extends BaseSettings {
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
       _runMode = getStringOptionValue(ARG_RUN_MODE);
       _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
+
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
       _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);

@@ -1,5 +1,9 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class Flow implements Comparable<Flow> {
 
    private final int _dscp;

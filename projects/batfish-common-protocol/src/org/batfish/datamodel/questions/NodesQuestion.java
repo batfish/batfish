@@ -1,43 +1,41 @@
 package org.batfish.datamodel.questions;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NodeType;
-import org.batfish.datamodel.collections.NodeTypeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NodesQuestion extends Question {
 
    private static final String NODE_REGEX_VAR = "nodeRegex";
+
    private static final String NODE_TYPE_VAR = "nodeType";
 
-   private NodeTypeSet _nodeType = new NodeTypeSet(NodeType.ANY);
-   private String _nodeRegex = ".*";
+   private String _nodeRegex;
+
+   private Set<NodeType> _nodeType;
 
    public NodesQuestion() {
       super(QuestionType.NODES);
-   }
-
-   public NodesQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
+      _nodeType = EnumSet.noneOf(NodeType.class);
+      _nodeRegex = ".*";
    }
 
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -48,33 +46,35 @@ public class NodesQuestion extends Question {
    }
 
    @JsonProperty(NODE_TYPE_VAR)
-   public NodeTypeSet getNodeType() {
+   public Set<NodeType> getNodeTypes() {
       return _nodeType;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
-
       Iterator<?> paramKeys = parameters.keys();
-
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
-
          try {
             switch (paramKey) {
             case NODE_REGEX_VAR:
                setNodeRegex(parameters.getString(paramKey));
                break;
             case NODE_TYPE_VAR:
-               ObjectMapper mapper = new ObjectMapper();
-               NodeTypeSet nset = mapper.readValue(
-                     parameters.getString(paramKey), NodeTypeSet.class);
-               setNodeTypeSet(nset);
+               setNodeTypes(new ObjectMapper().<Set<NodeType>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<NodeType>>() {
+                     }));
                break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: "
-                     + paramKey);
+               throw new BatfishException("Unknown key in "
+                     + getClass().getSimpleName() + ": " + paramKey);
             }
          }
          catch (JSONException | IOException e) {
@@ -87,18 +87,8 @@ public class NodesQuestion extends Question {
       _nodeRegex = regex;
    }
 
-   public void setNodeTypeSet(NodeTypeSet nType) {
+   public void setNodeTypes(Set<NodeType> nType) {
       _nodeType = nType;
    }
 
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NODE_REGEX_VAR) == VariableType.STRING) {
-         setNodeRegex(parameters.getString(NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(NODE_TYPE_VAR) == VariableType.NODE_TYPE) {
-         // setNodeType(parameters.getSetNodeType(NODE_TYPE_VAR));
-      }
-   }
 }

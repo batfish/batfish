@@ -425,6 +425,8 @@ public final class Settings extends BaseSettings {
 
    private String _protocolDependencyGraphPath;
 
+   private String _protocolDependencyGraphZipPath;
+
    private boolean _query;
 
    private boolean _queryAll;
@@ -754,6 +756,10 @@ public final class Settings extends BaseSettings {
 
    public String getProtocolDependencyGraphPath() {
       return _protocolDependencyGraphPath;
+   }
+
+   public String getProtocolDependencyGraphZipPath() {
+      return _protocolDependencyGraphZipPath;
    }
 
    public boolean getQuery() {
@@ -1420,6 +1426,11 @@ public final class Settings extends BaseSettings {
 
    public void setProtocolDependencyGraphPath(String protocolDependencyGraphPath) {
       _protocolDependencyGraphPath = protocolDependencyGraphPath;
+   }
+
+   public void setProtocolDependencyGraphZipPath(
+         String protocolDependencyGraphZipPath) {
+      _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
    }
 
    public void setQuestionParametersPath(String questionParametersPath) {

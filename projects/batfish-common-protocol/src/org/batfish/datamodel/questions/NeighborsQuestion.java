@@ -1,45 +1,46 @@
 package org.batfish.datamodel.questions;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NeighborType;
-import org.batfish.datamodel.collections.NeighborTypeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NeighborsQuestion extends Question {
 
    private static final String DST_NODE_REGEX_VAR = "dstNodeRegex";
+
    private static final String NEIGHBOR_TYPE_VAR = "neighborType";
+
    private static final String SRC_NODE_REGEX_VAR = "srcNodeRegex";
 
-   private String _dstNodeRegex = ".*";
-   private NeighborTypeSet _neighborType = new NeighborTypeSet(NeighborType.ANY);
-   private String _srcNodeRegex = ".*";
+   private String _dstNodeRegex;
+
+   private Set<NeighborType> _neighborTypes;
+
+   private String _srcNodeRegex;
 
    public NeighborsQuestion() {
       super(QuestionType.NEIGHBORS);
-   }
-
-   public NeighborsQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
+      _dstNodeRegex = ".*";
+      _srcNodeRegex = ".*";
+      _neighborTypes = EnumSet.noneOf(NeighborType.class);
    }
 
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
    }
@@ -50,13 +51,18 @@ public class NeighborsQuestion extends Question {
    }
 
    @JsonProperty(NEIGHBOR_TYPE_VAR)
-   public NeighborTypeSet getNeighborTypeSet() {
-      return _neighborType;
+   public Set<NeighborType> getNeighborTypes() {
+      return _neighborTypes;
    }
 
    @JsonProperty(SRC_NODE_REGEX_VAR)
    public String getSrcNodeRegex() {
       return _srcNodeRegex;
+   }
+
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
    public void setDstNodeRegex(String regex) {
@@ -78,17 +84,18 @@ public class NeighborsQuestion extends Question {
                setDstNodeRegex(parameters.getString(paramKey));
                break;
             case NEIGHBOR_TYPE_VAR:
-               ObjectMapper mapper = new ObjectMapper();
-               NeighborTypeSet nset = mapper.readValue(
-                     parameters.getString(paramKey), NeighborTypeSet.class);
-               setNeighborTypeSet(nset);
+               setNeighborTypes(new ObjectMapper()
+                     .<Set<NeighborType>> readValue(
+                           parameters.getString(paramKey),
+                           new TypeReference<Set<NeighborType>>() {
+                           }));
                break;
             case SRC_NODE_REGEX_VAR:
                setSrcNodeRegex(parameters.getString(paramKey));
                break;
             default:
-               throw new BatfishException("Unknown key in NodesQuestion: "
-                     + paramKey);
+               throw new BatfishException("Unknown key in "
+                     + getClass().getSimpleName() + ": " + paramKey);
             }
          }
          catch (JSONException | IOException e) {
@@ -97,25 +104,12 @@ public class NeighborsQuestion extends Question {
       }
    }
 
-   public void setNeighborTypeSet(NeighborTypeSet neighborType) {
-      _neighborType = neighborType;
-   }
-
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NEIGHBOR_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNeighborTypeSet(parameters.getNeighborTypeSet(NEIGHBOR_TYPE_VAR));
-      }
-      if (parameters.getTypeBindings().get(DST_NODE_REGEX_VAR) == VariableType.STRING) {
-         setSrcNodeRegex(parameters.getString(DST_NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(SRC_NODE_REGEX_VAR) == VariableType.STRING) {
-         setDstNodeRegex(parameters.getString(SRC_NODE_REGEX_VAR));
-      }
+   public void setNeighborTypes(Set<NeighborType> neighborType) {
+      _neighborTypes = neighborType;
    }
 
    public void setSrcNodeRegex(String regex) {
       _srcNodeRegex = regex;
    }
+
 }

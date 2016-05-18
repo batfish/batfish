@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -37,6 +39,12 @@ public class Driver {
 
    private static HashMap<String, Task> _taskLog;
 
+   static Logger httpServerLogger = Logger
+         .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
+               .getName());
+
+   static Logger networkListenerLogger = Logger
+         .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
    private static final String SERVICE_URL = "http://0.0.0.0";
 
    private static synchronized boolean claimIdle() {
@@ -95,6 +103,8 @@ public class Driver {
 
       try {
          _mainSettings = new Settings(args);
+         networkListenerLogger.setLevel(Level.WARNING);
+         httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
          System.err.println("batfish: Initialization failed. Reason: "

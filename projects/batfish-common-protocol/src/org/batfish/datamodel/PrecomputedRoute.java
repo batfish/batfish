@@ -2,6 +2,10 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       Serializable {
 

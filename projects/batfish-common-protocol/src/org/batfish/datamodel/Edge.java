@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
    private static final long serialVersionUID = 1L;
@@ -24,10 +26,12 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
       return _second.getInterface();
    }
 
+   @JsonIgnore
    public NodeInterfacePair getInterface1() {
       return _first;
    }
 
+   @JsonIgnore
    public NodeInterfacePair getInterface2() {
       return _second;
    }
@@ -42,8 +46,7 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
    @Override
    public String toString() {
-      return getNode1() + ", " + getInt1() + ", " + getNode2() + ", "
-            + getInt2();
+      return getNode1() + ":" + getInt1() + ", " + getNode2() + ":" + getInt2();
    }
 
 }

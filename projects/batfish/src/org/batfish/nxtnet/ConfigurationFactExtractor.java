@@ -504,8 +504,15 @@ public class ConfigurationFactExtractor {
                   ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
                }
                else {
-                  ospfCost = Math.max((int) (_configuration.getOspfProcess()
-                        .getReferenceBandwidth() / i.getBandwidth()), 1);
+                  if (i.getBandwidth() != null) {
+                     ospfCost = Math.max((int) (_configuration.getOspfProcess()
+                           .getReferenceBandwidth() / i.getBandwidth()), 1);
+                  }
+                  else {
+                     throw new BatfishException(
+                           "Expected non-null interface bandwidth for \""
+                                 + hostname + "\":\"" + interfaceName + "\"");
+                  }
                }
             }
             wSetOspfInterfaceCost.append(_configuration.getHostname() + "|"
@@ -584,12 +591,6 @@ public class ConfigurationFactExtractor {
          List<IpAccessListLine> lines = ipAccessList.getLines();
          for (int i = 0; i < lines.size(); i++) {
             IpAccessListLine line = lines.get(i);
-            String invalidMessage = line.getInvalidMessage();
-            if (invalidMessage != null) {
-               _w.redFlag("IpAccessList " + name + " line " + i
-                     + ": disabled: " + invalidMessage + "\n");
-               continue;
-            }
             switch (line.getAction()) {
             case ACCEPT:
                wSetIpAccessListLine_permit.append(name + "|" + i + "\n");

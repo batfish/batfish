@@ -14,38 +14,41 @@ public class ExtendedAccessListLine implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+   private final LineAction _action;
 
-   private Set<Integer> _dscps;
+   private final Set<Integer> _dscps;
 
-   private String _dstAddressGroup;
+   private final String _dstAddressGroup;
 
-   private IpWildcard _dstIpWildcard;
+   private final IpWildcard _dstIpWildcard;
 
-   private List<SubRange> _dstPortRanges;
+   private final List<SubRange> _dstPortRanges;
 
-   private Set<Integer> _ecns;
+   private final Set<Integer> _ecns;
 
-   private Integer _icmpCode;
+   private final Integer _icmpCode;
 
-   private Integer _icmpType;
+   private final Integer _icmpType;
 
-   private IpProtocol _protocol;
+   private final String _name;
 
-   private String _srcAddressGroup;
+   private final IpProtocol _protocol;
 
-   private IpWildcard _srcIpWildcard;
+   private final String _srcAddressGroup;
 
-   private List<SubRange> _srcPortRanges;
+   private final IpWildcard _srcIpWildcard;
 
-   private List<TcpFlags> _tcpFlags;
+   private final List<SubRange> _srcPortRanges;
 
-   public ExtendedAccessListLine(LineAction action, IpProtocol protocol,
-         IpWildcard srcIpWildcard, String srcAddressGroup,
+   private final List<TcpFlags> _tcpFlags;
+
+   public ExtendedAccessListLine(String name, LineAction action,
+         IpProtocol protocol, IpWildcard srcIpWildcard, String srcAddressGroup,
          IpWildcard dstIpWildcard, String dstAddressGroup,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
          Set<Integer> dscps, Set<Integer> ecns, Integer icmpType,
          Integer icmpCode, List<TcpFlags> tcpFlags) {
+      _name = name;
       _action = action;
       _protocol = protocol;
       _srcIpWildcard = srcIpWildcard;
@@ -93,6 +96,10 @@ public class ExtendedAccessListLine implements Serializable {
       return _icmpType;
    }
 
+   public String getName() {
+      return _name;
+   }
+
    public IpProtocol getProtocol() {
       return _protocol;
    }
@@ -116,8 +123,9 @@ public class ExtendedAccessListLine implements Serializable {
    @Override
    public String toString() {
       String protocolName = _protocol.name();
-      return "[Action:" + _action + ", Protocol:" + protocolName + "("
-            + _protocol.number() + ")" + ", SourceIpWildcard:" + _srcIpWildcard
+      return "[Name:\"" + _name + "\", Action:" + _action + ", Protocol:"
+            + protocolName + "(" + _protocol.number() + ")"
+            + ", SourceIpWildcard:" + _srcIpWildcard
             + ", DestinationIpWildcard:" + _dstIpWildcard + ", PortRange:"
             + _srcPortRanges + "]";
    }

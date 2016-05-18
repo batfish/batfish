@@ -2,8 +2,8 @@ package org.batfish.datamodel.questions;
 
 public class ProtocolDependenciesQuestion extends Question {
 
-   public ProtocolDependenciesQuestion(QuestionParameters parameters) {
-      super(QuestionType.PROTOCOL_DEPENDENCIES, parameters);
+   public ProtocolDependenciesQuestion() {
+      super(QuestionType.PROTOCOL_DEPENDENCIES);
    }
 
    @Override
@@ -13,6 +13,11 @@ public class ProtocolDependenciesQuestion extends Question {
 
    @Override
    public boolean getDifferential() {
+      return false;
+   }
+
+   @Override
+   public boolean getTraffic() {
       return false;
    }
 

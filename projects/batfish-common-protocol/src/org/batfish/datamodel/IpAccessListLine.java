@@ -25,7 +25,7 @@ public final class IpAccessListLine implements Serializable {
 
    private int _icmpType;
 
-   private String _invalidMessage;
+   private String _name;
 
    private final Set<IpProtocol> _protocols;
 
@@ -52,25 +52,6 @@ public final class IpAccessListLine implements Serializable {
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
       _tcpFlags = new ArrayList<TcpFlags>();
-   }
-
-   public IpAccessListLine copy() {
-      IpAccessListLine line = new IpAccessListLine();
-      line._action = _action;
-      line._dscps.addAll(_dscps);
-      line._dstIpWildcards.addAll(_dstIpWildcards);
-      line._dstPortRanges.addAll(_dstPortRanges);
-      line._ecns.addAll(_ecns);
-      line._icmpCode = _icmpCode;
-      line._icmpType = _icmpType;
-      line._invalidMessage = _invalidMessage;
-      line._protocols.addAll(_protocols);
-      line._srcIpWildcards.addAll(_srcIpWildcards);
-      line._srcOrDstIpWildcards.addAll(_srcOrDstIpWildcards);
-      line._srcOrDstPortRanges.addAll(_srcOrDstPortRanges);
-      line._srcPortRanges.addAll(_srcPortRanges);
-      line._tcpFlags.addAll(_tcpFlags);
-      return line;
    }
 
    public LineAction getAction() {
@@ -101,8 +82,8 @@ public final class IpAccessListLine implements Serializable {
       return _icmpType;
    }
 
-   public String getInvalidMessage() {
-      return _invalidMessage;
+   public String getName() {
+      return _name;
    }
 
    public Set<IpProtocol> getProtocols() {
@@ -141,8 +122,8 @@ public final class IpAccessListLine implements Serializable {
       _icmpType = icmpType;
    }
 
-   public void setInvalidMessage(String invalidMessage) {
-      _invalidMessage = invalidMessage;
+   public void setName(String name) {
+      _name = name;
    }
 
    @Override

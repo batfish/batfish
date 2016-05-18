@@ -1,37 +1,48 @@
 package org.batfish.datamodel.questions;
 
-import org.batfish.datamodel.NamedStructType;
+import java.io.IOException;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.NamedStructType;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class CompareSameNameQuestion extends Question {
 
-   private static final String NODE_REGEX_VAR = "nodeRegex";
    private static final String NAMED_STRUCT_TYPE_VAR = "namedStructType";
 
-   private NamedStructType _namedStructType = NamedStructType.ANY;
-   private String _nodeRegex = ".*";
+   private static final String NODE_REGEX_VAR = "nodeRegex";
+
+   private Set<NamedStructType> _namedStructTypes;
+
+   private String _nodeRegex;
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
-   }
-
-   public CompareSameNameQuestion(QuestionParameters parameters) {
-      this();
-      setParameters(parameters);
+      _namedStructTypes = EnumSet.noneOf(NamedStructType.class);
+      _nodeRegex = ".*";
    }
 
    @Override
-   @JsonIgnore
    public boolean getDataPlane() {
       return false;
    }
 
    @Override
-   @JsonIgnore
    public boolean getDifferential() {
       return false;
+   }
+
+   @JsonProperty(NAMED_STRUCT_TYPE_VAR)
+   public Set<NamedStructType> getNamedStructTypes() {
+      return _namedStructTypes;
    }
 
    @JsonProperty(NODE_REGEX_VAR)
@@ -39,28 +50,49 @@ public final class CompareSameNameQuestion extends Question {
       return _nodeRegex;
    }
 
-   @JsonProperty(NAMED_STRUCT_TYPE_VAR)
-   public NamedStructType getNodeType() {
-      return _namedStructType;
+   @Override
+   public boolean getTraffic() {
+      return false;
    }
 
-   public void setNamedStructType(NamedStructType nType) {
-      _namedStructType = nType;
+   @Override
+   public void setJsonParameters(JSONObject parameters) {
+      super.setJsonParameters(parameters);
+
+      Iterator<?> paramKeys = parameters.keys();
+
+      while (paramKeys.hasNext()) {
+         String paramKey = (String) paramKeys.next();
+
+         try {
+            switch (paramKey) {
+            case NAMED_STRUCT_TYPE_VAR:
+               setNamedStructTypes(new ObjectMapper()
+                     .<Set<NamedStructType>> readValue(
+                           parameters.getString(paramKey),
+                           new TypeReference<Set<NamedStructType>>() {
+                           }));
+               break;
+            case NODE_REGEX_VAR:
+               setNodeRegex(parameters.getString(paramKey));
+               break;
+            default:
+               throw new BatfishException("Unknown key in "
+                     + getClass().getSimpleName() + ": " + paramKey);
+            }
+         }
+         catch (JSONException | IOException e) {
+            throw new BatfishException("JSONException in parameters", e);
+         }
+      }
+   }
+
+   public void setNamedStructTypes(Set<NamedStructType> nType) {
+      _namedStructTypes = nType;
    }
 
    public void setNodeRegex(String regex) {
       _nodeRegex = regex;
    }
 
-   @Override
-   public void setParameters(QuestionParameters parameters) {
-      super.setParameters(parameters);
-      if (parameters.getTypeBindings().get(NODE_REGEX_VAR) == VariableType.STRING) {
-         setNodeRegex(parameters.getString(NODE_REGEX_VAR));
-      }
-      if (parameters.getTypeBindings().get(NAMED_STRUCT_TYPE_VAR) == VariableType.NODE_TYPE) {
-         setNamedStructType(parameters
-               .getNamedStructType(NAMED_STRUCT_TYPE_VAR));
-      }
-   }
 }

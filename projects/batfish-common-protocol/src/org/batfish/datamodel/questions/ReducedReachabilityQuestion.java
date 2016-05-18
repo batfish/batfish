@@ -2,8 +2,8 @@ package org.batfish.datamodel.questions;
 
 public class ReducedReachabilityQuestion extends Question {
 
-   public ReducedReachabilityQuestion(QuestionParameters parameters) {
-      super(QuestionType.REDUCED_REACHABILITY, parameters);
+   public ReducedReachabilityQuestion() {
+      super(QuestionType.REDUCED_REACHABILITY);
    }
 
    @Override
@@ -13,6 +13,11 @@ public class ReducedReachabilityQuestion extends Question {
 
    @Override
    public boolean getDifferential() {
+      return true;
+   }
+
+   @Override
+   public boolean getTraffic() {
       return true;
    }
 

@@ -104,7 +104,7 @@ public class ZipUtility {
          // System.out.println("Given files are successfully zipped");
       }
       catch (Exception e) {
-         System.out.println("Some Errors happned during the zip process");
+         System.out.println("Some Errors happened during the zip process");
       }
       finally {
          return result;

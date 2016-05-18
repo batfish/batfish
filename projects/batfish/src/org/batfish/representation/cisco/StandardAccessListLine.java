@@ -14,16 +14,19 @@ public class StandardAccessListLine implements Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+   private final LineAction _action;
 
-   private Set<Integer> _dscps;
+   private final Set<Integer> _dscps;
 
-   private Set<Integer> _ecns;
+   private final Set<Integer> _ecns;
 
-   private IpWildcard _ipWildcard;
+   private final IpWildcard _ipWildcard;
 
-   public StandardAccessListLine(LineAction action, IpWildcard ipWildcard,
-         Set<Integer> dscps, Set<Integer> ecns) {
+   private final String _name;
+
+   public StandardAccessListLine(String name, LineAction action,
+         IpWildcard ipWildcard, Set<Integer> dscps, Set<Integer> ecns) {
+      _name = name;
       _action = action;
       _ipWildcard = ipWildcard;
       _dscps = dscps;
@@ -38,9 +41,14 @@ public class StandardAccessListLine implements Serializable {
       return _ipWildcard;
    }
 
+   public String getName() {
+      return _name;
+   }
+
    public ExtendedAccessListLine toExtendedAccessListLine() {
-      return new ExtendedAccessListLine(_action, IpProtocol.IP, _ipWildcard,
-            null, IpWildcard.ANY, null, Collections.<SubRange> emptyList(),
+      return new ExtendedAccessListLine(_name, _action, IpProtocol.IP,
+            _ipWildcard, null, IpWildcard.ANY, null,
+            Collections.<SubRange> emptyList(),
             Collections.<SubRange> emptyList(), _dscps, _ecns, null, null,
             Collections.<TcpFlags> emptyList());
    }

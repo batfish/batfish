@@ -17,6 +17,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_BATFISH_ARGS = "batfishargs";
    private static final String ARG_CLIENT_ARGS = "clientargs";
    private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
+   private static final String ARG_RUN_MODE = "runmode";
    private static final String ARG_TESTRIG_DIR = "testrig";
 
    private static final String EXECUTABLE_NAME = "allinone";
@@ -27,6 +28,7 @@ public class Settings extends BaseSettings {
    private String _commandFile;
    private String _logFile;
    private String _logLevel;
+   private String _runMode;
    private String _testrigDir;
 
    public Settings(String[] args) throws Exception {
@@ -63,6 +65,10 @@ public class Settings extends BaseSettings {
       return _logLevel;
    }
 
+   public String getRunMode() {
+	      return _runMode;
+   }
+
    public String getTestrigDir() {
       return _testrigDir;
    }
@@ -79,6 +85,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_BATFISH_ARGS, "");
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
+      setDefaultProperty(ARG_RUN_MODE, "batch");
    }
 
    private void initOptions() {
@@ -103,8 +110,10 @@ public class Settings extends BaseSettings {
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");
 
-      addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+      addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
+              "run_mode");
 
+      addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
    }
 
    private void parseCommandLine(String[] args) {
@@ -121,6 +130,7 @@ public class Settings extends BaseSettings {
       _batfishArgs = getStringOptionValue(ARG_BATFISH_ARGS);
       _clientArgs = getStringOptionValue(ARG_CLIENT_ARGS);
       _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
+      _runMode = getStringOptionValue(ARG_RUN_MODE);
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
    }
 }

@@ -6,14 +6,14 @@ import org.batfish.datamodel.Configuration;
 
 public class NodesAnswerElement implements AnswerElement {
 
-   private Map<String, Configuration> _answer;
+   private Map<String, Configuration> _nodes;
 
    public NodesAnswerElement(Map<String, Configuration> nodes) {
-      _answer = nodes;
+      _nodes = nodes;
    }
 
    public Map<String, Configuration> getAnswer() {
-      return _answer;
+      return _nodes;
    }
 
 }

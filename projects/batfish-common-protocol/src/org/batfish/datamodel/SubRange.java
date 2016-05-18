@@ -2,6 +2,11 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import org.batfish.common.BatfishException;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public final class SubRange implements Serializable, Comparable<SubRange> {
 
    private static final long serialVersionUID = 1L;
@@ -13,6 +18,41 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
    public SubRange(int start, int end) {
       _start = start;
       _end = end;
+   }
+
+   @JsonCreator
+   public SubRange(Object o) {
+      if (o instanceof String) {
+         String s = (String) o;
+         String[] parts = s.split("-");
+         if (parts.length != 2) {
+            throw new BatfishException("Invalid subrange: \"" + s + "\"");
+         }
+         try {
+            _start = Integer.parseInt(parts[0]);
+         }
+         catch (NumberFormatException e) {
+            throw new BatfishException("Invalid subrange start: \"" + parts[0]
+                  + "\"", e);
+         }
+         try {
+            _end = Integer.parseInt(parts[1]);
+         }
+         catch (NumberFormatException e) {
+            throw new BatfishException("Invalid subrange end: \"" + parts[1]
+                  + "\"", e);
+         }
+      }
+      else if (o instanceof Integer) {
+         int i = ((Integer) o).intValue();
+         _start = i;
+         _end = i;
+      }
+      else {
+         throw new BatfishException(
+               "Cannot creat SubRange from input object of type: "
+                     + o.getClass().getCanonicalName());
+      }
    }
 
    @Override
@@ -54,6 +94,11 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
       result = prime * result + _end;
       result = prime * result + _start;
       return result;
+   }
+
+   @JsonValue
+   public String serializedForm() {
+      return String.format("%d-%d", _start, _end);
    }
 
    @Override
