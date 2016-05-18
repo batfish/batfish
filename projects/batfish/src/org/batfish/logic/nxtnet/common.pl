@@ -83,7 +83,7 @@ function_sig('BgpAdvertisement_constructor', 12).
 function_sig('MinContributingRouteAdmin', 2).
 function_sig('BgpAdvertisement_srcIp', 2).
 function_sig('RouteDetails_nextHop', 2).
-
+function_sig('PrecomputedAdvertisement_index', 2).
 
 'AsPathDenyAdvert'(AsPath, Advert) :-
    'AsPathFirstMatchAdvert'(AsPath, Advert, Line),
