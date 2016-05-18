@@ -33,6 +33,5 @@ public final class AsPathAccessList implements Serializable {
    public String getName() {
       return _name;
    }
-
    
 }

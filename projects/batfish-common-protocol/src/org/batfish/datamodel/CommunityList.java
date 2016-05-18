@@ -38,6 +38,15 @@ public class CommunityList implements Serializable {
       _lines = lines;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      CommunityList other = (CommunityList) obj;
+      return other._lines.equals(_lines);
+   }
+   
    public List<CommunityListLine> getLines() {
       return _lines;
    }
