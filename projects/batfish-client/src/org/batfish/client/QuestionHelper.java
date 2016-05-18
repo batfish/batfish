@@ -50,6 +50,8 @@ public class QuestionHelper {
          return new NodesQuestion();
       case OSPF_LOOPBACKS:
          return new OspfLoopbacksQuestion();
+      case PAIRWISE_VPN_CONNECTIVITY:
+         return new PairwiseVpnConnectivityQuestion();
       case PROTOCOL_DEPENDENCIES:
          return new ProtocolDependenciesQuestion();
       case REACHABILITY:
@@ -62,6 +64,10 @@ public class QuestionHelper {
          return new SelfAdjacenciesQuestion();
       case TRACEROUTE:
          return new TracerouteQuestion();
+      case UNIQUE_BGP_PREFIX_ORIGINATION:
+         return new UniqueBgpPrefixOriginationQuestion();
+      case UNIQUE_IP_ASSIGNMENTS:
+         return new UniqueIpAssignmentsQuestion();
       default:
          break;
       }

@@ -36,8 +36,9 @@ public class SelfAdjacenciesAnswer extends Answer {
             if (iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
                   Prefix basePrefix = prefix.getNetworkPrefix();
-                  if (!ifaceBasePrefixes.contains(basePrefix))
+                  if (!ifaceBasePrefixes.contains(basePrefix)) {
                      ifaceBasePrefixes.add(basePrefix);
+                  }
                   nodePrefixes.add(basePrefix);
                }
             }

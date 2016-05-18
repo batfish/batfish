@@ -739,7 +739,7 @@ public final class ProtocolDependencyAnalysis {
          if (c.getOspfProcess() != null) {
             for (PolicyMap outboundPolicy : proc.getOutboundPolicyMaps()) {
                OspfMetricType metricType = proc.getPolicyMetricTypes().get(
-                     outboundPolicy);
+                     outboundPolicy.getName());
                RoutingProtocol protocol = metricType.toRoutingProtocol();
                Set<DependentRoute> dependentRoutes = getPermittedRoutes(node,
                      outboundPolicy, permittedProtocols);

@@ -26,7 +26,7 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    private final Map<String, Set<BgpAdvertisement>> _sentIbgpAdvertisements;
 
    public BgpAdvertisementsAnswerElement(
-         Map<String, Configuration> configurations, Pattern nodeRegex, 
+         Map<String, Configuration> configurations, Pattern nodeRegex,
          boolean ebgp, boolean ibgp, boolean received, boolean sent) {
       _allRequestedAdvertisements = new TreeSet<BgpAdvertisement>();
       _receivedEbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();

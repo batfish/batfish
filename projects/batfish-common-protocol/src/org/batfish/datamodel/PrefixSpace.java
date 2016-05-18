@@ -204,7 +204,7 @@ public class PrefixSpace {
       return _trie.containsPrefixRange(prefixRange);
    }
 
-   private Set<PrefixRange> getPrefixRanges() {
+   public Set<PrefixRange> getPrefixRanges() {
       return _trie.getPrefixRanges();
    }
 
@@ -226,6 +226,13 @@ public class PrefixSpace {
    public boolean overlaps(PrefixSpace intersectSpace) {
       PrefixSpace intersection = intersection(intersectSpace);
       return !intersection.isEmpty();
+   }
+
+   public void setPrefixRanges(Set<PrefixRange> prefixRanges) {
+      _trie = new BitTrie();
+      for (PrefixRange prefixRange : prefixRanges) {
+         _trie.addPrefixRange(prefixRange);
+      }
    }
 
    @Override

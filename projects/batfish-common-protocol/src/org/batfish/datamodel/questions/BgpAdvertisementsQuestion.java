@@ -15,7 +15,7 @@ public class BgpAdvertisementsQuestion extends Question {
    private static final String IBGP_VAR = "ibgp";
 
    private static final String NODE_REGEX_VAR = "nodeRegex";
-   
+
    private static final String RECEIVED_VAR = "received";
 
    private static final String SENT_VAR = "sent";
@@ -23,7 +23,7 @@ public class BgpAdvertisementsQuestion extends Question {
    private boolean _ebgp;
 
    private boolean _ibgp;
-   
+
    private String _nodeRegex;
 
    private boolean _received;
