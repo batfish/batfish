@@ -103,7 +103,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
-            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
+            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_NO_SANITY_CHECK, false);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
       setDefaultProperty(ARG_RUN_MODE, "batch");

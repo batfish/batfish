@@ -81,7 +81,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
-            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
+            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_BATFISH_ARGS, "");
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");

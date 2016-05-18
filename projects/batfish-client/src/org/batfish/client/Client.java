@@ -72,6 +72,7 @@ public class Client {
 	private static final String COMMAND_SHOW_API_KEY = "show-api-key";
 	private static final String COMMAND_SHOW_CONTAINER = "show-container";
 	private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
+   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
 	private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
 	private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
@@ -162,6 +163,8 @@ public class Client {
 				+ "\t Show active container");
 		descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
 				+ "\t Show coordinator host");
+      descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n" 
+            + "\t Show current loglevel");
 		descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
 				+ "\t Show active testrig");
 		descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
@@ -243,30 +246,6 @@ public class Client {
 		}	   
 
 		return result;
-	}
-
-	private Map<String, String> parseParams(String paramsLine) {
-		Map<String,String> parameters = new HashMap<String, String>();
-
-		Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
-
-		String[] params = paramsLine.split("\\|");
-
-		_logger.debugf("Found %d parameters\n", params.length);
-
-		for (String param : params) {
-			Matcher matcher = pattern.matcher(param);
-
-			while (matcher.find()) {
-				String key = matcher.group(1).trim();
-				String value = matcher.group(2).trim();
-				_logger.debugf("key=%s value=%s\n", key, value);
-
-				parameters.put(key,  value);
-			}
-		}
-
-		return parameters;
 	}
 
 	private boolean answerFile(String questionFile, String paramsLine, boolean isDiff) 
@@ -515,6 +494,31 @@ public class Client {
 		return true;
 	}
 
+   private Map<String, String> parseParams(String paramsLine) {
+      Map<String,String> parameters = new HashMap<String, String>();
+
+      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
+
+      String[] params = paramsLine.split("\\|");
+
+      _logger.debugf("Found %d parameters\n", params.length);
+
+      for (String param : params) {
+         Matcher matcher = pattern.matcher(param);
+
+         while (matcher.find()) {
+            String key = matcher.group(1).trim();
+            String value = matcher.group(2).trim();
+            _logger.debugf("key=%s value=%s\n", key, value);
+
+            parameters.put(key,  value);
+         }
+      }
+
+      return parameters;
+   }
+
+   
 	private void printUsage() {
 		for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
 			_logger.output(entry.getValue() + "\n\n");
@@ -849,6 +853,10 @@ public class Client {
 			case COMMAND_SHOW_COORDINATOR_HOST: {
 				_logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
 				return true;
+			}
+			case COMMAND_SHOW_LOGLEVEL: {		   
+			   _logger.outputf("Current log level is %s\n", _logger.getLogLevelStr());
+			   return true;
 			}
 			case COMMAND_SHOW_TESTRIG: {
 				_logger.outputf("Current testrig is %s\n", _currTestrigName);
