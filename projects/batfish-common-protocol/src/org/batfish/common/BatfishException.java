@@ -1,11 +1,13 @@
 package org.batfish.common;
 
+import org.batfish.datamodel.answers.AnswerElement;
+
 /**
  * Thrown as a fatal exception. When caught, Batfish should perform any
  * necessary cleanup and terminate gracefully with a non-zero exit status. A
  * BatfishException should always contain a detail message.
  */
-public class BatfishException extends RuntimeException {
+public class BatfishException extends RuntimeException implements AnswerElement {
 
    private static final long serialVersionUID = 1L;
 

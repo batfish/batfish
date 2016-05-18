@@ -7,7 +7,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.IsisLoopbacksAnswerElement;
 import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
 import org.batfish.main.Batfish;
@@ -15,8 +14,6 @@ import org.batfish.main.Batfish;
 public class IsisLoopbacksAnswer extends Answer {
 
    public IsisLoopbacksAnswer(Batfish batfish, IsisLoopbacksQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();

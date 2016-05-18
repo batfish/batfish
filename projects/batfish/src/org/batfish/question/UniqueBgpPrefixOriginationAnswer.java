@@ -7,7 +7,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.UniqueBgpPrefixOriginationAnswerElement;
 import org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion;
 import org.batfish.main.Batfish;
@@ -16,8 +15,6 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
 
    public UniqueBgpPrefixOriginationAnswer(Batfish batfish,
          UniqueBgpPrefixOriginationQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();

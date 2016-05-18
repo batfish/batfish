@@ -84,6 +84,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -112,6 +113,7 @@ import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
 import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.ErrorQuestion;
 import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
 import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
 import org.batfish.datamodel.questions.LocalPathQuestion;
@@ -171,6 +173,7 @@ import org.batfish.question.AclReachabilityAnswer;
 import org.batfish.question.BgpAdvertisementsAnswer;
 import org.batfish.question.BgpSessionCheckAnswer;
 import org.batfish.question.CompareSameNameAnswer;
+import org.batfish.question.ErrorAnswer;
 import org.batfish.question.IpsecVpnCheckAnswer;
 import org.batfish.question.IsisLoopbacksAnswer;
 import org.batfish.question.LocalPathAnswer;
@@ -575,104 +578,127 @@ public class Batfish implements AutoCloseable {
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
       initQuestionEnvironments(question, diff, diffActive, dp);
-      switch (question.getType()) {
-      case ACL_REACHABILITY:
-         outputAnswer(new AclReachabilityAnswer(this,
-               (AclReachabilityQuestion) question));
-         break;
+      Answer answer = null;
+      BatfishException exception = null;
+      try {
+         switch (question.getType()) {
+         case ACL_REACHABILITY:
+            answer = new AclReachabilityAnswer(this,
+                  (AclReachabilityQuestion) question);
+            break;
 
-      case BGP_ADVERTISEMENTS:
-         outputAnswer(new BgpAdvertisementsAnswer(this,
-               (BgpAdvertisementsQuestion) question));
-         break;
+         case BGP_ADVERTISEMENTS:
+            answer = new BgpAdvertisementsAnswer(this,
+                  (BgpAdvertisementsQuestion) question);
+            break;
 
-      case BGP_SESSION_CHECK:
-         outputAnswer(new BgpSessionCheckAnswer(this,
-               (BgpSessionCheckQuestion) question));
-         break;
+         case BGP_SESSION_CHECK:
+            answer = new BgpSessionCheckAnswer(this,
+                  (BgpSessionCheckQuestion) question);
+            break;
 
-      case COMPARE_SAME_NAME:
-         outputAnswer(new CompareSameNameAnswer(this,
-               (CompareSameNameQuestion) question));
-         break;
+         case COMPARE_SAME_NAME:
+            answer = new CompareSameNameAnswer(this,
+                  (CompareSameNameQuestion) question);
+            break;
 
-      case IPSEC_VPN_CHECK:
-         outputAnswer(new IpsecVpnCheckAnswer(this,
-               (IpsecVpnCheckQuestion) question));
-         break;
+         case ERROR:
+            answer = new ErrorAnswer(this, (ErrorQuestion) question);
+            break;
 
-      case ISIS_LOOPBACKS:
-         outputAnswer(new IsisLoopbacksAnswer(this,
-               (IsisLoopbacksQuestion) question));
-         break;
+         case IPSEC_VPN_CHECK:
+            answer = new IpsecVpnCheckAnswer(this,
+                  (IpsecVpnCheckQuestion) question);
+            break;
 
-      case LOCAL_PATH:
-         outputAnswer(new LocalPathAnswer(this, (LocalPathQuestion) question));
-         break;
+         case ISIS_LOOPBACKS:
+            answer = new IsisLoopbacksAnswer(this,
+                  (IsisLoopbacksQuestion) question);
+            break;
 
-      case MULTIPATH:
-         outputAnswer(new MultipathAnswer(this, (MultipathQuestion) question));
-         break;
+         case LOCAL_PATH:
+            answer = new LocalPathAnswer(this, (LocalPathQuestion) question);
+            break;
 
-      case NEIGHBORS:
-         outputAnswer(new NeighborsAnswer(this, (NeighborsQuestion) question));
-         break;
+         case MULTIPATH:
+            answer = new MultipathAnswer(this, (MultipathQuestion) question);
+            break;
 
-      case NODES:
-         outputAnswer(new NodesAnswer(this, (NodesQuestion) question));
-         break;
+         case NEIGHBORS:
+            answer = new NeighborsAnswer(this, (NeighborsQuestion) question);
+            break;
 
-      case OSPF_LOOPBACKS:
-         outputAnswer(new OspfLoopbacksAnswer(this,
-               (OspfLoopbacksQuestion) question));
-         break;
+         case NODES:
+            answer = new NodesAnswer(this, (NodesQuestion) question);
+            break;
 
-      case PAIRWISE_VPN_CONNECTIVITY:
-         outputAnswer(new PairwiseVpnConnectivityAnswer(this,
-               (PairwiseVpnConnectivityQuestion) question));
-         break;
+         case OSPF_LOOPBACKS:
+            answer = new OspfLoopbacksAnswer(this,
+                  (OspfLoopbacksQuestion) question);
+            break;
 
-      case PROTOCOL_DEPENDENCIES:
-         outputAnswer(new ProtocolDependenciesAnswer(this,
-               (ProtocolDependenciesQuestion) question));
-         break;
+         case PAIRWISE_VPN_CONNECTIVITY:
+            answer = new PairwiseVpnConnectivityAnswer(this,
+                  (PairwiseVpnConnectivityQuestion) question);
+            break;
 
-      case REACHABILITY:
-         outputAnswer(new ReachabilityAnswer(this,
-               (ReachabilityQuestion) question));
-         break;
+         case PROTOCOL_DEPENDENCIES:
+            answer = new ProtocolDependenciesAnswer(this,
+                  (ProtocolDependenciesQuestion) question);
+            break;
 
-      case REDUCED_REACHABILITY:
-         outputAnswer(new ReducedReachabilityAnswer(this,
-               (ReducedReachabilityQuestion) question));
-         break;
+         case REACHABILITY:
+            answer = new ReachabilityAnswer(this,
+                  (ReachabilityQuestion) question);
+            break;
 
-      case ROUTES:
-         outputAnswer(new RoutesAnswer(this, (RoutesQuestion) question));
-         break;
+         case REDUCED_REACHABILITY:
+            answer = new ReducedReachabilityAnswer(this,
+                  (ReducedReachabilityQuestion) question);
+            break;
 
-      case SELF_ADJACENCIES:
-         outputAnswer(new SelfAdjacenciesAnswer(this,
-               (SelfAdjacenciesQuestion) question));
-         break;
+         case ROUTES:
+            answer = new RoutesAnswer(this, (RoutesQuestion) question);
+            break;
 
-      case TRACEROUTE:
-         outputAnswer(new TracerouteAnswer(this, (TracerouteQuestion) question));
-         break;
+         case SELF_ADJACENCIES:
+            answer = new SelfAdjacenciesAnswer(this,
+                  (SelfAdjacenciesQuestion) question);
+            break;
 
-      case UNIQUE_BGP_PREFIX_ORIGINATION:
-         outputAnswer(new UniqueBgpPrefixOriginationAnswer(this,
-               (UniqueBgpPrefixOriginationQuestion) question));
-         break;
+         case TRACEROUTE:
+            answer = new TracerouteAnswer(this, (TracerouteQuestion) question);
+            break;
 
-      case UNIQUE_IP_ASSIGNMENTS:
-         outputAnswer(new UniqueIpAssignmentsAnswer(this,
-               (UniqueIpAssignmentsQuestion) question));
-         break;
+         case UNIQUE_BGP_PREFIX_ORIGINATION:
+            answer = new UniqueBgpPrefixOriginationAnswer(this,
+                  (UniqueBgpPrefixOriginationQuestion) question);
+            break;
 
-      default:
-         throw new BatfishException("Unknown question type");
+         case UNIQUE_IP_ASSIGNMENTS:
+            answer = new UniqueIpAssignmentsAnswer(this,
+                  (UniqueIpAssignmentsQuestion) question);
+            break;
+
+         default:
+            throw new BatfishException("Unknown question type");
+         }
       }
+      catch (Exception e) {
+         exception = new BatfishException("Failed to answer question", e);
+      }
+      if (exception == null) {
+         // success
+         answer.setStatus(AnswerStatus.SUCCESS);
+      }
+      else {
+         // failure
+         answer = new Answer();
+         answer.setStatus(AnswerStatus.FAILURE);
+         answer.addAnswerElement(exception);
+      }
+      answer.setQuestion(question);
+      outputAnswer(answer);
    }
 
    /**
@@ -2475,6 +2501,7 @@ public class Batfish implements AutoCloseable {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
          Answer failureAnswer = Answer.failureAnswer(e.getMessage());
+         failureAnswer.addAnswerElement(be);
          try {
             String failureJsonString = mapper.writeValueAsString(failureAnswer);
             _logger.error(failureJsonString);

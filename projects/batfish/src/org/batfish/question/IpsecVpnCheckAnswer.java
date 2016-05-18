@@ -10,7 +10,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.IpsecVpnCheckAnswerElement;
 import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
 import org.batfish.main.Batfish;
@@ -18,7 +17,6 @@ import org.batfish.main.Batfish;
 public class IpsecVpnCheckAnswer extends Answer {
 
    public IpsecVpnCheckAnswer(Batfish batfish, IpsecVpnCheckQuestion question) {
-      setQuestion(question);
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
       batfish.initRemoteIpsecVpns(configurations);
@@ -78,7 +76,6 @@ public class IpsecVpnCheckAnswer extends Answer {
          }
       }
       addAnswerElement(answerElement);
-      setStatus(AnswerStatus.SUCCESS);
    }
 
 }

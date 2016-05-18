@@ -10,7 +10,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.BgpSessionCheckAnswerElement;
 import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
 import org.batfish.main.Batfish;
@@ -19,7 +18,6 @@ public class BgpSessionCheckAnswer extends Answer {
 
    public BgpSessionCheckAnswer(Batfish batfish,
          BgpSessionCheckQuestion question) {
-      setQuestion(question);
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
       batfish.initRemoteBgpNeighbors(configurations);
@@ -203,7 +201,6 @@ public class BgpSessionCheckAnswer extends Answer {
          }
       }
       addAnswerElement(answerElement);
-      setStatus(AnswerStatus.SUCCESS);
    }
 
 }

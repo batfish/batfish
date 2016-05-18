@@ -8,7 +8,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -19,8 +18,6 @@ public class UniqueIpAssignmentsAnswer extends Answer {
 
    public UniqueIpAssignmentsAnswer(Batfish batfish,
          UniqueIpAssignmentsQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();
