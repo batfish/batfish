@@ -349,24 +349,45 @@ public class Client {
 		_logger.output("\n");
 		_logger.infof("final status: %s\n", status);
 
-		// get the results
-		String logFileName = wItem.getId() + ".log";
-		String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
-				wItem.getTestrigName(), logFileName);
+	    // get the answer
+      String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
+      String downloadedAnsFile = _workHelper.getObject(wItem.getContainerName(),
+            wItem.getTestrigName(), ansFileName);
 
-		if (downloadedFile == null) {
-			_logger.errorf("Failed to get output file %s\n", logFileName);
-			return false;
-		}
-		else {
-			try (BufferedReader br = new BufferedReader(new FileReader(
-					downloadedFile))) {
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					_logger.output(line + "\n");
-				}
-			}
-		}
+      if (downloadedAnsFile == null) {
+         _logger.errorf("Failed to get answer file %s. Fix batfish and remove the statement below this line\n", ansFileName);
+         //return false;
+      }
+      else {
+         try (BufferedReader br = new BufferedReader(new FileReader(
+               downloadedAnsFile))) {
+            String line = null;
+            while ((line = br.readLine()) != null) {
+               _logger.output(line + "\n");
+            }
+         }
+      }
+
+      if (_logger.getLogLevel() > BatfishLogger.LEVEL_OUTPUT) {
+         // get the results
+         String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
+         String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+               wItem.getTestrigName(), logFileName);
+
+         if (downloadedFile == null) {
+            _logger.errorf("Failed to get output file %s\n", logFileName);
+            return false;
+         }
+         else {
+            try (BufferedReader br = new BufferedReader(new FileReader(
+                  downloadedFile))) {
+               String line = null;
+               while ((line = br.readLine()) != null) {
+                  _logger.output(line + "\n");
+               }
+            }
+         }
+      }
 
 		// TODO: remove the log file?
 
@@ -791,13 +812,6 @@ public class Client {
 						_currContainerName);
 				return true;
 			}
-			case COMMAND_SET_TESTRIG: {
-				_currTestrigName = parameters.get(0);
-				_currEnv = DEFAULT_ENV_NAME;
-				_logger.outputf(
-						"Active testrig is now %s\n", _currTestrigName);
-				return true;
-			}
 			case COMMAND_SET_DIFF_ENV: {
 				_currDiffEnv = parameters.get(0);
 				_logger.outputf(
@@ -817,6 +831,13 @@ public class Client {
 				}
 				return true;
 			}
+         case COMMAND_SET_TESTRIG: {
+            _currTestrigName = parameters.get(0);
+            _currEnv = DEFAULT_ENV_NAME;
+            _logger.outputf(
+                  "Active testrig is now %s\n", _currTestrigName);
+            return true;
+         }
 			case COMMAND_SHOW_API_KEY: {
 				_logger.outputf("Current API Key is %s\n", _settings.getApiKey());
 				return true;
