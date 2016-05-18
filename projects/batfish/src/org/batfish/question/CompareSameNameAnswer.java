@@ -46,7 +46,6 @@ public class CompareSameNameAnswer extends Answer {
          nodes.addAll(configurations.keySet());
       }
 
-      setQuestion(question);
       addAnswerElement(answerElement);
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated

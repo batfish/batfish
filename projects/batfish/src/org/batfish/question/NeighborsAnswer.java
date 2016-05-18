@@ -61,7 +61,6 @@ public class NeighborsAnswer extends Answer {
          }         
       }
 
-      setStatus(AnswerStatus.SUCCESS);
       addAnswerElement(answerElement);
    }
 }

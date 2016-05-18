@@ -11,7 +11,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.main.Batfish;
@@ -50,8 +49,6 @@ public class MultipathAnswer extends Answer {
       batfish.nxtnetTraffic();
       AnswerElement answerElement = batfish.getHistory();
       addAnswerElement(answerElement);
-      setStatus(AnswerStatus.SUCCESS);
-      setQuestion(question);
    }
 
 }

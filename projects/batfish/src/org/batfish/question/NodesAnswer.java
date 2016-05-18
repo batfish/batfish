@@ -11,7 +11,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.NodesAnswerElement;
 import org.batfish.datamodel.questions.NodesQuestion;
 import org.batfish.main.Batfish;
@@ -20,8 +19,7 @@ public class NodesAnswer extends Answer {
 
    public NodesAnswer(Batfish batfish, NodesQuestion question) {
       batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish
-            .loadConfigurations();
+      Map<String, Configuration> configurations = batfish.loadConfigurations();
 
       // collect nodes nodes
       Pattern nodeRegex;
@@ -50,10 +48,8 @@ public class NodesAnswer extends Answer {
       Map<String, Configuration> answerNodes = new TreeMap<String, Configuration>();
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
-      setQuestion(question);
 
       _answerElements.add(new NodesAnswerElement(answerNodes));
-      setStatus(AnswerStatus.SUCCESS);
    }
 
 }

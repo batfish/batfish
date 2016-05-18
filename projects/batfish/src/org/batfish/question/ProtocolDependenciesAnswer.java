@@ -10,7 +10,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ProtocolDependenciesAnswerElement;
 import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.main.Batfish;
@@ -20,8 +19,6 @@ public class ProtocolDependenciesAnswer extends Answer {
 
    public ProtocolDependenciesAnswer(Batfish batfish,
          ProtocolDependenciesQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
       ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(

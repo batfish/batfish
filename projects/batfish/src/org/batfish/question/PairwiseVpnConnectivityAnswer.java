@@ -7,7 +7,6 @@ import java.util.TreeSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.PairwiseVpnConnectivityAnswerElement;
 import org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion;
 import org.batfish.main.Batfish;
@@ -16,8 +15,6 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
 
    public PairwiseVpnConnectivityAnswer(Batfish batfish,
          PairwiseVpnConnectivityQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       PairwiseVpnConnectivityAnswerElement answerElement = new PairwiseVpnConnectivityAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();

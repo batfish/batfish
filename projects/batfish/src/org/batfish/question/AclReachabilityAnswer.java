@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
@@ -16,8 +15,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
@@ -36,21 +33,18 @@ public class AclReachabilityAnswer extends Answer {
 
    public AclReachabilityAnswer(Batfish batfish,
          AclReachabilityQuestion question) {
-      setQuestion(question);
       _logger = batfish.getLogger();
       _batfish = batfish;
       _settings = batfish.getSettings();
 
       batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish
-            .loadConfigurations();
+      Map<String, Configuration> configurations = batfish.loadConfigurations();
       Synthesizer aclSynthesizer = synthesizeAcls(configurations);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          Configuration c = e.getValue();
-         for (Entry<String, IpAccessList> e2 : c.getIpAccessLists()
-               .entrySet()) {
+         for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
             String aclName = e2.getKey();
             // skip juniper srx inbound filters, as they can't really contain
             // operator error
@@ -110,13 +104,12 @@ public class AclReachabilityAnswer extends Answer {
             }
             else {
                Configuration c = configurations.get(aclLine.getHostname());
-               IpAccessList acl = c.getIpAccessLists().get(
-                     aclLine.getAclName());
+               IpAccessList acl = c.getIpAccessLists()
+                     .get(aclLine.getAclName());
                IpAccessListLine ipAccessListLine = acl.getLines().get(line);
                _logger.outputf("%s:%s:%d is UNREACHABLE\n\t%s\n", hostname,
                      aclName, line, ipAccessListLine.toString());
-               answerElement
-               .addUnreachableLine(hostname, ipAccessList, line);
+               answerElement.addUnreachableLine(hostname, ipAccessList, line);
                aclsWithUnreachableLines.add(qualifiedAclName);
             }
          }
@@ -127,8 +120,8 @@ public class AclReachabilityAnswer extends Answer {
       for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
          String hostname = qualfiedAcl.getFirst();
          String aclName = qualfiedAcl.getSecond();
-         _logger.outputf("%s:%s has at least 1 unreachable line\n",
-               hostname, aclName);
+         _logger.outputf("%s:%s has at least 1 unreachable line\n", hostname,
+               aclName);
       }
       int numAclsWithUnreachableLines = aclsWithUnreachableLines.size();
       int numAcls = allAcls.size();
@@ -141,7 +134,6 @@ public class AclReachabilityAnswer extends Answer {
       _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
             numUnreachableLines, numLines, percentUnreachableLines);
       addAnswerElement(answerElement);
-      setStatus(AnswerStatus.SUCCESS);
    }
 
    private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {

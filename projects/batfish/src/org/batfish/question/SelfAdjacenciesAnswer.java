@@ -10,7 +10,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.SelfAdjacenciesAnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -21,8 +20,6 @@ public class SelfAdjacenciesAnswer extends Answer {
 
    public SelfAdjacenciesAnswer(Batfish batfish,
          SelfAdjacenciesQuestion question) {
-      setQuestion(question);
-      setStatus(AnswerStatus.SUCCESS);
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();
