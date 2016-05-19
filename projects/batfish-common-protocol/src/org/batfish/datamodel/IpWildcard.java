@@ -15,8 +15,12 @@ public class IpWildcard extends Pair<Ip, Ip> {
     */
    private static final long serialVersionUID = 1L;
 
-   public IpWildcard(Ip t1, Ip t2) {
-      super(t1, t2);
+   public IpWildcard(Ip address, Ip wildcardMask) {
+      super(address, wildcardMask);
+      if (!wildcardMask.valid()) {
+         throw new BatfishException("Invalid wildcard: "
+               + wildcardMask.toString());
+      }
    }
 
    public IpWildcard(Prefix prefix) {
