@@ -1,4 +1,4 @@
-package org.batfish.nxtnet;
+package org.batfish.nls;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +20,7 @@ public class Relation {
          _name = name;
       }
 
-      public Relation build(PredicateInfo predicateInfo, String nxtnetText) {
+      public Relation build(PredicateInfo predicateInfo, String nlsText) {
          LBValueTypeList columnValueTypes = predicateInfo
                .getPredicateValueTypes(_name);
          if (columnValueTypes == null) {
@@ -28,9 +28,9 @@ public class Relation {
                   + _name + "\"");
          }
          int numColumns = columnValueTypes.size();
-         String[] lines = nxtnetText.split("\n|\r\n");
+         String[] lines = nlsText.split("\n|\r\n");
          int numLines;
-         if (nxtnetText.length() == 0) {
+         if (nlsText.length() == 0) {
             numLines = 0;
          }
          else {
@@ -44,7 +44,7 @@ public class Relation {
             String[] parts = line.split(delimiter);
             int numFields = parts.length;
             if (numFields != numColumns) {
-               throw new BatfishException("nxtnet relation: \"" + _name
+               throw new BatfishException("nls relation: \"" + _name
                      + "\", line " + (i + 1) + ": expected " + numColumns
                      + " fields but got " + numFields);
             }

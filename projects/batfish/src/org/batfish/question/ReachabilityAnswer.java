@@ -94,7 +94,7 @@ public class ReachabilityAnswer extends Answer {
          wSetFlowOriginate.append(flow.toLBLine());
       }
       batfish.dumpTrafficFacts(trafficFactBins);
-      batfish.nxtnetTraffic();
+      batfish.nlsTraffic();
       AnswerElement answerElement = batfish.getHistory();
       addAnswerElement(answerElement);
    }

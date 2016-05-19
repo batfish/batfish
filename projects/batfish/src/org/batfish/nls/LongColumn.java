@@ -1,4 +1,4 @@
-package org.batfish.nxtnet;
+package org.batfish.nls;
 
 import java.util.ArrayList;
 import java.util.List;

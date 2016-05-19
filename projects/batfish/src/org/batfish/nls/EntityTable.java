@@ -1,4 +1,4 @@
-package org.batfish.nxtnet;
+package org.batfish.nls;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +35,10 @@ public class EntityTable {
 
    private final Map<Long, PrecomputedRoute> _routes;
 
-   public EntityTable(Map<String, String> nxtnetPredicateContents,
+   public EntityTable(Map<String, String> nlsPredicateContents,
          PredicateInfo predicateInfo) {
       _predicateInfo = predicateInfo;
-      _relations = buildRelations(nxtnetPredicateContents);
+      _relations = buildRelations(nlsPredicateContents);
       _asPaths = new HashMap<Long, AsPath>();
       _bgpAdvertisements = new HashMap<Long, BgpAdvertisement>();
       _communities = new HashMap<Long, CommunitySet>();
@@ -54,9 +54,9 @@ public class EntityTable {
    }
 
    private Map<String, Relation> buildRelations(
-         Map<String, String> nxtnetPredicateContents) {
+         Map<String, String> nlsPredicateContents) {
       Map<String, Relation> relations = new HashMap<String, Relation>();
-      for (Entry<String, String> e : nxtnetPredicateContents.entrySet()) {
+      for (Entry<String, String> e : nlsPredicateContents.entrySet()) {
          String relationName = e.getKey();
          String text = e.getValue();
          Relation relation = new Relation.Builder(relationName).build(
