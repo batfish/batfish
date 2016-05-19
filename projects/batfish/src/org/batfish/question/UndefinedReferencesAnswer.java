@@ -1,23 +1,14 @@
 package org.batfish.question;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.UndefinedReferencesAnswerElement;
-import org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement;
-import org.batfish.datamodel.collections.MultiSet;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.UndefinedReferencesQuestion;
-import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
 import org.batfish.main.Batfish;
 import org.batfish.representation.VendorConfiguration;
 
