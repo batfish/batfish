@@ -4471,6 +4471,11 @@ QOS
    'qos'
 ;
 
+QOS_GROUP
+:
+   'qos-group'
+;
+   
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'

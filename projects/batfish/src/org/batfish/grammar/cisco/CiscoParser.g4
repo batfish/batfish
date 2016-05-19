@@ -119,8 +119,10 @@ cm_match_tail
    | cmm_cos
    | cmm_default_inspection_traffic
    | cmm_dscp
+   | cmm_mpls
    | cmm_non_client_nrt
    | cmm_port
+   | cmm_qos_group
 ;
 
 cmm_access_group
@@ -154,6 +156,11 @@ cmm_dscp
    )+ NEWLINE
 ;
 
+cmm_mpls
+:
+   MPLS ~NEWLINE* NEWLINE
+;
+
 cmm_non_client_nrt
 :
    NON_CLIENT_NRT NEWLINE
@@ -167,6 +174,11 @@ cmm_port
       | UDP
    )
    port_specifier NEWLINE
+;
+
+cmm_qos_group
+:
+   QOS_GROUP DEC NEWLINE
 ;
 
 cp_ip_access_group
