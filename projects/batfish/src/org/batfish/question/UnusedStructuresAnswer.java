@@ -3,7 +3,7 @@ package org.batfish.question;
 import java.io.File;
 import java.util.Map.Entry;
 
-import org.batfish.common.Pair;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -25,9 +25,9 @@ public class UnusedStructuresAnswer extends Answer {
       for (Entry<String, Warnings> e : ccae.getWarnings().entrySet()) {
          String hostname = e.getKey();
          Warnings warnings = e.getValue();
-         for (Pair<String, String> warning : warnings.getRedFlagWarnings()) {
-            String tag = warning.getSecond();
-            String text = warning.getFirst();
+         for (Warning warning : warnings.getRedFlagWarnings()) {
+            String tag = warning.getTag();
+            String text = warning.getText();
             if (tag.equals(VendorConfiguration.UNUSED)) {
                answerElement.add(hostname, text);
             }

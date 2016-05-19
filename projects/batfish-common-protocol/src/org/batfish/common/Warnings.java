@@ -26,8 +26,7 @@ public class Warnings implements Serializable {
             jgen.writeFieldName("Pedantic complaints");
             jgen.writeStartObject();
             for (int i = 0; i < value._pedanticWarnings.size(); i++) {
-               Pair<String, String> taggedWarning = value._pedanticWarnings
-                     .get(i);
+               Warning taggedWarning = value._pedanticWarnings.get(i);
                String text = taggedWarning.getFirst();
                String tag = taggedWarning.getSecond();
                String msg = tag + ": " + text;
@@ -40,8 +39,7 @@ public class Warnings implements Serializable {
             jgen.writeFieldName("Red flags");
             jgen.writeStartObject();
             for (int i = 0; i < value._redFlagWarnings.size(); i++) {
-               Pair<String, String> taggedWarning = value._redFlagWarnings
-                     .get(i);
+               Warning taggedWarning = value._redFlagWarnings.get(i);
                String text = taggedWarning.getFirst();
                String tag = taggedWarning.getSecond();
                String msg = tag + ": " + text;
@@ -54,8 +52,7 @@ public class Warnings implements Serializable {
             jgen.writeFieldName("Unimplemented features");
             jgen.writeStartObject();
             for (int i = 0; i < value._unimplementedWarnings.size(); i++) {
-               Pair<String, String> taggedWarning = value._unimplementedWarnings
-                     .get(i);
+               Warning taggedWarning = value._unimplementedWarnings.get(i);
                String text = taggedWarning.getFirst();
                String tag = taggedWarning.getSecond();
                String msg = tag + ": " + text;
@@ -74,28 +71,28 @@ public class Warnings implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   protected final List<Pair<String, String>> _pedanticWarnings;
+   protected final List<Warning> _pedanticWarnings;
 
-   protected final List<Pair<String, String>> _redFlagWarnings;
+   protected final List<Warning> _redFlagWarnings;
 
-   protected final List<Pair<String, String>> _unimplementedWarnings;
+   protected final List<Warning> _unimplementedWarnings;
 
    public Warnings() {
-      _pedanticWarnings = new ArrayList<Pair<String, String>>();
-      _redFlagWarnings = new ArrayList<Pair<String, String>>();
-      _unimplementedWarnings = new ArrayList<Pair<String, String>>();
+      _pedanticWarnings = new ArrayList<Warning>();
+      _redFlagWarnings = new ArrayList<Warning>();
+      _unimplementedWarnings = new ArrayList<Warning>();
 
    }
 
-   public List<Pair<String, String>> getPedanticWarnings() {
+   public List<Warning> getPedanticWarnings() {
       return _pedanticWarnings;
    }
 
-   public List<Pair<String, String>> getRedFlagWarnings() {
+   public List<Warning> getRedFlagWarnings() {
       return _redFlagWarnings;
    }
 
-   public List<Pair<String, String>> getUnimplementedWarnings() {
+   public List<Warning> getUnimplementedWarnings() {
       return _unimplementedWarnings;
    }
 

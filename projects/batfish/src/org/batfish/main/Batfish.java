@@ -47,7 +47,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
-import org.batfish.common.Pair;
+import org.batfish.common.Warning;
 import org.batfish.common.util.StringFilter;
 import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.common.util.CommonUtil;
@@ -506,6 +506,22 @@ public class Batfish implements AutoCloseable {
 
    public static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins, true);
+   }
+
+   public static void logWarnings(BatfishLogger logger, Warnings warnings) {
+      for (Warning warning : warnings.getRedFlagWarnings()) {
+         logger.redflag(logWarningsHelper(warning));
+      }
+      for (Warning warning : warnings.getUnimplementedWarnings()) {
+         logger.unimplemented(logWarningsHelper(warning));
+      }
+      for (Warning warning : warnings.getPedanticWarnings()) {
+         logger.pedantic(logWarningsHelper(warning));
+      }
+   }
+
+   private static String logWarningsHelper(Warning warning) {
+      return "   " + warning.getTag() + ": " + warning.getText() + "\n";
    }
 
    public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
@@ -2820,16 +2836,7 @@ public class Batfish implements AutoCloseable {
             }
          }
          finally {
-            for (Pair<String, String> warning : warnings.getRedFlagWarnings()) {
-               _logger.redflag(warning.getFirst());
-            }
-            for (Pair<String, String> warning : warnings
-                  .getUnimplementedWarnings()) {
-               _logger.unimplemented(warning.getFirst());
-            }
-            for (Pair<String, String> warning : warnings.getPedanticWarnings()) {
-               _logger.pedantic(warning.getFirst());
-            }
+            logWarnings(_logger, warnings);
          }
       }
       if (processingError) {

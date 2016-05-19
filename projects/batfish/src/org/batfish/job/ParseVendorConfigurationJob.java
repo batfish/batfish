@@ -16,7 +16,6 @@ import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
@@ -195,16 +194,7 @@ public class ParseVendorConfigurationJob extends
                _logger.getHistory(), _file, new BatfishException(error, e));
       }
       finally {
-         for (Pair<String, String> warning : _warnings.getRedFlagWarnings()) {
-            _logger.redflag(warning.getFirst());
-         }
-         for (Pair<String, String> warning : _warnings
-               .getUnimplementedWarnings()) {
-            _logger.unimplemented(warning.getFirst());
-         }
-         for (Pair<String, String> warning : _warnings.getPedanticWarnings()) {
-            _logger.pedantic(warning.getFirst());
-         }
+         Batfish.logWarnings(_logger, _warnings);
       }
       vc = extractor.getVendorConfiguration();
       vc.setVendor(format);

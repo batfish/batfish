@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.common.Pair;
+import org.batfish.common.Warning;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoParser;
@@ -57,7 +57,7 @@ public class Warnings extends org.batfish.common.Warnings {
          // String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
          // + ": PEDANTIC: ";
          // String warning = prefix + msg + "\n";
-         _pedanticWarnings.add(new Pair<String, String>(msg, tag));
+         _pedanticWarnings.add(new Warning(msg, tag));
       }
    }
 
@@ -73,7 +73,7 @@ public class Warnings extends org.batfish.common.Warnings {
          // String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
          // + ": RED FLAG: ";
          // String warning = prefix + msg + "\n";
-         _redFlagWarnings.add(new Pair<String, String>(msg, tag));
+         _redFlagWarnings.add(new Warning(msg, tag));
       }
    }
 
@@ -115,8 +115,8 @@ public class Warnings extends org.batfish.common.Warnings {
          throw new UnimplementedBatfishException(warning);
       }
       else {
-         _unimplementedWarnings.add(new Pair<String, String>(sb.toString(),
-               "UNIMPLEMENTED"));
+         _unimplementedWarnings
+               .add(new Warning(sb.toString(), "UNIMPLEMENTED"));
       }
    }
 
@@ -132,7 +132,7 @@ public class Warnings extends org.batfish.common.Warnings {
          // String prefix = "WARNING " + (_unimplementedWarnings.size() + 1)
          // + ": UNIMPLEMENTED: ";
          // String warning = prefix + msg + "\n";
-         _unimplementedWarnings.add(new Pair<String, String>(msg, tag));
+         _unimplementedWarnings.add(new Warning(msg, tag));
       }
    }
 
