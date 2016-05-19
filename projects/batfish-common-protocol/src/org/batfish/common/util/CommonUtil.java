@@ -3,6 +3,8 @@ package org.batfish.common.util;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
@@ -155,6 +157,16 @@ public class CommonUtil {
          wildcard |= (1 << i);
       }
       return wildcard;
+   }
+
+   public static Map<Integer, String> toLineMap(String str) {
+      Map<Integer, String> map = new TreeMap<Integer, String>();
+      String[] lines = str.split("\n");
+      for (int i = 0; i < lines.length; i++) {
+         String line = lines[i];
+         map.put(i, line);
+      }
+      return map;
    }
 
    /**

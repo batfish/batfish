@@ -3,9 +3,11 @@ package org.batfish.z3;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public class NodSatResult<Key> extends BatfishJobResult<Map<Key, Boolean>> {
+public class NodSatResult<Key> extends
+      BatfishJobResult<Map<Key, Boolean>, NodSatAnswerElement> {
 
    private final Map<Key, Boolean> _results;
 
@@ -20,7 +22,8 @@ public class NodSatResult<Key> extends BatfishJobResult<Map<Key, Boolean>> {
    }
 
    @Override
-   public void applyTo(Map<Key, Boolean> output, BatfishLogger logger) {
+   public void applyTo(Map<Key, Boolean> output, BatfishLogger logger,
+         NodSatAnswerElement answerElement) {
       output.putAll(_results);
    }
 

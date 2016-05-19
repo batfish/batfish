@@ -6,8 +6,9 @@ import java.util.Set;
 import org.batfish.job.BatfishJobResult;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.answers.NodAnswerElement;
 
-public class NodJobResult extends BatfishJobResult<Set<Flow>> {
+public class NodJobResult extends BatfishJobResult<Set<Flow>, NodAnswerElement> {
 
    /**
     * Elapsed time in milliseconds
@@ -29,7 +30,8 @@ public class NodJobResult extends BatfishJobResult<Set<Flow>> {
    }
 
    @Override
-   public void applyTo(Set<Flow> flows, BatfishLogger logger) {
+   public void applyTo(Set<Flow> flows, BatfishLogger logger,
+         NodAnswerElement answerElement) {
       flows.addAll(_flows);
    }
 

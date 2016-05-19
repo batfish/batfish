@@ -12,6 +12,10 @@ import org.batfish.main.Warnings;
 
 public interface VendorConfiguration extends Serializable, GenericConfigObject {
 
+   String UNDEFINED = "UNDEFINED";
+
+   String UNUSED = "UNUSED";
+
    String getHostname();
 
    RoleSet getRoles();

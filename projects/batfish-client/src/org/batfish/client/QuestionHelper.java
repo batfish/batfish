@@ -23,13 +23,9 @@ public class QuestionHelper {
       return retString;
    }
 
-   public static Question getQuestion(String questionTypeStr) throws Exception {
-      QuestionType qType = QuestionType.fromName(questionTypeStr);
-      return getQuestion(qType);
-   }
-   
-   public static Question getQuestion(QuestionType questionType) throws Exception {
-      
+   public static Question getQuestion(QuestionType questionType)
+         throws Exception {
+
       switch (questionType) {
       case ACL_REACHABILITY:
          return new AclReachabilityQuestion();
@@ -69,10 +65,14 @@ public class QuestionHelper {
          return new SelfAdjacenciesQuestion();
       case TRACEROUTE:
          return new TracerouteQuestion();
+      case UNDEFINED_REFERENCES:
+         return new UndefinedReferencesQuestion();
       case UNIQUE_BGP_PREFIX_ORIGINATION:
          return new UniqueBgpPrefixOriginationQuestion();
       case UNIQUE_IP_ASSIGNMENTS:
          return new UniqueIpAssignmentsQuestion();
+      case UNUSED_STRUCTURES:
+         return new UnusedStructuresQuestion();
       default:
          break;
       }
@@ -80,13 +80,19 @@ public class QuestionHelper {
       throw new Exception("Unsupported question type " + questionType);
    }
 
-   public static String getQuestionString(String questionType) throws Exception {
+   public static Question getQuestion(String questionTypeStr) throws Exception {
+      QuestionType qType = QuestionType.fromName(questionTypeStr);
+      return getQuestion(qType);
+   }
+
+   public static String getQuestionString(QuestionType questionType)
+         throws Exception {
       ObjectMapper mapper = new ObjectMapper();
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
       return mapper.writeValueAsString(getQuestion(questionType));
    }
 
-   public static String getQuestionString(QuestionType questionType) throws Exception {
+   public static String getQuestionString(String questionType) throws Exception {
       ObjectMapper mapper = new ObjectMapper();
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
       return mapper.writeValueAsString(getQuestion(questionType));
