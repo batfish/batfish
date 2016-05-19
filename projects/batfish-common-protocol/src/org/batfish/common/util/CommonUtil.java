@@ -151,14 +151,6 @@ public class CommonUtil {
       return md5;
    }
 
-   public static long numWildcardBitsToWildcardLong(int numBits) {
-      long wildcard = 0;
-      for (int i = 0; i < numBits; i++) {
-         wildcard |= (1 << i);
-      }
-      return wildcard;
-   }
-
    public static Map<Integer, String> toLineMap(String str) {
       Map<Integer, String> map = new TreeMap<Integer, String>();
       String[] lines = str.split("\n");

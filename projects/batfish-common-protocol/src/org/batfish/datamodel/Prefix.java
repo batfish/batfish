@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -60,6 +59,14 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
          networkEnd |= ((long) 1 << i);
       }
       return networkEnd;
+   }
+
+   private static long numWildcardBitsToWildcardLong(int numBits) {
+      long wildcard = 0;
+      for (int i = 0; i < numBits; i++) {
+         wildcard |= (1l << i);
+      }
+      return wildcard;
    }
 
    private Ip _address;
@@ -139,8 +146,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
    public Ip getPrefixWildcard() {
       int numWildcardBits = 32 - _prefixLength;
-      long wildcardLong = CommonUtil
-            .numWildcardBitsToWildcardLong(numWildcardBits);
+      long wildcardLong = numWildcardBitsToWildcardLong(numWildcardBits);
       return new Ip(wildcardLong);
    }
 
