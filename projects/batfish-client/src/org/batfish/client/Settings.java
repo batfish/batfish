@@ -17,6 +17,7 @@ public class Settings extends BaseSettings {
    
    private static final String ARG_API_KEY = "apikey";
    public static final String ARG_BATCH_COMMAND_FILE = "batchcmdfile";
+   public static final String ARG_BATFISH_LOG_LEVEL = "batfishloglevel";
    private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
    public static final String ARG_LOG_FILE = "logfile";
@@ -35,6 +36,7 @@ public class Settings extends BaseSettings {
 
    private String _apiKey;
    private String _batchCommandFile;
+   private String _batfishLogLevel;
    private String _coordinatorHost;
    private int _coordinatorPoolPort;
    private int _coordinatorWorkPort;
@@ -63,6 +65,10 @@ public class Settings extends BaseSettings {
 
    public String getBatchCommandFile() {
       return _batchCommandFile;
+   }
+
+   public String getBatfishLogLevel() {
+      return _batfishLogLevel;
    }
 
    public String getCoordinatorHost() {
@@ -111,6 +117,8 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
+      setDefaultProperty(ARG_BATFISH_LOG_LEVEL,
+            BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
@@ -131,6 +139,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_BATCH_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
+
+      addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish", "batfish_loglevel");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
@@ -174,6 +184,7 @@ public class Settings extends BaseSettings {
 
       _apiKey = getStringOptionValue(ARG_API_KEY);
       _batchCommandFile = getStringOptionValue(ARG_BATCH_COMMAND_FILE);
+      _batfishLogLevel = getStringOptionValue(ARG_BATFISH_LOG_LEVEL);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
@@ -188,4 +199,7 @@ public class Settings extends BaseSettings {
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
    }
 
+   public void setBatfishLogLevel(String logLevel) {
+      _batfishLogLevel = logLevel;
+   }
 }

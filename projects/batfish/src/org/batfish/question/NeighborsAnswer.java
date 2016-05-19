@@ -25,17 +25,17 @@ public class NeighborsAnswer extends Answer {
       }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
-               String.format("One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                     question.getDstNodeRegex(), question.getSrcNodeRegex()),
-                     e);
+               String.format(
+                     "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
+                     question.getDstNodeRegex(), question.getSrcNodeRegex()), e);
       }
 
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
-      if (question.getNeighborTypes().isEmpty() ||
-            question.getNeighborTypes().contains(NeighborType.IP)) {
-         Topology topology = batfish.computeTopology(batfish.loadConfigurations(),
-               batfish.getEnvSettings());
+      if (question.getNeighborTypes().isEmpty()
+            || question.getNeighborTypes().contains(NeighborType.IP)) {
+         Topology topology = batfish.computeTopology(
+               batfish.loadConfigurations(), batfish.getEnvSettings());
 
          for (Edge edge : topology.getEdges()) {
             Matcher srcMatcher = srcNodeRegex.matcher(edge.getNode1());
@@ -53,7 +53,8 @@ public class NeighborsAnswer extends Answer {
          case EBGP:
          case IBGP:
          default:
-            throw new BatfishException("Unsupported NeighborType: " + nType.toString());
+            throw new BatfishException("Unsupported NeighborType: "
+                  + nType.toString());
 
          }
       }

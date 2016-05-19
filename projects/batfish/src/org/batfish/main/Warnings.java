@@ -1,85 +1,79 @@
 package org.batfish.main;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.Pair;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoParser;
 
-public class Warnings {
+public class Warnings extends org.batfish.common.Warnings {
 
-   private final boolean _pedanticAsError;
+   private static final String MISCELLANEOUS = "MISCELLANEOUS";
 
-   private final boolean _pedanticRecord;
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   private final List<String> _pedanticWarnings;
+   private final transient boolean _pedanticAsError;
 
-   private boolean _printParseTree;
+   private final transient boolean _pedanticRecord;
 
-   private final boolean _redFlagAsError;
+   private transient boolean _printParseTree;
 
-   private final boolean _redFlagRecord;
+   private final transient boolean _redFlagAsError;
 
-   private final List<String> _redFlagWarnings;
+   private final transient boolean _redFlagRecord;
 
-   private final boolean _unimplementedAsError;
+   private final transient boolean _unimplementedAsError;
 
-   private final boolean _unimplementedRecord;
-
-   private final List<String> _unimplementedWarnings;
+   private final transient boolean _unimplementedRecord;
 
    public Warnings(boolean pedanticAsError, boolean pedanticRecord,
          boolean redFlagAsError, boolean redFlagRecord,
          boolean unimplementedAsError, boolean unimplementedRecord,
          boolean printParseTree) {
       _pedanticAsError = pedanticAsError;
-      _pedanticWarnings = new ArrayList<String>();
       _pedanticRecord = pedanticRecord;
       _printParseTree = printParseTree;
       _redFlagAsError = redFlagAsError;
       _redFlagRecord = redFlagRecord;
-      _redFlagWarnings = new ArrayList<String>();
       _unimplementedAsError = unimplementedAsError;
       _unimplementedRecord = unimplementedRecord;
-      _unimplementedWarnings = new ArrayList<String>();
-   }
-
-   public List<String> getPedanticWarnings() {
-      return _pedanticWarnings;
-   }
-
-   public List<String> getRedFlagWarnings() {
-      return _redFlagWarnings;
-   }
-
-   public List<String> getUnimplementedWarnings() {
-      return _unimplementedWarnings;
    }
 
    public void pedantic(String msg) {
+      pedantic(msg, MISCELLANEOUS);
+   }
+
+   public void pedantic(String msg, String tag) {
       if (_pedanticAsError) {
          throw new PedanticBatfishException(msg);
       }
       else if (_pedanticRecord) {
-         String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
-               + ": PEDANTIC: ";
-         String warning = prefix + msg + "\n";
-         _pedanticWarnings.add(warning);
+         // String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
+         // + ": PEDANTIC: ";
+         // String warning = prefix + msg + "\n";
+         _pedanticWarnings.add(new Pair<String, String>(msg, tag));
       }
    }
 
    public void redFlag(String msg) {
+      redFlag(msg, MISCELLANEOUS);
+   }
+
+   public void redFlag(String msg, String tag) {
       if (_redFlagAsError) {
          throw new RedFlagBatfishException(msg);
       }
       else if (_redFlagRecord) {
-         String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
-               + ": RED FLAG: ";
-         String warning = prefix + msg + "\n";
-         _redFlagWarnings.add(warning);
+         // String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
+         // + ": RED FLAG: ";
+         // String warning = prefix + msg + "\n";
+         _redFlagWarnings.add(new Pair<String, String>(msg, tag));
       }
    }
 
@@ -121,19 +115,24 @@ public class Warnings {
          throw new UnimplementedBatfishException(warning);
       }
       else {
-         _unimplementedWarnings.add(sb.toString());
+         _unimplementedWarnings.add(new Pair<String, String>(sb.toString(),
+               "UNIMPLEMENTED"));
       }
    }
 
    public void unimplemented(String msg) {
+      unimplemented(msg, MISCELLANEOUS);
+   }
+
+   public void unimplemented(String msg, String tag) {
       if (_unimplementedAsError) {
          throw new UnimplementedBatfishException(msg);
       }
       else if (_unimplementedRecord) {
-         String prefix = "WARNING " + (_unimplementedWarnings.size() + 1)
-               + ": UNIMPLEMENTED: ";
-         String warning = prefix + msg + "\n";
-         _unimplementedWarnings.add(warning);
+         // String prefix = "WARNING " + (_unimplementedWarnings.size() + 1)
+         // + ": UNIMPLEMENTED: ";
+         // String warning = prefix + msg + "\n";
+         _unimplementedWarnings.add(new Pair<String, String>(msg, tag));
       }
    }
 

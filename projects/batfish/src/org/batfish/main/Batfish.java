@@ -47,6 +47,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Pair;
 import org.batfish.common.util.StringFilter;
 import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.common.util.CommonUtil;
@@ -85,6 +86,11 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.NodAnswerElement;
+import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -129,8 +135,10 @@ import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
 import org.batfish.datamodel.questions.RoutesQuestion;
 import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
 import org.batfish.datamodel.questions.TracerouteQuestion;
+import org.batfish.datamodel.questions.UndefinedReferencesQuestion;
 import org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion;
 import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
+import org.batfish.datamodel.questions.UnusedStructuresQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -188,8 +196,10 @@ import org.batfish.question.ReducedReachabilityAnswer;
 import org.batfish.question.RoutesAnswer;
 import org.batfish.question.SelfAdjacenciesAnswer;
 import org.batfish.question.TracerouteAnswer;
+import org.batfish.question.UndefinedReferencesAnswer;
 import org.batfish.question.UniqueBgpPrefixOriginationAnswer;
 import org.batfish.question.UniqueIpAssignmentsAnswer;
+import org.batfish.question.UnusedStructuresAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.util.Util;
@@ -312,6 +322,10 @@ public class Batfish implements AutoCloseable {
                BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH).toString());
          settings.setProtocolDependencyGraphZipPath(Paths.get(baseDir,
                BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH_ZIP).toString());
+         settings.setParseAnswerPath(Paths.get(baseDir,
+               BfConsts.RELPATH_PARSE_ANSWER_PATH).toString());
+         settings.setConvertAnswerPath(Paths.get(baseDir,
+               BfConsts.RELPATH_CONVERT_ANSWER_PATH).toString());
          String envName = settings.getEnvironmentName();
          if (envName != null) {
             envSettings.setName(envName);
@@ -569,7 +583,7 @@ public class Batfish implements AutoCloseable {
 
    }
 
-   private void answer() {
+   private Answer answer() {
       Question question = parseQuestion();
       boolean dp = question.getDataPlane();
       boolean diff = question.getDifferential();
@@ -670,6 +684,11 @@ public class Batfish implements AutoCloseable {
             answer = new TracerouteAnswer(this, (TracerouteQuestion) question);
             break;
 
+         case UNDEFINED_REFERENCES:
+            answer = new UndefinedReferencesAnswer(this,
+                  (UndefinedReferencesQuestion) question);
+            break;
+
          case UNIQUE_BGP_PREFIX_ORIGINATION:
             answer = new UniqueBgpPrefixOriginationAnswer(this,
                   (UniqueBgpPrefixOriginationQuestion) question);
@@ -678,6 +697,11 @@ public class Batfish implements AutoCloseable {
          case UNIQUE_IP_ASSIGNMENTS:
             answer = new UniqueIpAssignmentsAnswer(this,
                   (UniqueIpAssignmentsQuestion) question);
+            break;
+
+         case UNUSED_STRUCTURES:
+            answer = new UnusedStructuresAnswer(this,
+                  (UnusedStructuresQuestion) question);
             break;
 
          default:
@@ -698,7 +722,7 @@ public class Batfish implements AutoCloseable {
          answer.addAnswerElement(exception);
       }
       answer.setQuestion(question);
-      outputAnswer(answer);
+      return answer;
    }
 
    /**
@@ -923,13 +947,14 @@ public class Batfish implements AutoCloseable {
    public void close() throws Exception {
    }
 
-   public Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs) {
+   public Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs,
+         NodAnswerElement answerElement) {
       _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
-      BatfishJobExecutor<CompositeNodJob, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<CompositeNodJob, NodJobResult, Set<Flow>>(
+      BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>>(
             _settings, _logger);
-      executor.executeJobs(jobs, flows);
+      executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
    }
@@ -1068,9 +1093,10 @@ public class Batfish implements AutoCloseable {
       _logger.info("\n*** EXECUTING NOD JOBS ***\n");
       resetTimer();
       Set<Flow> flows = new TreeSet<Flow>();
-      BatfishJobExecutor<NodJob, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<NodJob, NodJobResult, Set<Flow>>(
+      BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>>(
             _settings, _logger);
-      executor.executeJobs(jobs, flows);
+      // todo: do something with nod answer element
+      executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
       return flows;
    }
@@ -1079,9 +1105,9 @@ public class Batfish implements AutoCloseable {
          Map<Key, Boolean> output) {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
-      BatfishJobExecutor<NodSatJob<Key>, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<NodSatJob<Key>, NodSatResult<Key>, Map<Key, Boolean>>(
+      BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>>(
             _settings, _logger);
-      executor.executeJobs(jobs, output);
+      executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
    }
 
@@ -1132,7 +1158,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private Map<String, Configuration> convertConfigurations(
-         Map<String, GenericConfigObject> vendorConfigurations) {
+         Map<String, GenericConfigObject> vendorConfigurations,
+         ConvertConfigurationAnswerElement answerElement) {
       _logger
             .info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
       resetTimer();
@@ -1153,9 +1180,9 @@ public class Batfish implements AutoCloseable {
                vc, hostname, warnings);
          jobs.add(job);
       }
-      BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationResult, Map<String, Configuration>>(
+      BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>>(
             _settings, _logger);
-      executor.executeJobs(jobs, configurations);
+      executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
       return configurations;
    }
@@ -1192,7 +1219,7 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   private Object deserializeObject(File inputFile) {
+   public Object deserializeObject(File inputFile) {
       FileInputStream fis;
       Object o = null;
       ObjectInputStream ois;
@@ -1347,9 +1374,11 @@ public class Batfish implements AutoCloseable {
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
       }
-      BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationResult, Map<File, String>> executor = new BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationResult, Map<File, String>>(
+      BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<File, String>> executor = new BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<File, String>>(
             _settings, _logger);
-      executor.executeJobs(jobs, outputConfigurationData);
+      // todo: do something with answer element
+      executor.executeJobs(jobs, outputConfigurationData,
+            new FlattenVendorConfigurationAnswerElement());
       printElapsedTime();
       for (Entry<File, String> e : outputConfigurationData.entrySet()) {
          File outputFile = e.getKey();
@@ -1634,14 +1663,16 @@ public class Batfish implements AutoCloseable {
    }
 
    public Map<String, Configuration> getConfigurations(
-         String serializedVendorConfigPath) {
+         String serializedVendorConfigPath,
+         ConvertConfigurationAnswerElement answerElement) {
       Map<String, GenericConfigObject> vendorConfigurations = deserializeVendorConfigurations(serializedVendorConfigPath);
-      Map<String, Configuration> configurations = convertConfigurations(vendorConfigurations);
+      Map<String, Configuration> configurations = convertConfigurations(
+            vendorConfigurations, answerElement);
       return configurations;
    }
 
    private Map<String, Configuration> getDeltaConfigurations(
-         EnvironmentSettings envSettings) {
+         EnvironmentSettings envSettings, Answer answer) {
       String deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
       if (deltaConfigurationsDir != null) {
          File deltaConfigurationsDirAsFile = new File(deltaConfigurationsDir);
@@ -1650,15 +1681,18 @@ public class Batfish implements AutoCloseable {
             Map<File, String> deltaConfigsText = readConfigurationFiles(
                   configParentDir.toString(),
                   BfConsts.RELPATH_CONFIGURATIONS_DIR);
-            Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(deltaConfigsText);
+            // todo: something about answer
+            Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(
+                  deltaConfigsText, new ParseVendorConfigurationAnswerElement());
 
             // convert the map to the right type
             Map<String, GenericConfigObject> castedConfigs = new HashMap<String, GenericConfigObject>();
             for (String name : vendorDeltaConfigs.keySet()) {
                castedConfigs.put(name, vendorDeltaConfigs.get(name));
             }
-
-            Map<String, Configuration> deltaConfigs = convertConfigurations(castedConfigs);
+            // todo: something with answer
+            Map<String, Configuration> deltaConfigs = convertConfigurations(
+                  castedConfigs, new ConvertConfigurationAnswerElement());
             return deltaConfigs;
          }
       }
@@ -2038,7 +2072,10 @@ public class Batfish implements AutoCloseable {
    private void histogram(String testRigPath) {
       Map<File, String> configurationData = readConfigurationFiles(testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
-      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
+      // todo: either remove histogram function or do something userful with
+      // answer
+      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
+            configurationData, new ParseVendorConfigurationAnswerElement());
       _logger.info("Building feature histogram...");
       MultiSet<String> histogram = new TreeMultiSet<String>();
       for (VendorConfiguration vc : vendorConfigurations.values()) {
@@ -2437,7 +2474,7 @@ public class Batfish implements AutoCloseable {
             .getSerializeIndependentPath());
       processNodeBlacklist(configurations, envSettings);
       processInterfaceBlacklist(configurations, envSettings);
-      processDeltaConfigurations(configurations, envSettings);
+      processDeltaConfigurations(configurations, envSettings, new Answer());
       disableUnusableVpnInterfaces(configurations, envSettings);
       return configurations;
    }
@@ -2451,15 +2488,16 @@ public class Batfish implements AutoCloseable {
       return topology;
    }
 
-   private void nxtnetDataPlane(EnvironmentSettings envSettings) {
+   private Answer nxtnetDataPlane(EnvironmentSettings envSettings) {
       Map<String, String> inputFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
             NxtnetConstants.NXTNET_DATA_PLANE_COMPUTATION_FACTS);
       writeNxtnetInput(getNxtnetDataPlaneOutputSymbols(), inputFacts,
             envSettings.getNxtnetDataPlaneInputFile(), envSettings);
-      runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
+      Answer answer = runNxtnet(envSettings.getNxtnetDataPlaneInputFile(),
             envSettings.getNxtnetDataPlaneOutputDir());
       writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
+      return answer;
    }
 
    public void nxtnetTraffic() {
@@ -2489,7 +2527,7 @@ public class Batfish implements AutoCloseable {
             envSettings.getNxtnetTrafficOutputDir());
    }
 
-   private void outputAnswer(Answer answer) {
+   void outputAnswer(Answer answer) {
       ObjectMapper mapper = new ObjectMapper();
       mapper.enable(SerializationFeature.INDENT_OUTPUT);
       try {
@@ -2684,7 +2722,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
-         Map<File, String> configurationData) {
+         Map<File, String> configurationData,
+         ParseVendorConfigurationAnswerElement answerElement) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
@@ -2704,10 +2743,10 @@ public class Batfish implements AutoCloseable {
                _settings, fileText, currentFile, warnings);
          jobs.add(job);
       }
-      BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationResult, Map<String, VendorConfiguration>>(
+      BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>>(
             _settings, _logger);
-      executor.executeJobs(jobs, vendorConfigurations);
 
+      executor.executeJobs(jobs, vendorConfigurations, answerElement);
       printElapsedTime();
       return vendorConfigurations;
    }
@@ -2781,14 +2820,15 @@ public class Batfish implements AutoCloseable {
             }
          }
          finally {
-            for (String warning : warnings.getRedFlagWarnings()) {
-               _logger.redflag(warning);
+            for (Pair<String, String> warning : warnings.getRedFlagWarnings()) {
+               _logger.redflag(warning.getFirst());
             }
-            for (String warning : warnings.getUnimplementedWarnings()) {
-               _logger.unimplemented(warning);
+            for (Pair<String, String> warning : warnings
+                  .getUnimplementedWarnings()) {
+               _logger.unimplemented(warning.getFirst());
             }
-            for (String warning : warnings.getPedanticWarnings()) {
-               _logger.pedantic(warning);
+            for (Pair<String, String> warning : warnings.getPedanticWarnings()) {
+               _logger.pedantic(warning.getFirst());
             }
          }
       }
@@ -3070,8 +3110,9 @@ public class Batfish implements AutoCloseable {
 
    private void processDeltaConfigurations(
          Map<String, Configuration> configurations,
-         EnvironmentSettings envSettings) {
-      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(envSettings);
+         EnvironmentSettings envSettings, Answer answer) {
+      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(
+            envSettings, answer);
       configurations.putAll(deltaConfigurations);
       // TODO: deal with topological changes
    }
@@ -3306,8 +3347,9 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   public void run() {
+   public Answer run() {
       boolean action = false;
+      Answer answer = new Answer();
 
       if (_settings.getQuery() || _settings.getPrintSemantics()
             || _settings.getDataPlane() || _settings.getWriteRoutes()
@@ -3320,46 +3362,46 @@ public class Batfish implements AutoCloseable {
          // Print predicate semantics and quit if requested
          if (_settings.getPrintSemantics()) {
             printAllPredicateSemantics(_predicateInfo.getPredicateSemantics());
-            return;
+            return answer;
          }
       }
 
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
-         return;
+         return answer;
       }
 
       if (_settings.getSynthesizeTopology()) {
          writeSynthesizedTopology();
-         return;
+         return answer;
       }
 
       if (_settings.getSynthesizeJsonTopology()) {
          writeJsonTopology();
-         return;
+         return answer;
       }
 
       if (_settings.getBuildPredicateInfo()) {
          buildPredicateInfo();
-         return;
+         return answer;
       }
 
       if (_settings.getHistogram()) {
          histogram(_settings.getTestRigPath());
-         return;
+         return answer;
       }
 
       if (_settings.getGenerateOspfTopologyPath() != null) {
          generateOspfConfigs(_settings.getGenerateOspfTopologyPath(),
                _settings.getSerializeIndependentPath());
-         return;
+         return answer;
       }
 
       if (_settings.getFlatten()) {
          String flattenSource = _settings.getTestRigPath();
          String flattenDestination = _settings.getFlattenDestination();
          flatten(flattenSource, flattenDestination);
-         return;
+         return answer;
       }
 
       if (_settings.getGenerateStubs()) {
@@ -3368,7 +3410,7 @@ public class Batfish implements AutoCloseable {
                .getGenerateStubsInterfaceDescriptionRegex();
          int stubAs = _settings.getGenerateStubsRemoteAs();
          generateStubs(inputRole, stubAs, interfaceDescriptionRegex);
-         return;
+         return answer;
       }
 
       // if (_settings.getZ3()) {
@@ -3379,30 +3421,30 @@ public class Batfish implements AutoCloseable {
       // }
       // File dataPlanePathAsFile = new File(dataPlanePath);
       // genZ3(configurations, dataPlanePathAsFile);
-      // return;
+      // return answer;
       // }
       //
       if (_settings.getAnonymize()) {
          anonymizeConfigurations();
-         return;
+         return answer;
       }
 
       // if (_settings.getRoleTransitQuery()) {
       // genRoleTransitQueries();
-      // return;
+      // return answer;
       // }
 
       if (_settings.getSerializeVendor()) {
          String testRigPath = _settings.getTestRigPath();
          String outputPath = _settings.getSerializeVendorPath();
-         serializeVendorConfigs(testRigPath, outputPath);
+         answer.append(serializeVendorConfigs(testRigPath, outputPath));
          action = true;
       }
 
       if (_settings.getSerializeIndependent()) {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
-         serializeIndependentConfigs(inputPath, outputPath);
+         answer.append(serializeIndependentConfigs(inputPath, outputPath));
          action = true;
       }
 
@@ -3419,7 +3461,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getNxtnetDataPlane()) {
-         nxtnetDataPlane(_envSettings);
+         answer.append(nxtnetDataPlane(_envSettings));
          action = true;
       }
 
@@ -3441,13 +3483,13 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getAnswer()) {
-         answer();
+         answer.append(answer());
          action = true;
       }
 
       if (_settings.getQuery()) {
          query();
-         return;
+         return answer;
       }
 
       if (_settings.getDataPlane()) {
@@ -3479,9 +3521,11 @@ public class Batfish implements AutoCloseable {
          throw new CleanBatfishException(
                "No task performed! Run with -help flag to see usage\n");
       }
+      return answer;
    }
 
-   private void runNxtnet(String nxtnetInputFile, String nxtnetOutputDir) {
+   private Answer runNxtnet(String nxtnetInputFile, String nxtnetOutputDir) {
+      Answer answer = new Answer();
       _logger.info("\n*** RUNNING NXTNET ***\n");
       resetTimer();
       File logicDir = retrieveLogicDir();
@@ -3542,9 +3586,11 @@ public class Batfish implements AutoCloseable {
          }
       }
       printElapsedTime();
+      return answer;
    }
 
-   private void serializeAwsVpcConfigs(String testRigPath, String outputPath) {
+   private Answer serializeAwsVpcConfigs(String testRigPath, String outputPath) {
+      Answer answer = new Answer();
       Map<File, String> configurationData = readConfigurationFiles(testRigPath,
             BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
       AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
@@ -3561,6 +3607,7 @@ public class Batfish implements AutoCloseable {
          _logger.debug("OK\n");
       }
       printElapsedTime();
+      return answer;
    }
 
    private void serializeIndependentConfigs(
@@ -3585,16 +3632,26 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void serializeIndependentConfigs(String vendorConfigPath,
+   private Answer serializeIndependentConfigs(String vendorConfigPath,
          String outputPath) {
-      Map<String, Configuration> configurations = getConfigurations(vendorConfigPath);
+      Answer answer = new Answer();
+      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+      answer.addAnswerElement(answerElement);
+      Map<String, Configuration> configurations = getConfigurations(
+            vendorConfigPath, answerElement);
       serializeIndependentConfigs(configurations, outputPath);
+      serializeObject(answerElement, new File(_settings.getConvertAnswerPath()));
+      return answer;
    }
 
-   private void serializeNetworkConfigs(String testRigPath, String outputPath) {
+   private Answer serializeNetworkConfigs(String testRigPath, String outputPath) {
+      Answer answer = new Answer();
       Map<File, String> configurationData = readConfigurationFiles(testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
-      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(configurationData);
+      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answer.addAnswerElement(answerElement);
+      Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
+            configurationData, answerElement);
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors");
       }
@@ -3632,8 +3689,13 @@ public class Batfish implements AutoCloseable {
             serializeObject(vc, currentOutputPath.toFile());
             _logger.debug("OK\n");
          }
+         // serialize warnings
+         serializeObject(answerElement,
+               new File(_settings.getParseAnswerPath()));
          printElapsedTime();
+
       }
+      return answer;
    }
 
    private void serializeObject(Object object, File outputFile) {
@@ -3658,15 +3720,15 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void serializeVendorConfigs(String testRigPath, String outputPath) {
-
+   private Answer serializeVendorConfigs(String testRigPath, String outputPath) {
+      Answer answer = new Answer();
       boolean configsFound = false;
 
       // look for network configs
       File networkConfigsPath = Paths.get(testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile();
       if (networkConfigsPath.exists()) {
-         serializeNetworkConfigs(testRigPath, outputPath);
+         answer.append(serializeNetworkConfigs(testRigPath, outputPath));
          configsFound = true;
       }
 
@@ -3674,13 +3736,14 @@ public class Batfish implements AutoCloseable {
       File awsVpcConfigsPath = Paths.get(testRigPath,
             BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile();
       if (awsVpcConfigsPath.exists()) {
-         serializeAwsVpcConfigs(testRigPath, outputPath);
+         answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
          configsFound = true;
       }
 
       if (!configsFound) {
          throw new BatfishException("No valid configurations found");
       }
+      return answer;
    }
 
    public void SetTerminatedWithException(boolean terminatedWithException) {

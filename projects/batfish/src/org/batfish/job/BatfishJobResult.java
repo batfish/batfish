@@ -1,8 +1,9 @@
 package org.batfish.job;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.answers.AnswerElement;
 
-public abstract class BatfishJobResult<Output> {
+public abstract class BatfishJobResult<Output, AE extends AnswerElement> {
 
    private final long _elapsedTime;
 
@@ -17,7 +18,8 @@ public abstract class BatfishJobResult<Output> {
       _failureCause = failureCause;
    }
 
-   public abstract void applyTo(Output output, BatfishLogger logger);
+   public abstract void applyTo(Output output, BatfishLogger logger,
+         AE answerElement);
 
    public abstract void explainFailure(BatfishLogger logger);
 

@@ -67,11 +67,13 @@ public class Client {
 	private static final String COMMAND_PROMPT = "prompt";
 	private static final String COMMAND_PWD = "pwd";
 	private static final String COMMAND_QUIT = "quit";
+   private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
 	private static final String COMMAND_SET_CONTAINER = "set-container";
 	private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
 	private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
 	private static final String COMMAND_SET_TESTRIG = "set-testrig";
 	private static final String COMMAND_SHOW_API_KEY = "show-api-key";
+   private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
 	private static final String COMMAND_SHOW_CONTAINER = "show-container";
 	private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
    private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
@@ -149,24 +151,29 @@ public class Client {
 		descs.put(COMMAND_PWD, COMMAND_PWD + "\n"
 				+ "\t Prints the working directory");
 		descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Terminate interactive client session");
+      descs.put(COMMAND_SET_BATFISH_LOGLEVEL, COMMAND_SET_BATFISH_LOGLEVEL
+            + " <debug|info|output|warn|error>\n"
+            + "\t Set the batfish loglevel. Default is warn");
 		descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
 				+ " <container-name>\n" + "\t Set the current container");
 		descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
 				+ " <environment-name>\n"
 				+ "\t Set the current differential environment");
-		descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
-				+ " <debug|info|output|warn|error>\n"
-				+ "\t Set the loglevel. Default is output");
+      descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
+            + " <debug|info|output|warn|error>\n"
+            + "\t Set the client loglevel. Default is output");
 		descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
 				+ "\t Set the current testrig");
 		descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n" 
 				+ "\t Show API Key");
+      descs.put(COMMAND_SHOW_BATFISH_LOGLEVEL, COMMAND_SHOW_BATFISH_LOGLEVEL + "\n" 
+            + "\t Show current batfish loglevel");
 		descs.put(COMMAND_SHOW_CONTAINER, COMMAND_SHOW_CONTAINER + "\n" 
 				+ "\t Show active container");
 		descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
 				+ "\t Show coordinator host");
       descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n" 
-            + "\t Show current loglevel");
+            + "\t Show current client loglevel");
 		descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
 				+ "\t Show active testrig");
 		descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
@@ -304,7 +311,7 @@ public class Client {
 
 	private boolean execute(WorkItem wItem) throws Exception {
 
-		wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _logger.getLogLevelStr());
+		wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
 		_logger.info("work-id is " + wItem.getId() + "\n");
 
 		boolean queueWorkResult = _workHelper.queueWork(wItem);
@@ -350,23 +357,22 @@ public class Client {
          }
       }
 
-      if (_logger.getLogLevel() > BatfishLogger.LEVEL_OUTPUT) {
-         // get the results
-         String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-         String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
-               wItem.getTestrigName(), logFileName);
+      // get the log
+      _logger.output("---------------- Log output --------------\n");
+      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
+      String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+            wItem.getTestrigName(), logFileName);
 
-         if (downloadedFile == null) {
-            _logger.errorf("Failed to get output file %s\n", logFileName);
-            return false;
-         }
-         else {
-            try (BufferedReader br = new BufferedReader(new FileReader(
-                  downloadedFile))) {
-               String line = null;
-               while ((line = br.readLine()) != null) {
-                  _logger.output(line + "\n");
-               }
+      if (downloadedFile == null) {
+         _logger.errorf("Failed to get log file %s\n", logFileName);
+         return false;
+      }
+      else {
+         try (BufferedReader br = new BufferedReader(new FileReader(
+               downloadedFile))) {
+            String line = null;
+            while ((line = br.readLine()) != null) {
+               _logger.output(line + "\n");
             }
          }
       }
@@ -843,6 +849,16 @@ public class Client {
 				_logger.output("working directory = " + dir + "\n");
 				return true;
 			}
+         case COMMAND_SET_BATFISH_LOGLEVEL: {
+            String logLevelStr = parameters.get(0).toLowerCase();
+            if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
+               _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
+               return false;              
+            }
+            _settings.setBatfishLogLevel(logLevelStr);
+            _logger.output("Changed batfish loglevel to " + logLevelStr + "\n");
+            return true;
+         }
 			case COMMAND_SET_CONTAINER: {
 				_currContainerName = parameters.get(0);
 				_logger.outputf("Active container is now set to %s\n",
@@ -857,15 +873,13 @@ public class Client {
 				return true;
 			}
 			case COMMAND_SET_LOGLEVEL: {
-				String logLevelStr = parameters.get(0);
-				try {
-					_logger.setLogLevel(logLevelStr);
-					_logger.output("Changed loglevel to " + logLevelStr + "\n");
+				String logLevelStr = parameters.get(0).toLowerCase();
+				if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
+               _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
+               return false;				   
 				}
-				catch (Exception e) {
-					_logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
-					return false;
-				}
+				_logger.setLogLevel(logLevelStr);
+				_logger.output("Changed client loglevel to " + logLevelStr + "\n");
 				return true;
 			}
          case COMMAND_SET_TESTRIG: {
@@ -879,6 +893,10 @@ public class Client {
 				_logger.outputf("Current API Key is %s\n", _settings.getApiKey());
 				return true;
 			}
+         case COMMAND_SHOW_BATFISH_LOGLEVEL: {        
+            _logger.outputf("Current batfish log level is %s\n", _settings.getBatfishLogLevel());
+            return true;
+         }
 			case COMMAND_SHOW_CONTAINER: {
 				_logger.outputf("Current container is %s\n", _currContainerName);
 				return true;
@@ -887,10 +905,10 @@ public class Client {
 				_logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
 				return true;
 			}
-			case COMMAND_SHOW_LOGLEVEL: {		   
-			   _logger.outputf("Current log level is %s\n", _logger.getLogLevelStr());
-			   return true;
-			}
+         case COMMAND_SHOW_LOGLEVEL: {        
+            _logger.outputf("Current client log level is %s\n", _logger.getLogLevelStr());
+            return true;
+         }
 			case COMMAND_SHOW_TESTRIG: {
 				_logger.outputf("Current testrig is %s\n", _currTestrigName);
 				return true;

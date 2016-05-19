@@ -28,9 +28,11 @@ public enum QuestionType {
    ROUTES("routes"),
    SELF_ADJACENCIES("selfadjacencies"),
    TRACEROUTE("traceroute"),
+   UNDEFINED_REFERENCES("undefinedreferences"),
    UNIQUE_BGP_PREFIX_ORIGINATION("uniquebgpprefixorigination"),
-   UNIQUE_IP_ASSIGNMENTS("uniqueipassignments");
-   
+   UNIQUE_IP_ASSIGNMENTS("uniqueipassignments"),
+   UNUSED_STRUCTURES("unusedstructures");
+
    private final static Map<String, QuestionType> _map = buildMap();
 
    private static Map<String, QuestionType> buildMap() {
@@ -46,7 +48,8 @@ public enum QuestionType {
    public static QuestionType fromName(String name) {
       QuestionType instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("Not a valid QuestionType: \"" + name + "\"");
+         throw new BatfishException("Not a valid QuestionType: \"" + name
+               + "\"");
       }
       return instance;
    }

@@ -4,9 +4,11 @@ import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.GraphvizAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public final class GraphvizResult extends BatfishJobResult<Map<String, byte[]>> {
+public final class GraphvizResult extends
+      BatfishJobResult<Map<String, byte[]>, GraphvizAnswerElement> {
 
    private final byte[] _graphBytes;
 
@@ -47,7 +49,8 @@ public final class GraphvizResult extends BatfishJobResult<Map<String, byte[]>> 
    }
 
    @Override
-   public void applyTo(Map<String, byte[]> output, BatfishLogger logger) {
+   public void applyTo(Map<String, byte[]> output, BatfishLogger logger,
+         GraphvizAnswerElement answerElement) {
       output.put(_graphFile, _graphBytes);
       output.put(_svgFile, _svgBytes);
       output.put(_htmlFile, _htmlBytes);

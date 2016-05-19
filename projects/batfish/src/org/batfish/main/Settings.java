@@ -321,6 +321,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _canExecute;
 
+   private String _convertAnswerPath;
+
    private String _coordinatorHost;
 
    private int _coordinatorPoolPort;
@@ -400,6 +402,8 @@ public final class Settings extends BaseSettings {
    private boolean _nxtnetTraffic;
 
    private String _outputEnvironmentName;
+
+   private String _parseAnswerPath;
 
    private boolean _pedanticAsError;
 
@@ -558,6 +562,10 @@ public final class Settings extends BaseSettings {
       return _buildPredicateInfo;
    }
 
+   public String getConvertAnswerPath() {
+      return _convertAnswerPath;
+   }
+
    public String getCoordinatorHost() {
       return _coordinatorHost;
    }
@@ -712,6 +720,10 @@ public final class Settings extends BaseSettings {
 
    public String getOutputEnvironmentName() {
       return _outputEnvironmentName;
+   }
+
+   public String getParseAnswerPath() {
+      return _parseAnswerPath;
    }
 
    public boolean getPedanticAsError() {
@@ -1376,6 +1388,10 @@ public final class Settings extends BaseSettings {
       _activeEnvironmentSettings = envSettings;
    }
 
+   public void setConvertAnswerPath(String convertAnswerPath) {
+      _convertAnswerPath = convertAnswerPath;
+   }
+
    public void setDiffActive(boolean diffActive) {
       _diffActive = diffActive;
    }
@@ -1422,6 +1438,10 @@ public final class Settings extends BaseSettings {
 
    public void setNxtnetTraffic(boolean postFlows) {
       _nxtnetTraffic = postFlows;
+   }
+
+   public void setParseAnswerPath(String parseAnswerPath) {
+      _parseAnswerPath = parseAnswerPath;
    }
 
    public void setProtocolDependencyGraphPath(String protocolDependencyGraphPath) {

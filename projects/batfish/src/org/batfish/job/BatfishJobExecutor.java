@@ -12,9 +12,10 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Settings;
 
-public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult extends BatfishJobResult<Output>, Output> {
+public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends AnswerElement, JobResult extends BatfishJobResult<Output, AE>, Output> {
 
    private static final long JOB_POLLING_PERIOD_MS = 1000l;
 
@@ -27,7 +28,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
       _logger = logger;
    }
 
-   public Output executeJobs(List<Job> jobs, Output output) {
+   public void executeJobs(List<Job> jobs, Output output, AE answerElement) {
       ExecutorService pool;
       boolean shuffle;
       if (!_settings.getSequential()) {
@@ -71,7 +72,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
                String time = CommonUtil.getTime(result.getElapsedTime());
                Throwable failureCause = result.getFailureCause();
                if (failureCause == null) {
-                  result.applyTo(output, _logger);
+                  result.applyTo(output, _logger, answerElement);
                   _logger
                         .infof(
                               "Job terminated successfully with result: %s after elapsed time: %s - %d/%d (%.1f%%) complete\n",
@@ -115,7 +116,6 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, JobResult ext
          if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
             _logger.info("All jobs executed successfully\n");
          }
-         return output;
       }
 
    }
