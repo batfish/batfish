@@ -113,16 +113,26 @@ FlowNullRouted(flow, node) ->
    Flow(flow),
    Node(node).
 
-FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, icmpType, icmpCode, tcpFlags, tag] = flow ->
+FlowOriginate[node, srcIp, dstIp, srcPort, dstPort, protocol, icmpType, icmpCode, state, tcpFlagsCWR, tcpFlagsECE, tcpFlagsURG, tcpFlagsACK, tcpFlagsPSH, tcpFlagsRST, tcpFlagsSYN, tcpFlagsFIN, tag] = flow ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
    int(srcPort),
    int(dstPort),
    IpProtocol(protocol),
+   int(dscp),
+   int(ecn),
    int(icmpType),
    int(icmpCode),
-   int(tcpFlags),
+   int(state),
+   int(tcpFlagsCWR),
+   int(tcpFlagsECE),
+   int(tcpFlagsURG),
+   int(tcpFlagsACK),
+   int(tcpFlagsPSH),
+   int(tcpFlagsRST),
+   int(tcpFlagsSYN),
+   int(tcpFlagsFIN),
    FlowTag(tag),
    Flow(flow).
 
@@ -332,7 +342,7 @@ FlowSameHeader(flow1, flow2) ->
    Flow(flow1),
    Flow(flow2).
 
-SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, dscp, ecn, icmpType, icmpCode, tcpFlagsCWR, tcpFlagsECE, tcpFlagsURG, tcpFlagsACK, tcpFlagsPSH, tcpFlagsRST, tcpFlagsSYN, tcpFlagsFIN, tag) ->
+SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, dscp, ecn, icmpType, icmpCode, state, tcpFlagsCWR, tcpFlagsECE, tcpFlagsURG, tcpFlagsACK, tcpFlagsPSH, tcpFlagsRST, tcpFlagsSYN, tcpFlagsFIN, tag) ->
    Node(node),
    Ip(srcIp),
    Ip(dstIp),
@@ -343,6 +353,7 @@ SetFlowOriginate(node, srcIp, dstIp, srcPort, dstPort, protocol, dscp, ecn, icmp
    int(ecn),
    int(icmpType),
    int(icmpCode),
+   int(state),
    int(tcpFlagsCWR),
    int(tcpFlagsECE),
    int(tcpFlagsURG),

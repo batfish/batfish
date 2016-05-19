@@ -32,6 +32,7 @@ public class Facts {
       map.put("SetIpAccessListLine_ecn", "LIST|LINE|ECN");
       map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
       map.put("SetIpAccessListLine_icmpType", "LIST|LINE|ICMPTYPE");
+      map.put("SetIpAccessListLine_state", "LIST|LINE|STATE");
       map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|ALTERNATIVE");
       map.put("SetIpAccessListLine_tcpFlagsCWR", "LIST|LINE|ALTERNATIVE|BIT");
       map.put("SetIpAccessListLine_tcpFlagsECE", "LIST|LINE|ALTERNATIVE|BIT");

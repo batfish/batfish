@@ -7,6 +7,7 @@ import java.util.Set;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 
@@ -40,6 +41,8 @@ public class ExtendedAccessListLine implements Serializable {
 
    private final List<SubRange> _srcPortRanges;
 
+   private Set<State> _states;
+
    private final List<TcpFlags> _tcpFlags;
 
    public ExtendedAccessListLine(String name, LineAction action,
@@ -47,7 +50,7 @@ public class ExtendedAccessListLine implements Serializable {
          IpWildcard dstIpWildcard, String dstAddressGroup,
          List<SubRange> srcPortRanges, List<SubRange> dstPortRanges,
          Set<Integer> dscps, Set<Integer> ecns, Integer icmpType,
-         Integer icmpCode, List<TcpFlags> tcpFlags) {
+         Integer icmpCode, Set<State> states, List<TcpFlags> tcpFlags) {
       _name = name;
       _action = action;
       _protocol = protocol;
@@ -61,6 +64,7 @@ public class ExtendedAccessListLine implements Serializable {
       _dstPortRanges = dstPortRanges;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
+      _states = states;
       _tcpFlags = tcpFlags;
    }
 
@@ -114,6 +118,10 @@ public class ExtendedAccessListLine implements Serializable {
 
    public List<SubRange> getSrcPortRanges() {
       return _srcPortRanges;
+   }
+
+   public Set<State> getStates() {
+      return _states;
    }
 
    public List<TcpFlags> getTcpFlags() {

@@ -60,6 +60,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -566,6 +567,8 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_srcOrDstPortRange");
       StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
             .get("SetIpAccessListLine_srcPortRange");
+      StringBuilder wSetIpAccessListLine_state = _factBins
+            .get("SetIpAccessListLine_state");
       StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
             .get("SetIpAccessListLine_tcpFlags");
       StringBuilder wSetIpAccessListLine_tcpFlagsCWR = _factBins
@@ -659,6 +662,11 @@ public class ConfigurationFactExtractor {
                long endPort = srcPortRange.getEnd();
                wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
+            }
+            for (State state : line.getStates()) {
+               long stateNum = state.number();
+               wSetIpAccessListLine_state.append(name + "|" + i + "|"
+                     + stateNum + "\n");
             }
             for (int alt = 0; alt < line.getTcpFlags().size(); alt++) {
                TcpFlags tcpFlags = line.getTcpFlags().get(alt);

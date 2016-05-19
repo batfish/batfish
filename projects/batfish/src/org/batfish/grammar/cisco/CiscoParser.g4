@@ -134,8 +134,7 @@ cmm_access_group
       (
          NAME name = variable
       )
-   )
-   NEWLINE
+   ) NEWLINE
 ;
 
 cmm_cos
@@ -150,7 +149,7 @@ cmm_default_inspection_traffic
 
 cmm_dscp
 :
-   IP? DSCP 
+   IP? DSCP
    (
       dscp_types += dscp_type
    )+ NEWLINE
@@ -172,8 +171,7 @@ cmm_port
    (
       TCP
       | UDP
-   )
-   port_specifier NEWLINE
+   ) port_specifier NEWLINE
 ;
 
 cmm_qos_group
@@ -184,6 +182,9 @@ cmm_qos_group
 cp_ip_access_group
 :
    IP ACCESS_GROUP name = variable
+   (
+      VRF vrf = variable
+   )?
    (
       IN
       | OUT
@@ -202,6 +203,14 @@ cp_ip_flow
 cp_management_plane
 :
    MANAGEMENT_PLANE NEWLINE mgp_stanza*
+;
+
+cp_null
+:
+   NO?
+   (
+      EXIT
+   ) ~NEWLINE* NEWLINE
 ;
 
 cp_service_policy
@@ -377,7 +386,9 @@ mgmt_null
 :
    NO?
    (
-      IDLE_TIMEOUT
+      AUTHENTICATION
+      | EXIT
+      | IDLE_TIMEOUT
       | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
@@ -925,12 +936,11 @@ router_multicast_tail
 
 s_class_map
 :
-   CLASS_MAP 
+   CLASS_MAP
    (
-      MATCH_ALL 
+      MATCH_ALL
       | MATCH_ANY
-   )?
-   name = variable NEWLINE s_class_map_tail*
+   )? name = variable NEWLINE s_class_map_tail*
 ;
 
 s_class_map_tail
@@ -949,6 +959,7 @@ s_control_plane_tail
    cp_ip_access_group
    | cp_ip_flow
    | cp_management_plane
+   | cp_null
    | cp_service_policy
 ;
 

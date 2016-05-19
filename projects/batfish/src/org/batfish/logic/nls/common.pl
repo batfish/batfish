@@ -1,89 +1,99 @@
-function_sig('Network_end', 2).
-function_sig('BgpAdvertisement_nextHopIp', 2).
-function_sig('BgpNeighborGeneratedRoute_constructor', 4).
-function_sig('Flow_tag', 2).
 function_sig('AdministrativeDistance', 3).
-function_sig('FlowOriginate', 20).
-function_sig('RouteFilterFirstMatch', 3).
-function_sig('MaxLocalPref', 3).
-function_sig('Flow_srcIp', 2).
-function_sig('Route_node', 2).
-function_sig('OspfE2Route_constructor', 6).
-function_sig('GeneratedRoute_type', 2).
-function_sig('Flow_ipProtocol', 2).
-function_sig('Route_protocol', 2).
-function_sig('InstalledBgpAdvertisementRoute', 2).
-function_sig('RouteDetails_nextHopIp', 2).
-function_sig('MinContributingRouteAddress', 2).
-function_sig('PolicyMapFirstMatchFlow', 3).
-function_sig('MinOspfRouteCost', 3).
-function_sig('Route_constructor', 5).
-function_sig('Route_network', 2).
-function_sig('MinOspfE2RouteCostToAdvertiser', 3).
-function_sig('OspfRoute_advertiser', 2).
-function_sig('MinAsPathSize', 3).
 function_sig('AdvertisementPathSize', 2).
-function_sig('Network_constructor', 4).
-function_sig('LongestPrefixNetworkMatchPrefixLength', 3).
-function_sig('Route_cost', 2).
-function_sig('BgpAdvertisement_srcNode', 2).
-function_sig('BgpAdvertisement_localPref', 2).
-function_sig('RouteDetails_tag', 2).
-function_sig('Flow_srcPort', 2).
-function_sig('OspfRoute_advertiserIp', 2).
-function_sig('MinOspfE1RouteCost', 3).
-function_sig('MinBestGlobalGeneratedRoute_nextHopIpInt', 2).
-function_sig('Flow_dstPort', 2).
-function_sig('Flow_icmpCode', 2).
-function_sig('Flow_icmpType', 2).
-function_sig('Flow_tcpFlags', 2).
-function_sig('Network_address', 2).
-function_sig('OspfRoute_costToAdvertiser', 2).
-function_sig('PolicyMapFirstMatchAdvert', 3).
-function_sig('IpAccessListFirstMatch', 3).
-function_sig('Route_admin', 2).
-function_sig('InterfaceRoute_nextHopInt', 2).
-function_sig('RouteDetails_admin', 2).
-function_sig('MinIsisL2RouteCost', 3).
-function_sig('InterfaceRoute_constructor', 5).
-function_sig('SetIsisInterfaceCost', 3).
-function_sig('GeneratedRoute_constructor', 4).
-function_sig('BgpNeighborGeneratedRoute_neighborIp', 2).
-function_sig('MinIsisL1RouteCost', 3).
-function_sig('Flow_node', 2).
-function_sig('SetOspfInterfaceCost', 3).
-function_sig('IpCount', 2).
-function_sig('VlanNumber', 2).
-function_sig('BgpAdvertisement_originatorIp', 2).
-function_sig('PolicyMapFirstMatchRoute', 3).
-function_sig('RouteDetails_nextHopInt', 2).
-function_sig('Flow_dstIp', 2).
-function_sig('Route_tag', 2).
-function_sig('MinCost', 3).
-function_sig('CommunityListFirstMatch', 3).
-function_sig('Network_prefix_length', 2).
-function_sig('RouteDetails_cost', 2).
+function_sig('AsPathFirstMatchAdvert', 3).
+function_sig('BgpAdvertisement_constructor', 12).
 function_sig('BgpAdvertisement_dstIp', 2).
 function_sig('BgpAdvertisement_dstNode', 2).
-function_sig('BgpAdvertisement_network', 2).
-function_sig('NetworkOf', 3).
-function_sig('AsPathFirstMatchAdvert', 3).
-function_sig('BgpAdvertisement_srcProtocol', 2).
-function_sig('BgpAdvertisementRoute', 2).
-function_sig('BgpAdvertisement_type', 2).
-function_sig('MinOspfIARouteCost', 3).
-function_sig('BgpAdvertisement_originType', 2).
+function_sig('BgpAdvertisement_localPref', 2).
 function_sig('BgpAdvertisement_med', 2).
-function_sig('SetLinkLoadLimitOut', 3).
-function_sig('OspfE1Route_constructor', 5).
-function_sig('MinAdmin', 3).
-function_sig('Route_nextHopIp', 2).
-function_sig('SetLinkLoadLimitIn', 3).
-function_sig('BgpAdvertisement_constructor', 12).
-function_sig('MinContributingRouteAdmin', 2).
+function_sig('BgpAdvertisement_network', 2).
+function_sig('BgpAdvertisement_nextHopIp', 2).
+function_sig('BgpAdvertisement_originatorIp', 2).
+function_sig('BgpAdvertisement_originType', 2).
+function_sig('BgpAdvertisementRoute', 2).
 function_sig('BgpAdvertisement_srcIp', 2).
-function_sig('RouteDetails_nextHop', 2).
+function_sig('BgpAdvertisement_srcNode', 2).
+function_sig('BgpAdvertisement_srcProtocol', 2).
+function_sig('BgpAdvertisement_type', 2).
+function_sig('BgpNeighborGeneratedRoute_constructor', 4).
+function_sig('BgpNeighborGeneratedRoute_neighborIp', 2).
+function_sig('CommunityListFirstMatch', 3).
+function_sig('Flow_dscp', 2).
+function_sig('Flow_dstIp', 2).
+function_sig('Flow_dstPort', 2).
+function_sig('Flow_ecn', 2).
+function_sig('Flow_icmpCode', 2).
+function_sig('Flow_icmpType', 2).
+function_sig('Flow_ipProtocol', 2).
+function_sig('Flow_node', 2).
+function_sig('FlowOriginate', 20).
+function_sig('Flow_srcIp', 2).
+function_sig('Flow_srcPort', 2).
+function_sig('Flow_state', 2).
+function_sig('Flow_tag', 2).
+function_sig('Flow_tcpFlagsACK', 2).
+function_sig('Flow_tcpFlagsCWR', 2).
+function_sig('Flow_tcpFlagsECE', 2).
+function_sig('Flow_tcpFlagsFIN', 2).
+function_sig('Flow_tcpFlagsPSH', 2).
+function_sig('Flow_tcpFlagsRST', 2).
+function_sig('Flow_tcpFlagsSYN', 2).
+function_sig('Flow_tcpFlagsURG', 2).
+function_sig('GeneratedRoute_constructor', 4).
+function_sig('GeneratedRoute_type', 2).
+function_sig('InstalledBgpAdvertisementRoute', 2).
+function_sig('InterfaceRoute_constructor', 5).
+function_sig('InterfaceRoute_nextHopInt', 2).
+function_sig('IpAccessListFirstMatch', 3).
+function_sig('IpCount', 2).
+function_sig('LongestPrefixNetworkMatchPrefixLength', 3).
+function_sig('MaxLocalPref', 3).
+function_sig('MinAdmin', 3).
+function_sig('MinAsPathSize', 3).
+function_sig('MinBestGlobalGeneratedRoute_nextHopIpInt', 2).
+function_sig('MinContributingRouteAddress', 2).
+function_sig('MinContributingRouteAdmin', 2).
+function_sig('MinCost', 3).
+function_sig('MinIsisL1RouteCost', 3).
+function_sig('MinIsisL2RouteCost', 3).
+function_sig('MinOspfE1RouteCost', 3).
+function_sig('MinOspfE2RouteCostToAdvertiser', 3).
+function_sig('MinOspfIARouteCost', 3).
+function_sig('MinOspfRouteCost', 3).
+function_sig('Network_address', 2).
+function_sig('Network_constructor', 4).
+function_sig('Network_end', 2).
+function_sig('NetworkOf', 3).
+function_sig('Network_prefix_length', 2).
+function_sig('OspfE1Route_constructor', 5).
+function_sig('OspfE2Route_constructor', 6).
+function_sig('OspfRoute_advertiser', 2).
+function_sig('OspfRoute_advertiserIp', 2).
+function_sig('OspfRoute_costToAdvertiser', 2).
+function_sig('PolicyMapFirstMatchAdvert', 3).
+function_sig('PolicyMapFirstMatchFlow', 3).
+function_sig('PolicyMapFirstMatchRoute', 3).
 function_sig('PrecomputedAdvertisement_index', 2).
+function_sig('Route_admin', 2).
+function_sig('Route_constructor', 5).
+function_sig('Route_cost', 2).
+function_sig('RouteDetails_admin', 2).
+function_sig('RouteDetails_cost', 2).
+function_sig('RouteDetails_nextHop', 2).
+function_sig('RouteDetails_nextHopInt', 2).
+function_sig('RouteDetails_nextHopIp', 2).
+function_sig('RouteDetails_tag', 2).
+function_sig('RouteFilterFirstMatch', 3).
+function_sig('Route_network', 2).
+function_sig('Route_nextHopIp', 2).
+function_sig('Route_node', 2).
+function_sig('Route_protocol', 2).
+function_sig('Route_tag', 2).
+function_sig('SetIsisInterfaceCost', 3).
+function_sig('SetLinkLoadLimitIn', 3).
+function_sig('SetLinkLoadLimitOut', 3).
+function_sig('SetOspfInterfaceCost', 3).
+function_sig('VlanNumber', 2).
 
 'AsPathDenyAdvert'(AsPath, Advert) :-
    'AsPathFirstMatchAdvert'(AsPath, Advert, Line),
@@ -1780,6 +1790,7 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'IpAccessListMatchSrcOrDstIp'(List, Line, Flow),
    'IpAccessListMatchSrcOrDstPort'(List, Line, Flow),
    'IpAccessListMatchSrcPort'(List, Line, Flow),
+   'IpAccessListMatchState'(List, Line, Flow),
    'IpAccessListMatchTcpFlags'(List, Line, Flow).
 
 'IpAccessListMatchDscp'(List, Line, Flow) :-
@@ -1910,6 +1921,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
          SrcPort_start =< SrcPort,
          SrcPort =< SrcPort_end
       )
+   ).
+
+'IpAccessListMatchState'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_state'(Flow, State),
+   (
+      \+ 'SetIpAccessListLine_state'(List, Line, _) ;
+      'SetIpAccessListLine_state'(List, Line, State)
    ).
 
 'IpAccessListMatchTcpFlags'(List, Line, Flow) :-
@@ -3394,7 +3413,7 @@ net_ips(MatchNet, Ip) :-
 'Ip'(SrcIp),
 'Ip'(DstIp)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
 
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
@@ -3709,7 +3728,7 @@ net_ips(MatchNet, Ip) :-
    'FibDrop'(Node, DstIp),
    \+ 'FibNeighborUnreachable'(Node, DstIp, _).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
@@ -3721,6 +3740,7 @@ net_ips(MatchNet, Ip) :-
 'Flow_node'(Flow, Node),
 'Flow_srcIp'(Flow, SrcIp),
 'Flow_srcPort'(Flow, SrcPort),
+'Flow_state'(Flow, State),
 'Flow_tcpFlagsCWR'(Flow, CWR),
 'Flow_tcpFlagsECE'(Flow, ECE),
 'Flow_tcpFlagsURG'(Flow, URG),
@@ -3731,9 +3751,9 @@ net_ips(MatchNet, Ip) :-
 'Flow_tcpFlagsFIN'(Flow, FIN),
 'Flow_tag'(Flow, Tag)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
@@ -3745,6 +3765,7 @@ net_ips(MatchNet, Ip) :-
 'Flow_node'(Flow, Node),
 'Flow_srcIp'(Flow, SrcIp),
 'Flow_srcPort'(Flow, SrcPort),
+'Flow_state'(Flow, State),
 'Flow_tcpFlagsCWR'(Flow, CWR),
 'Flow_tcpFlagsECE'(Flow, ECE),
 'Flow_tcpFlagsURG'(Flow, URG),
@@ -3756,7 +3777,7 @@ net_ips(MatchNet, Ip) :-
 'Flow_tag'(Flow, Tag)
 :-
    'DuplicateRoleFlows'(_),
-   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
+   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
    'SetNodeRole'(AcceptNode, Role),
    'SetNodeRole'(Node, Role).
 
@@ -4058,6 +4079,6 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    'FlowSameHeader'(Flow, SimilarFlow).
 
 'FlowSameHeader'(Flow1, Flow2) :-
-   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
-   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
+   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
+   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
    Node1 \== Node2.
