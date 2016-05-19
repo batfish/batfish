@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.questions.Question;
 
 public class Answer {
@@ -14,13 +15,27 @@ public class Answer {
       return answer;
    }
 
-   private Question _question;
-   private AnswerStatus _status;
-
    protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
+   private Question _question;
+
+   private AnswerStatus _status;
 
    public void addAnswerElement(AnswerElement answerElement) {
       _answerElements.add(answerElement);
+   }
+
+   public void append(Answer answer) {
+      if (answer._question != null) {
+         _question = answer._question;
+      }
+      _answerElements.addAll(answer._answerElements);
+      _status = answer._status;
+      for (AnswerElement answerElement : answer._answerElements) {
+         if (answerElement instanceof BatfishException) {
+            BatfishException e = (BatfishException) answerElement;
+            throw e;
+         }
+      }
    }
 
    public List<AnswerElement> getAnswerElements() {

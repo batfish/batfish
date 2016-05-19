@@ -5,10 +5,13 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
-public class ConvertConfigurationResult extends
-      BatfishJobResult<Map<String, Configuration>> {
+public class ConvertConfigurationResult
+      extends
+      BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
 
    private Map<String, Configuration> _configurations;
 
@@ -16,20 +19,23 @@ public class ConvertConfigurationResult extends
 
    private String _name;
 
-   public ConvertConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, String name,
-         Map<String, Configuration> configurations) {
-      super(elapsedTime);
-      _history = history;
-      _name = name;
-      _configurations = configurations;
-   }
+   private Warnings _warnings;
 
    public ConvertConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, String name, Throwable failureCause) {
       super(elapsedTime, failureCause);
       _history = history;
       _name = name;
+   }
+
+   public ConvertConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, Warnings warnings, String name,
+         Map<String, Configuration> configurations) {
+      super(elapsedTime);
+      _history = history;
+      _name = name;
+      _warnings = warnings;
+      _configurations = configurations;
    }
 
    private void appendHistory(BatfishLogger logger) {
@@ -45,7 +51,7 @@ public class ConvertConfigurationResult extends
 
    @Override
    public void applyTo(Map<String, Configuration> configurations,
-         BatfishLogger logger) {
+         BatfishLogger logger, ConvertConfigurationAnswerElement answerElement) {
       appendHistory(logger);
       if (_configurations != null) {
          for (String hostname : _configurations.keySet()) {
@@ -55,6 +61,9 @@ public class ConvertConfigurationResult extends
             }
             else {
                configurations.put(hostname, config);
+               if (!_warnings.isEmpty()) {
+                  answerElement.getWarnings().put(hostname, _warnings);
+               }
             }
          }
       }

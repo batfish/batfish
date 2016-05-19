@@ -16,12 +16,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Util;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
@@ -235,7 +238,7 @@ public class Driver {
    }
 
    @SuppressWarnings("deprecation")
-   private static boolean RunBatfish(Settings settings) {
+   private static boolean RunBatfish(final Settings settings) {
 
       final BatfishLogger logger = settings.getLogger();
 
@@ -245,18 +248,33 @@ public class Driver {
          Thread thread = new Thread() {
             @Override
             public void run() {
+               Answer answer = null;
                try {
-                  batfish.run();
+                  answer = batfish.run();
                   batfish.SetTerminatedWithException(false);
+                  if (answer.getStatus() == null) {
+                     answer.setStatus(AnswerStatus.SUCCESS);
+                  }
                }
                catch (CleanBatfishException e) {
                   batfish.SetTerminatedWithException(true);
-                  logger.error("FATAL ERROR: " + e.getMessage());
+                  String msg = "FATAL ERROR: " + e.getMessage();
+                  logger.error(msg);
+                  answer = Answer.failureAnswer(msg);
                }
                catch (Exception e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(new BatfishException(
+                        "Batfish job failed", e));
                   batfish.SetTerminatedWithException(true);
+               }
+               finally {
+                  if (settings.getAnswerJsonPath() != null) {
+                     batfish.outputAnswer(answer);
+                  }
                }
             }
          };
