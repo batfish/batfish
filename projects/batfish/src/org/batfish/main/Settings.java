@@ -230,6 +230,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_NLS_DEBUG_SYMBOLS = "nlsdebugsymbols";
 
+   private static final String ARG_NLS_DRY = "nlsdry";
+
    private static final String ARG_NO_OUTPUT = "nooutput";
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
@@ -394,6 +396,8 @@ public final class Settings extends BaseSettings {
    private boolean _nlsDataPlane;
 
    private boolean _nlsDebugSymbols;
+
+   private boolean _nlsDry;
 
    private boolean _nlsTraffic;
 
@@ -706,6 +710,10 @@ public final class Settings extends BaseSettings {
       return _nlsDebugSymbols;
    }
 
+   public boolean getNlsDry() {
+      return _nlsDry;
+   }
+
    public boolean getNlsTraffic() {
       return _nlsTraffic;
    }
@@ -956,9 +964,10 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
+      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, false);
+      setDefaultProperty(ARG_NLS_DRY, false);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
-      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
@@ -1120,12 +1129,15 @@ public final class Settings extends BaseSettings {
       addOption(ARG_MAX_RUNTIME_MS,
             "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
+      addBooleanOption(ARG_NLS_DEBUG_SYMBOLS,
+            "compute/display nls debug symbols for querying");
+
+      addBooleanOption(ARG_NLS_DRY,
+            "prepare nls facts only without executing nls");
+
       addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
 
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
-
-      addBooleanOption(ARG_NLS_DEBUG_SYMBOLS,
-            "compute/display nls debug symbols for querying");
 
       addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment",
             ARGNAME_NAME);
@@ -1329,6 +1341,7 @@ public final class Settings extends BaseSettings {
       _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
       _nlsDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NLS_DATA_PLANE);
+      _nlsDry = getBooleanOptionValue(ARG_NLS_DRY);
       _nlsTraffic = getBooleanOptionValue(BfConsts.COMMAND_NLS_TRAFFIC);
       _nlsDebugSymbols = getBooleanOptionValue(ARG_NLS_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
@@ -1430,6 +1443,10 @@ public final class Settings extends BaseSettings {
 
    public void setMaxRuntimeMs(int runtimeMs) {
       _maxRuntimeMs = runtimeMs;
+   }
+
+   public void setNlsDry(boolean nlsDry) {
+      _nlsDry = nlsDry;
    }
 
    public void setNlsTraffic(boolean postFlows) {

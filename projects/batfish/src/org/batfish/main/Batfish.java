@@ -2509,7 +2509,9 @@ public class Batfish implements AutoCloseable {
             envSettings.getNlsDataPlaneInputFile(), envSettings);
       Answer answer = runNls(envSettings.getNlsDataPlaneInputFile(),
             envSettings.getNlsDataPlaneOutputDir());
-      writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
+      if (!_settings.getNlsDry()) {
+         writeRoutes(envSettings.getPrecomputedRoutesPath(), envSettings);
+      }
       return answer;
    }
 
@@ -2523,7 +2525,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private void nlsTraffic(EnvironmentSettings envSettings) {
+   private Answer nlsTraffic(EnvironmentSettings envSettings) {
       writeNlsPrecomputedRoutes(envSettings);
       Map<String, String> inputControlPlaneFacts = readFacts(
             envSettings.getControlPlaneFactsDir(),
@@ -2536,8 +2538,9 @@ public class Batfish implements AutoCloseable {
       inputFacts.putAll(inputFlowFacts);
       writeNlsInput(getNlsTrafficOutputSymbols(), inputFacts,
             envSettings.getNlsTrafficInputFile(), envSettings);
-      runNls(envSettings.getNlsTrafficInputFile(),
+      Answer answer = runNls(envSettings.getNlsTrafficInputFile(),
             envSettings.getNlsTrafficOutputDir());
+      return answer;
    }
 
    void outputAnswer(Answer answer) {
@@ -3553,41 +3556,46 @@ public class Batfish implements AutoCloseable {
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
       _logger.info("Command line: " + cmdLineString + " \n");
-      try {
-         executor.execute(cmdLine);
-      }
-      catch (ExecuteException e) {
-         failure = true;
-      }
-      catch (IOException e) {
-         throw new BatfishException("Unknown error running nls", e);
-      }
-      finally {
-         cleanupLogicDir();
-         byte[] outRaw = outStream.toByteArray();
-         byte[] errRaw = errStream.toByteArray();
-         String out = null;
-         String err = null;
+      if (!_settings.getNlsDry()) {
          try {
-            out = new String(outRaw, "UTF-8");
-            err = new String(errRaw, "UTF-8");
+            executor.execute(cmdLine);
+         }
+         catch (ExecuteException e) {
+            failure = true;
          }
          catch (IOException e) {
-            throw new BatfishException("Error reading nxnet output", e);
+            throw new BatfishException("Unknown error running nls", e);
          }
-         StringBuilder sb = new StringBuilder();
-         if (failure) {
-            sb.append("nls terminated abnormally:\n");
-            sb.append("nls command line: " + cmdLine.toString() + "\n");
-            sb.append(err);
-            throw new BatfishException(sb.toString());
+         finally {
+            cleanupLogicDir();
+            byte[] outRaw = outStream.toByteArray();
+            byte[] errRaw = errStream.toByteArray();
+            String out = null;
+            String err = null;
+            try {
+               out = new String(outRaw, "UTF-8");
+               err = new String(errRaw, "UTF-8");
+            }
+            catch (IOException e) {
+               throw new BatfishException("Error reading nxnet output", e);
+            }
+            StringBuilder sb = new StringBuilder();
+            if (failure) {
+               sb.append("nls terminated abnormally:\n");
+               sb.append("nls command line: " + cmdLine.toString() + "\n");
+               sb.append(err);
+               throw new BatfishException(sb.toString());
+            }
+            else {
+               sb.append("nls output:\n");
+               sb.append(out);
+               _logger.debug(sb.toString());
+               _logger.info("nls completed successfully\n");
+            }
          }
-         else {
-            sb.append("nls output:\n");
-            sb.append(out);
-            _logger.debug(sb.toString());
-            _logger.info("nls completed successfully\n");
-         }
+      }
+      else {
+         _logger.warn("NLS dry run - not executing\n");
       }
       printElapsedTime();
       return answer;
