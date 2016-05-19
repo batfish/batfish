@@ -29,15 +29,15 @@ public final class Settings extends BaseSettings {
 
       private String _name;
 
+      private String _nlsDataPlaneInputFile;
+
+      private String _nlsDataPlaneOutputDir;
+
+      private String _nlsTrafficInputFile;
+
+      private String _nlsTrafficOutputDir;
+
       private String _nodeBlacklistPath;
-
-      private String _nxtnetDataPlaneInputFile;
-
-      private String _nxtnetDataPlaneOutputDir;
-
-      private String _nxtnetTrafficInputFile;
-
-      private String _nxtnetTrafficOutputDir;
 
       private String _precomputedRoutesPath;
 
@@ -77,24 +77,24 @@ public final class Settings extends BaseSettings {
          return _name;
       }
 
+      public String getNlsDataPlaneInputFile() {
+         return _nlsDataPlaneInputFile;
+      }
+
+      public String getNlsDataPlaneOutputDir() {
+         return _nlsDataPlaneOutputDir;
+      }
+
+      public String getNlsTrafficInputFile() {
+         return _nlsTrafficInputFile;
+      }
+
+      public String getNlsTrafficOutputDir() {
+         return _nlsTrafficOutputDir;
+      }
+
       public String getNodeBlacklistPath() {
          return _nodeBlacklistPath;
-      }
-
-      public String getNxtnetDataPlaneInputFile() {
-         return _nxtnetDataPlaneInputFile;
-      }
-
-      public String getNxtnetDataPlaneOutputDir() {
-         return _nxtnetDataPlaneOutputDir;
-      }
-
-      public String getNxtnetTrafficInputFile() {
-         return _nxtnetTrafficInputFile;
-      }
-
-      public String getNxtnetTrafficOutputDir() {
-         return _nxtnetTrafficOutputDir;
       }
 
       public String getPrecomputedRoutesPath() {
@@ -142,24 +142,24 @@ public final class Settings extends BaseSettings {
          _name = name;
       }
 
+      public void setNlsDataPlaneInputFile(String nlsDataPlaneInputFile) {
+         _nlsDataPlaneInputFile = nlsDataPlaneInputFile;
+      }
+
+      public void setNlsDataPlaneOutputDir(String nlsDataPlaneOutputDir) {
+         _nlsDataPlaneOutputDir = nlsDataPlaneOutputDir;
+      }
+
+      public void setNlsTrafficInputFile(String nlsTrafficInputFile) {
+         _nlsTrafficInputFile = nlsTrafficInputFile;
+      }
+
+      public void setNlsTrafficOutputDir(String nlsTrafficOutputDir) {
+         _nlsTrafficOutputDir = nlsTrafficOutputDir;
+      }
+
       public void setNodeBlacklistPath(String nodeBlacklistPath) {
          _nodeBlacklistPath = nodeBlacklistPath;
-      }
-
-      public void setNxtnetDataPlaneInputFile(String nxtnetDataPlaneInputFile) {
-         _nxtnetDataPlaneInputFile = nxtnetDataPlaneInputFile;
-      }
-
-      public void setNxtnetDataPlaneOutputDir(String nxtnetDataPlaneOutputDir) {
-         _nxtnetDataPlaneOutputDir = nxtnetDataPlaneOutputDir;
-      }
-
-      public void setNxtnetTrafficInputFile(String nxtnetTrafficInputFile) {
-         _nxtnetTrafficInputFile = nxtnetTrafficInputFile;
-      }
-
-      public void setNxtnetTrafficOutputDir(String nxtnetTrafficOutputDir) {
-         _nxtnetTrafficOutputDir = nxtnetTrafficOutputDir;
       }
 
       public void setPrecomputedRoutesPath(String writeRoutesPath) {
@@ -228,11 +228,11 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
 
+   private static final String ARG_NLS_DEBUG_SYMBOLS = "nlsdebugsymbols";
+
    private static final String ARG_NO_OUTPUT = "nooutput";
 
    private static final String ARG_NO_SHUFFLE = "noshuffle";
-
-   private static final String ARG_NXTNET_DEBUG_SYMBOLS = "nxtnetdebugsymbols";
 
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
 
@@ -391,15 +391,15 @@ public final class Settings extends BaseSettings {
 
    private int _maxRuntimeMs;
 
+   private boolean _nlsDataPlane;
+
+   private boolean _nlsDebugSymbols;
+
+   private boolean _nlsTraffic;
+
    private String _nodeRolesPath;
 
    private boolean _noOutput;
-
-   private boolean _nxtnetDataPlane;
-
-   private boolean _nxtnetDebugSymbols;
-
-   private boolean _nxtnetTraffic;
 
    private String _outputEnvironmentName;
 
@@ -698,24 +698,24 @@ public final class Settings extends BaseSettings {
       return _maxRuntimeMs;
    }
 
+   public boolean getNlsDataPlane() {
+      return _nlsDataPlane;
+   }
+
+   public boolean getNlsDebugSymbols() {
+      return _nlsDebugSymbols;
+   }
+
+   public boolean getNlsTraffic() {
+      return _nlsTraffic;
+   }
+
    public String getNodeRolesPath() {
       return _nodeRolesPath;
    }
 
    public boolean getNoOutput() {
       return _noOutput;
-   }
-
-   public boolean getNxtnetDataPlane() {
-      return _nxtnetDataPlane;
-   }
-
-   public boolean getNxtnetDebugSymbols() {
-      return _nxtnetDebugSymbols;
-   }
-
-   public boolean getNxtnetTraffic() {
-      return _nxtnetTraffic;
    }
 
    public String getOutputEnvironmentName() {
@@ -958,7 +958,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
-      setDefaultProperty(ARG_NXTNET_DEBUG_SYMBOLS, false);
+      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
@@ -998,8 +998,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
       setDefaultProperty(BfConsts.COMMAND_GET_HISTORY, false);
       setDefaultProperty(BfConsts.COMMAND_KEEP_BLOCKS, false);
-      setDefaultProperty(BfConsts.COMMAND_NXTNET_DATA_PLANE, false);
-      setDefaultProperty(BfConsts.COMMAND_NXTNET_TRAFFIC, false);
+      setDefaultProperty(BfConsts.COMMAND_NLS_DATA_PLANE, false);
+      setDefaultProperty(BfConsts.COMMAND_NLS_TRAFFIC, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REMOVE_BLOCKS, false);
@@ -1124,8 +1124,8 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
-      addBooleanOption(ARG_NXTNET_DEBUG_SYMBOLS,
-            "compute/display nxtnet debug symbols for querying");
+      addBooleanOption(ARG_NLS_DEBUG_SYMBOLS,
+            "compute/display nls debug symbols for querying");
 
       addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment",
             ARGNAME_NAME);
@@ -1167,7 +1167,7 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_PRINT_SYMMETRIC_EDGES,
             "print topology with symmetric edges adjacent in listing");
 
-      addBooleanOption(ARG_QUERY, "query one or more nxtnet relations");
+      addBooleanOption(ARG_QUERY, "query one or more nls relations");
 
       addBooleanOption(ARG_QUERY_ALL, "query ALL predicates");
 
@@ -1242,11 +1242,11 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.COMMAND_KEEP_BLOCKS,
             "activate only selected blocks of logic rules");
 
-      addBooleanOption(BfConsts.COMMAND_NXTNET_DATA_PLANE,
-            "compute data plane with nxtnet");
+      addBooleanOption(BfConsts.COMMAND_NLS_DATA_PLANE,
+            "compute data plane with nls");
 
-      addBooleanOption(BfConsts.COMMAND_NXTNET_TRAFFIC,
-            "compute traffic information from provided flows with nxtnet");
+      addBooleanOption(BfConsts.COMMAND_NLS_TRAFFIC,
+            "compute traffic information from provided flows with nls");
 
       addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT,
             "serialize vendor-independent configs");
@@ -1258,16 +1258,16 @@ public final class Settings extends BaseSettings {
             "remove selected blocks of logic rules");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS,
-            "write bgp advertisements from nxtnet data plane model to disk");
+            "write bgp advertisements from nls data plane model to disk");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_CP_FACTS,
             "write control plane facts");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS,
-            "write ibgp neighbors from nxtnet data plane model to disk");
+            "write ibgp neighbors from nls data plane model to disk");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_ROUTES,
-            "write routes from nxtnet data plane model to disk");
+            "write routes from nls data plane model to disk");
 
    }
 
@@ -1328,9 +1328,9 @@ public final class Settings extends BaseSettings {
       _maxParserContextTokens = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
       _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
-      _nxtnetDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_DATA_PLANE);
-      _nxtnetTraffic = getBooleanOptionValue(BfConsts.COMMAND_NXTNET_TRAFFIC);
-      _nxtnetDebugSymbols = getBooleanOptionValue(ARG_NXTNET_DEBUG_SYMBOLS);
+      _nlsDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NLS_DATA_PLANE);
+      _nlsTraffic = getBooleanOptionValue(BfConsts.COMMAND_NLS_TRAFFIC);
+      _nlsDebugSymbols = getBooleanOptionValue(ARG_NLS_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
@@ -1432,12 +1432,12 @@ public final class Settings extends BaseSettings {
       _maxRuntimeMs = runtimeMs;
    }
 
-   public void setNodeRolesPath(String nodeRolesPath) {
-      _nodeRolesPath = nodeRolesPath;
+   public void setNlsTraffic(boolean postFlows) {
+      _nlsTraffic = postFlows;
    }
 
-   public void setNxtnetTraffic(boolean postFlows) {
-      _nxtnetTraffic = postFlows;
+   public void setNodeRolesPath(String nodeRolesPath) {
+      _nodeRolesPath = nodeRolesPath;
    }
 
    public void setParseAnswerPath(String parseAnswerPath) {

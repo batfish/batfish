@@ -6,7 +6,7 @@ export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
 export BATFISH_Z3=z3
 export BATFISH_Z3_DATALOG="$BATFISH_Z3 fixedpoint.engine=datalog fixedpoint.datalog.default_relation=doc fixedpoint.print_answer=true"
-export BATFISH_NXTNET=nxtnet
+export BATFISH_NLS=nls
 export BATFISH_PARALLEL='parallel --tag -v --eta --halt 2'
 export BATFISH_NESTED_PARALLEL='parallel --tag -v --halt 2 -j1'
 
@@ -126,7 +126,7 @@ batfish_compile() {
    batfish_expect_args 2 $# || return 1
    local BASE=$1
    local ENV=$2
-   batfish -autobasedir $BASE -env $ENV -cpfacts  -nxtnetdp || return 1
+   batfish -autobasedir $BASE -env $ENV -cpfacts  -nlsdp || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane"
 }
@@ -139,7 +139,7 @@ batfish_compile_diff() {
    local BASE=$1
    local ENV=$2
    local DIFF_ENV=$3
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -cpfacts -nxtnetdp -diffactive || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -cpfacts -nlsdp -diffactive || return 1
    batfish_date
    echo ": END: Compute the fixed point of the control plane (differential)"
 }
@@ -303,7 +303,7 @@ batfish_post_flows() {
    local BASE=$1
    local ENV=$2
    local QUESTIONNAME=$3
-   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nxtnettraffic || return 1
+   batfish -autobasedir $BASE -env $ENV -questionname $QUESTIONNAME -nlstraffic || return 1
    batfish_date
    echo ": END: Inject discovered packets into network model"
 }
@@ -317,7 +317,7 @@ batfish_post_flows_diff() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffquestion -questionname $QUESTIONNAME -nxtnettraffic || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffquestion -questionname $QUESTIONNAME -nlstraffic || return 1
    batfish_date
    echo ": END: Inject discovered packets into network model (differential)"
 }
@@ -331,7 +331,7 @@ batfish_post_flows_diff_active() {
    local ENV=$2
    local DIFF_ENV=$3
    local QUESTIONNAME=$4
-   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffactive -questionname $QUESTIONNAME -nxtnettraffic || return 1
+   batfish -autobasedir $BASE -env $ENV -diffenv $DIFF_ENV -diffactive -questionname $QUESTIONNAME -nlstraffic || return 1
    batfish_date
    echo ": END: Inject discovered packets into network model (use delta environment)"
 }

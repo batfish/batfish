@@ -44,8 +44,8 @@ public class BfConsts {
    public static final String COMMAND_DUMP_DP = "dp";
    public static final String COMMAND_GET_HISTORY = "history";
    public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
-   public static final String COMMAND_NXTNET_DATA_PLANE = "nxtnetdp";
-   public static final String COMMAND_NXTNET_TRAFFIC = "nxtnettraffic";
+   public static final String COMMAND_NLS_DATA_PLANE = "nlsdp";
+   public static final String COMMAND_NLS_TRAFFIC = "nlstraffic";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
@@ -80,8 +80,8 @@ public class BfConsts {
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
    public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
-   public static final String RELPATH_NXTNET_INPUT_FILE = "nxtnet_input.pl";
-   public static final String RELPATH_NXTNET_OUTPUT_DIR = "nxtnet_output";
+   public static final String RELPATH_NLS_INPUT_FILE = "nls_input.pl";
+   public static final String RELPATH_NLS_OUTPUT_DIR = "nls_output";
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH = "pdgraphs";

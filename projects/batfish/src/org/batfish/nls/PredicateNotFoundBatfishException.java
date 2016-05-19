@@ -1,4 +1,4 @@
-package org.batfish.nxtnet;
+package org.batfish.nls;
 
 import org.batfish.common.BatfishException;
 

@@ -1,31 +1,31 @@
-package org.batfish.nxtnet;
+package org.batfish.nls;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class NxtnetConstants {
+public class NlsConstants {
 
-   public static final Set<String> NXTNET_DATA_PLANE_COMPUTATION_FACTS = initNxtnetDataPlaneComputationFacts();
+   public static final Set<String> NLS_DATA_PLANE_COMPUTATION_FACTS = initNlsDataPlaneComputationFacts();
 
-   public static final Set<String> NXTNET_DATA_PLANE_ENTITY_SYMBOLS = initNxtnetDataPlaneEntitySymbols();
+   public static final Set<String> NLS_DATA_PLANE_ENTITY_SYMBOLS = initNlsDataPlaneEntitySymbols();
 
-   public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS = initNxtnetDataPlaneOutputDebugSymbols();
+   public static final Set<String> NLS_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS = initNlsDataPlaneOutputDebugSymbols();
 
-   public static final Set<String> NXTNET_DATA_PLANE_OUTPUT_SYMBOLS = initNxtnetDataPlaneOutputSymbols();
+   public static final Set<String> NLS_DATA_PLANE_OUTPUT_SYMBOLS = initNlsDataPlaneOutputSymbols();
 
-   public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS = initNxtnetTrafficComputationControlPlaneFacts();
+   public static final Set<String> NLS_TRAFFIC_COMPUTATION_CONTROL_PLANE_FACTS = initNlsTrafficComputationControlPlaneFacts();
 
-   public static final Set<String> NXTNET_TRAFFIC_COMPUTATION_FLOW_FACTS = initNxtnetTrafficComputationFlowFacts();
+   public static final Set<String> NLS_TRAFFIC_COMPUTATION_FLOW_FACTS = initNlsTrafficComputationFlowFacts();
 
-   public static final Set<String> NXTNET_TRAFFIC_ENTITY_SYMBOLS = initNxtnetTrafficEntitySymbols();
+   public static final Set<String> NLS_TRAFFIC_ENTITY_SYMBOLS = initNlsTrafficEntitySymbols();
 
-   public static final Set<String> NXTNET_TRAFFIC_OUTPUT_DEBUG_SYMBOLS = initNxtnetTrafficOutputDebugSymbols();
+   public static final Set<String> NLS_TRAFFIC_OUTPUT_DEBUG_SYMBOLS = initNlsTrafficOutputDebugSymbols();
 
-   public static final Set<String> NXTNET_TRAFFIC_OUTPUT_SYMBOLS = initNxtnetTrafficOutputSymbols();
+   public static final Set<String> NLS_TRAFFIC_OUTPUT_SYMBOLS = initNlsTrafficOutputSymbols();
 
-   private static Set<String> initNxtnetDataPlaneComputationFacts() {
+   private static Set<String> initNlsDataPlaneComputationFacts() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "SamePhysicalSegment",
@@ -166,7 +166,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static Set<String> initNxtnetDataPlaneEntitySymbols() {
+   private static Set<String> initNlsDataPlaneEntitySymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "AdvertisementCommunity",
@@ -199,7 +199,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetDataPlaneOutputDebugSymbols() {
+   private static final Set<String> initNlsDataPlaneOutputDebugSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "BgpExportPolicy",
@@ -296,7 +296,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetDataPlaneOutputSymbols() {
+   private static final Set<String> initNlsDataPlaneOutputSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "AdvertisementCommunity",
@@ -336,7 +336,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficComputationControlPlaneFacts() {
+   private static final Set<String> initNlsTrafficComputationControlPlaneFacts() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "SamePhysicalSegment",
@@ -428,7 +428,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficComputationFlowFacts() {
+   private static final Set<String> initNlsTrafficComputationFlowFacts() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "DuplicateRoleFlows",
@@ -438,7 +438,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficEntitySymbols() {
+   private static final Set<String> initNlsTrafficEntitySymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "Flow_dscp",
@@ -464,7 +464,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficOutputDebugSymbols() {
+   private static final Set<String> initNlsTrafficOutputDebugSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "FlowAccepted",
@@ -501,7 +501,7 @@ public class NxtnetConstants {
       return Collections.unmodifiableSet(factSet);
    }
 
-   private static final Set<String> initNxtnetTrafficOutputSymbols() {
+   private static final Set<String> initNlsTrafficOutputSymbols() {
       Set<String> factSet = new HashSet<String>();
       String[] facts = new String[] {
             "Flow_dscp",

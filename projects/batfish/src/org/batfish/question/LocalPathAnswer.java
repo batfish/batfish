@@ -134,7 +134,7 @@ public class LocalPathAnswer extends Answer {
       }
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getBaseEnvSettings());
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getDiffEnvSettings());
-      batfish.nxtnetTraffic();
+      batfish.nlsTraffic();
       AnswerElement answerElement = batfish.getHistory();
       addAnswerElement(answerElement);
    }
