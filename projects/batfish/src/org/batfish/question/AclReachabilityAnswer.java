@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -42,7 +41,7 @@ public class AclReachabilityAnswer extends Answer {
       _settings = batfish.getSettings();
 
       // collect nodes nodes
-      Pattern nodeRegex;      
+      Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
       }
