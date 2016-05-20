@@ -7,7 +7,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
@@ -37,12 +41,26 @@ public class AclReachabilityAnswer extends Answer {
       _batfish = batfish;
       _settings = batfish.getSettings();
 
+      // collect nodes nodes
+      Pattern nodeRegex;      
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
+
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
       Synthesizer aclSynthesizer = synthesizeAcls(configurations);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
+         if (!nodeRegex.matcher(hostname).matches()) {
+            continue;
+         }
          Configuration c = e.getValue();
          for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
             String aclName = e2.getKey();
