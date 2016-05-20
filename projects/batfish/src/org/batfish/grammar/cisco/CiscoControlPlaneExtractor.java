@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -1610,6 +1612,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
       Set<Integer> dscps = new TreeSet<Integer>();
       Set<Integer> ecns = new TreeSet<Integer>();
+      Set<State> states = EnumSet.noneOf(State.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
          if (feature.ACK() != null) {
             TcpFlags alt = new TcpFlags();
@@ -1701,6 +1704,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.TRACEROUTE;
             icmpCode = IcmpCode.TRACEROUTE;
          }
+         if (feature.TRACKED() != null) {
+            states.add(State.ESTABLISHED);
+         }
          if (feature.UNREACHABLE() != null) {
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
          }
@@ -1715,7 +1721,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ExtendedAccessListLine line = new ExtendedAccessListLine(name, action,
             protocol, new IpWildcard(srcIp, srcWildcard), srcAddressGroup,
             new IpWildcard(dstIp, dstWildcard), dstAddressGroup, srcPortRanges,
-            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
+            dstPortRanges, dscps, ecns, icmpType, icmpCode, states, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 

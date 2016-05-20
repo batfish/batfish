@@ -51,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
@@ -1048,6 +1049,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (icmpCode != null) {
             newLine.setIcmpCode(icmpCode);
          }
+         Set<State> states = fromLine.getStates();
+         newLine.getStates().addAll(states);
          List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
          newLine.getTcpFlags().addAll(tcpFlags);
          Set<Integer> dscps = fromLine.getDscps();

@@ -35,6 +35,7 @@ import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.PolicyMapSetNextHopLine;
 import org.batfish.datamodel.PolicyMapSetType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Zone;
@@ -125,6 +126,8 @@ public class Synthesizer {
    public static final int PROTOCOL_BITS = 8;
    public static final String SRC_IP_VAR = "src_ip";
    public static final String SRC_PORT_VAR = "src_port";
+   public static final int STATE_BITS = 2;
+   public static final String STATE_VAR = "state";
    public static final int TCP_FLAGS_ACK_BITS = 1;
    public static final String TCP_FLAGS_ACK_VAR = "tcp_flags_ack";
    public static final int TCP_FLAGS_CWR_BITS = 1;
@@ -159,6 +162,7 @@ public class Synthesizer {
       vars.add(ECN_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
+      vars.add(STATE_VAR);
       vars.add(TCP_FLAGS_CWR_VAR);
       vars.add(TCP_FLAGS_ECE_VAR);
       vars.add(TCP_FLAGS_URG_VAR);
@@ -217,6 +221,7 @@ public class Synthesizer {
       varSizes.put(ECN_VAR, ECN_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
+      varSizes.put(STATE_VAR, STATE_BITS);
       varSizes.put(TCP_FLAGS_CWR_VAR, TCP_FLAGS_CWR_BITS);
       varSizes.put(TCP_FLAGS_ECE_VAR, TCP_FLAGS_ECE_BITS);
       varSizes.put(TCP_FLAGS_URG_VAR, TCP_FLAGS_URG_BITS);
@@ -821,6 +826,7 @@ public class Synthesizer {
                dstPortRanges.addAll(line.getDstPortRanges());
                int icmpType = line.getIcmpType();
                int icmpCode = line.getIcmpCode();
+               Set<State> states = line.getStates();
                List<TcpFlags> tcpFlags = line.getTcpFlags();
                Set<Integer> dscps = line.getDscps();
                Set<Integer> ecns = line.getEcns();
@@ -1066,6 +1072,18 @@ public class Synthesizer {
                            new VarIntExpr(ECN_VAR), new LitIntExpr(ecn,
                                  ECN_BITS));
                      matchSomeEcn.addDisjunct(matchCurrentEcn);
+                  }
+               }
+
+               // match connection-tracking state
+               if (!states.isEmpty()) {
+                  OrExpr matchSomeState = new OrExpr();
+                  matchLineCriteria.addConjunct(matchSomeState);
+                  for (State state : states) {
+                     EqExpr matchCurrentState = new EqExpr(new VarIntExpr(
+                           STATE_VAR), new LitIntExpr(state.number(),
+                           STATE_BITS));
+                     matchSomeState.addDisjunct(matchCurrentState);
                   }
                }
 

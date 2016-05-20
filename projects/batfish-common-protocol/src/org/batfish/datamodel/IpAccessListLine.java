@@ -37,6 +37,8 @@ public final class IpAccessListLine implements Serializable {
 
    private final List<SubRange> _srcPortRanges;
 
+   private Set<State> _states;
+
    private final List<TcpFlags> _tcpFlags;
 
    public IpAccessListLine() {
@@ -51,6 +53,7 @@ public final class IpAccessListLine implements Serializable {
       _srcPortRanges = new ArrayList<SubRange>();
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
+      _states = EnumSet.noneOf(State.class);
       _tcpFlags = new ArrayList<TcpFlags>();
    }
 
@@ -106,6 +109,10 @@ public final class IpAccessListLine implements Serializable {
       return _srcPortRanges;
    }
 
+   public Set<State> getStates() {
+      return _states;
+   }
+
    public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }
@@ -135,8 +142,8 @@ public final class IpAccessListLine implements Serializable {
             + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
             + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
             + ", Dscps: " + _dscps.toString() + ", IcmpType:" + _icmpType
-            + ", IcmpCode:" + _icmpCode + ", TcpFlags:" + _tcpFlags.toString()
-            + "]";
+            + ", IcmpCode:" + _icmpCode + ", States:" + _states.toString()
+            + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
 }

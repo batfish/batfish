@@ -26,6 +26,8 @@ public final class Flow implements Comparable<Flow> {
 
    private final int _srcPort;
 
+   private final int _state;
+
    private final String _tag;
 
    private final int _tcpFlagsAck;
@@ -46,9 +48,9 @@ public final class Flow implements Comparable<Flow> {
 
    Flow(String ingressNode, Ip srcIp, Ip dstIp, int srcPort, int dstPort,
          IpProtocol ipProtocol, int dscp, int ecn, int icmpType, int icmpCode,
-         int tcpFlagsCwr, int tcpFlagsEce, int tcpFlagsUrg, int tcpFlagsAck,
-         int tcpFlagsPsh, int tcpFlagsRst, int tcpFlagsSyn, int tcpFlagsFin,
-         String tag) {
+         int state, int tcpFlagsCwr, int tcpFlagsEce, int tcpFlagsUrg,
+         int tcpFlagsAck, int tcpFlagsPsh, int tcpFlagsRst, int tcpFlagsSyn,
+         int tcpFlagsFin, String tag) {
       _ingressNode = ingressNode;
       _srcIp = srcIp;
       _dstIp = dstIp;
@@ -59,6 +61,7 @@ public final class Flow implements Comparable<Flow> {
       _ecn = ecn;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
+      _state = state;
       _tcpFlagsCwr = tcpFlagsCwr;
       _tcpFlagsEce = tcpFlagsEce;
       _tcpFlagsUrg = tcpFlagsUrg;
@@ -110,6 +113,10 @@ public final class Flow implements Comparable<Flow> {
          return ret;
       }
       ret = Integer.compare(_icmpCode, rhs._icmpCode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_state, rhs._state);
       if (ret != 0) {
          return ret;
       }
@@ -177,6 +184,9 @@ public final class Flow implements Comparable<Flow> {
       if (_icmpCode != other._icmpCode) {
          return false;
       }
+      if (_state != other._state) {
+         return false;
+      }
       if (_tcpFlagsCwr != other._tcpFlagsCwr) {
          return false;
       }
@@ -240,6 +250,10 @@ public final class Flow implements Comparable<Flow> {
       return _srcPort;
    }
 
+   public int getState() {
+      return _state;
+   }
+
    public String getTag() {
       return _tag;
    }
@@ -256,9 +270,10 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _ipProtocol.hashCode();
       result = prime * result + _srcIp.hashCode();
       result = prime * result + _srcPort;
-      result = prime * result + _tag.hashCode();
       result = prime * result + _icmpType;
       result = prime * result + _icmpCode;
+      result = prime * result + _state;
+      result = prime * result + _tag.hashCode();
       result = prime * result + _tcpFlagsCwr;
       result = prime * result + _tcpFlagsEce;
       result = prime * result + _tcpFlagsUrg;
@@ -280,10 +295,10 @@ public final class Flow implements Comparable<Flow> {
       long icmpCode = _icmpCode;
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
             + "|" + dst_port + "|" + protocol + "|" + _dscp + "|" + _ecn + "|"
-            + icmpType + "|" + icmpCode + "|" + _tcpFlagsCwr + "|"
-            + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|" + _tcpFlagsAck + "|"
-            + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|" + _tcpFlagsSyn + "|"
-            + _tcpFlagsFin + "|" + _tag + "\n";
+            + icmpType + "|" + icmpCode + "|" + _state + "|" + _tcpFlagsCwr
+            + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|" + _tcpFlagsAck
+            + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|" + _tcpFlagsSyn
+            + "|" + _tcpFlagsFin + "|" + _tag + "\n";
       return line;
    }
 
@@ -325,8 +340,8 @@ public final class Flow implements Comparable<Flow> {
             + ", dst_ip:" + _dstIp + ", ip_protocol:" + _ipProtocol
             + ", src_port:" + srcPort + ", dst_port:" + dstPort + ", dscp: "
             + _dscp + ", ecn:" + _ecn + ", icmp_type:" + icmpType
-            + ", icmp_code:" + icmpCode + ", tcp_flags:" + tcpFlags + ", tag:"
-            + _tag + ">";
+            + ", icmp_code:" + icmpCode + ", state:" + _state + ", tcp_flags:"
+            + tcpFlags + ", tag:" + _tag + ">";
    }
 
 }

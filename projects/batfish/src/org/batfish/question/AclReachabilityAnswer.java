@@ -41,7 +41,7 @@ public class AclReachabilityAnswer extends Answer {
       _settings = batfish.getSettings();
 
       // collect nodes nodes
-      Pattern nodeRegex;      
+      Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
       }
