@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrecomputedRoute;
@@ -17,11 +18,13 @@ public class RoutesAnswerElement implements AnswerElement {
 
    private Map<String, Set<PrecomputedRoute>> _routesByHostname;
 
-   public RoutesAnswerElement(Map<String, Configuration> configurations) {
+   public RoutesAnswerElement(Map<String, Configuration> configurations, Pattern nodeRegex) {
       _routes = new TreeSet<PrecomputedRoute>();
       _routesByHostname = new TreeMap<String, Set<PrecomputedRoute>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
+         if (!nodeRegex.matcher(hostname).matches())
+		    continue;
          Configuration c = e.getValue();
          Set<PrecomputedRoute> routes = c.getRoutes();
          _routes.addAll(routes);

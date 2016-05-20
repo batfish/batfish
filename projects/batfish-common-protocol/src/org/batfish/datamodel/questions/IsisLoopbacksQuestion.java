@@ -1,24 +1,39 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class IsisLoopbacksQuestion extends Question {
 
-   public IsisLoopbacksQuestion() {
-      super(QuestionType.ISIS_LOOPBACKS);
-   }
+	private static final String NODE_REGEX_VAR = "nodeRegex";
 
-   @Override
-   public boolean getDataPlane() {
-      return false;
-   }
+	private String _nodeRegex;
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
+	public IsisLoopbacksQuestion() {
+		super(QuestionType.ISIS_LOOPBACKS);
+	}
 
-   @Override
-   public boolean getTraffic() {
-      return false;
-   }
+	@Override
+	public boolean getDataPlane() {
+		return false;
+	}
+
+	@Override
+	public boolean getDifferential() {
+		return false;
+	}
+
+	@JsonProperty(NODE_REGEX_VAR)
+	public String getNodeRegex() {
+		return _nodeRegex;
+	}
+
+	@Override
+	public boolean getTraffic() {
+		return false;
+	}
+
+	public void setNodeRegex(String nodeRegex) {
+		_nodeRegex = nodeRegex;
+	}
 
 }
