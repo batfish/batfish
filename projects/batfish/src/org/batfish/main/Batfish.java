@@ -1804,7 +1804,7 @@ public class Batfish implements AutoCloseable {
          populateFlowHistory(flowHistory, _envSettings, _envSettings.getName(),
                tag);
       }
-      _logger.output(flowHistory.toString());
+      _logger.debug(flowHistory.toString());
       return flowHistory;
    }
 
