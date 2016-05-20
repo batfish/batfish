@@ -1,4 +1,4 @@
 {
-   "class" : "org.batfish.datamodel.questions.RoutesQuestion",
+   "class" : "org.batfish.datamodel.questions.RoutesQuestion"
 }
 
