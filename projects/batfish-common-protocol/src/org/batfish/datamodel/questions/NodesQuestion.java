@@ -20,14 +20,19 @@ public class NodesQuestion extends Question {
 
    private static final String NODE_TYPE_VAR = "nodeType";
 
+   private static final String SUMMARY_VAR = "summary";
+
    private String _nodeRegex;
 
    private Set<NodeType> _nodeType;
+
+   private boolean _summary;
 
    public NodesQuestion() {
       super(QuestionType.NODES);
       _nodeType = EnumSet.noneOf(NodeType.class);
       _nodeRegex = ".*";
+      _summary = false;
    }
 
    @Override
@@ -48,6 +53,10 @@ public class NodesQuestion extends Question {
    @JsonProperty(NODE_TYPE_VAR)
    public Set<NodeType> getNodeTypes() {
       return _nodeType;
+   }
+
+   public boolean getSummary() {
+      return _summary;
    }
 
    @Override
@@ -72,6 +81,9 @@ public class NodesQuestion extends Question {
                      new TypeReference<Set<NodeType>>() {
                      }));
                break;
+            case SUMMARY_VAR:
+               setSummary(parameters.getBoolean(paramKey));
+               break;
             default:
                throw new BatfishException("Unknown key in "
                      + getClass().getSimpleName() + ": " + paramKey);
@@ -89,6 +101,10 @@ public class NodesQuestion extends Question {
 
    public void setNodeTypes(Set<NodeType> nType) {
       _nodeType = nType;
+   }
+
+   public void setSummary(boolean summary) {
+      _summary = summary;
    }
 
 }

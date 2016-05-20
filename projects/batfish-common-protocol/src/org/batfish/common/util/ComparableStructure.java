@@ -5,8 +5,11 @@ import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+@JsonInclude(Include.NON_NULL)
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public abstract class ComparableStructure<Key extends Comparable<Key>> extends
       ReferenceCountedStructure implements

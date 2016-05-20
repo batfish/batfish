@@ -49,7 +49,8 @@ public class NodesAnswer extends Answer {
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
 
-      _answerElements.add(new NodesAnswerElement(answerNodes));
+      _answerElements.add(new NodesAnswerElement(answerNodes, question
+            .getSummary()));
    }
 
 }

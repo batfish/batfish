@@ -6,9 +6,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 /**
  * Represents a bgp process on a router
  */
+@JsonInclude(Include.NON_NULL)
 public class BgpProcess implements Serializable {
 
    /**
