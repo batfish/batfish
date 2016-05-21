@@ -14,6 +14,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
@@ -120,7 +121,9 @@ public class LocalPathAnswer extends Answer {
 
       }
 
-      Set<Flow> flows = batfish.computeCompositeNodOutput(jobs);
+      // TODO: maybe do something with nod answer element
+      Set<Flow> flows = batfish.computeCompositeNodOutput(jobs,
+            new NodAnswerElement());
 
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       Batfish.initTrafficFactBins(trafficFactBins);
@@ -131,7 +134,7 @@ public class LocalPathAnswer extends Answer {
       }
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getBaseEnvSettings());
       batfish.dumpTrafficFacts(trafficFactBins, batfish.getDiffEnvSettings());
-      batfish.nxtnetTraffic();
+      batfish.nlsTraffic();
       AnswerElement answerElement = batfish.getHistory();
       addAnswerElement(answerElement);
    }

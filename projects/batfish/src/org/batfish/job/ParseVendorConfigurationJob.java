@@ -60,7 +60,7 @@ public class ParseVendorConfigurationJob extends
       if (format == ConfigurationFormat.EMPTY) {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file);
+               _logger.getHistory(), _file, _warnings);
       }
       switch (format) {
 
@@ -76,10 +76,15 @@ public class ParseVendorConfigurationJob extends
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
-            _logger
-                  .warn("Flattening: \""
-                        + currentPath
-                        + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
+            String msg = "Flattening: \""
+                  + currentPath
+                  + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
+            _warnings.pedantic(msg);
+            // _logger
+            // .warn("Flattening: \""
+            // + currentPath
+            // +
+            // "\" on-the-fly; line-numbers reported for this file will be spurious\n");
             _fileText = Batfish.flatten(_fileText, _logger, _settings,
                   ConfigurationFormat.VYOS,
                   Format.BATFISH_FLATTENED_VYOS_HEADER);
@@ -102,10 +107,15 @@ public class ParseVendorConfigurationJob extends
 
       case JUNIPER:
          if (_settings.flattenOnTheFly()) {
-            _logger
-                  .warn("Flattening: \""
-                        + currentPath
-                        + "\" on-the-fly; line-numbers reported for this file will be spurious\n");
+            String msg = "Flattening: \""
+                  + currentPath
+                  + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
+            _warnings.pedantic(msg);
+            // _logger
+            // .warn("Flattening: \""
+            // + currentPath
+            // +
+            // "\" on-the-fly; line-numbers reported for this file will be spurious\n");
             _fileText = Batfish.flatten(_fileText, _logger, _settings,
                   ConfigurationFormat.JUNIPER,
                   Format.BATFISH_FLATTENED_JUNIPER_HEADER);
@@ -146,11 +156,12 @@ public class ParseVendorConfigurationJob extends
                         unsupportedError));
          }
          else {
-            _logger.warn(unsupportedError);
+            // _logger.warn(unsupportedError);
+            _warnings.unimplemented(unsupportedError);
          }
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file);
+               _logger.getHistory(), _file, _warnings);
 
       case EMPTY:
       case UNKNOWN:
@@ -183,15 +194,7 @@ public class ParseVendorConfigurationJob extends
                _logger.getHistory(), _file, new BatfishException(error, e));
       }
       finally {
-         for (String warning : _warnings.getRedFlagWarnings()) {
-            _logger.redflag(warning);
-         }
-         for (String warning : _warnings.getUnimplementedWarnings()) {
-            _logger.unimplemented(warning);
-         }
-         for (String warning : _warnings.getPedanticWarnings()) {
-            _logger.pedantic(warning);
-         }
+         Batfish.logWarnings(_logger, _warnings);
       }
       vc = extractor.getVendorConfiguration();
       vc.setVendor(format);
@@ -216,7 +219,7 @@ public class ParseVendorConfigurationJob extends
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
-            _logger.getHistory(), _file, vc);
+            _logger.getHistory(), _file, vc, _warnings);
    }
 
 }

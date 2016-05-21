@@ -6,6 +6,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
+import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -60,19 +61,10 @@ public class ConvertConfigurationJob extends
                _logger.getHistory(), _name, new BatfishException(error, e));
       }
       finally {
-         for (String warning : _warnings.getRedFlagWarnings()) {
-            _logger.redflag(warning);
-         }
-         for (String warning : _warnings.getUnimplementedWarnings()) {
-            _logger.unimplemented(warning);
-         }
-         for (String warning : _warnings.getPedanticWarnings()) {
-            _logger.pedantic(warning);
-         }
+         Batfish.logWarnings(_logger, _warnings);
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ConvertConfigurationResult(elapsedTime, _logger.getHistory(),
-            _name, configurations);
+            _warnings, _name, configurations);
    }
-
 }

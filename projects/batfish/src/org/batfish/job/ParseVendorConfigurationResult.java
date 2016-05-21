@@ -6,10 +6,13 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
-public class ParseVendorConfigurationResult extends
-      BatfishJobResult<Map<String, VendorConfiguration>> {
+public class ParseVendorConfigurationResult
+      extends
+      BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
    private final File _file;
 
@@ -17,12 +20,7 @@ public class ParseVendorConfigurationResult extends
 
    private VendorConfiguration _vc;
 
-   public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File file) {
-      super(elapsedTime);
-      _history = history;
-      _file = file;
-   }
+   private Warnings _warnings;
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, File file, Throwable failureCause) {
@@ -32,11 +30,21 @@ public class ParseVendorConfigurationResult extends
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File file, VendorConfiguration vc) {
+         BatfishLoggerHistory history, File file, VendorConfiguration vc,
+         Warnings warnings) {
       super(elapsedTime);
       _history = history;
       _file = file;
       _vc = vc;
+      _warnings = warnings;
+   }
+
+   public ParseVendorConfigurationResult(long elapsedTime,
+         BatfishLoggerHistory history, File file, Warnings warnings) {
+      super(elapsedTime);
+      _history = history;
+      _file = file;
+      _warnings = warnings;
    }
 
    private void appendHistory(BatfishLogger logger) {
@@ -55,7 +63,8 @@ public class ParseVendorConfigurationResult extends
 
    @Override
    public void applyTo(Map<String, VendorConfiguration> vendorConfigurations,
-         BatfishLogger logger) {
+         BatfishLogger logger,
+         ParseVendorConfigurationAnswerElement answerElement) {
       appendHistory(logger);
       if (_vc != null) {
          String hostname = _vc.getHostname();
@@ -64,6 +73,9 @@ public class ParseVendorConfigurationResult extends
          }
          else {
             vendorConfigurations.put(hostname, _vc);
+            if (!_warnings.isEmpty()) {
+               answerElement.getWarnings().put(hostname, _warnings);
+            }
          }
       }
    }

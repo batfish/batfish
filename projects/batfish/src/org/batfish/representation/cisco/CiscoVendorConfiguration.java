@@ -51,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
@@ -171,7 +172,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (mapName != null) {
          RouteMap currentMap = _routeMaps.get(mapName);
          if (currentMap == null) {
-            _w.redFlag("Undefined reference to route-map: " + mapName);
+            _w.redFlag("Reference to undefined to route-map: " + mapName,
+                  UNDEFINED);
          }
          else {
             for (RouteMapClause clause : currentMap.getClauses().values()) {
@@ -329,7 +331,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else {
-            _w.redFlag("Reference to undefined " + type + ": " + listName);
+            _w.redFlag("Reference to undefined " + type + ": " + listName,
+                  UNDEFINED);
          }
       }
    }
@@ -343,7 +346,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             routeMap.getReferers().put(this, msg);
          }
          else {
-            _w.redFlag("Reference to undefined " + type + ": " + routeMapName);
+            _w.redFlag("Reference to undefined " + type + ": " + routeMapName,
+                  UNDEFINED);
          }
       }
    }
@@ -454,8 +458,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                gr.getAttributePolicies().put(attributeMapName, attributePolicy);
             }
             else {
-               _w.redFlag("Reference to undefined route-map used as attribute-map: \""
-                     + attributeMapName + "\"");
+               _w.redFlag(
+                     "Reference to undefined route-map used as attribute-map: '"
+                           + attributeMapName + "'", UNDEFINED);
             }
          }
       }
@@ -535,9 +540,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             NamedBgpPeerGroup peerSession = proc.getPeerSessions().get(
                   peerSessionName);
             if (peerSession == null) {
-               _w.redFlag("peer group \"" + namedPeerGroupName
-                     + "\" inherits from non-existent peer-session: \""
-                     + peerSessionName + "\"");
+               _w.redFlag("peer group '" + namedPeerGroupName
+                     + "' inherits from non-existent peer-session: '"
+                     + peerSessionName + "'");
             }
             else {
                namedPeerGroup.inheritUnsetFields(peerSession);
@@ -556,8 +561,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                lpg.inheritUnsetFields(parentPeerGroup);
             }
             else {
-               _w.redFlag("Reference to undefined parent peer group: \""
-                     + groupName + "\"");
+               _w.redFlag("Reference to undefined parent peer group: '"
+                     + groupName + "'", UNDEFINED);
             }
          }
          lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
@@ -578,14 +583,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   updateSource = sourceIp;
                }
                else {
-                  _w.redFlag("bgp update source interface: \""
+                  _w.redFlag("bgp update source interface: '"
                         + updateSourceInterface
-                        + "\" not assigned an ip address");
+                        + "' not assigned an ip address");
                }
             }
             else {
-               _w.redFlag("reference to undefined update source interface: \""
-                     + updateSourceInterface + "\"");
+               _w.redFlag("reference to undefined update source interface: '"
+                     + updateSourceInterface + "'", UNDEFINED);
             }
          }
          else {
@@ -600,22 +605,22 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          if (updateSource == null) {
-            _w.redFlag("Could not determine update source for BGP neighbor: \""
-                  + lpg.getName() + "\"");
+            _w.redFlag("Could not determine update source for BGP neighbor: '"
+                  + lpg.getName() + "'");
          }
          PolicyMap newInboundPolicyMap = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
             newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
             if (newInboundPolicyMap == null) {
-               String msg = "neighbor: \"" + lpg.getName() + "\": ";
+               String msg = "neighbor: '" + lpg.getName() + "': ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
-                  msg += "group: \"" + groupName + "\": ";
+                  msg += "group: '" + groupName + "': ";
                }
-               msg += "undefined reference to inbound policy map: \""
-                     + inboundRouteMapName + "\"";
-               _w.redFlag(msg);
+               msg += "undefined reference to inbound policy map: '"
+                     + inboundRouteMapName + "'";
+               _w.redFlag(msg, UNDEFINED);
             }
             else {
                RouteMap inboundRouteMap = _routeMaps.get(inboundRouteMapName);
@@ -629,14 +634,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             PolicyMap outboundPolicyMap = c.getPolicyMaps().get(
                   outboundRouteMapName);
             if (outboundPolicyMap == null) {
-               String msg = "neighbor: \"" + lpg.getName() + "\": ";
+               String msg = "neighbor: '" + lpg.getName() + "': ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
-                  msg += "group: \"" + groupName + "\": ";
+                  msg += "group: '" + groupName + "': ";
                }
-               msg += "undefined reference to outbound policy map: \""
-                     + outboundRouteMapName + "\"";
-               _w.redFlag(msg);
+               msg += "undefined reference to outbound policy map: '"
+                     + outboundRouteMapName + "'";
+               _w.redFlag(msg, UNDEFINED);
             }
             else {
                RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
@@ -753,9 +758,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                PolicyMap defaultRouteGenerationPolicy = c.getPolicyMaps().get(
                      defaultOriginateMapName);
                if (defaultRouteGenerationPolicy == null) {
-                  throw new VendorConversionException(
+                  _w.redFlag(
                         "undefined reference to generated route policy map: "
-                              + defaultOriginateMapName);
+                              + defaultOriginateMapName, UNDEFINED);
                }
                else {
                   RouteMap defaultRouteGenerationRouteMap = _routeMaps
@@ -789,13 +794,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (inboundPrefixList != null) {
                inboundPrefixList.getReferers().put(
                      lpg,
-                     "inbound prefix-list for neighbor: \"" + lpg.getName()
-                           + "\"");
+                     "inbound prefix-list for neighbor: '" + lpg.getName()
+                           + "'");
             }
             else {
-               _w.redFlag("Reference to undefined inbound prefix-list: \""
-                     + inboundPrefixListName + "\" at neighbor: \""
-                     + lpg.getName() + "\"");
+               _w.redFlag(
+                     "Reference to undefined inbound prefix-list: '"
+                           + inboundPrefixListName + "' at neighbor: '"
+                           + lpg.getName() + "'", UNDEFINED);
             }
          }
          String outboundPrefixListName = lpg.getOutboundPrefixList();
@@ -805,13 +811,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (outboundPrefixList != null) {
                outboundPrefixList.getReferers().put(
                      lpg,
-                     "outbound prefix-list for neighbor: \"" + lpg.getName()
-                           + "\"");
+                     "outbound prefix-list for neighbor: '" + lpg.getName()
+                           + "'");
             }
             else {
-               _w.redFlag("Reference to undefined outbound prefix-list: \""
-                     + outboundPrefixListName + "\" at neighbor: \""
-                     + lpg.getName() + "\"");
+               _w.redFlag(
+                     "Reference to undefined outbound prefix-list: '"
+                           + outboundPrefixListName + "' at neighbor: '"
+                           + lpg.getName() + "'", UNDEFINED);
             }
          }
          String description = lpg.getDescription();
@@ -1042,6 +1049,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (icmpCode != null) {
             newLine.setIcmpCode(icmpCode);
          }
+         Set<State> states = fromLine.getStates();
+         newLine.getStates().addAll(states);
          List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
          newLine.getTcpFlags().addAll(tcpFlags);
          Set<Integer> dscps = fromLine.getDscps();
@@ -1171,47 +1180,48 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportConnectedPolicy = c.getPolicyMaps().get(mapName);
             if (exportConnectedPolicy == null) {
-               throw new VendorConversionException(
-                     "undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName,
+                     UNDEFINED);
             }
             else {
                RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
                exportConnectedRouteMap.getReferers().put(proc,
                      "is-is export connected route-map");
-            }
-            // crash if both an explicit metric is set and one exists in the
-            // route map
-            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
-               for (PolicyMapSetLine line : clause.getSetLines()) {
-                  if (line.getType() == PolicyMapSetType.METRIC) {
-                     if (explicitMetric) {
-                        throw new Error(
-                              "Explicit redistribution metric set while route map also contains set metric line");
-                     }
-                     else {
-                        routeMapMetric = true;
-                        break;
+
+               // crash if both an explicit metric is set and one exists in the
+               // route map
+               for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+                  for (PolicyMapSetLine line : clause.getSetLines()) {
+                     if (line.getType() == PolicyMapSetType.METRIC) {
+                        if (explicitMetric) {
+                           throw new Error(
+                                 "Explicit redistribution metric set while route map also contains set metric line");
+                        }
+                        else {
+                           routeMapMetric = true;
+                           break;
+                        }
                      }
                   }
                }
-            }
-            PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                  RoutingProtocol.CONNECTED);
-            PolicyMapSetLine setMetricLine = null;
-            // add a set metric line if no metric provided by route map
-            if (!routeMapMetric) {
-               // use default metric if no explicit metric is set
-               setMetricLine = new PolicyMapSetMetricLine(metric);
-            }
-            for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
-               clause.getMatchLines().add(matchConnectedLine);
+               PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
+                     RoutingProtocol.CONNECTED);
+               PolicyMapSetLine setMetricLine = null;
+               // add a set metric line if no metric provided by route map
                if (!routeMapMetric) {
-                  clause.getSetLines().add(setMetricLine);
+                  // use default metric if no explicit metric is set
+                  setMetricLine = new PolicyMapSetMetricLine(metric);
                }
+               for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
+                  clause.getMatchLines().add(matchConnectedLine);
+                  if (!routeMapMetric) {
+                     clause.getSetLines().add(setMetricLine);
+                  }
+               }
+               newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+               newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
+                     exportLevel);
             }
-            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
-                  exportLevel);
          }
          else {
             exportConnectedPolicy = makeRouteExportPolicy(c,
@@ -1243,7 +1253,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy == null) {
-               _w.redFlag("undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName,
+                     UNDEFINED);
             }
             else {
                RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
@@ -1386,7 +1397,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             PolicyMap generationPolicy = c.getPolicyMaps().get(mapName);
             if (generationPolicy == null) {
                _w.redFlag("undefined reference to generation policy map: "
-                     + mapName);
+                     + mapName, UNDEFINED);
             }
             else {
                RouteMap generationRouteMap = _routeMaps.get(mapName);
@@ -1454,7 +1465,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportConnectedPolicy = c.getPolicyMaps().get(mapName);
             if (exportConnectedPolicy == null) {
-               _w.redFlag("undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName,
+                     UNDEFINED);
             }
             else {
                RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
@@ -1525,7 +1537,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportStaticPolicy = c.getPolicyMaps().get(mapName);
             if (exportStaticPolicy == null) {
-               _w.redFlag("undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName,
+                     UNDEFINED);
             }
             else {
                RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
@@ -1617,7 +1630,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          if (mapName != null) {
             exportBgpPolicy = c.getPolicyMaps().get(mapName);
             if (exportBgpPolicy == null) {
-               _w.redFlag("undefined reference to policy map: " + mapName);
+               _w.redFlag("undefined reference to policy map: " + mapName,
+                     UNDEFINED);
             }
             else {
                RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
@@ -1768,8 +1782,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          for (String pathListName : pathLine.getListNames()) {
             AsPathAccessList list = c.getAsPathAccessLists().get(pathListName);
             if (list == null) {
-               _w.redFlag("Reference to nonexistent as-path access-list: "
-                     + pathListName);
+               _w.redFlag("Reference to undefined as-path access-list: "
+                     + pathListName, UNDEFINED);
             }
             else {
                IpAsPathAccessList ipAsPathAccessList = _asPathAccessLists
@@ -1788,8 +1802,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          for (String listName : communityLine.getListNames()) {
             CommunityList list = c.getCommunityLists().get(listName);
             if (list == null) {
-               _w.redFlag("Reference to nonexistent community list: "
-                     + listName);
+               _w.redFlag("Reference to undefined community list: " + listName,
+                     UNDEFINED);
             }
             else {
                String msg = "match community line";
@@ -1827,8 +1841,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                list = ipAccessList;
             }
             if (list == null) {
-               _w.redFlag("Reference to nonexistent ip access list: "
-                     + listName);
+               _w.redFlag("Reference to undefined ip access list: " + listName,
+                     UNDEFINED);
             }
             else {
                String msg = "route-map match ip access-list line";
@@ -1867,7 +1881,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             RouteFilterList list = c.getRouteFilterLists().get(prefixListName);
             if (list == null) {
                _w.redFlag("undefined reference to route filter list: "
-                     + prefixListName);
+                     + prefixListName, UNDEFINED);
             }
             else {
                PrefixList prefixList = _prefixLists.get(prefixListName);
@@ -2158,7 +2172,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          ExpandedCommunityList list = e.getValue();
          if (list.isUnused()) {
-            _w.redFlag("Unused expanded community-list: \"" + name + "\"");
+            _w.redFlag("Unused expanded community-list: '" + name + "'", UNUSED);
          }
       }
       for (Entry<String, StandardCommunityList> e : _standardCommunityLists
@@ -2169,7 +2183,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          StandardCommunityList list = e.getValue();
          if (list.isUnused()) {
-            _w.redFlag("Unused standard community-list: \"" + name + "\"");
+            _w.redFlag("Unused standard community-list: '" + name + "'", UNUSED);
          }
       }
    }
@@ -2183,7 +2197,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          ExtendedAccessList acl = e.getValue();
          if (!acl.getIpv6() && acl.isUnused()) {
-            _w.redFlag("Unused extended access-list: \"" + name + "\"");
+            _w.redFlag("Unused extended access-list: '" + name + "'", UNUSED);
          }
       }
       for (Entry<String, StandardAccessList> e : _standardAccessLists
@@ -2194,7 +2208,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          StandardAccessList acl = e.getValue();
          if (acl.isUnused()) {
-            _w.redFlag("Unused standard access-list: \"" + name + "\"");
+            _w.redFlag("Unused standard access-list: '" + name + "'", UNUSED);
          }
       }
    }
@@ -2207,7 +2221,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          IpAsPathAccessList asPathAccessList = e.getValue();
          if (asPathAccessList.isUnused()) {
-            _w.redFlag("Unused as-path access-list: \"" + name + "\"");
+            _w.redFlag("Unused as-path access-list: '" + name + "'", UNUSED);
          }
       }
    }
@@ -2220,7 +2234,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          PrefixList prefixList = e.getValue();
          if (prefixList.isUnused()) {
-            _w.redFlag("Unused prefix-list: \"" + name + "\"");
+            _w.redFlag("Unused prefix-list: '" + name + "'", UNUSED);
          }
       }
    }
@@ -2233,7 +2247,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          RouteMap routeMap = e.getValue();
          if (!routeMap.getIpv6() && routeMap.isUnused()) {
-            _w.redFlag("Unused route-map: \"" + name + "\"");
+            _w.redFlag("Unused route-map: '" + name + "'", UNUSED);
          }
       }
    }

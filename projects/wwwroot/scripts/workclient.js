@@ -347,13 +347,13 @@ function queueWork(worktype, entryPoint, remainingCalls) {
         case "generatedataplane":
             reqParams[COMMAND_WRITE_CP_FACTS] = "";
             reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[COMMAND_NXTNET_DATA_PLANE] = "";
+            reqParams[COMMAND_NLS_DATA_PLANE] = "";
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             break;
         case "generatediffdataplane":
             reqParams[COMMAND_WRITE_CP_FACTS] = "";
             reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[COMMAND_NXTNET_DATA_PLANE] = "";
+            reqParams[COMMAND_NLS_DATA_PLANE] = "";
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_DIFF_ACTIVE] = "";
@@ -379,7 +379,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             if (! bfIsInvalidStr(diffEnvName)) {
                 reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
             }
-            reqParams[COMMAND_NXTNET_TRAFFIC] = "";
+            reqParams[COMMAND_NLS_TRAFFIC] = "";
             reqParams[COMMAND_GET_HISTORY] = "";
 
             if (worktype == "answerdiffquestion") {

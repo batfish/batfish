@@ -52,7 +52,7 @@ public class BfCoordWorkHelper {
       multiPart.bodyPart(new FormDataBodyPart(key, value,
             MediaType.TEXT_PLAIN_TYPE));
    }
-   
+
    public boolean delContainer(String containerName) {
       try {
          Client client = getClientBuilder().build();
@@ -293,7 +293,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
       return wItem;
    }
@@ -308,7 +308,7 @@ public class BfCoordWorkHelper {
       if (diffEnvName != null) {
          wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       }
-      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
       return wItem;
    }
@@ -318,7 +318,7 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_DATA_PLANE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
@@ -328,7 +328,7 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_DATA_PLANE, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
@@ -365,7 +365,7 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemPostFlows(String containerName,
          String testrigName, String envName, String questionName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_NXTNET_TRAFFIC, "");
+      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
@@ -417,7 +417,7 @@ public class BfCoordWorkHelper {
 
          addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
                _settings.getApiKey());
-         
+
          JSONObject jObj = postData(webTarget, multiPart);
          if (jObj == null) {
             return null;
@@ -430,7 +430,7 @@ public class BfCoordWorkHelper {
          return null;
       }
    }
-   
+
    public String initContainer(String containerPrefix) {
       try {
          Client client = getClientBuilder().build();
@@ -518,7 +518,7 @@ public class BfCoordWorkHelper {
             _logger.errorf("GetObject: Did not get an OK response\n");
             return false;
          }
-         
+
          return true;
       }
       catch (ProcessingException e) {
@@ -538,7 +538,7 @@ public class BfCoordWorkHelper {
             return false;
          }
          throw e;
-      }      
+      }
    }
 
    public String[] listContainers() {
@@ -705,7 +705,7 @@ public class BfCoordWorkHelper {
 
          for (int index = 0; index < testrigArray.length(); index++) {
             JSONObject jObjTestrig = testrigArray.getJSONObject(index);
-            testrigs.put(jObjTestrig.getString(CoordConsts.SVC_TESTRIG_NAME_KEY), 
+            testrigs.put(jObjTestrig.getString(CoordConsts.SVC_TESTRIG_NAME_KEY),
                   jObjTestrig.getString(CoordConsts.SVC_TESTRIG_INFO_KEY));
          }
 

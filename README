@@ -12,7 +12,7 @@ Prerequisites:
    ant
    GNU parallel
    java 7 jdk
-   nxtnet (not required for all tasks)
+   Network Logic Solver (nls) (not required for all tasks)
    python
    z3
 
@@ -30,7 +30,8 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. Install nxtnet into your path
+3. Install nls into your path
+   You can download the Windows version from: https://www.microsoft.com/en-us/download/details.aspx?id=52259
 
 4. Clone batfish
 git clone https://github.com/arifogel/batfish.git
@@ -87,7 +88,7 @@ Within this base directory one finds:
 
       env (directory): a directory in which modifications to a default environment are specified. Modifications could include failed nodes, failed interfaces, failed links, or updated configuration files.
 
-      **TODO: explain nxtnet* files/dirs, precomputedroutes
+      **TODO: explain nls* files/dirs, precomputedroutes
 
 ***
 One can also run a single-node-failure or single-link-failure consistency check with:

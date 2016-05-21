@@ -34,6 +34,7 @@ public class BgpAdvertisementsQuestion extends Question {
       super(QuestionType.BGP_ADVERTISEMENTS);
       _ebgp = true;
       _ibgp = true;
+      _nodeRegex = ".*";
       _received = true;
       _sent = true;
    }

@@ -127,6 +127,10 @@ public class BatfishLogger {
       return levels;
    }
 
+   public static boolean isValidLogLevel(String levelStr) {
+      return (LOG_LEVELS.containsKey(levelStr));
+   }
+
    private final BatfishLoggerHistory _history;
 
    private int _level;

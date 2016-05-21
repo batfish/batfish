@@ -67,6 +67,10 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             flowBuilder.setEcn(value.intValue());
             break;
 
+         case Synthesizer.STATE_VAR:
+            flowBuilder.setState(value.intValue());
+            break;
+
          case Synthesizer.ICMP_TYPE_VAR:
             flowBuilder.setIcmpType(value.intValue());
             break;

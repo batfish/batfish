@@ -5,9 +5,11 @@ import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 
-public class FlattenVendorConfigurationResult extends
-      BatfishJobResult<Map<File, String>> {
+public class FlattenVendorConfigurationResult
+      extends
+      BatfishJobResult<Map<File, String>, FlattenVendorConfigurationAnswerElement> {
 
    private final String _flattenedText;
 
@@ -44,7 +46,8 @@ public class FlattenVendorConfigurationResult extends
 
    @Override
    public void applyTo(Map<File, String> outputConfigurationData,
-         BatfishLogger logger) {
+         BatfishLogger logger,
+         FlattenVendorConfigurationAnswerElement answerElement) {
       appendHistory(logger);
       outputConfigurationData.put(_outputFile, _flattenedText);
    }

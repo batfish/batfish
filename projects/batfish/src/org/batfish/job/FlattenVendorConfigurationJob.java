@@ -77,15 +77,7 @@ public class FlattenVendorConfigurationJob extends
                         error, e));
          }
          finally {
-            for (String warning : _warnings.getRedFlagWarnings()) {
-               _logger.redflag(warning);
-            }
-            for (String warning : _warnings.getUnimplementedWarnings()) {
-               _logger.unimplemented(warning);
-            }
-            for (String warning : _warnings.getPedanticWarnings()) {
-               _logger.pedantic(warning);
-            }
+            Batfish.logWarnings(_logger, _warnings);
          }
          elapsedTime = System.currentTimeMillis() - startTime;
          return new FlattenVendorConfigurationResult(elapsedTime,

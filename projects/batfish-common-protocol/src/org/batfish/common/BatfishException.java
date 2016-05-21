@@ -27,8 +27,9 @@ public class BatfishException extends RuntimeException implements AnswerElement 
       public void serialize(BatfishException value, JsonGenerator jgen,
             SerializerProvider provider) throws IOException,
             JsonProcessingException {
-         String stackTrace = ExceptionUtils.getFullStackTrace(value);
-         String[] lines = stackTrace.replace("\t", "   ").split("\n");
+         String stackTrace = ExceptionUtils.getFullStackTrace(value).replace(
+               "\t", "   ");
+         String[] lines = stackTrace.split("\n");
          for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             jgen.writeFieldName(Integer.toString(i));

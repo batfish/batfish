@@ -6,6 +6,8 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
@@ -13,6 +15,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
  * peer to the router whose configuration's BGP process contains this object
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+@JsonInclude(Include.NON_NULL)
 public final class BgpNeighbor implements Serializable {
 
    /**

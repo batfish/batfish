@@ -42,30 +42,29 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
          Map<String, BgpAdvertisementType> map = new HashMap<String, BgpAdvertisementType>();
          for (BgpAdvertisementType bgpAdvertisementType : BgpAdvertisementType
                .values()) {
-            String nxtnetTypeName = bgpAdvertisementType._nxtnetTypeName;
-            map.put(nxtnetTypeName, bgpAdvertisementType);
+            String nlsTypeName = bgpAdvertisementType._nlsTypeName;
+            map.put(nlsTypeName, bgpAdvertisementType);
          }
          return Collections.unmodifiableMap(map);
       }
 
-      public static BgpAdvertisementType fromNxtnetTypeName(
-            String nxtnetTypeName) {
-         BgpAdvertisementType bgpAdvertisementType = _map.get(nxtnetTypeName);
+      public static BgpAdvertisementType fromNlsTypeName(String nlsTypeName) {
+         BgpAdvertisementType bgpAdvertisementType = _map.get(nlsTypeName);
          if (bgpAdvertisementType == null) {
-            throw new BatfishException("Invalid nxtnetTypeName: \""
-                  + nxtnetTypeName + "\"");
+            throw new BatfishException("Invalid nlsTypeName: \"" + nlsTypeName
+                  + "\"");
          }
          return bgpAdvertisementType;
       }
 
-      private String _nxtnetTypeName;
+      private String _nlsTypeName;
 
-      private BgpAdvertisementType(String nxtnetTypeName) {
-         _nxtnetTypeName = nxtnetTypeName;
+      private BgpAdvertisementType(String nlsTypeName) {
+         _nlsTypeName = nlsTypeName;
       }
 
-      public String getNxtnetTypeName() {
-         return _nxtnetTypeName;
+      public String getNlsTypeName() {
+         return _nlsTypeName;
       }
 
    }

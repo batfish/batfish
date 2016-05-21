@@ -39,6 +39,7 @@ import org.batfish.datamodel.PrefixSpaceList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.answers.GraphvizAnswerElement;
 import org.batfish.graphviz.GraphvizDigraph;
 import org.batfish.graphviz.GraphvizJob;
 import org.batfish.graphviz.GraphvizEdge;
@@ -975,7 +976,7 @@ public final class ProtocolDependencyAnalysis {
             .getProtocolDependencyGraphPath();
       new File(protocolDependencyGraphPath).mkdirs();
       Map<Prefix, GraphvizInput> graphs = getGraphs();
-      BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizResult, Map<String, byte[]>>(
+      BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<String, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<String, byte[]>>(
             settings, logger);
       Map<String, byte[]> output = new TreeMap<String, byte[]>();
       List<GraphvizJob> jobs = new ArrayList<GraphvizJob>();
@@ -993,7 +994,8 @@ public final class ProtocolDependencyAnalysis {
                prefix);
          jobs.add(job);
       }
-      executor.executeJobs(jobs, output);
+      // todo: do something with graphviz answer element
+      executor.executeJobs(jobs, output, new GraphvizAnswerElement());
       for (Entry<String, byte[]> e : output.entrySet()) {
          String outputPath = e.getKey();
          byte[] outputBytes = e.getValue();

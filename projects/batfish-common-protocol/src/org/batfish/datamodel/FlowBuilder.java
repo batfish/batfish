@@ -42,6 +42,8 @@ public class FlowBuilder {
 
    private Integer _tcpFlagsUrg;
 
+   private Integer _state;
+
    public FlowBuilder() {
       _dscp = 0;
       _dstIp = Ip.ZERO;
@@ -52,6 +54,7 @@ public class FlowBuilder {
       _srcPort = 0;
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
+      _state = 0;
       _tcpFlagsCwr = 0;
       _tcpFlagsEce = 0;
       _tcpFlagsUrg = 0;
@@ -71,9 +74,9 @@ public class FlowBuilder {
          throw new BatfishException("Cannot build flow without specifying tag");
       }
       return new Flow(_ingressNode, _srcIp, _dstIp, _srcPort, _dstPort,
-            _ipProtocol, _dscp, _ecn, _icmpType, _icmpCode, _tcpFlagsCwr,
-            _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
-            _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
+            _ipProtocol, _dscp, _ecn, _icmpType, _icmpCode, _state,
+            _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
+            _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
    }
 
    public void setDscp(Integer dscp) {
@@ -114,6 +117,10 @@ public class FlowBuilder {
 
    public void setSrcPort(int srcPort) {
       _srcPort = srcPort;
+   }
+
+   public void setState(Integer state) {
+      _state = state;
    }
 
    public void setTag(String tag) {

@@ -82,6 +82,11 @@ IpAccessListMatchSrcPort(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchState(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchTcpFlags(list, line, flow) ->
    IpAccessList(list),
    int(line),
@@ -160,6 +165,11 @@ SetIpAccessListLine_srcPortRange(list, line, srcPort_start, srcPort_end) ->
    int(line),
    int(srcPort_start),
    int(srcPort_end).
+
+SetIpAccessListLine_state(list, line, state) ->
+   IpAccessList(list),
+   int(line),
+   int(state).
 
 SetIpAccessListLine_tcpFlags(list, line, alternative) ->
    IpAccessList(list),

@@ -33,6 +33,10 @@ Flow_icmpType[flow] = icmpType ->
    Flow(flow),
    int(icmpType).
 
+Flow_state[flow] = state ->
+   Flow(flow),
+   int(state).
+
 Flow_tcpFlagsCWR[flow] = bit ->
    Flow(flow),
    int(bit).

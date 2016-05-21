@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class ReferenceCountedStructure implements Serializable {
 
    /**
@@ -13,6 +15,7 @@ public abstract class ReferenceCountedStructure implements Serializable {
 
    private transient Map<Object, String> _referers;
 
+   @JsonIgnore
    public Map<Object, String> getReferers() {
       initReferers();
       return _referers;
@@ -24,6 +27,7 @@ public abstract class ReferenceCountedStructure implements Serializable {
       }
    }
 
+   @JsonIgnore
    public boolean isUnused() {
       initReferers();
       return _referers.isEmpty();

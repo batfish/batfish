@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,7 +17,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.DscpType;
@@ -36,6 +36,7 @@ import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -204,8 +205,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             return canonicalPrefix;
          }
       }
-      throw new BatfishException("Invalid interface name prefix: \"" + prefix
-            + "\"");
+      throw new BatfishException("Invalid interface name prefix: '" + prefix
+            + "'");
    }
 
    private static Map<String, String> getCiscoInterfacePrefixes() {
@@ -476,8 +477,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return NamedPort.XDMCP;
       }
       else {
-         throw new BatfishException("missing port-number mapping for port: \""
-               + ctx.getText() + "\"");
+         throw new BatfishException("missing port-number mapping for port: '"
+               + ctx.getText() + "'");
       }
    }
 
@@ -529,8 +530,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
-                     + ipPrefixToken.getType() + " with text: \""
-                     + ipPrefixToken.getText() + "\"");
+                     + ipPrefixToken.getType() + " with text: '"
+                     + ipPrefixToken.getText() + "'");
       }
       String text = ipPrefixToken.getText();
       String[] parts = text.split("/");
@@ -645,8 +646,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          val = DscpType.EF.number();
       }
       else {
-         throw new BatfishException("Unhandled dscp type: \"" + ctx.getText()
-               + "\"");
+         throw new BatfishException("Unhandled dscp type: '" + ctx.getText()
+               + "'");
       }
       return val;
    }
@@ -668,8 +669,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.range().range_list.size() != 1) {
          throw new RedFlagBatfishException(
-               "got interface range where single interface was expected: \""
-                     + ctx.getText() + "\"");
+               "got interface range where single interface was expected: '"
+                     + ctx.getText() + "'");
       }
       name += ctx.range().getText();
       return name;
@@ -897,7 +898,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _configuration.getInterfaces().put(name, newInterface);
       }
       else {
-         _w.pedantic("Interface: \"" + name + "\" altered more than once");
+         _w.pedantic("Interface: '" + name + "' altered more than once");
       }
       _currentInterfaces.add(newInterface);
       newInterface.setBandwidth(bandwidth);
@@ -966,8 +967,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String ifaceName = ctx.iname.getText();
       _currentIsisInterface = _configuration.getInterfaces().get(ifaceName);
       if (_currentIsisInterface == null) {
-         _w.redFlag("IS-IS process references nonexistent interface: \""
-               + ifaceName + "\"");
+         _w.redFlag("IS-IS process references nonexistent interface: '"
+               + ifaceName + "'");
          _currentIsisInterface = DUMMY_INTERFACE;
       }
       _currentIsisInterface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
@@ -1131,8 +1132,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                pushPeer(_currentIpPeerGroup);
             }
             else {
-               String message = "reference to undeclared peer group: \""
-                     + ip.toString() + "\"";
+               String message = "reference to undeclared peer group: '"
+                     + ip.toString() + "'";
                _w.redFlag(message);
                pushPeer(_dummyPeerGroup);
             }
@@ -1156,7 +1157,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             }
             else {
                throw new BatfishException(
-                     "reference to undeclared peer group: \"" + name + "\"");
+                     "reference to undeclared peer group: '" + name + "'");
             }
          }
          pushPeer(_currentNamedPeerGroup);
@@ -1611,6 +1612,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
       Set<Integer> dscps = new TreeSet<Integer>();
       Set<Integer> ecns = new TreeSet<Integer>();
+      Set<State> states = EnumSet.noneOf(State.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
          if (feature.ACK() != null) {
             TcpFlags alt = new TcpFlags();
@@ -1702,6 +1704,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.TRACEROUTE;
             icmpCode = IcmpCode.TRACEROUTE;
          }
+         if (feature.TRACKED() != null) {
+            states.add(State.ESTABLISHED);
+         }
          if (feature.UNREACHABLE() != null) {
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
          }
@@ -1716,7 +1721,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ExtendedAccessListLine line = new ExtendedAccessListLine(name, action,
             protocol, new IpWildcard(srcIp, srcWildcard), srcAddressGroup,
             new IpWildcard(dstIp, dstWildcard), dstAddressGroup, srcPortRanges,
-            dstPortRanges, dscps, ecns, icmpType, icmpCode, tcpFlags);
+            dstPortRanges, dscps, ecns, icmpType, icmpCode, states, tcpFlags);
       _currentExtendedAcl.addLine(line);
    }
 
