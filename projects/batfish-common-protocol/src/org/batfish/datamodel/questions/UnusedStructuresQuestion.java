@@ -10,6 +10,7 @@ public class UnusedStructuresQuestion extends Question {
 
 	public UnusedStructuresQuestion() {
 		super(QuestionType.UNUSED_STRUCTURES);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

@@ -10,6 +10,7 @@ public class UndefinedReferencesQuestion extends Question {
 
 	public UndefinedReferencesQuestion() {
 		super(QuestionType.UNDEFINED_REFERENCES);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

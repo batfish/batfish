@@ -10,6 +10,7 @@ public class UniqueIpAssignmentsQuestion extends Question {
 
    public UniqueIpAssignmentsQuestion() {
       super(QuestionType.UNIQUE_IP_ASSIGNMENTS);
+      _nodeRegex = ".*";
    }
 
    @Override

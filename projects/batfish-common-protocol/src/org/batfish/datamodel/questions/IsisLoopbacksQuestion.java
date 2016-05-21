@@ -10,6 +10,7 @@ public class IsisLoopbacksQuestion extends Question {
 
 	public IsisLoopbacksQuestion() {
 		super(QuestionType.ISIS_LOOPBACKS);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

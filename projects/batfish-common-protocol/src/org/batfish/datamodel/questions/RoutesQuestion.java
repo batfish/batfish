@@ -10,6 +10,7 @@ public class RoutesQuestion extends Question {
 
 	public RoutesQuestion() {
 		super(QuestionType.ROUTES);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

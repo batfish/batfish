@@ -10,6 +10,7 @@ public class OspfLoopbacksQuestion extends Question {
 
 	public OspfLoopbacksQuestion() {
 		super(QuestionType.OSPF_LOOPBACKS);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

@@ -10,6 +10,7 @@ public class UniqueBgpPrefixOriginationQuestion extends Question {
 
 	public UniqueBgpPrefixOriginationQuestion() {
 		super(QuestionType.UNIQUE_BGP_PREFIX_ORIGINATION);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

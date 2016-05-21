@@ -41,9 +41,7 @@ import jline.console.completer.StringsCompleter;
 public class Client {
 
 	private static final String COMMAND_ANSWER = "answer";
-	private static final String COMMAND_ANSWER_BYTYPE = "answer-bytype";
 	private static final String COMMAND_ANSWER_DIFF = "answer-diff";
-	private static final String COMMAND_ANSWER_DIFF_BYTYPE = "answer-diff-bytype";
 	private static final String COMMAND_CAT = "cat";
 	private static final String COMMAND_CLEAR_SCREEN = "cls";
 	private static final String COMMAND_DEL_CONTAINER = "del-container";
@@ -52,9 +50,11 @@ public class Client {
 	private static final String COMMAND_DEL_TESTRIG = "del-testrig";
 	private static final String COMMAND_DIR = "dir";
 	private static final String COMMAND_ECHO = "echo";
-   private static final String COMMAND_EXIT = "exit";
+	private static final String COMMAND_EXIT = "exit";
 	private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
 	private static final String COMMAND_GEN_DP = "generate-dataplane";
+	private static final String COMMAND_GET = "get";
+	private static final String COMMAND_GET_DIFF = "get-diff";
 	private static final String COMMAND_HELP = "help";
 	private static final String COMMAND_CHECK_API_KEY = "checkapikey";
 	private static final String COMMAND_INIT_CONTAINER = "init-container";
@@ -67,16 +67,16 @@ public class Client {
 	private static final String COMMAND_PROMPT = "prompt";
 	private static final String COMMAND_PWD = "pwd";
 	private static final String COMMAND_QUIT = "quit";
-   private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
+	private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
 	private static final String COMMAND_SET_CONTAINER = "set-container";
 	private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
 	private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
 	private static final String COMMAND_SET_TESTRIG = "set-testrig";
 	private static final String COMMAND_SHOW_API_KEY = "show-api-key";
-   private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
+	private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
 	private static final String COMMAND_SHOW_CONTAINER = "show-container";
 	private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
-   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
+	private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
 	private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
 	private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
@@ -93,15 +93,9 @@ public class Client {
 		descs.put(COMMAND_ANSWER, COMMAND_ANSWER
 				+ " <question-file> [param1=value1 [param2=value2] ...]\n"
 				+ "\t Answer the question in the file for the default environment");
-		descs.put(COMMAND_ANSWER_BYTYPE, COMMAND_ANSWER_BYTYPE
-				+ " <question-type>  [param1=value1 [param2=value2] ...]\n"
-				+ "\t Answer the question by type for the differential environment");
 		descs.put(COMMAND_ANSWER_DIFF, COMMAND_ANSWER_DIFF
 				+ " <question-file>  [param1=value1 [param2=value2] ...]\n"
 				+ "\t Answer the question in the file for the differential environment");
-		descs.put(COMMAND_ANSWER_DIFF_BYTYPE, COMMAND_ANSWER_DIFF_BYTYPE
-				+ " <question-file>  [param1=value1 [param2=value2] ...]\n"
-				+ "\t Answer the question by type for the differential environment");
 		descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
 				+ "\t Print the contents of the file");
 		// descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
@@ -121,11 +115,17 @@ public class Client {
 				+ "\t List directory contents");
 		descs.put(COMMAND_ECHO, COMMAND_ECHO + "<message>"
 				+ "\t Echo the message");
-      descs.put(COMMAND_EXIT, COMMAND_EXIT + "\n" + "\t Terminate interactive client session");
+		descs.put(COMMAND_EXIT, COMMAND_EXIT + "\n" + "\t Terminate interactive client session");
 		descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
 				+ "\t Generate dataplane for the differential environment");
 		descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
 				+ "\t Generate dataplane for the default environment");
+		descs.put(COMMAND_GET, COMMAND_GET
+				+ " <question-type>  [param1=value1 [param2=value2] ...]\n"
+				+ "\t Answer the question by type for the differential environment");
+		descs.put(COMMAND_GET_DIFF, COMMAND_GET_DIFF
+				+ " <question-file>  [param1=value1 [param2=value2] ...]\n"
+				+ "\t Answer the question by type for the differential environment");
 		descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
 				+ "\t Print the list of supported commands");
 		descs.put(COMMAND_CHECK_API_KEY, COMMAND_CHECK_API_KEY 
@@ -151,29 +151,29 @@ public class Client {
 		descs.put(COMMAND_PWD, COMMAND_PWD + "\n"
 				+ "\t Prints the working directory");
 		descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n" + "\t Terminate interactive client session");
-      descs.put(COMMAND_SET_BATFISH_LOGLEVEL, COMMAND_SET_BATFISH_LOGLEVEL
-            + " <debug|info|output|warn|error>\n"
-            + "\t Set the batfish loglevel. Default is warn");
+		descs.put(COMMAND_SET_BATFISH_LOGLEVEL, COMMAND_SET_BATFISH_LOGLEVEL
+				+ " <debug|info|output|warn|error>\n"
+				+ "\t Set the batfish loglevel. Default is warn");
 		descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
 				+ " <container-name>\n" + "\t Set the current container");
 		descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
 				+ " <environment-name>\n"
 				+ "\t Set the current differential environment");
-      descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
-            + " <debug|info|output|warn|error>\n"
-            + "\t Set the client loglevel. Default is output");
+		descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
+				+ " <debug|info|output|warn|error>\n"
+				+ "\t Set the client loglevel. Default is output");
 		descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
 				+ "\t Set the current testrig");
 		descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n" 
 				+ "\t Show API Key");
-      descs.put(COMMAND_SHOW_BATFISH_LOGLEVEL, COMMAND_SHOW_BATFISH_LOGLEVEL + "\n" 
-            + "\t Show current batfish loglevel");
+		descs.put(COMMAND_SHOW_BATFISH_LOGLEVEL, COMMAND_SHOW_BATFISH_LOGLEVEL + "\n" 
+				+ "\t Show current batfish loglevel");
 		descs.put(COMMAND_SHOW_CONTAINER, COMMAND_SHOW_CONTAINER + "\n" 
 				+ "\t Show active container");
 		descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST + "\n" 
 				+ "\t Show coordinator host");
-      descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n" 
-            + "\t Show current client loglevel");
+		descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n" 
+				+ "\t Show current client loglevel");
 		descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n" 
 				+ "\t Show active testrig");
 		descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
@@ -203,11 +203,11 @@ public class Client {
 
 		switch (_settings.getRunMode()) {
 		case batch:
-      case genquestions:
+		case genquestions:
 			_logger =  new BatfishLogger(_settings.getLogLevel(), false,
 					_settings.getLogFile(), false, false);
 			break;		   
-      case interactive:
+		case interactive:
 			try {
 				_reader = new ConsoleReader();
 				_reader.setPrompt("batfish> ");
@@ -338,44 +338,44 @@ public class Client {
 		_logger.output("\n");
 		_logger.infof("final status: %s\n", status);
 
-	    // get the answer
-      String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
-      String downloadedAnsFile = _workHelper.getObject(wItem.getContainerName(),
-            wItem.getTestrigName(), ansFileName);
+		// get the answer
+		String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
+		String downloadedAnsFile = _workHelper.getObject(wItem.getContainerName(),
+				wItem.getTestrigName(), ansFileName);
 
-      if (downloadedAnsFile == null) {
-         _logger.errorf("Failed to get answer file %s. Fix batfish and remove the statement below this line\n", ansFileName);
-         //return false;
-      }
-      else {
-         try (BufferedReader br = new BufferedReader(new FileReader(
-               downloadedAnsFile))) {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-               _logger.output(line + "\n");
-            }
-         }
-      }
+		if (downloadedAnsFile == null) {
+			_logger.errorf("Failed to get answer file %s. Fix batfish and remove the statement below this line\n", ansFileName);
+			//return false;
+		}
+		else {
+			try (BufferedReader br = new BufferedReader(new FileReader(
+					downloadedAnsFile))) {
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					_logger.output(line + "\n");
+				}
+			}
+		}
 
-      // get the log
-      _logger.output("---------------- Log output --------------\n");
-      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-      String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
-            wItem.getTestrigName(), logFileName);
+		// get the log
+		_logger.output("---------------- Log output --------------\n");
+		String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
+		String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+				wItem.getTestrigName(), logFileName);
 
-      if (downloadedFile == null) {
-         _logger.errorf("Failed to get log file %s\n", logFileName);
-         return false;
-      }
-      else {
-         try (BufferedReader br = new BufferedReader(new FileReader(
-               downloadedFile))) {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-               _logger.output(line + "\n");
-            }
-         }
-      }
+		if (downloadedFile == null) {
+			_logger.errorf("Failed to get log file %s\n", logFileName);
+			return false;
+		}
+		else {
+			try (BufferedReader br = new BufferedReader(new FileReader(
+					downloadedFile))) {
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					_logger.output(line + "\n");
+				}
+			}
+		}
 
 		// TODO: remove the log file?
 
@@ -411,35 +411,35 @@ public class Client {
 
 		return execute(wItemGenDdp);
 	}
-	
+
 	private void generateQuestions() {
-	   
-      File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
 
-      if (!questionsDir.exists()) {
-         if (!questionsDir.mkdirs()) {
-            _logger.errorf("Could not create questions dir %s\n", 
-                  _settings.getQuestionsDir());
-            System.exit(1);
-         }
-      }
+		File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
 
-	   for (QuestionType qType : QuestionType.values()) {
-	      try {
-	         String questionString = QuestionHelper.getQuestionString(qType);
-	         
-	         String qFile = Paths.get(_settings.getQuestionsDir(), 
-	               qType.questionTypeName() + ".json").toFile().getAbsolutePath();	   
-	         
-	         PrintWriter writer = new PrintWriter(qFile);
-	         writer.write(questionString);
-	         writer.close();	         
-	      }
-	      catch (Exception e) {
-	         _logger.errorf("Could not write question %s: %s\n", 
-	               qType.questionTypeName(), e.getMessage());
-	      }
-	   }
+		if (!questionsDir.exists()) {
+			if (!questionsDir.mkdirs()) {
+				_logger.errorf("Could not create questions dir %s\n", 
+						_settings.getQuestionsDir());
+				System.exit(1);
+			}
+		}
+
+		for (QuestionType qType : QuestionType.values()) {
+			try {
+				String questionString = QuestionHelper.getQuestionString(qType);
+
+				String qFile = Paths.get(_settings.getQuestionsDir(), 
+						qType.questionTypeName() + ".json").toFile().getAbsolutePath();	   
+
+				PrintWriter writer = new PrintWriter(qFile);
+				writer.write(questionString);
+				writer.close();	         
+			}
+			catch (Exception e) {
+				_logger.errorf("Could not write question %s: %s\n", 
+						qType.questionTypeName(), e.getMessage());
+			}
+		}
 	}
 
 	private List<String> getCommandParameters(String[] words, int numOptions) {
@@ -480,7 +480,7 @@ public class Client {
 		_poolHelper = new BfCoordPoolHelper(poolMgr);
 
 		int numTries = 0;
-		
+
 		while (true) {
 			try {
 				numTries++;
@@ -527,37 +527,39 @@ public class Client {
 			return true;
 
 		if (_currTestrigName == null) {
-			_logger.errorf("Active testrig is not set\n");
+			_logger.errorf("Active testrig is not set.\n");
+			_logger.errorf("Specify testrig on command line (-%s <testrigdir>) or use command (%s [-nodataplane] <testrigdir>)\n",
+					Settings.ARG_TESTRIG_DIR, COMMAND_INIT_TESTRIG);
 			return false;
 		}
 		return true;
 	}
 
-   private Map<String, String> parseParams(String paramsLine) {
-      Map<String,String> parameters = new HashMap<String, String>();
+	private Map<String, String> parseParams(String paramsLine) {
+		Map<String,String> parameters = new HashMap<String, String>();
 
-      Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
+		Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");      
 
-      String[] params = paramsLine.split("\\|");
+		String[] params = paramsLine.split("\\|");
 
-      _logger.debugf("Found %d parameters\n", params.length);
+		_logger.debugf("Found %d parameters\n", params.length);
 
-      for (String param : params) {
-         Matcher matcher = pattern.matcher(param);
+		for (String param : params) {
+			Matcher matcher = pattern.matcher(param);
 
-         while (matcher.find()) {
-            String key = matcher.group(1).trim();
-            String value = matcher.group(2).trim();
-            _logger.debugf("key=%s value=%s\n", key, value);
+			while (matcher.find()) {
+				String key = matcher.group(1).trim();
+				String value = matcher.group(2).trim();
+				_logger.debugf("key=%s value=%s\n", key, value);
 
-            parameters.put(key,  value);
-         }
-      }
+				parameters.put(key,  value);
+			}
+		}
 
-      return parameters;
-   }
+		return parameters;
+	}
 
-   
+
 	private void printUsage() {
 		for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
 			_logger.output(entry.getValue() + "\n\n");
@@ -587,17 +589,6 @@ public class Client {
 
 				return answerFile(questionFile, paramsLine, false);            	
 			}
-			case COMMAND_ANSWER_BYTYPE: {
-				if (!isSetTestrig() || !isSetContainer(true)) {
-					return false;
-				}
-
-				String questionType = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
-						Arrays.copyOfRange(words, 2 + options.size(), words.length));
-
-				return answerType(questionType, paramsLine, false);            	
-			}
 			case COMMAND_ANSWER_DIFF: {
 				if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
 					return false;
@@ -608,17 +599,6 @@ public class Client {
 						Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
 				return answerFile(questionFile, paramsLine, true);
-			}
-			case COMMAND_ANSWER_DIFF_BYTYPE: {
-				if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
-					return false;
-				}
-
-				String questionType = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
-						Arrays.copyOfRange(words, 2 + options.size(), words.length));
-
-				return answerType(questionType, paramsLine, true);
 			}
 			case COMMAND_CAT: {
 				String filename = words[1];
@@ -685,16 +665,38 @@ public class Client {
 				_logger.outputf("%s\n", Util.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
 				return true;
 			}
-         case COMMAND_EXIT:
-         case COMMAND_QUIT: {
-            System.exit(0);
-            return true;
-         }
+			case COMMAND_EXIT:
+			case COMMAND_QUIT: {
+				System.exit(0);
+				return true;
+			}
 			case COMMAND_GEN_DP: {
 				return generateDataplane();
 			}
 			case COMMAND_GEN_DIFF_DP: {
 				return generateDiffDataplane();
+			}
+			case COMMAND_GET: {
+				if (!isSetTestrig() || !isSetContainer(true)) {
+					return false;
+				}
+
+				String questionType = parameters.get(0);
+				String paramsLine = Util.joinStrings(" ",
+						Arrays.copyOfRange(words, 2 + options.size(), words.length));
+
+				return answerType(questionType, paramsLine, false);            	
+			}
+			case COMMAND_GET_DIFF: {
+				if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
+					return false;
+				}
+
+				String questionType = parameters.get(0);
+				String paramsLine = Util.joinStrings(" ",
+						Arrays.copyOfRange(words, 2 + options.size(), words.length));
+
+				return answerType(questionType, paramsLine, true);
 			}
 			case COMMAND_HELP: {
 				printUsage();
@@ -849,16 +851,16 @@ public class Client {
 				_logger.output("working directory = " + dir + "\n");
 				return true;
 			}
-         case COMMAND_SET_BATFISH_LOGLEVEL: {
-            String logLevelStr = parameters.get(0).toLowerCase();
-            if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
-               _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
-               return false;              
-            }
-            _settings.setBatfishLogLevel(logLevelStr);
-            _logger.output("Changed batfish loglevel to " + logLevelStr + "\n");
-            return true;
-         }
+			case COMMAND_SET_BATFISH_LOGLEVEL: {
+				String logLevelStr = parameters.get(0).toLowerCase();
+				if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
+					_logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
+					return false;              
+				}
+				_settings.setBatfishLogLevel(logLevelStr);
+				_logger.output("Changed batfish loglevel to " + logLevelStr + "\n");
+				return true;
+			}
 			case COMMAND_SET_CONTAINER: {
 				_currContainerName = parameters.get(0);
 				_logger.outputf("Active container is now set to %s\n",
@@ -875,28 +877,28 @@ public class Client {
 			case COMMAND_SET_LOGLEVEL: {
 				String logLevelStr = parameters.get(0).toLowerCase();
 				if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
-               _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
-               return false;				   
+					_logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
+					return false;				   
 				}
 				_logger.setLogLevel(logLevelStr);
 				_logger.output("Changed client loglevel to " + logLevelStr + "\n");
 				return true;
 			}
-         case COMMAND_SET_TESTRIG: {
-            _currTestrigName = parameters.get(0);
-            _currEnv = DEFAULT_ENV_NAME;
-            _logger.outputf(
-                  "Active testrig is now %s\n", _currTestrigName);
-            return true;
-         }
+			case COMMAND_SET_TESTRIG: {
+				_currTestrigName = parameters.get(0);
+				_currEnv = DEFAULT_ENV_NAME;
+				_logger.outputf(
+						"Active testrig is now %s\n", _currTestrigName);
+				return true;
+			}
 			case COMMAND_SHOW_API_KEY: {
 				_logger.outputf("Current API Key is %s\n", _settings.getApiKey());
 				return true;
 			}
-         case COMMAND_SHOW_BATFISH_LOGLEVEL: {        
-            _logger.outputf("Current batfish log level is %s\n", _settings.getBatfishLogLevel());
-            return true;
-         }
+			case COMMAND_SHOW_BATFISH_LOGLEVEL: {        
+				_logger.outputf("Current batfish log level is %s\n", _settings.getBatfishLogLevel());
+				return true;
+			}
 			case COMMAND_SHOW_CONTAINER: {
 				_logger.outputf("Current container is %s\n", _currContainerName);
 				return true;
@@ -905,11 +907,13 @@ public class Client {
 				_logger.outputf("Current coordinator host is %s\n", _settings.getCoordinatorHost());
 				return true;
 			}
-         case COMMAND_SHOW_LOGLEVEL: {        
-            _logger.outputf("Current client log level is %s\n", _logger.getLogLevelStr());
-            return true;
-         }
+			case COMMAND_SHOW_LOGLEVEL: {        
+				_logger.outputf("Current client log level is %s\n", _logger.getLogLevelStr());
+				return true;
+			}
 			case COMMAND_SHOW_TESTRIG: {
+				if (!isSetTestrig()) 
+					return false;
 				_logger.outputf("Current testrig is %s\n", _currTestrigName);
 				return true;
 			}
@@ -937,26 +941,28 @@ public class Client {
 		}
 	}
 
+	private boolean processCommand(String command) {
+		String line = command.trim();
+		if (line.length() == 0 || line.startsWith("#")) {
+			return true;
+		}
+		_logger.debug("Doing command: " + line + "\n");
+
+		String[] words = line.split("\\s+");
+
+		if (!validCommandUsage(words)) 
+			return false;
+
+		return processCommand(words);
+	}
+
+
 	private boolean processCommands(List<String> commands) {
-
-		for (String rawLine : commands) {
-			String line = rawLine.trim();
-			if (line.length() == 0 || line.startsWith("#")) {
-				continue;
-			}
-
-			_logger.debug("Doing command: " + line + "\n");
-
-			String[] words = line.split("\\s+");
-
-			if (words.length > 0) {
-				if (validCommandUsage(words)) {
-					if (!processCommand(words))
-						return false;
-				}
+		for (String command : commands) {
+			if (!processCommand(command)) {
+				return false;
 			}
 		}
-		
 		return true;
 	}
 
@@ -970,10 +976,19 @@ public class Client {
 		if (!processCommands(initialCommands))
 			return;
 
+		if (_settings.getTestrigDir() != null) {
+			if (!processCommand(
+					COMMAND_INIT_TESTRIG + " -nodataplane " + _settings.getTestrigDir())) {
+				return;
+			}				
+		}
+			
 		switch (_settings.getRunMode()) {
 		case batch:
 			if (_settings.getBatchCommandFile() == null) {
-				System.err.println("org.batfish.client: Command file not specified while running in batch mode. Did you mean to run in interactive mode (-runmode interactive)?");
+				System.err.println("org.batfish.client: Command file not specified while running in batch mode.");
+				System.err.printf("Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
+						Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
 				System.exit(1);
 			}
 			List<String> commands = null;
@@ -989,8 +1004,8 @@ public class Client {
 
 			break;
 		case genquestions:
-		   generateQuestions();
-		   break;
+			generateQuestions();
+			break;
 		case interactive:
 			runInteractive();
 			break;

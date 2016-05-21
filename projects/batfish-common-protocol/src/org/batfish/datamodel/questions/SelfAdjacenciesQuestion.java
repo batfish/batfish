@@ -10,6 +10,7 @@ public class SelfAdjacenciesQuestion extends Question {
 
 	public SelfAdjacenciesQuestion() {
 		super(QuestionType.SELF_ADJACENCIES);
+	      _nodeRegex = ".*";
 	}
 
 	@Override

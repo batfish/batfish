@@ -10,15 +10,15 @@ import org.batfish.common.Util;
 
 public class Settings extends BaseSettings {
 
-   private static final String ARG_COMMAND_FILE = "cmdfile";
+   private static final String ARG_COMMAND_FILE = org.batfish.client.Settings.ARG_COMMAND_FILE;
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_BATFISH_ARGS = "batfishargs";
    private static final String ARG_CLIENT_ARGS = "clientargs";
    private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
-   private static final String ARG_RUN_MODE = "runmode";
-   private static final String ARG_TESTRIG_DIR = "testrig";
+   private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
+   private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
 
    private static final String EXECUTABLE_NAME = "allinone";
 
@@ -74,10 +74,10 @@ public class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
-      setDefaultProperty(ARG_COMMAND_FILE, 
-            Paths.get(org.batfish.common.Util.getJarOrClassDir(
-                  ConfigurationLocator.class).getAbsolutePath(), "default_commands")
-                  .toAbsolutePath().toString());
+//      setDefaultProperty(ARG_COMMAND_FILE, 
+//            Paths.get(org.batfish.common.Util.getJarOrClassDir(
+//                  ConfigurationLocator.class).getAbsolutePath(), "default_commands")
+//                  .toAbsolutePath().toString());
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
