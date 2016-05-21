@@ -1,55 +1,39 @@
 package org.batfish.question;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.util.Util;
 
 public class CompareSameNameAnswer extends Answer {
 
    public CompareSameNameAnswer(Batfish batfish,
          CompareSameNameQuestion question) {
-      CompareSameNameAnswerElement answerElement = new CompareSameNameAnswerElement();
+      
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
-      // collect nodes nodes
-      Pattern nodeRegex;
-      try {
-         nodeRegex = Pattern.compile(question.getNodeRegex());
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
-      }
-
-      Set<String> nodes = new TreeSet<String>();
-      if (nodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher nodeMatcher = nodeRegex.matcher(node);
-            if (nodeMatcher.matches()) {
-               nodes.add(node);
-            }
+      // collect relevant nodes in a list.
+      List<String> nodes = Util.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      
+      // Add 
+      CompareSameNameAnswerElement<AsPathAccessList> asPathAccessListAnswerElement = new CompareSameNameAnswerElement<AsPathAccessList>();
+      addAnswerElement(asPathAccessListAnswerElement);
+      
+      for (String node : nodes) {     
+         // Process AsAccessPathList structures.
+         Map<String, AsPathAccessList> asPathAccessLists =  configurations.get(node).getAsPathAccessLists();
+            for (String asPathAccessListName : asPathAccessLists.keySet()) {
+               asPathAccessListAnswerElement.add(node, asPathAccessListName, asPathAccessLists.get(asPathAccessListName));
          }
+        
       }
-      else {
-         nodes.addAll(configurations.keySet());
-      }
-
-      addAnswerElement(answerElement);
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-
-   }
-
+      
+   }   
 }
+
