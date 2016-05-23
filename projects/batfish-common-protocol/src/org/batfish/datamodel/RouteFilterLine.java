@@ -18,6 +18,18 @@ public class RouteFilterLine implements Serializable {
       _lengthRange = lengthRange;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      RouteFilterLine other = (RouteFilterLine) obj;
+      if (other.toString().equals(this.toString())) {
+         return true;
+      }
+      return false;
+   }
+   
    public LineAction getAction() {
       return _action;
    }
@@ -40,5 +52,4 @@ public class RouteFilterLine implements Serializable {
       sb.append("}");
       return sb.toString();
    }
-
 }

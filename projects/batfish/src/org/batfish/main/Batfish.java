@@ -2682,7 +2682,6 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Could not parse JSON question", e);
       }
    }
-
    private Object parseQuestionParameters() {
       String questionParametersPath = _settings.getQuestionParametersPath();
       File questionParametersFile = new File(questionParametersPath);

@@ -35,7 +35,7 @@ public class CompareSameNameAnswerElement<T> implements AnswerElement {
          }
       }
       if (!done) {
-         NamedStructureEquivalenceClass<T> equiClass = new NamedStructureEquivalenceClass<T>(name, namedStructure);
+         NamedStructureEquivalenceClass<T> equiClass = new NamedStructureEquivalenceClass<T>(node, name, namedStructure);
          equiClasses.add(equiClass);
       }
    }

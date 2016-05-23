@@ -7,10 +7,12 @@ public class NamedStructureEquivalenceClass<T> {
    
    private final Set<String> _nodes;
    private final T _namedStructure;
+   private final String _name;
    
-   public NamedStructureEquivalenceClass(String node, T namedStructure) {
+   public NamedStructureEquivalenceClass(String node, String name, T namedStructure) {
       _nodes = new HashSet<String>();
       _nodes.add(node);
+      _name = name;
       _namedStructure = namedStructure;
    }
   
