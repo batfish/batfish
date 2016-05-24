@@ -661,7 +661,7 @@ public class Batfish implements AutoCloseable {
          case NODES:
             answer = new NodesAnswer(this, (NodesQuestion) question);
             break;
-
+            
          case OSPF_LOOPBACKS:
             answer = new OspfLoopbacksAnswer(this,
                   (OspfLoopbacksQuestion) question);
@@ -676,7 +676,7 @@ public class Batfish implements AutoCloseable {
             answer = new ProtocolDependenciesAnswer(this,
                   (ProtocolDependenciesQuestion) question);
             break;
-
+            
          case REACHABILITY:
             answer = new ReachabilityAnswer(this,
                   (ReachabilityQuestion) question);
@@ -2682,7 +2682,6 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Could not parse JSON question", e);
       }
    }
-
    private Object parseQuestionParameters() {
       String questionParametersPath = _settings.getQuestionParametersPath();
       File questionParametersFile = new File(questionParametersPath);

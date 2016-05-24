@@ -1,55 +1,72 @@
 package org.batfish.question;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.util.Util;
 
 public class CompareSameNameAnswer extends Answer {
 
    public CompareSameNameAnswer(Batfish batfish,
          CompareSameNameQuestion question) {
-      CompareSameNameAnswerElement answerElement = new CompareSameNameAnswerElement();
+      
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
-      // collect nodes nodes
-      Pattern nodeRegex;
-      try {
-         nodeRegex = Pattern.compile(question.getNodeRegex());
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
-      }
-
-      Set<String> nodes = new TreeSet<String>();
-      if (nodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher nodeMatcher = nodeRegex.matcher(node);
-            if (nodeMatcher.matches()) {
-               nodes.add(node);
-            }
+      // collect relevant nodes in a list.
+      List<String> nodes = Util.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      
+      processAccessPathLists(nodes, configurations);
+      processCommunityLists(nodes,configurations);
+      processRouteFilterLists(nodes, configurations);
+   }
+   
+   private void processAccessPathLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<AsPathAccessList> ae = new CompareSameNameAnswerElement<AsPathAccessList>(AsPathAccessList.class.getSimpleName());
+      for (String node : nodes) {
+         
+         // Process AsAccessPathList structures.
+         Map<String, AsPathAccessList> asPathAccessLists =  configurations.get(node).getAsPathAccessLists();
+            for (String asPathAccessListName : asPathAccessLists.keySet()) {
+               ae.add(node, asPathAccessListName, asPathAccessLists.get(asPathAccessListName));
          }
       }
-      else {
-         nodes.addAll(configurations.keySet());
+      addAnswerElement(ae);
+   }   
+   
+   private void processCommunityLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<CommunityList> ae = new CompareSameNameAnswerElement<CommunityList>(CommunityList.class.getSimpleName());
+      for (String node : nodes) {
+         Map<String, CommunityList> communityLists =  configurations.get(node).getCommunityLists();
+         for (String communityListName : communityLists.keySet()) {
+            ae.add(node, communityListName, communityLists.get(communityListName));
+         }     
       }
-
-      addAnswerElement(answerElement);
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-
+      addAnswerElement(ae);
    }
-
+   
+   private void processRouteFilterLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<RouteFilterList> ae = new CompareSameNameAnswerElement<RouteFilterList>(RouteFilterList.class.getSimpleName());
+      for (String node : nodes) {
+         // Process route filters
+         Map<String, RouteFilterList> routeFilterLists =  configurations.get(node).getRouteFilterLists();
+         for (String routeFilterListName : routeFilterLists.keySet()) {
+            ae.add(node, routeFilterListName, routeFilterLists.get(routeFilterListName));  
+         }
+      }
+      addAnswerElement(ae);
+   }   
+   
 }
+
