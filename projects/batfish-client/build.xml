@@ -43,7 +43,7 @@
     description=
      "Compile all Java files">
       <mkdir dir="bin"/>
-      <javac destdir="bin" includes="**/*.java" debug="true" includeantruntime="false" source="1.7" target="1.7">
+      <javac destdir="bin" includes="**/*.java" debug="true" includeantruntime="false">
       	 <src path="src" />
          <classpath refid="libraries" />
          <classpath refid="one-jar.libraries"/>
