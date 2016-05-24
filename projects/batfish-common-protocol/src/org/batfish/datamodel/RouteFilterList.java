@@ -20,6 +20,15 @@ public class RouteFilterList extends ComparableStructure<String> {
       _lines.add(r);
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      RouteFilterList other = (RouteFilterList) obj;
+      return other._lines.equals(_lines);
+   }
+   
    public List<RouteFilterLine> getLines() {
       return _lines;
    }

@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.List;
 
+import org.batfish.common.util.ComparableStructure;
+
 /**
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement
@@ -20,12 +22,9 @@ public class CommunityList implements Serializable {
     */
    private List<CommunityListLine> _lines;
 
-   /**
-    * The name associated with this CommunityList. Ordinarily this should be
-    * extracted verbatim from a vendor-configuration file.
-    */
-   private String _name;
 
+   private String _name;
+   
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
     * lines for {@link #_lines}
@@ -51,8 +50,8 @@ public class CommunityList implements Serializable {
       return _lines;
    }
 
-   public String getName() {
+   public String getName()
+   {
       return _name;
    }
-
 }

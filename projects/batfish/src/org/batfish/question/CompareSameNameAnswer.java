@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.Answer;
@@ -20,36 +21,52 @@ public class CompareSameNameAnswer extends Answer {
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
-      //Configuration x = configurations.get("as1border1");
-      //Map<String, RouteFilterList> y = x.getRouteFilterLists();
-      //int z = y.keySet().size();
-      
       // collect relevant nodes in a list.
       List<String> nodes = Util.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
       
-      // Add 
-      CompareSameNameAnswerElement<AsPathAccessList> asPathAccessListAnswerElement = new CompareSameNameAnswerElement<AsPathAccessList>();
-      addAnswerElement(asPathAccessListAnswerElement);
-      
-      CompareSameNameAnswerElement<RouteFilterList> routeFilterListAnswerElement = new CompareSameNameAnswerElement<RouteFilterList>();
-      addAnswerElement(routeFilterListAnswerElement);
-      
+      processAccessPathLists(nodes, configurations);
+      processCommunityLists(nodes,configurations);
+      processRouteFilterLists(nodes, configurations);
+   }
+   
+   private void processAccessPathLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<AsPathAccessList> ae = new CompareSameNameAnswerElement<AsPathAccessList>(AsPathAccessList.class.getSimpleName());
       for (String node : nodes) {
          
          // Process AsAccessPathList structures.
          Map<String, AsPathAccessList> asPathAccessLists =  configurations.get(node).getAsPathAccessLists();
             for (String asPathAccessListName : asPathAccessLists.keySet()) {
-               asPathAccessListAnswerElement.add(node, asPathAccessListName, asPathAccessLists.get(asPathAccessListName));
+               ae.add(node, asPathAccessListName, asPathAccessLists.get(asPathAccessListName));
          }
-         
+      }
+      addAnswerElement(ae);
+   }   
+   
+   private void processCommunityLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<CommunityList> ae = new CompareSameNameAnswerElement<CommunityList>(CommunityList.class.getSimpleName());
+      for (String node : nodes) {
+         Map<String, CommunityList> communityLists =  configurations.get(node).getCommunityLists();
+         for (String communityListName : communityLists.keySet()) {
+            ae.add(node, communityListName, communityLists.get(communityListName));
+         }     
+      }
+      addAnswerElement(ae);
+   }
+   
+   private void processRouteFilterLists(List<String> nodes, Map<String, Configuration> configurations)
+   {
+      CompareSameNameAnswerElement<RouteFilterList> ae = new CompareSameNameAnswerElement<RouteFilterList>(RouteFilterList.class.getSimpleName());
+      for (String node : nodes) {
          // Process route filters
          Map<String, RouteFilterList> routeFilterLists =  configurations.get(node).getRouteFilterLists();
          for (String routeFilterListName : routeFilterLists.keySet()) {
-            routeFilterListAnswerElement.add(node, routeFilterListName, routeFilterLists.get(routeFilterListName));
-         }     
-         
+            ae.add(node, routeFilterListName, routeFilterLists.get(routeFilterListName));  
+         }
       }
-      
+      addAnswerElement(ae);
    }   
+   
 }
 

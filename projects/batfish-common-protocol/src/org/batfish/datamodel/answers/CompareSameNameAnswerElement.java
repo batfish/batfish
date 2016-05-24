@@ -5,38 +5,40 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class CompareSameNameAnswerElement<T> implements AnswerElement {   
-   Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNameInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
+public class CompareSameNameAnswerElement<T> implements AnswerElement { 
+   private final String _hrName;
+   private final Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;
    
-   public CompareSameNameAnswerElement() {
-     _sameNameInfo = new HashMap<String, Set<NamedStructureEquivalenceClass<T>>>();
+   public CompareSameNameAnswerElement(String hrName) {
+      _hrName = hrName;
+     _sameNamedStructures = new HashMap<String, Set<NamedStructureEquivalenceClass<T>>>();
    }
-  
-   public Map<String, Set<NamedStructureEquivalenceClass<T>>> getSameNameInfo() {
-      return _sameNameInfo;
-   }
-  
+
    public void add(String node, String name, T namedStructure) {
-      Set<NamedStructureEquivalenceClass<T>> equiClasses;
-      if (_sameNameInfo.containsKey(name)) {
-         equiClasses = _sameNameInfo.get(name);
+      if (!_sameNamedStructures.containsKey(name)) {
+         _sameNamedStructures.put(name, new HashSet<NamedStructureEquivalenceClass<T>>());
       }
-      else {
-         equiClasses = new HashSet<NamedStructureEquivalenceClass<T>>();
-         _sameNameInfo.put(name, equiClasses);
-      }
+      Set<NamedStructureEquivalenceClass<T>> equiClasses = _sameNamedStructures.get(name);
       
-      boolean done = false;
       for(NamedStructureEquivalenceClass<T> equiClass: equiClasses) {
-         if (namedStructure.equals(equiClass.getNamedStrcuture())) {
+         if (equiClass.CompareStructure(namedStructure)) {
             equiClass.addNode(node);
-            done = true;
-            break;
+            return;
          }
       }
-      if (!done) {
-         NamedStructureEquivalenceClass<T> equiClass = new NamedStructureEquivalenceClass<T>(node, name, namedStructure);
-         equiClasses.add(equiClass);
-      }
+      equiClasses.add(new NamedStructureEquivalenceClass<T>(node, namedStructure));
+   }
+   
+   public String gethrName()
+   {
+      return _hrName;
+   }
+   
+   public Map<String, Set<NamedStructureEquivalenceClass<T>>> getSameNamedStructures()
+   {
+      return _sameNamedStructures;
    }
 }
