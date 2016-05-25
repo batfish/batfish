@@ -1,24 +1,40 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RoutesQuestion extends Question {
 
-   public RoutesQuestion() {
-      super(QuestionType.ROUTES);
-   }
+	private static final String NODE_REGEX_VAR = "nodeRegex";
 
-   @Override
-   public boolean getDataPlane() {
-      return true;
-   }
+	private String _nodeRegex;
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
+	public RoutesQuestion() {
+		super(QuestionType.ROUTES);
+	      _nodeRegex = ".*";
+	}
 
-   @Override
-   public boolean getTraffic() {
-      return false;
-   }
+	@Override
+	public boolean getDataPlane() {
+		return true;
+	}
+
+	@Override
+	public boolean getDifferential() {
+		return false;
+	}
+
+	@JsonProperty(NODE_REGEX_VAR)
+	public String getNodeRegex() {
+		return _nodeRegex;
+	}
+
+	@Override
+	public boolean getTraffic() {
+		return false;
+	}
+
+	public void setNodeRegex(String nodeRegex) {
+		_nodeRegex = nodeRegex;
+	}
 
 }

@@ -40,6 +40,7 @@ public class BgpAdvertisementsQuestion extends Question {
 
    public BgpAdvertisementsQuestion() {
       super(QuestionType.BGP_ADVERTISEMENTS);
+      _nodeRegex=".*";
       _ebgp = true;
       _ibgp = true;
       _nodeRegex = ".*";

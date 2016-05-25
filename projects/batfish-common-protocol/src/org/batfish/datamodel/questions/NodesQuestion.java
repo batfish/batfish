@@ -32,7 +32,7 @@ public class NodesQuestion extends Question {
       super(QuestionType.NODES);
       _nodeType = EnumSet.noneOf(NodeType.class);
       _nodeRegex = ".*";
-      _summary = false;
+      _summary = true;
    }
 
    @Override
