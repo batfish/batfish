@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
-public final class AsPathAccessListLine implements Serializable {
+public final class AsPathAccessListLine implements Serializable, Comparable<AsPathAccessListLine> {
 
    private static final long serialVersionUID = 1L;
 
@@ -16,6 +16,33 @@ public final class AsPathAccessListLine implements Serializable {
 
    private boolean _matchEmpty;
 
+   @Override
+   public int compareTo(AsPathAccessListLine  rhs) {
+      int ret = rhs._as1Range.compareTo(this._as1Range);
+      if (ret == 0) {
+         ret = rhs._as2Range.compareTo(this._as2Range);
+      }
+      if (ret == 0) {
+         ret = Boolean.compare(rhs._atBeginning, this._atBeginning);
+      }
+      return ret;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      AsPathAccessListLine other = (AsPathAccessListLine) obj;
+      if (other._as1Range != _as1Range) {
+         return false;
+      }
+      if (other._as2Range != _as2Range) {
+         return false;
+      }
+      return true;
+   }
+   
    public LineAction getAction() {
       return _action;
    }

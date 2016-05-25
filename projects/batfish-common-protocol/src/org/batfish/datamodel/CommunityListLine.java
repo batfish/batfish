@@ -20,6 +20,20 @@ public class CommunityListLine implements Serializable {
       _regex = regex;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      CommunityListLine other = (CommunityListLine) obj;
+      if (other._action != _action) {
+         return false;
+      }
+      else {
+         return other._regex.equals(_regex);
+      }
+   }
+   
    public LineAction getAction() {
       return _action;
    }
