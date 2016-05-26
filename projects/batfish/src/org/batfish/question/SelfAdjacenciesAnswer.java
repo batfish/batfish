@@ -21,53 +21,54 @@ import org.batfish.main.Batfish;
 
 public class SelfAdjacenciesAnswer extends Answer {
 
-	public SelfAdjacenciesAnswer(Batfish batfish,
-			SelfAdjacenciesQuestion question) {
+   public SelfAdjacenciesAnswer(Batfish batfish,
+         SelfAdjacenciesQuestion question) {
 
-		Pattern nodeRegex;
-		try {
-			nodeRegex = Pattern.compile(question.getNodeRegex());
-		}
-		catch (PatternSyntaxException e) {
-			throw new BatfishException(
-					"Supplied regex for nodes is not a valid java regex: \""
-							+ question.getNodeRegex() + "\"", e);
-		}	      
+      Pattern nodeRegex;
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
 
-		SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
-		addAnswerElement(answerElement);
-		batfish.checkConfigurations();
-		Map<String, Configuration> configurations = batfish.loadConfigurations();
-		for (Entry<String, Configuration> e : configurations.entrySet()) {
-			String hostname = e.getKey();
-			if (!nodeRegex.matcher(hostname).matches())
-				continue;
-			Configuration c = e.getValue();
-			MultiSet<Prefix> nodePrefixes = new TreeMultiSet<Prefix>();
-			for (Interface iface : c.getInterfaces().values()) {
-				Set<Prefix> ifaceBasePrefixes = new HashSet<Prefix>();
-				if (iface.getActive()) {
-					for (Prefix prefix : iface.getAllPrefixes()) {
-						Prefix basePrefix = prefix.getNetworkPrefix();
-						if (!ifaceBasePrefixes.contains(basePrefix)) {
-							ifaceBasePrefixes.add(basePrefix);
-						}
-						nodePrefixes.add(basePrefix);
-					}
-				}
-			}
-			for (Interface iface : c.getInterfaces().values()) {
-				for (Prefix prefix : iface.getAllPrefixes()) {
-					Prefix basePrefix = prefix.getNetworkPrefix();
-					if (nodePrefixes.count(basePrefix) > 1) {
-						Ip address = prefix.getAddress();
-						String interfaceName = iface.getName();
-						answerElement.add(hostname, basePrefix, interfaceName,
-								address);
-					}
-				}
-			}
-		}
-	}
+      SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
+      addAnswerElement(answerElement);
+      batfish.checkConfigurations();
+      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      for (Entry<String, Configuration> e : configurations.entrySet()) {
+         String hostname = e.getKey();
+         if (!nodeRegex.matcher(hostname).matches()) {
+            continue;
+         }
+         Configuration c = e.getValue();
+         MultiSet<Prefix> nodePrefixes = new TreeMultiSet<Prefix>();
+         for (Interface iface : c.getInterfaces().values()) {
+            Set<Prefix> ifaceBasePrefixes = new HashSet<Prefix>();
+            if (iface.getActive()) {
+               for (Prefix prefix : iface.getAllPrefixes()) {
+                  Prefix basePrefix = prefix.getNetworkPrefix();
+                  if (!ifaceBasePrefixes.contains(basePrefix)) {
+                     ifaceBasePrefixes.add(basePrefix);
+                  }
+                  nodePrefixes.add(basePrefix);
+               }
+            }
+         }
+         for (Interface iface : c.getInterfaces().values()) {
+            for (Prefix prefix : iface.getAllPrefixes()) {
+               Prefix basePrefix = prefix.getNetworkPrefix();
+               if (nodePrefixes.count(basePrefix) > 1) {
+                  Ip address = prefix.getAddress();
+                  String interfaceName = iface.getName();
+                  answerElement.add(hostname, basePrefix, interfaceName,
+                        address);
+               }
+            }
+         }
+      }
+   }
 
 }

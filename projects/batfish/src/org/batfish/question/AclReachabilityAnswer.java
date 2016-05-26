@@ -73,7 +73,7 @@ public class AclReachabilityAnswer extends Answer {
          for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
             String aclName = e2.getKey();
             if (!aclNameRegex.matcher(aclName).matches()) {
-            	continue;
+               continue;
             }
             // skip juniper srx inbound filters, as they can't really contain
             // operator error

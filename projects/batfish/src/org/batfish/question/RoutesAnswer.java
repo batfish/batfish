@@ -15,15 +15,15 @@ public class RoutesAnswer extends Answer {
 
    public RoutesAnswer(Batfish batfish, RoutesQuestion question) {
 
-	   Pattern nodeRegex;
-	      try {
-	         nodeRegex = Pattern.compile(question.getNodeRegex());
-	      }
-	      catch (PatternSyntaxException e) {
-	         throw new BatfishException(
-	               "Supplied regex for nodes is not a valid java regex: \""
-	                     + question.getNodeRegex() + "\"", e);
-	      }	      
+      Pattern nodeRegex;
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
 
       batfish.checkDataPlaneQuestionDependencies();
       Map<String, Configuration> configurations = batfish.loadConfigurations();

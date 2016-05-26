@@ -10,9 +10,13 @@ import java.util.regex.Pattern;
 
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PrefixSpace;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+@JsonInclude(Include.NON_NULL)
 public class BgpAdvertisementsAnswerElement implements AnswerElement {
 
    private final Set<BgpAdvertisement> _allRequestedAdvertisements;
@@ -27,12 +31,17 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
 
    public BgpAdvertisementsAnswerElement(
          Map<String, Configuration> configurations, Pattern nodeRegex,
-         boolean ebgp, boolean ibgp, boolean received, boolean sent) {
+         boolean ebgp, boolean ibgp, PrefixSpace prefixSpace, boolean received,
+         boolean sent) {
       _allRequestedAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedEbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
-      _sentEbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
-      _receivedIbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
-      _sentIbgpAdvertisements = new TreeMap<String, Set<BgpAdvertisement>>();
+      _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+            : null;
+      _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+            : null;
+      _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+            : null;
+      _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+            : null;
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          Matcher nodeMatcher = nodeRegex.matcher(hostname);
@@ -44,29 +53,42 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
             if (ebgp) {
                Set<BgpAdvertisement> advertisements = configuration
                      .getReceivedEbgpAdvertisements();
-               _receivedEbgpAdvertisements.put(hostname, advertisements);
-               _allRequestedAdvertisements.addAll(advertisements);
+               fill(_receivedEbgpAdvertisements, hostname, advertisements,
+                     prefixSpace);
             }
             if (ibgp) {
                Set<BgpAdvertisement> advertisements = configuration
                      .getReceivedIbgpAdvertisements();
-               _receivedIbgpAdvertisements.put(hostname, advertisements);
-               _allRequestedAdvertisements.addAll(advertisements);
+               fill(_receivedIbgpAdvertisements, hostname, advertisements,
+                     prefixSpace);
             }
          }
          if (sent) {
             if (ebgp) {
                Set<BgpAdvertisement> advertisements = configuration
                      .getSentEbgpAdvertisements();
-               _sentEbgpAdvertisements.put(hostname, advertisements);
-               _allRequestedAdvertisements.addAll(advertisements);
+               fill(_sentEbgpAdvertisements, hostname, advertisements,
+                     prefixSpace);
             }
             if (ibgp) {
                Set<BgpAdvertisement> advertisements = configuration
                      .getSentIbgpAdvertisements();
-               _sentIbgpAdvertisements.put(hostname, advertisements);
-               _allRequestedAdvertisements.addAll(advertisements);
+               fill(_sentIbgpAdvertisements, hostname, advertisements,
+                     prefixSpace);
             }
+         }
+      }
+   }
+
+   private void fill(Map<String, Set<BgpAdvertisement>> map, String hostname,
+         Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
+      Set<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
+      map.put(hostname, placedAdvertisements);
+      for (BgpAdvertisement advertisement : advertisements) {
+         if (prefixSpace.isEmpty()
+               || prefixSpace.containsPrefix(advertisement.getNetwork())) {
+            placedAdvertisements.add(advertisement);
+            _allRequestedAdvertisements.add(advertisement);
          }
       }
    }

@@ -4,36 +4,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UndefinedReferencesQuestion extends Question {
 
-	private static final String NODE_REGEX_VAR = "nodeRegex";
+   private static final String NODE_REGEX_VAR = "nodeRegex";
 
-	private String _nodeRegex;
+   private String _nodeRegex;
 
-	public UndefinedReferencesQuestion() {
-		super(QuestionType.UNDEFINED_REFERENCES);
-	      _nodeRegex = ".*";
-	}
+   public UndefinedReferencesQuestion() {
+      super(QuestionType.UNDEFINED_REFERENCES);
+      _nodeRegex = ".*";
+   }
 
-	@Override
-	public boolean getDataPlane() {
-		return false;
-	}
+   @Override
+   public boolean getDataPlane() {
+      return false;
+   }
 
-	@Override
-	public boolean getDifferential() {
-		return false;
-	}
+   @Override
+   public boolean getDifferential() {
+      return false;
+   }
 
-	@JsonProperty(NODE_REGEX_VAR)
-	public String getNodeRegex() {
-		return _nodeRegex;
-	}
+   @JsonProperty(NODE_REGEX_VAR)
+   public String getNodeRegex() {
+      return _nodeRegex;
+   }
 
-	@Override
-	public boolean getTraffic() {
-		return false;
-	}
+   @Override
+   public boolean getTraffic() {
+      return false;
+   }
 
-	public void setNodeRegex(String nodeRegex) {
-		_nodeRegex = nodeRegex;
-	}
+   public void setNodeRegex(String nodeRegex) {
+      _nodeRegex = nodeRegex;
+   }
 }
