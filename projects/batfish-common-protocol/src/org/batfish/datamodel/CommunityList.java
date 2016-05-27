@@ -9,7 +9,7 @@ import org.batfish.common.util.ComparableStructure;
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement
  */
-public class CommunityList implements Serializable {
+public class CommunityList extends ComparableStructure<String> implements Serializable {
 
    /**
     *
@@ -23,7 +23,7 @@ public class CommunityList implements Serializable {
    private List<CommunityListLine> _lines;
 
 
-   private String _name;
+   //private String _name;
    
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
@@ -33,7 +33,8 @@ public class CommunityList implements Serializable {
     * @param lines
     */
    public CommunityList(String name, List<CommunityListLine> lines) {
-      _name = name;
+      //_name = name;
+      super(name);
       _lines = lines;
    }
 
@@ -50,8 +51,8 @@ public class CommunityList implements Serializable {
       return _lines;
    }
 
-   public String getName()
-   {
-      return _name;
-   }
+//   public String getName()
+//   {
+//      return _name;
+//   }
 }
