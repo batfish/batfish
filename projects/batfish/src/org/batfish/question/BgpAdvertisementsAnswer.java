@@ -32,7 +32,8 @@ public class BgpAdvertisementsAnswer extends Answer {
       batfish.initBgpAdvertisements(configurations);
       BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
             configurations, nodeRegex, question.getEbgp(), question.getIbgp(),
-            question.getReceived(), question.getSent());
+            question.getPrefixSpace(), question.getReceived(),
+            question.getSent());
       addAnswerElement(answerElement);
    }
 

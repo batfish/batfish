@@ -35,11 +35,12 @@ public class NodesAnswer extends Answer {
 
       Set<String> nodes = new TreeSet<String>();
       if (nodeRegex != null) {
-    	  for (String node : configurations.keySet()) {
-    		  if (!nodeRegex.matcher(node).matches())
-    			  continue;
-    		  nodes.addAll(configurations.keySet());
-    	  }
+         for (String node : configurations.keySet()) {
+            if (!nodeRegex.matcher(node).matches()) {
+               continue;
+            }
+            nodes.addAll(configurations.keySet());
+         }
       }
       Map<String, Configuration> answerNodes = new TreeMap<String, Configuration>();
       answerNodes.putAll(configurations);

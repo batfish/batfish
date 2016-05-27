@@ -1,6 +1,10 @@
 package org.batfish.datamodel;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public class PrefixRange extends Pair<Prefix, SubRange> {
 
@@ -14,8 +18,45 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       return new PrefixRange(prefix, new SubRange(prefixLength, prefixLength));
    }
 
+   private static SubRange lengthRangeFromStr(String str) {
+      Prefix prefix;
+      String[] mainParts = str.split(":");
+      int numMainParts = mainParts.length;
+      if (numMainParts < 1 || numMainParts > 2) {
+         throw new BatfishException("Invalid PrefixRange string: '" + str + "'");
+      }
+      else {
+         prefix = new Prefix(mainParts[0]);
+         if (mainParts.length == 1) {
+            int prefixLength = prefix.getPrefixLength();
+            return new SubRange(prefixLength, prefixLength);
+         }
+         else {
+            return new SubRange(mainParts[1]);
+         }
+      }
+   }
+
+   private static Prefix prefixFromStr(String str) {
+      Prefix prefix;
+      String[] mainParts = str.split(":");
+      int numMainParts = mainParts.length;
+      if (numMainParts < 1 || numMainParts > 2) {
+         throw new BatfishException("Invalid PrefixRange string: '" + str + "'");
+      }
+      else {
+         prefix = new Prefix(mainParts[0]);
+         return prefix;
+      }
+   }
+
    public PrefixRange(Prefix prefix, SubRange lengthRange) {
       super(prefix, lengthRange);
+   }
+
+   @JsonCreator
+   public PrefixRange(String str) {
+      super(prefixFromStr(str), lengthRangeFromStr(str));
    }
 
    public SubRange getLengthRange() {
@@ -57,6 +98,20 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       return maskedPrefixAsLong == argMaskedPrefixAsLong
             && lengthRange.getStart() <= argLengthRange.getStart()
             && lengthRange.getEnd() >= argLengthRange.getEnd();
+   }
+
+   @Override
+   @JsonValue
+   public String toString() {
+      int prefixLength = _first.getPrefixLength();
+      int low = _second.getStart();
+      int high = _second.getEnd();
+      if (prefixLength == low && prefixLength == high) {
+         return _first.toString();
+      }
+      else {
+         return _first.toString() + ":" + low + "-" + high;
+      }
    }
 
 }
