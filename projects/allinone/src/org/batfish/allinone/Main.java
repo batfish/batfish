@@ -36,8 +36,12 @@ public class Main {
 
 	   if (_settings.getCommandFile() != null)
 	      argString += String.format(" -%s %s",
-	            org.batfish.client.Settings.ARG_BATCH_COMMAND_FILE, _settings.getCommandFile());
+	            org.batfish.client.Settings.ARG_COMMAND_FILE, _settings.getCommandFile());
 
+	   if (_settings.getTestrigDir() != null)
+		      argString += String.format(" -%s %s",
+		            org.batfish.client.Settings.ARG_TESTRIG_DIR, _settings.getTestrigDir());
+	   
 	   String[] argArray = getArgArrayFromString(argString);
 			
 	   try {
@@ -55,21 +59,10 @@ public class Main {
 	   runCoordinator();
 	   runBatfish();
 
-		doWork();
+		_client.run(new LinkedList<String>());
 		
 		//The program does not terminate without it in case the user misses the quit command
 		System.exit(0);
-	}
-
-	private static void doWork() {
-
-	   List<String> commands = new LinkedList<String>();
-	   
-	   if (_settings.getTestrigDir() != null) {
-		   commands.add(0, "init-testrig -nodataplane " + _settings.getTestrigDir());
-		}
-		
-		_client.run(commands);
 	}
 
 	private static String[] getArgArrayFromString(String argString) {

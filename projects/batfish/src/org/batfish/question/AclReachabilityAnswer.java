@@ -40,7 +40,6 @@ public class AclReachabilityAnswer extends Answer {
       _batfish = batfish;
       _settings = batfish.getSettings();
 
-      // collect nodes nodes
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -49,6 +48,16 @@ public class AclReachabilityAnswer extends Answer {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
                      + question.getNodeRegex() + "\"", e);
+      }
+
+      Pattern aclNameRegex;
+      try {
+         aclNameRegex = Pattern.compile(question.getAclNameRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getAclNameRegex() + "\"", e);
       }
 
       batfish.checkConfigurations();
@@ -63,6 +72,9 @@ public class AclReachabilityAnswer extends Answer {
          Configuration c = e.getValue();
          for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
             String aclName = e2.getKey();
+            if (!aclNameRegex.matcher(aclName).matches()) {
+               continue;
+            }
             // skip juniper srx inbound filters, as they can't really contain
             // operator error
             if (aclName.contains("~ZONE_INTERFACE_FILTER~")

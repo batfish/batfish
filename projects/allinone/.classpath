@@ -2,9 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/batfish"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/batfish-client"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/coordinator"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/batfish-client"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

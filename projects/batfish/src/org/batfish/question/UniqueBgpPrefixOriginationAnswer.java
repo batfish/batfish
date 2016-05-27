@@ -2,7 +2,10 @@ package org.batfish.question;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -15,6 +18,17 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
 
    public UniqueBgpPrefixOriginationAnswer(Batfish batfish,
          UniqueBgpPrefixOriginationQuestion question) {
+
+      Pattern nodeRegex;
+      try {
+         nodeRegex = Pattern.compile(question.getNodeRegex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + question.getNodeRegex() + "\"", e);
+      }
+
       UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
       addAnswerElement(answerElement);
       batfish.checkConfigurations();
@@ -22,6 +36,9 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
       batfish.initBgpOriginationSpaceExplicit(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String node1 = e.getKey();
+         if (!nodeRegex.matcher(node1).matches()) {
+            continue;
+         }
          Configuration c1 = e.getValue();
          BgpProcess proc1 = c1.getBgpProcess();
          if (proc1 != null) {
@@ -29,7 +46,7 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
             answerElement.getPrefixSpaces().put(node1, space1);
             for (Entry<String, Configuration> e2 : configurations.entrySet()) {
                String node2 = e2.getKey();
-               if (node1.equals(node2)) {
+               if (!nodeRegex.matcher(node2).matches() || node1.equals(node2)) {
                   continue;
                }
                Configuration c2 = e2.getValue();
@@ -45,5 +62,4 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
          }
       }
    }
-
 }

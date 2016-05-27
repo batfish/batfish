@@ -1,12 +1,16 @@
 package org.batfish.datamodel.questions;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.PrefixSpace;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BgpAdvertisementsQuestion extends Question {
 
@@ -15,6 +19,8 @@ public class BgpAdvertisementsQuestion extends Question {
    private static final String IBGP_VAR = "ibgp";
 
    private static final String NODE_REGEX_VAR = "nodeRegex";
+
+   private static final String PREFIX_RANGE_VAR = "prefixRange";
 
    private static final String RECEIVED_VAR = "received";
 
@@ -26,17 +32,21 @@ public class BgpAdvertisementsQuestion extends Question {
 
    private String _nodeRegex;
 
+   private PrefixSpace _prefixSpace;
+
    private boolean _received;
 
    private boolean _sent;
 
    public BgpAdvertisementsQuestion() {
       super(QuestionType.BGP_ADVERTISEMENTS);
+      _nodeRegex = ".*";
       _ebgp = true;
       _ibgp = true;
       _nodeRegex = ".*";
       _received = true;
       _sent = true;
+      _prefixSpace = new PrefixSpace();
    }
 
    @Override
@@ -62,6 +72,10 @@ public class BgpAdvertisementsQuestion extends Question {
    @JsonProperty(NODE_REGEX_VAR)
    public String getNodeRegex() {
       return _nodeRegex;
+   }
+
+   public PrefixSpace getPrefixSpace() {
+      return _prefixSpace;
    }
 
    @JsonProperty(RECEIVED_VAR)
@@ -104,6 +118,12 @@ public class BgpAdvertisementsQuestion extends Question {
             case NODE_REGEX_VAR:
                setNodeRegex(parameters.getString(paramKey));
                break;
+            case PREFIX_RANGE_VAR:
+               setPrefixSpace(new ObjectMapper().<PrefixSpace> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<PrefixSpace>() {
+                     }));
+               break;
             case RECEIVED_VAR:
                setReceived(parameters.getBoolean(paramKey));
                break;
@@ -115,14 +135,18 @@ public class BgpAdvertisementsQuestion extends Question {
                      + getClass().getSimpleName() + ": " + paramKey);
             }
          }
-         catch (JSONException e) {
-            throw new BatfishException("JSONException in parameters", e);
+         catch (JSONException | IOException e) {
+            throw new BatfishException("Exception in parameters", e);
          }
       }
    }
 
    public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;
+   }
+
+   private void setPrefixSpace(PrefixSpace prefixSpace) {
+      _prefixSpace = prefixSpace;
    }
 
    public void setReceived(boolean received) {

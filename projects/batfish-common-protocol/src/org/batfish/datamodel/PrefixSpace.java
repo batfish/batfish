@@ -6,6 +6,10 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public class PrefixSpace {
 
    private static class BitTrie {
@@ -183,6 +187,14 @@ public class PrefixSpace {
       _trie = new BitTrie();
    }
 
+   @JsonCreator
+   public PrefixSpace(Set<PrefixRange> prefixRanges) {
+      _trie = new BitTrie();
+      for (PrefixRange prefixRange : prefixRanges) {
+         _trie.addPrefixRange(prefixRange);
+      }
+   }
+
    public void addPrefix(Prefix prefix) {
       addPrefixRange(PrefixRange.fromPrefix(prefix));
    }
@@ -204,6 +216,7 @@ public class PrefixSpace {
       return _trie.containsPrefixRange(prefixRange);
    }
 
+   @JsonValue
    public Set<PrefixRange> getPrefixRanges() {
       return _trie.getPrefixRanges();
    }
@@ -219,20 +232,14 @@ public class PrefixSpace {
       return newSpace;
    }
 
-   private boolean isEmpty() {
+   @JsonIgnore
+   public boolean isEmpty() {
       return _trie._root.isEmpty();
    }
 
    public boolean overlaps(PrefixSpace intersectSpace) {
       PrefixSpace intersection = intersection(intersectSpace);
       return !intersection.isEmpty();
-   }
-
-   public void setPrefixRanges(Set<PrefixRange> prefixRanges) {
-      _trie = new BitTrie();
-      for (PrefixRange prefixRange : prefixRanges) {
-         _trie.addPrefixRange(prefixRange);
-      }
    }
 
    @Override
