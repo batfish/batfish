@@ -49,8 +49,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Warning;
 import org.batfish.common.util.StringFilter;
-import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.UrlZipExplorer;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -202,7 +202,6 @@ import org.batfish.question.UniqueIpAssignmentsAnswer;
 import org.batfish.question.UnusedStructuresAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
-import org.batfish.util.Util;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
@@ -794,7 +793,7 @@ public class Batfish implements AutoCloseable {
       PredicateSemantics predicateSemantics = new PredicateSemantics();
       List<ParserRuleContext> trees = new ArrayList<ParserRuleContext>();
       for (Path logicFilePath : logicFiles) {
-         String input = Util.readFile(logicFilePath.toFile());
+         String input = CommonUtil.readFile(logicFilePath.toFile());
          LogiQLCombinedParser parser = new LogiQLCombinedParser(input,
                _settings);
          ParserRuleContext tree = parse(parser, logicFilePath.toString());
@@ -1400,14 +1399,14 @@ public class Batfish implements AutoCloseable {
          String flatConfigText = e.getValue();
          String outputFileAsString = outputFile.toString();
          _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
-         Util.writeFile(outputFileAsString, flatConfigText);
+         CommonUtil.writeFile(outputFileAsString, flatConfigText);
          _logger.debug("OK\n");
       }
       Path inputTopologyPath = Paths.get(inputPath, TOPOLOGY_FILENAME);
       Path outputTopologyPath = Paths.get(outputPath, TOPOLOGY_FILENAME);
       if (Files.isRegularFile(inputTopologyPath)) {
-         String topologyFileText = Util.readFile(inputTopologyPath.toFile());
-         Util.writeFile(outputTopologyPath.toString(), topologyFileText);
+         String topologyFileText = CommonUtil.readFile(inputTopologyPath.toFile());
+         CommonUtil.writeFile(outputTopologyPath.toString(), topologyFileText);
       }
    }
 
@@ -1902,7 +1901,7 @@ public class Batfish implements AutoCloseable {
 
    private String getNlsText(String nlsOutputDir, String relationName) {
       File relationFile = Paths.get(nlsOutputDir, relationName).toFile();
-      String content = Util.readFile(relationFile);
+      String content = CommonUtil.readFile(relationFile);
       return content;
    }
 
@@ -2046,7 +2045,7 @@ public class Batfish implements AutoCloseable {
                throws IOException {
             String pathString = file.toString();
             if (pathString.endsWith(".semantics")) {
-               String contents = Util.readFile(file.toFile());
+               String contents = CommonUtil.readFile(file.toFile());
                semanticsFiles.put(pathString, contents);
             }
             return super.visitFile(file, attrs);
@@ -2266,7 +2265,7 @@ public class Batfish implements AutoCloseable {
                nodeBlacklistSb.append(node + "\n");
             }
             String nodeBlacklist = nodeBlacklistSb.toString();
-            Util.writeFile(envSettings.getNodeBlacklistPath(), nodeBlacklist);
+            CommonUtil.writeFile(envSettings.getNodeBlacklistPath(), nodeBlacklist);
          }
          // write interface blacklist from question
          if (!question.getInterfaceBlacklist().isEmpty()) {
@@ -2276,7 +2275,7 @@ public class Batfish implements AutoCloseable {
                      + pair.getInterface() + "\n");
             }
             String interfaceBlacklist = interfaceBlacklistSb.toString();
-            Util.writeFile(envSettings.getInterfaceBlacklistPath(),
+            CommonUtil.writeFile(envSettings.getInterfaceBlacklistPath(),
                   interfaceBlacklist);
          }
       }
@@ -2618,7 +2617,7 @@ public class Batfish implements AutoCloseable {
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
          File interfaceBlacklistPath) {
       Set<NodeInterfacePair> ifaces = new TreeSet<NodeInterfacePair>();
-      String interfaceBlacklistText = Util.readFile(interfaceBlacklistPath);
+      String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
       String[] interfaceBlacklistLines = interfaceBlacklistText.split("\n");
       for (String interfaceBlacklistLine : interfaceBlacklistLines) {
          String trimmedLine = interfaceBlacklistLine.trim();
@@ -2639,7 +2638,7 @@ public class Batfish implements AutoCloseable {
 
    private NodeSet parseNodeBlacklist(File nodeBlacklistPath) {
       NodeSet nodeSet = new NodeSet();
-      String nodeBlacklistText = Util.readFile(nodeBlacklistPath);
+      String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
       String[] nodeBlacklistLines = nodeBlacklistText.split("\n");
       for (String nodeBlacklistLine : nodeBlacklistLines) {
          String hostname = nodeBlacklistLine.trim();
@@ -2652,7 +2651,7 @@ public class Batfish implements AutoCloseable {
 
    private NodeRoleMap parseNodeRoles(String testRigPath) {
       Path rolePath = Paths.get(testRigPath, "node_roles");
-      String roleFileText = Util.readFile(rolePath.toFile());
+      String roleFileText = CommonUtil.readFile(rolePath.toFile());
       _logger.info("Parsing: \"" + rolePath.toAbsolutePath().toString() + "\"");
       BatfishCombinedParser<?, ?> parser = new RoleCombinedParser(roleFileText,
             _settings);
@@ -2668,7 +2667,7 @@ public class Batfish implements AutoCloseable {
       String questionPath = _settings.getQuestionPath();
       File questionFile = new File(questionPath);
       _logger.info("Reading question file: \"" + questionPath + "\"...");
-      String questionText = Util.readFile(questionFile);
+      String questionText = CommonUtil.readFile(questionFile);
       _logger.info("OK\n");
 
       try {
@@ -2691,7 +2690,7 @@ public class Batfish implements AutoCloseable {
       }
       _logger.info("Reading question parameters file: \""
             + questionParametersPath + "\"...");
-      String questionText = Util.readFile(questionParametersFile);
+      String questionText = CommonUtil.readFile(questionParametersFile);
       _logger.info("OK\n");
 
       try {
@@ -2707,7 +2706,7 @@ public class Batfish implements AutoCloseable {
    private Topology parseTopology(File topologyFilePath) {
       _logger.info("*** PARSING TOPOLOGY ***\n");
       resetTimer();
-      String topologyFileText = Util.readFile(topologyFilePath);
+      String topologyFileText = CommonUtil.readFile(topologyFilePath);
       BatfishCombinedParser<?, ?> parser = null;
       TopologyExtractor extractor = null;
       _logger.info("Parsing: \""
@@ -2952,7 +2951,7 @@ public class Batfish implements AutoCloseable {
             throw new BatfishException("File: \"" + filename
                   + "\" does not correspond to a fact");
          }
-         String contents = Util.readFile(file);
+         String contents = CommonUtil.readFile(file);
          sb.append(contents);
       }
       Set<Map.Entry<String, StringBuilder>> cpEntries = cpFactBins.entrySet();
@@ -3146,7 +3145,7 @@ public class Batfish implements AutoCloseable {
             .getExternalBgpAnnouncementsPath();
       File externalBgpAnnouncementsFile = new File(externalBgpAnnouncementsPath);
       if (externalBgpAnnouncementsFile.exists()) {
-         String externalBgpAnnouncementsFileContents = Util
+         String externalBgpAnnouncementsFileContents = CommonUtil
                .readFile(externalBgpAnnouncementsFile);
          // Populate advertSet with BgpAdvertisements that
          // gets passed to populatePrecomputedBgpAdvertisements.
@@ -3241,7 +3240,7 @@ public class Batfish implements AutoCloseable {
       Arrays.sort(configFilePaths);
       for (File file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
-         String fileTextRaw = Util.readFile(file.getAbsoluteFile());
+         String fileTextRaw = CommonUtil.readFile(file.getAbsoluteFile());
          String fileText = fileTextRaw
                + ((fileTextRaw.length() != 0) ? "\n" : "");
          configurationData.put(file, fileText);
@@ -3254,7 +3253,7 @@ public class Batfish implements AutoCloseable {
       Map<String, String> inputFacts = new TreeMap<String, String>();
       for (String factName : factNames) {
          File factFile = Paths.get(factsDir, factName).toFile();
-         String contents = Util.readFile(factFile);
+         String contents = CommonUtil.readFile(factFile);
          inputFacts.put(factName, contents);
       }
       return inputFacts;
@@ -3550,7 +3549,7 @@ public class Batfish implements AutoCloseable {
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
       cmdLineSb.append(NLS_COMMAND + " ");
-      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+      cmdLineSb.append(CommonUtil.joinStrings(" ",
             cmdLine.getArguments()));
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
@@ -3871,7 +3870,7 @@ public class Batfish implements AutoCloseable {
    private void writeJsonAnswer(String jsonAnswer) {
       String jsonPath = _settings.getAnswerJsonPath();
       if (jsonPath != null) {
-         Util.writeFile(jsonPath, jsonAnswer);
+         CommonUtil.writeFile(jsonPath, jsonAnswer);
       }
    }
 
@@ -3984,7 +3983,7 @@ public class Batfish implements AutoCloseable {
          }
       }
       String output = sb.toString();
-      Util.writeFile(nlsInputFile, output);
+      CommonUtil.writeFile(nlsInputFile, output);
    }
 
    private void writeNlsPrecomputedRoutes(EnvironmentSettings envSettings) {

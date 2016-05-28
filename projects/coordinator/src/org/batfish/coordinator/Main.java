@@ -97,7 +97,7 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  org.batfish.common.Util.getJarOrClassDir(
+                  org.batfish.common.util.Util.getJarOrClassDir(
                         ConfigurationLocator.class).getAbsolutePath(),
                   _settings.getSslKeystoreFilename()).toFile();
          }
@@ -149,7 +149,7 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  org.batfish.common.Util.getJarOrClassDir(
+                  org.batfish.common.util.Util.getJarOrClassDir(
                         ConfigurationLocator.class).getAbsolutePath(),
                   _settings.getSslKeystoreFilename()).toFile();
          }

@@ -5,7 +5,7 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Util;
+import org.batfish.common.util.Util;
 
 public class Settings extends BaseSettings {
    

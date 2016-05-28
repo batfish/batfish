@@ -111,7 +111,7 @@ public final class JuniperUtils {
    }
 
    private char[] initAllCharacters() {
-      String allCharacters = org.batfish.common.Util.joinStrings("",
+      String allCharacters = CommonUtil.joinStrings("",
             _characterFamilies);
       int len = allCharacters.length();
       char[] numAlpha = new char[len];
@@ -152,7 +152,7 @@ public final class JuniperUtils {
    }
 
    private Pattern initValidationRegex() {
-      String allCharacters = org.batfish.common.Util.joinStrings("",
+      String allCharacters = CommonUtil.joinStrings("",
             _characterFamilies);
       String allCharactersAdjusted = allCharacters.replaceAll("-", "") + "-";
       String regexText = "^\\$9\\$[" + allCharactersAdjusted + "]{4,}$";

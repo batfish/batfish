@@ -3,6 +3,7 @@ package org.batfish.question;
 import java.util.List;
 import java.util.Map;
 
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -11,7 +12,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
-import org.batfish.util.Util;
 
 public class CompareSameNameAnswer extends Answer {
 
@@ -22,7 +22,7 @@ public class CompareSameNameAnswer extends Answer {
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
       // collect relevant nodes in a list.
-      List<String> nodes = Util.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      List<String> nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
       
       processAccessPathLists(nodes, configurations);
       processCommunityLists(nodes,configurations);

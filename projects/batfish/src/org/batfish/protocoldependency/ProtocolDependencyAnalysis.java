@@ -18,6 +18,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
@@ -48,7 +49,6 @@ import org.batfish.graphviz.GraphvizNode;
 import org.batfish.graphviz.GraphvizResult;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.main.Settings;
-import org.batfish.util.Util;
 
 /**
  * TODO: ospfe1
@@ -1016,7 +1016,7 @@ public final class ProtocolDependencyAnalysis {
       prefixes.addAll(graphs.keySet());
       String masterHtmlText = computeMasterHtmlText(prefixes);
       logger.debug("Writing: \"" + masterHtmlFile + "\" ..");
-      Util.writeFile(masterHtmlFile, masterHtmlText);
+      CommonUtil.writeFile(masterHtmlFile, masterHtmlText);
       logger.debug("OK\n");
    }
 

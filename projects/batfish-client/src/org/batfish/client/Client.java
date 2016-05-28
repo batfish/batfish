@@ -28,11 +28,15 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Util;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.ZipUtility;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.Util;
+import org.batfish.common.util.ZipUtility;
+import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.QuestionType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -348,13 +352,16 @@ public class Client {
 			//return false;
 		}
 		else {
-			try (BufferedReader br = new BufferedReader(new FileReader(
-					downloadedAnsFile))) {
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					_logger.output(line + "\n");
-				}
-			}
+		   String answerString = CommonUtil.readFile(new File(downloadedAnsFile));
+		   _logger.output(answerString + "\n");
+		   try {
+            ObjectMapper mapper = new ObjectMapper();
+            Answer answer = mapper.readValue(answerString, Answer.class);
+            _logger.debugf("Could deserialize Json to Answer: %s\n", answer);
+		   }
+		   catch (Exception e) {
+            _logger.outputf("Could NOT deserialize Json to Answer: %s\n", e.getMessage());		      
+		   }
 		}
 
 		// get the log

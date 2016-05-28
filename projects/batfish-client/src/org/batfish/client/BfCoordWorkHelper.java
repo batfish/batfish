@@ -161,7 +161,7 @@ public class BfCoordWorkHelper {
    }
 
    private ClientBuilder getClientBuilder() throws Exception {
-      return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(),
+      return org.batfish.common.util.Util.getClientBuilder(_settings.getUseSsl(),
             _settings.getTrustAllSslCerts()).register(MultiPartFeature.class);
    }
 

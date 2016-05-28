@@ -6,7 +6,7 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Util;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 
 public final class Settings extends BaseSettings {
@@ -516,7 +516,7 @@ public final class Settings extends BaseSettings {
    }
 
    public Settings(String[] args) {
-      super(Util.getConfigProperties(ConfigurationLocator.class,
+      super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
       _diffEnvironmentSettings = new EnvironmentSettings();
       _baseEnvironmentSettings = new EnvironmentSettings();
