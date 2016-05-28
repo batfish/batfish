@@ -1,6 +1,8 @@
 package org.batfish.common;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -13,6 +15,8 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
+
+import org.batfish.common.util.UseForEqualityCheck;
 
 public final class Util {
 
@@ -115,6 +119,42 @@ public final class Util {
       return result;
    }
 
+   public static boolean CheckEqual(Object a, Object b)
+   {
+      Class<? extends Object> aClass = a.getClass();
+      Class<? extends Object> bClass = b.getClass();
+      
+      if (!aClass.equals(bClass)) {
+         return false;
+      }  
+      
+      Field[] fields = aClass.getDeclaredFields();
+      
+      for(Field field: fields){
+         field.setAccessible(true);
+         try {
+            String fieldName = field.getName();
+            Annotation useForEqualityCheck = field.getAnnotation(UseForEqualityCheck.class);
+            if (useForEqualityCheck != null) {
+               Object aValue = field.get(a);
+               Object bValue = field.get(b);
+               if (!aValue.equals(bValue)) {
+                  return false;
+               }
+            }
+         }
+         catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+         catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+     }
+     return true;
+   }
+   
    private Util() {
    }
 

@@ -12,6 +12,10 @@ import java.util.regex.PatternSyntaxException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.UseForEqualityCheck;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 
 public class Util {
 
@@ -67,7 +71,7 @@ public class Util {
       }
       return matchingStrings;
    }
-
+   
    private Util() {
    }
 }

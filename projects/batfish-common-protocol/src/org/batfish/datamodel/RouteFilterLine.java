@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import org.batfish.common.util.UseForEqualityCheck;
+
 public class RouteFilterLine implements Serializable {
 
    private static final long serialVersionUID = 1L;

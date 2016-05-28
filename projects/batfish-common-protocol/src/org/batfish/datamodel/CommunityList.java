@@ -3,13 +3,15 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.List;
 
+import org.batfish.common.Util;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.common.util.UseForEqualityCheck;
 
 /**
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement
  */
-public class CommunityList extends ComparableStructure<String> implements Serializable {
+public class CommunityList  implements Serializable {
 
    /**
     *
@@ -23,7 +25,8 @@ public class CommunityList extends ComparableStructure<String> implements Serial
    private List<CommunityListLine> _lines;
 
 
-   //private String _name;
+   @UseForEqualityCheck
+   private String _name;
    
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
@@ -33,26 +36,30 @@ public class CommunityList extends ComparableStructure<String> implements Serial
     * @param lines
     */
    public CommunityList(String name, List<CommunityListLine> lines) {
-      //_name = name;
-      super(name);
+      _name = name;
       _lines = lines;
    }
 
    @Override
+   public boolean equals(Object obj) {
+     return Util.CheckEqual(this, obj);
+   }
+   
+  /* @Override
    public boolean equals(Object obj) {
       if (this == obj) {
          return true;
       }
       CommunityList other = (CommunityList) obj;
       return other._lines.equals(_lines);
-   }
+   }*/
    
    public List<CommunityListLine> getLines() {
       return _lines;
    }
-
-//   public String getName()
-//   {
-//      return _name;
-//   }
+   
+   public String getName()
+   {
+      return _name;
+   }
 }

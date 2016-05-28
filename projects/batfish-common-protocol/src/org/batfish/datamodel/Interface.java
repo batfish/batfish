@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import org.batfish.common.util.UseForEqualityCheck;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +10,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.common.Util;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -160,7 +163,8 @@ public class Interface extends ComparableStructure<String> {
          return InterfaceType.PHYSICAL;
       }
    }
-
+   
+   @UseForEqualityCheck
    private int _accessVlan;
 
    private boolean _active;
@@ -229,6 +233,11 @@ public class Interface extends ComparableStructure<String> {
       return computeInterfaceType(_key, _owner.getVendor());
    }
 
+   @Override
+   public boolean equals(Object obj) {
+     return Util.CheckEqual(this, obj);
+   }
+   
    public int getAccessVlan() {
       return _accessVlan;
    }
@@ -274,7 +283,7 @@ public class Interface extends ComparableStructure<String> {
    public IsisInterfaceMode getIsisL2InterfaceMode() {
       return _isisL2InterfaceMode;
    }
-
+   
    public int getNativeVlan() {
       return _nativeVlan;
    }
@@ -444,5 +453,5 @@ public class Interface extends ComparableStructure<String> {
       iface.put("type", interfaceType.toString());
       return iface;
    }
-
+ 
 }
