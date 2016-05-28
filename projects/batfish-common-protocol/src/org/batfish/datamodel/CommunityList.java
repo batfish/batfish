@@ -3,8 +3,6 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.List;
 
-import org.batfish.common.util.ComparableStructure;
-
 /**
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement

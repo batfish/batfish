@@ -5,7 +5,7 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.util.Util;
+import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
    
@@ -53,7 +53,7 @@ public class Settings extends BaseSettings {
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class,
+      super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT));
 
       initConfigDefaults();

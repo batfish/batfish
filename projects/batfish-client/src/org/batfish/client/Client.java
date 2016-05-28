@@ -31,7 +31,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.Util;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.QuestionType;
@@ -591,7 +590,7 @@ public class Client {
 				}
 
 				String questionFile = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
+				String paramsLine = CommonUtil.joinStrings(" ",
 						Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
 				return answerFile(questionFile, paramsLine, false);            	
@@ -602,7 +601,7 @@ public class Client {
 				}
 
 				String questionFile = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
+				String paramsLine = CommonUtil.joinStrings(" ",
 						Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
 				return answerFile(questionFile, paramsLine, true);
@@ -669,7 +668,7 @@ public class Client {
 				return true;
 			}
 			case COMMAND_ECHO: {
-				_logger.outputf("%s\n", Util.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
+				_logger.outputf("%s\n", CommonUtil.joinStrings(" ",  Arrays.copyOfRange(words, 1, words.length)));
 				return true;
 			}
 			case COMMAND_EXIT:
@@ -689,7 +688,7 @@ public class Client {
 				}
 
 				String questionType = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
+				String paramsLine = CommonUtil.joinStrings(" ",
 						Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
 				return answerType(questionType, paramsLine, false);            	
@@ -700,7 +699,7 @@ public class Client {
 				}
 
 				String questionType = parameters.get(0);
-				String paramsLine = Util.joinStrings(" ",
+				String paramsLine = CommonUtil.joinStrings(" ",
 						Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
 				return answerType(questionType, paramsLine, true);
