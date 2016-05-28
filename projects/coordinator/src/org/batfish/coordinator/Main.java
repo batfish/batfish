@@ -11,6 +11,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.*;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
@@ -97,7 +98,7 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  org.batfish.common.util.Util.getJarOrClassDir(
+                  CommonUtil.getJarOrClassDir(
                         ConfigurationLocator.class).getAbsolutePath(),
                   _settings.getSslKeystoreFilename()).toFile();
          }
@@ -149,7 +150,7 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  org.batfish.common.util.Util.getJarOrClassDir(
+                  CommonUtil.getJarOrClassDir(
                         ConfigurationLocator.class).getAbsolutePath(),
                   _settings.getSslKeystoreFilename()).toFile();
          }
