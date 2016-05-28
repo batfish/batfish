@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.QuestionException;
 import org.batfish.datamodel.questions.Question;
 
 public class Answer {
@@ -33,7 +34,7 @@ public class Answer {
       for (AnswerElement answerElement : answer._answerElements) {
          if (answerElement instanceof BatfishException) {
             BatfishException e = (BatfishException) answerElement;
-            throw e;
+            throw new QuestionException("Exception answering question", e, this);
          }
       }
    }

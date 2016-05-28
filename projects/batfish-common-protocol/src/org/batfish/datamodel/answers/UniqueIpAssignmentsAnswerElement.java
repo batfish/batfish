@@ -12,6 +12,8 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
 
    private Map<Ip, Set<NodeInterfacePair>> _allIps;
 
+   private DiffLabel _diffLabel;
+
    private Map<Ip, Set<NodeInterfacePair>> _enabledIps;
 
    public UniqueIpAssignmentsAnswerElement() {
@@ -29,8 +31,17 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
       interfaces.add(new NodeInterfacePair(hostname, interfaceName));
    }
 
+   public void added(UniqueIpAssignmentsAnswerElement before,
+         UniqueIpAssignmentsAnswerElement after) {
+
+   }
+
    public Map<Ip, Set<NodeInterfacePair>> getAllIps() {
       return _allIps;
+   }
+
+   public DiffLabel getDiffLabel() {
+      return _diffLabel;
    }
 
    public Map<Ip, Set<NodeInterfacePair>> getEnabledIps() {
@@ -39,6 +50,10 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
 
    public void setAllIps(Map<Ip, Set<NodeInterfacePair>> allIps) {
       _allIps = allIps;
+   }
+
+   public void setDiffLabel(DiffLabel diffLabel) {
+      _diffLabel = diffLabel;
    }
 
    public void setEnabledIps(Map<Ip, Set<NodeInterfacePair>> enabledIps) {

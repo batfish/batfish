@@ -911,7 +911,7 @@ public class Batfish implements AutoCloseable {
       checkDataPlane(_diffEnvSettings);
    }
 
-   private void checkEnvironmentExists(EnvironmentSettings envSettings) {
+   public void checkEnvironmentExists(EnvironmentSettings envSettings) {
       checkBaseDirExists();
       if (!new File(envSettings.getDataPlanePath()).getParentFile().exists()) {
          throw new CleanBatfishException("Environment not initialized: \""
