@@ -35,6 +35,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.QuestionType;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jline.console.ConsoleReader;
@@ -356,7 +357,14 @@ public class Client {
 		   try {
             ObjectMapper mapper = new ObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
-            _logger.debugf("Could deserialize Json to Answer: %s\n", answer);
+            
+            String newAnswerString = mapper.writeValueAsString(answer);            
+            JsonNode tree = mapper.readTree(answerString);
+            JsonNode newTree = mapper.readTree(newAnswerString);
+            
+            if (!tree.equals(newTree)) { 
+               _logger.errorf("Original and recovered Json are different. Recovered = %s\n", newAnswerString);               
+            }
 		   }
 		   catch (Exception e) {
             _logger.outputf("Could NOT deserialize Json to Answer: %s\n", e.getMessage());		      

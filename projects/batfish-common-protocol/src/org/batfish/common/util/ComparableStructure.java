@@ -4,9 +4,11 @@ import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonInclude(Include.NON_NULL)
@@ -16,9 +18,11 @@ public abstract class ComparableStructure<Key extends Comparable<Key>> extends
       Comparable<ComparableStructure<Key>>, Serializable {
 
    private static final long serialVersionUID = 1L;
+   protected static final String NAME_VAR = "name";
    protected Key _key;
 
-   public ComparableStructure(Key name) {
+   @JsonCreator
+   public ComparableStructure(@JsonProperty(NAME_VAR) Key name) {
       _key = name;
    }
 
@@ -38,6 +42,7 @@ public abstract class ComparableStructure<Key extends Comparable<Key>> extends
       }
    }
 
+   @JsonProperty(NAME_VAR)
    public Key getName() {
       return _key;
    }
