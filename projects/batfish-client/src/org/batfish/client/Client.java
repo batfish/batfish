@@ -207,6 +207,15 @@ public class Client {
 
 		switch (_settings.getRunMode()) {
 		case batch:
+		   if (_settings.getBatchCommandFile() == null) {
+		      System.err.println("org.batfish.client: Command file not specified while running in batch mode.");
+		      System.err.printf("Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
+		            Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
+		      System.exit(1);
+		   }
+         _logger =  new BatfishLogger(_settings.getLogLevel(), false,
+               _settings.getLogFile(), false, false);
+         break;
 		case genquestions:
 			_logger =  new BatfishLogger(_settings.getLogLevel(), false,
 					_settings.getLogFile(), false, false);
@@ -990,21 +999,31 @@ public class Client {
 		if (!processCommands(initialCommands))
 			return;
 
-		if (_settings.getTestrigDir() != null) {
-			if (!processCommand(
-					COMMAND_INIT_TESTRIG + " -nodataplane " + _settings.getTestrigDir())) {
-				return;
-			}				
+		//set container if specified
+		if (_settings.getContainerId() != null) {
+		   if (!processCommand(
+		         COMMAND_SET_CONTAINER + "  " + _settings.getContainerId()))
+		      return;
 		}
-			
+
+		//set testrig if dir or id is specified
+		if (_settings.getTestrigDir() != null) {
+		   if (_settings.getTestrigId() != null) {
+		       System.err.println("org.batfish.client: Cannot supply both testrigDir and testrigId.");
+  	          System.exit(1);
+		   }
+			if (!processCommand(
+					COMMAND_INIT_TESTRIG + " -nodataplane " + _settings.getTestrigDir()))
+				return;
+		}
+		if (_settings.getTestrigId() != null) {
+         if (!processCommand(
+               COMMAND_SET_TESTRIG + "  " + _settings.getTestrigId()))
+            return;		   
+		}
+		
 		switch (_settings.getRunMode()) {
 		case batch:
-			if (_settings.getBatchCommandFile() == null) {
-				System.err.println("org.batfish.client: Command file not specified while running in batch mode.");
-				System.err.printf("Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
-						Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
-				System.exit(1);
-			}
 			List<String> commands = null;
 			try {
 				commands = Files.readAllLines(

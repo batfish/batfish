@@ -12,13 +12,21 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.NON_NULL)
 public class BgpAdvertisementsAnswerElement implements AnswerElement {
 
+   private static final String ALL_REQUESTED_ADVERTISEMENTS_VAR = "allRequestedAdvertisements";
+   private static final String RECEIVED_EBGP_ADVERTISEMENTS_VAR = "receivedEbgpAdvertisements";
+   private static final String RECEIVED_IBGP_ADVERTISEMENTS_VAR = "receivedIbgpAdvertisements";
+   private static final String SENT_EBGP_ADVERTISEMENTS_VAR = "sentEbgpAdvertisements";
+   private static final String SENT_IBGP_ADVERTISEMENTS_VAR = "sentIbgpAdvertisements";
+   
    private final Set<BgpAdvertisement> _allRequestedAdvertisements;
 
    private final Map<String, Set<BgpAdvertisement>> _receivedEbgpAdvertisements;
@@ -80,6 +88,23 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       }
    }
 
+   @JsonCreator
+   public BgpAdvertisementsAnswerElement(
+         @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR) Set<BgpAdvertisement> allRequested,
+         @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR) Map<String, Set<BgpAdvertisement>> receivedEbgp,
+         @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR) Map<String, Set<BgpAdvertisement>> receivedIbgp,
+         @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR) Map<String, Set<BgpAdvertisement>> sentEbgp,
+         @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR) Map<String, Set<BgpAdvertisement>> sentIbgp) {
+
+      _allRequestedAdvertisements = allRequested;
+      _receivedEbgpAdvertisements = receivedEbgp;
+      _receivedIbgpAdvertisements = receivedIbgp;
+      _sentEbgpAdvertisements = sentEbgp;
+      _sentIbgpAdvertisements = sentIbgp;
+   }
+         
+
+         
    private void fill(Map<String, Set<BgpAdvertisement>> map, String hostname,
          Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
       Set<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
@@ -93,26 +118,31 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       }
    }
 
+   @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
    public Set<BgpAdvertisement> getAllRequestedAdvertisements() {
       return _allRequestedAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR)
    public Map<String, Set<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
       return _receivedEbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR)
    public Map<String, Set<BgpAdvertisement>> getReceivedIbgpAdvertisements() {
       return _receivedIbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
    public Map<String, Set<BgpAdvertisement>> getSentEbgpAdvertisements() {
       return _sentEbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
    public Map<String, Set<BgpAdvertisement>> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
    }
