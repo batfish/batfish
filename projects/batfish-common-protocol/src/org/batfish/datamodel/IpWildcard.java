@@ -14,14 +14,14 @@ public class IpWildcard extends Pair<Ip, Ip> {
 
    private static final String IP_VAR = "ip";
    private static final String WILDCARD_VAR = "wildcard";
-   
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
    @JsonCreator
-   public IpWildcard(@JsonProperty(IP_VAR) Ip address, 
+   public IpWildcard(@JsonProperty(IP_VAR) Ip address,
          @JsonProperty(WILDCARD_VAR) Ip wildcardMask) {
       super(address, wildcardMask);
       if (!wildcardMask.valid()) {

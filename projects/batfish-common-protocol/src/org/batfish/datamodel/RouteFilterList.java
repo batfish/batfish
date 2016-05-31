@@ -28,7 +28,7 @@ public class RouteFilterList extends ComparableStructure<String> {
       RouteFilterList other = (RouteFilterList) obj;
       return other._lines.equals(_lines);
    }
-   
+
    public List<RouteFilterLine> getLines() {
       return _lines;
    }

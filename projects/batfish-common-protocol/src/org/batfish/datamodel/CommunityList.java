@@ -20,9 +20,8 @@ public class CommunityList implements Serializable {
     */
    private List<CommunityListLine> _lines;
 
-
    private String _name;
-   
+
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
     * lines for {@link #_lines}
@@ -43,13 +42,12 @@ public class CommunityList implements Serializable {
       CommunityList other = (CommunityList) obj;
       return other._lines.equals(_lines);
    }
-   
+
    public List<CommunityListLine> getLines() {
       return _lines;
    }
 
-   public String getName()
-   {
+   public String getName() {
       return _name;
    }
 }

@@ -31,8 +31,16 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 
 public class CommonUtil {
+   private static class TrustAllHostNameVerifier implements HostnameVerifier {
+      @Override
+      public boolean verify(String hostname, SSLSession session) {
+         return true;
+      }
+   }
+
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
+
    public static final String NULL_INTERFACE_NAME = "null_interface";
 
    public static String applyPrefix(String prefix, String msg) {
@@ -65,12 +73,6 @@ public class CommonUtil {
          s += (bit != 0) ? 1 : 0;
       }
       return s;
-   }
-
-   public static File getConfigProperties(Class<?> locatorClass,
-         String propertiesFilename) {
-      File configDir = getJarOrClassDir(locatorClass);
-      return Paths.get(configDir.toString(), propertiesFilename).toFile();
    }
 
    public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll)
@@ -106,6 +108,12 @@ public class CommonUtil {
       else {
          return ClientBuilder.newBuilder();
       }
+   }
+
+   public static File getConfigProperties(Class<?> locatorClass,
+         String propertiesFilename) {
+      File configDir = getJarOrClassDir(locatorClass);
+      return Paths.get(configDir.toString(), propertiesFilename).toFile();
    }
 
    public static String getIndentedString(String str, int indentLevel) {
@@ -176,7 +184,8 @@ public class CommonUtil {
       }
    }
 
-   public static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
+   public static List<String> getMatchingStrings(String regex,
+         Set<String> allStrings) {
       List<String> matchingStrings = new ArrayList<String>();
       Pattern pattern;
       try {
@@ -184,8 +193,7 @@ public class CommonUtil {
       }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
-               "Supplied regex is not a valid java regex: \""
-                     + regex + "\"", e);
+               "Supplied regex is not a valid java regex: \"" + regex + "\"", e);
       }
       if (pattern != null) {
          for (String s : allStrings) {
@@ -301,16 +309,6 @@ public class CommonUtil {
       return text;
    }
 
-   public static void writeFile(String outputPath, String output) {
-      File outputFile = new File(outputPath);
-      try {
-         FileUtils.write(outputFile, output);
-      }
-      catch (IOException e) {
-         throw new BatfishException("Failed to write file: " + outputPath, e);
-      }
-   }
-
    public static Map<Integer, String> toLineMap(String str) {
       Map<Integer, String> map = new TreeMap<Integer, String>();
       String[] lines = str.split("\n");
@@ -405,11 +403,14 @@ public class CommonUtil {
       }
       return sb.toString();
    }
-   
-   private static class TrustAllHostNameVerifier implements HostnameVerifier {
-      @Override
-      public boolean verify(String hostname, SSLSession session) {
-         return true;
+
+   public static void writeFile(String outputPath, String output) {
+      File outputFile = new File(outputPath);
+      try {
+         FileUtils.write(outputFile, output);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to write file: " + outputPath, e);
       }
    }
 }

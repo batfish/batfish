@@ -15,16 +15,16 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
    private static final String INT2_VAR = "int2";
    private static final String NODE1_VAR = "node1";
    private static final String NODE2_VAR = "node2";
-      
+
    public Edge(NodeInterfacePair p1, NodeInterfacePair p2) {
       super(p1, p2);
    }
 
    @JsonCreator
-   public Edge(@JsonProperty(NODE1_VAR) String node1, 
-               @JsonProperty(INT1_VAR) String int1, 
-               @JsonProperty(NODE2_VAR) String node2, 
-               @JsonProperty(INT2_VAR) String int2) {
+   public Edge(@JsonProperty(NODE1_VAR) String node1,
+         @JsonProperty(INT1_VAR) String int1,
+         @JsonProperty(NODE2_VAR) String node2,
+         @JsonProperty(INT2_VAR) String int2) {
       super(new NodeInterfacePair(node1, int1), new NodeInterfacePair(node2,
             int2));
    }

@@ -11,11 +11,11 @@ public class IpAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
    private static final String LINES_VAR = "lines";
-   
+
    private List<IpAccessListLine> _lines;
 
    @JsonCreator
-   public IpAccessList(@JsonProperty(NAME_VAR) String name, 
+   public IpAccessList(@JsonProperty(NAME_VAR) String name,
          @JsonProperty(LINES_VAR) List<IpAccessListLine> lines) {
       super(name);
       _lines = lines;

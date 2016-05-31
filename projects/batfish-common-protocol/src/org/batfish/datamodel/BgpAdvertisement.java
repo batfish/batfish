@@ -90,7 +90,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
    private static final String SRC_NODE_VAR = "srcNode";
    private static final String SRC_PROTOCOL_VAR = "srcProtocol";
    private static final String TYPE_VAR = "type";
-   
+
    private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
 
    private final AsPath _asPath;
@@ -121,7 +121,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
 
    private final String _type;
 
-   //this function can probably go in favor of json creator below
+   // this function can probably go in favor of json creator below
    public BgpAdvertisement(JSONObject announcement) throws JSONException {
       _type = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_TYPE);
       _network = new Prefix(
@@ -183,19 +183,19 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       }
    }
 
-   public BgpAdvertisement(
-         @JsonProperty(TYPE_VAR) String type, 
-         @JsonProperty(NETWORK_VAR) Prefix network, 
+   @JsonCreator
+   public BgpAdvertisement(@JsonProperty(TYPE_VAR) String type,
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-         @JsonProperty(SRC_NODE_VAR) String srcNode, 
-         @JsonProperty(SRC_IP_VAR) Ip srcIp, 
-         @JsonProperty(DST_NODE_VAR) String dstNode, 
+         @JsonProperty(SRC_NODE_VAR) String srcNode,
+         @JsonProperty(SRC_IP_VAR) Ip srcIp,
+         @JsonProperty(DST_NODE_VAR) String dstNode,
          @JsonProperty(DST_IP_VAR) Ip dstIp,
-         @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol, 
+         @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
          @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
-         @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference, 
-         @JsonProperty(MED_VAR) int med, 
-         @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp, 
+         @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference,
+         @JsonProperty(MED_VAR) int med,
+         @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
          @JsonProperty(AS_PATH_VAR) AsPath asPath,
          @JsonProperty(COMMUNITIES_VAR) CommunitySet communities) {
       _type = type;
@@ -212,27 +212,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       _originatorIp = originatorIp;
       _asPath = asPath;
       _communities = communities;
-   }
-
-   @JsonCreator
-   public BgpAdvertisement(
-         @JsonProperty(TYPE_VAR) String type, 
-         @JsonProperty(NETWORK_VAR) String network, 
-         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-         @JsonProperty(SRC_NODE_VAR) String srcNode, 
-         @JsonProperty(SRC_IP_VAR) Ip srcIp, 
-         @JsonProperty(DST_NODE_VAR) String dstNode, 
-         @JsonProperty(DST_IP_VAR) Ip dstIp,
-         @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol, 
-         @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
-         @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference, 
-         @JsonProperty(MED_VAR) int med, 
-         @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp, 
-         @JsonProperty(AS_PATH_VAR) AsPath asPath,
-         @JsonProperty(COMMUNITIES_VAR) CommunitySet communities) {
-
-      this(type, new Prefix(network), nextHopIp, srcNode, srcIp, dstNode, dstIp, 
-        srcProtocol, originType, localPreference, med, originatorIp, asPath, communities);      
    }
 
    @Override

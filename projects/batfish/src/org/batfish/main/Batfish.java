@@ -660,7 +660,7 @@ public class Batfish implements AutoCloseable {
          case NODES:
             answer = new NodesAnswer(this, (NodesQuestion) question);
             break;
-            
+
          case OSPF_LOOPBACKS:
             answer = new OspfLoopbacksAnswer(this,
                   (OspfLoopbacksQuestion) question);
@@ -675,7 +675,7 @@ public class Batfish implements AutoCloseable {
             answer = new ProtocolDependenciesAnswer(this,
                   (ProtocolDependenciesQuestion) question);
             break;
-            
+
          case REACHABILITY:
             answer = new ReachabilityAnswer(this,
                   (ReachabilityQuestion) question);
@@ -1405,7 +1405,8 @@ public class Batfish implements AutoCloseable {
       Path inputTopologyPath = Paths.get(inputPath, TOPOLOGY_FILENAME);
       Path outputTopologyPath = Paths.get(outputPath, TOPOLOGY_FILENAME);
       if (Files.isRegularFile(inputTopologyPath)) {
-         String topologyFileText = CommonUtil.readFile(inputTopologyPath.toFile());
+         String topologyFileText = CommonUtil.readFile(inputTopologyPath
+               .toFile());
          CommonUtil.writeFile(outputTopologyPath.toString(), topologyFileText);
       }
    }
@@ -2265,7 +2266,8 @@ public class Batfish implements AutoCloseable {
                nodeBlacklistSb.append(node + "\n");
             }
             String nodeBlacklist = nodeBlacklistSb.toString();
-            CommonUtil.writeFile(envSettings.getNodeBlacklistPath(), nodeBlacklist);
+            CommonUtil.writeFile(envSettings.getNodeBlacklistPath(),
+                  nodeBlacklist);
          }
          // write interface blacklist from question
          if (!question.getInterfaceBlacklist().isEmpty()) {
@@ -2617,7 +2619,8 @@ public class Batfish implements AutoCloseable {
    private Set<NodeInterfacePair> parseInterfaceBlacklist(
          File interfaceBlacklistPath) {
       Set<NodeInterfacePair> ifaces = new TreeSet<NodeInterfacePair>();
-      String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
+      String interfaceBlacklistText = CommonUtil
+            .readFile(interfaceBlacklistPath);
       String[] interfaceBlacklistLines = interfaceBlacklistText.split("\n");
       for (String interfaceBlacklistLine : interfaceBlacklistLines) {
          String trimmedLine = interfaceBlacklistLine.trim();
@@ -2681,6 +2684,7 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Could not parse JSON question", e);
       }
    }
+
    private Object parseQuestionParameters() {
       String questionParametersPath = _settings.getQuestionParametersPath();
       File questionParametersFile = new File(questionParametersPath);
@@ -3549,8 +3553,7 @@ public class Batfish implements AutoCloseable {
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
       cmdLineSb.append(NLS_COMMAND + " ");
-      cmdLineSb.append(CommonUtil.joinStrings(" ",
-            cmdLine.getArguments()));
+      cmdLineSb.append(CommonUtil.joinStrings(" ", cmdLine.getArguments()));
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
       _logger.info("Command line: " + cmdLineString + " \n");

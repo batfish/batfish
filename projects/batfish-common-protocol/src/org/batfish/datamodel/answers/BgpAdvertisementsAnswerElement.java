@@ -26,7 +26,7 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    private static final String RECEIVED_IBGP_ADVERTISEMENTS_VAR = "receivedIbgpAdvertisements";
    private static final String SENT_EBGP_ADVERTISEMENTS_VAR = "sentEbgpAdvertisements";
    private static final String SENT_IBGP_ADVERTISEMENTS_VAR = "sentIbgpAdvertisements";
-   
+
    private final Set<BgpAdvertisement> _allRequestedAdvertisements;
 
    private final Map<String, Set<BgpAdvertisement>> _receivedEbgpAdvertisements;
@@ -102,9 +102,7 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       _sentEbgpAdvertisements = sentEbgp;
       _sentIbgpAdvertisements = sentIbgp;
    }
-         
 
-         
    private void fill(Map<String, Set<BgpAdvertisement>> map, String hostname,
          Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
       Set<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
