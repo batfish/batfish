@@ -37,6 +37,7 @@ import org.batfish.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -365,6 +366,7 @@ public class Client {
 		   _logger.output(answerString + "\n");
 		   try {
             ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
             Answer answer = mapper.readValue(answerString, Answer.class);
             
             String newAnswerString = mapper.writeValueAsString(answer);            
