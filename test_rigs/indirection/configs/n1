@@ -1,0 +1,24 @@
+#
+set system host-name n1
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.12.1/24
+set protocols bgp local-as 1
+set protocols bgp group physical neighbor 10.0.12.2 type external
+set protocols bgp group physical neighbor 10.0.12.2 remote-as 2
+set protocols bgp group physical neighbor 10.0.12.2 import ps-from-2-tagger
+set protocols bgp group physical neighbor 10.0.12.2 import (ps-from-2-criterion-1 && ps-from-2-criterion-2)
+set policy-options policy-statement ps-from-2-tagger term 1 from policy ps-from-2-sub-1
+set policy-options policy-statement ps-from-2-tagger term 1 then next policy
+set policy-options policy-statement ps-from-2-tagger term 2 then reject
+set policy-options policy-statement ps-from-2-sub-1 term 1 from route-filter 1.0.0.0/8 orlonger
+set policy-options policy-statement ps-from-2-sub-1 term 1 then metric 500
+set policy-options policy-statement ps-from-2-sub-1 term 1 then local-preference 55
+set policy-options policy-statement ps-from-2-sub-1 term 1 then accept
+set policy-options policy-statement ps-from-2-sub-1 term 3 then reject
+set policy-options policy-statement ps-from-2-criterion-1 term 1 from metric 500
+set policy-options policy-statement ps-from-2-criterion-1 term 1 then metric 1000
+set policy-options policy-statement ps-from-2-criterion-1 term 2 then accept
+set policy-options policy-statement ps-from-2-criterion-2 term 1 from local-preference 55
+set policy-options policy-statement ps-from-2-criterion-2 term 1 then community add from-2-comm
+set policy-options policy-statement ps-from-2-criterion-2 term 1 then next term
+set policy-options policy-statement ps-from-2-criterion-2 term 2 then accept
+set policy-options community from-2-comm members 2:1
