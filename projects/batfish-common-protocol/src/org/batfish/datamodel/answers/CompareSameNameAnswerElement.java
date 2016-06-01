@@ -5,9 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
-
 public class CompareSameNameAnswerElement<T> implements AnswerElement {
    private final String _hrName;
    private final Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;

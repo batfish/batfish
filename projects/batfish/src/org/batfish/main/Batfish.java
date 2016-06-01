@@ -48,6 +48,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Warning;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.StringFilter;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UrlZipExplorer;
@@ -213,7 +214,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -2545,8 +2545,7 @@ public class Batfish implements AutoCloseable {
    }
 
    void outputAnswer(Answer answer) {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.enable(SerializationFeature.INDENT_OUTPUT);
+      ObjectMapper mapper = new BatfishObjectMapper();
       try {
          String jsonString = mapper.writeValueAsString(answer);
          _logger.debug(jsonString);
@@ -3164,11 +3163,11 @@ public class Batfish implements AutoCloseable {
                   .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
 
             ObjectMapper mapper = new ObjectMapper();
-            
+
             for (int index = 0; index < announcements.length(); index++) {
                JSONObject announcement = announcements.getJSONObject(index);
-               BgpAdvertisement bgpAdvertisement = mapper.readValue(announcement.toString(), 
-                     BgpAdvertisement.class);
+               BgpAdvertisement bgpAdvertisement = mapper.readValue(
+                     announcement.toString(), BgpAdvertisement.class);
                allCommunities.addAll(bgpAdvertisement.getCommunities());
                advertSet.add(bgpAdvertisement);
             }
