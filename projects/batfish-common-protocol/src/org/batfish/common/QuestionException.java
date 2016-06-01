@@ -3,9 +3,7 @@ package org.batfish.common;
 import org.batfish.datamodel.answers.Answer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonSerialize(using = BatfishException.BatfishExceptionSerializer.class)
 public class QuestionException extends BatfishException {
 
    /**

@@ -1,50 +1,42 @@
 package org.batfish.common;
 
-import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * Thrown as a fatal exception. When caught, Batfish should perform any
  * necessary cleanup and terminate gracefully with a non-zero exit status. A
  * BatfishException should always contain a detail message.
  */
-@JsonSerialize(using = BatfishException.BatfishExceptionSerializer.class)
 public class BatfishException extends RuntimeException implements AnswerElement {
 
-   public static class BatfishExceptionSerializer extends
-         JsonSerializer<BatfishException> {
+   public static class BatfishStackTrace implements AnswerElement {
 
-      @Override
-      public void serialize(BatfishException value, JsonGenerator jgen,
-            SerializerProvider provider) throws IOException,
-            JsonProcessingException {
-         String stackTrace = ExceptionUtils.getFullStackTrace(value).replace(
-               "\t", "   ");
-         String[] lines = stackTrace.split("\n");
-         for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            jgen.writeFieldName(Integer.toString(i));
-            jgen.writeString(line);
-         }
+      private static final String LINE_MAP_VAR = "contents";
+
+      private final Map<Integer, String> _lineMap;
+
+      public BatfishStackTrace(BatfishException exception) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(
+               exception).replace("\t", "   ");
+         _lineMap = CommonUtil.toLineMap(stackTrace);
       }
 
-      @Override
-      public void serializeWithType(BatfishException value, JsonGenerator gen,
-            SerializerProvider provider, TypeSerializer typeSer)
-            throws IOException, JsonProcessingException {
+      @JsonCreator
+      public BatfishStackTrace(@JsonProperty(LINE_MAP_VAR) Map<Integer, String> lineMap) {
+         _lineMap = lineMap;
+      }
 
-         typeSer.writeTypePrefixForObject(value, gen);
-         serialize(value, gen, provider); // call customized serialize method
-         typeSer.writeTypeSuffixForObject(value, gen);
+      @JsonProperty(LINE_MAP_VAR)
+      public Map<Integer, String> getLineMap() {
+         return _lineMap;
       }
 
    }
@@ -71,6 +63,11 @@ public class BatfishException extends RuntimeException implements AnswerElement 
     */
    public BatfishException(String msg, Throwable cause) {
       super(msg, cause);
+   }
+
+   @JsonValue
+   public BatfishStackTrace getBatfishStackTrace() {
+      return new BatfishStackTrace(this);
    }
 
 }
