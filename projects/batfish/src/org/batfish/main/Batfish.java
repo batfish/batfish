@@ -3163,16 +3163,18 @@ public class Batfish implements AutoCloseable {
             JSONArray announcements = jsonObj
                   .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
 
+            ObjectMapper mapper = new ObjectMapper();
+            
             for (int index = 0; index < announcements.length(); index++) {
                JSONObject announcement = announcements.getJSONObject(index);
-               BgpAdvertisement bgpAdvertisement = new BgpAdvertisement(
-                     announcement);
+               BgpAdvertisement bgpAdvertisement = mapper.readValue(announcement.toString(), 
+                     BgpAdvertisement.class);
                allCommunities.addAll(bgpAdvertisement.getCommunities());
                advertSet.add(bgpAdvertisement);
             }
 
          }
-         catch (JSONException e) {
+         catch (JSONException | IOException e) {
             throw new BatfishException("Problems parsing JSON in "
                   + externalBgpAnnouncementsFile.toString(), e);
          }

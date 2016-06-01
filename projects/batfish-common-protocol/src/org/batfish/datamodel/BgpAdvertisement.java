@@ -122,66 +122,66 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
    private final String _type;
 
    // this function can probably go in favor of json creator below
-   public BgpAdvertisement(JSONObject announcement) throws JSONException {
-      _type = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_TYPE);
-      _network = new Prefix(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_PREFIX));
-      _nextHopIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_NEXT_HOP_IP));
-      _srcNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_NODE);
-      _srcIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_IP));
-      _dstNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_NODE);
-      _dstIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_IP));
-      _srcProtocol = RoutingProtocol.fromProtocolName(announcement
-            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_PROTOCOL));
-      _originType = OriginType.fromString(announcement
-            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGIN_TYPE));
-      _localPreference = announcement
-            .getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_LOCAL_PREF);
-      _med = announcement.getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_MED);
-      _originatorIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGINATOR_IP));
-
-      JSONArray jsonAsPath = announcement
-            .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_AS_PATH);
-      _asPath = new AsPath(jsonAsPath.length());
-      for (int pathIndex = 0; pathIndex < jsonAsPath.length(); pathIndex++) {
-         JSONArray jsonAsSet = jsonAsPath.getJSONArray(pathIndex);
-         AsSet asSet = new AsSet();
-         for (int asIndex = 0; asIndex < jsonAsSet.length(); asIndex++) {
-            asSet.add(jsonAsSet.getInt(asIndex));
-         }
-         _asPath.set(pathIndex, asSet);
-      }
-
-      _communities = new CommunitySet();
-      if (announcement.has(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES)) {
-         JSONArray jsonCommunities = announcement
-               .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES);
-         for (int cIndex = 0; cIndex < jsonCommunities.length(); cIndex++) {
-            Object currentCommunity = jsonCommunities.get(cIndex);
-            long currentCommunityLong;
-            if (currentCommunity instanceof Long
-                  || currentCommunity instanceof Integer) {
-               currentCommunityLong = (long) currentCommunity;
-               _communities.add(currentCommunityLong);
-            }
-            else if (currentCommunity instanceof String) {
-               String currentCommunityStr = (String) currentCommunity;
-               currentCommunityLong = CommonUtil
-                     .communityStringToLong(currentCommunityStr);
-            }
-            else {
-               throw new BatfishException(
-                     "Invalid community in BgpAdvertisement JSONArray: "
-                           + currentCommunity.toString());
-            }
-            _communities.add(currentCommunityLong);
-         }
-      }
-   }
+//   public BgpAdvertisement(JSONObject announcement) throws JSONException {
+//      _type = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_TYPE);
+//      _network = new Prefix(
+//            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_PREFIX));
+//      _nextHopIp = new Ip(
+//            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_NEXT_HOP_IP));
+//      _srcNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_NODE);
+//      _srcIp = new Ip(
+//            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_IP));
+//      _dstNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_NODE);
+//      _dstIp = new Ip(
+//            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_IP));
+//      _srcProtocol = RoutingProtocol.fromProtocolName(announcement
+//            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_PROTOCOL));
+//      _originType = OriginType.fromString(announcement
+//            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGIN_TYPE));
+//      _localPreference = announcement
+//            .getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_LOCAL_PREF);
+//      _med = announcement.getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_MED);
+//      _originatorIp = new Ip(
+//            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGINATOR_IP));
+//
+//      JSONArray jsonAsPath = announcement
+//            .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_AS_PATH);
+//      _asPath = new AsPath(jsonAsPath.length());
+//      for (int pathIndex = 0; pathIndex < jsonAsPath.length(); pathIndex++) {
+//         JSONArray jsonAsSet = jsonAsPath.getJSONArray(pathIndex);
+//         AsSet asSet = new AsSet();
+//         for (int asIndex = 0; asIndex < jsonAsSet.length(); asIndex++) {
+//            asSet.add(jsonAsSet.getInt(asIndex));
+//         }
+//         _asPath.set(pathIndex, asSet);
+//      }
+//
+//      _communities = new CommunitySet();
+//      if (announcement.has(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES)) {
+//         JSONArray jsonCommunities = announcement
+//               .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES);
+//         for (int cIndex = 0; cIndex < jsonCommunities.length(); cIndex++) {
+//            Object currentCommunity = jsonCommunities.get(cIndex);
+//            long currentCommunityLong;
+//            if (currentCommunity instanceof Long
+//                  || currentCommunity instanceof Integer) {
+//               currentCommunityLong = (long) currentCommunity;
+//               _communities.add(currentCommunityLong);
+//            }
+//            else if (currentCommunity instanceof String) {
+//               String currentCommunityStr = (String) currentCommunity;
+//               currentCommunityLong = CommonUtil
+//                     .communityStringToLong(currentCommunityStr);
+//            }
+//            else {
+//               throw new BatfishException(
+//                     "Invalid community in BgpAdvertisement JSONArray: "
+//                           + currentCommunity.toString());
+//            }
+//            _communities.add(currentCommunityLong);
+//         }
+//      }
+//   }
 
    @JsonCreator
    public BgpAdvertisement(@JsonProperty(TYPE_VAR) String type,
