@@ -13,9 +13,9 @@
       "originType" : "egp",
       "localPreference" : 0,
       "med" : 20,
-      "originatorIp" : "INVALID_IP(-1l)",
+      "originatorIp" : "0.0.0.0",
       "asPath" : [ [ 1239 ], [7018, 7019]],
-      "communities" : [ 131074 ]
+      "communities" : [ 262145 ]
     }
 	]
 }
