@@ -12,6 +12,7 @@ import org.batfish.coordinator.queues.WorkQueue;
 public class Settings extends BaseSettings {
 
    private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
+   private static final String ARG_ALLOW_DEFAULT_KEY_LISTINGS = "allowdefaultkeylistings";   
    private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
@@ -52,6 +53,7 @@ public class Settings extends BaseSettings {
    private String _containersLocation;
    private String _dbAuthorizerConnString;
    private long _dbCacheExpiryMs;
+   private boolean _defaultKeyListings;
    private String _logFile;
    private String _logLevel;
    private long _periodAssignWorkMs;
@@ -89,6 +91,10 @@ public class Settings extends BaseSettings {
 
    public String getDbAuthorizerConnString() {
       return _dbAuthorizerConnString;
+   }
+   
+   public boolean getDefaultKeyListings() {
+      return _defaultKeyListings;
    }
 
    public String getFileAuthorizerPermsFile() {
@@ -177,6 +183,7 @@ public class Settings extends BaseSettings {
 
    private void initConfigDefaults() {
       setDefaultProperty(ARG_AUTHORIZER_TYPE, Authorizer.Type.none.toString());
+      setDefaultProperty(ARG_ALLOW_DEFAULT_KEY_LISTINGS, false);
       setDefaultProperty(ARG_DB_AUTHORIZER_CONN_STRING,
             "jdbc:mysql://localhost/batfish?user=batfish&password=batfish");
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
@@ -211,6 +218,9 @@ public class Settings extends BaseSettings {
    private void initOptions() {
       addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use",
             "authorizer type");
+
+      addBooleanOption(ARG_ALLOW_DEFAULT_KEY_LISTINGS,
+            "allow default API key to list containers and testrigs");
 
       addOption(ARG_DB_AUTHORIZER_CONN_STRING,
             "connection string for authorizer db", "connection string");
@@ -268,6 +278,7 @@ public class Settings extends BaseSettings {
             .valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
       _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
       _dbCacheExpiryMs = getLongOptionValue(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
+      _defaultKeyListings = getBooleanOptionValue(ARG_ALLOW_DEFAULT_KEY_LISTINGS);
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
