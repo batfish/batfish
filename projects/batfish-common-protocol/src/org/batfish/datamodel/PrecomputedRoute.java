@@ -2,7 +2,9 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
@@ -26,6 +28,16 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
 
    public static final int UNSET_ROUTE_TAG = -1;
 
+   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+   private static final String COST_VAR = "cost";
+   private static final String NETWORK_VAR = "network";
+   private static final String NEXT_HOP_VAR = "nextHop";
+   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+   private static final String NODE_VAR = "node";
+   private static final String PROTOCOL_VAR = "protocol";
+   private static final String TAG_VAR = "tag";
+
    private final int _administrativeCost;
 
    private final int _cost;
@@ -44,9 +56,17 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
 
    private final int _tag;
 
-   public PrecomputedRoute(String node, Prefix network, Ip nextHopIp,
-         String nextHop, String nextHopInterface, int administrativeCost,
-         int cost, RoutingProtocol protocol, int tag) {
+   @JsonCreator
+   public PrecomputedRoute(
+         @JsonProperty(NODE_VAR) String node, 
+         @JsonProperty(NETWORK_VAR) Prefix network, 
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(NEXT_HOP_VAR) String nextHop, 
+         @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface, 
+         @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
+         @JsonProperty(COST_VAR) int cost, 
+         @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol, 
+         @JsonProperty(TAG_VAR) int tag) {
       _node = node;
       _network = network;
       _nextHopIp = nextHopIp;
@@ -118,38 +138,47 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
       return true;
    }
 
+   @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public int getAdministrativeCost() {
       return _administrativeCost;
    }
 
+   @JsonProperty(COST_VAR)
    public int getCost() {
       return _cost;
    }
 
+   @JsonProperty(NEXT_HOP_VAR)
    public String getNextHop() {
       return _nextHop;
    }
 
+   @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    public String getNextHopInterface() {
       return _nextHopInterface;
    }
 
+   @JsonProperty(NEXT_HOP_IP_VAR)
    public Ip getNextHopIp() {
       return _nextHopIp;
    }
 
+   @JsonProperty(NODE_VAR)
    public String getNode() {
       return _node;
    }
 
+   @JsonProperty(NETWORK_VAR)
    public Prefix getPrefix() {
       return _network;
    }
 
+   @JsonProperty(PROTOCOL_VAR)
    public RoutingProtocol getProtocol() {
       return _protocol;
    }
 
+   @JsonProperty(TAG_VAR)
    public int getTag() {
       return _tag;
    }

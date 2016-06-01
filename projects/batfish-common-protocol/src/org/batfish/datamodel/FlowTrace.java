@@ -6,14 +6,29 @@ import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class FlowTrace implements Comparable<FlowTrace> {
 
+   private final static String DISPOSITION_VAR = "disposition";
+   private final static String HOPS_VAR = "hops";
+   private final static String NOTES_VAR = "notes";
+   
    private final FlowDisposition _disposition;
 
    private final List<Edge> _hops;
 
    private final String _notes;
 
+   public FlowTrace(
+         @JsonProperty(DISPOSITION_VAR) FlowDisposition disposition, 
+         @JsonProperty(HOPS_VAR) List<Edge> hops,
+         @JsonProperty(NOTES_VAR) String notes) {
+      _disposition = disposition;
+      _hops = hops;
+      _notes = notes;
+   }
+   
    public FlowTrace(String historyLine) {
       FlowDisposition disposition = null;
       String notes = "";
@@ -111,14 +126,17 @@ public class FlowTrace implements Comparable<FlowTrace> {
       return true;
    }
 
+   @JsonProperty(DISPOSITION_VAR)
    public FlowDisposition getDisposition() {
       return _disposition;
    }
 
+   @JsonProperty(HOPS_VAR)
    public List<Edge> getHops() {
       return _hops;
    }
 
+   @JsonProperty(NOTES_VAR)
    public String getNotes() {
       return _notes;
    }
