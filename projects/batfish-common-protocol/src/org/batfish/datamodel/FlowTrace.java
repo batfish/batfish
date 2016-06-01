@@ -13,22 +13,21 @@ public class FlowTrace implements Comparable<FlowTrace> {
    private final static String DISPOSITION_VAR = "disposition";
    private final static String HOPS_VAR = "hops";
    private final static String NOTES_VAR = "notes";
-   
+
    private final FlowDisposition _disposition;
 
    private final List<Edge> _hops;
 
    private final String _notes;
 
-   public FlowTrace(
-         @JsonProperty(DISPOSITION_VAR) FlowDisposition disposition, 
+   public FlowTrace(@JsonProperty(DISPOSITION_VAR) FlowDisposition disposition,
          @JsonProperty(HOPS_VAR) List<Edge> hops,
          @JsonProperty(NOTES_VAR) String notes) {
       _disposition = disposition;
       _hops = hops;
       _notes = notes;
    }
-   
+
    public FlowTrace(String historyLine) {
       FlowDisposition disposition = null;
       String notes = "";

@@ -57,15 +57,14 @@ public class PrecomputedRoute implements Comparable<PrecomputedRoute>,
    private final int _tag;
 
    @JsonCreator
-   public PrecomputedRoute(
-         @JsonProperty(NODE_VAR) String node, 
-         @JsonProperty(NETWORK_VAR) Prefix network, 
+   public PrecomputedRoute(@JsonProperty(NODE_VAR) String node,
+         @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
-         @JsonProperty(NEXT_HOP_VAR) String nextHop, 
-         @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface, 
+         @JsonProperty(NEXT_HOP_VAR) String nextHop,
+         @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
-         @JsonProperty(COST_VAR) int cost, 
-         @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol, 
+         @JsonProperty(COST_VAR) int cost,
+         @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol,
          @JsonProperty(TAG_VAR) int tag) {
       _node = node;
       _network = network;

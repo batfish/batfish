@@ -13,7 +13,6 @@ public class BatfishObjectMapper extends ObjectMapper {
 
    public BatfishObjectMapper() {
       enable(SerializationFeature.INDENT_OUTPUT);
-      enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
       enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
    }
 

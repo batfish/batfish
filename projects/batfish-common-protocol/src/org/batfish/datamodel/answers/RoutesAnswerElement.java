@@ -18,11 +18,11 @@ public class RoutesAnswerElement implements AnswerElement {
 
    private Map<String, Set<PrecomputedRoute>> _routesByHostname;
 
-   //this default constructor helps create from Json
+   // this default constructor helps create from Json
    public RoutesAnswerElement() {
-      
+
    }
-   
+
    public RoutesAnswerElement(Map<String, Configuration> configurations,
          Pattern nodeRegex) {
       _routes = new TreeSet<PrecomputedRoute>();

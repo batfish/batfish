@@ -1,6 +1,6 @@
 package org.batfish.common;
 
-import java.util.Map;
+import java.util.SortedMap;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.util.CommonUtil;
@@ -21,21 +21,22 @@ public class BatfishException extends RuntimeException implements AnswerElement 
 
       private static final String LINE_MAP_VAR = "contents";
 
-      private final Map<Integer, String> _lineMap;
+      private final SortedMap<Integer, String> _lineMap;
 
       public BatfishStackTrace(BatfishException exception) {
-         String stackTrace = ExceptionUtils.getFullStackTrace(
-               exception).replace("\t", "   ");
+         String stackTrace = ExceptionUtils.getFullStackTrace(exception)
+               .replace("\t", "   ");
          _lineMap = CommonUtil.toLineMap(stackTrace);
       }
 
       @JsonCreator
-      public BatfishStackTrace(@JsonProperty(LINE_MAP_VAR) Map<Integer, String> lineMap) {
+      public BatfishStackTrace(
+            @JsonProperty(LINE_MAP_VAR) SortedMap<Integer, String> lineMap) {
          _lineMap = lineMap;
       }
 
       @JsonProperty(LINE_MAP_VAR)
-      public Map<Integer, String> getLineMap() {
+      public SortedMap<Integer, String> getLineMap() {
          return _lineMap;
       }
 

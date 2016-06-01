@@ -23,9 +23,9 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
 
       private static final String INTERFACE_NAME_VAR = "interfaceName";
       private static final String IP_VAR = "ip";
-      
+
       @JsonCreator
-      public InterfaceIpPair(@JsonProperty(INTERFACE_NAME_VAR) String t1, 
+      public InterfaceIpPair(@JsonProperty(INTERFACE_NAME_VAR) String t1,
             @JsonProperty(IP_VAR) Ip t2) {
          super(t1, t2);
       }

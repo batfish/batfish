@@ -4,10 +4,15 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.batfish.common.util.ComparableStructure;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
@@ -17,6 +22,122 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 @JsonInclude(Include.NON_NULL)
 public final class BgpNeighbor implements Serializable {
+
+   public static final class BgpNeighborSummary extends
+         ComparableStructure<String> {
+
+      private static final String DESCRIPTION_VAR = "description";
+
+      private static final String GROUP_VAR = "group";
+
+      private static final String LOCAL_AS_VAR = "localAs";
+
+      private static final String LOCAL_IP_VAR = "localIp";
+
+      private static final String REMOTE_AS_VAR = "remoteAs";
+
+      private static final String REMOTE_IP_VAR = "remoteIp";
+
+      private static final String REMOTE_PREFIX_VAR = "dynamicRemotePrefix";
+
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
+
+      private final String _description;
+
+      private final String _group;
+
+      private final int _localAs;
+
+      private final Ip _localIp;
+
+      private final int _remoteAs;
+
+      private final Ip _remoteIp;
+
+      private final Prefix _remotePrefix;
+
+      public BgpNeighborSummary(BgpNeighbor bgpNeighbor) {
+         super(bgpNeighbor.getOwner().getName()
+               + ":"
+               + (bgpNeighbor._address != null ? bgpNeighbor._address
+                     .toString() : bgpNeighbor.getPrefix().toString()));
+         _description = bgpNeighbor._description;
+         _group = bgpNeighbor._groupName;
+         _localAs = bgpNeighbor._localAs;
+         _localIp = bgpNeighbor._localIp;
+         _remoteAs = bgpNeighbor._remoteAs;
+         _remoteIp = bgpNeighbor._address;
+         _remotePrefix = bgpNeighbor._prefix;
+      }
+
+      @JsonCreator
+      public BgpNeighborSummary(@JsonProperty(NAME_VAR) String name,
+            @JsonProperty(DESCRIPTION_VAR) String description,
+            @JsonProperty(GROUP_VAR) String group,
+            @JsonProperty(LOCAL_AS_VAR) int localAs,
+            @JsonProperty(LOCAL_IP_VAR) Ip localIp,
+            @JsonProperty(REMOTE_AS_VAR) int remoteAs,
+            @JsonProperty(REMOTE_IP_VAR) Ip remoteIp,
+            @JsonProperty(REMOTE_PREFIX_VAR) Prefix remotePrefix) {
+         super(name);
+         _description = description;
+         _group = group;
+         _localAs = localAs;
+         _localIp = localIp;
+         _remoteAs = remoteAs;
+         _remoteIp = remoteIp;
+         _remotePrefix = remotePrefix;
+      }
+
+      @JsonProperty(DESCRIPTION_VAR)
+      public String getDescription() {
+         return _description;
+      }
+
+      @JsonProperty(GROUP_VAR)
+      public String getGroup() {
+         return _group;
+      }
+
+      @JsonProperty(LOCAL_AS_VAR)
+      public int getLocalAs() {
+         return _localAs;
+      }
+
+      @JsonProperty(LOCAL_IP_VAR)
+      public Ip getLocalIp() {
+         return _localIp;
+      }
+
+      @JsonIgnore
+      public Prefix getPrefix() {
+         if (_remotePrefix == null) {
+            return new Prefix(_remoteIp, 32);
+         }
+         else {
+            return _remotePrefix;
+         }
+      }
+
+      @JsonProperty(REMOTE_AS_VAR)
+      public int getRemoteAs() {
+         return _remoteAs;
+      }
+
+      @JsonProperty(REMOTE_IP_VAR)
+      public Ip getRemoteIp() {
+         return _remoteIp;
+      }
+
+      @JsonProperty(REMOTE_PREFIX_VAR)
+      public Prefix getRemotePrefix() {
+         return _remotePrefix;
+      }
+
+   }
 
    /**
     *

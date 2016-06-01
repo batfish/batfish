@@ -12,8 +12,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -309,8 +309,8 @@ public class CommonUtil {
       return text;
    }
 
-   public static Map<Integer, String> toLineMap(String str) {
-      Map<Integer, String> map = new TreeMap<Integer, String>();
+   public static SortedMap<Integer, String> toLineMap(String str) {
+      SortedMap<Integer, String> map = new TreeMap<Integer, String>();
       String[] lines = str.split("\n");
       for (int i = 0; i < lines.length; i++) {
          String line = lines[i];

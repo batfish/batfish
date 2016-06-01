@@ -28,7 +28,7 @@ public final class Flow implements Comparable<Flow> {
    private final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
    private final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
    private final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
-   
+
    private final int _dscp;
 
    private final Ip _dstIp;
@@ -70,26 +70,25 @@ public final class Flow implements Comparable<Flow> {
    private final int _tcpFlagsUrg;
 
    @JsonCreator
-   Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode, 
-        @JsonProperty(SRC_IP_VAR) Ip srcIp, 
-        @JsonProperty(DST_IP_VAR) Ip dstIp, 
-        @JsonProperty(SRC_PORT_VAR) int srcPort, 
-        @JsonProperty(DST_PORT_VAR) int dstPort,
-        @JsonProperty(IP_PROTOCOL_VAR) IpProtocol ipProtocol, 
-        @JsonProperty(DSCP_VAR) int dscp, 
-        @JsonProperty(ECN_VAR) int ecn, 
-        @JsonProperty(ICMP_TYPE_VAR) int icmpType, 
-        @JsonProperty(ICMP_CODE_VAR) int icmpCode,
-        @JsonProperty(STATE_VAR) int state, 
-        @JsonProperty(TCP_FLAGS_CWR_VAR) int tcpFlagsCwr, 
-        @JsonProperty(TCP_FLAGS_ECE_VAR) int tcpFlagsEce, 
-        @JsonProperty(TCP_FLAGS_URG_VAR) int tcpFlagsUrg,
-        @JsonProperty(TCP_FLAGS_ACK_VAR) int tcpFlagsAck,
-        @JsonProperty(TCP_FLAGS_PSH_VAR) int tcpFlagsPsh,
-        @JsonProperty(TCP_FLAGS_RST_VAR) int tcpFlagsRst,
-        @JsonProperty(TCP_FLAGS_SYN_VAR) int tcpFlagsSyn,
-        @JsonProperty(TCP_FLAGS_FIN_VAR) int tcpFlagsFin,
-        @JsonProperty(TAG_VAR) String tag) {
+   Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+         @JsonProperty(SRC_IP_VAR) Ip srcIp,
+         @JsonProperty(DST_IP_VAR) Ip dstIp,
+         @JsonProperty(SRC_PORT_VAR) int srcPort,
+         @JsonProperty(DST_PORT_VAR) int dstPort,
+         @JsonProperty(IP_PROTOCOL_VAR) IpProtocol ipProtocol,
+         @JsonProperty(DSCP_VAR) int dscp, @JsonProperty(ECN_VAR) int ecn,
+         @JsonProperty(ICMP_TYPE_VAR) int icmpType,
+         @JsonProperty(ICMP_CODE_VAR) int icmpCode,
+         @JsonProperty(STATE_VAR) int state,
+         @JsonProperty(TCP_FLAGS_CWR_VAR) int tcpFlagsCwr,
+         @JsonProperty(TCP_FLAGS_ECE_VAR) int tcpFlagsEce,
+         @JsonProperty(TCP_FLAGS_URG_VAR) int tcpFlagsUrg,
+         @JsonProperty(TCP_FLAGS_ACK_VAR) int tcpFlagsAck,
+         @JsonProperty(TCP_FLAGS_PSH_VAR) int tcpFlagsPsh,
+         @JsonProperty(TCP_FLAGS_RST_VAR) int tcpFlagsRst,
+         @JsonProperty(TCP_FLAGS_SYN_VAR) int tcpFlagsSyn,
+         @JsonProperty(TCP_FLAGS_FIN_VAR) int tcpFlagsFin,
+         @JsonProperty(TAG_VAR) String tag) {
       _ingressNode = ingressNode;
       _srcIp = srcIp;
       _dstIp = dstIp;
@@ -253,57 +252,57 @@ public final class Flow implements Comparable<Flow> {
       return _tag.equals(other._tag);
    }
 
-   @JsonProperty(DSCP_VAR) 
+   @JsonProperty(DSCP_VAR)
    public int getDscp() {
       return _dscp;
    }
 
-   @JsonProperty(DST_IP_VAR) 
+   @JsonProperty(DST_IP_VAR)
    public Ip getDstIp() {
       return _dstIp;
    }
 
-   @JsonProperty(DST_PORT_VAR) 
+   @JsonProperty(DST_PORT_VAR)
    public Integer getDstPort() {
       return _dstPort;
    }
 
-   @JsonProperty(ICMP_CODE_VAR) 
+   @JsonProperty(ICMP_CODE_VAR)
    public Integer getIcmpCode() {
       return _icmpCode;
    }
 
-   @JsonProperty(ICMP_TYPE_VAR) 
+   @JsonProperty(ICMP_TYPE_VAR)
    public Integer getIcmpType() {
       return _icmpType;
    }
 
-   @JsonProperty(INGRESS_NODE_VAR) 
+   @JsonProperty(INGRESS_NODE_VAR)
    public String getIngressNode() {
       return _ingressNode;
    }
 
-   @JsonProperty(IP_PROTOCOL_VAR) 
+   @JsonProperty(IP_PROTOCOL_VAR)
    public IpProtocol getIpProtocol() {
       return _ipProtocol;
    }
 
-   @JsonProperty(SRC_IP_VAR) 
+   @JsonProperty(SRC_IP_VAR)
    public Ip getSrcIp() {
       return _srcIp;
    }
 
-   @JsonProperty(SRC_PORT_VAR) 
+   @JsonProperty(SRC_PORT_VAR)
    public Integer getSrcPort() {
       return _srcPort;
    }
 
-   @JsonProperty(STATE_VAR) 
+   @JsonProperty(STATE_VAR)
    public int getState() {
       return _state;
    }
 
-   @JsonProperty(TAG_VAR) 
+   @JsonProperty(TAG_VAR)
    public String getTag() {
       return _tag;
    }

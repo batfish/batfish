@@ -1,7 +1,7 @@
 package org.batfish.question;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -24,18 +24,18 @@ import org.batfish.main.Settings.EnvironmentSettings;
 
 public class UniqueIpAssignmentsAnswer extends Answer {
 
-   private static void computeAdded(Map<Ip, Set<NodeInterfacePair>> dst,
-         Map<Ip, Set<NodeInterfacePair>> before,
-         Map<Ip, Set<NodeInterfacePair>> after) {
-      for (Entry<Ip, Set<NodeInterfacePair>> eAfter : after.entrySet()) {
+   private static void computeAdded(Map<Ip, SortedSet<NodeInterfacePair>> dst,
+         Map<Ip, SortedSet<NodeInterfacePair>> before,
+         Map<Ip, SortedSet<NodeInterfacePair>> after) {
+      for (Entry<Ip, SortedSet<NodeInterfacePair>> eAfter : after.entrySet()) {
          Ip key = eAfter.getKey();
-         Set<NodeInterfacePair> sAfter = eAfter.getValue();
+         SortedSet<NodeInterfacePair> sAfter = eAfter.getValue();
          if (!before.containsKey(key)) {
             dst.put(key, sAfter);
          }
          else {
-            Set<NodeInterfacePair> sBefore = before.get(key);
-            Set<NodeInterfacePair> sDst = new TreeSet<NodeInterfacePair>();
+            SortedSet<NodeInterfacePair> sBefore = before.get(key);
+            SortedSet<NodeInterfacePair> sDst = new TreeSet<NodeInterfacePair>();
             sDst.addAll(sAfter);
             sDst.removeAll(sBefore);
             if (!sDst.isEmpty()) {
