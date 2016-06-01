@@ -12,7 +12,7 @@ import java.util.regex.PatternSyntaxException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.UseForEqualityCheck;
+import org.batfish.common.util.SkipForEqualityCheck;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;

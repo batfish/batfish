@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
-import org.batfish.common.util.UseForEqualityCheck;
+import org.batfish.common.util.SkipForEqualityCheck;
 
 public class RouteFilterLine implements Serializable {
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.batfish.common.Util;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.common.util.UseForEqualityCheck;
+import org.batfish.common.util.SkipForEqualityCheck;
 
 /**
  * Represents a named access-list whose matching criteria is restricted to
@@ -24,8 +24,6 @@ public class CommunityList  implements Serializable {
     */
    private List<CommunityListLine> _lines;
 
-
-   @UseForEqualityCheck
    private String _name;
    
    /**
@@ -40,19 +38,14 @@ public class CommunityList  implements Serializable {
       _lines = lines;
    }
 
-   @Override
-   public boolean equals(Object obj) {
-     return Util.CheckEqual(this, obj);
-   }
-   
-  /* @Override
+  @Override
    public boolean equals(Object obj) {
       if (this == obj) {
          return true;
       }
       CommunityList other = (CommunityList) obj;
       return other._lines.equals(_lines);
-   }*/
+   }
    
    public List<CommunityListLine> getLines() {
       return _lines;

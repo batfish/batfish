@@ -2,6 +2,7 @@ package org.batfish.datamodel.answers;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.batfish.common.Util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -10,6 +11,7 @@ public class NamedStructureEquivalenceClass<T> {
    // Jackson cannot serialize generics correctly.
    @JsonIgnore
    private final T _namedStructure; 
+   
    private final Set<String> _nodes;
    
    public NamedStructureEquivalenceClass(String node, T namedStructure) {
@@ -25,7 +27,8 @@ public class NamedStructureEquivalenceClass<T> {
    
    public boolean CompareStructure(T s)
    {
-      return _namedStructure.equals(s);
+      return Util.checkEqual(_namedStructure, s);
+     // return _namedStructure.equals(s);
    }
   
    public Set<String> getNodes() {

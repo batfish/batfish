@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.UseForEqualityCheck;
+import org.batfish.common.util.SkipForEqualityCheck;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +164,6 @@ public class Interface extends ComparableStructure<String> {
       }
    }
    
-   @UseForEqualityCheck
    private int _accessVlan;
 
    private boolean _active;
@@ -235,7 +234,7 @@ public class Interface extends ComparableStructure<String> {
 
    @Override
    public boolean equals(Object obj) {
-     return Util.CheckEqual(this, obj);
+     return Util.checkEqual(this, obj);
    }
    
    public int getAccessVlan() {

@@ -16,7 +16,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.batfish.common.util.UseForEqualityCheck;
+import org.batfish.common.util.SkipForEqualityCheck;
 
 public final class Util {
 
@@ -119,7 +119,18 @@ public final class Util {
       return result;
    }
 
-   public static boolean CheckEqual(Object a, Object b)
+   public static boolean isWrapperType(Class<?> clazz) {
+      return clazz.equals(Boolean.class) || 
+         clazz.equals(Integer.class) ||
+         clazz.equals(Character.class) ||
+         clazz.equals(Byte.class) ||
+         clazz.equals(Short.class) ||
+         clazz.equals(Double.class) ||
+         clazz.equals(Long.class) ||
+         clazz.equals(Float.class);
+   }
+   
+   public static boolean checkEqual(Object a, Object b)
    {
       Class<? extends Object> aClass = a.getClass();
       Class<? extends Object> bClass = b.getClass();
@@ -128,17 +139,21 @@ public final class Util {
          return false;
       }  
       
+      if (isWrapperType(aClass)) {
+         return (a.equals(b));
+      }
+      
       Field[] fields = aClass.getDeclaredFields();
       
       for(Field field: fields){
          field.setAccessible(true);
          try {
             String fieldName = field.getName();
-            Annotation useForEqualityCheck = field.getAnnotation(UseForEqualityCheck.class);
-            if (useForEqualityCheck != null) {
+            Annotation skipForEqualityCheck = field.getAnnotation(SkipForEqualityCheck.class);
+            if (skipForEqualityCheck == null) {
                Object aValue = field.get(a);
                Object bValue = field.get(b);
-               if (!aValue.equals(bValue)) {
+               if (!checkEqual(aValue, bValue)) {
                   return false;
                }
             }
