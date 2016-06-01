@@ -54,7 +54,7 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
          String hostname = e.getKey();
          Matcher nodeMatcher = nodeRegex.matcher(hostname);
          if (!nodeMatcher.matches()) {
-            break;
+            continue;
          }
          Configuration configuration = e.getValue();
          if (received) {
