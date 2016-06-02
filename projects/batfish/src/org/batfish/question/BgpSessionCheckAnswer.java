@@ -9,6 +9,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BgpSessionCheckAnswerElement;
 import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
@@ -40,8 +41,10 @@ public class BgpSessionCheckAnswer extends Answer {
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor bgpNeighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
-               answerElement.add(answerElement.getAllBgpNeighbors(), c,
+               BgpNeighborSummary bgpNeighborSummary = new BgpNeighborSummary(
                      bgpNeighbor);
+               answerElement.add(answerElement.getAllBgpNeighbors(), c,
+                     bgpNeighborSummary);
                boolean foreign = bgpNeighbor.getGroupName() != null
                      && question.getForeignBgpGroups().contains(
                            bgpNeighbor.getGroupName());
@@ -57,17 +60,17 @@ public class BgpSessionCheckAnswer extends Answer {
                   if (!ebgpMultihop && loopbackIps.contains(localIp)) {
                      answerElement.add(
                            answerElement.getEbgpLocalIpOnLoopback(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                   }
                   if (localIp == null) {
                      answerElement.add(answerElement.getBroken(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getMissingLocalIp(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getEbgpBroken(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getEbgpMissingLocalIp(),
-                           c, bgpNeighbor);
+                           c, bgpNeighborSummary);
                   }
                }
                else {
@@ -75,75 +78,75 @@ public class BgpSessionCheckAnswer extends Answer {
                   if (!loopbackIps.contains(localIp)) {
                      answerElement.add(
                            answerElement.getIbgpLocalIpOnNonLoopback(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                   }
                   if (localIp == null) {
                      answerElement.add(answerElement.getBroken(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getMissingLocalIp(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getIbgpBroken(), c,
-                           bgpNeighbor);
+                           bgpNeighborSummary);
                      answerElement.add(answerElement.getIbgpMissingLocalIp(),
-                           c, bgpNeighbor);
+                           c, bgpNeighborSummary);
                   }
                }
                if (foreign) {
                   answerElement.add(answerElement.getIgnoredForeignEndpoints(),
-                        c, bgpNeighbor);
+                        c, bgpNeighborSummary);
                }
                else {
                   // not foreign
                   if (ebgp) {
                      if (localIp != null && !allInterfaceIps.contains(localIp)) {
                         answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getLocalIpUnknown(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getEbgpBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(
                               answerElement.getEbgpLocalIpUnknown(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                      }
                      if (!allInterfaceIps.contains(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getRemoteIpUnknown(),
-                              c, bgpNeighbor);
+                              c, bgpNeighborSummary);
                         answerElement.add(answerElement.getEbgpBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(
                               answerElement.getEbgpRemoteIpUnknown(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                      }
                      else {
                         if (!ebgpMultihop && loopbackIps.contains(remoteIp)) {
                            answerElement.add(
                                  answerElement.getEbgpRemoteIpOnLoopback(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                         }
                      }
                      // check half open
                      if (localIp != null && allInterfaceIps.contains(remoteIp)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                            answerElement.add(answerElement.getBroken(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getHalfOpen(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getEbgpBroken(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getEbgpHalfOpen(),
-                                 c, bgpNeighbor);
+                                 c, bgpNeighborSummary);
                         }
                         else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
                               .size() != 1) {
                            answerElement.add(
                                  answerElement.getNonUniqueEndpoint(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(
                                  answerElement.getEbgpNonUniqueEndpoint(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                         }
                      }
                   }
@@ -151,48 +154,48 @@ public class BgpSessionCheckAnswer extends Answer {
                      // ibgp
                      if (localIp != null && !allInterfaceIps.contains(localIp)) {
                         answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getIbgpBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(
                               answerElement.getIbgpLocalIpUnknown(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                      }
                      if (!allInterfaceIps.contains(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getIbgpBroken(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                         answerElement.add(
                               answerElement.getIbgpRemoteIpUnknown(), c,
-                              bgpNeighbor);
+                              bgpNeighborSummary);
                      }
                      else {
                         if (!loopbackIps.contains(remoteIp)) {
                            answerElement.add(
                                  answerElement.getIbgpRemoteIpOnNonLoopback(),
-                                 c, bgpNeighbor);
+                                 c, bgpNeighborSummary);
                         }
                      }
                      if (localIp != null && allInterfaceIps.contains(remoteIp)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                            answerElement.add(answerElement.getBroken(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getHalfOpen(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getIbgpBroken(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(answerElement.getIbgpHalfOpen(),
-                                 c, bgpNeighbor);
+                                 c, bgpNeighborSummary);
                         }
                         else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
                               .size() != 1) {
                            answerElement.add(
                                  answerElement.getNonUniqueEndpoint(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                            answerElement.add(
                                  answerElement.getIbgpNonUniqueEndpoint(), c,
-                                 bgpNeighbor);
+                                 bgpNeighborSummary);
                         }
                      }
                   }

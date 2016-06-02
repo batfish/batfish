@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="one-jar/dist/one-jar-ant-task-0.97.jar"/>
-	<classpathentry kind="lib" path="one-jar/dist/one-jar-boot-0.97.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/azure/azure-storage-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/grizzly/grizzly-http-all-2.3.18.jar"/>

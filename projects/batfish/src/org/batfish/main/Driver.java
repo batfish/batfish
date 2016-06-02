@@ -21,8 +21,9 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.QuestionException;
 import org.batfish.common.BfConsts.TaskStatus;
-import org.batfish.common.Util;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
@@ -174,7 +175,7 @@ public class Driver {
 
    private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
-         Client client = Util.getClientBuilder(
+         Client client = CommonUtil.getClientBuilder(
                _mainSettings.getCoordinatorUseSsl(),
                _mainSettings.getTrustAllSslCerts()).build();
          WebTarget webTarget = client.target(poolRegUrl).queryParam(
@@ -261,6 +262,13 @@ public class Driver {
                   String msg = "FATAL ERROR: " + e.getMessage();
                   logger.error(msg);
                   answer = Answer.failureAnswer(msg);
+               }
+               catch (QuestionException e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  answer = e.getAnswer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  batfish.SetTerminatedWithException(true);
                }
                catch (Exception e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum NodeType {
    BGP("bgp"),
@@ -39,6 +40,7 @@ public enum NodeType {
       _name = name;
    }
 
+   @JsonValue
    public String nodeTypeName() {
       return _name;
    }

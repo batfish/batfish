@@ -1,4 +1,4 @@
-package org.batfish.common;
+package org.batfish.common.util;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

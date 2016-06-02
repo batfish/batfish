@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.batfish.common.BatfishException;
-import org.batfish.common.ZipUtility;
+import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.ProtocolDependenciesAnswerElement;

@@ -23,6 +23,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -161,7 +162,7 @@ public class BfCoordWorkHelper {
    }
 
    private ClientBuilder getClientBuilder() throws Exception {
-      return org.batfish.common.Util.getClientBuilder(_settings.getUseSsl(),
+      return CommonUtil.getClientBuilder(_settings.getUseSsl(),
             _settings.getTrustAllSslCerts()).register(MultiPartFeature.class);
    }
 

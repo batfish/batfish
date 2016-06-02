@@ -1,7 +1,7 @@
 package org.batfish.datamodel.answers;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -9,22 +9,23 @@ import org.batfish.datamodel.IpAccessList;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
-   private final Map<String, Map<String, IpAccessList>> _acls;
+   private final SortedMap<String, SortedMap<String, IpAccessList>> _acls;
 
-   private final Map<String, Map<String, Set<Integer>>> _reachableLines;
+   private final SortedMap<String, SortedMap<String, SortedSet<Integer>>> _reachableLines;
 
-   private final Map<String, Map<String, Set<Integer>>> _unreachableLines;
+   private final SortedMap<String, SortedMap<String, SortedSet<Integer>>> _unreachableLines;
 
    public AclLinesAnswerElement() {
-      _acls = new TreeMap<String, Map<String, IpAccessList>>();
-      _reachableLines = new TreeMap<String, Map<String, Set<Integer>>>();
-      _unreachableLines = new TreeMap<String, Map<String, Set<Integer>>>();
+      _acls = new TreeMap<String, SortedMap<String, IpAccessList>>();
+      _reachableLines = new TreeMap<String, SortedMap<String, SortedSet<Integer>>>();
+      _unreachableLines = new TreeMap<String, SortedMap<String, SortedSet<Integer>>>();
    }
 
-   private void addLine(Map<String, Map<String, Set<Integer>>> lines,
+   private void addLine(
+         SortedMap<String, SortedMap<String, SortedSet<Integer>>> lines,
          String hostname, IpAccessList ipAccessList, int index) {
       String aclName = ipAccessList.getName();
-      Map<String, IpAccessList> aclsByHostname = _acls.get(hostname);
+      SortedMap<String, IpAccessList> aclsByHostname = _acls.get(hostname);
       if (aclsByHostname == null) {
          aclsByHostname = new TreeMap<String, IpAccessList>();
          _acls.put(hostname, aclsByHostname);
@@ -32,12 +33,13 @@ public class AclLinesAnswerElement implements AnswerElement {
       if (!aclsByHostname.containsKey(aclName)) {
          aclsByHostname.put(aclName, ipAccessList);
       }
-      Map<String, Set<Integer>> linesByHostname = lines.get(hostname);
+      SortedMap<String, SortedSet<Integer>> linesByHostname = lines
+            .get(hostname);
       if (linesByHostname == null) {
-         linesByHostname = new TreeMap<String, Set<Integer>>();
+         linesByHostname = new TreeMap<String, SortedSet<Integer>>();
          lines.put(hostname, linesByHostname);
       }
-      Set<Integer> linesByAcl = linesByHostname.get(aclName);
+      SortedSet<Integer> linesByAcl = linesByHostname.get(aclName);
       if (linesByAcl == null) {
          linesByAcl = new TreeSet<Integer>();
          linesByHostname.put(aclName, linesByAcl);
@@ -55,15 +57,15 @@ public class AclLinesAnswerElement implements AnswerElement {
       addLine(_unreachableLines, hostname, ipAccessList, index);
    }
 
-   public Map<String, Map<String, IpAccessList>> getAcls() {
+   public SortedMap<String, SortedMap<String, IpAccessList>> getAcls() {
       return _acls;
    }
 
-   public Map<String, Map<String, Set<Integer>>> getReachableLines() {
+   public SortedMap<String, SortedMap<String, SortedSet<Integer>>> getReachableLines() {
       return _reachableLines;
    }
 
-   public Map<String, Map<String, Set<Integer>>> getUnreachableLines() {
+   public SortedMap<String, SortedMap<String, SortedSet<Integer>>> getUnreachableLines() {
       return _unreachableLines;
    }
 

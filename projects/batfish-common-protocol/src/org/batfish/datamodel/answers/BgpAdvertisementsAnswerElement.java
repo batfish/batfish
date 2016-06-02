@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -12,41 +13,49 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.NON_NULL)
 public class BgpAdvertisementsAnswerElement implements AnswerElement {
 
-   private final Set<BgpAdvertisement> _allRequestedAdvertisements;
+   private static final String ALL_REQUESTED_ADVERTISEMENTS_VAR = "allRequestedAdvertisements";
+   private static final String RECEIVED_EBGP_ADVERTISEMENTS_VAR = "receivedEbgpAdvertisements";
+   private static final String RECEIVED_IBGP_ADVERTISEMENTS_VAR = "receivedIbgpAdvertisements";
+   private static final String SENT_EBGP_ADVERTISEMENTS_VAR = "sentEbgpAdvertisements";
+   private static final String SENT_IBGP_ADVERTISEMENTS_VAR = "sentIbgpAdvertisements";
 
-   private final Map<String, Set<BgpAdvertisement>> _receivedEbgpAdvertisements;
+   private final SortedSet<BgpAdvertisement> _allRequestedAdvertisements;
 
-   private final Map<String, Set<BgpAdvertisement>> _receivedIbgpAdvertisements;
+   private final Map<String, SortedSet<BgpAdvertisement>> _receivedEbgpAdvertisements;
 
-   private final Map<String, Set<BgpAdvertisement>> _sentEbgpAdvertisements;
+   private final Map<String, SortedSet<BgpAdvertisement>> _receivedIbgpAdvertisements;
 
-   private final Map<String, Set<BgpAdvertisement>> _sentIbgpAdvertisements;
+   private final Map<String, SortedSet<BgpAdvertisement>> _sentEbgpAdvertisements;
+
+   private final Map<String, SortedSet<BgpAdvertisement>> _sentIbgpAdvertisements;
 
    public BgpAdvertisementsAnswerElement(
          Map<String, Configuration> configurations, Pattern nodeRegex,
          boolean ebgp, boolean ibgp, PrefixSpace prefixSpace, boolean received,
          boolean sent) {
       _allRequestedAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+      _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
             : null;
-      _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+      _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
             : null;
-      _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+      _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
             : null;
-      _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<String, Set<BgpAdvertisement>>()
+      _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
             : null;
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          Matcher nodeMatcher = nodeRegex.matcher(hostname);
          if (!nodeMatcher.matches()) {
-            break;
+            continue;
          }
          Configuration configuration = e.getValue();
          if (received) {
@@ -80,9 +89,25 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       }
    }
 
-   private void fill(Map<String, Set<BgpAdvertisement>> map, String hostname,
-         Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
-      Set<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
+   @JsonCreator
+   public BgpAdvertisementsAnswerElement(
+         @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR) SortedSet<BgpAdvertisement> allRequested,
+         @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> receivedEbgp,
+         @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> receivedIbgp,
+         @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> sentEbgp,
+         @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> sentIbgp) {
+
+      _allRequestedAdvertisements = allRequested;
+      _receivedEbgpAdvertisements = receivedEbgp;
+      _receivedIbgpAdvertisements = receivedIbgp;
+      _sentEbgpAdvertisements = sentEbgp;
+      _sentIbgpAdvertisements = sentIbgp;
+   }
+
+   private void fill(Map<String, SortedSet<BgpAdvertisement>> map,
+         String hostname, Set<BgpAdvertisement> advertisements,
+         PrefixSpace prefixSpace) {
+      SortedSet<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
       map.put(hostname, placedAdvertisements);
       for (BgpAdvertisement advertisement : advertisements) {
          if (prefixSpace.isEmpty()
@@ -93,27 +118,32 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       }
    }
 
-   public Set<BgpAdvertisement> getAllRequestedAdvertisements() {
+   @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
+   public SortedSet<BgpAdvertisement> getAllRequestedAdvertisements() {
       return _allRequestedAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Set<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
+   @JsonProperty(RECEIVED_EBGP_ADVERTISEMENTS_VAR)
+   public Map<String, SortedSet<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
       return _receivedEbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Set<BgpAdvertisement>> getReceivedIbgpAdvertisements() {
+   @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR)
+   public Map<String, SortedSet<BgpAdvertisement>> getReceivedIbgpAdvertisements() {
       return _receivedIbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Set<BgpAdvertisement>> getSentEbgpAdvertisements() {
+   @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR)
+   public Map<String, SortedSet<BgpAdvertisement>> getSentEbgpAdvertisements() {
       return _sentEbgpAdvertisements;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Set<BgpAdvertisement>> getSentIbgpAdvertisements() {
+   @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
+   public Map<String, SortedSet<BgpAdvertisement>> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
    }
 

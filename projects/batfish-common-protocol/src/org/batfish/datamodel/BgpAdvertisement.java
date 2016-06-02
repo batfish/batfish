@@ -6,14 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.collections.CommunitySet;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
@@ -69,10 +66,25 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
 
    }
 
+   private static final String AS_PATH_VAR = "asPath";
+
+   private static final String COMMUNITIES_VAR = "communities";
+   private static final String DST_IP_VAR = "dstIp";
+   private static final String DST_NODE_VAR = "dstNode";
+   private static final String LOCAL_PREFERENCE_VAR = "localPreference";
+   private static final String MED_VAR = "med";
+   private static final String NETWORK_VAR = "network";
+   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+   private static final String ORIGIN_TYPE_VAR = "originType";
+   private static final String ORIGINATOR_IP_VAR = "originatorIp";
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+   private static final String SRC_IP_VAR = "srcIp";
+   private static final String SRC_NODE_VAR = "srcNode";
+   private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+   private static final String TYPE_VAR = "type";
 
    private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
 
@@ -104,72 +116,21 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
 
    private final String _type;
 
-   public BgpAdvertisement(JSONObject announcement) throws JSONException {
-      _type = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_TYPE);
-      _network = new Prefix(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_PREFIX));
-      _nextHopIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_NEXT_HOP_IP));
-      _srcNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_NODE);
-      _srcIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_IP));
-      _dstNode = announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_NODE);
-      _dstIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_DST_IP));
-      _srcProtocol = RoutingProtocol.fromProtocolName(announcement
-            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_SRC_PROTOCOL));
-      _originType = OriginType.fromString(announcement
-            .getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGIN_TYPE));
-      _localPreference = announcement
-            .getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_LOCAL_PREF);
-      _med = announcement.getInt(BfConsts.KEY_BGP_ANNOUNCEMENT_MED);
-      _originatorIp = new Ip(
-            announcement.getString(BfConsts.KEY_BGP_ANNOUNCEMENT_ORIGINATOR_IP));
-
-      JSONArray jsonAsPath = announcement
-            .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_AS_PATH);
-      _asPath = new AsPath(jsonAsPath.length());
-      for (int pathIndex = 0; pathIndex < jsonAsPath.length(); pathIndex++) {
-         JSONArray jsonAsSet = jsonAsPath.getJSONArray(pathIndex);
-         AsSet asSet = new AsSet();
-         for (int asIndex = 0; asIndex < jsonAsSet.length(); asIndex++) {
-            asSet.add(jsonAsSet.getInt(asIndex));
-         }
-         _asPath.set(pathIndex, asSet);
-      }
-
-      _communities = new CommunitySet();
-      if (announcement.has(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES)) {
-         JSONArray jsonCommunities = announcement
-               .getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENT_COMMUNITIES);
-         for (int cIndex = 0; cIndex < jsonCommunities.length(); cIndex++) {
-            Object currentCommunity = jsonCommunities.get(cIndex);
-            long currentCommunityLong;
-            if (currentCommunity instanceof Long
-                  || currentCommunity instanceof Integer) {
-               currentCommunityLong = (long) currentCommunity;
-               _communities.add(currentCommunityLong);
-            }
-            else if (currentCommunity instanceof String) {
-               String currentCommunityStr = (String) currentCommunity;
-               currentCommunityLong = CommonUtil
-                     .communityStringToLong(currentCommunityStr);
-            }
-            else {
-               throw new BatfishException(
-                     "Invalid community in BgpAdvertisement JSONArray: "
-                           + currentCommunity.toString());
-            }
-            _communities.add(currentCommunityLong);
-         }
-      }
-   }
-
-   public BgpAdvertisement(String type, Prefix network, Ip nextHopIp,
-         String srcNode, Ip srcIp, String dstNode, Ip dstIp,
-         RoutingProtocol srcProtocol, OriginType originType,
-         int localPreference, int med, Ip originatorIp, AsPath asPath,
-         CommunitySet communities) {
+   @JsonCreator
+   public BgpAdvertisement(@JsonProperty(TYPE_VAR) String type,
+         @JsonProperty(NETWORK_VAR) Prefix network,
+         @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
+         @JsonProperty(SRC_NODE_VAR) String srcNode,
+         @JsonProperty(SRC_IP_VAR) Ip srcIp,
+         @JsonProperty(DST_NODE_VAR) String dstNode,
+         @JsonProperty(DST_IP_VAR) Ip dstIp,
+         @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
+         @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
+         @JsonProperty(LOCAL_PREFERENCE_VAR) int localPreference,
+         @JsonProperty(MED_VAR) int med,
+         @JsonProperty(ORIGINATOR_IP_VAR) Ip originatorIp,
+         @JsonProperty(AS_PATH_VAR) AsPath asPath,
+         @JsonProperty(COMMUNITIES_VAR) CommunitySet communities) {
       _type = type;
       _network = network;
       _nextHopIp = nextHopIp;
@@ -291,58 +252,72 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       return true;
    }
 
+   @JsonProperty(AS_PATH_VAR)
    public AsPath getAsPath() {
       return _asPath;
    }
 
+   @JsonProperty(COMMUNITIES_VAR)
    public CommunitySet getCommunities() {
       return _communities;
    }
 
+   @JsonProperty(DST_IP_VAR)
    public Ip getDstIp() {
       return _dstIp;
    }
 
+   @JsonProperty(DST_NODE_VAR)
    public String getDstNode() {
       return _dstNode;
    }
 
+   @JsonProperty(LOCAL_PREFERENCE_VAR)
    public int getLocalPreference() {
       return _localPreference;
    }
 
+   @JsonProperty(MED_VAR)
    public int getMed() {
       return _med;
    }
 
+   @JsonProperty(NETWORK_VAR)
    public Prefix getNetwork() {
       return _network;
    }
 
+   @JsonProperty(NEXT_HOP_IP_VAR)
    public Ip getNextHopIp() {
       return _nextHopIp;
    }
 
+   @JsonProperty(ORIGINATOR_IP_VAR)
    public Ip getOriginatorIp() {
       return _originatorIp;
    }
 
+   @JsonProperty(ORIGIN_TYPE_VAR)
    public OriginType getOriginType() {
       return _originType;
    }
 
+   @JsonProperty(SRC_IP_VAR)
    public Ip getSrcIp() {
       return _srcIp;
    }
 
+   @JsonProperty(SRC_NODE_VAR)
    public String getSrcNode() {
       return _srcNode;
    }
 
+   @JsonProperty(SRC_PROTOCOL_VAR)
    public RoutingProtocol getSrcProtocol() {
       return _srcProtocol;
    }
 
+   @JsonProperty(TYPE_VAR)
    public String getType() {
       return _type;
    }

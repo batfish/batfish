@@ -31,7 +31,7 @@ public class RouteFilterLine implements Serializable {
       }
       return false;
    }
-   
+
    public LineAction getAction() {
       return _action;
    }

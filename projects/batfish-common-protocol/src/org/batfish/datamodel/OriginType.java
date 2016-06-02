@@ -1,29 +1,48 @@
 package org.batfish.datamodel;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.batfish.common.BatfishException;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum OriginType {
    EGP("egp"),
    IGP("igp"),
    INCOMPLETE("incomplete");
 
-   public static OriginType fromString(String originType) {
-      for (OriginType ot : values()) {
-         if (ot._originType.equals(originType)) {
-            return ot;
-         }
+   private final static Map<String, OriginType> _map = buildMap();
+
+   private static Map<String, OriginType> buildMap() {
+      Map<String, OriginType> map = new HashMap<String, OriginType>();
+      for (OriginType value : OriginType.values()) {
+         String name = value._name;
+         map.put(name, value);
       }
-      throw new BatfishException("bad origin type string");
+      return Collections.unmodifiableMap(map);
    }
 
-   private String _originType;
+   @JsonCreator
+   public static OriginType fromString(String name) {
+      OriginType instance = _map.get(name.toLowerCase());
+      if (instance == null) {
+         throw new BatfishException("Not a valid OriginType: \"" + name + "\"");
+      }
+      return instance;
+   }
+
+   private String _name;
 
    private OriginType(String originType) {
-      _originType = originType;
+      _name = originType;
    }
 
-   @Override
-   public String toString() {
-      return _originType;
+   @JsonValue
+   public String getOriginTypeName() {
+      return _name;
    }
+
 }

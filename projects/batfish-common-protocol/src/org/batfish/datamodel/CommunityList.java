@@ -24,6 +24,7 @@ public class CommunityList  implements Serializable {
     */
    private List<CommunityListLine> _lines;
 
+
    private String _name;
    
    /**

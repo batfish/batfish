@@ -120,7 +120,7 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       cmdLine.addArgument("-Tcmapx");
       StringBuilder cmdLineSb = new StringBuilder();
       cmdLineSb.append(GRAPHVIZ_COMMAND + " ");
-      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+      cmdLineSb.append(org.batfish.common.util.CommonUtil.joinStrings(" ",
             cmdLine.getArguments()));
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;
@@ -166,7 +166,7 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       cmdLine.addArgument("-Tsvg");
       StringBuilder cmdLineSb = new StringBuilder();
       cmdLineSb.append(GRAPHVIZ_COMMAND + " ");
-      cmdLineSb.append(org.batfish.common.Util.joinStrings(" ",
+      cmdLineSb.append(org.batfish.common.util.CommonUtil.joinStrings(" ",
             cmdLine.getArguments()));
       String cmdLineString = cmdLineSb.toString();
       boolean failure = false;

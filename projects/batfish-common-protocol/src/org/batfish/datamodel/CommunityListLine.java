@@ -33,7 +33,7 @@ public class CommunityListLine implements Serializable {
          return other._regex.equals(_regex);
       }
    }
-   
+
    public LineAction getAction() {
       return _action;
    }

@@ -3,7 +3,7 @@ package org.batfish.datamodel.answers;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 
@@ -11,210 +11,211 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference;
 
 public class BgpSessionCheckAnswerElement implements AnswerElement {
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _allBgpNeighbors;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _allBgpNeighborSummarys;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _broken;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _broken;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpBroken;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpBroken;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpHalfOpen;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpHalfOpen;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpLocalIpOnLoopback;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpLocalIpOnLoopback;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpLocalIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpLocalIpUnknown;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpMissingLocalIp;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpMissingLocalIp;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpNonUniqueEndpoint;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpNonUniqueEndpoint;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpRemoteIpOnLoopback;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpRemoteIpOnLoopback;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ebgpRemoteIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ebgpRemoteIpUnknown;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _halfOpen;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _halfOpen;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpBroken;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpBroken;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpHalfOpen;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpHalfOpen;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpLocalIpOnNonLoopback;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpLocalIpOnNonLoopback;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpLocalIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpLocalIpUnknown;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpMissingLocalIp;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpMissingLocalIp;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpNonUniqueEndpoint;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpNonUniqueEndpoint;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpRemoteIpOnNonLoopback;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpRemoteIpOnNonLoopback;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ibgpRemoteIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ibgpRemoteIpUnknown;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _ignoredForeignEndpoints;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _ignoredForeignEndpoints;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _localIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _localIpUnknown;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _missingLocalIp;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _missingLocalIp;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _nonUniqueEndpoint;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _nonUniqueEndpoint;
 
-   private final Map<String, Map<Prefix, BgpNeighbor>> _remoteIpUnknown;
+   private final Map<String, Map<Prefix, BgpNeighborSummary>> _remoteIpUnknown;
 
    public BgpSessionCheckAnswerElement() {
-      _allBgpNeighbors = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _broken = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpBroken = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpBroken = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpHalfOpen = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpLocalIpOnLoopback = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpLocalIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpMissingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpNonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpRemoteIpOnLoopback = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ebgpRemoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _halfOpen = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpHalfOpen = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpLocalIpOnNonLoopback = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpLocalIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpMissingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpNonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpRemoteIpOnNonLoopback = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ibgpRemoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _ignoredForeignEndpoints = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _localIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _missingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _nonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
-      _remoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighbor>>();
+      _allBgpNeighborSummarys = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _broken = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpBroken = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpBroken = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpHalfOpen = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpLocalIpOnLoopback = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpLocalIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpMissingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpNonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpRemoteIpOnLoopback = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ebgpRemoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _halfOpen = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpHalfOpen = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpLocalIpOnNonLoopback = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpLocalIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpMissingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpNonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpRemoteIpOnNonLoopback = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ibgpRemoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _ignoredForeignEndpoints = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _localIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _missingLocalIp = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _nonUniqueEndpoint = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
+      _remoteIpUnknown = new TreeMap<String, Map<Prefix, BgpNeighborSummary>>();
    }
 
-   public void add(Map<String, Map<Prefix, BgpNeighbor>> neighborsByHostname,
-         Configuration c, BgpNeighbor bgpNeighbor) {
+   public void add(
+         Map<String, Map<Prefix, BgpNeighborSummary>> neighborsByHostname,
+         Configuration c, BgpNeighborSummary bgpNeighbor) {
       String hostname = c.getHostname();
-      Map<Prefix, BgpNeighbor> neighborsByPrefix = neighborsByHostname
+      Map<Prefix, BgpNeighborSummary> neighborsByPrefix = neighborsByHostname
             .get(hostname);
       if (neighborsByPrefix == null) {
-         neighborsByPrefix = new TreeMap<Prefix, BgpNeighbor>();
+         neighborsByPrefix = new TreeMap<Prefix, BgpNeighborSummary>();
          neighborsByHostname.put(hostname, neighborsByPrefix);
       }
       Prefix prefix = bgpNeighbor.getPrefix();
       neighborsByPrefix.put(prefix, bgpNeighbor);
    }
 
-   public Map<String, Map<Prefix, BgpNeighbor>> getAllBgpNeighbors() {
-      return _allBgpNeighbors;
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getAllBgpNeighbors() {
+      return _allBgpNeighborSummarys;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getBroken() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getBroken() {
       return _broken;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpBroken() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpBroken() {
       return _ebgpBroken;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpHalfOpen() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpHalfOpen() {
       return _ebgpHalfOpen;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpLocalIpOnLoopback() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpLocalIpOnLoopback() {
       return _ebgpLocalIpOnLoopback;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpLocalIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpLocalIpUnknown() {
       return _ebgpLocalIpUnknown;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpMissingLocalIp() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpMissingLocalIp() {
       return _ebgpMissingLocalIp;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpNonUniqueEndpoint() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpNonUniqueEndpoint() {
       return _ebgpNonUniqueEndpoint;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpRemoteIpOnLoopback() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpRemoteIpOnLoopback() {
       return _ebgpRemoteIpOnLoopback;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getEbgpRemoteIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getEbgpRemoteIpUnknown() {
       return _ebgpRemoteIpUnknown;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getHalfOpen() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getHalfOpen() {
       return _halfOpen;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpBroken() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpBroken() {
       return _ibgpBroken;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpHalfOpen() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpHalfOpen() {
       return _ibgpHalfOpen;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpLocalIpOnNonLoopback() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpLocalIpOnNonLoopback() {
       return _ibgpLocalIpOnNonLoopback;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpLocalIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpLocalIpUnknown() {
       return _ibgpLocalIpUnknown;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpMissingLocalIp() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpMissingLocalIp() {
       return _ibgpMissingLocalIp;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpNonUniqueEndpoint() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpNonUniqueEndpoint() {
       return _ibgpNonUniqueEndpoint;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpRemoteIpOnNonLoopback() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpRemoteIpOnNonLoopback() {
       return _ibgpRemoteIpOnNonLoopback;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIbgpRemoteIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIbgpRemoteIpUnknown() {
       return _ibgpRemoteIpUnknown;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getIgnoredForeignEndpoints() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getIgnoredForeignEndpoints() {
       return _ignoredForeignEndpoints;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getLocalIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getLocalIpUnknown() {
       return _localIpUnknown;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getMissingLocalIp() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getMissingLocalIp() {
       return _missingLocalIp;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getNonUniqueEndpoint() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getNonUniqueEndpoint() {
       return _nonUniqueEndpoint;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Map<String, Map<Prefix, BgpNeighbor>> getRemoteIpUnknown() {
+   public Map<String, Map<Prefix, BgpNeighborSummary>> getRemoteIpUnknown() {
       return _remoteIpUnknown;
    }
 }

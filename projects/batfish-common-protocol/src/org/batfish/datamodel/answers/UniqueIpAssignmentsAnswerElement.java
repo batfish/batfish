@@ -1,7 +1,7 @@
 package org.batfish.datamodel.answers;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -10,18 +10,20 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
 
-   private Map<Ip, Set<NodeInterfacePair>> _allIps;
+   private SortedMap<Ip, SortedSet<NodeInterfacePair>> _allIps;
 
-   private Map<Ip, Set<NodeInterfacePair>> _enabledIps;
+   private DiffLabel _diffLabel;
+
+   private SortedMap<Ip, SortedSet<NodeInterfacePair>> _enabledIps;
 
    public UniqueIpAssignmentsAnswerElement() {
-      _allIps = new TreeMap<Ip, Set<NodeInterfacePair>>();
-      _enabledIps = new TreeMap<Ip, Set<NodeInterfacePair>>();
+      _allIps = new TreeMap<Ip, SortedSet<NodeInterfacePair>>();
+      _enabledIps = new TreeMap<Ip, SortedSet<NodeInterfacePair>>();
    }
 
-   public void add(Map<Ip, Set<NodeInterfacePair>> map, Ip ip, String hostname,
-         String interfaceName) {
-      Set<NodeInterfacePair> interfaces = map.get(ip);
+   public void add(SortedMap<Ip, SortedSet<NodeInterfacePair>> map, Ip ip,
+         String hostname, String interfaceName) {
+      SortedSet<NodeInterfacePair> interfaces = map.get(ip);
       if (interfaces == null) {
          interfaces = new TreeSet<NodeInterfacePair>();
          map.put(ip, interfaces);
@@ -29,19 +31,28 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
       interfaces.add(new NodeInterfacePair(hostname, interfaceName));
    }
 
-   public Map<Ip, Set<NodeInterfacePair>> getAllIps() {
+   public SortedMap<Ip, SortedSet<NodeInterfacePair>> getAllIps() {
       return _allIps;
    }
 
-   public Map<Ip, Set<NodeInterfacePair>> getEnabledIps() {
+   public DiffLabel getDiffLabel() {
+      return _diffLabel;
+   }
+
+   public SortedMap<Ip, SortedSet<NodeInterfacePair>> getEnabledIps() {
       return _enabledIps;
    }
 
-   public void setAllIps(Map<Ip, Set<NodeInterfacePair>> allIps) {
+   public void setAllIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> allIps) {
       _allIps = allIps;
    }
 
-   public void setEnabledIps(Map<Ip, Set<NodeInterfacePair>> enabledIps) {
+   public void setDiffLabel(DiffLabel diffLabel) {
+      _diffLabel = diffLabel;
+   }
+
+   public void setEnabledIps(
+         SortedMap<Ip, SortedSet<NodeInterfacePair>> enabledIps) {
       _enabledIps = enabledIps;
    }
 

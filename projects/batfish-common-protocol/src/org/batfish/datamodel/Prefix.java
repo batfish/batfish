@@ -1,47 +1,13 @@
 package org.batfish.datamodel;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-@JsonSerialize(using = Prefix.PrefixSerializer.class)
-@JsonDeserialize(using = Prefix.PrefixDeserializer.class)
 public final class Prefix implements Comparable<Prefix>, Serializable {
-
-   public static class PrefixDeserializer extends JsonDeserializer<Prefix> {
-
-      @Override
-      public Prefix deserialize(JsonParser parser, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-         JsonNode node = parser.getCodec().readTree(parser);
-         String prefixAsString = node.textValue();
-         return new Prefix(prefixAsString);
-      }
-
-   }
-
-   public static class PrefixSerializer extends JsonSerializer<Prefix> {
-
-      @Override
-      public void serialize(Prefix value, JsonGenerator jgen,
-            SerializerProvider provider) throws IOException,
-            JsonProcessingException {
-         jgen.writeString(value.toString());
-      }
-
-   }
 
    public static final int MAX_PREFIX_LENGTH = 32;
 
@@ -83,6 +49,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       _prefixLength = mask.numSubnetBits();
    }
 
+   @JsonCreator
    public Prefix(String text) {
       String[] parts = text.split("/");
       if (parts.length != 2) {
@@ -164,6 +131,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
    }
 
    @Override
+   @JsonValue
    public String toString() {
       return _address.toString() + "/" + _prefixLength;
    }

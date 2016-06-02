@@ -1,17 +1,46 @@
 package org.batfish.common.util;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.ClientBuilder;
+
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 
 public class CommonUtil {
+   private static class TrustAllHostNameVerifier implements HostnameVerifier {
+      @Override
+      public boolean verify(String hostname, SSLSession session) {
+         return true;
+      }
+   }
+
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
+
    public static final String NULL_INTERFACE_NAME = "null_interface";
 
    public static String applyPrefix(String prefix, String msg) {
@@ -46,6 +75,47 @@ public class CommonUtil {
       return s;
    }
 
+   public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll)
+         throws Exception {
+      if (secure) {
+         if (trustAll) {
+            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            sslcontext.init(null, new TrustManager[] { new X509TrustManager() {
+               @Override
+               public void checkClientTrusted(X509Certificate[] arg0,
+                     String arg1) throws CertificateException {
+               }
+
+               @Override
+               public void checkServerTrusted(X509Certificate[] arg0,
+                     String arg1) throws CertificateException {
+               }
+
+               @Override
+               public X509Certificate[] getAcceptedIssuers() {
+                  return new X509Certificate[0];
+               }
+
+            } }, new java.security.SecureRandom());
+
+            return ClientBuilder.newBuilder().sslContext(sslcontext)
+                  .hostnameVerifier(new TrustAllHostNameVerifier());
+         }
+         else {
+            return ClientBuilder.newBuilder();
+         }
+      }
+      else {
+         return ClientBuilder.newBuilder();
+      }
+   }
+
+   public static File getConfigProperties(Class<?> locatorClass,
+         String propertiesFilename) {
+      File configDir = getJarOrClassDir(locatorClass);
+      return Paths.get(configDir.toString(), propertiesFilename).toFile();
+   }
+
    public static String getIndentedString(String str, int indentLevel) {
       String indent = getIndentString(indentLevel);
       StringBuilder sb = new StringBuilder();
@@ -78,6 +148,65 @@ public class CommonUtil {
          }
       }
       return null;
+   }
+
+   public static File getJarOrClassDir(Class<?> locatorClass) {
+      File locatorDirFile = null;
+      URL locatorSourceURL = locatorClass.getProtectionDomain().getCodeSource()
+            .getLocation();
+      String locatorSourceString = locatorSourceURL.toString();
+      if (locatorSourceString.startsWith("onejar:")) {
+         URL onejarSourceURL = null;
+         try {
+            onejarSourceURL = Class.forName("com.simontuffs.onejar.Boot")
+                  .getProtectionDomain().getCodeSource().getLocation();
+         }
+         catch (ClassNotFoundException e) {
+            throw new BatfishException("could not find onejar class");
+         }
+         File jarDir = new File(onejarSourceURL.toString().replaceAll(
+               "^file:\\\\*", "")).getParentFile();
+         return jarDir;
+      }
+      else {
+         char separator = System.getProperty("file.separator").charAt(0);
+         String locatorPackageResourceName = locatorClass.getPackage()
+               .getName().replace('.', separator);
+         try {
+            locatorDirFile = new File(locatorClass.getClassLoader()
+                  .getResource(locatorPackageResourceName).toURI());
+         }
+         catch (URISyntaxException e) {
+            throw new BatfishException("Failed to resolve locator directory", e);
+         }
+         assert Boolean.TRUE;
+         return locatorDirFile;
+      }
+   }
+
+   public static List<String> getMatchingStrings(String regex,
+         Set<String> allStrings) {
+      List<String> matchingStrings = new ArrayList<String>();
+      Pattern pattern;
+      try {
+         pattern = Pattern.compile(regex);
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex is not a valid java regex: \"" + regex + "\"", e);
+      }
+      if (pattern != null) {
+         for (String s : allStrings) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.matches()) {
+               matchingStrings.add(s);
+            }
+         }
+      }
+      else {
+         matchingStrings.addAll(allStrings);
+      }
+      return matchingStrings;
    }
 
    public static String getTime(long millis) {
@@ -116,6 +245,23 @@ public class CommonUtil {
       return wp == check;
    }
 
+   public static String joinStrings(String delimiter, String[] parts) {
+      StringBuilder sb = new StringBuilder();
+      for (String part : parts) {
+         sb.append(part + delimiter);
+      }
+      String joined = sb.toString();
+      int joinedLength = joined.length();
+      String result;
+      if (joinedLength > 0) {
+         result = joined.substring(0, joinedLength - delimiter.length());
+      }
+      else {
+         result = joined;
+      }
+      return result;
+   }
+
    public static String longToCommunity(Long l) {
       Long upper = l >> 16;
       Long lower = l & 0xFFFF;
@@ -151,8 +297,20 @@ public class CommonUtil {
       return md5;
    }
 
-   public static Map<Integer, String> toLineMap(String str) {
-      Map<Integer, String> map = new TreeMap<Integer, String>();
+   public static String readFile(File file) {
+      String text = null;
+      try {
+         text = FileUtils.readFileToString(file);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to read file: " + file.toString(),
+               e);
+      }
+      return text;
+   }
+
+   public static SortedMap<Integer, String> toLineMap(String str) {
+      SortedMap<Integer, String> map = new TreeMap<Integer, String>();
       String[] lines = str.split("\n");
       for (int i = 0; i < lines.length; i++) {
          String line = lines[i];
@@ -244,5 +402,15 @@ public class CommonUtil {
          sb.append(ch);
       }
       return sb.toString();
+   }
+
+   public static void writeFile(String outputPath, String output) {
+      File outputFile = new File(outputPath);
+      try {
+         FileUtils.write(outputFile, output);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to write file: " + outputPath, e);
+      }
    }
 }

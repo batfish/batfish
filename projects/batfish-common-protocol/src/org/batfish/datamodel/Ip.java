@@ -1,47 +1,13 @@
 package org.batfish.datamodel;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-@JsonSerialize(using = Ip.IpSerializer.class)
-@JsonDeserialize(using = Ip.IpDeserializer.class)
 public class Ip implements Comparable<Ip>, Serializable {
-
-   public static class IpDeserializer extends JsonDeserializer<Ip> {
-
-      @Override
-      public Ip deserialize(JsonParser parser, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-         JsonNode node = parser.getCodec().readTree(parser);
-         String ipAsString = node.textValue();
-         return new Ip(ipAsString);
-      }
-
-   }
-
-   public static class IpSerializer extends JsonSerializer<Ip> {
-
-      @Override
-      public void serialize(Ip value, JsonGenerator jgen,
-            SerializerProvider provider) throws IOException,
-            JsonProcessingException {
-         jgen.writeString(value.toString());
-      }
-
-   }
 
    public static final Ip MAX = new Ip(0xFFFFFFFFl);
 
@@ -52,6 +18,16 @@ public class Ip implements Comparable<Ip>, Serializable {
    private static long ipStrToLong(String addr) {
       String[] addrArray = addr.split("\\.");
       if (addrArray.length != 4) {
+         if (addr.startsWith("INVALID_IP")) {
+            String[] tail = addr.split("\\(");
+            if (tail.length == 2) {
+               String[] longStrParts = tail[1].split("l");
+               if (longStrParts.length == 2) {
+                  String longStr = longStrParts[0];
+                  return Long.parseLong(longStr);
+               }
+            }
+         }
          throw new BatfishException("Invalid ip string: \"" + addr + "\"");
       }
       long num = 0;
@@ -92,6 +68,7 @@ public class Ip implements Comparable<Ip>, Serializable {
       _hashCode = _ip.hashCode();
    }
 
+   @JsonCreator
    public Ip(String ipAsString) {
       _ip = ipStrToLong(ipAsString);
       _hashCode = _ip.hashCode();
@@ -182,6 +159,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    }
 
    @Override
+   @JsonValue
    public String toString() {
       if (!valid()) {
          return "INVALID_IP(" + _ip + "l)";

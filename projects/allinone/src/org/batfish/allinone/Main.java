@@ -2,7 +2,6 @@ package org.batfish.allinone;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.batfish.allinone.Settings;
 import org.batfish.client.Client;

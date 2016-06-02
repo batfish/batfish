@@ -36,7 +36,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 public class WorkMgrService {
 
    BatfishLogger _logger = Main.getLogger();
-
+   Settings _settings = Main.getSettings();
+   
    private void checkApiKeyValidity(String apiKey) throws Exception {
       if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
          throw new AccessControlException("Invalid API key: " + apiKey);
@@ -499,7 +500,7 @@ public class WorkMgrService {
          ;
          checkApiKeyValidity(apiKey);
 
-         if (apiKey.equals(CoordConsts.DEFAULT_API_KEY))
+         if (!_settings.getDefaultKeyListings() && apiKey.equals(CoordConsts.DEFAULT_API_KEY))
             throw new AccessControlException("Listing containers is not allowed with Default API key");
          
          String[] containerList = Main.getWorkMgr().listContainers(apiKey);
@@ -645,7 +646,7 @@ public class WorkMgrService {
          ;
          checkApiKeyValidity(apiKey);
          
-         if (apiKey.equals(CoordConsts.DEFAULT_API_KEY))
+         if (!_settings.getDefaultKeyListings() && apiKey.equals(CoordConsts.DEFAULT_API_KEY))
             throw new AccessControlException("Listing all testrigs is not allowed with Default API key");
          
          List<String> containerList = new LinkedList<String>();

@@ -5,7 +5,7 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.Util;
+import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
    
@@ -18,6 +18,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_API_KEY = "apikey";
    public static final String ARG_BATFISH_LOG_LEVEL = "batfishloglevel";
    public static final String ARG_COMMAND_FILE = "cmdfile";
+   public static final String ARG_CONTAINER_ID = "containerid";
    private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
    public static final String ARG_LOG_FILE = "logfile";
@@ -26,7 +27,8 @@ public class Settings extends BaseSettings {
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
    private static final String ARG_QUESTIONS_DIR = "questionsdir";   
    public static final String ARG_RUN_MODE = "runmode";
-   public static final String ARG_TESTRIG_DIR = "testrig";
+   public static final String ARG_TESTRIG_DIR = "testrigdir";
+   public static final String ARG_TESTRIG_ID = "testrigid";
 
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
@@ -38,6 +40,7 @@ public class Settings extends BaseSettings {
    private String _apiKey;
    private String _batchCommandFile;
    private String _batfishLogLevel;
+   private String _containerId;
    private String _logFile;
    private String _logLevel;
    private long _periodCheckWorkMs;
@@ -45,6 +48,7 @@ public class Settings extends BaseSettings {
    private RunMode _runMode;
    private boolean _sanityCheck;
    private String _testrigDir;
+   private String _testrigId;
 
    private String _coordinatorHost;
    private int _coordinatorPoolPort;
@@ -53,7 +57,7 @@ public class Settings extends BaseSettings {
    private boolean _useSsl;
 
    public Settings(String[] args) throws Exception {
-      super(Util.getConfigProperties(ConfigurationLocator.class,
+      super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_CLIENT));
 
       initConfigDefaults();
@@ -72,6 +76,10 @@ public class Settings extends BaseSettings {
 
    public String getBatfishLogLevel() {
       return _batfishLogLevel;
+   }
+
+   public String getContainerId() {
+      return _containerId;
    }
 
    public String getCoordinatorHost() {
@@ -106,14 +114,18 @@ public class Settings extends BaseSettings {
       return _runMode;
    }
 
-   public String getTestrigDir() {
-	   return _testrigDir;
-   }
-
    public boolean getSanityCheck() {
       return _sanityCheck;
    }
    
+   public String getTestrigDir() {
+      return _testrigDir;
+   }
+
+   public String getTestrigId() {
+      return _testrigId;
+   }
+
    public boolean getTrustAllSslCerts() {
       return _trustAllSslCerts;
    }
@@ -149,6 +161,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish", "batfish_loglevel");
 
+      addOption(ARG_CONTAINER_ID, "container to attach to", "container_id");
+
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
       addBooleanOption(ARG_HELP, "print this message");
@@ -169,6 +183,8 @@ public class Settings extends BaseSettings {
             "run_mode");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+
+      addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
 
       addOption(ARG_COORDINATOR_HOST, "hostname for the service",
             "base url for coordinator service");
@@ -194,6 +210,7 @@ public class Settings extends BaseSettings {
       _apiKey = getStringOptionValue(ARG_API_KEY);
       _batchCommandFile = getStringOptionValue(ARG_COMMAND_FILE);
       _batfishLogLevel = getStringOptionValue(ARG_BATFISH_LOG_LEVEL);
+      _containerId = getStringOptionValue(ARG_CONTAINER_ID);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
@@ -201,6 +218,7 @@ public class Settings extends BaseSettings {
       _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
       _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
+      _testrigId = getStringOptionValue(ARG_TESTRIG_ID);
 
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);

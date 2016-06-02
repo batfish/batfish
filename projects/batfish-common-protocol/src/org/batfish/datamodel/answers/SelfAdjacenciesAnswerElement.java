@@ -9,6 +9,9 @@ import org.batfish.common.Pair;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SelfAdjacenciesAnswerElement implements AnswerElement {
 
    public static class InterfaceIpPair extends Pair<String, Ip> {
@@ -18,14 +21,21 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
        */
       private static final long serialVersionUID = 1L;
 
-      public InterfaceIpPair(String t1, Ip t2) {
+      private static final String INTERFACE_NAME_VAR = "interfaceName";
+      private static final String IP_VAR = "ip";
+
+      @JsonCreator
+      public InterfaceIpPair(@JsonProperty(INTERFACE_NAME_VAR) String t1,
+            @JsonProperty(IP_VAR) Ip t2) {
          super(t1, t2);
       }
 
+      @JsonProperty(INTERFACE_NAME_VAR)
       public String getInterfaceName() {
          return _first;
       }
 
+      @JsonProperty(IP_VAR)
       public Ip getIp() {
          return _second;
       }
