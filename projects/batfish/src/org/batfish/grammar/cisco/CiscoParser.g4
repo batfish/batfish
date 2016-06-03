@@ -12,6 +12,14 @@ options {
 package org.batfish.grammar.cisco;
 }
 
+@members {
+   private boolean _nonNexus;
+   
+   public void setNonNexus(boolean b) {
+      _nonNexus = b;
+   }
+}
+
 address_aiimgp_stanza
 :
    ADDRESS ~NEWLINE* NEWLINE

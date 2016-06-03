@@ -2,8 +2,6 @@
 hostname neighbor_mix
 !
 router bgp 1
- address-family ipv4 !non-nexus
-  neighbor 1.1.1.1 activate !non-nexus
  bgp router-id 10.10.10.10
  neighbor 1.1.1.1 remote-as 1 !nexus
   address-family ipv4 !nexus
@@ -19,11 +17,4 @@ router bgp 1
  neighbor 4.4.4.4 remote-as 4 !nexus
   address-family ipv6 !nexus
    description neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus
- address-family ipv4 !non-nexus
-  neighbor 11.11.11.11 activate !non-nexus
- exit-address-family !non-nexus
- neighbor 2.2.2.2 remote-as 2 !non-nexus
- address-family ipv4 !non-nexus
-  neighbor 2.2.2.2 route-map stuff in !non-nexus
- exit-address-family !non-nexus
 !

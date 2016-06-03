@@ -1,6 +1,8 @@
 package org.batfish.job;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -67,8 +69,9 @@ public class ParseVendorConfigurationJob extends
       case ARISTA:
       case CISCO:
       case CISCO_IOS_XR:
+         boolean nonNexus = checkNonNexus(_fileText);
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText,
-               _settings);
+               _settings, nonNexus);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser,
                _warnings, _settings.getUnrecognizedAsRedFlag());
@@ -220,6 +223,15 @@ public class ParseVendorConfigurationJob extends
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
             _logger.getHistory(), _file, vc, _warnings);
+   }
+
+   private boolean checkNonNexus(String fileText) {
+      Matcher neighborActivateMatcher = Pattern.compile(
+            "(?m)^neighbor.*activate$")
+
+      .matcher(fileText);
+      return fileText.contains("exit-address-family")
+            || neighborActivateMatcher.find();
    }
 
 }

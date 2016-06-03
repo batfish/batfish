@@ -629,35 +629,43 @@ redistribute_static_bgp_tail
 
 router_bgp_stanza
 :
-   ROUTER BGP procnum = DEC NEWLINE
-   (
-      address_family_rb_stanza
-      | aggregate_address_rb_stanza
-      | always_compare_med_rb_stanza
-      | bgp_advertise_inactive_rb_stanza
-      | bgp_listen_range_rb_stanza
-      | bgp_redistribute_internal_rb_stanza
-      | bgp_tail
-      | cluster_id_rb_stanza
-      | default_information_originate_rb_stanza
-      // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
+   ROUTER BGP procnum = DEC NEWLINE router_bgp_stanza_tail+
+;
 
-      | nexus_neighbor_rb_stanza
-      | neighbor_rb_stanza
-      | neighbor_group_rb_stanza
-      | no_bgp_enforce_first_as_stanza
-      | no_neighbor_activate_rb_stanza
-      | no_neighbor_shutdown_rb_stanza
-      | no_redistribute_connected_rb_stanza
-      | null_no_neighbor_rb_stanza
-      | peer_group_assignment_rb_stanza
-      | peer_group_creation_rb_stanza
-      | router_id_rb_stanza
-      | template_peer_rb_stanza
-      | template_peer_session_rb_stanza
-      | nexus_vrf_rb_stanza
-      | unrecognized_line
-   )+
+router_bgp_stanza_tail
+:
+   address_family_rb_stanza
+   | aggregate_address_rb_stanza
+   | always_compare_med_rb_stanza
+   | bgp_advertise_inactive_rb_stanza
+   | bgp_listen_range_rb_stanza
+   | bgp_redistribute_internal_rb_stanza
+   | bgp_tail
+   | cluster_id_rb_stanza
+   | default_information_originate_rb_stanza
+   // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
+
+   |
+   {!_nonNexus}?
+
+   nexus_neighbor_rb_stanza
+   | neighbor_rb_stanza
+   | neighbor_group_rb_stanza
+   | no_bgp_enforce_first_as_stanza
+   | no_neighbor_activate_rb_stanza
+   | no_neighbor_shutdown_rb_stanza
+   | no_redistribute_connected_rb_stanza
+   | null_no_neighbor_rb_stanza
+   | peer_group_assignment_rb_stanza
+   | peer_group_creation_rb_stanza
+   | router_id_rb_stanza
+   | template_peer_rb_stanza
+   | template_peer_session_rb_stanza
+   |
+   {!_nonNexus}?
+
+   nexus_vrf_rb_stanza
+   | unrecognized_line
 ;
 
 router_id_bgp_tail
