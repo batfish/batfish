@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.SkipForEqualityCheck;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +8,6 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.common.Util;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -232,11 +229,6 @@ public class Interface extends ComparableStructure<String> {
       return computeInterfaceType(_key, _owner.getVendor());
    }
 
-   @Override
-   public boolean equals(Object obj) {
-     return Util.checkEqual(this, obj);
-   }
-   
    public int getAccessVlan() {
       return _accessVlan;
    }

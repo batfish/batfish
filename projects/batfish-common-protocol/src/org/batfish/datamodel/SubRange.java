@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.SkipForEqualityCheck;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

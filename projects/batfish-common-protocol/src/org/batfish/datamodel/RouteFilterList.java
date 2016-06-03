@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.common.util.SkipForEqualityCheck;
 
 public class RouteFilterList extends ComparableStructure<String> {
 

@@ -1,8 +1,14 @@
 package org.batfish.question;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -12,7 +18,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
-import org.batfish.util.Util;
 
 public class CompareSameNameAnswer extends Answer {
 
@@ -23,7 +28,7 @@ public class CompareSameNameAnswer extends Answer {
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
       // collect relevant nodes in a list.
-      List<String> nodes = Util.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      List<String> nodes = getMatchingStrings(question.getNodeRegex(), configurations.keySet());
       
       processAccessPathLists(nodes, configurations);
       processCommunityLists(nodes,configurations);
@@ -78,7 +83,32 @@ public class CompareSameNameAnswer extends Answer {
          }
       }
       addAnswerElement(ae);
-   }   
+   }
+   
+   private static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
+      List<String> matchingStrings = new ArrayList<String>();
+      Pattern pattern;
+      try {
+         pattern = Pattern.compile(regex);
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex is not a valid java regex: \""
+                     + regex + "\"", e);
+      }
+      if (pattern != null) {
+         for (String s : allStrings) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.matches()) {
+               matchingStrings.add(s);
+            }
+         }
+      }
+      else {
+         matchingStrings.addAll(allStrings);
+      }
+      return matchingStrings;
+   }
    
 }
 
