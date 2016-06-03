@@ -8,27 +8,6 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class Flow implements Comparable<Flow> {
 
-   private final String DSCP_VAR = "dscp";
-   private final String DST_IP_VAR = "dstIp";
-   private final String DST_PORT_VAR = "dstPort";
-   private final String ECN_VAR = "ecn";
-   private final String ICMP_CODE_VAR = "icmpCode";
-   private final String ICMP_TYPE_VAR = "icmpVar";
-   private final String INGRESS_NODE_VAR = "ingressNode";
-   private final String IP_PROTOCOL_VAR = "ipProtocol";
-   private final String SRC_IP_VAR = "srcIp";
-   private final String SRC_PORT_VAR = "srcPort";
-   private final String STATE_VAR = "state";
-   private final String TAG_VAR = "tag";
-   private final String TCP_FLAGS_ACK_VAR = "tcpFlagsAck";
-   private final String TCP_FLAGS_CWR_VAR = "tcpFlagsCwr";
-   private final String TCP_FLAGS_ECE_VAR = "tcpFlagsEce";
-   private final String TCP_FLAGS_FIN_VAR = "tcpFlagsFin";
-   private final String TCP_FLAGS_PSH_VAR = "tcpFlagsPsh";
-   private final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
-   private final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
-   private final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
-
    private final int _dscp;
 
    private final Ip _dstIp;
@@ -69,8 +48,48 @@ public final class Flow implements Comparable<Flow> {
 
    private final int _tcpFlagsUrg;
 
+   private final String DSCP_VAR = "dscp";
+
+   private final String DST_IP_VAR = "dstIp";
+
+   private final String DST_PORT_VAR = "dstPort";
+
+   private final String ECN_VAR = "ecn";
+
+   private final String ICMP_CODE_VAR = "icmpCode";
+
+   private final String ICMP_TYPE_VAR = "icmpVar";
+
+   private final String INGRESS_NODE_VAR = "ingressNode";
+
+   private final String IP_PROTOCOL_VAR = "ipProtocol";
+
+   private final String SRC_IP_VAR = "srcIp";
+
+   private final String SRC_PORT_VAR = "srcPort";
+
+   private final String STATE_VAR = "state";
+
+   private final String TAG_VAR = "tag";
+
+   private final String TCP_FLAGS_ACK_VAR = "tcpFlagsAck";
+
+   private final String TCP_FLAGS_CWR_VAR = "tcpFlagsCwr";
+
+   private final String TCP_FLAGS_ECE_VAR = "tcpFlagsEce";
+
+   private final String TCP_FLAGS_FIN_VAR = "tcpFlagsFin";
+
+   private final String TCP_FLAGS_PSH_VAR = "tcpFlagsPsh";
+
+   private final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
+
+   private final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
+
+   private final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
+
    @JsonCreator
-   Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+   public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
          @JsonProperty(SRC_IP_VAR) Ip srcIp,
          @JsonProperty(DST_IP_VAR) Ip dstIp,
          @JsonProperty(SRC_PORT_VAR) int srcPort,
