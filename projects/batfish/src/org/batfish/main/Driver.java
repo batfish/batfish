@@ -43,6 +43,15 @@ public class Driver {
 
    private static HashMap<String, Task> _taskLog;
 
+   private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
+                                                                                // minute
+
+   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30
+                                                                     // seconds
+
+   private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1 * 1000; // 1
+                                                                                   // second
+
    static Logger httpServerLogger = Logger
          .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
                .getName());
@@ -130,9 +139,9 @@ public class Driver {
          ResourceConfig rc = new ResourceConfig(Service.class)
                .register(new JettisonFeature());
 
-         GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
-
          try {
+            GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
+
             if (_mainSettings.getCoordinatorRegister()) {
                // this function does not return until registration succeeds
                registerWithCoordinatorPersistent();
@@ -140,7 +149,7 @@ public class Driver {
 
             // sleep indefinitely, in 1 minute chunks
             while (true) {
-               Thread.sleep(1 * 60 * 1000); // 1 minute
+               Thread.sleep(COORDINATOR_POLL_CHECK_INTERVAL_MS);
 
                // every time we wake up, we check if the coordinator has polled
                // us recently
@@ -148,16 +157,22 @@ public class Driver {
                // died and come back.
                if (_mainSettings.getCoordinatorRegister()
                      && new Date().getTime()
-                           - _lastPollFromCoordinator.getTime() > 30 * 1000) {
+                           - _lastPollFromCoordinator.getTime() > COORDINATOR_POLL_TIMEOUT_MS) {
                   // this function does not return until registration succeeds
                   registerWithCoordinatorPersistent();
                }
 
             }
          }
+         catch (ProcessingException e) {
+            String msg = "FATAL ERROR: " + e.getMessage();
+            _mainLogger.error(msg);
+            System.exit(1);
+         }
          catch (Exception ex) {
             String stackTrace = ExceptionUtils.getFullStackTrace(ex);
             _mainLogger.error(stackTrace);
+            System.exit(1);
          }
       }
       else if (_mainSettings.canExecute()) {
@@ -233,7 +248,7 @@ public class Driver {
       do {
          registrationSuccess = registerWithCoordinator(poolRegUrl);
          if (!registrationSuccess) {
-            Thread.sleep(1 * 1000); // 1 seconds
+            Thread.sleep(COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS);
          }
       } while (!registrationSuccess);
    }
@@ -252,13 +267,13 @@ public class Driver {
                Answer answer = null;
                try {
                   answer = batfish.run();
-                  batfish.SetTerminatedWithException(false);
+                  batfish.setTerminatedWithException(false);
                   if (answer.getStatus() == null) {
                      answer.setStatus(AnswerStatus.SUCCESS);
                   }
                }
                catch (CleanBatfishException e) {
-                  batfish.SetTerminatedWithException(true);
+                  batfish.setTerminatedWithException(true);
                   String msg = "FATAL ERROR: " + e.getMessage();
                   logger.error(msg);
                   answer = Answer.failureAnswer(msg);
@@ -268,7 +283,7 @@ public class Driver {
                   logger.error(stackTrace);
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
-                  batfish.SetTerminatedWithException(true);
+                  batfish.setTerminatedWithException(true);
                }
                catch (Exception e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -277,7 +292,7 @@ public class Driver {
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(new BatfishException(
                         "Batfish job failed", e));
-                  batfish.SetTerminatedWithException(true);
+                  batfish.setTerminatedWithException(true);
                }
                finally {
                   if (settings.getAnswerJsonPath() != null) {
@@ -293,13 +308,15 @@ public class Driver {
          if (thread.isAlive()) {
             // this is deprecated but we should be safe since we don't have
             // locks and such
+            // AF: This doesn't do what you think it does, esp. not in Java 8.
+            // It needs to be replaced.
             thread.stop();
             logger.error("Batfish worker took too long. Terminated.");
-            batfish.SetTerminatedWithException(true);
+            batfish.setTerminatedWithException(true);
          }
 
          batfish.close();
-         return !batfish.GetTerminatedWithException();
+         return !batfish.getTerminatedWithException();
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);

@@ -2080,7 +2080,7 @@ public class Batfish implements AutoCloseable {
       return consumedEdges;
    }
 
-   public boolean GetTerminatedWithException() {
+   public boolean getTerminatedWithException() {
       return _terminatedWithException;
    }
 
@@ -3760,7 +3760,7 @@ public class Batfish implements AutoCloseable {
       return answer;
    }
 
-   public void SetTerminatedWithException(boolean terminatedWithException) {
+   public void setTerminatedWithException(boolean terminatedWithException) {
       _terminatedWithException = terminatedWithException;
    }
 
