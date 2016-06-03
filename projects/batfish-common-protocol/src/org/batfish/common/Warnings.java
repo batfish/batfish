@@ -52,7 +52,7 @@ public class Warnings implements Serializable {
             String msg = e.getValue().asText();
             int colonIndex = msg.indexOf(":");
             String tag = msg.substring(0, colonIndex);
-            String text = msg.substring(colonIndex + 1, msg.length());
+            String text = msg.substring(colonIndex + 2, msg.length());
             Warning warning = new Warning(text, tag);
             warnings.add(warning);
          }
