@@ -49,21 +49,25 @@ public class IsisLoopbacksAnswer extends Answer {
                boolean isis = false;
                if (l1Mode == IsisInterfaceMode.ACTIVE) {
                   l1 = true;
+                  isis = true;
                   answerElement.add(answerElement.getL1Active(), hostname,
                         interfaceName);
                }
                else if (l1Mode == IsisInterfaceMode.PASSIVE) {
                   l1 = true;
+                  isis = true;
                   answerElement.add(answerElement.getL1Passive(), hostname,
                         interfaceName);
                }
                if (l2Mode == IsisInterfaceMode.ACTIVE) {
                   l2 = true;
+                  isis = true;
                   answerElement.add(answerElement.getL2Active(), hostname,
                         interfaceName);
                }
                else if (l2Mode == IsisInterfaceMode.PASSIVE) {
                   l2 = true;
+                  isis = true;
                   answerElement.add(answerElement.getL2Passive(), hostname,
                         interfaceName);
                }

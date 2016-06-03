@@ -9,6 +9,7 @@ package org.batfish.grammar.cisco;
 }
 
 @members {
+int lastTokenType = 0;
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
@@ -26,6 +27,12 @@ public String printStateVariables() {
    return sb.toString();
 }
 
+public void emit(Token token) {
+    super.emit(token);
+    if (token.getChannel() != HIDDEN) {
+       lastTokenType = token.getType();
+    }
+}
 }
 
 tokens {
@@ -4475,7 +4482,7 @@ QOS_GROUP
 :
    'qos-group'
 ;
-   
+
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
@@ -6567,7 +6574,17 @@ COMMUNITY_SET_VALUE
 
 COMMENT_LINE
 :
-   '!' F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+   (
+      F_Whitespace
+   )* '!'
+   {lastTokenType == NEWLINE}?
+
+   F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+;
+
+COMMENT_TAIL
+:
+   '!' F_NonNewline* -> channel ( HIDDEN )
 ;
 
 DASH
@@ -6872,25 +6889,25 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r/.(),] )
+   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] )
 ;
 
 fragment
 F_Variable_RequiredVarChar_Ipv6
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r/.(),] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] | ':' )
 ;
 
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r()]
+   ~[ \t\n\r()!]
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~[ \t\n\r:()]
+   ~( [ \t\n\r()!] | ':' )
 ;
 
 fragment
