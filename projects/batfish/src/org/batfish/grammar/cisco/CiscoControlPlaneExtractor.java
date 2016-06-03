@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -844,6 +845,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private NamedBgpPeerGroup _currentNamedPeerGroup;
 
+   private final Set<String> _currentNexusNeighborAddressFamilies;
+
    private OspfProcess _currentOspfProcess;
 
    private BgpPeerGroup _currentPeerGroup;
@@ -865,6 +868,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private String _currentVrf;
 
    private BgpPeerGroup _dummyPeerGroup;
+
+   private boolean _inNexusNeighbor;
 
    private final BatfishCombinedParser<?, ?> _parser;
 
@@ -889,6 +894,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _w = warnings;
       _peerGroupStack = new ArrayList<BgpPeerGroup>();
       _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
+      _currentNexusNeighborAddressFamilies = new HashSet<String>();
    }
 
    private void addInterface(String vrf, double bandwidth, String name) {
@@ -907,9 +913,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterAddress_family_header(Address_family_headerContext ctx) {
-      if (ctx.VPNV4() != null || ctx.VPNV6() != null || ctx.IPV6() != null
-            || ctx.MDT() != null || ctx.MULTICAST() != null
-            || ctx.VRF() != null) {
+      String addressFamilyStr = ctx.addressFamilyStr;
+      if (_inNexusNeighbor) {
+         if (_currentNexusNeighborAddressFamilies.contains(addressFamilyStr)) {
+            popPeer();
+            _inNexusNeighbor = false;
+            _currentNexusNeighborAddressFamilies.clear();
+         }
+         else {
+            _currentNexusNeighborAddressFamilies.add(addressFamilyStr);
+         }
+      }
+      Bgp_address_familyContext af = ctx.af;
+      if (af.VPNV4() != null || af.VPNV6() != null || af.IPV6() != null
+            || af.MDT() != null || af.MULTICAST() != null || af.VRF() != null) {
          pushPeer(_dummyPeerGroup);
       }
       else {
@@ -1176,6 +1193,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
+      _currentNexusNeighborAddressFamilies.clear();
+      _inNexusNeighbor = true;
       // do no further processing for unsupported address families / containers
       if (_currentPeerGroup == _dummyPeerGroup) {
          pushPeer(_dummyPeerGroup);
@@ -1568,6 +1587,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitEbgp_multihop_bgp_tail(Ebgp_multihop_bgp_tailContext ctx) {
       _currentPeerGroup.setEbgpMultihop(true);
+   }
+
+   @Override
+   public void exitEmpty_nexus_neighbor_address_family(
+         Empty_nexus_neighbor_address_familyContext ctx) {
+      popPeer();
    }
 
    @Override
@@ -2216,7 +2241,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitNexus_neighbor_address_family(
          Nexus_neighbor_address_familyContext ctx) {
-      popPeer();
+      if (_inNexusNeighbor) {
+         popPeer();
+      }
+      else {
+         _currentNexusNeighborAddressFamilies.clear();
+      }
    }
 
    @Override
@@ -2243,7 +2273,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
-      popPeer();
+      if (_inNexusNeighbor) {
+         popPeer();
+      }
+      else {
+         _inNexusNeighbor = false;
+      }
    }
 
    @Override

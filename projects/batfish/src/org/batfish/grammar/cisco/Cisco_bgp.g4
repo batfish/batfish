@@ -11,9 +11,16 @@ activate_bgp_tail
    ACTIVATE NEWLINE
 ;
 
-address_family_header
+address_family_header returns [String addressFamilyStr]
 :
-   ADDRESS_FAMILY
+   ADDRESS_FAMILY af = bgp_address_family
+   {$addressFamilyStr = $af.ctx.getText();}
+
+   NEWLINE
+;
+
+bgp_address_family
+:
    (
       (
          IPV4 MDT?
@@ -28,7 +35,7 @@ address_family_header
    )?
    (
       VRF vrf_name = VARIABLE
-   )? NEWLINE
+   )?
 ;
 
 address_family_footer
@@ -306,7 +313,12 @@ next_hop_self_bgp_tail
 
 nexus_neighbor_address_family
 :
-   address_family_header bgp_tail* address_family_footer
+   address_family_header bgp_tail+ address_family_footer
+;
+
+empty_nexus_neighbor_address_family
+:
+   address_family_header address_family_footer
 ;
 
 nexus_neighbor_inherit
@@ -315,8 +327,12 @@ nexus_neighbor_inherit
 ;
 
 nexus_neighbor_rb_stanza
-locals [java.util.Set<String> addressFamilies]
-@init {$addressFamilies = new java.util.HashSet<String>();}
+locals
+[java.util.Set<String> addressFamilies, java.util.Set<String> consumedAddressFamilies]
+@init {
+   $addressFamilies = new java.util.HashSet<String>();
+   $consumedAddressFamilies = new java.util.HashSet<String>();
+}
 :
    NEIGHBOR
    (
@@ -327,47 +343,20 @@ locals [java.util.Set<String> addressFamilies]
    )
    (
       REMOTE_AS asnum = DEC
-   )? NEWLINE nexus_neighbor_rb_stanza_tail [$addressFamilies]
-;
-
-nexus_neighbor_rb_stanza_tail [java.util.Set<String> addressFamilies]
-locals [boolean active]
-:
-{
-   if (_input.LT(1).getType() == ADDRESS_FAMILY) {
-      String addressFamilyString = "";
-      for (int i = 1, currentType = -1; _input.LT(i).getType() != NEWLINE; i++) {
-         addressFamilyString += " " + _input.LT(i).getText();
-      }
-      if ($addressFamilies.contains(addressFamilyString)) {
-         $active = false;
-      }
-      else {
-         $addressFamilies.add(addressFamilyString);
-         $active = true;
-      }
-   }
-   else {
-      $active = true;
-   }
-}
-
+   )? NEWLINE
    (
-      {$active}?
-
+      bgp_tail
+      | nexus_neighbor_inherit
+      | no_shutdown_rb_stanza
+      | remote_as_bgp_tail
+      | use_neighbor_group_bgp_tail
+   )*
+   (
       (
-         (
-            bgp_tail
-            | nexus_neighbor_address_family
-            | nexus_neighbor_inherit
-            | no_shutdown_rb_stanza
-            | remote_as_bgp_tail
-            | use_neighbor_group_bgp_tail
-         ) nexus_neighbor_rb_stanza_tail [$addressFamilies]
-      )
-      | //intentional blank
-
-   )
+         empty_nexus_neighbor_address_family
+         | nexus_neighbor_address_family
+      )* nexus_neighbor_address_family
+   )?
 ;
 
 nexus_vrf_rb_stanza
