@@ -1,14 +1,8 @@
 package org.batfish.question;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -28,7 +22,7 @@ public class CompareSameNameAnswer extends Answer {
       Map<String, Configuration> configurations = batfish.loadConfigurations();
 
       // collect relevant nodes in a list.
-      List<String> nodes = getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      List<String> nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
       
       processAccessPathLists(nodes, configurations);
       processCommunityLists(nodes,configurations);
@@ -40,9 +34,9 @@ public class CompareSameNameAnswer extends Answer {
    {
       CompareSameNameAnswerElement<AsPathAccessList> ae = new CompareSameNameAnswerElement<AsPathAccessList>(AsPathAccessList.class.getSimpleName());
       for (String node : nodes) {       
-         Map<String, AsPathAccessList> asPathAccessLists =  configurations.get(node).getAsPathAccessLists();
-            for (String asPathAccessListName : asPathAccessLists.keySet()) {
-               ae.add(node, asPathAccessListName, asPathAccessLists.get(asPathAccessListName));
+         Map<String, AsPathAccessList> lists =  configurations.get(node).getAsPathAccessLists();
+            for (String listName : lists.keySet()) {
+               ae.add(node, listName, lists.get(listName));
          }
       }
       addAnswerElement(ae);
@@ -52,9 +46,9 @@ public class CompareSameNameAnswer extends Answer {
    {
       CompareSameNameAnswerElement<CommunityList> ae = new CompareSameNameAnswerElement<CommunityList>(CommunityList.class.getSimpleName());
       for (String node : nodes) {
-         Map<String, CommunityList> communityLists =  configurations.get(node).getCommunityLists();
-         for (String communityListName : communityLists.keySet()) {
-            ae.add(node, communityListName, communityLists.get(communityListName));
+         Map<String, CommunityList> lists =  configurations.get(node).getCommunityLists();
+         for (String listName : lists.keySet()) {
+            ae.add(node, listName, lists.get(listName));
          }     
       }
       addAnswerElement(ae);
@@ -64,9 +58,9 @@ public class CompareSameNameAnswer extends Answer {
    {
       CompareSameNameAnswerElement<IkeGateway> ae = new CompareSameNameAnswerElement<IkeGateway>(IkeGateway.class.getSimpleName());
       for (String node : nodes) {
-         Map<String, IkeGateway> ikeGateways =  configurations.get(node).getIkeGateways();
-         for (String ikeGatewayName : ikeGateways.keySet()) {
-            ae.add(node, ikeGatewayName, ikeGateways.get(ikeGatewayName));
+         Map<String, IkeGateway> lists =  configurations.get(node).getIkeGateways();
+         for (String listName : lists.keySet()) {
+            ae.add(node, listName, lists.get(listName));
          }     
       }
       addAnswerElement(ae);
@@ -77,38 +71,12 @@ public class CompareSameNameAnswer extends Answer {
       CompareSameNameAnswerElement<RouteFilterList> ae = new CompareSameNameAnswerElement<RouteFilterList>(RouteFilterList.class.getSimpleName());
       for (String node : nodes) {
          // Process route filters
-         Map<String, RouteFilterList> routeFilterLists =  configurations.get(node).getRouteFilterLists();
-         for (String routeFilterListName : routeFilterLists.keySet()) {
-            ae.add(node, routeFilterListName, routeFilterLists.get(routeFilterListName));  
+         Map<String, RouteFilterList> lists =  configurations.get(node).getRouteFilterLists();
+         for (String listName : lists.keySet()) {
+            ae.add(node, listName, lists.get(listName));  
          }
       }
       addAnswerElement(ae);
    }
-   
-   private static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
-      List<String> matchingStrings = new ArrayList<String>();
-      Pattern pattern;
-      try {
-         pattern = Pattern.compile(regex);
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex is not a valid java regex: \""
-                     + regex + "\"", e);
-      }
-      if (pattern != null) {
-         for (String s : allStrings) {
-            Matcher matcher = pattern.matcher(s);
-            if (matcher.matches()) {
-               matchingStrings.add(s);
-            }
-         }
-      }
-      else {
-         matchingStrings.addAll(allStrings);
-      }
-      return matchingStrings;
-   }
-   
 }
 
