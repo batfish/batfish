@@ -2,16 +2,23 @@ package org.batfish.datamodel;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
 
-   private List<Ip> _nextHops;
+   private static final String NEXT_HOPS_VAR = "nextHops";
 
-   public PolicyMapSetNextHopLine(List<Ip> nextHops) {
+   private final List<Ip> _nextHops;
+
+   @JsonCreator
+   public PolicyMapSetNextHopLine(@JsonProperty(NEXT_HOPS_VAR) List<Ip> nextHops) {
       _nextHops = nextHops;
    }
 
+   @JsonProperty(NEXT_HOPS_VAR)
    public List<Ip> getNextHops() {
       return _nextHops;
    }

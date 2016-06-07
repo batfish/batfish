@@ -282,7 +282,7 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       _ipToInterfaceMap = new HashMap<Ip, org.batfish.datamodel.Interface>();
       _w = warnings;
       _c = new Configuration(_hostname);
-      _c.setVendor(_format);
+      _c.setConfigurationFormat(_format);
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       _c.setDefaultInboundAction(LineAction.ACCEPT);
 

@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -11,13 +12,65 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Interface extends ComparableStructure<String> {
+public final class Interface extends ComparableStructure<String> {
+
+   private static final String ACCESS_VLAN_VAR = "accessVlan";
+
+   private static final String ACTIVE_VAR = "active";
+
+   private static final String ALL_PREFIXES_VAR = "allPrefixes";
+
+   private static final String ALLOWED_VLANS_VAR = "allowedVlans";
+
+   private static final String BANDWIDTH_VAR = "bandwidth";
+
+   private static final String DESCRIPTION_VAR = "description";
 
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
+   private static final String INBOUND_FILTER_VAR = "inboundFilter";
+
+   private static final String INCOMING_FILTER_VAR = "incomingFilter";
+
+   private static final String ISIS_COST_VAR = "isisCost";
+
+   private static final String ISIS_L1_INTERFACE_MODE_VAR = "isisL1InterfaceMode";
+
+   private static final String ISIS_L2_INTERFACE_MODE_VAR = "isisL2InterfaceMode";
+
+   private static final String NATIVE_VLAN_VAR = "nativeVlan";
+
+   private static final String OSPF_AREA_VAR = "ospfArea";
+
+   private static final String OSPF_COST_VAR = "ospfCost";
+
+   private static final String OSPF_DEAD_INTERVAL_VAR = "ospfDeadInterval";
+
+   private static final String OSPF_ENABLED_VAR = "ospfEnabled";
+
+   private static final String OSPF_HELLO_MULTIPLIER_VAR = "ospfHelloMultiplier";
+
+   private static final String OSPF_PASSIVE_VAR = "ospfPassive";
+
+   private static final String OUTGOING_FILTER_VAR = "outgoingFilter";
+
+   private static final String OWNER_VAR = "owner";
+
+   private static final String PREFIX_VAR = "prefix";
+
+   private static final String ROUTING_POLICY_VAR = "routingPolicy";
+
    private static final long serialVersionUID = 1L;
+
+   private static final String SWITCHPORT_MODE_VAR = "switchportMode";
+
+   private static final String SWITCHPORT_TRUNK_ENCAPSULATION_VAR = "switchportTrunkEncapsulation";
+
+   private static final String ZONE_VAR = "zone";
 
    private static InterfaceType computeAwsInterfaceType(String name) {
       if (name.startsWith("v")) {
@@ -165,7 +218,7 @@ public class Interface extends ComparableStructure<String> {
 
    private boolean _active;
 
-   private ArrayList<SubRange> _allowedVlans;
+   private List<SubRange> _allowedVlans;
 
    private final Set<Prefix> _allPrefixes;
 
@@ -185,7 +238,7 @@ public class Interface extends ComparableStructure<String> {
 
    private int _nativeVlan;
 
-   private OspfArea _ospfArea;
+   private Map<Long, OspfArea> _ospfArea;
 
    private Integer _ospfCost;
 
@@ -211,6 +264,62 @@ public class Interface extends ComparableStructure<String> {
 
    private Zone _zone;
 
+   @JsonCreator
+   public Interface(
+         @JsonProperty(ACCESS_VLAN_VAR) int accessVlan,
+         @JsonProperty(ACTIVE_VAR) boolean active,
+         @JsonProperty(ALLOWED_VLANS_VAR) List<SubRange> allowedVlans,
+         @JsonProperty(ALL_PREFIXES_VAR) Set<Prefix> allPrefixes,
+         @JsonProperty(BANDWIDTH_VAR) Double bandwidth,
+         @JsonProperty(DESCRIPTION_VAR) String description,
+         @JsonProperty(INBOUND_FILTER_VAR) IpAccessList inboundFilter,
+         @JsonProperty(INCOMING_FILTER_VAR) IpAccessList incomingFilter,
+         @JsonProperty(ISIS_COST_VAR) Integer isisCost,
+         @JsonProperty(ISIS_L1_INTERFACE_MODE_VAR) IsisInterfaceMode isisL1InterfaceMode,
+         @JsonProperty(ISIS_L2_INTERFACE_MODE_VAR) IsisInterfaceMode isisL2InterfaceMode,
+         @JsonProperty(NAME_VAR) String name,
+         @JsonProperty(NATIVE_VLAN_VAR) int nativeVlan,
+         @JsonProperty(OSPF_AREA_VAR) Map<Long, OspfArea> ospfArea,
+         @JsonProperty(OSPF_COST_VAR) Integer ospfCost,
+         @JsonProperty(OSPF_DEAD_INTERVAL_VAR) int ospfDeadInterval,
+         @JsonProperty(OSPF_ENABLED_VAR) boolean ospfEnabled,
+         @JsonProperty(OSPF_HELLO_MULTIPLIER_VAR) int ospfHelloMultiplier,
+         @JsonProperty(OSPF_PASSIVE_VAR) boolean ospfPassive,
+         @JsonProperty(OUTGOING_FILTER_VAR) IpAccessList outgoingFilter,
+         @JsonProperty(OWNER_VAR) Configuration owner,
+         @JsonProperty(PREFIX_VAR) Prefix prefix,
+         @JsonProperty(ROUTING_POLICY_VAR) PolicyMap routingPolicy,
+         @JsonProperty(SWITCHPORT_MODE_VAR) SwitchportMode switchportMode,
+         @JsonProperty(SWITCHPORT_TRUNK_ENCAPSULATION_VAR) SwitchportEncapsulationType switchportTrunkEncapsulation,
+         @JsonProperty(ZONE_VAR) Zone zone) {
+      super(name);
+      _accessVlan = accessVlan;
+      _active = active;
+      _allowedVlans = allowedVlans;
+      _allPrefixes = allPrefixes;
+      _bandwidth = bandwidth;
+      _description = description;
+      _inboundFilter = inboundFilter;
+      _incomingFilter = incomingFilter;
+      _isisCost = isisCost;
+      _isisL1InterfaceMode = isisL1InterfaceMode;
+      _isisL2InterfaceMode = isisL2InterfaceMode;
+      _nativeVlan = nativeVlan;
+      _ospfArea = ospfArea;
+      _ospfCost = ospfCost;
+      _ospfDeadInterval = ospfDeadInterval;
+      _ospfEnabled = ospfEnabled;
+      _ospfHelloMultiplier = ospfHelloMultiplier;
+      _ospfPassive = ospfPassive;
+      _outgoingFilter = outgoingFilter;
+      _owner = owner;
+      _prefix = prefix;
+      _routingPolicy = routingPolicy;
+      _switchportMode = switchportMode;
+      _switchportTrunkEncapsulation = switchportTrunkEncapsulation;
+      _zone = zone;
+   }
+
    public Interface(String name, Configuration owner) {
       super(name);
       _active = true;
@@ -226,112 +335,137 @@ public class Interface extends ComparableStructure<String> {
    }
 
    private InterfaceType computeInterfaceType() {
-      return computeInterfaceType(_key, _owner.getVendor());
+      return computeInterfaceType(_key, _owner.getConfigurationFormat());
    }
 
+   @JsonProperty(ACCESS_VLAN_VAR)
    public int getAccessVlan() {
       return _accessVlan;
    }
 
+   @JsonProperty(ACTIVE_VAR)
    public boolean getActive() {
       return _active;
    }
 
+   @JsonProperty(ALLOWED_VLANS_VAR)
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
    }
 
+   @JsonProperty(ALL_PREFIXES_VAR)
    public Set<Prefix> getAllPrefixes() {
       return _allPrefixes;
    }
 
+   @JsonProperty(BANDWIDTH_VAR)
    public Double getBandwidth() {
       return _bandwidth;
    }
 
+   @JsonProperty(DESCRIPTION_VAR)
    public String getDescription() {
       return _description;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(INBOUND_FILTER_VAR)
    public IpAccessList getInboundFilter() {
       return _inboundFilter;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(INCOMING_FILTER_VAR)
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
    }
 
+   @JsonProperty(ISIS_COST_VAR)
    public Integer getIsisCost() {
       return _isisCost;
    }
 
+   @JsonProperty(ISIS_L1_INTERFACE_MODE_VAR)
    public IsisInterfaceMode getIsisL1InterfaceMode() {
       return _isisL1InterfaceMode;
    }
 
+   @JsonProperty(ISIS_L2_INTERFACE_MODE_VAR)
    public IsisInterfaceMode getIsisL2InterfaceMode() {
       return _isisL2InterfaceMode;
    }
 
+   @JsonProperty(NATIVE_VLAN_VAR)
    public int getNativeVlan() {
       return _nativeVlan;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public OspfArea getOspfArea() {
+   @JsonProperty(OSPF_AREA_VAR)
+   public Map<Long, OspfArea> getOspfArea() {
       return _ospfArea;
    }
 
+   @JsonProperty(OSPF_COST_VAR)
    public Integer getOspfCost() {
       return _ospfCost;
    }
 
+   @JsonProperty(OSPF_DEAD_INTERVAL_VAR)
    public int getOspfDeadInterval() {
       return _ospfDeadInterval;
    }
 
+   @JsonProperty(OSPF_ENABLED_VAR)
    public boolean getOspfEnabled() {
       return _ospfEnabled;
    }
 
+   @JsonProperty(OSPF_HELLO_MULTIPLIER_VAR)
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
    }
 
+   @JsonProperty(OSPF_PASSIVE_VAR)
    public boolean getOspfPassive() {
       return _ospfPassive;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(OUTGOING_FILTER_VAR)
    public IpAccessList getOutgoingFilter() {
       return _outgoingFilter;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(OWNER_VAR)
    public Configuration getOwner() {
       return _owner;
    }
 
+   @JsonProperty(PREFIX_VAR)
    public Prefix getPrefix() {
       return _prefix;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(ROUTING_POLICY_VAR)
    public PolicyMap getRoutingPolicy() {
       return _routingPolicy;
    }
 
+   @JsonProperty(SWITCHPORT_MODE_VAR)
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
 
+   @JsonProperty(SWITCHPORT_TRUNK_ENCAPSULATION_VAR)
    public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
       return _switchportTrunkEncapsulation;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(ZONE_VAR)
    public Zone getZone() {
       return _zone;
    }
@@ -386,7 +520,7 @@ public class Interface extends ComparableStructure<String> {
       _nativeVlan = vlan;
    }
 
-   public void setOspfArea(OspfArea ospfArea) {
+   public void setOspfArea(Map<Long, OspfArea> ospfArea) {
       _ospfArea = ospfArea;
    }
 

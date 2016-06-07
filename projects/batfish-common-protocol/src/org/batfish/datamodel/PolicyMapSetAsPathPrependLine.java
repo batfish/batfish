@@ -2,16 +2,24 @@ package org.batfish.datamodel;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PolicyMapSetAsPathPrependLine extends PolicyMapSetLine {
+
+   private static final String LIST_VAR = "list";
 
    private static final long serialVersionUID = 1L;
 
-   private List<Integer> _asList;
+   private final List<Integer> _asList;
 
-   public PolicyMapSetAsPathPrependLine(List<Integer> asList) {
+   @JsonCreator
+   public PolicyMapSetAsPathPrependLine(
+         @JsonProperty(LIST_VAR) List<Integer> asList) {
       _asList = asList;
    }
 
+   @JsonProperty(LIST_VAR)
    public List<Integer> getAsList() {
       return _asList;
    }

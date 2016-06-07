@@ -1,18 +1,25 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PolicyMapClauseMatchInterfaceLine extends PolicyMapMatchLine {
+
+   private static final String NAME_VAR = "name";
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private String _name;
+   private final String _name;
 
-   public PolicyMapClauseMatchInterfaceLine(String name) {
+   @JsonCreator
+   public PolicyMapClauseMatchInterfaceLine(@JsonProperty(NAME_VAR) String name) {
       _name = name;
    }
 
+   @JsonProperty(NAME_VAR)
    public String getName() {
       return _name;
    }

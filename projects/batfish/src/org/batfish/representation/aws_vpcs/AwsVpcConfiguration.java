@@ -275,7 +275,7 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
       // set the right vendor
       for (Configuration cfgNode : _configurationNodes.values()) {
-         cfgNode.setVendor(ConfigurationFormat.AWS_VPC);
+         cfgNode.setConfigurationFormat(ConfigurationFormat.AWS_VPC);
          cfgNode.setDefaultInboundAction(LineAction.ACCEPT);
          cfgNode.setDefaultCrossZoneAction(LineAction.ACCEPT);
       }

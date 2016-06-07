@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
@@ -16,17 +16,17 @@ public final class Zone extends ComparableStructure<String> {
 
    private final IpAccessList _inboundFilter;
 
-   private final Map<Interface, IpAccessList> _inboundInterfaceFilters;
+   private final SortedMap<String, IpAccessList> _inboundInterfaceFilters;
 
    private final IpAccessList _toHostFilter;
 
-   private final Map<String, IpAccessList> _toZonePolicies;
+   private final SortedMap<String, IpAccessList> _toZonePolicies;
 
    public Zone(String name, IpAccessList inboundFilter,
          IpAccessList fromHostFilter, IpAccessList toHostFilter) {
       super(name);
       _inboundFilter = inboundFilter;
-      _inboundInterfaceFilters = new TreeMap<Interface, IpAccessList>();
+      _inboundInterfaceFilters = new TreeMap<String, IpAccessList>();
       _fromHostFilter = fromHostFilter;
       _toHostFilter = toHostFilter;
       _toZonePolicies = new TreeMap<String, IpAccessList>();
@@ -40,7 +40,7 @@ public final class Zone extends ComparableStructure<String> {
       return _inboundFilter;
    }
 
-   public Map<Interface, IpAccessList> getInboundInterfaceFilters() {
+   public SortedMap<String, IpAccessList> getInboundInterfaceFilters() {
       return _inboundInterfaceFilters;
    }
 
@@ -48,7 +48,7 @@ public final class Zone extends ComparableStructure<String> {
       return _toHostFilter;
    }
 
-   public Map<String, IpAccessList> getToZonePolicies() {
+   public SortedMap<String, IpAccessList> getToZonePolicies() {
       return _toZonePolicies;
    }
 

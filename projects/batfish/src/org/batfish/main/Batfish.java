@@ -1094,7 +1094,7 @@ public class Batfish implements AutoCloseable {
          for (Interface iface : node.getInterfaces().values()) {
             String ifaceName = iface.getName();
             NodeInterfacePair p = new NodeInterfacePair(hostname, ifaceName);
-            if (iface.getActive() && !iface.isLoopback(node.getVendor())
+            if (iface.getActive() && !iface.isLoopback(node.getConfigurationFormat())
                   && !topologyInterfaces.contains(p)) {
                flowSinks.add(p);
             }
@@ -1482,7 +1482,7 @@ public class Batfish implements AutoCloseable {
       }
       for (Configuration config : configs.values()) {
          // use cisco arbitrarily
-         config.setVendor(ConfigurationFormat.CISCO);
+         config.setConfigurationFormat(ConfigurationFormat.CISCO);
          OspfProcess proc = new OspfProcess();
          config.setOspfProcess(proc);
          proc.setReferenceBandwidth(org.batfish.representation.cisco.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
@@ -1603,7 +1603,7 @@ public class Batfish implements AutoCloseable {
                            stubOriginationPolicy);
                      stub.getRouteFilterLists().put(
                            stubOriginationRouteFilterListName, rf);
-                     stub.setVendor(ConfigurationFormat.CISCO);
+                     stub.setConfigurationFormat(ConfigurationFormat.CISCO);
                      stub.setRoles(stubRoles);
                      nodeRoles.put(hostname, stubRoles);
                   }
@@ -3805,7 +3805,7 @@ public class Batfish implements AutoCloseable {
             Interface iface = e2.getValue();
             String ifaceName = e2.getKey();
             Prefix prefix = e2.getValue().getPrefix();
-            if (!iface.isLoopback(node.getVendor()) && iface.getActive()
+            if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()
                   && prefix != null && prefix.getPrefixLength() < 32) {
                Prefix network = new Prefix(prefix.getNetworkAddress(),
                      prefix.getPrefixLength());

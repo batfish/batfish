@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PolicyMapSetLevelLine extends PolicyMapSetLine {
 
    /**
@@ -7,12 +10,16 @@ public class PolicyMapSetLevelLine extends PolicyMapSetLine {
     */
    private static final long serialVersionUID = 1L;
 
-   private IsisLevel _level;
+   private static final String LEVEL_VAR = "level";
 
-   public PolicyMapSetLevelLine(IsisLevel level) {
+   private final IsisLevel _level;
+
+   @JsonCreator
+   public PolicyMapSetLevelLine(@JsonProperty(LEVEL_VAR) IsisLevel level) {
       _level = level;
    }
 
+   @JsonProperty(LEVEL_VAR)
    public IsisLevel getLevel() {
       return _level;
    }

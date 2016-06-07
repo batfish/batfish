@@ -2,17 +2,29 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RouteFilterLine implements Serializable {
+
+   private static final String ACTION_VAR = "action";
+
+   private static final String LENGTH_RANGE_VAR = "lengthRange";
+
+   private static final String PREFIX_VAR = "prefix";
 
    private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
+   private final LineAction _action;
 
-   private SubRange _lengthRange;
+   private final SubRange _lengthRange;
 
-   private Prefix _prefix;
+   private final Prefix _prefix;
 
-   public RouteFilterLine(LineAction action, Prefix prefix, SubRange lengthRange) {
+   @JsonCreator
+   public RouteFilterLine(@JsonProperty(ACTION_VAR) LineAction action,
+         @JsonProperty(PREFIX_VAR) Prefix prefix,
+         @JsonProperty(LENGTH_RANGE_VAR) SubRange lengthRange) {
       _action = action;
       _prefix = prefix;
       _lengthRange = lengthRange;
@@ -30,14 +42,17 @@ public class RouteFilterLine implements Serializable {
       return false;
    }
 
+   @JsonProperty(ACTION_VAR)
    public LineAction getAction() {
       return _action;
    }
 
+   @JsonProperty(LENGTH_RANGE_VAR)
    public SubRange getLengthRange() {
       return _lengthRange;
    }
 
+   @JsonProperty(PREFIX_VAR)
    public Prefix getPrefix() {
       return _prefix;
    }

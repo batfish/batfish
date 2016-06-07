@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -14,47 +13,95 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Configuration extends ComparableStructure<String> {
 
+   private static final String AS_PATH_ACCESS_LISTS_VAR = "asPathAccessLists";
+
+   private static final String BGP_PROCESS_VAR = "bgpProcess";
+
+   private static final String COMMUNITIES_VAR = "communities";
+
+   private static final String COMMUNITY_LISTS_VAR = "communityLists";
+
+   private static final String CONFIGURATION_FORMAT_VAR = "configurationFormat";
+
+   private static final String DEFAULT_CROSS_ZONE_ACTION_VAR = "defaultCrossZoneAction";
+
+   private static final String DEFAULT_INBOUND_ACTION_VAR = "defaultInboundAction";
+
+   private static final String GENERATED_ROUTES_VAR = "aggregateRoutes";
+
+   private static final String IKE_GATEWAYS_VAR = "ikeGateways";
+
+   private static final String IKE_POLICIES_VAR = "ikePolicies";
+
+   private static final String IKE_PROPOSALS_VAR = "ikeProposals";
+
+   private static final String INTERFACES_VAR = "interfaces";
+
+   private static final String IP_ACCESS_LISTS_VAR = "ipAccessLists";
+
+   private static final String IPSEC_POLICIES_VAR = "ipsecPolicies";
+
+   private static final String IPSEC_PROPOSALS_VAR = "ipsecProposals";
+
+   private static final String IPSEC_VPNS_VAR = "ipsecVpns";
+
+   private static final String ISIS_PROCESS_VAR = "isisProcess";
+
    public static final String NODE_NONE_NAME = "(none)";
+
+   private static final String OSPF_PROCESS_VAR = "ospfProcess";
+
+   private static final String POLICY_MAPS_VAR = "policyMaps";
+
+   private static final String ROLES_VAR = "roles";
+
+   private static final String ROUTE_FILTER_LISTS_VAR = "routeFilterLists";
 
    private static final long serialVersionUID = 1L;
 
-   private final Set<GeneratedRoute> _aggregateRoutes;
+   private static final String STATIC_ROUTES_VAR = "staticRoutes";
 
-   private final Map<String, AsPathAccessList> _asPathAccessLists;
+   private static final String ZONES_VAR = "zones";
+
+   private final NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
    private transient Set<BgpAdvertisement> _bgpAdvertisements;
 
    private BgpProcess _bgpProcess;
 
-   private final Set<Long> _communities;
+   private final NavigableSet<Long> _communities;
 
-   private final Map<String, CommunityList> _communityLists;
+   private final NavigableMap<String, CommunityList> _communityLists;
 
-   private final Set<ConnectedRoute> _connectedRoutes;
+   private ConfigurationFormat _configurationFormat;
 
    private LineAction _defaultCrossZoneAction;
 
    private LineAction _defaultInboundAction;
 
-   private final Map<String, IkeGateway> _ikeGateways;
+   private final NavigableSet<GeneratedRoute> _generatedRoutes;
 
-   private final Map<String, IkePolicy> _ikePolicies;
+   private final NavigableMap<String, IkeGateway> _ikeGateways;
 
-   private final Map<String, IkeProposal> _ikeProposals;
+   private final NavigableMap<String, IkePolicy> _ikePolicies;
 
-   private final Map<String, Interface> _interfaces;
+   private final NavigableMap<String, IkeProposal> _ikeProposals;
 
-   private final Map<String, IpAccessList> _ipAccessLists;
+   private final NavigableMap<String, Interface> _interfaces;
 
-   private final Map<String, IpsecPolicy> _ipsecPolicies;
+   private final NavigableMap<String, IpAccessList> _ipAccessLists;
 
-   private final Map<String, IpsecProposal> _ipsecProposals;
+   private final NavigableMap<String, IpsecPolicy> _ipsecPolicies;
 
-   private final Map<String, IpsecVpn> _ipsecVpns;
+   private final NavigableMap<String, IpsecProposal> _ipsecProposals;
+
+   private final NavigableMap<String, IpsecVpn> _ipsecVpns;
 
    private IsisProcess _isisProcess;
 
@@ -66,7 +113,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private OspfProcess _ospfProcess;
 
-   private final Map<String, PolicyMap> _policyMaps;
+   private final NavigableMap<String, PolicyMap> _policyMaps;
 
    private transient Set<BgpAdvertisement> _receivedAdvertisements;
 
@@ -76,7 +123,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private RoleSet _roles;
 
-   private final Map<String, RouteFilterList> _routeFilterLists;
+   private final NavigableMap<String, RouteFilterList> _routeFilterLists;
 
    private transient Set<PrecomputedRoute> _routes;
 
@@ -86,35 +133,85 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient Set<BgpAdvertisement> _sentIbgpAdvertisements;
 
-   private final Set<StaticRoute> _staticRoutes;
+   private final NavigableSet<StaticRoute> _staticRoutes;
 
-   private ConfigurationFormat _vendor;
+   private final NavigableMap<String, Zone> _zones;
 
-   private final Map<String, Zone> _zones;
+   @JsonCreator
+   public Configuration(
+         @JsonProperty(AS_PATH_ACCESS_LISTS_VAR) NavigableMap<String, AsPathAccessList> asPathAccessLists,
+         @JsonProperty(BGP_PROCESS_VAR) BgpProcess bgpProcess,
+         @JsonProperty(COMMUNITIES_VAR) NavigableSet<Long> communities,
+         @JsonProperty(COMMUNITY_LISTS_VAR) NavigableMap<String, CommunityList> communityLists,
+         @JsonProperty(CONFIGURATION_FORMAT_VAR) ConfigurationFormat configurationFormat,
+         @JsonProperty(DEFAULT_CROSS_ZONE_ACTION_VAR) LineAction defaultCrossZoneAction,
+         @JsonProperty(DEFAULT_INBOUND_ACTION_VAR) LineAction defaultInboundAction,
+         @JsonProperty(GENERATED_ROUTES_VAR) NavigableSet<GeneratedRoute> generatedRoutes,
+         @JsonProperty(NAME_VAR) String hostname,
+         @JsonProperty(IKE_GATEWAYS_VAR) NavigableMap<String, IkeGateway> ikeGateways,
+         @JsonProperty(IKE_POLICIES_VAR) NavigableMap<String, IkePolicy> ikePolicies,
+         @JsonProperty(IKE_PROPOSALS_VAR) NavigableMap<String, IkeProposal> ikeProposals,
+         @JsonProperty(INTERFACES_VAR) NavigableMap<String, Interface> interfaces,
+         @JsonProperty(IP_ACCESS_LISTS_VAR) NavigableMap<String, IpAccessList> ipAccessLists,
+         @JsonProperty(IPSEC_POLICIES_VAR) NavigableMap<String, IpsecPolicy> ipsecPolicies,
+         @JsonProperty(IPSEC_PROPOSALS_VAR) NavigableMap<String, IpsecProposal> ipsecProposals,
+         @JsonProperty(IPSEC_VPNS_VAR) NavigableMap<String, IpsecVpn> ipsecVpns,
+         @JsonProperty(ISIS_PROCESS_VAR) IsisProcess isisProcess,
+         @JsonProperty(OSPF_PROCESS_VAR) OspfProcess ospfProcess,
+         @JsonProperty(POLICY_MAPS_VAR) NavigableMap<String, PolicyMap> policyMaps,
+         @JsonProperty(ROLES_VAR) RoleSet roles,
+         @JsonProperty(ROUTE_FILTER_LISTS_VAR) NavigableMap<String, RouteFilterList> routeFilterLists,
+         @JsonProperty(STATIC_ROUTES_VAR) NavigableSet<StaticRoute> staticRoutes,
+         @JsonProperty(ZONES_VAR) NavigableMap<String, Zone> zones) {
+      super(hostname);
+      _asPathAccessLists = asPathAccessLists;
+      _bgpProcess = bgpProcess;
+      _communities = communities;
+      _communityLists = communityLists;
+      _configurationFormat = configurationFormat;
+      _defaultCrossZoneAction = defaultCrossZoneAction;
+      _defaultInboundAction = defaultInboundAction;
+      _generatedRoutes = generatedRoutes;
+      _ikeGateways = ikeGateways;
+      _ikePolicies = ikePolicies;
+      _ikeProposals = ikeProposals;
+      _interfaces = interfaces;
+      _ipAccessLists = ipAccessLists;
+      _ipsecPolicies = ipsecPolicies;
+      _ipsecProposals = ipsecProposals;
+      _ipsecVpns = ipsecVpns;
+      _isisProcess = isisProcess;
+      _ospfProcess = ospfProcess;
+      _policyMaps = policyMaps;
+      _roles = roles;
+      _routeFilterLists = routeFilterLists;
+      _staticRoutes = staticRoutes;
+      _zones = zones;
+   }
 
    public Configuration(String hostname) {
       super(hostname);
-      _aggregateRoutes = new LinkedHashSet<GeneratedRoute>();
-      _asPathAccessLists = new HashMap<String, AsPathAccessList>();
-      _communities = new LinkedHashSet<Long>();
-      _communityLists = new HashMap<String, CommunityList>();
-      _connectedRoutes = new LinkedHashSet<ConnectedRoute>();
+      _asPathAccessLists = new TreeMap<String, AsPathAccessList>();
+      _communities = new TreeSet<Long>();
+      _communityLists = new TreeMap<String, CommunityList>();
+      _generatedRoutes = new TreeSet<GeneratedRoute>();
       _ikeGateways = new TreeMap<String, IkeGateway>();
       _ikePolicies = new TreeMap<String, IkePolicy>();
       _ikeProposals = new TreeMap<String, IkeProposal>();
-      _interfaces = new HashMap<String, Interface>();
-      _ipAccessLists = new HashMap<String, IpAccessList>();
+      _interfaces = new TreeMap<String, Interface>();
+      _ipAccessLists = new TreeMap<String, IpAccessList>();
       _ipsecPolicies = new TreeMap<String, IpsecPolicy>();
       _ipsecProposals = new TreeMap<String, IpsecProposal>();
       _ipsecVpns = new TreeMap<String, IpsecVpn>();
-      _policyMaps = new HashMap<String, PolicyMap>();
+      _policyMaps = new TreeMap<String, PolicyMap>();
       _roles = new RoleSet();
-      _routeFilterLists = new HashMap<String, RouteFilterList>();
-      _staticRoutes = new LinkedHashSet<StaticRoute>();
+      _routeFilterLists = new TreeMap<String, RouteFilterList>();
+      _staticRoutes = new TreeSet<StaticRoute>();
       _zones = new TreeMap<String, Zone>();
    }
 
-   public Map<String, AsPathAccessList> getAsPathAccessLists() {
+   @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
+   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
    }
 
@@ -123,70 +220,87 @@ public final class Configuration extends ComparableStructure<String> {
       return _bgpAdvertisements;
    }
 
+   @JsonProperty(BGP_PROCESS_VAR)
    public BgpProcess getBgpProcess() {
       return _bgpProcess;
    }
 
+   @JsonProperty(COMMUNITIES_VAR)
    public Set<Long> getCommunities() {
       return _communities;
    }
 
-   public Map<String, CommunityList> getCommunityLists() {
+   @JsonProperty(COMMUNITY_LISTS_VAR)
+   public NavigableMap<String, CommunityList> getCommunityLists() {
       return _communityLists;
    }
 
-   public Set<ConnectedRoute> getConnectedRoutes() {
-      return _connectedRoutes;
+   @JsonProperty(CONFIGURATION_FORMAT_VAR)
+   public ConfigurationFormat getConfigurationFormat() {
+      return _configurationFormat;
    }
 
+   @JsonProperty(DEFAULT_CROSS_ZONE_ACTION_VAR)
    public LineAction getDefaultCrossZoneAction() {
       return _defaultCrossZoneAction;
    }
 
+   @JsonProperty(DEFAULT_INBOUND_ACTION_VAR)
    public LineAction getDefaultInboundAction() {
       return _defaultInboundAction;
    }
 
+   @JsonProperty(GENERATED_ROUTES_VAR)
    public Set<GeneratedRoute> getGeneratedRoutes() {
-      return _aggregateRoutes;
+      return _generatedRoutes;
    }
 
+   @JsonProperty(NAME_VAR)
    public String getHostname() {
       return _key;
    }
 
-   public Map<String, IkeGateway> getIkeGateways() {
+   @JsonProperty(IKE_GATEWAYS_VAR)
+   public NavigableMap<String, IkeGateway> getIkeGateways() {
       return _ikeGateways;
    }
 
-   public Map<String, IkePolicy> getIkePolicies() {
+   @JsonProperty(IKE_POLICIES_VAR)
+   public NavigableMap<String, IkePolicy> getIkePolicies() {
       return _ikePolicies;
    }
 
-   public Map<String, IkeProposal> getIkeProposals() {
+   @JsonProperty(IKE_PROPOSALS_VAR)
+   public NavigableMap<String, IkeProposal> getIkeProposals() {
       return _ikeProposals;
    }
 
-   public Map<String, Interface> getInterfaces() {
+   @JsonProperty(INTERFACES_VAR)
+   public NavigableMap<String, Interface> getInterfaces() {
       return _interfaces;
    }
 
-   public Map<String, IpAccessList> getIpAccessLists() {
+   @JsonProperty(IP_ACCESS_LISTS_VAR)
+   public NavigableMap<String, IpAccessList> getIpAccessLists() {
       return _ipAccessLists;
    }
 
-   public Map<String, IpsecPolicy> getIpsecPolicies() {
+   @JsonProperty(IPSEC_POLICIES_VAR)
+   public NavigableMap<String, IpsecPolicy> getIpsecPolicies() {
       return _ipsecPolicies;
    }
 
-   public Map<String, IpsecProposal> getIpsecProposals() {
+   @JsonProperty(IPSEC_PROPOSALS_VAR)
+   public NavigableMap<String, IpsecProposal> getIpsecProposals() {
       return _ipsecProposals;
    }
 
-   public Map<String, IpsecVpn> getIpsecVpns() {
+   @JsonProperty(IPSEC_VPNS_VAR)
+   public NavigableMap<String, IpsecVpn> getIpsecVpns() {
       return _ipsecVpns;
    }
 
+   @JsonProperty(ISIS_PROCESS_VAR)
    public IsisProcess getIsisProcess() {
       return _isisProcess;
    }
@@ -203,11 +317,13 @@ public final class Configuration extends ComparableStructure<String> {
       return _originatedIbgpAdvertisements;
    }
 
+   @JsonProperty(OSPF_PROCESS_VAR)
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
    }
 
-   public Map<String, PolicyMap> getPolicyMaps() {
+   @JsonProperty(POLICY_MAPS_VAR)
+   public NavigableMap<String, PolicyMap> getPolicyMaps() {
       return _policyMaps;
    }
 
@@ -226,11 +342,13 @@ public final class Configuration extends ComparableStructure<String> {
       return _receivedIbgpAdvertisements;
    }
 
+   @JsonProperty(ROLES_VAR)
    public RoleSet getRoles() {
       return _roles;
    }
 
-   public Map<String, RouteFilterList> getRouteFilterLists() {
+   @JsonProperty(ROUTE_FILTER_LISTS_VAR)
+   public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
       return _routeFilterLists;
    }
 
@@ -253,15 +371,13 @@ public final class Configuration extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   @JsonProperty(STATIC_ROUTES_VAR)
    public Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
    }
 
-   public ConfigurationFormat getVendor() {
-      return _vendor;
-   }
-
-   public Map<String, Zone> getZones() {
+   @JsonProperty(ZONES_VAR)
+   public NavigableMap<String, Zone> getZones() {
       return _zones;
    }
 
@@ -286,6 +402,10 @@ public final class Configuration extends ComparableStructure<String> {
       _bgpProcess = process;
    }
 
+   public void setConfigurationFormat(ConfigurationFormat configurationFormat) {
+      _configurationFormat = configurationFormat;
+   }
+
    public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
       _defaultCrossZoneAction = defaultCrossZoneAction;
    }
@@ -304,10 +424,6 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setRoles(RoleSet roles) {
       _roles = roles;
-   }
-
-   public void setVendor(ConfigurationFormat vendor) {
-      _vendor = vendor;
    }
 
    public JSONObject toJson() throws JSONException {

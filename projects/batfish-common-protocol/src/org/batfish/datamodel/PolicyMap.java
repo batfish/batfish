@@ -8,8 +8,11 @@ import java.util.Set;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PolicyMap extends ComparableStructure<String> {
+
+   private static final String CLAUSES_VAR = "clauses";
 
    /**
     *
@@ -27,6 +30,12 @@ public class PolicyMap extends ComparableStructure<String> {
 
    private transient PrefixSpace _prefixSpace;
 
+   public PolicyMap(@JsonProperty(CLAUSES_VAR) List<PolicyMapClause> clauses,
+         @JsonProperty(NAME_VAR) String name) {
+      super(name);
+      _clauses = clauses;
+   }
+
    /**
     * Constructs a PolicyMap with the given name for {@link #_mapName} and list
     * of clauses for {@link #_clauses}.
@@ -41,6 +50,7 @@ public class PolicyMap extends ComparableStructure<String> {
    /**
     * @return {@link #_clauses}
     */
+   @JsonProperty(CLAUSES_VAR)
    public List<PolicyMapClause> getClauses() {
       return _clauses;
    }

@@ -29,7 +29,7 @@ public class BgpSessionCheckAnswer extends Answer {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getPrefix() != null) {
                for (Prefix prefix : i.getAllPrefixes()) {
-                  if (i.isLoopback(c.getVendor())) {
+                  if (i.isLoopback(c.getConfigurationFormat())) {
                      loopbackIps.add(prefix.getAddress());
                   }
                   allInterfaceIps.add(prefix.getAddress());
@@ -45,9 +45,9 @@ public class BgpSessionCheckAnswer extends Answer {
                      bgpNeighbor);
                answerElement.add(answerElement.getAllBgpNeighbors(), c,
                      bgpNeighborSummary);
-               boolean foreign = bgpNeighbor.getGroupName() != null
+               boolean foreign = bgpNeighbor.getGroup() != null
                      && question.getForeignBgpGroups().contains(
-                           bgpNeighbor.getGroupName());
+                           bgpNeighbor.getGroup());
                boolean ebgp = bgpNeighbor.getRemoteAs() != bgpNeighbor
                      .getLocalAs();
                boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();

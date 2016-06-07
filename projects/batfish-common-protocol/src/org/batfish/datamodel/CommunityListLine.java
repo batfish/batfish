@@ -8,14 +8,24 @@ import java.util.regex.Pattern;
 
 import org.batfish.common.util.CommonUtil;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CommunityListLine implements Serializable {
+
+   private static final String ACTION_VAR = "action";
+
+   private static final String REGEX_VAR = "regex";
 
    private static final long serialVersionUID = 1L;
 
-   private LineAction _action;
-   private String _regex;
+   private final LineAction _action;
 
-   public CommunityListLine(LineAction action, String regex) {
+   private final String _regex;
+
+   @JsonCreator
+   public CommunityListLine(@JsonProperty(ACTION_VAR) LineAction action,
+         @JsonProperty(REGEX_VAR) String regex) {
       _action = action;
       _regex = regex;
    }
@@ -34,6 +44,7 @@ public class CommunityListLine implements Serializable {
       }
    }
 
+   @JsonProperty(ACTION_VAR)
    public LineAction getAction() {
       return _action;
    }
@@ -66,6 +77,7 @@ public class CommunityListLine implements Serializable {
       return matchingCommunitites;
    }
 
+   @JsonProperty(REGEX_VAR)
    public String getRegex() {
       return _regex;
    }

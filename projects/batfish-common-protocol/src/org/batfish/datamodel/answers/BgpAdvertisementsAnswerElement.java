@@ -14,12 +14,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.NON_NULL)
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class BgpAdvertisementsAnswerElement implements AnswerElement {
 
    private static final String ALL_REQUESTED_ADVERTISEMENTS_VAR = "allRequestedAdvertisements";
@@ -96,7 +99,6 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
          @JsonProperty(RECEIVED_IBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> receivedIbgp,
          @JsonProperty(SENT_EBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> sentEbgp,
          @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR) Map<String, SortedSet<BgpAdvertisement>> sentIbgp) {
-
       _allRequestedAdvertisements = allRequested;
       _receivedEbgpAdvertisements = receivedEbgp;
       _receivedIbgpAdvertisements = receivedIbgp;
