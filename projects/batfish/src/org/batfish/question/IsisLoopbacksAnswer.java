@@ -41,7 +41,7 @@ public class IsisLoopbacksAnswer extends Answer {
          for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
-            if (iface.isLoopback(c.getVendor())) {
+            if (iface.isLoopback(c.getConfigurationFormat())) {
                IsisInterfaceMode l1Mode = iface.getIsisL1InterfaceMode();
                IsisInterfaceMode l2Mode = iface.getIsisL2InterfaceMode();
                boolean l1 = false;

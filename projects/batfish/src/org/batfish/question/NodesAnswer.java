@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -41,7 +42,7 @@ public class NodesAnswer extends Answer {
             nodes.addAll(configurations.keySet());
          }
       }
-      Map<String, Configuration> answerNodes = new TreeMap<String, Configuration>();
+      SortedMap<String, Configuration> answerNodes = new TreeMap<String, Configuration>();
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
 

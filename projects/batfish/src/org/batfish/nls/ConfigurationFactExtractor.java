@@ -1448,7 +1448,7 @@ public class ConfigurationFactExtractor {
 
    private void writeVendor() {
       String hostname = _configuration.getHostname();
-      String vendor = _configuration.getVendor().getVendorString();
+      String vendor = _configuration.getConfigurationFormat().getVendorString();
       StringBuilder wSetNodeVendor = _factBins.get("SetNodeVendor");
       wSetNodeVendor.append(hostname + "|" + vendor + "\n");
    }
@@ -1480,9 +1480,9 @@ public class ConfigurationFactExtractor {
       String hostname = _configuration.getHostname();
       for (Zone srcZone : _configuration.getZones().values()) {
          String srcZoneName = hostname + ":" + srcZone.getName();
-         for (Entry<Interface, IpAccessList> e : srcZone
+         for (Entry<String, IpAccessList> e : srcZone
                .getInboundInterfaceFilters().entrySet()) {
-            String ifaceName = e.getKey().getName();
+            String ifaceName = e.getKey();
             IpAccessList inboundFilter = e.getValue();
             String inboundFilterName = hostname + ":" + inboundFilter.getName();
             wSetInboundInterfaceFilter.append(hostname + "|" + ifaceName + "|"

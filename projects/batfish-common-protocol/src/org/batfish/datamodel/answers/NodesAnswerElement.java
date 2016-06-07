@@ -1,9 +1,9 @@
 package org.batfish.datamodel.answers;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.batfish.datamodel.Configuration;
@@ -11,86 +11,91 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.RoleSet;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NodesAnswerElement implements AnswerElement {
 
    @JsonInclude(Include.NON_NULL)
    public static class NodeSummary {
 
-      private Set<String> _asPathAccessLists;
+      private SortedSet<String> _asPathAccessLists;
 
-      private Set<String> _communityLists;
+      private SortedSet<String> _communityLists;
 
       private ConfigurationFormat _configurationFormat;
 
-      private Set<String> _ikeGateways;
+      private SortedSet<String> _ikeGateways;
 
-      private Set<String> _ikePolicies;
+      private SortedSet<String> _ikePolicies;
 
-      private Set<String> _ikeProposals;
+      private SortedSet<String> _ikeProposals;
 
-      private Set<String> _interfaces;
+      private SortedSet<String> _interfaces;
 
-      private Set<String> _ipAccessLists;
+      private SortedSet<String> _ipAccessLists;
 
-      private Set<String> _ipsecPolicies;
+      private SortedSet<String> _ipsecPolicies;
 
-      private Set<String> _ipsecProposals;
+      private SortedSet<String> _ipsecProposals;
 
-      private Set<String> _ipsecVpns;
+      private SortedSet<String> _ipsecVpns;
 
-      private Set<String> _policyMaps;
+      private SortedSet<String> _policySortedMaps;
 
       private RoleSet _roles;
 
-      private Set<String> _routeFilterLists;
+      private SortedSet<String> _routeFilterLists;
 
-      private Set<RoutingProtocol> _routingProtocols;
+      private EnumSet<RoutingProtocol> _routingProtocols;
 
-      private Set<String> _zones;
+      private SortedSet<String> _zones;
+
+      public NodeSummary() {
+      }
 
       public NodeSummary(Configuration node) {
          if (!node.getAsPathAccessLists().isEmpty()) {
-            _asPathAccessLists = node.getAsPathAccessLists().keySet();
+            _asPathAccessLists = node.getAsPathAccessLists().navigableKeySet();
          }
          if (!node.getCommunityLists().isEmpty()) {
-            _communityLists = node.getCommunityLists().keySet();
+            _communityLists = node.getCommunityLists().navigableKeySet();
          }
-         _configurationFormat = node.getVendor();
+         _configurationFormat = node.getConfigurationFormat();
          if (!node.getInterfaces().isEmpty()) {
-            _interfaces = node.getInterfaces().keySet();
+            _interfaces = node.getInterfaces().navigableKeySet();
          }
          if (!node.getIkeGateways().isEmpty()) {
-            _ikeGateways = node.getIkeGateways().keySet();
+            _ikeGateways = node.getIkeGateways().navigableKeySet();
          }
          if (!node.getIkePolicies().isEmpty()) {
-            _ikePolicies = node.getIkePolicies().keySet();
+            _ikePolicies = node.getIkePolicies().navigableKeySet();
          }
          if (!node.getIkeProposals().isEmpty()) {
-            _ikeProposals = node.getIkeProposals().keySet();
+            _ikeProposals = node.getIkeProposals().navigableKeySet();
          }
          if (!node.getIpAccessLists().isEmpty()) {
-            _ipAccessLists = node.getIpAccessLists().keySet();
+            _ipAccessLists = node.getIpAccessLists().navigableKeySet();
          }
          if (!node.getIpsecPolicies().isEmpty()) {
-            _ipsecPolicies = node.getIpsecPolicies().keySet();
+            _ipsecPolicies = node.getIpsecPolicies().navigableKeySet();
          }
          if (!node.getIpsecProposals().isEmpty()) {
-            _ipsecProposals = node.getIpsecProposals().keySet();
+            _ipsecProposals = node.getIpsecProposals().navigableKeySet();
          }
          if (!node.getIpsecVpns().isEmpty()) {
-            _ipsecVpns = node.getIpsecVpns().keySet();
+            _ipsecVpns = node.getIpsecVpns().navigableKeySet();
          }
          if (!node.getPolicyMaps().isEmpty()) {
-            _policyMaps = node.getPolicyMaps().keySet();
+            _policySortedMaps = node.getPolicyMaps().navigableKeySet();
          }
          if (!node.getRoles().isEmpty()) {
             _roles = node.getRoles();
          }
          if (!node.getRouteFilterLists().isEmpty()) {
-            _routeFilterLists = node.getRouteFilterLists().keySet();
+            _routeFilterLists = node.getRouteFilterLists().navigableKeySet();
          }
          _routingProtocols = EnumSet.noneOf(RoutingProtocol.class);
          if (node.getBgpProcess() != null) {
@@ -109,15 +114,15 @@ public class NodesAnswerElement implements AnswerElement {
             _routingProtocols.add(RoutingProtocol.AGGREGATE);
          }
          if (!node.getZones().isEmpty()) {
-            _zones = node.getZones().keySet();
+            _zones = node.getZones().navigableKeySet();
          }
       }
 
-      public Set<String> getAsPathAccessLists() {
+      public SortedSet<String> getAsPathAccessLists() {
          return _asPathAccessLists;
       }
 
-      public Set<String> getCommunityLists() {
+      public SortedSet<String> getCommunityLists() {
          return _communityLists;
       }
 
@@ -125,63 +130,63 @@ public class NodesAnswerElement implements AnswerElement {
          return _configurationFormat;
       }
 
-      public Set<String> getIkeGateways() {
+      public SortedSet<String> getIkeGateways() {
          return _ikeGateways;
       }
 
-      public Set<String> getIkePolicies() {
+      public SortedSet<String> getIkePolicies() {
          return _ikePolicies;
       }
 
-      public Set<String> getIkeProposals() {
+      public SortedSet<String> getIkeProposals() {
          return _ikeProposals;
       }
 
-      public Set<String> getInterfaces() {
+      public SortedSet<String> getInterfaces() {
          return _interfaces;
       }
 
-      public Set<String> getIpAccessLists() {
+      public SortedSet<String> getIpAccessLists() {
          return _ipAccessLists;
       }
 
-      public Set<String> getIpsecPolicies() {
+      public SortedSet<String> getIpsecPolicies() {
          return _ipsecPolicies;
       }
 
-      public Set<String> getIpsecProposals() {
+      public SortedSet<String> getIpsecProposals() {
          return _ipsecProposals;
       }
 
-      public Set<String> getIpsecVpns() {
+      public SortedSet<String> getIpsecVpns() {
          return _ipsecVpns;
       }
 
-      public Set<String> getPolicyMaps() {
-         return _policyMaps;
+      public SortedSet<String> getPolicySortedMaps() {
+         return _policySortedMaps;
       }
 
       public RoleSet getRoles() {
          return _roles;
       }
 
-      public Set<String> getRouteFilterLists() {
+      public SortedSet<String> getRouteFilterLists() {
          return _routeFilterLists;
       }
 
-      public Set<RoutingProtocol> getRoutingProtocols() {
+      public EnumSet<RoutingProtocol> getRoutingProtocols() {
          return _routingProtocols;
       }
 
-      public Set<String> getZones() {
+      public SortedSet<String> getZones() {
          return _zones;
       }
 
-      public void setAsPathAccessLists(Set<String> asPathAccessLists) {
+      public void setAsPathAccessLists(SortedSet<String> asPathAccessLists) {
          _asPathAccessLists = asPathAccessLists;
       }
 
-      public void setCommunityLists(Set<String> communityLists) {
+      public void setCommunityLists(SortedSet<String> communityLists) {
          _communityLists = communityLists;
       }
 
@@ -189,65 +194,70 @@ public class NodesAnswerElement implements AnswerElement {
          _configurationFormat = configurationFormat;
       }
 
-      public void setIkeGateways(Set<String> ikeGateways) {
+      public void setIkeGateways(SortedSet<String> ikeGateways) {
          _ikeGateways = ikeGateways;
       }
 
-      public void setIkePolicies(Set<String> ikePolicies) {
+      public void setIkePolicies(SortedSet<String> ikePolicies) {
          _ikePolicies = ikePolicies;
       }
 
-      public void setIkeProposals(Set<String> ikeProposals) {
+      public void setIkeProposals(SortedSet<String> ikeProposals) {
          _ikeProposals = ikeProposals;
       }
 
-      public void setInterfaces(Set<String> interfaces) {
+      public void setInterfaces(SortedSet<String> interfaces) {
          _interfaces = interfaces;
       }
 
-      public void setIpAccessLists(Set<String> ipAccessLists) {
+      public void setIpAccessLists(SortedSet<String> ipAccessLists) {
          _ipAccessLists = ipAccessLists;
       }
 
-      public void setIpsecPolicies(Set<String> ipsecPolicies) {
+      public void setIpsecPolicies(SortedSet<String> ipsecPolicies) {
          _ipsecPolicies = ipsecPolicies;
       }
 
-      public void setIpsecProposals(Set<String> ipsecProposals) {
+      public void setIpsecProposals(SortedSet<String> ipsecProposals) {
          _ipsecProposals = ipsecProposals;
       }
 
-      public void setIpsecVpns(Set<String> ipsecVpns) {
+      public void setIpsecVpns(SortedSet<String> ipsecVpns) {
          _ipsecVpns = ipsecVpns;
       }
 
-      public void setPolicyMaps(Set<String> policyMaps) {
-         _policyMaps = policyMaps;
+      public void setPolicySortedMaps(SortedSet<String> policySortedMaps) {
+         _policySortedMaps = policySortedMaps;
       }
 
       public void setRoles(RoleSet roles) {
          _roles = roles;
       }
 
-      public void setRouteFilterLists(Set<String> routeFilterLists) {
+      public void setRouteFilterLists(SortedSet<String> routeFilterLists) {
          _routeFilterLists = routeFilterLists;
       }
 
-      public void setRoutingProtocols(Set<RoutingProtocol> routingProtocols) {
+      public void setRoutingProtocols(EnumSet<RoutingProtocol> routingProtocols) {
          _routingProtocols = routingProtocols;
       }
 
-      public void setZones(Set<String> zones) {
+      public void setZones(SortedSet<String> zones) {
          _zones = zones;
       }
 
    }
 
-   private Map<String, Configuration> _nodes;
+   private static final String NODES_VAR = "nodes";
 
-   private Map<String, NodeSummary> _summary;
+   private static final String SUMMARY_VAR = "summary";
 
-   public NodesAnswerElement(Map<String, Configuration> nodes, boolean summary) {
+   private final SortedMap<String, Configuration> _nodes;
+
+   private final SortedMap<String, NodeSummary> _summary;
+
+   public NodesAnswerElement(SortedMap<String, Configuration> nodes,
+         boolean summary) {
       if (summary) {
          _summary = new TreeMap<String, NodeSummary>();
          for (Entry<String, Configuration> e : nodes.entrySet()) {
@@ -255,22 +265,30 @@ public class NodesAnswerElement implements AnswerElement {
             Configuration node = e.getValue();
             _summary.put(hostname, new NodeSummary(node));
          }
+         _nodes = null;
       }
       else {
          _nodes = nodes;
+         _summary = null;
       }
    }
 
-   public Map<String, Configuration> getAnswer() {
+   @JsonCreator
+   public NodesAnswerElement(
+         @JsonProperty(NODES_VAR) SortedMap<String, Configuration> nodes,
+         @JsonProperty(SUMMARY_VAR) SortedMap<String, NodeSummary> summary) {
+      _nodes = nodes;
+      _summary = summary;
+   }
+
+   @JsonProperty(NODES_VAR)
+   public SortedMap<String, Configuration> getAnswer() {
       return _nodes;
    }
 
-   public Map<String, NodeSummary> getSummary() {
+   @JsonProperty(SUMMARY_VAR)
+   public SortedMap<String, NodeSummary> getSummary() {
       return _summary;
-   }
-
-   public void setSummary(Map<String, NodeSummary> summary) {
-      _summary = summary;
    }
 
 }

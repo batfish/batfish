@@ -113,7 +113,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             advertiseInactive = false;
          }
          neighbor.setAdvertiseInactive(advertiseInactive);
-         neighbor.setGroupName(ig.getGroupName());
+         neighbor.setGroup(ig.getGroupName());
          // import policies
          for (String importPolicyName : ig.getImportPolicies()) {
             PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);
@@ -969,7 +969,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       _w = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
-      _c.setVendor(_vendor);
+      _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
 
       // convert prefix lists to route filter lists
@@ -1284,7 +1284,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                inboundInterfaceName);
          IpAccessList inboundInterfaceFilterList = _c.getIpAccessLists().get(
                inboundInterfaceFilterName);
-         newZone.getInboundInterfaceFilters().put(newIface,
+         newZone.getInboundInterfaceFilters().put(newIface.getName(),
                inboundInterfaceFilterList);
       }
 
@@ -1317,7 +1317,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          else {
             inboundInterfaceFilterList = inboundFilterList;
          }
-         newZone.getInboundInterfaceFilters().put(newIface,
+         newZone.getInboundInterfaceFilters().put(newIface.getName(),
                inboundInterfaceFilterList);
       }
 

@@ -40,7 +40,7 @@ public class OspfLoopbacksAnswer extends Answer {
          for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
-            if (iface.isLoopback(c.getVendor())) {
+            if (iface.isLoopback(c.getConfigurationFormat())) {
                if (iface.getOspfEnabled()) {
                   answerElement.add(answerElement.getRunning(), hostname,
                         interfaceName);

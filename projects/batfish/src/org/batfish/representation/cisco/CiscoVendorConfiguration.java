@@ -857,7 +857,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (defaultRoute != null) {
                newNeighbor.getGeneratedRoutes().add(defaultRoute);
             }
-            newNeighbor.setGroupName(lpg.getGroupName());
+            newNeighbor.setGroup(lpg.getGroupName());
             if (newInboundPolicyMap != null) {
                newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
             }
@@ -1372,7 +1372,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   areas.put(areaNum, newArea);
                }
                newArea.getInterfaces().add(i);
-               i.setOspfArea(newArea);
+               i.setOspfArea(Collections.singletonMap(areaNum, newArea));
                i.setOspfEnabled(true);
                boolean passive = proc.getInterfaceBlacklist().contains(
                      i.getName())
@@ -1969,7 +1969,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    public Configuration toVendorIndependentConfiguration(Warnings warnings) {
       _w = warnings;
       final Configuration c = new Configuration(_hostname);
-      c.setVendor(_vendor);
+      c.setConfigurationFormat(_vendor);
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
  * peer to the router whose configuration's BGP process contains this object
  */
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
-@JsonInclude(Include.NON_NULL)
+//@JsonInclude(Include.NON_NULL)
 public final class BgpNeighbor implements Serializable {
 
    public static final class BgpNeighborSummary extends
@@ -65,7 +65,7 @@ public final class BgpNeighbor implements Serializable {
                + (bgpNeighbor._address != null ? bgpNeighbor._address
                      .toString() : bgpNeighbor.getPrefix().toString()));
          _description = bgpNeighbor._description;
-         _group = bgpNeighbor._groupName;
+         _group = bgpNeighbor._group;
          _localAs = bgpNeighbor._localAs;
          _localIp = bgpNeighbor._localIp;
          _remoteAs = bgpNeighbor._remoteAs;
@@ -139,6 +139,44 @@ public final class BgpNeighbor implements Serializable {
 
    }
 
+   private static final String ADDRESS_VAR = "address";
+
+   private static final String ADVERTISE_INACTIVE_VAR = "advertiseInactive";
+
+   private static final String ALLOW_LOCAL_AS_IN_VAR = "allowLocalAsIn";
+
+   private static final String ALLOW_REMOTE_AS_OUT_VAR = "allowRemoteAsOut";
+
+   private static final String CLUSTER_ID_VAR = "clusterId";
+
+   private static final String DEFAULT_METRIC_VAR = "defaultMetric";
+
+   private static final String DESCRIPTION_VAR = "description";
+
+   private static final String EBGP_MULTIHOP_VAR = "ebgpMultihop";
+
+   private static final String GENERATED_ROUTES_VAR = "generatedRoutes";
+
+   private static final String GROUP_VAR = "group";
+
+   private static final String INBOUND_POLICY_MAPS_VAR = "inboundPolicyMaps";
+
+   private static final String LOCAL_AS_VAR = "localAs";
+
+   private static final String LOCAL_IP_VAR = "localIp";
+
+   private static final String ORIGINATION_POLICIES_VAR = "originationPolicies";
+
+   private static final String OUTBOUND_POLICY_MAPS_VAR = "outboundPolicyMaps";
+
+   private static final String OWNER_VAR = "owner";
+
+   private static final String PREFIX_VAR = "prefix";
+
+   private static final String REMOTE_AS_VAR = "remoteAs";
+
+   private static final String SEND_COMMUNITY_VAR = "sendCommunity";
+
    /**
     *
     */
@@ -183,7 +221,7 @@ public final class BgpNeighbor implements Serializable {
     * field is OPTIONAL and should not impact the subsequent data plane
     * computation.
     */
-   private String _groupName;
+   private String _group;
 
    /**
     * The set of policies applied to inbound routes. Each policy in this set is
@@ -245,6 +283,48 @@ public final class BgpNeighbor implements Serializable {
       _owner = owner;
    }
 
+   @JsonCreator
+   public BgpNeighbor(
+         @JsonProperty(ADDRESS_VAR) Ip address,
+         @JsonProperty(ADVERTISE_INACTIVE_VAR) boolean advertiseInactive,
+         @JsonProperty(ALLOW_LOCAL_AS_IN_VAR) boolean allowLocalAsIn,
+         @JsonProperty(ALLOW_REMOTE_AS_OUT_VAR) boolean allowRemoteAsOut,
+         @JsonProperty(CLUSTER_ID_VAR) Long clusterId,
+         @JsonProperty(DEFAULT_METRIC_VAR) Integer defaultMetric,
+         @JsonProperty(DESCRIPTION_VAR) String description,
+         @JsonProperty(EBGP_MULTIHOP_VAR) boolean ebgpMultihop,
+         @JsonProperty(GENERATED_ROUTES_VAR) Set<GeneratedRoute> generatedRoutes,
+         @JsonProperty(GROUP_VAR) String group,
+         @JsonProperty(INBOUND_POLICY_MAPS_VAR) Set<PolicyMap> inboundPolicyMaps,
+         @JsonProperty(LOCAL_AS_VAR) Integer localAs,
+         @JsonProperty(LOCAL_IP_VAR) Ip localIp,
+         @JsonProperty(ORIGINATION_POLICIES_VAR) Set<PolicyMap> originationPolicies,
+         @JsonProperty(OUTBOUND_POLICY_MAPS_VAR) Set<PolicyMap> outboundPolicyMaps,
+         @JsonProperty(OWNER_VAR) Configuration owner,
+         @JsonProperty(PREFIX_VAR) Prefix prefix,
+         @JsonProperty(REMOTE_AS_VAR) Integer remoteAs,
+         @JsonProperty(SEND_COMMUNITY_VAR) Boolean sendCommunity) {
+      _address = address;
+      _advertiseInactive = advertiseInactive;
+      _allowLocalAsIn = allowLocalAsIn;
+      _allowRemoteAsOut = allowRemoteAsOut;
+      _clusterId = clusterId;
+      _defaultMetric = defaultMetric;
+      _description = description;
+      _ebgpMultihop = ebgpMultihop;
+      _generatedRoutes = generatedRoutes;
+      _group = group;
+      _inboundPolicyMaps = inboundPolicyMaps;
+      _localAs = localAs;
+      _localIp = localIp;
+      _originationPolicies = originationPolicies;
+      _outboundPolicyMaps = outboundPolicyMaps;
+      _owner = owner;
+      _prefix = prefix;
+      _remoteAs = remoteAs;
+      _sendCommunity = sendCommunity;
+   }
+
    /**
     * Constructs a BgpNeighbor with the given peer ip address for
     * {@link #_address}
@@ -270,23 +350,28 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_address}
     */
+   @JsonProperty(ADDRESS_VAR)
    public Ip getAddress() {
       return _address;
    }
 
+   @JsonProperty(ADVERTISE_INACTIVE_VAR)
    public boolean getAdvertiseInactive() {
       return _advertiseInactive;
    }
 
+   @JsonProperty(ALLOW_LOCAL_AS_IN_VAR)
    public boolean getAllowLocalAsIn() {
       return _allowLocalAsIn;
    }
 
+   @JsonProperty(ALLOW_REMOTE_AS_OUT_VAR)
    public boolean getAllowRemoteAsOut() {
       return _allowRemoteAsOut;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonIgnore
    public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
       return _candidateRemoteBgpNeighbors;
    }
@@ -294,6 +379,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_clusterId}
     */
+   @JsonProperty(CLUSTER_ID_VAR)
    public Long getClusterId() {
       return _clusterId;
    }
@@ -301,14 +387,17 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_defaultMetric}
     */
+   @JsonProperty(DEFAULT_METRIC_VAR)
    public Integer getDefaultMetric() {
       return _defaultMetric;
    }
 
+   @JsonProperty(DESCRIPTION_VAR)
    public String getDescription() {
       return _description;
    }
 
+   @JsonProperty(EBGP_MULTIHOP_VAR)
    public boolean getEbgpMultihop() {
       return _ebgpMultihop;
    }
@@ -316,21 +405,24 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_generatedRoutes}
     */
+   @JsonProperty(GENERATED_ROUTES_VAR)
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
    /**
-    * @return {@link #_groupName}
+    * @return {@link #_group}
     */
-   public String getGroupName() {
-      return _groupName;
+   @JsonProperty(GROUP_VAR)
+   public String getGroup() {
+      return _group;
    }
 
    /**
     * @return {@link #_inboundPolicyMaps}
     */
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(INBOUND_POLICY_MAPS_VAR)
    public Set<PolicyMap> getInboundPolicyMaps() {
       return _inboundPolicyMaps;
    }
@@ -338,6 +430,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_localAs}
     */
+   @JsonProperty(LOCAL_AS_VAR)
    public Integer getLocalAs() {
       return _localAs;
    }
@@ -345,6 +438,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_localIp}
     */
+   @JsonProperty(LOCAL_IP_VAR)
    public Ip getLocalIp() {
       return _localIp;
    }
@@ -353,6 +447,7 @@ public final class BgpNeighbor implements Serializable {
     * @return {@link #_originationPolicies}
     */
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(ORIGINATION_POLICIES_VAR)
    public Set<PolicyMap> getOriginationPolicies() {
       return _originationPolicies;
    }
@@ -361,11 +456,13 @@ public final class BgpNeighbor implements Serializable {
     * @return {@link #_outboundPolicyMaps}
     */
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(OUTBOUND_POLICY_MAPS_VAR)
    public Set<PolicyMap> getOutboundPolicyMaps() {
       return _outboundPolicyMaps;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(OWNER_VAR)
    public Configuration getOwner() {
       return _owner;
    }
@@ -373,6 +470,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_prefix} if non-null, else /32 prefix of {@link #_address}
     */
+   @JsonProperty(PREFIX_VAR)
    public Prefix getPrefix() {
       if (_prefix != null) {
          return _prefix;
@@ -385,11 +483,12 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_remoteAs}
     */
+   @JsonProperty(REMOTE_AS_VAR)
    public Integer getRemoteAs() {
       return _remoteAs;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
+   @JsonIgnore
    public BgpNeighbor getRemoteBgpNeighbor() {
       return _remoteBgpNeighbor;
    }
@@ -397,6 +496,7 @@ public final class BgpNeighbor implements Serializable {
    /**
     * @return {@link #_sendCommunity}
     */
+   @JsonProperty(SEND_COMMUNITY_VAR)
    public Boolean getSendCommunity() {
       return _sendCommunity;
    }
@@ -444,12 +544,12 @@ public final class BgpNeighbor implements Serializable {
    }
 
    /**
-    * Sets {@link #_groupName}
+    * Sets {@link #_group}
     *
     * @param name
     */
-   public void setGroupName(String name) {
-      _groupName = name;
+   public void setGroup(String name) {
+      _group = name;
    }
 
    /**

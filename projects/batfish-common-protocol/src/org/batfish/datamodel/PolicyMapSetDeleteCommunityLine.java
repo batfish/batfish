@@ -1,15 +1,23 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
+
+   private static final String LIST_VAR = "list";
 
    private static final long serialVersionUID = 1L;
 
-   private CommunityList _list;
+   private final CommunityList _list;
 
-   public PolicyMapSetDeleteCommunityLine(CommunityList list) {
+   @JsonCreator
+   public PolicyMapSetDeleteCommunityLine(
+         @JsonProperty(LIST_VAR) CommunityList list) {
       _list = list;
    }
 
+   @JsonProperty(LIST_VAR)
    public CommunityList getList() {
       return _list;
    }

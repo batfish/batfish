@@ -1,13 +1,19 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
 import java.util.List;
+
+import org.batfish.common.util.ComparableStructure;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a named access-list whose matching criteria is restricted to
  * regexes on community attributes sent with a bgp advertisement
  */
-public class CommunityList implements Serializable {
+public class CommunityList extends ComparableStructure<String> {
+
+   private static final String LINES_VAR = "lines";
 
    /**
     *
@@ -18,9 +24,7 @@ public class CommunityList implements Serializable {
     * The list of lines that are checked in order against the community
     * attribute(s) of a bgp advertisement
     */
-   private List<CommunityListLine> _lines;
-
-   private String _name;
+   private final List<CommunityListLine> _lines;
 
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
@@ -29,8 +33,10 @@ public class CommunityList implements Serializable {
     * @param name
     * @param lines
     */
-   public CommunityList(String name, List<CommunityListLine> lines) {
-      _name = name;
+   @JsonCreator
+   public CommunityList(@JsonProperty(NAME_VAR) String name,
+         @JsonProperty(LINES_VAR) List<CommunityListLine> lines) {
+      super(name);
       _lines = lines;
    }
 
@@ -43,11 +49,13 @@ public class CommunityList implements Serializable {
       return other._lines.equals(_lines);
    }
 
+   @JsonProperty(LINES_VAR)
    public List<CommunityListLine> getLines() {
       return _lines;
    }
 
+   @JsonProperty(NAME_VAR)
    public String getName() {
-      return _name;
+      return _key;
    }
 }

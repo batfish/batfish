@@ -1,7 +1,9 @@
 package org.batfish.datamodel.answers;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.collections.EdgeSet;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,10 +11,10 @@ public class NeighborsAnswerElement implements AnswerElement {
 
    private final static String IP_NEIGHBORS_VAR = "ipNeighbors";
 
-   private EdgeSet _ipNeighbors;
+   private SortedSet<Edge> _ipNeighbors;
 
    public NeighborsAnswerElement() {
-      _ipNeighbors = new EdgeSet();
+      _ipNeighbors = new TreeSet<Edge>();
    }
 
    public void addIpEdge(Edge edge) {
@@ -20,11 +22,11 @@ public class NeighborsAnswerElement implements AnswerElement {
    }
 
    @JsonProperty(IP_NEIGHBORS_VAR)
-   public EdgeSet getIpNeighbors() {
+   public SortedSet<Edge> getIpNeighbors() {
       return _ipNeighbors;
    }
 
-   public void setIpNeighbors(EdgeSet edges) {
+   public void setIpNeighbors(SortedSet<Edge> edges) {
       _ipNeighbors = edges;
    }
 }

@@ -27,7 +27,7 @@ public class IpsecVpnCheckAnswer extends Answer {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getPrefix() != null) {
                for (Prefix prefix : i.getAllPrefixes()) {
-                  if (i.isLoopback(c.getVendor())) {
+                  if (i.isLoopback(c.getConfigurationFormat())) {
                      loopbackIps.add(prefix.getAddress());
                   }
                   allInterfaceIps.add(prefix.getAddress());
