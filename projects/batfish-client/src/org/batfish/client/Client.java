@@ -371,8 +371,8 @@ public class Client {
             String newAnswerString = mapper.writeValueAsString(answer);
             JsonNode tree = mapper.readTree(answerString);
             JsonNode newTree = mapper.readTree(newAnswerString);
-
-            if (!tree.equals(newTree)) {
+            if (!CommonUtil.checkJsonEqual(tree, newTree)) {
+            //if (!tree.equals(newTree)) {
                _logger.errorf("Original and recovered Json are different. Recovered = %s\n", newAnswerString);
             }
 		   }

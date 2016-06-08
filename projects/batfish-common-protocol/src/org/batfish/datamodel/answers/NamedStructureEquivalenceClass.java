@@ -4,13 +4,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.batfish.common.util.*;
 
 public class NamedStructureEquivalenceClass<T> {
 
    // Jackson cannot serialize generics correctly.
    @JsonIgnore
-   private final T _namedStructure;
-   private final Set<String> _nodes;
+   private T _namedStructure = null;
+
+   private Set<String> _nodes = null;
+
+   public NamedStructureEquivalenceClass() {
+   }
 
    public NamedStructureEquivalenceClass(String node, T namedStructure) {
       _namedStructure = namedStructure;
@@ -23,11 +28,24 @@ public class NamedStructureEquivalenceClass<T> {
       _nodes.add(node);
    }
 
-   public boolean CompareStructure(T s) {
-      return _namedStructure.equals(s);
+   public boolean compareStructure(T s) {
+      return CommonUtil.checkJsonEqual(_namedStructure, s);
    }
 
-   public Set<String> getNodes() {
+   public T get_namedStructure() {
+      return _namedStructure;
+   }
+
+   public Set<String> get_nodes() {
       return _nodes;
    }
+
+   public void set_namedStructure(T _namedStructure) {
+      this._namedStructure = _namedStructure;
+   }
+
+   public void set_nodes(Set<String> _nodes) {
+      this._nodes = _nodes;
+   }
+
 }

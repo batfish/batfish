@@ -29,6 +29,7 @@ import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
    private static class TrustAllHostNameVerifier implements HostnameVerifier {
@@ -50,6 +51,26 @@ public class CommonUtil {
          sb.append(prefix + line + "\n");
       }
       return sb.toString();
+   }
+
+   public static boolean checkJsonEqual(Object a, Object b) {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+
+      try {
+         String aString = mapper.writeValueAsString(a);
+         String bString = mapper.writeValueAsString(b);
+         JSONAssert.assertEquals(aString, bString, false);
+         return true;
+      }
+      catch (Exception e) {
+         throw new BatfishException("JSON equlality check failed: "
+               + e.getMessage() + e.getStackTrace());
+      }
+      catch (AssertionError err) {
+         return false;
+      }
+      finally {
+      }
    }
 
    public static long communityStringToLong(String str) {

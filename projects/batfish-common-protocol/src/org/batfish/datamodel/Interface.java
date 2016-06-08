@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -238,7 +237,7 @@ public final class Interface extends ComparableStructure<String> {
 
    private int _nativeVlan;
 
-   private Map<Long, OspfArea> _ospfArea;
+   private OspfArea _ospfArea;
 
    private Integer _ospfCost;
 
@@ -351,7 +350,7 @@ public final class Interface extends ComparableStructure<String> {
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(OSPF_AREA_VAR)
-   public Map<Long, OspfArea> getOspfArea() {
+   public OspfArea getOspfArea() {
       return _ospfArea;
    }
 
@@ -490,7 +489,7 @@ public final class Interface extends ComparableStructure<String> {
    }
 
    @JsonProperty(OSPF_AREA_VAR)
-   public void setOspfArea(Map<Long, OspfArea> ospfArea) {
+   public void setOspfArea(OspfArea ospfArea) {
       _ospfArea = ospfArea;
    }
 

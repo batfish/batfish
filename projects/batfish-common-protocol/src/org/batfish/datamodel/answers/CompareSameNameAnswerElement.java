@@ -6,8 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class CompareSameNameAnswerElement<T> implements AnswerElement {
-   private final String _hrName;
-   private final Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;
+
+   private String _hrName;
+   private Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;
+
+   public CompareSameNameAnswerElement() {
+      _hrName = "";
+      _sameNamedStructures = new HashMap<String, Set<NamedStructureEquivalenceClass<T>>>();
+   }
 
    public CompareSameNameAnswerElement(String hrName) {
       _hrName = hrName;
@@ -23,7 +29,7 @@ public class CompareSameNameAnswerElement<T> implements AnswerElement {
             .get(name);
 
       for (NamedStructureEquivalenceClass<T> equiClass : equiClasses) {
-         if (equiClass.CompareStructure(namedStructure)) {
+         if (equiClass.compareStructure(namedStructure)) {
             equiClass.addNode(node);
             return;
          }
@@ -32,11 +38,21 @@ public class CompareSameNameAnswerElement<T> implements AnswerElement {
             namedStructure));
    }
 
-   public String gethrName() {
+   public String get_hrName() {
       return _hrName;
    }
 
-   public Map<String, Set<NamedStructureEquivalenceClass<T>>> getSameNamedStructures() {
+   public Map<String, Set<NamedStructureEquivalenceClass<T>>> get_sameNamedStructures() {
       return _sameNamedStructures;
    }
+
+   public void set_hrName(String _hrName) {
+      this._hrName = _hrName;
+   }
+
+   public void set_sameNamedStructures(
+         Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures) {
+      this._sameNamedStructures = _sameNamedStructures;
+   }
+
 }

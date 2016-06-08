@@ -27,6 +27,33 @@ public class IkeGateway extends ComparableStructure<String> {
       super(name);
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      IkeGateway other = (IkeGateway) obj;
+      if (!other._address.equals(_address)) {
+         return false;
+      }
+      if (!other._externalInterface.equals(_externalInterface)) {
+         return false;
+      }
+      if (!other._ikePolicy.equals(_ikePolicy)) {
+         return false;
+      }
+      if (!other._localAddress.equals(_localAddress)) {
+         return false;
+      }
+      if (!other._localId.equals(_localId)) {
+         return false;
+      }
+      if (!other._remoteId.equals(_remoteId)) {
+         return false;
+      }
+      return true;
+   }
+
    public Ip getAddress() {
       return _address;
    }

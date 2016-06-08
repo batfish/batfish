@@ -1372,7 +1372,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   areas.put(areaNum, newArea);
                }
                newArea.getInterfaces().add(i);
-               i.setOspfArea(Collections.singletonMap(areaNum, newArea));
+               i.setOspfArea(newArea);
                i.setOspfEnabled(true);
                boolean passive = proc.getInterfaceBlacklist().contains(
                      i.getName())
