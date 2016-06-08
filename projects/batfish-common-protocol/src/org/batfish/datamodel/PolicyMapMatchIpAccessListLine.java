@@ -12,11 +12,13 @@ public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final Set<IpAccessList> _lists;
+   private Set<IpAccessList> _lists;
 
    @JsonCreator
-   public PolicyMapMatchIpAccessListLine(
-         @JsonProperty(LISTS_VAR) Set<IpAccessList> lists) {
+   public PolicyMapMatchIpAccessListLine() {
+   }
+
+   public PolicyMapMatchIpAccessListLine(Set<IpAccessList> lists) {
       _lists = lists;
    }
 
@@ -29,6 +31,11 @@ public class PolicyMapMatchIpAccessListLine extends PolicyMapMatchLine {
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.IP_ACCESS_LIST;
+   }
+
+   @JsonProperty(LISTS_VAR)
+   public void setLists(Set<IpAccessList> lists) {
+      _lists = lists;
    }
 
 }

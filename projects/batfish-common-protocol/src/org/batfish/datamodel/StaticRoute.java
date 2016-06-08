@@ -5,15 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StaticRoute extends Route implements Comparable<StaticRoute> {
 
-   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
-
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
 
    private static final long serialVersionUID = 1L;
 
    private static final String TAG_VAR = "tag";
 
-   private final int _administrativeCost;
+   private int _administrativeCost;
 
    private final String _nextHopInterface;
 
@@ -23,8 +21,14 @@ public class StaticRoute extends Route implements Comparable<StaticRoute> {
    public StaticRoute(@JsonProperty(PREFIX_VAR) Prefix prefix,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
-         @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
          @JsonProperty(TAG_VAR) int tag) {
+      super(prefix, nextHopIp);
+      _nextHopInterface = nextHopInterface;
+      _tag = tag;
+   }
+
+   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+         int administrativeCost, int tag) {
       super(prefix, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
@@ -90,6 +94,7 @@ public class StaticRoute extends Route implements Comparable<StaticRoute> {
    }
 
    @Override
+   @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public int getAdministrativeCost() {
       return _administrativeCost;
    }
@@ -121,6 +126,11 @@ public class StaticRoute extends Route implements Comparable<StaticRoute> {
             + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
       result = prime * result + _tag;
       return result;
+   }
+
+   @JsonProperty(ADMINISTRATIVE_COST_VAR)
+   public void setAdministrativeCost(int administrativeCost) {
+      _administrativeCost = administrativeCost;
    }
 
 }

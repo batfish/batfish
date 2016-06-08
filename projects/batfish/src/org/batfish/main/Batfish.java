@@ -1094,7 +1094,8 @@ public class Batfish implements AutoCloseable {
          for (Interface iface : node.getInterfaces().values()) {
             String ifaceName = iface.getName();
             NodeInterfacePair p = new NodeInterfacePair(hostname, ifaceName);
-            if (iface.getActive() && !iface.isLoopback(node.getConfigurationFormat())
+            if (iface.getActive()
+                  && !iface.isLoopback(node.getConfigurationFormat())
                   && !topologyInterfaces.contains(p)) {
                flowSinks.add(p);
             }
@@ -3805,8 +3806,9 @@ public class Batfish implements AutoCloseable {
             Interface iface = e2.getValue();
             String ifaceName = e2.getKey();
             Prefix prefix = e2.getValue().getPrefix();
-            if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()
-                  && prefix != null && prefix.getPrefixLength() < 32) {
+            if (!iface.isLoopback(node.getConfigurationFormat())
+                  && iface.getActive() && prefix != null
+                  && prefix.getPrefixLength() < 32) {
                Prefix network = new Prefix(prefix.getNetworkAddress(),
                      prefix.getPrefixLength());
                NodeInterfacePair pair = new NodeInterfacePair(nodeName,

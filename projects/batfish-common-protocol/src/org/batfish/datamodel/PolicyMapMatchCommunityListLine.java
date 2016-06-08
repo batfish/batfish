@@ -12,11 +12,13 @@ public class PolicyMapMatchCommunityListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final Set<CommunityList> _lists;
+   private Set<CommunityList> _lists;
 
    @JsonCreator
-   public PolicyMapMatchCommunityListLine(
-         @JsonProperty(LISTS_VAR) Set<CommunityList> lists) {
+   public PolicyMapMatchCommunityListLine() {
+   }
+
+   public PolicyMapMatchCommunityListLine(Set<CommunityList> lists) {
       _lists = lists;
    }
 
@@ -29,6 +31,11 @@ public class PolicyMapMatchCommunityListLine extends PolicyMapMatchLine {
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.COMMUNITY_LIST;
+   }
+
+   @JsonProperty(LISTS_VAR)
+   public void setLists(Set<CommunityList> lists) {
+      _lists = lists;
    }
 
 }

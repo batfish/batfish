@@ -38,7 +38,6 @@ public class OspfProcess implements Serializable {
       return _areas;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
@@ -60,7 +59,28 @@ public class OspfProcess implements Serializable {
       return _routerId;
    }
 
+   public void setAreas(Map<Long, OspfArea> areas) {
+      _areas = areas;
+   }
+
+   public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
+      _generatedRoutes = generatedRoutes;
+   }
+
+   public void setOutboundPolicyMaps(Set<PolicyMap> outboundPolicyMaps) {
+      _outboundPolicyMaps = outboundPolicyMaps;
+   }
+
+   public void setPolicyMetricTypes(
+         Map<String, OspfMetricType> policyMetricTypes) {
+      _policyMetricTypes = policyMetricTypes;
+   }
+
    public void setReferenceBandwidth(double referenceBandwidth) {
+      _referenceBandwidth = referenceBandwidth;
+   }
+
+   public void setReferenceBandwidth(Double referenceBandwidth) {
       _referenceBandwidth = referenceBandwidth;
    }
 

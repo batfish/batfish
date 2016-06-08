@@ -102,7 +102,7 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
          ipsecVpnPairMap.put(hostname, ipsecVpnPairsByHostname);
       }
       String ipsecVpnName = ipsecVpn.getName();
-      String remoteHostname = ipsecVpn.getRemoteIpsecVpn().getConfiguration()
+      String remoteHostname = ipsecVpn.getRemoteIpsecVpn().getOwner()
             .getHostname();
       String remoteIpsecVpnName = remoteIpsecVpn.getName();
       ipsecVpnPairsByHostname.add(new IpsecVpnPair(hostname, ipsecVpnName,

@@ -5,6 +5,10 @@ import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public final class IkePolicy extends ComparableStructure<String> {
 
    /**
@@ -14,9 +18,10 @@ public final class IkePolicy extends ComparableStructure<String> {
 
    private String _preSharedKeyHash;
 
-   private final Map<String, IkeProposal> _proposals;
+   private Map<String, IkeProposal> _proposals;
 
-   public IkePolicy(String name) {
+   @JsonCreator
+   public IkePolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _proposals = new TreeMap<String, IkeProposal>();
    }
@@ -25,12 +30,17 @@ public final class IkePolicy extends ComparableStructure<String> {
       return _preSharedKeyHash;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Map<String, IkeProposal> getProposals() {
       return _proposals;
    }
 
    public void setPreSharedKeyHash(String preSharedKeyHash) {
       _preSharedKeyHash = preSharedKeyHash;
+   }
+
+   public void setProposals(Map<String, IkeProposal> proposals) {
+      _proposals = proposals;
    }
 
 }

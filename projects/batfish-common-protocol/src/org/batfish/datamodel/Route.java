@@ -12,13 +12,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Route implements Serializable {
 
+   protected static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+
    protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
 
    protected static final String PREFIX_VAR = "prefix";
 
    private static final long serialVersionUID = 1L;
-
-   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
 
    protected final Ip _nextHopIp;
 

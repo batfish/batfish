@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+
 public class IkeGateway extends ComparableStructure<String> {
 
    /**
@@ -33,6 +35,7 @@ public class IkeGateway extends ComparableStructure<String> {
       return _externalInterface;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public IkePolicy getIkePolicy() {
       return _ikePolicy;
    }

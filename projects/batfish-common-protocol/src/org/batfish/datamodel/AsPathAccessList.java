@@ -6,8 +6,13 @@ import java.util.List;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public final class AsPathAccessList extends ComparableStructure<String>
       implements Serializable {
+
+   private static final String LINES_VAR = "lines";
 
    private static final long serialVersionUID = 1L;
 
@@ -18,8 +23,11 @@ public final class AsPathAccessList extends ComparableStructure<String>
       _lines = new ArrayList<AsPathAccessListLine>();
    }
 
-   public void addLine(AsPathAccessListLine a) {
-      _lines.add(a);
+   @JsonCreator
+   public AsPathAccessList(@JsonProperty(NAME_VAR) String name,
+         @JsonProperty(LINES_VAR) List<AsPathAccessListLine> lines) {
+      super(name);
+      _lines = lines;
    }
 
    @Override
@@ -31,7 +39,9 @@ public final class AsPathAccessList extends ComparableStructure<String>
       return other._lines.equals(_lines);
    }
 
+   @JsonProperty(LINES_VAR)
    public List<AsPathAccessListLine> getLines() {
       return _lines;
    }
+
 }

@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -15,16 +16,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
    private static final long serialVersionUID = 1L;
 
-   private final SortedSet<Interface> _interfaces;
+   private SortedSet<Interface> _interfaces;
 
-   public OspfArea(long number) {
+   @JsonCreator
+   public OspfArea(@JsonProperty(NAME_VAR) Long number) {
       super(number);
       _interfaces = new TreeSet<Interface>();
-   }
-
-   public OspfArea(@JsonProperty(NAME_VAR)Long number, @JsonProperty(INTERFACES_VAR) SortedSet<Interface> interfaces) {
-      super(number);
-      _interfaces = interfaces;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
@@ -36,6 +33,11 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
    @JsonProperty(NAME_VAR)
    public Long getNumber() {
       return _key;
+   }
+
+   @JsonProperty(INTERFACES_VAR)
+   public void setInterfaces(SortedSet<Interface> interfaces) {
+      _interfaces = interfaces;
    }
 
 }

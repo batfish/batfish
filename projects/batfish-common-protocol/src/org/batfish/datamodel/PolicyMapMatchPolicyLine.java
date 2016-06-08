@@ -10,10 +10,13 @@ public class PolicyMapMatchPolicyLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final PolicyMap _policy;
+   private PolicyMap _policy;
 
    @JsonCreator
-   public PolicyMapMatchPolicyLine(@JsonProperty(POLICY_VAR) PolicyMap policy) {
+   public PolicyMapMatchPolicyLine() {
+   }
+
+   public PolicyMapMatchPolicyLine(PolicyMap policy) {
       _policy = policy;
    }
 
@@ -26,6 +29,11 @@ public class PolicyMapMatchPolicyLine extends PolicyMapMatchLine {
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.POLICY;
+   }
+
+   @JsonProperty(POLICY_VAR)
+   public void setPolicy(PolicyMap policy) {
+      _policy = policy;
    }
 
 }
