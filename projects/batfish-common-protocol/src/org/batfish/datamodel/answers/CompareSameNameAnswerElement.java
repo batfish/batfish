@@ -8,6 +8,7 @@ import java.util.Set;
 public class CompareSameNameAnswerElement<T> implements AnswerElement {
 
    private String _hrName;
+
    private Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;
 
    public CompareSameNameAnswerElement() {

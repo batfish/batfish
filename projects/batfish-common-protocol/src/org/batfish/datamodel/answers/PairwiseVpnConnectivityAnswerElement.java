@@ -1,45 +1,47 @@
 package org.batfish.datamodel.answers;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class PairwiseVpnConnectivityAnswerElement implements AnswerElement {
 
-   private Map<String, Set<String>> _connectedNeighbors;
+   private SortedMap<String, SortedSet<String>> _connectedNeighbors;
 
-   private Set<String> _ipsecVpnNodes;
+   private SortedSet<String> _ipsecVpnNodes;
 
-   private Map<String, Set<String>> _missingNeighbors;
+   private SortedMap<String, SortedSet<String>> _missingNeighbors;
 
    public PairwiseVpnConnectivityAnswerElement() {
-      _connectedNeighbors = new TreeMap<String, Set<String>>();
+      _connectedNeighbors = new TreeMap<String, SortedSet<String>>();
       _ipsecVpnNodes = new TreeSet<String>();
-      _missingNeighbors = new TreeMap<String, Set<String>>();
+      _missingNeighbors = new TreeMap<String, SortedSet<String>>();
    }
 
-   public Map<String, Set<String>> getConnectedNeighbors() {
+   public SortedMap<String, SortedSet<String>> getConnectedNeighbors() {
       return _connectedNeighbors;
    }
 
-   public Set<String> getIpsecVpnNodes() {
+   public SortedSet<String> getIpsecVpnNodes() {
       return _ipsecVpnNodes;
    }
 
-   public Map<String, Set<String>> getMissingNeighbors() {
+   public SortedMap<String, SortedSet<String>> getMissingNeighbors() {
       return _missingNeighbors;
    }
 
-   public void setConnectedNeighbors(Map<String, Set<String>> connectedNeighbors) {
+   public void setConnectedNeighbors(
+         SortedMap<String, SortedSet<String>> connectedNeighbors) {
       _connectedNeighbors = connectedNeighbors;
    }
 
-   public void setIpsecVpnNodes(Set<String> ipsecVpnNodes) {
+   public void setIpsecVpnNodes(SortedSet<String> ipsecVpnNodes) {
       _ipsecVpnNodes = ipsecVpnNodes;
    }
 
-   public void setMissingNeighbors(Map<String, Set<String>> missingNeighbors) {
+   public void setMissingNeighbors(
+         SortedMap<String, SortedSet<String>> missingNeighbors) {
       _missingNeighbors = missingNeighbors;
    }
 

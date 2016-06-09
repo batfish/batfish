@@ -9,11 +9,11 @@ import org.batfish.datamodel.IpAccessList;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
-   private final SortedMap<String, SortedMap<String, IpAccessList>> _acls;
+   private SortedMap<String, SortedMap<String, IpAccessList>> _acls;
 
-   private final SortedMap<String, SortedMap<String, SortedSet<Integer>>> _reachableLines;
+   private SortedMap<String, SortedMap<String, SortedSet<Integer>>> _reachableLines;
 
-   private final SortedMap<String, SortedMap<String, SortedSet<Integer>>> _unreachableLines;
+   private SortedMap<String, SortedMap<String, SortedSet<Integer>>> _unreachableLines;
 
    public AclLinesAnswerElement() {
       _acls = new TreeMap<String, SortedMap<String, IpAccessList>>();
@@ -67,6 +67,20 @@ public class AclLinesAnswerElement implements AnswerElement {
 
    public SortedMap<String, SortedMap<String, SortedSet<Integer>>> getUnreachableLines() {
       return _unreachableLines;
+   }
+
+   public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
+      _acls = acls;
+   }
+
+   public void setReachableLines(
+         SortedMap<String, SortedMap<String, SortedSet<Integer>>> reachableLines) {
+      _reachableLines = reachableLines;
+   }
+
+   public void setUnreachableLines(
+         SortedMap<String, SortedMap<String, SortedSet<Integer>>> unreachableLines) {
+      _unreachableLines = unreachableLines;
    }
 
 }

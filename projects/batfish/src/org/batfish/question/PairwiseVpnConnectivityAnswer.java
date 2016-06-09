@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.batfish.datamodel.Configuration;
@@ -27,7 +28,7 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
          }
       }
       for (Configuration c : configurations.values()) {
-         Set<String> currentNeighbors = new TreeSet<String>();
+         SortedSet<String> currentNeighbors = new TreeSet<String>();
          if (!c.getIpsecVpns().isEmpty()) {
             for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
                if (ipsecVpn.getRemoteIpsecVpn() != null) {
@@ -39,7 +40,7 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
                   }
                }
             }
-            Set<String> missingNeighbors = new TreeSet<String>();
+            SortedSet<String> missingNeighbors = new TreeSet<String>();
             missingNeighbors.addAll(ipsecVpnNodes);
             missingNeighbors.removeAll(currentNeighbors);
             String hostname = c.getHostname();
