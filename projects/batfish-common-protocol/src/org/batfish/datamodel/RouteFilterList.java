@@ -14,15 +14,10 @@ public class RouteFilterList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
-   private final List<RouteFilterLine> _lines;
+   private List<RouteFilterLine> _lines;
 
    @JsonCreator
-   public RouteFilterList(@JsonProperty(LINES_VAR)List<RouteFilterLine> lines, @JsonProperty(NAME_VAR)String name) {
-      super(name);
-      _lines = lines;
-   }
-
-   public RouteFilterList(String name) {
+   public RouteFilterList(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _lines = new ArrayList<RouteFilterLine>();
    }
@@ -43,6 +38,11 @@ public class RouteFilterList extends ComparableStructure<String> {
    @JsonProperty(LINES_VAR)
    public List<RouteFilterLine> getLines() {
       return _lines;
+   }
+
+   @JsonProperty(LINES_VAR)
+   public void setLines(List<RouteFilterLine> lines) {
+      _lines = lines;
    }
 
 }

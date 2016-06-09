@@ -24,9 +24,9 @@
 	<classpathentry kind="lib" path="lib/commons/commons-exec-1.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>
 	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.8.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.8.0-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.8.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.8.0-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.8.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.8.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.8.0.rc2-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.8.0.rc2-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.8.0.rc2-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/antlr/antlr-4.5.3-complete.jar" sourcepath="lib/antlr/antlr4-runtime-4.5.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/aopalliance-repackaged-2.4.0-b09.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/asm-debug-all-5.0.2.jar"/>
@@ -53,5 +53,7 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/osgi-resource-locator-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/persistence-api-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/java-json/java-json.jar"/>
+	<classpathentry kind="lib" path="lib/jsonassert/jsonassert-1.2.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

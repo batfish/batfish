@@ -9,14 +9,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class IpAccessList extends ComparableStructure<String> {
 
-   private static final long serialVersionUID = 1L;
    private static final String LINES_VAR = "lines";
+
+   private static final long serialVersionUID = 1L;
 
    private List<IpAccessListLine> _lines;
 
    @JsonCreator
-   public IpAccessList(@JsonProperty(NAME_VAR) String name,
-         @JsonProperty(LINES_VAR) List<IpAccessListLine> lines) {
+   public IpAccessList(@JsonProperty(NAME_VAR) String name) {
+      super(name);
+   }
+
+   public IpAccessList(String name, List<IpAccessListLine> lines) {
       super(name);
       _lines = lines;
    }
@@ -24,6 +28,11 @@ public class IpAccessList extends ComparableStructure<String> {
    @JsonProperty(LINES_VAR)
    public List<IpAccessListLine> getLines() {
       return _lines;
+   }
+
+   @JsonProperty(LINES_VAR)
+   public void setLines(List<IpAccessListLine> lines) {
+      _lines = lines;
    }
 
    @Override

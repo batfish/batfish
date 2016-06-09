@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,15 +27,9 @@ public class PolicyMap extends ComparableStructure<String> {
     * If the matching clause is a deny clause, or if there is no matching
     * clause, then the policy denies the route.
     */
-   private final List<PolicyMapClause> _clauses;
+   private List<PolicyMapClause> _clauses;
 
    private transient PrefixSpace _prefixSpace;
-
-   public PolicyMap(@JsonProperty(CLAUSES_VAR) List<PolicyMapClause> clauses,
-         @JsonProperty(NAME_VAR) String name) {
-      super(name);
-      _clauses = clauses;
-   }
 
    /**
     * Constructs a PolicyMap with the given name for {@link #_mapName} and list
@@ -42,7 +37,8 @@ public class PolicyMap extends ComparableStructure<String> {
     *
     * @param name
     */
-   public PolicyMap(String name) {
+   @JsonCreator
+   public PolicyMap(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _clauses = new ArrayList<PolicyMapClause>();
    }
@@ -95,6 +91,11 @@ public class PolicyMap extends ComparableStructure<String> {
             _prefixSpace.addPrefixRange(prefixRange);
          }
       }
+   }
+
+   @JsonProperty(CLAUSES_VAR)
+   public void setClauses(List<PolicyMapClause> clauses) {
+      _clauses = clauses;
    }
 
 }

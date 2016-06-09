@@ -850,7 +850,8 @@ public class ConfigurationFactExtractor {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getName();
             wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
-            IsisLevel exportLevel = proc.getPolicyExportLevels().get(map);
+            IsisLevel exportLevel = proc.getPolicyExportLevels().get(
+                  map.getName());
             if (exportLevel == null) {
                continue;
             }

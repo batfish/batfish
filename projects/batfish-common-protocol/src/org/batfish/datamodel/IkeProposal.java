@@ -6,6 +6,9 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public final class IkeProposal extends ComparableStructure<String> {
 
    public static final IkeProposal PSK_3DES_DH2_MD5 = initPSK_3DES_DH2_MD5();
@@ -100,7 +103,8 @@ public final class IkeProposal extends ComparableStructure<String> {
 
    private Integer _lifetimeSeconds;
 
-   public IkeProposal(String name) {
+   @JsonCreator
+   public IkeProposal(@JsonProperty(NAME_VAR) String name) {
       super(name);
    }
 
@@ -148,7 +152,7 @@ public final class IkeProposal extends ComparableStructure<String> {
       _encryptionAlgorithm = encryptionAlgorithm;
    }
 
-   public void setLifetimeSeconds(int lifetimeSeconds) {
+   public void setLifetimeSeconds(Integer lifetimeSeconds) {
       _lifetimeSeconds = lifetimeSeconds;
    }
 

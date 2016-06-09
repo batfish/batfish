@@ -5,6 +5,9 @@ import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public final class Zone extends ComparableStructure<String> {
 
    /**
@@ -12,15 +15,20 @@ public final class Zone extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
-   private final IpAccessList _fromHostFilter;
+   private IpAccessList _fromHostFilter;
 
-   private final IpAccessList _inboundFilter;
+   private IpAccessList _inboundFilter;
 
-   private final SortedMap<String, IpAccessList> _inboundInterfaceFilters;
+   private SortedMap<String, IpAccessList> _inboundInterfaceFilters;
 
-   private final IpAccessList _toHostFilter;
+   private IpAccessList _toHostFilter;
 
-   private final SortedMap<String, IpAccessList> _toZonePolicies;
+   private SortedMap<String, IpAccessList> _toZonePolicies;
+
+   @JsonCreator
+   public Zone(@JsonProperty(NAME_VAR) String name) {
+      super(name);
+   }
 
    public Zone(String name, IpAccessList inboundFilter,
          IpAccessList fromHostFilter, IpAccessList toHostFilter) {
@@ -50,6 +58,27 @@ public final class Zone extends ComparableStructure<String> {
 
    public SortedMap<String, IpAccessList> getToZonePolicies() {
       return _toZonePolicies;
+   }
+
+   public void setFromHostFilter(IpAccessList fromHostFilter) {
+      _fromHostFilter = fromHostFilter;
+   }
+
+   public void setInboundFilter(IpAccessList inboundFilter) {
+      _inboundFilter = inboundFilter;
+   }
+
+   public void setInboundInterfaceFilters(
+         SortedMap<String, IpAccessList> inboundInterfaceFilters) {
+      _inboundInterfaceFilters = inboundInterfaceFilters;
+   }
+
+   public void setToHostFilter(IpAccessList toHostFilter) {
+      _toHostFilter = toHostFilter;
+   }
+
+   public void setToZonePolicies(SortedMap<String, IpAccessList> toZonePolicies) {
+      _toZonePolicies = toZonePolicies;
    }
 
 }

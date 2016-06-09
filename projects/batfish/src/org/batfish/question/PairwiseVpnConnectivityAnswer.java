@@ -33,7 +33,7 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
                if (ipsecVpn.getRemoteIpsecVpn() != null) {
                   for (IpsecVpn remoteIpsecVpn : ipsecVpn
                         .getCandidateRemoteIpsecVpns()) {
-                     String remoteHost = remoteIpsecVpn.getConfiguration()
+                     String remoteHost = remoteIpsecVpn.getOwner()
                            .getHostname();
                      currentNeighbors.add(remoteHost);
                   }

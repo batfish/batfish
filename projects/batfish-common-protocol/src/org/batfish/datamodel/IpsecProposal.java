@@ -5,6 +5,9 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class IpsecProposal extends ComparableStructure<String> {
 
    public static final IpsecProposal G2_ESP_3DES_SHA = initG2_ESP_3DES_SHA();
@@ -82,7 +85,8 @@ public class IpsecProposal extends ComparableStructure<String> {
 
    private IpsecProtocol _protocol;
 
-   public IpsecProposal(String name) {
+   @JsonCreator
+   public IpsecProposal(@JsonProperty(NAME_VAR) String name) {
       super(name);
    }
 

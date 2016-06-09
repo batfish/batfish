@@ -1219,8 +1219,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
                newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-               newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
-                     exportLevel);
+               newProcess.getPolicyExportLevels().put(
+                     exportConnectedPolicy.getName(), exportLevel);
             }
          }
          else {
@@ -1228,8 +1228,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   ISIS_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
                   metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyExportLevels().put(exportConnectedPolicy,
-                  exportLevel);
+            newProcess.getPolicyExportLevels().put(
+                  exportConnectedPolicy.getName(), exportLevel);
             c.getPolicyMaps().put(exportConnectedPolicy.getName(),
                   exportConnectedPolicy);
          }
@@ -1310,8 +1310,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   }
                }
                newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-               newProcess.getPolicyExportLevels().put(exportStaticPolicy,
-                     exportLevel);
+               newProcess.getPolicyExportLevels().put(
+                     exportStaticPolicy.getName(), exportLevel);
 
             }
          }
@@ -1322,8 +1322,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
                   RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
             newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyExportLevels().put(exportStaticPolicy,
-                  exportLevel);
+            newProcess.getPolicyExportLevels().put(
+                  exportStaticPolicy.getName(), exportLevel);
          }
       }
       return newProcess;
@@ -1372,7 +1372,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   areas.put(areaNum, newArea);
                }
                newArea.getInterfaces().add(i);
-               i.setOspfArea(Collections.singletonMap(areaNum, newArea));
+               i.setOspfArea(newArea);
                i.setOspfEnabled(true);
                boolean passive = proc.getInterfaceBlacklist().contains(
                      i.getName())

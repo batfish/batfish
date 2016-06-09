@@ -12,10 +12,13 @@ public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final Set<RouteFilterList> _lists;
+   private Set<RouteFilterList> _lists;
 
    @JsonCreator
-   public PolicyMapMatchRouteFilterListLine(@JsonProperty(LISTS_VAR) Set<RouteFilterList> lists) {
+   public PolicyMapMatchRouteFilterListLine() {
+   }
+
+   public PolicyMapMatchRouteFilterListLine(Set<RouteFilterList> lists) {
       _lists = lists;
    }
 
@@ -28,6 +31,11 @@ public class PolicyMapMatchRouteFilterListLine extends PolicyMapMatchLine {
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.ROUTE_FILTER_LIST;
+   }
+
+   @JsonProperty(LISTS_VAR)
+   public void setLists(Set<RouteFilterList> lists) {
+      _lists = lists;
    }
 
 }

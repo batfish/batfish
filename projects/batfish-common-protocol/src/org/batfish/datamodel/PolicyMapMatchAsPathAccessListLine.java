@@ -12,11 +12,13 @@ public class PolicyMapMatchAsPathAccessListLine extends PolicyMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final Set<AsPathAccessList> _lists;
+   private Set<AsPathAccessList> _lists;
 
    @JsonCreator
-   public PolicyMapMatchAsPathAccessListLine(
-         @JsonProperty(LISTS_VAR) Set<AsPathAccessList> lists) {
+   public PolicyMapMatchAsPathAccessListLine() {
+   }
+
+   public PolicyMapMatchAsPathAccessListLine(Set<AsPathAccessList> lists) {
       _lists = lists;
    }
 
@@ -29,6 +31,11 @@ public class PolicyMapMatchAsPathAccessListLine extends PolicyMapMatchLine {
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.AS_PATH_ACCESS_LIST;
+   }
+
+   @JsonProperty(LISTS_VAR)
+   public void setLists(Set<AsPathAccessList> lists) {
+      _lists = lists;
    }
 
 }

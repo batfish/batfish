@@ -14,7 +14,8 @@ public class PolicyMapSetCommunityLine extends PolicyMapSetLine {
    private final List<Long> _communities;
 
    @JsonCreator
-   public PolicyMapSetCommunityLine(@JsonProperty(COMMUNITIES_VAR)List<Long> communities) {
+   public PolicyMapSetCommunityLine(
+         @JsonProperty(COMMUNITIES_VAR) List<Long> communities) {
       _communities = communities;
    }
 

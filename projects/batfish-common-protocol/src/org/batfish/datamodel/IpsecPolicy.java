@@ -6,6 +6,10 @@ import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class IpsecPolicy extends ComparableStructure<String> {
 
    /**
@@ -19,7 +23,8 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
    private Map<String, IpsecProposal> _proposals;
 
-   public IpsecPolicy(String name) {
+   @JsonCreator
+   public IpsecPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _proposals = new TreeMap<String, IpsecProposal>();
    }
@@ -32,6 +37,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
       return _pfsKeyGroupDynamicIke;
    }
 
+   @JsonIdentityReference(alwaysAsId = true)
    public Map<String, IpsecProposal> getProposals() {
       return _proposals;
    }
@@ -42,6 +48,10 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
    public void setPfsKeyGroupDynamicIke(boolean pfsKeyGroupDynamicIke) {
       _pfsKeyGroupDynamicIke = pfsKeyGroupDynamicIke;
+   }
+
+   public void setProposals(Map<String, IpsecProposal> proposals) {
+      _proposals = proposals;
    }
 
 }

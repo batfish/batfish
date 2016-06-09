@@ -3,14 +3,14 @@ package org.batfish.datamodel;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.batfish.common.Pair;
+import org.batfish.common.util.ComparableStructure;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
-public final class IpsecVpn extends Pair<Configuration, String> {
+public final class IpsecVpn extends ComparableStructure<String> {
 
    /**
     *
@@ -25,10 +25,18 @@ public final class IpsecVpn extends Pair<Configuration, String> {
 
    private IpsecPolicy _ipsecPolicy;
 
+   private Configuration _owner;
+
    private transient IpsecVpn _remoteIpsecVpn;
 
-   public IpsecVpn(String name, Configuration configuration) {
-      super(configuration, name);
+   @JsonCreator
+   public IpsecVpn(@JsonProperty(NAME_VAR) String name) {
+      super(name);
+   }
+
+   public IpsecVpn(String name, Configuration owner) {
+      super(name);
+      _owner = owner;
    }
 
    public Boolean compatibleIkeProposals(IpsecVpn remoteIpsecVpn) {
@@ -69,6 +77,7 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return false;
    }
 
+   @JsonIgnore
    private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
       for (IkeProposal lhs : _gateway.getIkePolicy().getProposals().values()) {
          for (IkeProposal rhs : remoteIpsecVpn.getGateway().getIkePolicy()
@@ -92,11 +101,6 @@ public final class IpsecVpn extends Pair<Configuration, String> {
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public Configuration getConfiguration() {
-      return _first;
-   }
-
-   @JsonIdentityReference(alwaysAsId = true)
    public IkeGateway getGateway() {
       return _gateway;
    }
@@ -106,8 +110,9 @@ public final class IpsecVpn extends Pair<Configuration, String> {
       return _ipsecPolicy;
    }
 
-   public String getName() {
-      return _second;
+   @JsonIdentityReference(alwaysAsId = true)
+   public Configuration getOwner() {
+      return _owner;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
@@ -129,6 +134,10 @@ public final class IpsecVpn extends Pair<Configuration, String> {
 
    public void setIpsecPolicy(IpsecPolicy ipsecPolicy) {
       _ipsecPolicy = ipsecPolicy;
+   }
+
+   public void setOwner(Configuration owner) {
+      _owner = owner;
    }
 
    public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {

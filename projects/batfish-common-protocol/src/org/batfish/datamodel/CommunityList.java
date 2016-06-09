@@ -54,6 +54,7 @@ public class CommunityList extends ComparableStructure<String> {
       return _lines;
    }
 
+   @Override
    @JsonProperty(NAME_VAR)
    public String getName() {
       return _key;

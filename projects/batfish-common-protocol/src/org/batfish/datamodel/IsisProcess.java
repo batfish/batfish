@@ -1,10 +1,14 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 
 public class IsisProcess implements Serializable {
 
@@ -21,14 +25,14 @@ public class IsisProcess implements Serializable {
 
    private IsoAddress _netAddress;
 
-   private Set<PolicyMap> _outboundPolicyMaps;
+   private List<PolicyMap> _outboundPolicyMaps;
 
-   private Map<PolicyMap, IsisLevel> _policyExportLevels;
+   private SortedMap<String, IsisLevel> _policyExportLevels;
 
    public IsisProcess() {
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
-      _policyExportLevels = new LinkedHashMap<PolicyMap, IsisLevel>();
-      _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
+      _policyExportLevels = new TreeMap<String, IsisLevel>();
+      _outboundPolicyMaps = new ArrayList<PolicyMap>();
    }
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
@@ -43,12 +47,17 @@ public class IsisProcess implements Serializable {
       return _netAddress;
    }
 
-   public Set<PolicyMap> getOutboundPolicyMaps() {
+   @JsonIdentityReference(alwaysAsId = true)
+   public List<PolicyMap> getOutboundPolicyMaps() {
       return _outboundPolicyMaps;
    }
 
-   public Map<PolicyMap, IsisLevel> getPolicyExportLevels() {
+   public SortedMap<String, IsisLevel> getPolicyExportLevels() {
       return _policyExportLevels;
+   }
+
+   public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
+      _generatedRoutes = generatedRoutes;
    }
 
    public void setLevel(IsisLevel level) {
@@ -57,6 +66,15 @@ public class IsisProcess implements Serializable {
 
    public void setNetAddress(IsoAddress netAddress) {
       _netAddress = netAddress;
+   }
+
+   public void setOutboundPolicyMaps(List<PolicyMap> outboundPolicyMaps) {
+      _outboundPolicyMaps = outboundPolicyMaps;
+   }
+
+   public void setPolicyExportLevels(
+         SortedMap<String, IsisLevel> policyExportLevels) {
+      _policyExportLevels = policyExportLevels;
    }
 
 }

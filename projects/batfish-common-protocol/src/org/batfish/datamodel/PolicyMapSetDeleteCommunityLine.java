@@ -9,11 +9,13 @@ public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
 
    private static final long serialVersionUID = 1L;
 
-   private final CommunityList _list;
+   private CommunityList _list;
 
    @JsonCreator
-   public PolicyMapSetDeleteCommunityLine(
-         @JsonProperty(LIST_VAR) CommunityList list) {
+   public PolicyMapSetDeleteCommunityLine() {
+   }
+
+   public PolicyMapSetDeleteCommunityLine(CommunityList list) {
       _list = list;
    }
 
@@ -25,6 +27,11 @@ public class PolicyMapSetDeleteCommunityLine extends PolicyMapSetLine {
    @Override
    public PolicyMapSetType getType() {
       return PolicyMapSetType.DELETE_COMMUNITY;
+   }
+
+   @JsonProperty(LIST_VAR)
+   public void setList(CommunityList list) {
+      _list = list;
    }
 
 }

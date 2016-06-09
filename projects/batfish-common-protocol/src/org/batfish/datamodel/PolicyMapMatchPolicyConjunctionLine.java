@@ -16,11 +16,14 @@ public final class PolicyMapMatchPolicyConjunctionLine extends
     */
    private static final long serialVersionUID = 1L;
 
-   private final Set<PolicyMap> _conjuncts;
+   private Set<PolicyMap> _conjuncts;
 
    @JsonCreator
-   public PolicyMapMatchPolicyConjunctionLine(
-         @JsonProperty(CONJUNCTS_VAR) Set<PolicyMap> conjuncts) {
+   public PolicyMapMatchPolicyConjunctionLine() {
+
+   }
+
+   public PolicyMapMatchPolicyConjunctionLine(Set<PolicyMap> conjuncts) {
       _conjuncts = conjuncts;
    }
 
@@ -33,6 +36,11 @@ public final class PolicyMapMatchPolicyConjunctionLine extends
    @Override
    public PolicyMapMatchType getType() {
       return PolicyMapMatchType.POLICY_CONJUNCTION;
+   }
+
+   @JsonProperty(CONJUNCTS_VAR)
+   public void setConjuncts(Set<PolicyMap> conjuncts) {
+      _conjuncts = conjuncts;
    }
 
 }
