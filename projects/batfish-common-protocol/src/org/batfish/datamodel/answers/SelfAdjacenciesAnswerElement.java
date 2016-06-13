@@ -1,7 +1,7 @@
 package org.batfish.datamodel.answers;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -16,13 +16,13 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
 
    public static class InterfaceIpPair extends Pair<String, Ip> {
 
+      private static final String INTERFACE_NAME_VAR = "interfaceName";
+
+      private static final String IP_VAR = "ip";
       /**
        *
        */
       private static final long serialVersionUID = 1L;
-
-      private static final String INTERFACE_NAME_VAR = "interfaceName";
-      private static final String IP_VAR = "ip";
 
       @JsonCreator
       public InterfaceIpPair(@JsonProperty(INTERFACE_NAME_VAR) String t1,
@@ -42,21 +42,21 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
 
    }
 
-   private Map<String, Map<Prefix, Set<InterfaceIpPair>>> _selfAdjacencies;
+   private SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> _selfAdjacencies;
 
    public SelfAdjacenciesAnswerElement() {
-      _selfAdjacencies = new TreeMap<String, Map<Prefix, Set<InterfaceIpPair>>>();
+      _selfAdjacencies = new TreeMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>>();
    }
 
    public void add(String hostname, Prefix prefix, String interfaceName,
          Ip address) {
-      Map<Prefix, Set<InterfaceIpPair>> prefixMap = _selfAdjacencies
+      SortedMap<Prefix, SortedSet<InterfaceIpPair>> prefixMap = _selfAdjacencies
             .get(hostname);
       if (prefixMap == null) {
-         prefixMap = new TreeMap<Prefix, Set<InterfaceIpPair>>();
+         prefixMap = new TreeMap<Prefix, SortedSet<InterfaceIpPair>>();
          _selfAdjacencies.put(hostname, prefixMap);
       }
-      Set<InterfaceIpPair> interfaces = prefixMap.get(prefix);
+      SortedSet<InterfaceIpPair> interfaces = prefixMap.get(prefix);
       if (interfaces == null) {
          interfaces = new TreeSet<InterfaceIpPair>();
          prefixMap.put(prefix, interfaces);
@@ -64,12 +64,12 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
       interfaces.add(new InterfaceIpPair(interfaceName, address));
    }
 
-   public Map<String, Map<Prefix, Set<InterfaceIpPair>>> getSelfAdjacencies() {
+   public SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> getSelfAdjacencies() {
       return _selfAdjacencies;
    }
 
    public void setSelfAdjacencies(
-         Map<String, Map<Prefix, Set<InterfaceIpPair>>> selfAdjacencies) {
+         SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> selfAdjacencies) {
       _selfAdjacencies = selfAdjacencies;
    }
 

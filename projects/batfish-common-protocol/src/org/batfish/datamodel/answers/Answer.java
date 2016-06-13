@@ -17,6 +17,7 @@ public class Answer {
    }
 
    protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
+
    private Question _question;
 
    private AnswerStatus _status;

@@ -1,9 +1,13 @@
 package org.batfish.question;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -17,27 +21,55 @@ import org.batfish.main.Batfish;
 
 public class BgpSessionCheckAnswer extends Answer {
 
+   private Map<Ip, Set<String>> _ipOwners;
+
+   private Pattern _node2Regex;
+
    public BgpSessionCheckAnswer(Batfish batfish,
          BgpSessionCheckQuestion question) {
+      Pattern node1Regex;
+      Pattern node2Regex;
+      try {
+         node1Regex = Pattern.compile(question.getNode1Regex());
+         node2Regex = Pattern.compile(question.getNode2Regex());
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               String.format(
+                     "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
+                     question.getNode1Regex(), question.getNode2Regex()), e);
+      }
+      _node2Regex = node2Regex;
       batfish.checkConfigurations();
       Map<String, Configuration> configurations = batfish.loadConfigurations();
       batfish.initRemoteBgpNeighbors(configurations);
       BgpSessionCheckAnswerElement answerElement = new BgpSessionCheckAnswerElement();
       Set<Ip> allInterfaceIps = new HashSet<Ip>();
       Set<Ip> loopbackIps = new HashSet<Ip>();
+      _ipOwners = new HashMap<Ip, Set<String>>();
       for (Configuration c : configurations.values()) {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getPrefix() != null) {
                for (Prefix prefix : i.getAllPrefixes()) {
+                  Ip address = prefix.getAddress();
                   if (i.isLoopback(c.getConfigurationFormat())) {
-                     loopbackIps.add(prefix.getAddress());
+                     loopbackIps.add(address);
                   }
-                  allInterfaceIps.add(prefix.getAddress());
+                  allInterfaceIps.add(address);
+                  Set<String> currentIpOwners = _ipOwners.get(address);
+                  if (currentIpOwners == null) {
+                     currentIpOwners = new HashSet<String>();
+                     _ipOwners.put(address, currentIpOwners);
+                  }
+                  currentIpOwners.add(c.getHostname());
                }
             }
          }
       }
       for (Configuration c : configurations.values()) {
+         if (!node1Regex.matcher(c.getHostname()).matches()) {
+            continue;
+         }
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor bgpNeighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
@@ -121,14 +153,16 @@ public class BgpSessionCheckAnswer extends Answer {
                               bgpNeighborSummary);
                      }
                      else {
-                        if (!ebgpMultihop && loopbackIps.contains(remoteIp)) {
+                        if (!ebgpMultihop && loopbackIps.contains(remoteIp)
+                              && node2RegexMatchesIp(remoteIp)) {
                            answerElement.add(
                                  answerElement.getEbgpRemoteIpOnLoopback(), c,
                                  bgpNeighborSummary);
                         }
                      }
                      // check half open
-                     if (localIp != null && allInterfaceIps.contains(remoteIp)) {
+                     if (localIp != null && allInterfaceIps.contains(remoteIp)
+                           && node2RegexMatchesIp(remoteIp)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                            answerElement.add(answerElement.getBroken(), c,
                                  bgpNeighborSummary);
@@ -161,7 +195,8 @@ public class BgpSessionCheckAnswer extends Answer {
                               answerElement.getIbgpLocalIpUnknown(), c,
                               bgpNeighborSummary);
                      }
-                     if (!allInterfaceIps.contains(remoteIp)) {
+                     if (!allInterfaceIps.contains(remoteIp)
+                           && node2RegexMatchesIp(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
                               bgpNeighborSummary);
                         answerElement.add(answerElement.getIbgpBroken(), c,
@@ -171,13 +206,15 @@ public class BgpSessionCheckAnswer extends Answer {
                               bgpNeighborSummary);
                      }
                      else {
-                        if (!loopbackIps.contains(remoteIp)) {
+                        if (!loopbackIps.contains(remoteIp)
+                              && node2RegexMatchesIp(remoteIp)) {
                            answerElement.add(
                                  answerElement.getIbgpRemoteIpOnNonLoopback(),
                                  c, bgpNeighborSummary);
                         }
                      }
-                     if (localIp != null && allInterfaceIps.contains(remoteIp)) {
+                     if (localIp != null && allInterfaceIps.contains(remoteIp)
+                           && node2RegexMatchesIp(remoteIp)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                            answerElement.add(answerElement.getBroken(), c,
                                  bgpNeighborSummary);
@@ -204,6 +241,20 @@ public class BgpSessionCheckAnswer extends Answer {
          }
       }
       addAnswerElement(answerElement);
+   }
+
+   private boolean node2RegexMatchesIp(Ip ip) {
+      Set<String> owners = _ipOwners.get(ip);
+      if (owners == null) {
+         throw new BatfishException("Expected at least one owner of ip: "
+               + ip.toString());
+      }
+      for (String owner : owners) {
+         if (_node2Regex.matcher(owner).matches()) {
+            return true;
+         }
+      }
+      return false;
    }
 
 }

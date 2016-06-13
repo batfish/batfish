@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -71,7 +70,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
-   private transient Set<BgpAdvertisement> _bgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
    private BgpProcess _bgpProcess;
 
@@ -105,33 +104,33 @@ public final class Configuration extends ComparableStructure<String> {
 
    private IsisProcess _isisProcess;
 
-   private transient Set<BgpAdvertisement> _originatedAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
 
-   private transient Set<BgpAdvertisement> _originatedEbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
 
-   private transient Set<BgpAdvertisement> _originatedIbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
 
    private OspfProcess _ospfProcess;
 
    private NavigableMap<String, PolicyMap> _policyMaps;
 
-   private transient Set<BgpAdvertisement> _receivedAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
-   private transient Set<BgpAdvertisement> _receivedEbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
 
-   private transient Set<BgpAdvertisement> _receivedIbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
 
    private RoleSet _roles;
 
    private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
-   private transient Set<PrecomputedRoute> _routes;
+   private transient NavigableSet<PrecomputedRoute> _routes;
 
-   private transient Set<BgpAdvertisement> _sentAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
 
-   private transient Set<BgpAdvertisement> _sentEbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
 
-   private transient Set<BgpAdvertisement> _sentIbgpAdvertisements;
+   private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
    private NavigableSet<StaticRoute> _staticRoutes;
 
@@ -165,7 +164,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getBgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
       return _bgpAdvertisements;
    }
 
@@ -175,7 +174,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(COMMUNITIES_VAR)
-   public Set<Long> getCommunities() {
+   public NavigableSet<Long> getCommunities() {
       return _communities;
    }
 
@@ -200,7 +199,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
-   public Set<GeneratedRoute> getGeneratedRoutes() {
+   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
@@ -255,17 +254,17 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getOriginatedAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
       return _originatedAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
       return _originatedEbgpAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
       return _originatedIbgpAdvertisements;
    }
 
@@ -280,17 +279,17 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getReceivedAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
       return _receivedAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getReceivedEbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
       return _receivedEbgpAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getReceivedIbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
       return _receivedIbgpAdvertisements;
    }
 
@@ -305,27 +304,27 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonIgnore
-   public Set<PrecomputedRoute> getRoutes() {
+   public NavigableSet<PrecomputedRoute> getRoutes() {
       return _routes;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getSentAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
       return _sentAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getSentEbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
       return _sentEbgpAdvertisements;
    }
 
    @JsonIgnore
-   public Set<BgpAdvertisement> getSentIbgpAdvertisements() {
+   public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
    }
 
    @JsonProperty(STATIC_ROUTES_VAR)
-   public Set<StaticRoute> getStaticRoutes() {
+   public NavigableSet<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
    }
 

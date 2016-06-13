@@ -16,18 +16,18 @@ import org.batfish.main.Batfish;
 public class NeighborsAnswer extends Answer {
 
    public NeighborsAnswer(Batfish batfish, NeighborsQuestion question) {
-      Pattern dstNodeRegex;
-      Pattern srcNodeRegex;
+      Pattern node1Regex;
+      Pattern node2Regex;
 
       try {
-         dstNodeRegex = Pattern.compile(question.getDstNodeRegex());
-         srcNodeRegex = Pattern.compile(question.getSrcNodeRegex());
+         node1Regex = Pattern.compile(question.getNode1Regex());
+         node2Regex = Pattern.compile(question.getNode2Regex());
       }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                String.format(
                      "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                     question.getDstNodeRegex(), question.getSrcNodeRegex()), e);
+                     question.getNode1Regex(), question.getNode2Regex()), e);
       }
 
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
@@ -38,9 +38,9 @@ public class NeighborsAnswer extends Answer {
                batfish.loadConfigurations(), batfish.getEnvSettings());
 
          for (Edge edge : topology.getEdges()) {
-            Matcher srcMatcher = srcNodeRegex.matcher(edge.getNode1());
-            Matcher dstMatcher = dstNodeRegex.matcher(edge.getNode2());
-            if (srcMatcher.matches() && dstMatcher.matches()) {
+            Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
+            Matcher node2Matcher = node2Regex.matcher(edge.getNode2());
+            if (node1Matcher.matches() && node2Matcher.matches()) {
                answerElement.addIpEdge(edge);
             }
          }

@@ -17,11 +17,21 @@ public class BgpSessionCheckQuestion extends Question {
 
    private static final String FOREIGN_BGP_GROUPS_VAR = "foreignBgpGroups";
 
+   private static final String NODE1_REGEX_VAR = "node1Regex";
+
+   private static final String NODE2_REGEX_VAR = "node2Regex";
+
    private Set<String> _foreignBgpGroups;
+
+   private String _node1Regex;
+
+   private String _node2Regex;
 
    public BgpSessionCheckQuestion() {
       super(QuestionType.BGP_SESSION_CHECK);
       _foreignBgpGroups = new TreeSet<String>();
+      _node1Regex = ".*";
+      _node2Regex = ".*";
    }
 
    @Override
@@ -37,6 +47,16 @@ public class BgpSessionCheckQuestion extends Question {
    @JsonProperty(FOREIGN_BGP_GROUPS_VAR)
    public Set<String> getForeignBgpGroups() {
       return _foreignBgpGroups;
+   }
+
+   @JsonProperty(NODE1_REGEX_VAR)
+   public String getNode1Regex() {
+      return _node1Regex;
+   }
+
+   @JsonProperty(NODE2_REGEX_VAR)
+   public String getNode2Regex() {
+      return _node2Regex;
    }
 
    @Override
@@ -65,6 +85,12 @@ public class BgpSessionCheckQuestion extends Question {
                      new TypeReference<Set<String>>() {
                      }));
                break;
+            case NODE1_REGEX_VAR:
+               setNode1Regex(parameters.getString(paramKey));
+               break;
+            case NODE2_REGEX_VAR:
+               setNode2Regex(parameters.getString(paramKey));
+               break;
             default:
                throw new BatfishException("Unknown key in "
                      + getClass().getSimpleName() + ": " + paramKey);
@@ -75,4 +101,13 @@ public class BgpSessionCheckQuestion extends Question {
          }
       }
    }
+
+   public void setNode1Regex(String regex) {
+      _node1Regex = regex;
+   }
+
+   public void setNode2Regex(String regex) {
+      _node2Regex = regex;
+   }
+
 }
