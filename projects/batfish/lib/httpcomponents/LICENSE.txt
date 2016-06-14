@@ -1,1 +1,0 @@
-../../../../lib/httpcomponents/LICENSE.txt
