@@ -11,6 +11,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -37,11 +38,15 @@ public class ReachabilityQuestion extends Question {
 
    private static final String IP_PROTO_RANGE_VAR = "ipProtoRange";
 
+   private static final String REACHABILITY_TYPE_VAR = "type";
+
    private static final String SRC_PORT_RANGE_VAR = "srcPortRange";
 
    private static final String SRC_PREFIXES_VAR = "srcPrefixes";
 
    private Set<ForwardingAction> _actions;
+
+   private boolean _differential;
 
    private Set<SubRange> _dstPortRange;
 
@@ -56,6 +61,8 @@ public class ReachabilityQuestion extends Question {
    private String _ingressNodeRegex;
 
    private Set<SubRange> _ipProtocolRange;
+
+   private ReachabilityType _reachabilityType;
 
    private Set<SubRange> _srcPortRange;
 
@@ -73,6 +80,7 @@ public class ReachabilityQuestion extends Question {
       _icmpType = IcmpType.UNSET;
       _ingressNodeRegex = ".*";
       _ipProtocolRange = new TreeSet<SubRange>();
+      _reachabilityType = ReachabilityType.STANDARD;
       _srcPortRange = new TreeSet<SubRange>();
       _srcPrefixes = new TreeSet<Prefix>();
    }
@@ -89,7 +97,7 @@ public class ReachabilityQuestion extends Question {
 
    @Override
    public boolean getDifferential() {
-      return false;
+      return _differential;
    }
 
    @JsonProperty(DST_PORT_RANGE_VAR)
@@ -127,6 +135,11 @@ public class ReachabilityQuestion extends Question {
       return _ipProtocolRange;
    }
 
+   @JsonProperty(REACHABILITY_TYPE_VAR)
+   public ReachabilityType getReachabilityType() {
+      return _reachabilityType;
+   }
+
    @JsonProperty(SRC_PORT_RANGE_VAR)
    public Set<SubRange> getSrcPortRange() {
       return _srcPortRange;
@@ -142,34 +155,42 @@ public class ReachabilityQuestion extends Question {
       return true;
    }
 
+   @JsonProperty(ACTIONS_VAR)
    public void setActions(Set<ForwardingAction> actionSet) {
       _actions = actionSet;
    }
 
+   @JsonProperty(DST_PORT_RANGE_VAR)
    public void setDstPortRange(Set<SubRange> rangeSet) {
       _dstPortRange = rangeSet;
    }
 
+   @JsonProperty(DST_PREFIXES_VAR)
    public void setDstPrefixes(Set<Prefix> prefixSet) {
       _dstPrefixes = prefixSet;
    }
 
+   @JsonProperty(FINAL_NODE_REGEX_VAR)
    public void setFinalNodeRegex(String regex) {
       _finalNodeRegex = regex;
    }
 
+   @JsonProperty(ICMP_CODE_VAR)
    public void setIcmpCode(int icmpCode) {
       _icmpCode = icmpCode;
    }
 
+   @JsonProperty(ICMP_TYPE_VAR)
    public void setIcmpType(int icmpType) {
       _icmpType = icmpType;
    }
 
+   @JsonProperty(INGRESS_NODE_REGEX_VAR)
    public void setIngressNodeRegex(String regex) {
       _ingressNodeRegex = regex;
    }
 
+   @JsonProperty(IP_PROTO_RANGE_VAR)
    public void setIpProtocolRange(Set<SubRange> rangeSet) {
       _ipProtocolRange = rangeSet;
    }
@@ -221,6 +242,10 @@ public class ReachabilityQuestion extends Question {
                      new TypeReference<Set<SubRange>>() {
                      }));
                break;
+            case REACHABILITY_TYPE_VAR:
+               setReachabilityType(ReachabilityType.fromName(parameters
+                     .getString(paramKey)));
+               break;
             case SRC_PORT_RANGE_VAR:
                setSrcPortRange(new ObjectMapper().<Set<SubRange>> readValue(
                      parameters.getString(paramKey),
@@ -244,10 +269,32 @@ public class ReachabilityQuestion extends Question {
       }
    }
 
+   @JsonProperty(REACHABILITY_TYPE_VAR)
+   public void setReachabilityType(ReachabilityType reachabilityType) {
+      _reachabilityType = reachabilityType;
+      switch (reachabilityType) {
+      case INCREASED:
+      case MULTIPATH_DIFF:
+      case PATH_DIFF:
+      case REDUCED_REACHABILITY:
+         _differential = true;
+         break;
+      case MULTIPATH:
+      case STANDARD:
+         _differential = false;
+         break;
+      default:
+         throw new BatfishException("Invalid reachability type: "
+               + reachabilityType.reachabilityTypeName());
+      }
+   }
+
+   @JsonProperty(SRC_PORT_RANGE_VAR)
    public void setSrcPortRange(Set<SubRange> rangeSet) {
       _srcPortRange = rangeSet;
    }
 
+   @JsonProperty(SRC_PREFIXES_VAR)
    public void setSrcPrefixes(Set<Prefix> prefixSet) {
       _srcPrefixes = prefixSet;
    }

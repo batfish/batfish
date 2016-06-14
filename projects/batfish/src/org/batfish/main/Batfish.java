@@ -123,8 +123,6 @@ import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.ErrorQuestion;
 import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
 import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
-import org.batfish.datamodel.questions.LocalPathQuestion;
-import org.batfish.datamodel.questions.MultipathQuestion;
 import org.batfish.datamodel.questions.NeighborsQuestion;
 import org.batfish.datamodel.questions.NodesQuestion;
 import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
@@ -132,7 +130,6 @@ import org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion;
 import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
-import org.batfish.datamodel.questions.ReducedReachabilityQuestion;
 import org.batfish.datamodel.questions.RoutesQuestion;
 import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
 import org.batfish.datamodel.questions.TracerouteQuestion;
@@ -185,15 +182,12 @@ import org.batfish.question.CompareSameNameAnswer;
 import org.batfish.question.ErrorAnswer;
 import org.batfish.question.IpsecVpnCheckAnswer;
 import org.batfish.question.IsisLoopbacksAnswer;
-import org.batfish.question.LocalPathAnswer;
-import org.batfish.question.MultipathAnswer;
 import org.batfish.question.NeighborsAnswer;
 import org.batfish.question.NodesAnswer;
 import org.batfish.question.OspfLoopbacksAnswer;
 import org.batfish.question.PairwiseVpnConnectivityAnswer;
 import org.batfish.question.ProtocolDependenciesAnswer;
 import org.batfish.question.ReachabilityAnswer;
-import org.batfish.question.ReducedReachabilityAnswer;
 import org.batfish.question.RoutesAnswer;
 import org.batfish.question.SelfAdjacenciesAnswer;
 import org.batfish.question.TracerouteAnswer;
@@ -645,14 +639,6 @@ public class Batfish implements AutoCloseable {
                   (IsisLoopbacksQuestion) question);
             break;
 
-         case LOCAL_PATH:
-            answer = new LocalPathAnswer(this, (LocalPathQuestion) question);
-            break;
-
-         case MULTIPATH:
-            answer = new MultipathAnswer(this, (MultipathQuestion) question);
-            break;
-
          case NEIGHBORS:
             answer = new NeighborsAnswer(this, (NeighborsQuestion) question);
             break;
@@ -679,11 +665,6 @@ public class Batfish implements AutoCloseable {
          case REACHABILITY:
             answer = new ReachabilityAnswer(this,
                   (ReachabilityQuestion) question);
-            break;
-
-         case REDUCED_REACHABILITY:
-            answer = new ReducedReachabilityAnswer(this,
-                  (ReducedReachabilityQuestion) question);
             break;
 
          case ROUTES:

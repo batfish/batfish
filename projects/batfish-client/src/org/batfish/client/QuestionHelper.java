@@ -41,10 +41,6 @@ public class QuestionHelper {
          return new IpsecVpnCheckQuestion();
       case ISIS_LOOPBACKS:
          return new IsisLoopbacksQuestion();
-      case LOCAL_PATH:
-         return new LocalPathQuestion();
-      case MULTIPATH:
-         return new MultipathQuestion();
       case NEIGHBORS:
          return new NeighborsQuestion();
       case NODES:
@@ -57,8 +53,6 @@ public class QuestionHelper {
          return new ProtocolDependenciesQuestion();
       case REACHABILITY:
          return new ReachabilityQuestion();
-      case REDUCED_REACHABILITY:
-         return new ReducedReachabilityQuestion();
       case ROUTES:
          return new RoutesQuestion();
       case SELF_ADJACENCIES:
