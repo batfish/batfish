@@ -1,7 +1,6 @@
 {
 	"Announcements": [
 		{
-	   "@id" : 1,
       "type" : "bgp_to",
       "network" : "4.0.0.0/8",
       "nextHopIp" : "10.14.22.4",

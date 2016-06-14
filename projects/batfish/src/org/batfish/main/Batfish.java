@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -3147,7 +3148,15 @@ public class Batfish implements AutoCloseable {
             ObjectMapper mapper = new ObjectMapper();
 
             for (int index = 0; index < announcements.length(); index++) {
-               JSONObject announcement = announcements.getJSONObject(index);
+               JSONObject announcement = new JSONObject();
+               announcement.put("@id", index);
+               JSONObject announcementSrc = announcements.getJSONObject(index);
+               for (Iterator<?> i = announcementSrc.keys(); i.hasNext();) {
+                  String key = (String) i.next();
+                  if (!key.equals("@id")) {
+                     announcement.put(key, announcementSrc.get(key));
+                  }
+               }
                BgpAdvertisement bgpAdvertisement = mapper.readValue(
                      announcement.toString(), BgpAdvertisement.class);
                allCommunities.addAll(bgpAdvertisement.getCommunities());
