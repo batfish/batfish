@@ -74,6 +74,9 @@ public class UniqueIpAssignmentsQuestion extends Question {
             case DIFF_VAR:
                setDifferential(parameters.getBoolean(paramKey));
                break;
+            case NODE_REGEX_VAR:
+               setNodeRegex(parameters.getString(paramKey));
+               break;
             case VERBOSE_VAR:
                setVerbose(parameters.getBoolean(paramKey));
                break;
