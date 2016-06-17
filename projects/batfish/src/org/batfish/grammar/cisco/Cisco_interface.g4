@@ -40,6 +40,7 @@ if_stanza
 :
    default_gw_if_stanza
    | description_if_stanza
+   | if_switchport_mode_dot1q_tunnel
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_dhcp_if_stanza
@@ -397,6 +398,7 @@ null_block_if_stanza
       | NAMEIF
       | NEGOTIATE
       | NEGOTIATION
+      | NMSP
       |
       (
          NTP BROADCAST
@@ -517,6 +519,11 @@ switchport_access_if_stanza
 switchport_mode_access_stanza
 :
    SWITCHPORT MODE ACCESS NEWLINE
+;
+
+if_switchport_mode_dot1q_tunnel
+:
+   SWITCHPORT MODE DOT1Q_TUNNEL NEWLINE
 ;
 
 switchport_mode_dynamic_auto_stanza

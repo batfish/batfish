@@ -855,7 +855,7 @@ pim_rp_address
    (
       OVERRIDE
       | name = variable
-   ) NEWLINE
+   )? NEWLINE
 ;
 
 pim_rp_announce_filter

@@ -1661,6 +1661,11 @@ DOT1Q
    'dot1q'
 ;
 
+DOT1Q_TUNNEL
+:
+   'dot1q-tunnel'
+;
+
 DROP
 :
    'drop'
@@ -3771,6 +3776,11 @@ NHOP_ONLY
 NLS
 :
    'nls'
+;
+
+NMSP
+:
+   'nmsp'
 ;
 
 NNTP

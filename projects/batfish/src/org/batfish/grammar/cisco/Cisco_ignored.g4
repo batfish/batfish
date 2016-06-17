@@ -213,6 +213,7 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      | WEBVPN
       | WRED_PROFILE
    ) ~NEWLINE* NEWLINE
    (
@@ -242,6 +243,7 @@ null_block_substanza
          | AESA
          | ALERT_GROUP
          | ANYCONNECT
+         | ANYCONNECT_ESSENTIALS
          | APPLICATION
          | ARCHIVE_LENGTH
          | ARCHIVE_SIZE
@@ -392,6 +394,7 @@ null_block_substanza
          | ISAKMP
          | ISSUER_NAME
          | KEEPALIVE_ENABLE
+         | KEEPOUT
          | KEY_STRING
          | KEYPAIR
          | KEYPATH
@@ -565,6 +568,7 @@ null_block_substanza
          | TRUST
          | TUNNEL
          | TUNNEL_GROUP
+         | TUNNEL_GROUP_LIST
          | UDP_JITTER
          | UID
          | UNTAGGED
@@ -583,7 +587,6 @@ null_block_substanza
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
          | VTY_POOL
-         | WEBVPN
          | WINS_SERVER
          | WITHOUT_CSD
          | WRED
@@ -634,8 +637,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ACTION
       | ACTIVE
       | ALIAS
-      | ANYCONNECT
-      | ANYCONNECT_ESSENTIALS
       | AP
       | AQM_REGISTER_FNF
       | ARP
@@ -681,7 +682,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DSPFARM
       | DSS
       | DYNAMIC_ACCESS_POLICY_RECORD
-      | ENABLE
       | ENCR
       | ENROLLMENT
       | ENVIRONMENT
@@ -796,7 +796,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
          )
       )
       | ISDN
-      | KEEPOUT
       | KEYPAIR
       | KEYRING
       | LDAP_BASE_DN
@@ -904,7 +903,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | TLS_PROXY
       | TRANSLATE
       | TRANSPORT
-      | TUNNEL_GROUP_LIST
       | TYPE
       | UDLD
       | UNABLE
@@ -928,7 +926,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | VPN
       | VTP
       | VOICE_CARD
-      | WEBVPN
       | WLAN
       | WSMA
       | X25
