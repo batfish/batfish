@@ -8,13 +8,13 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
-   
+
    public enum RunMode {
       batch,
       genquestions,
       interactive
    }
-   
+
    private static final String ARG_API_KEY = "apikey";
    public static final String ARG_BATFISH_LOG_LEVEL = "batfishloglevel";
    public static final String ARG_COMMAND_FILE = "cmdfile";
@@ -25,7 +25,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_NO_SANITY_CHECK = "nosanitycheck";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
-   private static final String ARG_QUESTIONS_DIR = "questionsdir";   
+   private static final String ARG_QUESTIONS_DIR = "questionsdir";
    public static final String ARG_RUN_MODE = "runmode";
    public static final String ARG_TESTRIG_DIR = "testrigdir";
    public static final String ARG_TESTRIG_ID = "testrigid";
@@ -117,7 +117,7 @@ public class Settings extends BaseSettings {
    public boolean getSanityCheck() {
       return _sanityCheck;
    }
-   
+
    public String getTestrigDir() {
       return _testrigDir;
    }
@@ -159,7 +159,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
 
-      addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish", "batfish_loglevel");
+      addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish",
+            "batfish_loglevel");
 
       addOption(ARG_CONTAINER_ID, "container to attach to", "container_id");
 
@@ -171,7 +172,8 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_LOG_LEVEL, "log level", "loglevel");
 
-      addBooleanOption(ARG_NO_SANITY_CHECK, "do not check if container, testrig etc. are set. (helps debugging.)");
+      addBooleanOption(ARG_NO_SANITY_CHECK,
+            "do not check if container, testrig etc. are set. (helps debugging.)");
 
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
@@ -179,8 +181,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_QUESTIONS_DIR, "directory to output questions in",
             "questions_dir");
 
-      addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive|genquestions)",
-            "run_mode");
+      addOption(ARG_RUN_MODE,
+            "which mode to run in (batch|interactive|genquestions)", "run_mode");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 

@@ -1,17 +1,12 @@
 package org.batfish.datamodel.questions;
 
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.NodeType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutesQuestion extends Question {
 
@@ -31,6 +26,16 @@ public class RoutesQuestion extends Question {
 
    @Override
    public boolean getDifferential() {
+      return false;
+   }
+
+   @JsonProperty(NODE_REGEX_VAR)
+   public String getNodeRegex() {
+      return _nodeRegex;
+   }
+
+   @Override
+   public boolean getTraffic() {
       return false;
    }
 
@@ -54,16 +59,6 @@ public class RoutesQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
-   }
-
-   @JsonProperty(NODE_REGEX_VAR)
-   public String getNodeRegex() {
-      return _nodeRegex;
-   }
-
-   @Override
-   public boolean getTraffic() {
-      return false;
    }
 
    public void setNodeRegex(String nodeRegex) {

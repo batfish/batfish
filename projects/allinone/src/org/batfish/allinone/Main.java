@@ -82,7 +82,8 @@ public class Main {
 				Arrays.toString(argArray));
 		
 		Thread thread = new Thread("batfishThread") {
-			public void run() {
+			@Override
+         public void run() {
 			   try {
 			      org.batfish.main.Driver.main(argArray, _logger);
             }
@@ -103,7 +104,8 @@ public class Main {
 				Arrays.toString(argArray));		
 
 		Thread thread = new Thread("coordinatorThread") {
-			public void run() {
+			@Override
+         public void run() {
 			   try {
 			      org.batfish.coordinator.Main.main(argArray, _logger);
 			   }
