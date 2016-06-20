@@ -382,6 +382,12 @@ public class Batfish implements AutoCloseable {
                   .toString());
             diffEnvSettings.setPrecomputedRoutesPath(diffEnvPath.resolve(
                   BfConsts.RELPATH_PRECOMPUTED_ROUTES).toString());
+            diffEnvSettings.setDeltaVendorConfigurationsDir(diffEnvPath
+                  .resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR)
+                  .toString());
+            diffEnvSettings.setDeltaCompiledConfigurationsDir(diffEnvPath
+                  .resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR)
+                  .toString());
             if (settings.getDiffActive()) {
                settings.setActiveEnvironmentSettings(diffEnvSettings);
             }
@@ -941,6 +947,27 @@ public class Batfish implements AutoCloseable {
 
    @Override
    public void close() throws Exception {
+   }
+
+   private Answer compileDeltaConfigurations(EnvironmentSettings envSettings) {
+      Answer answer = new Answer();
+      String deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
+      String vendorConfigsDir = envSettings.getDeltaVendorConfigurationsDir();
+      String indepConfigsDir = envSettings.getDeltaCompiledConfigurationsDir();
+      if (deltaConfigurationsDir != null) {
+         File deltaConfigurationsDirAsFile = new File(deltaConfigurationsDir);
+         if (deltaConfigurationsDirAsFile.exists()) {
+            answer.append(serializeVendorConfigs(envSettings.getEnvPath(),
+                  vendorConfigsDir));
+            answer.append(serializeIndependentConfigs(vendorConfigsDir,
+                  indepConfigsDir));
+         }
+         return answer;
+      }
+      else {
+         throw new BatfishException(
+               "Delta configurations directory cannot be null");
+      }
    }
 
    public Set<Flow> computeCompositeNodOutput(List<CompositeNodJob> jobs,
@@ -1670,31 +1697,19 @@ public class Batfish implements AutoCloseable {
    }
 
    private Map<String, Configuration> getDeltaConfigurations(
-         EnvironmentSettings envSettings, Answer answer) {
-      String deltaConfigurationsDir = envSettings.getDeltaConfigurationsDir();
-      if (deltaConfigurationsDir != null) {
-         File deltaConfigurationsDirAsFile = new File(deltaConfigurationsDir);
-         if (deltaConfigurationsDirAsFile.exists()) {
-            File configParentDir = deltaConfigurationsDirAsFile.getParentFile();
-            Map<File, String> deltaConfigsText = readConfigurationFiles(
-                  configParentDir.toString(),
-                  BfConsts.RELPATH_CONFIGURATIONS_DIR);
-            // todo: something about answer
-            Map<String, VendorConfiguration> vendorDeltaConfigs = parseVendorConfigurations(
-                  deltaConfigsText, new ParseVendorConfigurationAnswerElement());
-
-            // convert the map to the right type
-            Map<String, GenericConfigObject> castedConfigs = new HashMap<String, GenericConfigObject>();
-            for (String name : vendorDeltaConfigs.keySet()) {
-               castedConfigs.put(name, vendorDeltaConfigs.get(name));
-            }
-            // todo: something with answer
-            Map<String, Configuration> deltaConfigs = convertConfigurations(
-                  castedConfigs, new ConvertConfigurationAnswerElement());
-            return deltaConfigs;
-         }
+         EnvironmentSettings envSettings) {
+      if (envSettings == _baseEnvSettings) {
+         return Collections.emptyMap();
       }
-      return Collections.<String, Configuration> emptyMap();
+      File deltaIndepDir = new File(
+            envSettings.getDeltaCompiledConfigurationsDir());
+      if (deltaIndepDir.exists()) {
+         return deserializeConfigurations(envSettings
+               .getDeltaCompiledConfigurationsDir());
+      }
+      else {
+         throw new BatfishException("Missing compiled delta configurations");
+      }
    }
 
    public EnvironmentSettings getDiffEnvSettings() {
@@ -2471,7 +2486,7 @@ public class Batfish implements AutoCloseable {
             .getSerializeIndependentPath());
       processNodeBlacklist(configurations, envSettings);
       processInterfaceBlacklist(configurations, envSettings);
-      processDeltaConfigurations(configurations, envSettings, new Answer());
+      processDeltaConfigurations(configurations, envSettings);
       disableUnusableVpnInterfaces(configurations, envSettings);
       return configurations;
    }
@@ -3101,9 +3116,8 @@ public class Batfish implements AutoCloseable {
 
    private void processDeltaConfigurations(
          Map<String, Configuration> configurations,
-         EnvironmentSettings envSettings, Answer answer) {
-      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(
-            envSettings, answer);
+         EnvironmentSettings envSettings) {
+      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(envSettings);
       configurations.putAll(deltaConfigurations);
       // TODO: deal with topological changes
    }
@@ -3446,6 +3460,11 @@ public class Batfish implements AutoCloseable {
          String inputPath = _settings.getSerializeVendorPath();
          String outputPath = _settings.getSerializeIndependentPath();
          answer.append(serializeIndependentConfigs(inputPath, outputPath));
+         action = true;
+      }
+
+      if (_settings.getCompileDiffEnvironment()) {
+         answer.append(compileDeltaConfigurations(_diffEnvSettings));
          action = true;
       }
 

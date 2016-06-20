@@ -938,6 +938,15 @@ public class BfCoordWorkHelper {
       }
    }
 
+   public WorkItem getWorkItemCompileDiffEnvironment(String containerName,
+         String testrigName, String envName, String diffEnvName) {
+      WorkItem wItem = new WorkItem(containerName, testrigName);
+      wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      return wItem;
+   }
+
    // private String uriEncode(String input) {
    // return UriComponent.encode(input,
    // UriComponent.Type.QUERY_PARAM_SPACE_ENCODED);

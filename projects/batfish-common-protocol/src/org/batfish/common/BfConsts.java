@@ -41,6 +41,7 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
 
    public static final String COMMAND_ANSWER = "answer";
+   public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
    public static final String COMMAND_DUMP_DP = "dp";
    public static final String COMMAND_GET_HISTORY = "history";
    public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
@@ -55,6 +56,7 @@ public class BfConsts {
    public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
+   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
@@ -79,9 +81,9 @@ public class BfConsts {
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
-   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
    public static final String RELPATH_NLS_INPUT_FILE = "nls_input.pl";
    public static final String RELPATH_NLS_OUTPUT_DIR = "nls_output";
+   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
    public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH = "pdgraphs";
@@ -107,7 +109,7 @@ public class BfConsts {
    public static final String SVC_RUN_TASK_RSC = "run";
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
+
    public static final String SVC_TASKID_KEY = "taskid";
 
-   public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
 }

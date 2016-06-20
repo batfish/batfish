@@ -17,7 +17,11 @@ public final class Settings extends BaseSettings {
 
       private String _dataPlanePath;
 
+      private String _deltaCompiledConfigurationsDir;
+
       private String _deltaConfigurationsDir;
+
+      private String _deltaVendorConfigurationsDir;
 
       private String _edgeBlacklistPath;
 
@@ -53,8 +57,16 @@ public final class Settings extends BaseSettings {
          return _dataPlanePath;
       }
 
+      public String getDeltaCompiledConfigurationsDir() {
+         return _deltaCompiledConfigurationsDir;
+      }
+
       public String getDeltaConfigurationsDir() {
          return _deltaConfigurationsDir;
+      }
+
+      public String getDeltaVendorConfigurationsDir() {
+         return _deltaVendorConfigurationsDir;
       }
 
       public String getEdgeBlacklistPath() {
@@ -117,8 +129,18 @@ public final class Settings extends BaseSettings {
          _dataPlanePath = path;
       }
 
+      public void setDeltaCompiledConfigurationsDir(
+            String deltaCompiledConfigurationsDir) {
+         _deltaCompiledConfigurationsDir = deltaCompiledConfigurationsDir;
+      }
+
       public void setDeltaConfigurationsDir(String deltaConfigurationsDir) {
          _deltaConfigurationsDir = deltaConfigurationsDir;
+      }
+
+      public void setDeltaVendorConfigurationsDir(
+            String deltaVendorConfigurationsDir) {
+         _deltaVendorConfigurationsDir = deltaVendorConfigurationsDir;
       }
 
       public void setEdgeBlacklistPath(String edgeBlacklistPath) {
@@ -322,6 +344,8 @@ public final class Settings extends BaseSettings {
    private boolean _buildPredicateInfo;
 
    private boolean _canExecute;
+
+   private boolean _compileDiffEnvironment;
 
    private String _convertAnswerPath;
 
@@ -564,6 +588,10 @@ public final class Settings extends BaseSettings {
 
    public boolean getBuildPredicateInfo() {
       return _buildPredicateInfo;
+   }
+
+   public boolean getCompileDiffEnvironment() {
+      return _compileDiffEnvironment;
    }
 
    public String getConvertAnswerPath() {
@@ -1004,6 +1032,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
+      setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
       setDefaultProperty(BfConsts.COMMAND_GET_HISTORY, false);
       setDefaultProperty(BfConsts.COMMAND_KEEP_BLOCKS, false);
@@ -1246,6 +1275,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
+      addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
+            "compile configurations for differential environment");
+
       addBooleanOption(BfConsts.COMMAND_DUMP_DP,
             "compute and serialize data plane");
 
@@ -1310,6 +1342,7 @@ public final class Settings extends BaseSettings {
       _answerJsonPath = getStringOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
       _autoBaseDir = getStringOptionValue(BfConsts.ARG_AUTO_BASE_DIR);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
+      _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
       _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);

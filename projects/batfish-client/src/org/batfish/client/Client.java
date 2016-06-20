@@ -48,6 +48,7 @@ public class Client {
 	private static final String COMMAND_ANSWER = "answer";
 	private static final String COMMAND_ANSWER_DIFF = "answer-diff";
 	private static final String COMMAND_CAT = "cat";
+	private static final String COMMAND_CHECK_API_KEY = "checkapikey";
 	private static final String COMMAND_CLEAR_SCREEN = "cls";
 	private static final String COMMAND_DEL_CONTAINER = "del-container";
 	private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
@@ -61,7 +62,6 @@ public class Client {
 	private static final String COMMAND_GET = "get";
 	private static final String COMMAND_GET_DIFF = "get-diff";
 	private static final String COMMAND_HELP = "help";
-	private static final String COMMAND_CHECK_API_KEY = "checkapikey";
 	private static final String COMMAND_INIT_CONTAINER = "init-container";
 	private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
 	private static final String COMMAND_INIT_TESTRIG = "init-testrig";
@@ -199,10 +199,6 @@ public class Client {
 
 	private BfCoordWorkHelper _workHelper;
 
-	public Client(String[] args) throws Exception {
-		this(new Settings(args));
-	}
-
 	public Client(Settings settings) {
 		_settings = settings;
 
@@ -250,26 +246,8 @@ public class Client {
 
 	}
 
-	private boolean answerType(String questionType, String paramsLine, boolean isDiff)
-			throws Exception {
-
-		Map<String, String> parameters = parseParams(paramsLine);
-
-		String questionString = QuestionHelper.getQuestionString(questionType);
-		_logger.debugf("Question Json:\n%s\n", questionString);
-
-		String parametersString = QuestionHelper.getParametersString(parameters);
-		_logger.debugf("Parameters Json:\n%s\n", parametersString);
-
-		File questionFile = createTempFile("question", questionString);
-
-		boolean result = answerFile(questionFile.getAbsolutePath(), parametersString, isDiff);
-
-		if (questionFile != null) {
-			questionFile.delete();
-		}
-
-		return result;
+	public Client(String[] args) throws Exception {
+		this(new Settings(args));
 	}
 
 	private boolean answerFile(String questionFile, String paramsLine, boolean isDiff)
@@ -308,6 +286,41 @@ public class Client {
 							_currDiffEnv);
 						return execute(wItemAs);
 	}
+
+	private boolean answerType(String questionType, String paramsLine, boolean isDiff)
+			throws Exception {
+
+		Map<String, String> parameters = parseParams(paramsLine);
+
+		String questionString = QuestionHelper.getQuestionString(questionType);
+		_logger.debugf("Question Json:\n%s\n", questionString);
+
+		String parametersString = QuestionHelper.getParametersString(parameters);
+		_logger.debugf("Parameters Json:\n%s\n", parametersString);
+
+		File questionFile = createTempFile("question", questionString);
+
+		boolean result = answerFile(questionFile.getAbsolutePath(), parametersString, isDiff);
+
+		if (questionFile != null) {
+			questionFile.delete();
+		}
+
+		return result;
+	}
+
+	private boolean compileDiffEnvironment() throws Exception {
+      if (!isSetDiffEnvironment() ||
+            !isSetTestrig()   ||
+            !isSetContainer(true))
+         return false;
+
+      WorkItem wItemGenDdp = _workHelper
+            .getWorkItemCompileDiffEnvironment(_currContainerName,
+                  _currTestrigName, _currEnv, _currDiffEnv);
+
+      return execute(wItemGenDdp);
+   }
 
 	private File createTempFile(String filePrefix, String content)
 			throws IOException {
@@ -466,15 +479,6 @@ public class Client {
 		}
 	}
 
-	private List<String> getCommandParameters(String[] words, int numOptions) {
-		List<String> parameters = new LinkedList<String>();
-
-		for (int index=numOptions+1; index < words.length; index++)
-			parameters.add(words[index]);
-
-		return parameters;
-	}
-
 	private List<String> getCommandOptions(String[] words) {
 		List<String> options = new LinkedList<String>();
 
@@ -487,6 +491,15 @@ public class Client {
 		}
 
 		return options;
+	}
+
+	private List<String> getCommandParameters(String[] words, int numOptions) {
+		List<String> parameters = new LinkedList<String>();
+
+		for (int index=numOptions+1; index < words.length; index++)
+			parameters.add(words[index]);
+
+		return parameters;
 	}
 
 	public BatfishLogger getLogger() {
@@ -559,6 +572,7 @@ public class Client {
 		return true;
 	}
 
+
 	private Map<String, String> parseParams(String paramsLine) {
 		Map<String,String> parameters = new HashMap<String, String>();
 
@@ -583,14 +597,28 @@ public class Client {
 		return parameters;
 	}
 
-
 	private void printUsage() {
 		for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
 			_logger.output(entry.getValue() + "\n\n");
 		}
 	}
 
-	private boolean processCommand(String[] words) {
+	private boolean processCommand(String command) {
+		String line = command.trim();
+		if (line.length() == 0 || line.startsWith("#")) {
+			return true;
+		}
+		_logger.debug("Doing command: " + line + "\n");
+
+		String[] words = line.split("\\s+");
+
+		if (!validCommandUsage(words))
+			return false;
+
+		return processCommand(words);
+	}
+
+   private boolean processCommand(String[] words) {
 		try {
 			List<String> options = getCommandOptions(words);
 			List<String> parameters = getCommandParameters(words, options.size());
@@ -766,6 +794,10 @@ public class Client {
 
 				_logger.outputf(
 						"Active delta environment is now %s\n", _currDiffEnv);
+
+				if (!compileDiffEnvironment()) {
+				   return false;
+				}
 
 				if (generateDiffDataplane) {
 					_logger.output("Generating delta dataplane\n");
@@ -963,21 +995,6 @@ public class Client {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	private boolean processCommand(String command) {
-		String line = command.trim();
-		if (line.length() == 0 || line.startsWith("#")) {
-			return true;
-		}
-		_logger.debug("Doing command: " + line + "\n");
-
-		String[] words = line.split("\\s+");
-
-		if (!validCommandUsage(words))
-			return false;
-
-		return processCommand(words);
 	}
 
 
