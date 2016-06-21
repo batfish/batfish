@@ -39,10 +39,6 @@ public class SelfAdjacenciesQuestion extends Question {
       return false;
    }
 
-   public void setNodeRegex(String nodeRegex) {
-      _nodeRegex = nodeRegex;
-   }
-
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
@@ -63,5 +59,9 @@ public class SelfAdjacenciesQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   public void setNodeRegex(String nodeRegex) {
+      _nodeRegex = nodeRegex;
    }
 }
