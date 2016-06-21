@@ -12,8 +12,6 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
 
    private SortedMap<Ip, SortedSet<NodeInterfacePair>> _allIps;
 
-   private DiffLabel _diffLabel;
-
    private SortedMap<Ip, SortedSet<NodeInterfacePair>> _enabledIps;
 
    public UniqueIpAssignmentsAnswerElement() {
@@ -35,20 +33,12 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
       return _allIps;
    }
 
-   public DiffLabel getDiffLabel() {
-      return _diffLabel;
-   }
-
    public SortedMap<Ip, SortedSet<NodeInterfacePair>> getEnabledIps() {
       return _enabledIps;
    }
 
    public void setAllIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> allIps) {
       _allIps = allIps;
-   }
-
-   public void setDiffLabel(DiffLabel diffLabel) {
-      _diffLabel = diffLabel;
    }
 
    public void setEnabledIps(

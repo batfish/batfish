@@ -63,7 +63,7 @@ public class CommonUtil {
          return true;
       }
       catch (Exception e) {
-         throw new BatfishException("JSON equlality check failed: "
+         throw new BatfishException("JSON equality check failed: "
                + e.getMessage() + e.getStackTrace());
       }
       catch (AssertionError err) {
