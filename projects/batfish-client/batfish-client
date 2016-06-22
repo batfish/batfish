@@ -6,6 +6,9 @@ BATFISH_CLIENT_JAVA_ARGS=
 if batfish_cygwin; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
    BATFISH_CLIENT_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
+   stty -icanon min 1 -echo
 fi
 java $BATFISH_CLIENT_JAVA_ARGS -jar "$BATFISH_CLIENT_JAR" "$@"
-
+if batfish_cygwin; then
+   stty icanon echo
+fi

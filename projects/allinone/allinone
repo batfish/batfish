@@ -6,5 +6,9 @@ ALLINONE_JAVA_ARGS=
 if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w $ALLINONE_JAR)"
    ALLINONE_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
+   stty -icanon min 1 -echo
 fi
 java $ALLINONE_JAVA_ARGS -jar "$ALLINONE_JAR" "$@"
+if batfish_cygwin; then
+   stty icanon echo
+fi
