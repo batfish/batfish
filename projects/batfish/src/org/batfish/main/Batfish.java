@@ -469,9 +469,19 @@ public class Batfish implements AutoCloseable {
                envName, questionName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
+         TestrigSettings deltaTestrigSettings = settings
+               .getDeltaTestrigSettings();
+         if (deltaTestrig != null && deltaEnvName == null) {
+            deltaEnvName = envName;
+            settings.setDeltaEnvironmentName(envName);
+         }
+         else if (deltaTestrig == null && deltaEnvName != null) {
+            deltaTestrig = testrig;
+            settings.setDeltaTestrig(testrig);
+         }
          if (deltaTestrig != null) {
-            applyBaseDir(settings.getDeltaTestrigSettings(), containerDir,
-                  deltaTestrig, deltaEnvName, questionName);
+            applyBaseDir(deltaTestrigSettings, containerDir, deltaTestrig,
+                  deltaEnvName, questionName);
          }
          if (settings.getDiffActive()) {
             settings.setActiveTestrigSettings(settings
@@ -814,8 +824,8 @@ public class Batfish implements AutoCloseable {
       checkConfigurations(_testrigSettings);
    }
 
-   public void checkConfigurations(TestrigSettings settings) {
-      Path path = settings.getSerializeIndependentPath();
+   public void checkConfigurations(TestrigSettings testrigSettings) {
+      Path path = testrigSettings.getSerializeIndependentPath();
       if (!Files.exists(path)) {
          throw new CleanBatfishException(
                "Missing compiled vendor-independent configurations for this test-rig\n");

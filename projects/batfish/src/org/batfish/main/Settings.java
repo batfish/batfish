@@ -652,6 +652,7 @@ public final class Settings extends BaseSettings {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
       _testrigSettings = new TestrigSettings();
+      _deltaTestrigSettings = new TestrigSettings();
       initConfigDefaults();
       initOptions();
       parseCommandLine(args);

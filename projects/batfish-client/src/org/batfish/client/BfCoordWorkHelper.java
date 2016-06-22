@@ -346,6 +346,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       return wItem;
    }
 
