@@ -170,7 +170,7 @@ public class Client {
       descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
             + " <container-name>\n" + "\t Set the current container");
       descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
-            + " <environment-name>\n"
+            + " <environment-name> [testrig-name]\n"
             + "\t Set the current differential environment");
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
             + " <debug|info|output|warn|error>\n"
@@ -206,6 +206,7 @@ public class Client {
    private Settings _settings;
 
    private BfCoordWorkHelper _workHelper;
+   private String _currDeltaTestrig;
 
    public Client(Settings settings) {
       _settings = settings;
@@ -294,8 +295,9 @@ public class Client {
       // answer the question
       WorkItem wItemAs = (isDiff) ? _workHelper.getWorkItemAnswerDiffQuestion(
             questionName, _currContainerName, _currTestrigName, _currEnv,
-            _currDiffEnv) : _workHelper.getWorkItemAnswerQuestion(questionName,
-            _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
+            _currDeltaTestrig, _currDiffEnv) : _workHelper
+            .getWorkItemAnswerQuestion(questionName, _currContainerName,
+                  _currTestrigName, _currEnv, _currDeltaTestrig, _currDiffEnv);
       return execute(wItemAs);
    }
 
@@ -975,6 +977,9 @@ public class Client {
          }
          case COMMAND_SET_DIFF_ENV: {
             _currDiffEnv = parameters.get(0);
+            if (parameters.size() > 1) {
+               _currDeltaTestrig = parameters.get(1);
+            }
             _logger.outputf(
                   "Active differential environment is now set to %s\n",
                   _currDiffEnv);
