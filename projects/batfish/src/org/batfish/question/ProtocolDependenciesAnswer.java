@@ -2,7 +2,7 @@ package org.batfish.question;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -24,17 +24,16 @@ public class ProtocolDependenciesAnswer extends Answer {
       ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
             configurations);
       analysis.printDependencies(batfish.getLogger());
-      analysis.writeGraphs(batfish.getSettings(), batfish.getLogger());
-      String protocolDependencyGraphPath = batfish.getSettings()
+      analysis.writeGraphs(batfish, batfish.getLogger());
+      Path protocolDependencyGraphPath = batfish.getTestrigSettings()
             .getProtocolDependencyGraphPath();
-      String protocolDependencyGraphZipPath = batfish.getSettings()
+      Path protocolDependencyGraphZipPath = batfish.getTestrigSettings()
             .getProtocolDependencyGraphZipPath();
-      ZipUtility.zipFiles(protocolDependencyGraphPath,
-            protocolDependencyGraphZipPath);
+      ZipUtility.zipFiles(protocolDependencyGraphPath.toString(),
+            protocolDependencyGraphZipPath.toString());
       byte[] zipBytes;
       try {
-         zipBytes = Files.readAllBytes(Paths
-               .get(protocolDependencyGraphZipPath));
+         zipBytes = Files.readAllBytes(protocolDependencyGraphZipPath);
       }
       catch (IOException e) {
          throw new BatfishException("Could not read zip", e);

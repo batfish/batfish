@@ -1,5 +1,6 @@
 package org.batfish.graphviz;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
@@ -8,21 +9,34 @@ import org.batfish.datamodel.answers.GraphvizAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
 public final class GraphvizResult extends
-      BatfishJobResult<Map<String, byte[]>, GraphvizAnswerElement> {
+      BatfishJobResult<Map<Path, byte[]>, GraphvizAnswerElement> {
 
    private final byte[] _graphBytes;
 
-   private final String _graphFile;
+   private final Path _graphFile;
 
    private final byte[] _htmlBytes;
 
-   private final String _htmlFile;
+   private final Path _htmlFile;
 
    private final Prefix _prefix;
 
    private final byte[] _svgBytes;
 
-   private final String _svgFile;
+   private final Path _svgFile;
+
+   public GraphvizResult(long elapsedTime, Path graphFile, byte[] graphBytes,
+         Path svgFile, byte[] svgBytes, Path htmlFile, byte[] htmlBytes,
+         Prefix prefix) {
+      super(elapsedTime);
+      _graphBytes = graphBytes;
+      _graphFile = graphFile;
+      _htmlBytes = htmlBytes;
+      _htmlFile = htmlFile;
+      _prefix = prefix;
+      _svgBytes = svgBytes;
+      _svgFile = svgFile;
+   }
 
    public GraphvizResult(long elapsedTime, Prefix prefix, Throwable failureCause) {
       super(elapsedTime, failureCause);
@@ -35,21 +49,8 @@ public final class GraphvizResult extends
       _svgFile = null;
    }
 
-   public GraphvizResult(long elapsedTime, String graphFile, byte[] graphBytes,
-         String svgFile, byte[] svgBytes, String htmlFile, byte[] htmlBytes,
-         Prefix prefix) {
-      super(elapsedTime);
-      _graphBytes = graphBytes;
-      _graphFile = graphFile;
-      _htmlBytes = htmlBytes;
-      _htmlFile = htmlFile;
-      _prefix = prefix;
-      _svgBytes = svgBytes;
-      _svgFile = svgFile;
-   }
-
    @Override
-   public void applyTo(Map<String, byte[]> output, BatfishLogger logger,
+   public void applyTo(Map<Path, byte[]> output, BatfishLogger logger,
          GraphvizAnswerElement answerElement) {
       output.put(_graphFile, _graphBytes);
       output.put(_svgFile, _svgBytes);

@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +27,7 @@ import org.batfish.representation.VendorConfiguration;
 public class ParseVendorConfigurationJob extends
       BatfishJob<ParseVendorConfigurationResult> {
 
-   private File _file;
+   private Path _file;
 
    private String _fileText;
 
@@ -38,7 +38,7 @@ public class ParseVendorConfigurationJob extends
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
-         File file, Warnings warnings) {
+         Path file, Warnings warnings) {
       _settings = settings;
       _fileText = fileText;
       _file = file;
@@ -51,7 +51,7 @@ public class ParseVendorConfigurationJob extends
    public ParseVendorConfigurationResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
-      String currentPath = _file.getAbsolutePath();
+      String currentPath = _file.toAbsolutePath().toString();
       VendorConfiguration vc = null;
       BatfishCombinedParser<?, ?> combinedParser = null;
       ParserRuleContext tree = null;
@@ -213,7 +213,7 @@ public class ParseVendorConfigurationJob extends
             return new ParseVendorConfigurationResult(elapsedTime,
                   _logger.getHistory(), _file, e);
          }
-         String filename = _file.getName();
+         String filename = _file.getFileName().toString();
          String guessedHostname = filename.replaceAll("\\.(cfg|conf)$", "");
          _logger
                .redflag("\tNo hostname set! Guessing hostname from filename: \""

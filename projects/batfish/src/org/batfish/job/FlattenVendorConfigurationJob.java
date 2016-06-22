@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
@@ -15,18 +15,18 @@ public class FlattenVendorConfigurationJob extends
 
    private String _fileText;
 
-   private File _inputFile;
+   private Path _inputFile;
 
    private final BatfishLogger _logger;
 
-   private File _outputFile;
+   private Path _outputFile;
 
    private Settings _settings;
 
    private Warnings _warnings;
 
    public FlattenVendorConfigurationJob(Settings settings, String fileText,
-         File inputFile, File outputFile, Warnings warnings) {
+         Path inputFile, Path outputFile, Warnings warnings) {
       _settings = settings;
       _fileText = fileText;
       _inputFile = inputFile;
@@ -40,7 +40,7 @@ public class FlattenVendorConfigurationJob extends
    public FlattenVendorConfigurationResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
-      String inputFileAsString = _inputFile.getAbsolutePath();
+      String inputFileAsString = _inputFile.toAbsolutePath().toString();
       ConfigurationFormat format = Format
             .identifyConfigurationFormat(_fileText);
 

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +20,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -26,7 +29,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -79,6 +81,17 @@ public class CommonUtil {
       long low = Long.parseLong(parts[1]);
       long result = low + (high << 16);
       return result;
+   }
+
+   public static void createDirectories(Path path) {
+      try {
+         Files.createDirectories(path);
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Could not create directories leading up to and including '"
+                     + path.toString() + "'", e);
+      }
    }
 
    public static String escape(String offendingTokenText) {
@@ -283,6 +296,16 @@ public class CommonUtil {
       return result;
    }
 
+   public static Stream<Path> list(Path configsPath) {
+      try {
+         return Files.list(configsPath);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not list files in '"
+               + configsPath.toString() + "'", e);
+      }
+   }
+
    public static String longToCommunity(Long l) {
       Long upper = l >> 16;
       Long lower = l & 0xFFFF;
@@ -318,10 +341,10 @@ public class CommonUtil {
       return md5;
    }
 
-   public static String readFile(File file) {
+   public static String readFile(Path file) {
       String text = null;
       try {
-         text = FileUtils.readFileToString(file);
+         text = new String(Files.readAllBytes(file), "UTF-8");
       }
       catch (IOException e) {
          throw new BatfishException("Failed to read file: " + file.toString(),
@@ -425,10 +448,9 @@ public class CommonUtil {
       return sb.toString();
    }
 
-   public static void writeFile(String outputPath, String output) {
-      File outputFile = new File(outputPath);
+   public static void writeFile(Path outputPath, String output) {
       try {
-         FileUtils.write(outputFile, output);
+         Files.write(outputPath, output.getBytes());
       }
       catch (IOException e) {
          throw new BatfishException("Failed to write file: " + outputPath, e);

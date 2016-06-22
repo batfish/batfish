@@ -177,7 +177,7 @@ public class Driver {
       }
       else if (_mainSettings.canExecute()) {
          _mainSettings.setLogger(_mainLogger);
-         Batfish.applyAutoBaseDir(_mainSettings);
+         Batfish.initTestrigSettings(_mainSettings);
          if (!RunBatfish(_mainSettings)) {
             System.exit(1);
          }
@@ -337,7 +337,7 @@ public class Driver {
       }
 
       try {
-         Batfish.applyAutoBaseDir(settings);
+         Batfish.initTestrigSettings(settings);
       }
       catch (Exception e) {
          return Arrays.asList("failure",

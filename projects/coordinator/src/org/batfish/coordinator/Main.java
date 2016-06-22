@@ -29,8 +29,11 @@ public class Main {
    private static Settings _settings;
    private static WorkMgr _workManager;
 
-   static Logger networkListenerLogger = Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
-   static Logger httpServerLogger = Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
+   static Logger httpServerLogger = Logger
+         .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
+               .getName());
+   static Logger networkListenerLogger = Logger
+         .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
    public static Authorizer getAuthorizer() {
       return _authorizer;
@@ -98,9 +101,9 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  CommonUtil.getJarOrClassDir(
-                        ConfigurationLocator.class).getAbsolutePath(),
-                  _settings.getSslKeystoreFilename()).toFile();
+                  CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
+                        .getAbsolutePath(), _settings.getSslKeystoreFilename())
+                  .toFile();
          }
 
          if (!keystoreFile.exists()) {
@@ -150,9 +153,9 @@ public class Main {
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
             keystoreFile = Paths.get(
-                  CommonUtil.getJarOrClassDir(
-                        ConfigurationLocator.class).getAbsolutePath(),
-                  _settings.getSslKeystoreFilename()).toFile();
+                  CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
+                        .getAbsolutePath(), _settings.getSslKeystoreFilename())
+                  .toFile();
          }
 
          if (!keystoreFile.exists()) {
@@ -179,7 +182,7 @@ public class Main {
       mainInit(args);
       _logger = new BatfishLogger(_settings.getLogLevel(), false,
             _settings.getLogFile(), false, true);
-      mainRun();      
+      mainRun();
    }
 
    public static void main(String[] args, BatfishLogger logger) {
@@ -191,9 +194,9 @@ public class Main {
    public static void mainInit(String[] args) {
       _settings = null;
       try {
-         _settings = new Settings(args);         
-         networkListenerLogger.setLevel(Level.WARNING);                  
-         httpServerLogger.setLevel(Level.WARNING);                  
+         _settings = new Settings(args);
+         networkListenerLogger.setLevel(Level.WARNING);
+         httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
          System.err.print("org.batfish.coordinator: Initialization failed: "
@@ -209,8 +212,9 @@ public class Main {
          initWorkManager();
       }
       catch (Exception e) {
-         System.err.print("org.batfish.coordinator: Initialization of a helper failed: "
-               + e.getMessage());
+         System.err
+               .print("org.batfish.coordinator: Initialization of a helper failed: "
+                     + e.getMessage());
          System.exit(1);
       }
 

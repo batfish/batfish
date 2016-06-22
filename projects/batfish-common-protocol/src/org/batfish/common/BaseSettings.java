@@ -1,9 +1,12 @@
 package org.batfish.common;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -104,6 +107,30 @@ public abstract class BaseSettings {
       }
    }
 
+   protected final List<Path> getPathListOptionValue(String key) {
+      if (_line.hasOption(key)) {
+         String[] optionValues = _line.getOptionValues(key);
+         if (optionValues == null) {
+            return Collections.<Path> emptyList();
+         }
+         else {
+            return Arrays.stream(optionValues)
+                  .map(optionValue -> nullablePath(optionValue))
+                  .collect(Collectors.toList());
+         }
+      }
+      else {
+         return Arrays.stream(_config.getStringArray(key))
+               .map(optionValue -> nullablePath(optionValue))
+               .collect(Collectors.toList());
+      }
+   }
+
+   protected final Path getPathOptionValue(String key) {
+      String value = _line.getOptionValue(key, _config.getString(key));
+      return nullablePath(value);
+   }
+
    protected final List<String> getStringListOptionValue(String key) {
       if (_line.hasOption(key)) {
          String[] optionValues = _line.getOptionValues(key);
@@ -135,6 +162,10 @@ public abstract class BaseSettings {
          throw new BatfishException("Could not parse command line", e);
       }
 
+   }
+
+   private final Path nullablePath(String s) {
+      return (s != null) ? Paths.get(s) : null;
    }
 
    protected final void printHelp(String executableName) {

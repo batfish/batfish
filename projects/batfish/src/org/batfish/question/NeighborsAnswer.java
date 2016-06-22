@@ -117,7 +117,7 @@ public class NeighborsAnswer extends Answer {
       if (question.getNeighborTypes().isEmpty()
             || question.getNeighborTypes().contains(NeighborType.LAN)) {
          Topology topology = batfish.computeTopology(configurations,
-               batfish.getEnvSettings());
+               batfish.getTestrigSettings());
 
          for (Edge edge : topology.getEdges()) {
             Matcher node1Matcher = node1Regex.matcher(edge.getNode1());

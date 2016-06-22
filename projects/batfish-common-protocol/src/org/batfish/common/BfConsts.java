@@ -17,10 +17,11 @@ public class BfConsts {
    // ensure that the clients (including the javascript client) are up to date
    //
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
-   public static final String ARG_AUTO_BASE_DIR = "autobasedir";
    public static final String ARG_BLOCK_NAMES = "blocknames";
+   public static final String ARG_CONTAINER_DIR = "containerdir";
+   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
+   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
-   public static final String ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
    public static final String ARG_ENVIRONMENT_NAME = "env";
    public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
@@ -33,6 +34,7 @@ public class BfConsts {
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
    public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
+   public static final String ARG_TESTRIG = "testrig";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
    public static final String ARG_UNRECOGNIZED_AS_RED_FLAG = "urf";
@@ -109,7 +111,6 @@ public class BfConsts {
    public static final String SVC_RUN_TASK_RSC = "run";
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
-
    public static final String SVC_TASKID_KEY = "taskid";
 
 }

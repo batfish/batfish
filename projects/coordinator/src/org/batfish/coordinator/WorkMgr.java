@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -127,21 +128,25 @@ public class WorkMgr {
 
          // get the task and add other standard stuff
          JSONObject task = work.getWorkItem().toTask();
-         File autobasedir = Paths.get(
-               Main.getSettings().getContainersLocation(),
-               work.getWorkItem().getContainerName(),
-               work.getWorkItem().getTestrigName()).toFile();
-         task.put(BfConsts.ARG_AUTO_BASE_DIR, autobasedir.getAbsolutePath());
+         Path containerDir = Paths.get(Main.getSettings()
+               .getContainersLocation(), work.getWorkItem().getContainerName());
+         String testrigName = work.getWorkItem().getTestrigName();
+         Path testrigBaseDir = containerDir.resolve(testrigName)
+               .toAbsolutePath();
+         task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath()
+               .toString());
+         task.put(BfConsts.ARG_TESTRIG, testrigName);
          task.put(
                BfConsts.ARG_LOG_FILE,
-               Paths.get(autobasedir.getAbsolutePath(),
+               testrigBaseDir.resolve(
                      work.getId().toString() + BfConsts.SUFFIX_LOG_FILE)
                      .toString());
          task.put(
                BfConsts.ARG_ANSWER_JSON_PATH,
-               Paths.get(autobasedir.getAbsolutePath(),
-                     work.getId().toString() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
-                     .toString());
+               testrigBaseDir
+                     .resolve(
+                           work.getId().toString()
+                                 + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
          Client client = ClientBuilder.newClient();
          WebTarget webTarget = client
@@ -300,9 +305,8 @@ public class WorkMgr {
 
    public void delContainer(String containerName) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
@@ -314,17 +318,15 @@ public class WorkMgr {
    public void delEnvironment(String containerName, String testrigName,
          String envName) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("Testrig " + testrigName
                + " does not exist");
@@ -345,17 +347,15 @@ public class WorkMgr {
    public void delQuestion(String containerName, String testrigName,
          String qName) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("Testrig " + testrigName
                + " does not exist");
@@ -376,17 +376,15 @@ public class WorkMgr {
    public void delTestrig(String containerName, String testrigName)
          throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("Testrig " + testrigName
                + " does not exist");
@@ -398,18 +396,16 @@ public class WorkMgr {
    public File getObject(String containerName, String testrigName,
          String objectName) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
@@ -450,20 +446,19 @@ public class WorkMgr {
    public JSONObject getStatusJson() throws JSONException {
       return _workQueueMgr.getStatusJson();
    }
-   
-   private File getTestrigDir(String containerName, String testrigName) throws FileNotFoundException {
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+
+   private File getTestrigDir(String containerName, String testrigName)
+         throws FileNotFoundException {
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();      
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
@@ -472,35 +467,39 @@ public class WorkMgr {
 
       return testrigDir;
    }
-   
-   public String getTestrigInfo(String containerName, String testrigName) throws Exception {
+
+   public String getTestrigInfo(String containerName, String testrigName)
+         throws Exception {
 
       File testrigDir = getTestrigDir(containerName, testrigName);
 
-      File submittedTestrigDir = Paths.get(testrigDir.getAbsolutePath(), 
+      File submittedTestrigDir = Paths.get(testrigDir.getAbsolutePath(),
             BfConsts.RELPATH_TEST_RIG_DIR).toFile();
-      
+
       StringBuilder retStringBuilder = new StringBuilder();
-      
+
       for (File subFile : submittedTestrigDir.listFiles()) {
          retStringBuilder.append(subFile.getName());
          if (subFile.isDirectory()) {
             File[] subSubFiles = subFile.listFiles();
             retStringBuilder.append("/\n");
 
-            //now append a maximum of 10 
-            for (int index=0; index < subSubFiles.length && index < 10; index++) {
-               retStringBuilder.append("  " + subSubFiles[index].getName() + "\n");
+            // now append a maximum of 10
+            for (int index = 0; index < subSubFiles.length && index < 10; index++) {
+               retStringBuilder.append("  " + subSubFiles[index].getName()
+                     + "\n");
             }
-            
-            if (subSubFiles.length > 10) 
-               retStringBuilder.append("  ...... " + (subSubFiles.length - 10) + " more entries\n");
+
+            if (subSubFiles.length > 10) {
+               retStringBuilder.append("  ...... " + (subSubFiles.length - 10)
+                     + " more entries\n");
+            }
          }
          else {
             retStringBuilder.append("\n");
-         }                 
+         }
       }
-      
+
       return retStringBuilder.toString();
    }
 
@@ -512,9 +511,8 @@ public class WorkMgr {
 
       String containerName = containerPrefix + "_" + UUID.randomUUID();
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (containerDir.exists()) {
          throw new FileExistsException("Container " + containerName
@@ -531,8 +529,7 @@ public class WorkMgr {
 
    public String[] listContainers(String apiKey) throws Exception {
 
-      File containersDir = new File(Main.getSettings()
-            .getContainersLocation());
+      File containersDir = new File(Main.getSettings().getContainersLocation());
 
       if (!containersDir.exists()) {
          containersDir.mkdirs();
@@ -554,17 +551,15 @@ public class WorkMgr {
    public String[] listEnvironments(String containerName, String testrigName)
          throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("Testrig " + testrigName
@@ -592,26 +587,24 @@ public class WorkMgr {
    public String[] listQuestions(String containerName, String testrigName)
          throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("Testrig " + testrigName
                + " does not exist");
       }
 
-      File questionsDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName, BfConsts.RELPATH_QUESTIONS_DIR).toFile();
+      File questionsDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName, BfConsts.RELPATH_QUESTIONS_DIR)
+            .toFile();
 
       if (!questionsDir.exists()) {
          return new String[0];
@@ -629,9 +622,8 @@ public class WorkMgr {
 
    public String[] listTestrigs(String containerName) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
@@ -666,18 +658,16 @@ public class WorkMgr {
    public void putObject(String containerName, String testrigName,
          String objectName, InputStream fileStream) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
@@ -719,8 +709,7 @@ public class WorkMgr {
 
    public boolean queueWork(WorkItem workItem) throws Exception {
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(),
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
             workItem.getContainerName(), workItem.getTestrigName()).toFile();
 
       if (workItem.getTestrigName().isEmpty() || !testrigDir.exists()) {
@@ -748,18 +737,16 @@ public class WorkMgr {
    public void uploadEnvironment(String containerName, String testrigName,
          String envName, InputStream fileStream) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
@@ -823,18 +810,16 @@ public class WorkMgr {
          String qName, InputStream fileStream, InputStream paramFileStream)
          throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (!testrigDir.exists()) {
          throw new FileNotFoundException("testrig " + testrigName
@@ -880,18 +865,16 @@ public class WorkMgr {
    public void uploadTestrig(String containerName, String testrigName,
          InputStream fileStream) throws Exception {
 
-      File containerDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName)
-            .toFile();
+      File containerDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName).toFile();
 
       if (!containerDir.exists()) {
          throw new FileNotFoundException("Container " + containerName
                + " does not exist");
       }
 
-      File testrigDir = Paths.get(
-            Main.getSettings().getContainersLocation(), containerName,
-            testrigName).toFile();
+      File testrigDir = Paths.get(Main.getSettings().getContainersLocation(),
+            containerName, testrigName).toFile();
 
       if (testrigDir.exists()) {
          throw new FileExistsException("Testrig with name " + testrigName

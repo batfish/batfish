@@ -1,8 +1,8 @@
 package org.batfish.protocoldependency;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
@@ -48,7 +47,7 @@ import org.batfish.graphviz.GraphvizInput;
 import org.batfish.graphviz.GraphvizNode;
 import org.batfish.graphviz.GraphvizResult;
 import org.batfish.job.BatfishJobExecutor;
-import org.batfish.main.Settings;
+import org.batfish.main.Batfish;
 
 /**
  * TODO: ospfe1
@@ -971,37 +970,37 @@ public final class ProtocolDependencyAnalysis {
       _dependencyDatabase.removeCycles();
    }
 
-   public void writeGraphs(Settings settings, BatfishLogger logger) {
-      String protocolDependencyGraphPath = settings
+   public void writeGraphs(Batfish batfish, BatfishLogger logger) {
+      Path protocolDependencyGraphPath = batfish.getTestrigSettings()
             .getProtocolDependencyGraphPath();
-      new File(protocolDependencyGraphPath).mkdirs();
+      CommonUtil.createDirectories(protocolDependencyGraphPath);
       Map<Prefix, GraphvizInput> graphs = getGraphs();
-      BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<String, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<String, byte[]>>(
-            settings, logger);
-      Map<String, byte[]> output = new TreeMap<String, byte[]>();
+      BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<Path, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<Path, byte[]>>(
+            batfish.getSettings(), logger);
+      Map<Path, byte[]> output = new TreeMap<Path, byte[]>();
       List<GraphvizJob> jobs = new ArrayList<GraphvizJob>();
       for (Entry<Prefix, GraphvizInput> e : graphs.entrySet()) {
          Prefix prefix = e.getKey();
          GraphvizInput input = e.getValue();
          String graphName = GraphvizDigraph.getGraphName(prefix);
-         String graphFile = Paths.get(protocolDependencyGraphPath, "dot",
-               graphName + ".dot").toString();
-         String svgFile = Paths.get(protocolDependencyGraphPath, "svg",
-               graphName + ".svg").toString();
-         String htmlFile = Paths.get(protocolDependencyGraphPath, "html",
-               graphName + ".html").toString();
+         Path graphFile = protocolDependencyGraphPath.resolve("dot").resolve(
+               graphName + ".dot");
+         Path svgFile = protocolDependencyGraphPath.resolve("svg").resolve(
+               graphName + ".svg");
+         Path htmlFile = protocolDependencyGraphPath.resolve("html").resolve(
+               graphName + ".html");
          GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, htmlFile,
                prefix);
          jobs.add(job);
       }
       // todo: do something with graphviz answer element
       executor.executeJobs(jobs, output, new GraphvizAnswerElement());
-      for (Entry<String, byte[]> e : output.entrySet()) {
-         String outputPath = e.getKey();
+      for (Entry<Path, byte[]> e : output.entrySet()) {
+         Path outputPath = e.getKey();
          byte[] outputBytes = e.getValue();
          logger.debug("Writing: \"" + outputPath + "\" ..");
          try {
-            FileUtils.writeByteArrayToFile(new File(outputPath), outputBytes);
+            Files.write(outputPath, outputBytes);
          }
          catch (IOException ex) {
             throw new BatfishException(
@@ -1010,8 +1009,8 @@ public final class ProtocolDependencyAnalysis {
          }
          logger.debug("OK\n");
       }
-      String masterHtmlFile = Paths.get(protocolDependencyGraphPath, "html",
-            "index.html").toString();
+      Path masterHtmlFile = protocolDependencyGraphPath.resolve("html")
+            .resolve("index.html");
       Set<Prefix> prefixes = new TreeSet<Prefix>();
       prefixes.addAll(graphs.keySet());
       String masterHtmlText = computeMasterHtmlText(prefixes);

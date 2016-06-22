@@ -37,7 +37,46 @@ public class WorkMgrService {
 
    BatfishLogger _logger = Main.getLogger();
    Settings _settings = Main.getSettings();
-   
+
+   /**
+    * Check if an API key is valid
+    *
+    * @param apiKey
+    * @return
+    */
+   @POST
+   @Path(CoordConsts.SVC_CHECK_API_KEY_RSC)
+   @Produces(MediaType.APPLICATION_JSON)
+   public JSONArray checkApiKey(
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
+      try {
+         _logger.info("WMS:checkApiKey " + apiKey + "\n");
+
+         checkStringParam(apiKey, "API key not supplied or is empty");
+         ;
+         if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+                  new JSONObject().put(CoordConsts.SVC_API_KEY, true)));
+         }
+         else {
+            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+                  new JSONObject().put(CoordConsts.SVC_API_KEY, false)));
+         }
+      }
+      catch (FileExistsException | FileNotFoundException
+            | IllegalArgumentException | AccessControlException e) {
+         _logger.error("WMS:initContainer exception: " + e.getMessage() + "\n");
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+      catch (Exception e) {
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("WMS:initContainer exception: " + stackTrace);
+         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+               e.getMessage()));
+      }
+   }
+
    private void checkApiKeyValidity(String apiKey) throws Exception {
       if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
          throw new AccessControlException("Invalid API key: " + apiKey);
@@ -46,7 +85,8 @@ public class WorkMgrService {
 
    private void checkContainerAccessibility(String apiKey, String containerName)
          throws Exception {
-      if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName, true)) {
+      if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName,
+            true)) {
          throw new AccessControlException(
                "container is not accessible by the api key");
       }
@@ -443,46 +483,6 @@ public class WorkMgrService {
    }
 
    /**
-    * Check if an API key is valid
-    *
-    * @param apiKey
-    * @return
-    */
-   @POST
-   @Path(CoordConsts.SVC_CHECK_API_KEY_RSC)
-   @Produces(MediaType.APPLICATION_JSON)
-   public JSONArray checkApiKey(
-         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
-      try {
-         _logger.info("WMS:checkApiKey " + apiKey + "\n");
-
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, 
-                  new JSONObject().put(CoordConsts.SVC_API_KEY, true)));
-         }
-         else 
-         {
-            return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, 
-                  new JSONObject().put(CoordConsts.SVC_API_KEY, false)));
-         }
-      }
-      catch (FileExistsException | FileNotFoundException
-            | IllegalArgumentException | AccessControlException e) {
-         _logger.error("WMS:initContainer exception: " + e.getMessage() + "\n");
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
-      }
-      catch (Exception e) {
-         String stackTrace = ExceptionUtils.getFullStackTrace(e);
-         _logger.error("WMS:initContainer exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
-      }
-   }
-   
-   /**
     * List the containers that the specified API key can access
     *
     * @param apiKey
@@ -500,9 +500,12 @@ public class WorkMgrService {
          ;
          checkApiKeyValidity(apiKey);
 
-         if (!_settings.getDefaultKeyListings() && apiKey.equals(CoordConsts.DEFAULT_API_KEY))
-            throw new AccessControlException("Listing containers is not allowed with Default API key");
-         
+         if (!_settings.getDefaultKeyListings()
+               && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
+            throw new AccessControlException(
+                  "Listing containers is not allowed with Default API key");
+         }
+
          String[] containerList = Main.getWorkMgr().listContainers(apiKey);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
@@ -645,39 +648,45 @@ public class WorkMgrService {
          checkStringParam(apiKey, "API key not supplied or is empty");
          ;
          checkApiKeyValidity(apiKey);
-         
-         if (!_settings.getDefaultKeyListings() && apiKey.equals(CoordConsts.DEFAULT_API_KEY))
-            throw new AccessControlException("Listing all testrigs is not allowed with Default API key");
-         
+
+         if (!_settings.getDefaultKeyListings()
+               && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
+            throw new AccessControlException(
+                  "Listing all testrigs is not allowed with Default API key");
+         }
+
          List<String> containerList = new LinkedList<String>();
-         
+
          if (containerName == null || containerName.equals("")) {
-            containerList.addAll(Arrays.asList(Main.getWorkMgr().listContainers(apiKey)));
+            containerList.addAll(Arrays.asList(Main.getWorkMgr()
+                  .listContainers(apiKey)));
          }
          else {
             checkContainerAccessibility(apiKey, containerName);
             containerList.add(containerName);
          }
-         
+
          JSONArray retArray = new JSONArray();
-         
+
          for (String container : containerList) {
             String[] testrigList = Main.getWorkMgr().listTestrigs(container);
-            
+
             for (String testrig : testrigList) {
-               String testrigInfo = Main.getWorkMgr().getTestrigInfo(container, testrig);
-               
-               JSONObject jObject = new JSONObject()
-                  .put(CoordConsts.SVC_TESTRIG_NAME_KEY, container + "/" + testrig)
-                  .put(CoordConsts.SVC_TESTRIG_INFO_KEY, testrigInfo);
-               
+               String testrigInfo = Main.getWorkMgr().getTestrigInfo(container,
+                     testrig);
+
+               JSONObject jObject = new JSONObject().put(
+                     CoordConsts.SVC_TESTRIG_NAME_KEY,
+                     container + "/" + testrig).put(
+                     CoordConsts.SVC_TESTRIG_INFO_KEY, testrigInfo);
+
                retArray.put(jObject);
-            }                        
+            }
          }
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put(CoordConsts.SVC_TESTRIG_LIST_KEY,
-                     retArray))));
+               (new JSONObject()
+                     .put(CoordConsts.SVC_TESTRIG_LIST_KEY, retArray))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
@@ -730,8 +739,8 @@ public class WorkMgrService {
          checkApiKeyValidity(apiKey);
          checkContainerAccessibility(apiKey, containerName);
 
-         Main.getWorkMgr().putObject(containerName, testrigName,
-               objectName, fileStream);
+         Main.getWorkMgr().putObject(containerName, testrigName, objectName,
+               fileStream);
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                (new JSONObject().put("result",
@@ -824,7 +833,6 @@ public class WorkMgrService {
          return "got error";
       }
    }
-
 
    /**
     * Uploads a new environment under the container, testrig

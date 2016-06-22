@@ -24,9 +24,9 @@ public class DbAuthorizer implements Authorizer {
    private static final int DB_VALID_CHECK_TIMEOUT_SECS = 3;
    private static final int MAX_DB_TRIES = 3;
 
+   private static final String TABLE_CONTAINERS = "containers";
    private static final String TABLE_PERMISSIONS = "containerpermissions";
    private static final String TABLE_USERS = "members";
-   private static final String TABLE_CONTAINERS = "containers";
 
    private Map<String, Date> _cacheApiKeys = new HashMap<String, Date>();
    private Map<String, Date> _cachePermissions = new HashMap<String, Date>();
@@ -34,9 +34,9 @@ public class DbAuthorizer implements Authorizer {
    private Connection _dbConn;
    private BatfishLogger _logger;
 
-   private java.text.SimpleDateFormat DateFormatter = 
-         new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-   
+   private java.text.SimpleDateFormat DateFormatter = new java.text.SimpleDateFormat(
+         "yyyy-MM-dd HH:mm:ss");
+
    public DbAuthorizer() throws SQLException {
       _logger = Main.getLogger();
       openDbConnection();
@@ -48,23 +48,26 @@ public class DbAuthorizer implements Authorizer {
 
       _logger.infof("Authorizing %s for %s\n", apiKey, containerName);
 
-      //add the container if it does not exist; update datelastaccessed if it does
-      Date now = new Date();      
-      String insertQuery = String.format("INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s') "
-            + " ON DUPLICATE KEY UPDATE %s = '%s'",
-            TABLE_CONTAINERS, 
-            COLUMN_CONTAINER_NAME,  COLUMN_DATE_CREATED, COLUMN_DATE_LAST_ACCESSED,
-            containerName, DateFormatter.format(now), DateFormatter.format(now),
+      // add the container if it does not exist; update datelastaccessed if it
+      // does
+      Date now = new Date();
+      String insertQuery = String.format(
+            "INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s') "
+                  + " ON DUPLICATE KEY UPDATE %s = '%s'", TABLE_CONTAINERS,
+            COLUMN_CONTAINER_NAME, COLUMN_DATE_CREATED,
+            COLUMN_DATE_LAST_ACCESSED, containerName,
+            DateFormatter.format(now), DateFormatter.format(now),
             COLUMN_DATE_LAST_ACCESSED, DateFormatter.format(now));
 
       int numInsertRows = executeUpdate(insertQuery);
-      
-      //MySQL says 2 rows impacted when an old row is updated; otherwise it says 1
-      if (numInsertRows == 1) 
+
+      // MySQL says 2 rows impacted when an old row is updated; otherwise it
+      // says 1
+      if (numInsertRows == 1) {
          _logger.infof("New container added\n");
-         
-      
-      //return if already accessible
+      }
+
+      // return if already accessible
       if (isAccessibleContainer(apiKey, containerName, false)) {
          return;
       }
@@ -151,8 +154,8 @@ public class DbAuthorizer implements Authorizer {
    }
 
    @Override
-   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError)
-         throws Exception {
+   public boolean isAccessibleContainer(String apiKey, String containerName,
+         boolean logError) throws Exception {
 
       String cacheKey = getPermsCacheKey(apiKey, containerName);
 
@@ -163,30 +166,32 @@ public class DbAuthorizer implements Authorizer {
       }
 
       String query = String.format(
-            "SELECT * FROM %s WHERE %s = '%s' AND %s = '%s'", TABLE_PERMISSIONS,
-            COLUMN_APIKEY, apiKey, COLUMN_CONTAINER_NAME, containerName);
+            "SELECT * FROM %s WHERE %s = '%s' AND %s = '%s'",
+            TABLE_PERMISSIONS, COLUMN_APIKEY, apiKey, COLUMN_CONTAINER_NAME,
+            containerName);
 
       ResultSet rs = executeQuery(query);
 
       if (rs != null && rs.first()) {
          insertInCache(_cachePermissions, cacheKey);
-         
-         //a valid access was made; update datelastaccessed         
+
+         // a valid access was made; update datelastaccessed
          Date now = new Date();
-         String updateQuery = String.format("UPDATE %s SET %s='%s' WHERE %s='%s'", 
-               TABLE_CONTAINERS, 
+         String updateQuery = String.format(
+               "UPDATE %s SET %s='%s' WHERE %s='%s'", TABLE_CONTAINERS,
                COLUMN_DATE_LAST_ACCESSED, DateFormatter.format(now),
                COLUMN_CONTAINER_NAME, containerName);
-         
+
          executeUpdate(updateQuery);
-         
+
          return true;
       }
 
-      if (logError)
+      if (logError) {
          _logger.infof("Authorizer: %s is NOT allowed to access %s\n", apiKey,
                containerName);
-      
+      }
+
       return false;
    }
 

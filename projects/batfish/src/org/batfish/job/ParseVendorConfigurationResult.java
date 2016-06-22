@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
@@ -14,7 +14,7 @@ public class ParseVendorConfigurationResult
       extends
       BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
-   private final File _file;
+   private final Path _file;
 
    private final BatfishLoggerHistory _history;
 
@@ -23,14 +23,14 @@ public class ParseVendorConfigurationResult
    private Warnings _warnings;
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File file, Throwable failureCause) {
+         BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, failureCause);
       _history = history;
       _file = file;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File file, VendorConfiguration vc,
+         BatfishLoggerHistory history, Path file, VendorConfiguration vc,
          Warnings warnings) {
       super(elapsedTime);
       _history = history;
@@ -40,7 +40,7 @@ public class ParseVendorConfigurationResult
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File file, Warnings warnings) {
+         BatfishLoggerHistory history, Path file, Warnings warnings) {
       super(elapsedTime);
       _history = history;
       _file = file;
@@ -85,7 +85,7 @@ public class ParseVendorConfigurationResult
       appendHistory(logger);
    }
 
-   public File getFile() {
+   public Path getFile() {
       return _file;
    }
 

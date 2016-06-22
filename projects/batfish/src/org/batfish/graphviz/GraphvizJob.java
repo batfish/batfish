@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -17,18 +18,18 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
 
    private static final String GRAPHVIZ_COMMAND = "sfdp";
 
-   private final String _graphFile;
+   private final Path _graphFile;
 
-   private final String _htmlFile;
+   private final Path _htmlFile;
 
    private final GraphvizInput _input;
 
    private final Prefix _prefix;
 
-   private final String _svgFile;
+   private final Path _svgFile;
 
-   public GraphvizJob(GraphvizInput input, String graphFile, String svgFile,
-         String htmlFile, Prefix prefix) {
+   public GraphvizJob(GraphvizInput input, Path graphFile, Path svgFile,
+         Path htmlFile, Prefix prefix) {
       _input = input;
       _graphFile = graphFile;
       _htmlFile = htmlFile;

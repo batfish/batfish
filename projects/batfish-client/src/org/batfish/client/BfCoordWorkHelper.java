@@ -318,7 +318,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
@@ -333,7 +333,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       if (diffEnvName != null) {
-         wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+         wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       }
       wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
@@ -345,7 +345,7 @@ public class BfCoordWorkHelper {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       return wItem;
    }
 
@@ -366,7 +366,7 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
       wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, diffEnvName);
+      wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       return wItem;
    }

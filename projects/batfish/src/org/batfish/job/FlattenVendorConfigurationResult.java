@@ -1,6 +1,6 @@
 package org.batfish.job;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
@@ -9,16 +9,16 @@ import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 
 public class FlattenVendorConfigurationResult
       extends
-      BatfishJobResult<Map<File, String>, FlattenVendorConfigurationAnswerElement> {
+      BatfishJobResult<Map<Path, String>, FlattenVendorConfigurationAnswerElement> {
 
    private final String _flattenedText;
 
    private final BatfishLoggerHistory _history;
 
-   private final File _outputFile;
+   private final Path _outputFile;
 
    public FlattenVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File outputFile, String flattenedText) {
+         BatfishLoggerHistory history, Path outputFile, String flattenedText) {
       super(elapsedTime);
       _history = history;
       _outputFile = outputFile;
@@ -26,7 +26,7 @@ public class FlattenVendorConfigurationResult
    }
 
    public FlattenVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, File outputFile, Throwable failureCause) {
+         BatfishLoggerHistory history, Path outputFile, Throwable failureCause) {
       super(elapsedTime, failureCause);
       _outputFile = outputFile;
       _history = history;
@@ -39,13 +39,13 @@ public class FlattenVendorConfigurationResult
          terseLogLevelPrefix = "";
       }
       else {
-         terseLogLevelPrefix = _outputFile.getName() + ": ";
+         terseLogLevelPrefix = _outputFile.getFileName().toString() + ": ";
       }
       logger.append(_history, terseLogLevelPrefix);
    }
 
    @Override
-   public void applyTo(Map<File, String> outputConfigurationData,
+   public void applyTo(Map<Path, String> outputConfigurationData,
          BatfishLogger logger,
          FlattenVendorConfigurationAnswerElement answerElement) {
       appendHistory(logger);
@@ -65,7 +65,7 @@ public class FlattenVendorConfigurationResult
       return _history;
    }
 
-   public File getOutputFile() {
+   public Path getOutputFile() {
       return _outputFile;
    }
 

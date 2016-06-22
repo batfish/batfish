@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import java.io.File;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -34,8 +33,8 @@ public class UndefinedReferencesAnswer extends Answer {
       UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
       addAnswerElement(answerElement);
       ConvertConfigurationAnswerElement ccae = (ConvertConfigurationAnswerElement) batfish
-            .deserializeObject(new File(batfish.getSettings()
-                  .getConvertAnswerPath()));
+            .deserializeObject(batfish.getTestrigSettings()
+                  .getConvertAnswerPath());
       for (Entry<String, Warnings> e : ccae.getWarnings().entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {

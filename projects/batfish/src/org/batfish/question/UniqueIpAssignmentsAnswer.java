@@ -19,7 +19,7 @@ import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
 import org.batfish.main.Batfish;
-import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -39,12 +39,12 @@ public class UniqueIpAssignmentsAnswer extends Answer {
       _batfish.checkConfigurations();
 
       if (question.getDifferential()) {
-         _batfish.checkEnvironmentExists(_batfish.getBaseEnvSettings());
-         _batfish.checkEnvironmentExists(_batfish.getDiffEnvSettings());
+         _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
+         _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
          UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
-               .getBaseEnvSettings());
+               .getBaseTestrigSettings());
          UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
-               .getDiffEnvSettings());
+               .getDeltaTestrigSettings());
          ObjectMapper mapper = new BatfishObjectMapper();
          try {
             String beforeJsonStr = mapper.writeValueAsString(before);
@@ -61,14 +61,14 @@ public class UniqueIpAssignmentsAnswer extends Answer {
       }
       else {
          UniqueIpAssignmentsAnswerElement answerElement = initAnswerElement(batfish
-               .getEnvSettings());
+               .getTestrigSettings());
          addAnswerElement(answerElement);
       }
 
    }
 
    private UniqueIpAssignmentsAnswerElement initAnswerElement(
-         EnvironmentSettings envSettings) {
+         TestrigSettings testrigSettings) {
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(_question.getNodeRegex());
@@ -80,7 +80,7 @@ public class UniqueIpAssignmentsAnswer extends Answer {
       }
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
       Map<String, Configuration> configurations = _batfish
-            .loadConfigurations(envSettings);
+            .loadConfigurations(testrigSettings);
       MultiSet<Ip> allIps = new TreeMultiSet<Ip>();
       MultiSet<Ip> enabledIps = new TreeMultiSet<Ip>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {

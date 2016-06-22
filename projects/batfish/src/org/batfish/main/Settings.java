@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.batfish.common.BaseSettings;
@@ -13,75 +14,77 @@ public final class Settings extends BaseSettings {
 
    public static final class EnvironmentSettings {
 
-      private String _controlPlaneFactsDir;
+      private Path _controlPlaneFactsDir;
 
-      private String _dataPlanePath;
+      private Path _dataPlanePath;
 
-      private String _deltaCompiledConfigurationsDir;
+      private Path _deltaCompiledConfigurationsDir;
 
-      private String _deltaConfigurationsDir;
+      private Path _deltaConfigurationsDir;
 
-      private String _deltaVendorConfigurationsDir;
+      private Path _deltaVendorConfigurationsDir;
 
-      private String _edgeBlacklistPath;
+      private Path _edgeBlacklistPath;
 
-      private String _envPath;
+      private Path _envPath;
 
-      private String _externalBgpAnnouncementsPath;
+      private Path _externalBgpAnnouncementsPath;
 
-      private String _interfaceBlacklistPath;
+      private Path _interfaceBlacklistPath;
 
       private String _name;
 
-      private String _nlsDataPlaneInputFile;
+      private Path _nlsDataPlaneInputFile;
 
-      private String _nlsDataPlaneOutputDir;
+      private Path _nlsDataPlaneOutputDir;
 
-      private String _nlsTrafficInputFile;
+      private Path _nlsTrafficInputFile;
 
-      private String _nlsTrafficOutputDir;
+      private Path _nlsTrafficOutputDir;
 
-      private String _nodeBlacklistPath;
+      private Path _nodeBlacklistPath;
 
-      private String _precomputedRoutesPath;
+      private Path _precomputedRoutesPath;
 
-      private String _serializedTopologyPath;
+      private Path _serializedTopologyPath;
 
-      private String _trafficFactsDir;
+      private Path _trafficFactsDir;
 
-      public String getControlPlaneFactsDir() {
+      private Path _z3File;
+
+      public Path getControlPlaneFactsDir() {
          return _controlPlaneFactsDir;
       }
 
-      public String getDataPlanePath() {
+      public Path getDataPlanePath() {
          return _dataPlanePath;
       }
 
-      public String getDeltaCompiledConfigurationsDir() {
+      public Path getDeltaCompiledConfigurationsDir() {
          return _deltaCompiledConfigurationsDir;
       }
 
-      public String getDeltaConfigurationsDir() {
+      public Path getDeltaConfigurationsDir() {
          return _deltaConfigurationsDir;
       }
 
-      public String getDeltaVendorConfigurationsDir() {
+      public Path getDeltaVendorConfigurationsDir() {
          return _deltaVendorConfigurationsDir;
       }
 
-      public String getEdgeBlacklistPath() {
+      public Path getEdgeBlacklistPath() {
          return _edgeBlacklistPath;
       }
 
-      public String getEnvPath() {
+      public Path getEnvPath() {
          return _envPath;
       }
 
-      public String getExternalBgpAnnouncementsPath() {
+      public Path getExternalBgpAnnouncementsPath() {
          return _externalBgpAnnouncementsPath;
       }
 
-      public String getInterfaceBlacklistPath() {
+      public Path getInterfaceBlacklistPath() {
          return _interfaceBlacklistPath;
       }
 
@@ -89,74 +92,78 @@ public final class Settings extends BaseSettings {
          return _name;
       }
 
-      public String getNlsDataPlaneInputFile() {
+      public Path getNlsDataPlaneInputFile() {
          return _nlsDataPlaneInputFile;
       }
 
-      public String getNlsDataPlaneOutputDir() {
+      public Path getNlsDataPlaneOutputDir() {
          return _nlsDataPlaneOutputDir;
       }
 
-      public String getNlsTrafficInputFile() {
+      public Path getNlsTrafficInputFile() {
          return _nlsTrafficInputFile;
       }
 
-      public String getNlsTrafficOutputDir() {
+      public Path getNlsTrafficOutputDir() {
          return _nlsTrafficOutputDir;
       }
 
-      public String getNodeBlacklistPath() {
+      public Path getNodeBlacklistPath() {
          return _nodeBlacklistPath;
       }
 
-      public String getPrecomputedRoutesPath() {
+      public Path getPrecomputedRoutesPath() {
          return _precomputedRoutesPath;
       }
 
-      public String getSerializedTopologyPath() {
+      public Path getSerializedTopologyPath() {
          return _serializedTopologyPath;
       }
 
-      public String getTrafficFactsDir() {
+      public Path getTrafficFactsDir() {
          return _trafficFactsDir;
       }
 
-      public void setControlPlaneFactsDir(String path) {
+      public Path getZ3File() {
+         return _z3File;
+      }
+
+      public void setControlPlaneFactsDir(Path path) {
          _controlPlaneFactsDir = path;
       }
 
-      public void setDataPlanePath(String path) {
+      public void setDataPlanePath(Path path) {
          _dataPlanePath = path;
       }
 
       public void setDeltaCompiledConfigurationsDir(
-            String deltaCompiledConfigurationsDir) {
+            Path deltaCompiledConfigurationsDir) {
          _deltaCompiledConfigurationsDir = deltaCompiledConfigurationsDir;
       }
 
-      public void setDeltaConfigurationsDir(String deltaConfigurationsDir) {
+      public void setDeltaConfigurationsDir(Path deltaConfigurationsDir) {
          _deltaConfigurationsDir = deltaConfigurationsDir;
       }
 
       public void setDeltaVendorConfigurationsDir(
-            String deltaVendorConfigurationsDir) {
+            Path deltaVendorConfigurationsDir) {
          _deltaVendorConfigurationsDir = deltaVendorConfigurationsDir;
       }
 
-      public void setEdgeBlacklistPath(String edgeBlacklistPath) {
+      public void setEdgeBlacklistPath(Path edgeBlacklistPath) {
          _edgeBlacklistPath = edgeBlacklistPath;
       }
 
-      public void setEnvPath(String envPath) {
+      public void setEnvPath(Path envPath) {
          _envPath = envPath;
       }
 
       public void setExternalBgpAnnouncementsPath(
-            String externalBgpAnnouncementsPath) {
+            Path externalBgpAnnouncementsPath) {
          _externalBgpAnnouncementsPath = externalBgpAnnouncementsPath;
       }
 
-      public void setInterfaceBlacklistPath(String interfaceBlacklistPath) {
+      public void setInterfaceBlacklistPath(Path interfaceBlacklistPath) {
          _interfaceBlacklistPath = interfaceBlacklistPath;
       }
 
@@ -164,36 +171,150 @@ public final class Settings extends BaseSettings {
          _name = name;
       }
 
-      public void setNlsDataPlaneInputFile(String nlsDataPlaneInputFile) {
+      public void setNlsDataPlaneInputFile(Path nlsDataPlaneInputFile) {
          _nlsDataPlaneInputFile = nlsDataPlaneInputFile;
       }
 
-      public void setNlsDataPlaneOutputDir(String nlsDataPlaneOutputDir) {
+      public void setNlsDataPlaneOutputDir(Path nlsDataPlaneOutputDir) {
          _nlsDataPlaneOutputDir = nlsDataPlaneOutputDir;
       }
 
-      public void setNlsTrafficInputFile(String nlsTrafficInputFile) {
+      public void setNlsTrafficInputFile(Path nlsTrafficInputFile) {
          _nlsTrafficInputFile = nlsTrafficInputFile;
       }
 
-      public void setNlsTrafficOutputDir(String nlsTrafficOutputDir) {
+      public void setNlsTrafficOutputDir(Path nlsTrafficOutputDir) {
          _nlsTrafficOutputDir = nlsTrafficOutputDir;
       }
 
-      public void setNodeBlacklistPath(String nodeBlacklistPath) {
+      public void setNodeBlacklistPath(Path nodeBlacklistPath) {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
 
-      public void setPrecomputedRoutesPath(String writeRoutesPath) {
+      public void setPrecomputedRoutesPath(Path writeRoutesPath) {
          _precomputedRoutesPath = writeRoutesPath;
       }
 
-      public void setSerializedTopologyPath(String serializedTopologyPath) {
+      public void setSerializedTopologyPath(Path serializedTopologyPath) {
          _serializedTopologyPath = serializedTopologyPath;
       }
 
-      public void setTrafficFactDumpDir(String trafficFactDumpDir) {
-         _trafficFactsDir = trafficFactDumpDir;
+      public void setTrafficFactsDir(Path trafficFactsDir) {
+         _trafficFactsDir = trafficFactsDir;
+      }
+
+      public void setZ3DataPlaneFile(Path path) {
+         _z3File = path;
+      }
+
+   }
+
+   public static final class TestrigSettings {
+
+      private Path _basePath;
+
+      private Path _convertAnswerPath;
+
+      private EnvironmentSettings _environmentSettings;
+
+      private String _name;
+
+      private Path _parseAnswerPath;
+
+      private Path _protocolDependencyGraphPath;
+
+      private Path _protocolDependencyGraphZipPath;
+
+      private Path _serializeIndependentPath;
+
+      private Path _serializeVendorPath;
+
+      private Path _testRigPath;
+
+      public TestrigSettings() {
+         _environmentSettings = new EnvironmentSettings();
+      }
+
+      public Path getBasePath() {
+         return _basePath;
+      }
+
+      public Path getConvertAnswerPath() {
+         return _convertAnswerPath;
+      }
+
+      public EnvironmentSettings getEnvironmentSettings() {
+         return _environmentSettings;
+      }
+
+      public String getName() {
+         return _name;
+      }
+
+      public Path getParseAnswerPath() {
+         return _parseAnswerPath;
+      }
+
+      public Path getProtocolDependencyGraphPath() {
+         return _protocolDependencyGraphPath;
+      }
+
+      public Path getProtocolDependencyGraphZipPath() {
+         return _protocolDependencyGraphZipPath;
+      }
+
+      public Path getSerializeIndependentPath() {
+         return _serializeIndependentPath;
+      }
+
+      public Path getSerializeVendorPath() {
+         return _serializeVendorPath;
+      }
+
+      public Path getTestRigPath() {
+         return _testRigPath;
+      }
+
+      public void setBasePath(Path basePath) {
+         _basePath = basePath;
+      }
+
+      public void setConvertAnswerPath(Path convertAnswerPath) {
+         _convertAnswerPath = convertAnswerPath;
+      }
+
+      public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
+         _environmentSettings = environmentSettings;
+      }
+
+      public void setName(String name) {
+         _name = name;
+      }
+
+      public void setParseAnswerPath(Path parseAnswerPath) {
+         _parseAnswerPath = parseAnswerPath;
+      }
+
+      public void setProtocolDependencyGraphPath(
+            Path protocolDependencyGraphPath) {
+         _protocolDependencyGraphPath = protocolDependencyGraphPath;
+      }
+
+      public void setProtocolDependencyGraphZipPath(
+            Path protocolDependencyGraphZipPath) {
+         _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
+      }
+
+      public void setSerializeIndependentPath(Path path) {
+         _serializeIndependentPath = path;
+      }
+
+      public void setSerializeVendorPath(Path path) {
+         _serializeVendorPath = path;
+      }
+
+      public void setTestRigPath(Path path) {
+         _testRigPath = path;
       }
 
    }
@@ -327,17 +448,13 @@ public final class Settings extends BaseSettings {
 
    private static final String EXECUTABLE_NAME = "batfish";
 
-   private EnvironmentSettings _activeEnvironmentSettings;
+   private TestrigSettings _activeTestrigSettings;
 
    private boolean _anonymize;
 
    private boolean _answer;
 
-   private String _answerJsonPath;
-
-   private String _autoBaseDir;
-
-   private EnvironmentSettings _baseEnvironmentSettings;
+   private Path _answerJsonPath;
 
    private List<String> _blockNames;
 
@@ -347,7 +464,7 @@ public final class Settings extends BaseSettings {
 
    private boolean _compileDiffEnvironment;
 
-   private String _convertAnswerPath;
+   private Path _containerDir;
 
    private String _coordinatorHost;
 
@@ -361,11 +478,13 @@ public final class Settings extends BaseSettings {
 
    private boolean _dataPlane;
 
+   private String _deltaEnvironmentName;
+
+   private String _deltaTestrig;
+
+   private TestrigSettings _deltaTestrigSettings;
+
    private boolean _diffActive;
-
-   private String _diffEnvironmentName;
-
-   private EnvironmentSettings _diffEnvironmentSettings;
 
    private boolean _diffQuestion;
 
@@ -375,7 +494,7 @@ public final class Settings extends BaseSettings {
 
    private boolean _flatten;
 
-   private String _flattenDestination;
+   private Path _flattenDestination;
 
    private boolean _flattenOnTheFly;
 
@@ -387,7 +506,7 @@ public final class Settings extends BaseSettings {
 
    private Integer _generateStubsRemoteAs;
 
-   private String _genOspfTopologyPath;
+   private Path _genOspfTopologyPath;
 
    private List<String> _helpPredicates;
 
@@ -425,27 +544,25 @@ public final class Settings extends BaseSettings {
 
    private boolean _nlsTraffic;
 
-   private String _nodeRolesPath;
+   private Path _nodeRolesPath;
 
    private boolean _noOutput;
 
    private String _outputEnvironmentName;
 
-   private String _parseAnswerPath;
-
    private boolean _pedanticAsError;
 
    private boolean _pedanticRecord;
 
-   private String _precomputedBgpAdvertisementsPath;
+   private Path _precomputedBgpAdvertisementsPath;
 
-   private String _precomputedFactsPath;
+   private Path _precomputedFactsPath;
 
-   private String _precomputedIbgpNeighborsPath;
+   private Path _precomputedIbgpNeighborsPath;
 
-   private String _precomputedRoutesPath;
+   private Path _precomputedRoutesPath;
 
-   private List<String> _precomputedRoutesPaths;
+   private List<Path> _precomputedRoutesPaths;
 
    private List<String> _predicates;
 
@@ -455,19 +572,15 @@ public final class Settings extends BaseSettings {
 
    private boolean _printSymmetricEdges;
 
-   private String _protocolDependencyGraphPath;
-
-   private String _protocolDependencyGraphZipPath;
-
    private boolean _query;
 
    private boolean _queryAll;
 
    private String _questionName;
 
-   private String _questionParametersPath;
+   private Path _questionParametersPath;
 
-   private String _questionPath;
+   private Path _questionPath;
 
    private boolean _redFlagAsError;
 
@@ -481,13 +594,9 @@ public final class Settings extends BaseSettings {
 
    private boolean _serializeIndependent;
 
-   private String _serializeIndependentPath;
-
    private boolean _serializeToText;
 
    private boolean _serializeVendor;
-
-   private String _serializeVendorPath;
 
    private String _serviceHost;
 
@@ -501,7 +610,9 @@ public final class Settings extends BaseSettings {
 
    private boolean _synthesizeTopology;
 
-   private String _testRigPath;
+   private String _testrig;
+
+   private TestrigSettings _testrigSettings;
 
    private boolean _throwOnLexerError;
 
@@ -533,8 +644,6 @@ public final class Settings extends BaseSettings {
 
    private boolean _writeRoutes;
 
-   private String _z3File;
-
    public Settings() {
       this(new String[] {});
    }
@@ -542,9 +651,7 @@ public final class Settings extends BaseSettings {
    public Settings(String[] args) {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
-      _diffEnvironmentSettings = new EnvironmentSettings();
-      _baseEnvironmentSettings = new EnvironmentSettings();
-      _activeEnvironmentSettings = _baseEnvironmentSettings;
+      _testrigSettings = new TestrigSettings();
       initConfigDefaults();
       initOptions();
       parseCommandLine(args);
@@ -558,8 +665,8 @@ public final class Settings extends BaseSettings {
       return _flattenOnTheFly;
    }
 
-   public EnvironmentSettings getActiveEnvironmentSettings() {
-      return _activeEnvironmentSettings;
+   public TestrigSettings getActiveTestrigSettings() {
+      return _activeTestrigSettings;
    }
 
    public boolean getAnonymize() {
@@ -570,16 +677,8 @@ public final class Settings extends BaseSettings {
       return _answer;
    }
 
-   public String getAnswerJsonPath() {
+   public Path getAnswerJsonPath() {
       return _answerJsonPath;
-   }
-
-   public String getAutoBaseDir() {
-      return _autoBaseDir;
-   }
-
-   public EnvironmentSettings getBaseEnvironmentSettings() {
-      return _baseEnvironmentSettings;
    }
 
    public List<String> getBlockNames() {
@@ -590,12 +689,12 @@ public final class Settings extends BaseSettings {
       return _buildPredicateInfo;
    }
 
-   public boolean getCompileDiffEnvironment() {
+   public boolean getCompileEnvironment() {
       return _compileDiffEnvironment;
    }
 
-   public String getConvertAnswerPath() {
-      return _convertAnswerPath;
+   public Path getContainerDir() {
+      return _containerDir;
    }
 
    public String getCoordinatorHost() {
@@ -622,16 +721,20 @@ public final class Settings extends BaseSettings {
       return _dataPlane;
    }
 
+   public String getDeltaEnvironmentName() {
+      return _deltaEnvironmentName;
+   }
+
+   public String getDeltaTestrig() {
+      return _deltaTestrig;
+   }
+
+   public TestrigSettings getDeltaTestrigSettings() {
+      return _deltaTestrigSettings;
+   }
+
    public boolean getDiffActive() {
       return _diffActive;
-   }
-
-   public String getDiffEnvironmentName() {
-      return _diffEnvironmentName;
-   }
-
-   public EnvironmentSettings getDiffEnvironmentSettings() {
-      return _diffEnvironmentSettings;
    }
 
    public boolean getDiffQuestion() {
@@ -654,11 +757,11 @@ public final class Settings extends BaseSettings {
       return _flatten;
    }
 
-   public String getFlattenDestination() {
+   public Path getFlattenDestination() {
       return _flattenDestination;
    }
 
-   public String getGenerateOspfTopologyPath() {
+   public Path getGenerateOspfTopologyPath() {
       return _genOspfTopologyPath;
    }
 
@@ -746,7 +849,7 @@ public final class Settings extends BaseSettings {
       return _nlsTraffic;
    }
 
-   public String getNodeRolesPath() {
+   public Path getNodeRolesPath() {
       return _nodeRolesPath;
    }
 
@@ -758,10 +861,6 @@ public final class Settings extends BaseSettings {
       return _outputEnvironmentName;
    }
 
-   public String getParseAnswerPath() {
-      return _parseAnswerPath;
-   }
-
    public boolean getPedanticAsError() {
       return _pedanticAsError;
    }
@@ -770,23 +869,23 @@ public final class Settings extends BaseSettings {
       return _pedanticRecord;
    }
 
-   public String getPrecomputedBgpAdvertisementsPath() {
+   public Path getPrecomputedBgpAdvertisementsPath() {
       return _precomputedBgpAdvertisementsPath;
    }
 
-   public String getPrecomputedFactsPath() {
+   public Path getPrecomputedFactsPath() {
       return _precomputedFactsPath;
    }
 
-   public String getPrecomputedIbgpNeighborsPath() {
+   public Path getPrecomputedIbgpNeighborsPath() {
       return _precomputedIbgpNeighborsPath;
    }
 
-   public String getPrecomputedRoutesPath() {
+   public Path getPrecomputedRoutesPath() {
       return _precomputedRoutesPath;
    }
 
-   public List<String> getPrecomputedRoutesPaths() {
+   public List<Path> getPrecomputedRoutesPaths() {
       return _precomputedRoutesPaths;
    }
 
@@ -802,14 +901,6 @@ public final class Settings extends BaseSettings {
       return _printSymmetricEdges;
    }
 
-   public String getProtocolDependencyGraphPath() {
-      return _protocolDependencyGraphPath;
-   }
-
-   public String getProtocolDependencyGraphZipPath() {
-      return _protocolDependencyGraphZipPath;
-   }
-
    public boolean getQuery() {
       return _query;
    }
@@ -822,11 +913,11 @@ public final class Settings extends BaseSettings {
       return _questionName;
    }
 
-   public String getQuestionParametersPath() {
+   public Path getQuestionParametersPath() {
       return _questionParametersPath;
    }
 
-   public String getQuestionPath() {
+   public Path getQuestionPath() {
       return _questionPath;
    }
 
@@ -850,20 +941,12 @@ public final class Settings extends BaseSettings {
       return _serializeIndependent;
    }
 
-   public String getSerializeIndependentPath() {
-      return _serializeIndependentPath;
-   }
-
    public boolean getSerializeToText() {
       return _serializeToText;
    }
 
    public boolean getSerializeVendor() {
       return _serializeVendor;
-   }
-
-   public String getSerializeVendorPath() {
-      return _serializeVendorPath;
    }
 
    public String getServiceHost() {
@@ -890,8 +973,12 @@ public final class Settings extends BaseSettings {
       return _synthesizeTopology;
    }
 
-   public String getTestRigPath() {
-      return _testRigPath;
+   public String getTestrig() {
+      return _testrig;
+   }
+
+   public TestrigSettings getTestrigSettings() {
+      return _testrigSettings;
    }
 
    public boolean getThrowOnLexerError() {
@@ -950,10 +1037,6 @@ public final class Settings extends BaseSettings {
       return _writeRoutes;
    }
 
-   public String getZ3File() {
-      return _z3File;
-   }
-
    public boolean ignoreUnsupported() {
       return _ignoreUnsupported;
    }
@@ -969,7 +1052,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_COORDINATOR_NO_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
-      setDefaultProperty(BfConsts.ARG_DIFF_ENVIRONMENT_NAME, null);
+      setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
       setDefaultProperty(ARG_DIFF_QUESTION, false);
       setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
       setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
@@ -1055,15 +1138,15 @@ public final class Settings extends BaseSettings {
       addOption(BfConsts.ARG_ANSWER_JSON_PATH,
             "save query json output to specified file", ARGNAME_PATH);
 
-      addOption(BfConsts.ARG_AUTO_BASE_DIR,
-            "path to base dir for automatic i/o path selection", ARGNAME_PATH);
-
       addListOption(BfConsts.ARG_BLOCK_NAMES,
             "list of blocks of logic rules to add or remove", "blocknames");
 
       addOption(
             ARG_BUILD_PREDICATE_INFO,
             "build predicate info (should only be called by ant build script) with provided input logic dir",
+            ARGNAME_PATH);
+
+      addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory",
             ARGNAME_PATH);
 
       addOption(ARG_COORDINATOR_HOST,
@@ -1081,12 +1164,15 @@ public final class Settings extends BaseSettings {
       addOption(ARG_COORDINATOR_WORK_PORT,
             "coordinator work manager listening port", "port_number");
 
+      addOption(BfConsts.ARG_DELTA_ENVIRONMENT_NAME,
+            "name of delta environment to use", "name");
+
+      addOption(BfConsts.ARG_DELTA_TESTRIG, "name of delta testrig",
+            ARGNAME_NAME);
+
       addBooleanOption(
             BfConsts.ARG_DIFF_ACTIVE,
             "make differential environment the active one for questions about a single environment");
-
-      addOption(BfConsts.ARG_DIFF_ENVIRONMENT_NAME,
-            "name of delta environment to use", "name");
 
       addBooleanOption(
             ARG_DIFF_QUESTION,
@@ -1240,6 +1326,8 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
             "synthesize topology from interface ip subnet information");
 
+      addOption(BfConsts.ARG_TESTRIG, "name of testrig", ARGNAME_NAME);
+
       addBooleanOption(ARG_THROW_ON_LEXER_ERROR,
             "throw exception immediately on lexer error");
 
@@ -1339,29 +1427,30 @@ public final class Settings extends BaseSettings {
       // REGULAR OPTIONS
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
       _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
-      _answerJsonPath = getStringOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
-      _autoBaseDir = getStringOptionValue(BfConsts.ARG_AUTO_BASE_DIR);
+      _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
       _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
       _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
+      _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
       _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
       _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
       _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
       _coordinatorUseSsl = !getBooleanOptionValue(ARG_COORDINATOR_NO_SSL);
       _coordinatorWorkPort = getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
       _dataPlane = getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
+      _deltaEnvironmentName = getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
+      _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
       _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
-      _diffEnvironmentName = getStringOptionValue(BfConsts.ARG_DIFF_ENVIRONMENT_NAME);
       _diffQuestion = getBooleanOptionValue(ARG_DIFF_QUESTION);
       _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
       _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
       _flatten = getBooleanOptionValue(ARG_FLATTEN);
-      _flattenDestination = getStringOptionValue(ARG_FLATTEN_DESTINATION);
+      _flattenDestination = getPathOptionValue(ARG_FLATTEN_DESTINATION);
       _flattenOnTheFly = getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
       _generateStubs = getBooleanOptionValue(ARG_GENERATE_STUBS);
       _generateStubsInputRole = getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
       _generateStubsInterfaceDescriptionRegex = getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
       _generateStubsRemoteAs = getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
-      _genOspfTopologyPath = getStringOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+      _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
       _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
       _history = getBooleanOptionValue(BfConsts.COMMAND_GET_HISTORY);
@@ -1380,11 +1469,11 @@ public final class Settings extends BaseSettings {
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
-      _precomputedBgpAdvertisementsPath = getStringOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
-      _precomputedFactsPath = getStringOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
-      _precomputedIbgpNeighborsPath = getStringOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
-      _precomputedRoutesPath = getStringOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
-      _precomputedRoutesPaths = getStringListOptionValue(ARG_PRECOMPUTED_ROUTES_PATHS);
+      _precomputedBgpAdvertisementsPath = getPathOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
+      _precomputedFactsPath = getPathOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
+      _precomputedIbgpNeighborsPath = getPathOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);
+      _precomputedRoutesPath = getPathOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
+      _precomputedRoutesPaths = getPathListOptionValue(ARG_PRECOMPUTED_ROUTES_PATHS);
       _predicates = getStringListOptionValue(ARG_PREDICATES);
       _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
       _printSymmetricEdges = getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
@@ -1405,6 +1494,7 @@ public final class Settings extends BaseSettings {
       _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
       _synthesizeJsonTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
       _synthesizeTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_TOPOLOGY);
+      _testrig = getStringOptionValue(BfConsts.ARG_TESTRIG);
       _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
       _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
       _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
@@ -1430,20 +1520,20 @@ public final class Settings extends BaseSettings {
       return _runInServiceMode;
    }
 
-   public void setActiveEnvironmentSettings(EnvironmentSettings envSettings) {
-      _activeEnvironmentSettings = envSettings;
+   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
+      _activeTestrigSettings = activeTestrigSettings;
    }
 
-   public void setConvertAnswerPath(String convertAnswerPath) {
-      _convertAnswerPath = convertAnswerPath;
+   public void setDeltaEnvironmentName(String diffEnvironmentName) {
+      _deltaEnvironmentName = diffEnvironmentName;
+   }
+
+   public void setDeltaTestrig(String deltaTestrig) {
+      _deltaTestrig = deltaTestrig;
    }
 
    public void setDiffActive(boolean diffActive) {
       _diffActive = diffActive;
-   }
-
-   public void setDiffEnvironmentName(String diffEnvironmentName) {
-      _diffEnvironmentName = diffEnvironmentName;
    }
 
    public void setDiffQuestion(boolean diffQuestion) {
@@ -1486,41 +1576,16 @@ public final class Settings extends BaseSettings {
       _nlsTraffic = postFlows;
    }
 
-   public void setNodeRolesPath(String nodeRolesPath) {
+   public void setNodeRolesPath(Path nodeRolesPath) {
       _nodeRolesPath = nodeRolesPath;
    }
 
-   public void setParseAnswerPath(String parseAnswerPath) {
-      _parseAnswerPath = parseAnswerPath;
-   }
-
-   public void setProtocolDependencyGraphPath(String protocolDependencyGraphPath) {
-      _protocolDependencyGraphPath = protocolDependencyGraphPath;
-   }
-
-   public void setProtocolDependencyGraphZipPath(
-         String protocolDependencyGraphZipPath) {
-      _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
-   }
-
-   public void setQuestionParametersPath(String questionParametersPath) {
+   public void setQuestionParametersPath(Path questionParametersPath) {
       _questionParametersPath = questionParametersPath;
    }
 
-   public void setQuestionPath(String questionPath) {
+   public void setQuestionPath(Path questionPath) {
       _questionPath = questionPath;
-   }
-
-   public void setSerializeIndependentPath(String path) {
-      _serializeIndependentPath = path;
-   }
-
-   public void setSerializeVendorPath(String path) {
-      _serializeVendorPath = path;
-   }
-
-   public void setTestRigPath(String path) {
-      _testRigPath = path;
    }
 
    public void setThrowOnLexerError(boolean throwOnLexerError) {
@@ -1529,10 +1594,6 @@ public final class Settings extends BaseSettings {
 
    public void setThrowOnParserError(boolean throwOnParserError) {
       _throwOnParserError = throwOnParserError;
-   }
-
-   public void setZ3DataPlaneFile(String path) {
-      _z3File = path;
    }
 
 }

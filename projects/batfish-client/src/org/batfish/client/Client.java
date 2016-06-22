@@ -390,7 +390,8 @@ public class Client {
          // return false;
       }
       else {
-         String answerString = CommonUtil.readFile(new File(downloadedAnsFile));
+         String answerString = CommonUtil
+               .readFile(Paths.get(downloadedAnsFile));
          _logger.output(answerString + "\n");
          try {
             ObjectMapper mapper = new BatfishObjectMapper();

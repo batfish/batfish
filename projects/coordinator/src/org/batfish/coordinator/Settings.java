@@ -11,12 +11,18 @@ import org.batfish.coordinator.queues.WorkQueue;
 
 public class Settings extends BaseSettings {
 
+   private static final String ARG_ALLOW_DEFAULT_KEY_LISTINGS = "allowdefaultkeylistings";
    private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
-   private static final String ARG_ALLOW_DEFAULT_KEY_LISTINGS = "allowdefaultkeylistings";   
    private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
    private static final String ARG_DISABLE_SSL = "disablessl";
+   /**
+    * (the arguments below are not wired to command line)
+    */
+   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "fileauthpermsfile";
+   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
+   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
@@ -27,25 +33,19 @@ public class Settings extends BaseSettings {
    private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
    private static final String ARG_QUEUE_TYPE = "qtype";
    private static final String ARG_SERVICE_HOST = "servicehost";
+
    private static final String ARG_SERVICE_POOL_PORT = "poolport";
    private static final String ARG_SERVICE_WORK_PORT = "workport";
    private static final String ARG_SSL_KEYSTORE_FILE = "sslkeystorefile";
 
+   private static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
    /**
     * Need when using Azure queues for storing work items
     */
    private static final String ARG_STORAGE_ACCOUNT_KEY = "storageaccountkey";
    private static final String ARG_STORAGE_ACCOUNT_NAME = "storageaccountname";
+
    private static final String ARG_STORAGE_PROTOCOL = "storageprotocol";
-
-   /**
-    * (the arguments below are not wired to command line)
-    */
-   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "fileauthpermsfile";
-   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
-   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
-
-   private static final String ARG_SSL_KEYSTORE_PASSWORD = "sslkeystorepassword";
 
    private static final String EXECUTABLE_NAME = "coordinator";
 
@@ -85,6 +85,10 @@ public class Settings extends BaseSettings {
       return _authorizerType;
    }
 
+   public String getContainersLocation() {
+      return _containersLocation;
+   }
+
    public long getDbAuthorizerCacheExpiryMs() {
       return _dbCacheExpiryMs;
    }
@@ -92,7 +96,7 @@ public class Settings extends BaseSettings {
    public String getDbAuthorizerConnString() {
       return _dbAuthorizerConnString;
    }
-   
+
    public boolean getDefaultKeyListings() {
       return _defaultKeyListings;
    }
@@ -171,10 +175,6 @@ public class Settings extends BaseSettings {
 
    public String getStorageProtocol() {
       return _storageProtocol;
-   }
-
-   public String getContainersLocation() {
-      return _containersLocation;
    }
 
    public boolean getUseSsl() {
