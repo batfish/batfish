@@ -11,7 +11,7 @@ Instructions for building and running Batfish
 Prerequisites:
    ant
    GNU parallel
-   java 7 jdk
+   java 8 jdk
    Network Logic Solver (nls) (not required for all tasks)
    python
    z3
