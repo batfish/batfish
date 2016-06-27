@@ -412,6 +412,11 @@ public class Batfish implements AutoCloseable {
       Path testrigDir = settings.getTestrigSettings().getBasePath();
       TestrigSettings testrigSettings = settings.getTestrigSettings();
       TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
+      EnvironmentSettings deltaEnvSettings = deltaTestrigSettings
+            .getEnvironmentSettings();
+      String deltaEnvName = deltaEnvSettings.getName();
+      boolean delta = settings.getDeltaTestrig() != null
+            || deltaEnvName != null;
       if (questionName != null) {
          Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR)
                .resolve(questionName);
@@ -422,10 +427,7 @@ public class Batfish implements AutoCloseable {
          EnvironmentSettings envSettings = testrigSettings
                .getEnvironmentSettings();
          String envName = envSettings.getName();
-         if (deltaTestrigSettings != null) {
-            EnvironmentSettings deltaEnvSettings = deltaTestrigSettings
-                  .getEnvironmentSettings();
-            String deltaEnvName = deltaEnvSettings.getName();
+         if (delta) {
             deltaEnvSettings.setTrafficFactsDir(questionPath.resolve(Paths.get(
                   BfConsts.RELPATH_DIFF, envName, deltaEnvName,
                   BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)));
