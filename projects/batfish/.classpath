@@ -19,7 +19,7 @@
 	<classpathentry kind="lib" path="lib/httpcomponents/httpmime-4.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/protobuf/protobuf-2.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.7.jar"/>
-	<classpathentry kind="lib" path="lib/z3/com.microsoft.z3.jar"/>
+	<classpathentry kind="lib" path="lib/z3/com.microsoft.z3.jar" sourcepath="lib/z3/com.microsoft.z3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/grizzly/grizzly-http-all-2.3.18.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-exec-1.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/batfish-common-protocol"/>

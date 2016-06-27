@@ -30,9 +30,7 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
       Map<Key, Boolean> results = new LinkedHashMap<Key, Boolean>();
       long startTime = System.currentTimeMillis();
       long elapsedTime;
-      Context ctx = null;
-      try {
-         ctx = new Context();
+      try (Context ctx = new Context()) {
          NodProgram baseProgram = _synthesizer.synthesizeNodAclProgram(ctx);
          NodProgram queryProgram = _query.getNodProgram(baseProgram);
          NodProgram program = baseProgram.append(queryProgram);

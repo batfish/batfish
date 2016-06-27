@@ -139,9 +139,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
    public NodJobResult call() throws Exception {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
-      Context ctx = null;
-      try {
-         ctx = new Context();
+      try (Context ctx = new Context()) {
          NodProgram baseProgram = _dataPlaneSynthesizer
                .synthesizeNodDataPlaneProgram(ctx);
          NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);

@@ -57,10 +57,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       NodProgram latestProgram = null;
-      Context ctx = null;
-      try {
+      try (Context ctx = new Context()) {
          BoolExpr[] answers = new BoolExpr[_numPrograms];
-         ctx = new Context();
          Params p = ctx.mkParams();
          p.add("fixedpoint.engine", "datalog");
          p.add("fixedpoint.datalog.default_relation", "doc");
@@ -160,11 +158,6 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new NodJobResult(elapsedTime, new BatfishException(
                "Error running NoD on concatenated data plane", e));
-      }
-      finally {
-         if (ctx != null) {
-            ctx.dispose();
-         }
       }
    }
 
