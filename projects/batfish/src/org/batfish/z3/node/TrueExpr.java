@@ -10,7 +10,11 @@ public class TrueExpr extends BooleanExpr {
    public static final TrueExpr INSTANCE = new TrueExpr();
 
    private TrueExpr() {
-      _printer = new SimpleExprPrinter("true");
+   }
+
+   @Override
+   public void print(StringBuilder sb, int indent) {
+      sb.append("true");
    }
 
    @Override

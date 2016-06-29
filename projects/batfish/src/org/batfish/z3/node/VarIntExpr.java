@@ -13,7 +13,6 @@ public class VarIntExpr extends IntExpr {
 
    public VarIntExpr(String var) {
       _var = var;
-      _printer = new SimpleExprPrinter(_var);
    }
 
    @Override
@@ -37,6 +36,11 @@ public class VarIntExpr extends IntExpr {
    @Override
    public int hashCode() {
       return _var.hashCode();
+   }
+
+   @Override
+   public void print(StringBuilder sb, int indent) {
+      sb.append(_var);
    }
 
    @Override

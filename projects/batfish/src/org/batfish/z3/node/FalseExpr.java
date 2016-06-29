@@ -10,7 +10,11 @@ public class FalseExpr extends BooleanExpr {
    public static final FalseExpr INSTANCE = new FalseExpr();
 
    private FalseExpr() {
-      _printer = new SimpleExprPrinter("false");
+   }
+
+   @Override
+   public void print(StringBuilder sb, int indent) {
+      sb.append("false");
    }
 
    @Override

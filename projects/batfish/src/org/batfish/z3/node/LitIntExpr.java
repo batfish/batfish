@@ -11,24 +11,20 @@ public class LitIntExpr extends IntExpr {
 
    private int _bits;
    private long _num;
-   private String _numString;
 
    public LitIntExpr(Ip ip) {
       _num = ip.asLong();
       _bits = 32;
-      init();
    }
 
    public LitIntExpr(long num, int bits) {
       _num = num;
       _bits = bits;
-      init();
    }
 
    public LitIntExpr(long num, int low, int high) {
       _bits = high - low + 1;
       _num = num >> low;
-      init();
    }
 
    @Override
@@ -40,12 +36,8 @@ public class LitIntExpr extends IntExpr {
       return false;
    }
 
-   @Override
-   public int hashCode() {
-      return _numString.hashCode();
-   }
-
-   private void init() {
+   private String getNumString() {
+      String _numString;
       if (_bits % 4 == 0) {
          // hex
          int numNibbles = _bits / 4;
@@ -60,7 +52,17 @@ public class LitIntExpr extends IntExpr {
             _numString += (bit != 0) ? 1 : 0;
          }
       }
-      _printer = new SimpleExprPrinter(_numString);
+      return _numString;
+   }
+
+   @Override
+   public int hashCode() {
+      return getNumString().hashCode();
+   }
+
+   @Override
+   public void print(StringBuilder sb, int indent) {
+      sb.append(getNumString());
    }
 
    @Override

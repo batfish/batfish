@@ -6,11 +6,15 @@ public class IdExpr extends Expr {
 
    public IdExpr(String id) {
       _id = id;
-      _printer = new SimpleExprPrinter(_id);
    }
 
    public String getId() {
       return _id;
+   }
+
+   @Override
+   public void print(StringBuilder sb, int indent) {
+      sb.append(_id);
    }
 
 }
