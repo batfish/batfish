@@ -64,6 +64,7 @@ public class Client {
    private static final String COMMAND_HELP = "help";
    private static final String COMMAND_INIT_CONTAINER = "init-container";
    private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
+   private static final String COMMAND_INIT_DIFF_TESTRIG = "init-diff-testrig";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
    private static final String COMMAND_LIST_CONTAINERS = "list-containers";
    private static final String COMMAND_LIST_ENVIRONMENTS = "list-environments";
@@ -82,14 +83,15 @@ public class Client {
    private static final String COMMAND_SHOW_CONTAINER = "show-container";
    private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
    private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
+   private static final String COMMAND_SHOW_DIFF_TESTRIG = "show-diff-testrig";
    private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
-   private static final String DEFAULT_DIFF_ENV_PREFIX = "delta";
-   private static final String DEFAULT_ENV_NAME = "default";
+   private static final String DEFAULT_DIFF_ENV_PREFIX = "env_";
+   private static final String DEFAULT_ENV_NAME = "env_default";
    private static final String DEFAULT_QUESTION_PREFIX = "q";
-   private static final String DEFAULT_TESTRIG_PREFIX = "tr";
+   private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
@@ -146,6 +148,11 @@ public class Client {
                   + " [-nodataplane] <environment zipfile or directory> [<environment-name>]\n"
                   + "\t Initialize the differential environment");
       descs.put(
+            COMMAND_INIT_DIFF_TESTRIG,
+            COMMAND_INIT_DIFF_TESTRIG
+                  + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
+                  + "\t Initialize the diff testrig with default environment");
+      descs.put(
             COMMAND_INIT_TESTRIG,
             COMMAND_INIT_TESTRIG
                   + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
@@ -187,17 +194,20 @@ public class Client {
             + "\n" + "\t Show coordinator host");
       descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n"
             + "\t Show current client loglevel");
+      descs.put(COMMAND_SHOW_DIFF_TESTRIG, COMMAND_SHOW_DIFF_TESTRIG + "\n"
+            + "\t Show differential testrig and environment");
       descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
-            + "\t Show active testrig");
+            + "\t Show base testrig and environment");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
    }
 
-   private String _currContainerName = null;
+   private String _currContainerName = null;   
    private String _currDiffEnv = null;
+   private String _currDiffTestrig;   
    private String _currEnv = null;
-   private String _currTestrigName = null;
+   private String _currTestrig = null;
 
    private BatfishLogger _logger;
    private BfCoordPoolHelper _poolHelper;
@@ -206,7 +216,6 @@ public class Client {
    private Settings _settings;
 
    private BfCoordWorkHelper _workHelper;
-   private String _currDeltaTestrig;
 
    public Client(Settings settings) {
       _settings = settings;
@@ -278,7 +287,7 @@ public class Client {
 
       // upload the question
       boolean resultUpload = _workHelper.uploadQuestion(_currContainerName,
-            _currTestrigName, questionName, questionFile,
+            _currTestrig, questionName, questionFile,
             paramsFile.getAbsolutePath());
 
       if (!resultUpload) {
@@ -294,10 +303,10 @@ public class Client {
 
       // answer the question
       WorkItem wItemAs = (isDiff) ? _workHelper.getWorkItemAnswerDiffQuestion(
-            questionName, _currContainerName, _currTestrigName, _currEnv,
-            _currDeltaTestrig, _currDiffEnv) : _workHelper
+            questionName, _currContainerName, _currTestrig, _currEnv,
+            _currDiffTestrig, _currDiffEnv) : _workHelper
             .getWorkItemAnswerQuestion(questionName, _currContainerName,
-                  _currTestrigName, _currEnv, _currDeltaTestrig, _currDiffEnv);
+                  _currTestrig, _currEnv, _currDiffTestrig, _currDiffEnv);
       return execute(wItemAs);
    }
 
@@ -322,17 +331,6 @@ public class Client {
       }
 
       return result;
-   }
-
-   private boolean compileDiffEnvironment() throws Exception {
-      if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
-         return false;
-      }
-
-      WorkItem wItemGenDdp = _workHelper.getWorkItemCompileDiffEnvironment(
-            _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
-
-      return execute(wItemGenDdp);
    }
 
    private File createTempFile(String filePrefix, String content)
@@ -454,7 +452,7 @@ public class Client {
 
       // generate the data plane
       WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
-            _currContainerName, _currTestrigName, _currEnv);
+            _currContainerName, _currTestrig, _currEnv);
 
       return execute(wItemGenDp);
    }
@@ -465,7 +463,7 @@ public class Client {
       }
 
       WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDiffDataPlane(
-            _currContainerName, _currTestrigName, _currEnv, _currDiffEnv);
+            _currContainerName, _currTestrig, _currEnv, _currDiffEnv);
 
       return execute(wItemGenDdp);
    }
@@ -584,6 +582,11 @@ public class Client {
          return true;
       }
 
+      if (_currDiffTestrig == null) {
+         _logger.errorf("Active diff testrig is not set\n");
+         return false;
+      }
+
       if (_currDiffEnv == null) {
          _logger.errorf("Active diff environment is not set\n");
          return false;
@@ -596,7 +599,7 @@ public class Client {
          return true;
       }
 
-      if (_currTestrigName == null) {
+      if (_currTestrig == null) {
          _logger.errorf("Active testrig is not set.\n");
          _logger
                .errorf(
@@ -658,7 +661,9 @@ public class Client {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
 
-         switch (words[0]) {
+         String command = words[0];
+         
+         switch (command) {
          // this is a hidden command for testing
          case "add-worker": {
             boolean result = _poolHelper.addBatfishWorker(words[1]);
@@ -714,7 +719,7 @@ public class Client {
 
             String envName = parameters.get(0);
             boolean result = _workHelper.delEnvironment(_currContainerName,
-                  _currTestrigName, envName);
+                  _currTestrig, envName);
             _logger.outputf("Result of deleting environment: %s\n", result);
             return true;
          }
@@ -725,7 +730,7 @@ public class Client {
 
             String qName = parameters.get(0);
             boolean result = _workHelper.delQuestion(_currContainerName,
-                  _currTestrigName, qName);
+                  _currTestrig, qName);
             _logger.outputf("Result of deleting question: %s\n", result);
             return true;
          }
@@ -833,13 +838,16 @@ public class Client {
             }
 
             _currDiffEnv = diffEnvName;
+            _currDiffTestrig = _currTestrig;
 
-            _logger.outputf("Active delta environment is now %s\n",
-                  _currDiffEnv);
+            _logger.outputf("Active diff testrig->environment is now %s->%s\n",
+                  _currDiffTestrig, _currDiffEnv);
 
-            if (!compileDiffEnvironment()) {
+            WorkItem wItemGenDdp = _workHelper.getWorkItemCompileDiffEnvironment(
+                  _currContainerName, _currDiffTestrig, _currEnv, _currDiffEnv);
+
+            if (!execute(wItemGenDdp))
                return false;
-            }
 
             if (generateDiffDataplane) {
                _logger.output("Generating delta dataplane\n");
@@ -852,7 +860,8 @@ public class Client {
             }
 
             return true;
-         }
+         }         
+         case COMMAND_INIT_DIFF_TESTRIG: 
          case COMMAND_INIT_TESTRIG: {
             boolean generateDataplane = true;
 
@@ -891,10 +900,17 @@ public class Client {
                return false;
             }
 
-            // set the name of the current testrig
-            _currTestrigName = testrigName;
-            _currEnv = DEFAULT_ENV_NAME;
-            _logger.outputf("Active testrig is now %s\n", _currTestrigName);
+            
+            if (command.equals(COMMAND_INIT_TESTRIG)) {
+               _currTestrig = testrigName;
+               _currEnv = DEFAULT_ENV_NAME;
+               _logger.outputf("Base testrig is now %s\n", _currTestrig);
+            }
+            else {
+               _currDiffTestrig = testrigName;
+               _currDiffEnv = DEFAULT_ENV_NAME;
+               _logger.outputf("Diff testrig is now %s\n", _currTestrig);               
+            }
 
             if (generateDataplane) {
                _logger.output("Generating dataplane now\n");
@@ -919,7 +935,7 @@ public class Client {
             }
 
             String[] environmentList = _workHelper.listEnvironments(
-                  _currContainerName, _currTestrigName);
+                  _currContainerName, _currTestrig);
             _logger.outputf("Environments: %s\n",
                   Arrays.toString(environmentList));
 
@@ -930,7 +946,7 @@ public class Client {
                return false;
             }
             String[] questionList = _workHelper.listQuestions(
-                  _currContainerName, _currTestrigName);
+                  _currContainerName, _currTestrig);
             _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
             return true;
          }
@@ -978,7 +994,7 @@ public class Client {
          case COMMAND_SET_DIFF_ENV: {
             _currDiffEnv = parameters.get(0);
             if (parameters.size() > 1) {
-               _currDeltaTestrig = parameters.get(1);
+               _currDiffTestrig = parameters.get(1);
             }
             _logger.outputf(
                   "Active differential environment is now set to %s\n",
@@ -996,9 +1012,9 @@ public class Client {
             return true;
          }
          case COMMAND_SET_TESTRIG: {
-            _currTestrigName = parameters.get(0);
+            _currTestrig = parameters.get(0);
             _currEnv = DEFAULT_ENV_NAME;
-            _logger.outputf("Active testrig is now %s\n", _currTestrigName);
+            _logger.outputf("Active testrig is now %s\n", _currTestrig);
             return true;
          }
          case COMMAND_SHOW_API_KEY: {
@@ -1024,11 +1040,18 @@ public class Client {
                   _logger.getLogLevelStr());
             return true;
          }
+         case COMMAND_SHOW_DIFF_TESTRIG: {
+            if (!isSetDiffEnvironment()) {
+               return false;
+            }
+            _logger.outputf("Diff testrig->environment is %s->%s\n", _currDiffTestrig, _currDiffEnv);
+            return true;
+         }
          case COMMAND_SHOW_TESTRIG: {
             if (!isSetTestrig()) {
                return false;
             }
-            _logger.outputf("Current testrig is %s\n", _currTestrigName);
+            _logger.outputf("Base testrig->environment is %s->%s\n", _currTestrig, _currEnv);
             return true;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
@@ -1041,7 +1064,7 @@ public class Client {
 
             // upload the object
             return _workHelper.uploadCustomObject(_currContainerName,
-                  _currTestrigName, objectName, objectFile);
+                  _currTestrig, objectName, objectFile);
          }
          default:
             _logger.error("Unsupported command " + words[0] + "\n");
@@ -1174,7 +1197,7 @@ public class Client {
 
       boolean result = (isTestrig) ? _workHelper.uploadTestrig(
             _currContainerName, testrigOrEnvName, uploadFilename) : _workHelper
-            .uploadEnvironment(_currContainerName, _currTestrigName,
+            .uploadEnvironment(_currContainerName, _currTestrig,
                   testrigOrEnvName, uploadFilename);
 
       // unequal means we must have created a temporary file
