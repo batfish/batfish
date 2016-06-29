@@ -16,6 +16,9 @@ Prerequisites:
    python
    z3
 
+Optional:
+   JProfiler - a Java profiler - located at http://www.ej-technologies.com/products/jprofiler/overview.html
+
 Steps:
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
