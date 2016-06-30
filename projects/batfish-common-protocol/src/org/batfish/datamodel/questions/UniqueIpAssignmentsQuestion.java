@@ -11,13 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UniqueIpAssignmentsQuestion extends Question {
 
-   private static final String DIFF_VAR = "diff";
-
    private static final String NODE_REGEX_VAR = "nodeRegex";
 
    private static final String VERBOSE_VAR = "verbose";
-
-   private boolean _differential;
 
    private String _nodeRegex;
 
@@ -26,19 +22,11 @@ public class UniqueIpAssignmentsQuestion extends Question {
    public UniqueIpAssignmentsQuestion() {
       super(QuestionType.UNIQUE_IP_ASSIGNMENTS);
       _nodeRegex = ".*";
-      _differential = false;
    }
 
    @Override
    public boolean getDataPlane() {
       return false;
-   }
-
-   @Override
-   @JsonIgnore(false)
-   @JsonProperty(DIFF_VAR)
-   public boolean getDifferential() {
-      return _differential;
    }
 
    @JsonProperty(NODE_REGEX_VAR)
@@ -56,10 +44,6 @@ public class UniqueIpAssignmentsQuestion extends Question {
       return _verbose;
    }
 
-   private void setDifferential(boolean differential) {
-      _differential = differential;
-   }
-
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
@@ -69,11 +53,11 @@ public class UniqueIpAssignmentsQuestion extends Question {
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
+         if (isBaseParamKey(paramKey))
+            continue;
+         
          try {
             switch (paramKey) {
-            case DIFF_VAR:
-               setDifferential(parameters.getBoolean(paramKey));
-               break;
             case NODE_REGEX_VAR:
                setNodeRegex(parameters.getString(paramKey));
                break;
