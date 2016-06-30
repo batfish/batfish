@@ -1,4 +1,4 @@
-package org.batfish.datamodel.answers;
+package org.batfish.datamodel.collections;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,7 +6,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.batfish.common.util.*;
 
-public class NamedStructureEquivalenceClass<T> {
+public class NamedStructureEquivalenceSet<T> {
 
    // Jackson cannot serialize generics correctly.
    @JsonIgnore
@@ -14,10 +14,10 @@ public class NamedStructureEquivalenceClass<T> {
 
    private Set<String> _nodes = null;
 
-   public NamedStructureEquivalenceClass() {
+   public NamedStructureEquivalenceSet() {
    }
 
-   public NamedStructureEquivalenceClass(String node, T namedStructure) {
+   public NamedStructureEquivalenceSet(String node, T namedStructure) {
       _namedStructure = namedStructure;
       _nodes = new HashSet<String>();
       _nodes.add(node);

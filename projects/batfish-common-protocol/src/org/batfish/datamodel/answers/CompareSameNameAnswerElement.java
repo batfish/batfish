@@ -1,59 +1,28 @@
 package org.batfish.datamodel.answers;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-public class CompareSameNameAnswerElement<T> implements AnswerElement {
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 
-   private String _hrName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-   private Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures;
+public class CompareSameNameAnswerElement implements AnswerElement {
+
+   private final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
+   
+   private Map<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
 
    public CompareSameNameAnswerElement() {
-      _hrName = "";
-      _sameNamedStructures = new HashMap<String, Set<NamedStructureEquivalenceClass<T>>>();
+      _equivalenceSets = new HashMap<String, NamedStructureEquivalenceSets<?>>();
    }
-
-   public CompareSameNameAnswerElement(String hrName) {
-      _hrName = hrName;
-      _sameNamedStructures = new HashMap<String, Set<NamedStructureEquivalenceClass<T>>>();
+   
+   public void add(String key, NamedStructureEquivalenceSets<?> sets) {
+      _equivalenceSets.put(key, sets);
    }
-
-   public void add(String node, String name, T namedStructure) {
-      if (!_sameNamedStructures.containsKey(name)) {
-         _sameNamedStructures.put(name,
-               new HashSet<NamedStructureEquivalenceClass<T>>());
-      }
-      Set<NamedStructureEquivalenceClass<T>> equiClasses = _sameNamedStructures
-            .get(name);
-
-      for (NamedStructureEquivalenceClass<T> equiClass : equiClasses) {
-         if (equiClass.compareStructure(namedStructure)) {
-            equiClass.addNode(node);
-            return;
-         }
-      }
-      equiClasses.add(new NamedStructureEquivalenceClass<T>(node,
-            namedStructure));
+   
+   @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
+   public Map<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
+      return _equivalenceSets;
    }
-
-   public String get_hrName() {
-      return _hrName;
-   }
-
-   public Map<String, Set<NamedStructureEquivalenceClass<T>>> get_sameNamedStructures() {
-      return _sameNamedStructures;
-   }
-
-   public void set_hrName(String _hrName) {
-      this._hrName = _hrName;
-   }
-
-   public void set_sameNamedStructures(
-         Map<String, Set<NamedStructureEquivalenceClass<T>>> _sameNamedStructures) {
-      this._sameNamedStructures = _sameNamedStructures;
-   }
-
 }

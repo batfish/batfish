@@ -9,34 +9,49 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
 
-public class CompareSameNameAnswerer extends Answer {
+public class CompareSameNameAnswerer extends Answerer {
 
-   public CompareSameNameAnswerer(Batfish batfish,
-         CompareSameNameQuestion question,
-         TestrigSettings testrigSettings) {
+   public CompareSameNameAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations(testrigSettings);
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
 
+      CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
+      
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+
+      CompareSameNameAnswerElement answerElement = new CompareSameNameAnswerElement();
+      
       // collect relevant nodes in a list.
       List<String> nodes = CommonUtil.getMatchingStrings(
             question.getNodeRegex(), configurations.keySet());
 
-      processAccessPathLists(nodes, configurations);
-      processCommunityLists(nodes, configurations);
-      processIkeGateways(nodes, configurations);
-      processRouteFilterLists(nodes, configurations);
+      answerElement.add(AsPathAccessList.class.getSimpleName(), 
+            processAccessPathLists(nodes, configurations));
+      answerElement.add(CommunityList.class.getSimpleName(), 
+            processCommunityLists(nodes, configurations));
+      answerElement.add(IkeGateway.class.getSimpleName(), 
+            processIkeGateways(nodes, configurations));
+      answerElement.add(RouteFilterList.class.getSimpleName(), 
+            processRouteFilterLists(nodes, configurations));
+      
+      return answerElement;
    }
 
-   private void processAccessPathLists(List<String> nodes,
+   private NamedStructureEquivalenceSets<AsPathAccessList> processAccessPathLists(List<String> nodes,
          Map<String, Configuration> configurations) {
-      CompareSameNameAnswerElement<AsPathAccessList> ae = new CompareSameNameAnswerElement<AsPathAccessList>(
+      NamedStructureEquivalenceSets<AsPathAccessList> ae = new NamedStructureEquivalenceSets<AsPathAccessList>(
             AsPathAccessList.class.getSimpleName());
       for (String node : nodes) {
          Map<String, AsPathAccessList> lists = configurations.get(node)
@@ -45,12 +60,12 @@ public class CompareSameNameAnswerer extends Answer {
             ae.add(node, listName, lists.get(listName));
          }
       }
-      addAnswerElement(ae);
+      return ae;
    }
 
-   private void processCommunityLists(List<String> nodes,
+   private NamedStructureEquivalenceSets<CommunityList> processCommunityLists(List<String> nodes,
          Map<String, Configuration> configurations) {
-      CompareSameNameAnswerElement<CommunityList> ae = new CompareSameNameAnswerElement<CommunityList>(
+      NamedStructureEquivalenceSets<CommunityList> ae = new NamedStructureEquivalenceSets<CommunityList>(
             CommunityList.class.getSimpleName());
       for (String node : nodes) {
          Map<String, CommunityList> lists = configurations.get(node)
@@ -59,12 +74,12 @@ public class CompareSameNameAnswerer extends Answer {
             ae.add(node, listName, lists.get(listName));
          }
       }
-      addAnswerElement(ae);
+      return ae;
    }
 
-   private void processIkeGateways(List<String> nodes,
+   private NamedStructureEquivalenceSets<IkeGateway> processIkeGateways(List<String> nodes,
          Map<String, Configuration> configurations) {
-      CompareSameNameAnswerElement<IkeGateway> ae = new CompareSameNameAnswerElement<IkeGateway>(
+      NamedStructureEquivalenceSets<IkeGateway> ae = new NamedStructureEquivalenceSets<IkeGateway>(
             IkeGateway.class.getSimpleName());
       for (String node : nodes) {
          Map<String, IkeGateway> lists = configurations.get(node)
@@ -73,12 +88,12 @@ public class CompareSameNameAnswerer extends Answer {
             ae.add(node, listName, lists.get(listName));
          }
       }
-      addAnswerElement(ae);
+      return ae;
    }
 
-   private void processRouteFilterLists(List<String> nodes,
+   private NamedStructureEquivalenceSets<RouteFilterList> processRouteFilterLists(List<String> nodes,
          Map<String, Configuration> configurations) {
-      CompareSameNameAnswerElement<RouteFilterList> ae = new CompareSameNameAnswerElement<RouteFilterList>(
+      NamedStructureEquivalenceSets<RouteFilterList> ae = new NamedStructureEquivalenceSets<RouteFilterList>(
             RouteFilterList.class.getSimpleName());
       for (String node : nodes) {
          // Process route filters
@@ -88,6 +103,6 @@ public class CompareSameNameAnswerer extends Answer {
             ae.add(node, listName, lists.get(listName));
          }
       }
-      addAnswerElement(ae);
+      return ae;
    }
 }

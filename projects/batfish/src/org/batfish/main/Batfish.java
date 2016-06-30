@@ -594,25 +594,7 @@ public class Batfish implements AutoCloseable {
       try {
          
          if (question.getDifferential() == true) {
-//            checkEnvironmentExists(getBaseTestrigSettings());
-//            checkEnvironmentExists(getDeltaTestrigSettings());
-//            UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
-//                  .getBaseTestrigSettings());
-//            UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
-//                  .getDeltaTestrigSettings());
-//            ObjectMapper mapper = new BatfishObjectMapper();
-//            try {
-//               String beforeJsonStr = mapper.writeValueAsString(before);
-//               String afterJsonStr = mapper.writeValueAsString(after);
-//               JSONObject beforeJson = new JSONObject(beforeJsonStr);
-//               JSONObject afterJson = new JSONObject(afterJsonStr);
-//               JsonDiff diff = new JsonDiff(beforeJson, afterJson);
-//               addAnswerElement(new JsonDiffAnswerElement(diff));
-//            }
-//            catch (JsonProcessingException | JSONException e) {
-//               throw new BatfishException(
-//                     "Could not convert diff element to json string", e);
-//            }
+            answerElement = Answerer.Create(question, this).answerDiff();
          }
          else {
             answerElement = Answerer.Create(question, this).answer(_testrigSettings);

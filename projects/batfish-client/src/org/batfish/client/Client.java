@@ -397,6 +397,11 @@ public class Client {
             ObjectMapper mapper = new BatfishObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
 
+            // printf debugging
+            //            org.batfish.datamodel.answers.CompareSameNameAnswerElement csnAnswer = 
+            //                  (org.batfish.datamodel.answers.CompareSameNameAnswerElement) answer.getAnswerElements().get(0);
+            //            _logger.outputf("answer: %s", csnAnswer.getEquivalenceSets().get("RouteFilterList").get_sameNamedStructures().size());
+            
             String newAnswerString = mapper.writeValueAsString(answer);
             JsonNode tree = mapper.readTree(answerString);
             JsonNode newTree = mapper.readTree(newAnswerString);
@@ -877,7 +882,7 @@ public class Client {
 
             String testrigLocation = parameters.get(0);
             String testrigName = (parameters.size() > 1) ? parameters.get(1)
-                  : DEFAULT_TESTRIG_PREFIX + "_" + UUID.randomUUID().toString();
+                  : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID().toString();
 
             // initialize the container if it hasn't been init'd before
             if (!isSetContainer(false)) {
@@ -996,9 +1001,12 @@ public class Client {
             if (parameters.size() > 1) {
                _currDiffTestrig = parameters.get(1);
             }
+            else if (_currDiffTestrig == null ) {
+               _currDiffTestrig = _currTestrig;
+            }
             _logger.outputf(
-                  "Active differential environment is now set to %s\n",
-                  _currDiffEnv);
+                  "Active diff testrig->environment is now %s->%s\n",
+                  _currDiffTestrig, _currDiffEnv);
             return true;
          }
          case COMMAND_SET_LOGLEVEL: {
