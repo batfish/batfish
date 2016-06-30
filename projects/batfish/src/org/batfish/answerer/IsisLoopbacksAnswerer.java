@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,14 +9,23 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.IsisLoopbacksAnswerElement;
 import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class IsisLoopbacksAnswer extends Answer {
+public class IsisLoopbacksAnswerer extends Answerer {
 
-   public IsisLoopbacksAnswer(Batfish batfish, IsisLoopbacksQuestion question) {
+   public IsisLoopbacksAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
+
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      IsisLoopbacksQuestion question = (IsisLoopbacksQuestion) _question;
 
       Pattern nodeRegex;
       try {
@@ -29,9 +38,8 @@ public class IsisLoopbacksAnswer extends Answer {
       }
 
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
-      addAnswerElement(answerElement);
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      _batfish.checkConfigurations();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
@@ -90,6 +98,7 @@ public class IsisLoopbacksAnswer extends Answer {
             }
          }
       }
-   }
 
+      return answerElement;
+   }
 }

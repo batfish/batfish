@@ -45,6 +45,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.answerer.Answerer;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
@@ -88,12 +89,15 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.JsonDiffAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -178,26 +182,6 @@ import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
-import org.batfish.question.AclReachabilityAnswer;
-import org.batfish.question.BgpAdvertisementsAnswer;
-import org.batfish.question.BgpSessionCheckAnswer;
-import org.batfish.question.CompareSameNameAnswer;
-import org.batfish.question.ErrorAnswer;
-import org.batfish.question.IpsecVpnCheckAnswer;
-import org.batfish.question.IsisLoopbacksAnswer;
-import org.batfish.question.NeighborsAnswer;
-import org.batfish.question.NodesAnswer;
-import org.batfish.question.OspfLoopbacksAnswer;
-import org.batfish.question.PairwiseVpnConnectivityAnswer;
-import org.batfish.question.ProtocolDependenciesAnswer;
-import org.batfish.question.ReachabilityAnswer;
-import org.batfish.question.RoutesAnswer;
-import org.batfish.question.SelfAdjacenciesAnswer;
-import org.batfish.question.TracerouteAnswer;
-import org.batfish.question.UndefinedReferencesAnswer;
-import org.batfish.question.UniqueBgpPrefixOriginationAnswer;
-import org.batfish.question.UniqueIpAssignmentsAnswer;
-import org.batfish.question.UnusedStructuresAnswer;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.z3.CompositeNodJob;
@@ -210,6 +194,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -604,126 +589,55 @@ public class Batfish implements AutoCloseable {
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
       initQuestionEnvironments(question, diff, diffActive, dp);
-      Answer answer = null;
+      AnswerElement answerElement = null;
       BatfishException exception = null;
       try {
-         switch (question.getType()) {
-         case ACL_REACHABILITY:
-            answer = new AclReachabilityAnswer(this,
-                  (AclReachabilityQuestion) question);
-            break;
-
-         case BGP_ADVERTISEMENTS:
-            answer = new BgpAdvertisementsAnswer(this,
-                  (BgpAdvertisementsQuestion) question);
-            break;
-
-         case BGP_SESSION_CHECK:
-            answer = new BgpSessionCheckAnswer(this,
-                  (BgpSessionCheckQuestion) question);
-            break;
-
-         case COMPARE_SAME_NAME:
-            answer = new CompareSameNameAnswer(this,
-                  (CompareSameNameQuestion) question);
-            break;
-
-         case ERROR:
-            answer = new ErrorAnswer(this, (ErrorQuestion) question);
-            break;
-
-         case IPSEC_VPN_CHECK:
-            answer = new IpsecVpnCheckAnswer(this,
-                  (IpsecVpnCheckQuestion) question);
-            break;
-
-         case ISIS_LOOPBACKS:
-            answer = new IsisLoopbacksAnswer(this,
-                  (IsisLoopbacksQuestion) question);
-            break;
-
-         case NEIGHBORS:
-            answer = new NeighborsAnswer(this, (NeighborsQuestion) question);
-            break;
-
-         case NODES:
-            answer = new NodesAnswer(this, (NodesQuestion) question);
-            break;
-
-         case OSPF_LOOPBACKS:
-            answer = new OspfLoopbacksAnswer(this,
-                  (OspfLoopbacksQuestion) question);
-            break;
-
-         case PAIRWISE_VPN_CONNECTIVITY:
-            answer = new PairwiseVpnConnectivityAnswer(this,
-                  (PairwiseVpnConnectivityQuestion) question);
-            break;
-
-         case PROTOCOL_DEPENDENCIES:
-            answer = new ProtocolDependenciesAnswer(this,
-                  (ProtocolDependenciesQuestion) question);
-            break;
-
-         case REACHABILITY:
-            answer = new ReachabilityAnswer(this,
-                  (ReachabilityQuestion) question);
-            break;
-
-         case ROUTES:
-            answer = new RoutesAnswer(this, (RoutesQuestion) question);
-            break;
-
-         case SELF_ADJACENCIES:
-            answer = new SelfAdjacenciesAnswer(this,
-                  (SelfAdjacenciesQuestion) question);
-            break;
-
-         case TRACEROUTE:
-            answer = new TracerouteAnswer(this, (TracerouteQuestion) question);
-            break;
-
-         case UNDEFINED_REFERENCES:
-            answer = new UndefinedReferencesAnswer(this,
-                  (UndefinedReferencesQuestion) question);
-            break;
-
-         case UNIQUE_BGP_PREFIX_ORIGINATION:
-            answer = new UniqueBgpPrefixOriginationAnswer(this,
-                  (UniqueBgpPrefixOriginationQuestion) question);
-            break;
-
-         case UNIQUE_IP_ASSIGNMENTS:
-            answer = new UniqueIpAssignmentsAnswer(this,
-                  (UniqueIpAssignmentsQuestion) question);
-            break;
-
-         case UNUSED_STRUCTURES:
-            answer = new UnusedStructuresAnswer(this,
-                  (UnusedStructuresQuestion) question);
-            break;
-
-         default:
-            throw new BatfishException("Unknown question type");
+         
+         if (question.getDifferential() == true) {
+//            checkEnvironmentExists(getBaseTestrigSettings());
+//            checkEnvironmentExists(getDeltaTestrigSettings());
+//            UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
+//                  .getBaseTestrigSettings());
+//            UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
+//                  .getDeltaTestrigSettings());
+//            ObjectMapper mapper = new BatfishObjectMapper();
+//            try {
+//               String beforeJsonStr = mapper.writeValueAsString(before);
+//               String afterJsonStr = mapper.writeValueAsString(after);
+//               JSONObject beforeJson = new JSONObject(beforeJsonStr);
+//               JSONObject afterJson = new JSONObject(afterJsonStr);
+//               JsonDiff diff = new JsonDiff(beforeJson, afterJson);
+//               addAnswerElement(new JsonDiffAnswerElement(diff));
+//            }
+//            catch (JsonProcessingException | JSONException e) {
+//               throw new BatfishException(
+//                     "Could not convert diff element to json string", e);
+//            }
          }
+         else {
+            answerElement = Answerer.Create(question, this).answer(_testrigSettings);
+         }         
       }
       catch (Exception e) {
          exception = new BatfishException("Failed to answer question", e);
       }
+      
+      Answer answer = new Answer();
+      answer.setQuestion(question);
+      
       if (exception == null) {
          // success
          answer.setStatus(AnswerStatus.SUCCESS);
+         answer.addAnswerElement(answerElement);
       }
       else {
          // failure
-         answer = new Answer();
          answer.setStatus(AnswerStatus.FAILURE);
          answer.addAnswerElement(exception);
       }
-      answer.setQuestion(question);
       return answer;
    }
-
+   
    /**
     * This function extracts predicate type information from the logic files. It
     * is meant only to be called during the build process, and should never be
@@ -874,9 +788,9 @@ public class Batfish implements AutoCloseable {
       checkDataPlaneQuestionDependencies(_testrigSettings);
    }
 
-   private void checkDataPlaneQuestionDependencies(
+   public void checkDataPlaneQuestionDependencies(
          TestrigSettings testrigSettings) {
-      checkConfigurations();
+      checkConfigurations(testrigSettings);
       checkDataPlane(testrigSettings);
    }
 
@@ -1767,8 +1681,12 @@ public class Batfish implements AutoCloseable {
    }
 
    public String getFlowTag() {
-      return _settings.getQuestionName() + ":" + _testrigSettings.getName()
-            + ":" + _testrigSettings.getEnvironmentSettings().getName();
+      return getFlowTag(_testrigSettings);
+   }
+
+   public String getFlowTag(TestrigSettings testrigSettings) {
+      return _settings.getQuestionName() + ":" + testrigSettings.getName()
+            + ":" + testrigSettings.getEnvironmentSettings().getName();
    }
 
    private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
@@ -1787,6 +1705,11 @@ public class Batfish implements AutoCloseable {
    }
 
    public FlowHistory getHistory() {
+      return getHistory(_testrigSettings);
+   }
+   
+   //TODO Ari: is this right?
+   public FlowHistory getHistory(TestrigSettings testrigSettings) {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
          checkTrafficFacts(_baseTestrigSettings);
@@ -1800,11 +1723,11 @@ public class Batfish implements AutoCloseable {
          populateFlowHistory(flowHistory, _deltaTestrigSettings, deltaName, tag);
       }
       else {
-         checkTrafficFacts(_testrigSettings);
+         checkTrafficFacts(testrigSettings);
          String tag = getFlowTag();
-         String name = _testrigSettings.getName() + ":"
-               + _testrigSettings.getEnvironmentSettings().getName();
-         populateFlowHistory(flowHistory, _testrigSettings, name, tag);
+         String name = testrigSettings.getName() + ":"
+               + testrigSettings.getEnvironmentSettings().getName();
+         populateFlowHistory(flowHistory, testrigSettings, name, tag);
       }
       _logger.debug(flowHistory.toString());
       return flowHistory;
@@ -2513,7 +2436,7 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private Answer nlsTraffic(TestrigSettings testrigSettings) {
+   public Answer nlsTraffic(TestrigSettings testrigSettings) {
       EnvironmentSettings envSettings = testrigSettings
             .getEnvironmentSettings();
       writeNlsPrecomputedRoutes(testrigSettings);

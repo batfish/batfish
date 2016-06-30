@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -11,15 +11,22 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.PairwiseVpnConnectivityAnswerElement;
 import org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class PairwiseVpnConnectivityAnswer extends Answer {
+public class PairwiseVpnConnectivityAnswerer extends Answerer {
 
-   public PairwiseVpnConnectivityAnswer(Batfish batfish,
-         PairwiseVpnConnectivityQuestion question) {
+   public PairwiseVpnConnectivityAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
+
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      PairwiseVpnConnectivityQuestion question = (PairwiseVpnConnectivityQuestion) _question;
       Pattern node1Regex;
       Pattern node2Regex;
 
@@ -35,10 +42,11 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
       }
 
       PairwiseVpnConnectivityAnswerElement answerElement = new PairwiseVpnConnectivityAnswerElement();
-      addAnswerElement(answerElement);
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      batfish.initRemoteIpsecVpns(configurations);
+
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+
+      _batfish.initRemoteIpsecVpns(configurations);
       Set<String> ipsecVpnNodes = answerElement.getIpsecVpnNodes();
       Set<String> node2RegexNodes = new HashSet<String>();
 
@@ -81,6 +89,8 @@ public class PairwiseVpnConnectivityAnswer extends Answer {
             answerElement.getMissingNeighbors().put(hostname, missingNeighbors);
          }
       }
+      
+      return answerElement;
    }
 
 }

@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,15 +8,24 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.OspfLoopbacksAnswerElement;
 import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class OspfLoopbacksAnswer extends Answer {
+public class OspfLoopbacksAnswerer extends Answerer {
 
-   public OspfLoopbacksAnswer(Batfish batfish, OspfLoopbacksQuestion question) {
+   public OspfLoopbacksAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      OspfLoopbacksQuestion question = (OspfLoopbacksQuestion) _question;
+      
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -28,9 +37,10 @@ public class OspfLoopbacksAnswer extends Answer {
       }
 
       OspfLoopbacksAnswerElement answerElement = new OspfLoopbacksAnswerElement();
-      addAnswerElement(answerElement);
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
@@ -60,6 +70,8 @@ public class OspfLoopbacksAnswer extends Answer {
             }
          }
       }
+      
+      return answerElement;
    }
 
 }

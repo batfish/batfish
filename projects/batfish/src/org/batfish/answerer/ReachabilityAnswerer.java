@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,14 +17,15 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
@@ -35,27 +36,25 @@ import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 
-public class ReachabilityAnswer extends Answer {
+public class ReachabilityAnswerer extends Answerer {
 
-   public ReachabilityAnswer(Batfish batfish, ReachabilityQuestion question) {
+   public ReachabilityAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
+
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      ReachabilityQuestion question = (ReachabilityQuestion) _question;
       ReachabilityType type = question.getReachabilityType();
       switch (type) {
       case MULTIPATH:
-         multipath(batfish, question);
-         break;
-
+         return multipath(question,testrigSettings);
       case PATH_DIFF:
-         pathDiff(batfish, question);
-         break;
-
+         return pathDiff(question,testrigSettings);
       case REDUCED_REACHABILITY:
-         reducedReachability(batfish, question);
-         break;
-
+         return reducedReachability(question,testrigSettings);
       case STANDARD:
-         standard(batfish, question);
-         break;
-
+         return standard(question,testrigSettings);
       case INCREASED:
       case MULTIPATH_DIFF:
       default:
@@ -64,14 +63,14 @@ public class ReachabilityAnswer extends Answer {
       }
    }
 
-   private void multipath(Batfish batfish, ReachabilityQuestion question) {
-      batfish.checkDataPlaneQuestionDependencies();
-      String tag = batfish.getFlowTag();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      Path dataPlanePath = batfish.getTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
+   private AnswerElement multipath(ReachabilityQuestion question, 
+         TestrigSettings testrigSettings) {
+      _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
+      String tag = _batfish.getFlowTag(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Path dataPlanePath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
       Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             configurations, dataPlanePath);
       List<NodJob> jobs = new ArrayList<NodJob>();
       for (String node : configurations.keySet()) {
@@ -83,48 +82,50 @@ public class ReachabilityAnswer extends Answer {
          jobs.add(job);
       }
 
-      flows = batfish.computeNodOutput(jobs);
+      flows = _batfish.computeNodOutput(jobs);
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       Batfish.initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
       }
-      batfish.dumpTrafficFacts(trafficFactBins);
-      batfish.nlsTraffic();
-      AnswerElement answerElement = batfish.getHistory();
-      addAnswerElement(answerElement);
+      _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
+      _batfish.nlsTraffic(testrigSettings);
+      
+      AnswerElement answerElement = _batfish.getHistory(testrigSettings);
+      return answerElement;
    }
 
-   private void pathDiff(Batfish batfish, ReachabilityQuestion question) {
-      batfish.checkDifferentialDataPlaneQuestionDependencies();
-      String tag = batfish.getDifferentialFlowTag();
+   private AnswerElement pathDiff(ReachabilityQuestion question,
+         TestrigSettings testrigSettings) {
+      _batfish.checkDifferentialDataPlaneQuestionDependencies();
+      String tag = _batfish.getDifferentialFlowTag();
 
       // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = batfish
-            .loadConfigurations(batfish.getBaseTestrigSettings());
-      Path baseDataPlanePath = batfish.getBaseTestrigSettings()
+      Map<String, Configuration> baseConfigurations = _batfish
+            .loadConfigurations(_batfish.getBaseTestrigSettings());
+      Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer baseDataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer baseDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             baseConfigurations, baseDataPlanePath);
 
       // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = batfish
-            .loadConfigurations(batfish.getDeltaTestrigSettings());
-      Path diffDataPlanePath = batfish.getDeltaTestrigSettings()
+      Map<String, Configuration> diffConfigurations = _batfish
+            .loadConfigurations(_batfish.getDeltaTestrigSettings());
+      Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer diffDataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer diffDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             diffConfigurations, diffDataPlanePath);
 
       Set<String> commonNodes = new TreeSet<String>();
       commonNodes.addAll(baseConfigurations.keySet());
       commonNodes.retainAll(diffConfigurations.keySet());
 
-      NodeSet blacklistNodes = batfish.getNodeBlacklist(batfish
+      NodeSet blacklistNodes = _batfish.getNodeBlacklist(_batfish
             .getDeltaTestrigSettings());
-      Set<NodeInterfacePair> blacklistInterfaces = batfish
-            .getInterfaceBlacklist(batfish.getDeltaTestrigSettings());
-      EdgeSet blacklistEdges = batfish.getEdgeBlacklist(batfish
+      Set<NodeInterfacePair> blacklistInterfaces = _batfish
+            .getInterfaceBlacklist(_batfish.getDeltaTestrigSettings());
+      EdgeSet blacklistEdges = _batfish.getEdgeBlacklist(_batfish
             .getDeltaTestrigSettings());
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
@@ -140,7 +141,7 @@ public class ReachabilityAnswer extends Answer {
       List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
 
       // generate local edge reachability and black hole queries
-      Topology diffTopology = batfish.loadTopology(batfish
+      Topology diffTopology = _batfish.loadTopology(_batfish
             .getDeltaTestrigSettings());
       EdgeSet diffEdges = diffTopology.getEdges();
       for (Edge edge : diffEdges) {
@@ -167,7 +168,7 @@ public class ReachabilityAnswer extends Answer {
       List<Synthesizer> missingEdgeSynthesizers = new ArrayList<Synthesizer>();
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-      Topology baseTopology = batfish.loadTopology(batfish
+      Topology baseTopology = _batfish.loadTopology(_batfish
             .getBaseTestrigSettings());
       EdgeSet baseEdges = baseTopology.getEdges();
       EdgeSet missingEdges = new EdgeSet();
@@ -191,7 +192,7 @@ public class ReachabilityAnswer extends Answer {
       }
 
       // TODO: maybe do something with nod answer element
-      Set<Flow> flows = batfish.computeCompositeNodOutput(jobs,
+      Set<Flow> flows = _batfish.computeCompositeNodOutput(jobs,
             new NodAnswerElement());
 
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
@@ -199,47 +200,48 @@ public class ReachabilityAnswer extends Answer {
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
-         batfish.getLogger().output(flow.toString() + "\n");
+         _logger.output(flow.toString() + "\n");
       }
-      batfish.dumpTrafficFacts(trafficFactBins,
-            batfish.getBaseTestrigSettings());
-      batfish.dumpTrafficFacts(trafficFactBins,
-            batfish.getDeltaTestrigSettings());
-      batfish.nlsTraffic();
-      AnswerElement answerElement = batfish.getHistory();
-      addAnswerElement(answerElement);
+      _batfish.dumpTrafficFacts(trafficFactBins,
+            _batfish.getBaseTestrigSettings());
+      _batfish.dumpTrafficFacts(trafficFactBins,
+            _batfish.getDeltaTestrigSettings());
+      _batfish.nlsTraffic();
+      
+      AnswerElement answerElement = _batfish.getHistory();
+      return answerElement;
    }
 
-   private void reducedReachability(Batfish batfish,
-         ReachabilityQuestion question) {
-      batfish.checkDifferentialDataPlaneQuestionDependencies();
-      String tag = batfish.getDifferentialFlowTag();
+   private AnswerElement reducedReachability(ReachabilityQuestion question,
+         TestrigSettings testrigSettings) {
+      _batfish.checkDifferentialDataPlaneQuestionDependencies();
+      String tag = _batfish.getDifferentialFlowTag();
 
       // load base configurations and generate base data plane
-      Map<String, Configuration> baseConfigurations = batfish
-            .loadConfigurations(batfish.getBaseTestrigSettings());
-      Path baseDataPlanePath = batfish.getBaseTestrigSettings()
+      Map<String, Configuration> baseConfigurations = _batfish
+            .loadConfigurations(_batfish.getBaseTestrigSettings());
+      Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer baseDataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer baseDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             baseConfigurations, baseDataPlanePath);
 
       // load diff configurations and generate diff data plane
-      Map<String, Configuration> diffConfigurations = batfish
-            .loadConfigurations(batfish.getDeltaTestrigSettings());
-      Path diffDataPlanePath = batfish.getDeltaTestrigSettings()
+      Map<String, Configuration> diffConfigurations = _batfish
+            .loadConfigurations(_batfish.getDeltaTestrigSettings());
+      Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer diffDataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer diffDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             diffConfigurations, diffDataPlanePath);
 
       Set<String> commonNodes = new TreeSet<String>();
       commonNodes.addAll(baseConfigurations.keySet());
       commonNodes.retainAll(diffConfigurations.keySet());
 
-      NodeSet blacklistNodes = batfish.getNodeBlacklist(batfish
+      NodeSet blacklistNodes = _batfish.getNodeBlacklist(_batfish
             .getDeltaTestrigSettings());
-      Set<NodeInterfacePair> blacklistInterfaces = batfish
-            .getInterfaceBlacklist(batfish.getDeltaTestrigSettings());
-      EdgeSet blacklistEdges = batfish.getEdgeBlacklist(batfish
+      Set<NodeInterfacePair> blacklistInterfaces = _batfish
+            .getInterfaceBlacklist(_batfish.getDeltaTestrigSettings());
+      EdgeSet blacklistEdges = _batfish.getEdgeBlacklist(_batfish
             .getDeltaTestrigSettings());
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
@@ -273,7 +275,7 @@ public class ReachabilityAnswer extends Answer {
       }
 
       // TODO: maybe do something with nod answer element
-      Set<Flow> flows = batfish.computeCompositeNodOutput(jobs,
+      Set<Flow> flows = _batfish.computeCompositeNodOutput(jobs,
             new NodAnswerElement());
 
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
@@ -281,25 +283,25 @@ public class ReachabilityAnswer extends Answer {
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
-         batfish.getLogger().debug("Found: " + flow.toString() + "\n");
+         _logger.debug("Found: " + flow.toString() + "\n");
       }
-      batfish.dumpTrafficFacts(trafficFactBins,
-            batfish.getBaseTestrigSettings());
-      batfish.dumpTrafficFacts(trafficFactBins,
-            batfish.getDeltaTestrigSettings());
-      batfish.nlsTraffic();
-      AnswerElement answerElement = batfish.getHistory();
-      addAnswerElement(answerElement);
+      _batfish.dumpTrafficFacts(trafficFactBins,
+            _batfish.getBaseTestrigSettings());
+      _batfish.dumpTrafficFacts(trafficFactBins,
+            _batfish.getDeltaTestrigSettings());
+      _batfish.nlsTraffic();
+      AnswerElement answerElement = _batfish.getHistory();
+      return answerElement;
    }
 
-   private void standard(Batfish batfish, ReachabilityQuestion question) {
-      batfish.checkDataPlaneQuestionDependencies();
-      String tag = batfish.getFlowTag();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      Path dataPlanePath = batfish.getTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
+   private AnswerElement standard(ReachabilityQuestion question,
+         TestrigSettings testrigSettings) {
+      _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
+      String tag = _batfish.getFlowTag(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Path dataPlanePath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
       Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = batfish.synthesizeDataPlane(
+      Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             configurations, dataPlanePath);
 
       // collect ingress nodes
@@ -353,7 +355,7 @@ public class ReachabilityAnswer extends Answer {
       }
 
       // run jobs and get resulting flows
-      flows = batfish.computeNodOutput(jobs);
+      flows = _batfish.computeNodOutput(jobs);
 
       // dump flows to disk
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
@@ -362,10 +364,11 @@ public class ReachabilityAnswer extends Answer {
       for (Flow flow : flows) {
          wSetFlowOriginate.append(flow.toLBLine());
       }
-      batfish.dumpTrafficFacts(trafficFactBins);
-      batfish.nlsTraffic();
-      AnswerElement answerElement = batfish.getHistory();
-      addAnswerElement(answerElement);
+      _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
+      _batfish.nlsTraffic(testrigSettings);
+      
+      AnswerElement answerElement = _batfish.getHistory(testrigSettings);
+      return answerElement;
    }
 
 }

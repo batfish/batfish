@@ -1,7 +1,8 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.List;
 import java.util.Map;
+
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -12,14 +13,16 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class CompareSameNameAnswer extends Answer {
+public class CompareSameNameAnswerer extends Answer {
 
-   public CompareSameNameAnswer(Batfish batfish,
-         CompareSameNameQuestion question) {
+   public CompareSameNameAnswerer(Batfish batfish,
+         CompareSameNameQuestion question,
+         TestrigSettings testrigSettings) {
 
       batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      Map<String, Configuration> configurations = batfish.loadConfigurations(testrigSettings);
 
       // collect relevant nodes in a list.
       List<String> nodes = CommonUtil.getMatchingStrings(

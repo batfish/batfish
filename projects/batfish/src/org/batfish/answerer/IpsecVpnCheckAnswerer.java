@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -7,14 +7,23 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.IpsecVpnCheckAnswerElement;
 import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class IpsecVpnCheckAnswer extends Answer {
+public class IpsecVpnCheckAnswerer extends Answerer {
 
-   public IpsecVpnCheckAnswer(Batfish batfish, IpsecVpnCheckQuestion question) {
+   public IpsecVpnCheckAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
+
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      IpsecVpnCheckQuestion question = (IpsecVpnCheckQuestion) _question;
+      
       Pattern node1Regex;
       Pattern node2Regex;
       try {
@@ -28,9 +37,10 @@ public class IpsecVpnCheckAnswer extends Answer {
                      question.getNode1Regex(), question.getNode2Regex()), e);
       }
 
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      batfish.initRemoteIpsecVpns(configurations);
+      _batfish.checkConfigurations();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      _batfish.initRemoteIpsecVpns(configurations);
+      
       IpsecVpnCheckAnswerElement answerElement = new IpsecVpnCheckAnswerElement();
       for (Configuration c : configurations.values()) {
          if (!node1Regex.matcher(c.getHostname()).matches()) {
@@ -79,7 +89,7 @@ public class IpsecVpnCheckAnswer extends Answer {
             }
          }
       }
-      addAnswerElement(answerElement);
+      return answerElement;
    }
 
 }

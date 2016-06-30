@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.Set;
@@ -10,16 +10,25 @@ import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NodesAnswerElement;
 import org.batfish.datamodel.questions.NodesQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class NodesAnswer extends Answer {
+public class NodesAnswerer extends Answerer {
 
-   public NodesAnswer(Batfish batfish, NodesQuestion question) {
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+   public NodesAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
+
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      NodesQuestion question = (NodesQuestion) _question;
+      
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
 
       // collect nodes nodes
       Pattern nodeRegex;
@@ -46,8 +55,8 @@ public class NodesAnswer extends Answer {
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
 
-      _answerElements.add(new NodesAnswerElement(answerNodes, question
-            .getSummary()));
+      return new NodesAnswerElement(answerNodes, question
+            .getSummary());
    }
 
 }

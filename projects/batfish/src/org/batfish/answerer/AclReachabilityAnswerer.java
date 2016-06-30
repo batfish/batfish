@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,35 +11,32 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
-import org.batfish.main.Settings;
+import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.NodSatJob;
 import org.batfish.z3.Synthesizer;
 
-public class AclReachabilityAnswer extends Answer {
+public class AclReachabilityAnswerer extends Answerer {
 
-   private Batfish _batfish;
+   public AclReachabilityAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
-   private BatfishLogger _logger;
-
-   private Settings _settings;
-
-   public AclReachabilityAnswer(Batfish batfish,
-         AclReachabilityQuestion question) {
-      _logger = batfish.getLogger();
-      _batfish = batfish;
-      _settings = batfish.getSettings();
-
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      
+      AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
+      
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -60,8 +57,8 @@ public class AclReachabilityAnswer extends Answer {
                      + question.getAclNameRegex() + "\"", e);
       }
 
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      _batfish.checkConfigurations();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
       Synthesizer aclSynthesizer = synthesizeAcls(configurations);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
@@ -96,7 +93,7 @@ public class AclReachabilityAnswer extends Answer {
          }
       }
       Map<AclLine, Boolean> output = new TreeMap<AclLine, Boolean>();
-      batfish.computeNodSatOutput(jobs, output);
+      _batfish.computeNodSatOutput(jobs, output);
       Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<Pair<String, String>>();
       Set<Pair<String, String>> allAcls = new TreeSet<Pair<String, String>>();
       int numUnreachableLines = 0;
@@ -162,7 +159,8 @@ public class AclReachabilityAnswer extends Answer {
             numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
       _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
             numUnreachableLines, numLines, percentUnreachableLines);
-      addAnswerElement(answerElement);
+      
+      return answerElement;
    }
 
    private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
@@ -170,7 +168,7 @@ public class AclReachabilityAnswer extends Answer {
       _batfish.resetTimer();
 
       _logger.info("Synthesizing Z3 ACL logic...");
-      Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
+      Synthesizer s = new Synthesizer(configurations, _batfish.getSettings().getSimplify());
 
       List<String> warnings = s.getWarnings();
       int numWarnings = warnings.size();

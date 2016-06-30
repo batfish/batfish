@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,16 +9,23 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.UniqueBgpPrefixOriginationAnswerElement;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class UniqueBgpPrefixOriginationAnswer extends Answer {
+public class UniqueBgpPrefixOriginationAnswerer extends Answerer {
 
-   public UniqueBgpPrefixOriginationAnswer(Batfish batfish,
-         UniqueBgpPrefixOriginationQuestion question) {
+   public UniqueBgpPrefixOriginationAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      UniqueBgpPrefixOriginationQuestion question = (UniqueBgpPrefixOriginationQuestion) _question;
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -30,10 +37,9 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
       }
 
       UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
-      addAnswerElement(answerElement);
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      batfish.initBgpOriginationSpaceExplicit(configurations);
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      _batfish.initBgpOriginationSpaceExplicit(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String node1 = e.getKey();
          if (!nodeRegex.matcher(node1).matches()) {
@@ -61,5 +67,6 @@ public class UniqueBgpPrefixOriginationAnswer extends Answer {
             }
          }
       }
+      return answerElement;
    }
 }

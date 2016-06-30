@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -12,18 +12,26 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.SelfAdjacenciesAnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class SelfAdjacenciesAnswer extends Answer {
+public class SelfAdjacenciesAnswerer extends Answerer {
 
-   public SelfAdjacenciesAnswer(Batfish batfish,
-         SelfAdjacenciesQuestion question) {
+   public SelfAdjacenciesAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      SelfAdjacenciesQuestion question = (SelfAdjacenciesQuestion) _question;
+      
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -35,9 +43,8 @@ public class SelfAdjacenciesAnswer extends Answer {
       }
 
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
-      addAnswerElement(answerElement);
-      batfish.checkConfigurations();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      _batfish.checkConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
@@ -68,7 +75,7 @@ public class SelfAdjacenciesAnswer extends Answer {
                }
             }
          }
-      }
+      }     
+      return answerElement;
    }
-
 }

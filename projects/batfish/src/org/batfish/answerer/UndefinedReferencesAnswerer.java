@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -7,18 +7,26 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.UndefinedReferencesAnswerElement;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.UndefinedReferencesQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.representation.VendorConfiguration;
 
-public class UndefinedReferencesAnswer extends Answer {
+public class UndefinedReferencesAnswerer extends Answerer {
 
-   public UndefinedReferencesAnswer(Batfish batfish,
-         UndefinedReferencesQuestion question) {
+   public UndefinedReferencesAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
+      
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -29,12 +37,10 @@ public class UndefinedReferencesAnswer extends Answer {
                      + question.getNodeRegex() + "\"", e);
       }
 
-      batfish.checkConfigurations();
+      _batfish.checkConfigurations(testrigSettings);
       UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
-      addAnswerElement(answerElement);
-      ConvertConfigurationAnswerElement ccae = (ConvertConfigurationAnswerElement) batfish
-            .deserializeObject(batfish.getTestrigSettings()
-                  .getConvertAnswerPath());
+      ConvertConfigurationAnswerElement ccae = (ConvertConfigurationAnswerElement) _batfish
+            .deserializeObject(testrigSettings.getConvertAnswerPath());
       for (Entry<String, Warnings> e : ccae.getWarnings().entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
@@ -49,5 +55,6 @@ public class UndefinedReferencesAnswer extends Answer {
             }
          }
       }
+      return answerElement;
    }
 }

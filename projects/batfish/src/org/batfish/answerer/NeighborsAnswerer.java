@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -13,17 +13,25 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NeighborsAnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.questions.NeighborsQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class NeighborsAnswer extends Answer {
+public class NeighborsAnswerer extends Answerer {
+
+   public NeighborsAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
    private boolean _remoteBgpNeighborsInitialized;
 
-   public NeighborsAnswer(Batfish batfish, NeighborsQuestion question) {
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      NeighborsQuestion question = (NeighborsQuestion) _question;
       Pattern node1Regex;
       Pattern node2Regex;
 
@@ -40,17 +48,17 @@ public class NeighborsAnswer extends Answer {
 
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
 
       for (NeighborType nType : question.getNeighborTypes()) {
          switch (nType) {
          case EBGP:
             answerElement.initEbgpNeighbors();
-            initRemoteBgpNeighbors(batfish, configurations);
+            initRemoteBgpNeighbors(_batfish, configurations);
             break;
          case IBGP:
             answerElement.initIbgpNeighbors();
-            initRemoteBgpNeighbors(batfish, configurations);
+            initRemoteBgpNeighbors(_batfish, configurations);
             break;
          case LAN:
             answerElement.initLanNeighbors();
@@ -116,8 +124,8 @@ public class NeighborsAnswer extends Answer {
 
       if (question.getNeighborTypes().isEmpty()
             || question.getNeighborTypes().contains(NeighborType.LAN)) {
-         Topology topology = batfish.computeTopology(configurations,
-               batfish.getTestrigSettings());
+         Topology topology = _batfish.computeTopology(configurations,
+               testrigSettings);
 
          for (Edge edge : topology.getEdges()) {
             Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
@@ -128,7 +136,7 @@ public class NeighborsAnswer extends Answer {
          }
       }
 
-      addAnswerElement(answerElement);
+      return answerElement;
    }
 
    private void initRemoteBgpNeighbors(Batfish batfish,

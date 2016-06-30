@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -6,77 +6,78 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.JsonDiff;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.JsonDiffAnswerElement;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+public class UniqueIpAssignmentsAnswerer extends Answerer {
 
-public class UniqueIpAssignmentsAnswer extends Answer {
+//   private final Batfish _batfish;
+//   private final UniqueIpAssignmentsQuestion _question;
+//
+//   public UniqueIpAssignmentsReplier(Batfish batfish,
+//         UniqueIpAssignmentsQuestion question) {
+//      _batfish = batfish;
+//      _question = question;
+//      _batfish.checkConfigurations();
+//
+//      if (question.getDifferential()) {
+//         _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
+//         _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
+//         UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
+//               .getBaseTestrigSettings());
+//         UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
+//               .getDeltaTestrigSettings());
+//         ObjectMapper mapper = new BatfishObjectMapper();
+//         try {
+//            String beforeJsonStr = mapper.writeValueAsString(before);
+//            String afterJsonStr = mapper.writeValueAsString(after);
+//            JSONObject beforeJson = new JSONObject(beforeJsonStr);
+//            JSONObject afterJson = new JSONObject(afterJsonStr);
+//            JsonDiff diff = new JsonDiff(beforeJson, afterJson);
+//            addAnswerElement(new JsonDiffAnswerElement(diff));
+//         }
+//         catch (JsonProcessingException | JSONException e) {
+//            throw new BatfishException(
+//                  "Could not convert diff element to json string", e);
+//         }
+//      }
+//      else {
+//         UniqueIpAssignmentsAnswerElement answerElement = initAnswerElement(batfish
+//               .getTestrigSettings());
+//         addAnswerElement(answerElement);
+//      }
+//
+//   }
 
-   private final Batfish _batfish;
-
-   private final UniqueIpAssignmentsQuestion _question;
-
-   public UniqueIpAssignmentsAnswer(Batfish batfish,
-         UniqueIpAssignmentsQuestion question) {
-      _batfish = batfish;
-      _question = question;
-      _batfish.checkConfigurations();
-
-      if (question.getDifferential()) {
-         _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
-         _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
-         UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
-               .getBaseTestrigSettings());
-         UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
-               .getDeltaTestrigSettings());
-         ObjectMapper mapper = new BatfishObjectMapper();
-         try {
-            String beforeJsonStr = mapper.writeValueAsString(before);
-            String afterJsonStr = mapper.writeValueAsString(after);
-            JSONObject beforeJson = new JSONObject(beforeJsonStr);
-            JSONObject afterJson = new JSONObject(afterJsonStr);
-            JsonDiff diff = new JsonDiff(beforeJson, afterJson);
-            addAnswerElement(new JsonDiffAnswerElement(diff));
-         }
-         catch (JsonProcessingException | JSONException e) {
-            throw new BatfishException(
-                  "Could not convert diff element to json string", e);
-         }
-      }
-      else {
-         UniqueIpAssignmentsAnswerElement answerElement = initAnswerElement(batfish
-               .getTestrigSettings());
-         addAnswerElement(answerElement);
-      }
-
+   public UniqueIpAssignmentsAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
    }
 
-   private UniqueIpAssignmentsAnswerElement initAnswerElement(
-         TestrigSettings testrigSettings) {
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+      
+      UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
+      
+      _batfish.checkConfigurations(testrigSettings);
+      
       Pattern nodeRegex;
       try {
-         nodeRegex = Pattern.compile(_question.getNodeRegex());
+         nodeRegex = Pattern.compile(question.getNodeRegex());
       }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + _question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"", e);
       }
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
       Map<String, Configuration> configurations = _batfish

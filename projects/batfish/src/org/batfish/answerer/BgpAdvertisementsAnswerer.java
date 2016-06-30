@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.answerer;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -6,16 +6,24 @@ import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.BgpAdvertisementsAnswerElement;
 import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings.TestrigSettings;
 
-public class BgpAdvertisementsAnswer extends Answer {
+public class BgpAdvertisementsAnswerer extends Answerer {
 
-   public BgpAdvertisementsAnswer(Batfish batfish,
-         BgpAdvertisementsQuestion question) {
+   public BgpAdvertisementsAnswerer(Question question, Batfish batfish) {
+      super(question, batfish);
+   }
 
+   @Override
+   public AnswerElement answer(TestrigSettings testrigSettings) {
+
+      BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
+      
       Pattern nodeRegex;
 
       try {
@@ -27,14 +35,16 @@ public class BgpAdvertisementsAnswer extends Answer {
                      + question.getNodeRegex() + "\"", e);
       }
 
-      batfish.checkDataPlaneQuestionDependencies();
-      Map<String, Configuration> configurations = batfish.loadConfigurations();
-      batfish.initBgpAdvertisements(configurations);
+      _batfish.checkDataPlaneQuestionDependencies();
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      _batfish.initBgpAdvertisements(configurations);
+      
       BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
             configurations, nodeRegex, question.getEbgp(), question.getIbgp(),
             question.getPrefixSpace(), question.getReceived(),
             question.getSent());
-      addAnswerElement(answerElement);
+
+      return answerElement;
    }
 
 }
