@@ -47,15 +47,11 @@ public class UniqueIpAssignmentsQuestion extends Question {
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
-
       Iterator<?> paramKeys = parameters.keys();
-
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
-
          if (isBaseParamKey(paramKey))
-            continue;
-         
+            continue;         
          try {
             switch (paramKey) {
             case NODE_REGEX_VAR:
