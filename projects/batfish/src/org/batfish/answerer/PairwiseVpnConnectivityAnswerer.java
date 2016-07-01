@@ -44,7 +44,8 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
       PairwiseVpnConnectivityAnswerElement answerElement = new PairwiseVpnConnectivityAnswerElement();
 
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
 
       _batfish.initRemoteIpsecVpns(configurations);
       Set<String> ipsecVpnNodes = answerElement.getIpsecVpnNodes();
@@ -89,7 +90,7 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
             answerElement.getMissingNeighbors().put(hostname, missingNeighbors);
          }
       }
-      
+
       return answerElement;
    }
 

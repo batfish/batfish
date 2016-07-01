@@ -3,6 +3,8 @@ package org.batfish.representation.juniper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapClauseMatchInterfaceLine;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceInterface;
 import org.batfish.main.Warnings;
 
 public final class PsFromInterface extends PsFrom {
@@ -28,6 +30,12 @@ public final class PsFromInterface extends PsFrom {
 
    public String getName() {
       return _name;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      return new MatchSourceInterface(_name);
    }
 
 }

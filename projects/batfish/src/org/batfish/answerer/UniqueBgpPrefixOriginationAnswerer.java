@@ -38,7 +38,8 @@ public class UniqueBgpPrefixOriginationAnswerer extends Answerer {
 
       UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       _batfish.initBgpOriginationSpaceExplicit(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String node1 = e.getKey();

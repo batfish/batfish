@@ -20,7 +20,7 @@ public class TracerouteAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
-      TracerouteQuestion question  = (TracerouteQuestion) _question;
+      TracerouteQuestion question = (TracerouteQuestion) _question;
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
       Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();

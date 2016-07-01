@@ -10,6 +10,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
 import org.batfish.main.Warnings;
 
 public final class PsFromPrefixListFilterOrLonger extends PsFrom {
@@ -58,6 +61,41 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
       else {
          warnings.redFlag("Reference to undefined prefix-list: \""
                + _prefixList + "\"");
+      }
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      PrefixList pl = jc.getPrefixLists().get(_prefixList);
+      if (pl != null) {
+         pl.getReferers().put(this, "from prefix-list-filter or-longer");
+         if (pl.getIpv6()) {
+            return BooleanExprs.False.toStaticBooleanExpr();
+         }
+         RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
+         String orLongerListName = "~" + _prefixList + "~ORLONGER~";
+         RouteFilterList orLongerList = c.getRouteFilterLists().get(
+               orLongerListName);
+         if (orLongerList == null) {
+            orLongerList = new RouteFilterList(orLongerListName);
+            for (RouteFilterLine line : rf.getLines()) {
+               Prefix prefix = line.getPrefix();
+               LineAction action = line.getAction();
+               SubRange orLongerLineRange = new SubRange(line.getLengthRange()
+                     .getStart(), 32);
+               RouteFilterLine orLongerLine = new RouteFilterLine(action,
+                     prefix, orLongerLineRange);
+               orLongerList.addLine(orLongerLine);
+               c.getRouteFilterLists().put(orLongerListName, orLongerList);
+            }
+         }
+         return new MatchRouteFilter(orLongerListName);
+      }
+      else {
+         warnings.redFlag("Reference to undefined prefix-list: \""
+               + _prefixList + "\"");
+         return BooleanExprs.False.toStaticBooleanExpr();
       }
    }
 }

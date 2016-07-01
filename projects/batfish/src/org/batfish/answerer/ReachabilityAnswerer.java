@@ -48,13 +48,13 @@ public class ReachabilityAnswerer extends Answerer {
       ReachabilityType type = question.getReachabilityType();
       switch (type) {
       case MULTIPATH:
-         return multipath(question,testrigSettings);
+         return multipath(question, testrigSettings);
       case PATH_DIFF:
-         return pathDiff(question,testrigSettings);
+         return pathDiff(question, testrigSettings);
       case REDUCED_REACHABILITY:
-         return reducedReachability(question,testrigSettings);
+         return reducedReachability(question, testrigSettings);
       case STANDARD:
-         return standard(question,testrigSettings);
+         return standard(question, testrigSettings);
       case INCREASED:
       case MULTIPATH_DIFF:
       default:
@@ -63,12 +63,14 @@ public class ReachabilityAnswerer extends Answerer {
       }
    }
 
-   private AnswerElement multipath(ReachabilityQuestion question, 
+   private AnswerElement multipath(ReachabilityQuestion question,
          TestrigSettings testrigSettings) {
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       String tag = _batfish.getFlowTag(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
-      Path dataPlanePath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
+      Path dataPlanePath = testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             configurations, dataPlanePath);
@@ -91,7 +93,7 @@ public class ReachabilityAnswerer extends Answerer {
       }
       _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
       _batfish.nlsTraffic(testrigSettings);
-      
+
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
    }
@@ -207,7 +209,7 @@ public class ReachabilityAnswerer extends Answerer {
       _batfish.dumpTrafficFacts(trafficFactBins,
             _batfish.getDeltaTestrigSettings());
       _batfish.nlsTraffic();
-      
+
       AnswerElement answerElement = _batfish.getHistory();
       return answerElement;
    }
@@ -298,8 +300,10 @@ public class ReachabilityAnswerer extends Answerer {
          TestrigSettings testrigSettings) {
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       String tag = _batfish.getFlowTag(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
-      Path dataPlanePath = testrigSettings.getEnvironmentSettings().getDataPlanePath();
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
+      Path dataPlanePath = testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
             configurations, dataPlanePath);
@@ -366,7 +370,7 @@ public class ReachabilityAnswerer extends Answerer {
       }
       _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
       _batfish.nlsTraffic(testrigSettings);
-      
+
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
    }

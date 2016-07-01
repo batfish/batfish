@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public final class PsTerm implements Serializable {
@@ -18,9 +18,9 @@ public final class PsTerm implements Serializable {
    private final Set<PsThen> _thens;
 
    public PsTerm(String name) {
-      _froms = new HashSet<PsFrom>();
+      _froms = new LinkedHashSet<PsFrom>();
       _name = name;
-      _thens = new HashSet<PsThen>();
+      _thens = new LinkedHashSet<PsThen>();
    }
 
    public Set<PsFrom> getFroms() {

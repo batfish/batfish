@@ -25,7 +25,7 @@ public class OspfLoopbacksAnswerer extends Answerer {
    public AnswerElement answer(TestrigSettings testrigSettings) {
 
       OspfLoopbacksQuestion question = (OspfLoopbacksQuestion) _question;
-      
+
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -39,8 +39,9 @@ public class OspfLoopbacksAnswerer extends Answerer {
       OspfLoopbacksAnswerElement answerElement = new OspfLoopbacksAnswerElement();
 
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
-      
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
+
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
@@ -70,7 +71,7 @@ public class OspfLoopbacksAnswerer extends Answerer {
             }
          }
       }
-      
+
       return answerElement;
    }
 

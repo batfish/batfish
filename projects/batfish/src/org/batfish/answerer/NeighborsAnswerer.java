@@ -23,11 +23,11 @@ import org.batfish.main.Settings.TestrigSettings;
 
 public class NeighborsAnswerer extends Answerer {
 
+   private boolean _remoteBgpNeighborsInitialized;
+
    public NeighborsAnswerer(Question question, Batfish batfish) {
       super(question, batfish);
    }
-
-   private boolean _remoteBgpNeighborsInitialized;
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
@@ -48,7 +48,8 @@ public class NeighborsAnswerer extends Answerer {
 
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
 
       for (NeighborType nType : question.getNeighborTypes()) {
          switch (nType) {

@@ -6,6 +6,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixList;
 import org.batfish.main.Warnings;
 
 public final class PsFromPrefixList extends PsFrom {
@@ -44,6 +46,12 @@ public final class PsFromPrefixList extends PsFrom {
 
    public String getName() {
       return _name;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      return new MatchPrefixList(_name);
    }
 
 }

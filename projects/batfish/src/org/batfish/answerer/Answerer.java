@@ -17,16 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class Answerer {
 
-   Batfish _batfish;
-   BatfishLogger _logger;
-   Question _question;
-
-   public Answerer(Question question, Batfish batfish) {
-      _batfish = batfish;
-      _logger = batfish.getLogger();
-      _question = question;      
-   }
-
    public static Answerer Create(Question question, Batfish batfish) {
 
       switch (question.getType()) {
@@ -75,17 +65,27 @@ public abstract class Answerer {
       }
    }
 
+   Batfish _batfish;
+   BatfishLogger _logger;
+
+   Question _question;
+
+   public Answerer(Question question, Batfish batfish) {
+      _batfish = batfish;
+      _logger = batfish.getLogger();
+      _question = question;
+   }
+
    public abstract AnswerElement answer(TestrigSettings testrigSettings);
 
-   //this is the default differential answerer
-   //if you want a custom one for a subclass, override this function in the subclass
+   // this is the default differential answerer
+   // if you want a custom one for a subclass, override this function in the
+   // subclass
    public AnswerElement answerDiff() {
       _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
       _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
-      AnswerElement before = answer(_batfish
-            .getBaseTestrigSettings());
-      AnswerElement after = answer(_batfish
-            .getDeltaTestrigSettings());
+      AnswerElement before = answer(_batfish.getBaseTestrigSettings());
+      AnswerElement after = answer(_batfish.getDeltaTestrigSettings());
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
          String beforeJsonStr = mapper.writeValueAsString(before);

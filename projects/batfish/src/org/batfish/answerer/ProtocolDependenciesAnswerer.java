@@ -24,16 +24,19 @@ public class ProtocolDependenciesAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
-      
+
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
 
       ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
             configurations);
       analysis.printDependencies(_logger);
       analysis.writeGraphs(_batfish, _logger);
-      Path protocolDependencyGraphPath = testrigSettings.getProtocolDependencyGraphPath();
-      Path protocolDependencyGraphZipPath = testrigSettings.getProtocolDependencyGraphZipPath();
+      Path protocolDependencyGraphPath = testrigSettings
+            .getProtocolDependencyGraphPath();
+      Path protocolDependencyGraphZipPath = testrigSettings
+            .getProtocolDependencyGraphZipPath();
       ZipUtility.zipFiles(protocolDependencyGraphPath.toString(),
             protocolDependencyGraphZipPath.toString());
       byte[] zipBytes;
@@ -46,7 +49,7 @@ public class ProtocolDependenciesAnswerer extends Answerer {
       String zipBase64 = Base64.encodeBase64String(zipBytes);
       ProtocolDependenciesAnswerElement answerElement = new ProtocolDependenciesAnswerElement();
       answerElement.setZipBase64(zipBase64);
-      
+
       return answerElement;
    }
 

@@ -179,18 +179,16 @@ public class Client {
       descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
             + " <container-name>\n" + "\t Set the current container");
       descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
-            + " <environment-name>\n"
-            + "\t Set the differential environment");
-      descs.put(COMMAND_SET_DIFF_TESTRIG, COMMAND_SET_DIFF_TESTRIG 
+            + " <environment-name>\n" + "\t Set the differential environment");
+      descs.put(COMMAND_SET_DIFF_TESTRIG, COMMAND_SET_DIFF_TESTRIG
             + " <testrig-name> [environment name]\n"
             + "\t Set the differential testrig");
-      descs.put(COMMAND_SET_ENV, COMMAND_SET_ENV
-            + " <environment-name>\n"
+      descs.put(COMMAND_SET_ENV, COMMAND_SET_ENV + " <environment-name>\n"
             + "\t Set the current base environment");
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
             + " <debug|info|output|warn|error>\n"
             + "\t Set the client loglevel. Default is output");
-      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG 
+      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG
             + " <testrig-name> [environment name]\n"
             + "\t Set the base testrig");
       descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n"
@@ -212,9 +210,9 @@ public class Client {
       return descs;
    }
 
-   private String _currContainerName = null;   
+   private String _currContainerName = null;
    private String _currDiffEnv = null;
-   private String _currDiffTestrig;   
+   private String _currDiffTestrig;
    private String _currEnv = null;
    private String _currTestrig = null;
 
@@ -324,7 +322,8 @@ public class Client {
 
       Map<String, String> parameters = parseParams(paramsLine);
 
-      String questionString = QuestionHelper.getQuestionString(questionType, isDiff);
+      String questionString = QuestionHelper.getQuestionString(questionType,
+            isDiff);
       _logger.debugf("Question Json:\n%s\n", questionString);
 
       String parametersString = QuestionHelper.getParametersString(parameters);
@@ -407,10 +406,13 @@ public class Client {
             Answer answer = mapper.readValue(answerString, Answer.class);
 
             // printf debugging
-            //            org.batfish.datamodel.answers.CompareSameNameAnswerElement csnAnswer = 
-            //                  (org.batfish.datamodel.answers.CompareSameNameAnswerElement) answer.getAnswerElements().get(0);
-            //            _logger.outputf("answer: %s", csnAnswer.getEquivalenceSets().get("RouteFilterList").get_sameNamedStructures().size());
-            
+            // org.batfish.datamodel.answers.CompareSameNameAnswerElement
+            // csnAnswer =
+            // (org.batfish.datamodel.answers.CompareSameNameAnswerElement)
+            // answer.getAnswerElements().get(0);
+            // _logger.outputf("answer: %s",
+            // csnAnswer.getEquivalenceSets().get("RouteFilterList").get_sameNamedStructures().size());
+
             String newAnswerString = mapper.writeValueAsString(answer);
             JsonNode tree = mapper.readTree(answerString);
             JsonNode newTree = mapper.readTree(newAnswerString);
@@ -676,7 +678,7 @@ public class Client {
          List<String> parameters = getCommandParameters(words, options.size());
 
          String command = words[0];
-         
+
          switch (command) {
          // this is a hidden command for testing
          case "add-worker": {
@@ -857,11 +859,13 @@ public class Client {
             _logger.outputf("Active diff testrig->environment is now %s->%s\n",
                   _currDiffTestrig, _currDiffEnv);
 
-            WorkItem wItemGenDdp = _workHelper.getWorkItemCompileDiffEnvironment(
-                  _currContainerName, _currDiffTestrig, _currEnv, _currDiffEnv);
+            WorkItem wItemGenDdp = _workHelper
+                  .getWorkItemCompileDiffEnvironment(_currContainerName,
+                        _currDiffTestrig, _currEnv, _currDiffEnv);
 
-            if (!execute(wItemGenDdp))
+            if (!execute(wItemGenDdp)) {
                return false;
+            }
 
             if (generateDiffDataplane) {
                _logger.output("Generating delta dataplane\n");
@@ -874,8 +878,8 @@ public class Client {
             }
 
             return true;
-         }         
-         case COMMAND_INIT_DIFF_TESTRIG: 
+         }
+         case COMMAND_INIT_DIFF_TESTRIG:
          case COMMAND_INIT_TESTRIG: {
             boolean generateDataplane = true;
 
@@ -914,7 +918,6 @@ public class Client {
                return false;
             }
 
-            
             if (command.equals(COMMAND_INIT_TESTRIG)) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
@@ -923,7 +926,7 @@ public class Client {
             else {
                _currDiffTestrig = testrigName;
                _currDiffEnv = DEFAULT_ENV_NAME;
-               _logger.outputf("Diff testrig is now %s\n", _currTestrig);               
+               _logger.outputf("Diff testrig is now %s\n", _currTestrig);
             }
 
             if (generateDataplane) {
@@ -1007,26 +1010,28 @@ public class Client {
          }
          case COMMAND_SET_DIFF_ENV: {
             _currDiffEnv = parameters.get(0);
-            if (_currDiffTestrig == null ) {
+            if (_currDiffTestrig == null) {
                _currDiffTestrig = _currTestrig;
             }
-            _logger.outputf(
-                  "Active diff testrig->environment is now %s->%s\n",
+            _logger.outputf("Active diff testrig->environment is now %s->%s\n",
                   _currDiffTestrig, _currDiffEnv);
             return true;
          }
          case COMMAND_SET_ENV: {
-            if (!isSetTestrig())
+            if (!isSetTestrig()) {
                return false;
+            }
             _currEnv = parameters.get(0);
-            _logger.outputf("Base testrig->env is now %s->%s\n",
-                  _currTestrig, _currEnv);
+            _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig,
+                  _currEnv);
             return true;
          }
          case COMMAND_SET_DIFF_TESTRIG: {
             _currDiffTestrig = parameters.get(0);
-            _currDiffEnv = (parameters.size() > 1)? parameters.get(1) : DEFAULT_ENV_NAME;
-            _logger.outputf("Diff testrig->env is now %s->%s\n", _currDiffTestrig, _currDiffEnv);
+            _currDiffEnv = (parameters.size() > 1) ? parameters.get(1)
+                  : DEFAULT_ENV_NAME;
+            _logger.outputf("Diff testrig->env is now %s->%s\n",
+                  _currDiffTestrig, _currDiffEnv);
             return true;
          }
          case COMMAND_SET_LOGLEVEL: {
@@ -1040,12 +1045,15 @@ public class Client {
             return true;
          }
          case COMMAND_SET_TESTRIG: {
-            if (!isSetContainer(true))
+            if (!isSetContainer(true)) {
                return false;
-            
+            }
+
             _currTestrig = parameters.get(0);
-            _currEnv = (parameters.size() > 1)? parameters.get(1) : DEFAULT_ENV_NAME;
-            _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig, _currEnv);
+            _currEnv = (parameters.size() > 1) ? parameters.get(1)
+                  : DEFAULT_ENV_NAME;
+            _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig,
+                  _currEnv);
             return true;
          }
          case COMMAND_SHOW_API_KEY: {
@@ -1075,14 +1083,16 @@ public class Client {
             if (!isSetDiffEnvironment()) {
                return false;
             }
-            _logger.outputf("Diff testrig->environment is %s->%s\n", _currDiffTestrig, _currDiffEnv);
+            _logger.outputf("Diff testrig->environment is %s->%s\n",
+                  _currDiffTestrig, _currDiffEnv);
             return true;
          }
          case COMMAND_SHOW_TESTRIG: {
             if (!isSetTestrig()) {
                return false;
             }
-            _logger.outputf("Base testrig->environment is %s->%s\n", _currTestrig, _currEnv);
+            _logger.outputf("Base testrig->environment is %s->%s\n",
+                  _currTestrig, _currEnv);
             return true;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {

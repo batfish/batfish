@@ -23,7 +23,7 @@ public class BgpAdvertisementsAnswerer extends Answerer {
    public AnswerElement answer(TestrigSettings testrigSettings) {
 
       BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
-      
+
       Pattern nodeRegex;
 
       try {
@@ -36,9 +36,10 @@ public class BgpAdvertisementsAnswerer extends Answerer {
       }
 
       _batfish.checkDataPlaneQuestionDependencies();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       _batfish.initBgpAdvertisements(configurations);
-      
+
       BgpAdvertisementsAnswerElement answerElement = new BgpAdvertisementsAnswerElement(
             configurations, nodeRegex, question.getEbgp(), question.getIbgp(),
             question.getPrefixSpace(), question.getReceived(),

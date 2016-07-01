@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.main.Warnings;
 
 public abstract class PsFrom implements Serializable {
@@ -15,5 +16,8 @@ public abstract class PsFrom implements Serializable {
 
    public abstract void applyTo(PolicyMapClause clause, PolicyStatement ps,
          JuniperConfiguration jc, Configuration c, Warnings warnings);
+
+   public abstract BooleanExpr toBooleanExpr(JuniperConfiguration jc,
+         Configuration c, Warnings warnings);
 
 }

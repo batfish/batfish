@@ -3,6 +3,8 @@ package org.batfish.representation.juniper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchColorLine;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.main.Warnings;
 
 public final class PsFromColor extends PsFrom {
@@ -27,6 +29,12 @@ public final class PsFromColor extends PsFrom {
 
    public int getColor() {
       return _color;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      return new MatchColor(_color);
    }
 
 }

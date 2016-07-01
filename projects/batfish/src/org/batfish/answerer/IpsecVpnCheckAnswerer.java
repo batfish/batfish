@@ -23,7 +23,7 @@ public class IpsecVpnCheckAnswerer extends Answerer {
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
       IpsecVpnCheckQuestion question = (IpsecVpnCheckQuestion) _question;
-      
+
       Pattern node1Regex;
       Pattern node2Regex;
       try {
@@ -38,9 +38,10 @@ public class IpsecVpnCheckAnswerer extends Answerer {
       }
 
       _batfish.checkConfigurations();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       _batfish.initRemoteIpsecVpns(configurations);
-      
+
       IpsecVpnCheckAnswerElement answerElement = new IpsecVpnCheckAnswerElement();
       for (Configuration c : configurations.values()) {
          if (!node1Regex.matcher(c.getHostname()).matches()) {

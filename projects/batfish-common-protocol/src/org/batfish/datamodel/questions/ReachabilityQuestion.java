@@ -46,8 +46,6 @@ public class ReachabilityQuestion extends Question {
 
    private Set<ForwardingAction> _actions;
 
-   private boolean _differential;
-
    private Set<SubRange> _dstPortRange;
 
    private Set<Prefix> _dstPrefixes;
@@ -198,8 +196,9 @@ public class ReachabilityQuestion extends Question {
 
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
-         if (isBaseParamKey(paramKey))
-            continue;         
+         if (isBaseParamKey(paramKey)) {
+            continue;
+         }
 
          try {
             switch (paramKey) {
@@ -274,11 +273,11 @@ public class ReachabilityQuestion extends Question {
       case MULTIPATH_DIFF:
       case PATH_DIFF:
       case REDUCED_REACHABILITY:
-         _differential = true;
+         setDifferential(true);
          break;
       case MULTIPATH:
       case STANDARD:
-         _differential = false;
+         setDifferential(false);
          break;
       default:
          throw new BatfishException("Invalid reachability type: "

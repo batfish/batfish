@@ -21,43 +21,43 @@ import org.batfish.main.Settings.TestrigSettings;
 
 public class UniqueIpAssignmentsAnswerer extends Answerer {
 
-//   private final Batfish _batfish;
-//   private final UniqueIpAssignmentsQuestion _question;
-//
-//   public UniqueIpAssignmentsReplier(Batfish batfish,
-//         UniqueIpAssignmentsQuestion question) {
-//      _batfish = batfish;
-//      _question = question;
-//      _batfish.checkConfigurations();
-//
-//      if (question.getDifferential()) {
-//         _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
-//         _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
-//         UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
-//               .getBaseTestrigSettings());
-//         UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
-//               .getDeltaTestrigSettings());
-//         ObjectMapper mapper = new BatfishObjectMapper();
-//         try {
-//            String beforeJsonStr = mapper.writeValueAsString(before);
-//            String afterJsonStr = mapper.writeValueAsString(after);
-//            JSONObject beforeJson = new JSONObject(beforeJsonStr);
-//            JSONObject afterJson = new JSONObject(afterJsonStr);
-//            JsonDiff diff = new JsonDiff(beforeJson, afterJson);
-//            addAnswerElement(new JsonDiffAnswerElement(diff));
-//         }
-//         catch (JsonProcessingException | JSONException e) {
-//            throw new BatfishException(
-//                  "Could not convert diff element to json string", e);
-//         }
-//      }
-//      else {
-//         UniqueIpAssignmentsAnswerElement answerElement = initAnswerElement(batfish
-//               .getTestrigSettings());
-//         addAnswerElement(answerElement);
-//      }
-//
-//   }
+   // private final Batfish _batfish;
+   // private final UniqueIpAssignmentsQuestion _question;
+   //
+   // public UniqueIpAssignmentsReplier(Batfish batfish,
+   // UniqueIpAssignmentsQuestion question) {
+   // _batfish = batfish;
+   // _question = question;
+   // _batfish.checkConfigurations();
+   //
+   // if (question.getDifferential()) {
+   // _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
+   // _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
+   // UniqueIpAssignmentsAnswerElement before = initAnswerElement(batfish
+   // .getBaseTestrigSettings());
+   // UniqueIpAssignmentsAnswerElement after = initAnswerElement(batfish
+   // .getDeltaTestrigSettings());
+   // ObjectMapper mapper = new BatfishObjectMapper();
+   // try {
+   // String beforeJsonStr = mapper.writeValueAsString(before);
+   // String afterJsonStr = mapper.writeValueAsString(after);
+   // JSONObject beforeJson = new JSONObject(beforeJsonStr);
+   // JSONObject afterJson = new JSONObject(afterJsonStr);
+   // JsonDiff diff = new JsonDiff(beforeJson, afterJson);
+   // addAnswerElement(new JsonDiffAnswerElement(diff));
+   // }
+   // catch (JsonProcessingException | JSONException e) {
+   // throw new BatfishException(
+   // "Could not convert diff element to json string", e);
+   // }
+   // }
+   // else {
+   // UniqueIpAssignmentsAnswerElement answerElement = initAnswerElement(batfish
+   // .getTestrigSettings());
+   // addAnswerElement(answerElement);
+   // }
+   //
+   // }
 
    public UniqueIpAssignmentsAnswerer(Question question, Batfish batfish) {
       super(question, batfish);
@@ -65,11 +65,11 @@ public class UniqueIpAssignmentsAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
-      
+
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-      
+
       _batfish.checkConfigurations(testrigSettings);
-      
+
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());

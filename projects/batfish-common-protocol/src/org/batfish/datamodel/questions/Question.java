@@ -87,15 +87,16 @@ public abstract class Question {
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
 
-         if (!isBaseParamKey(paramKey))
+         if (!isBaseParamKey(paramKey)) {
             continue;
-         
+         }
+
          try {
             switch (paramKey) {
             case DIFF_VAR:
                setDifferential(parameters.getBoolean(paramKey));
                break;
-            //TODO: interface and node blacklists
+            // TODO: interface and node blacklists
             default:
                throw new BatfishException("Unhandled base param key in "
                      + getClass().getSimpleName() + ": " + paramKey);

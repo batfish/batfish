@@ -4,6 +4,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchPolicyLine;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchRoutingPolicy;
 import org.batfish.main.Warnings;
 
 public final class PsFromPolicyStatement extends PsFrom {
@@ -39,6 +41,12 @@ public final class PsFromPolicyStatement extends PsFrom {
 
    public String getPolicyStatement() {
       return _policyStatement;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      return new MatchRoutingPolicy(_policyStatement);
    }
 
 }
