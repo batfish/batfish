@@ -54,11 +54,6 @@ public class BgpAdvertisementsQuestion extends Question {
       return true;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
    @JsonProperty(EBGP_VAR)
    public boolean getEbgp() {
       return _ebgp;
@@ -107,6 +102,8 @@ public class BgpAdvertisementsQuestion extends Question {
       Iterator<?> paramKeys = parameters.keys();
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
          try {
             switch (paramKey) {
             case EBGP_VAR:

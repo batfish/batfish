@@ -39,11 +39,6 @@ public class BgpSessionCheckQuestion extends Question {
       return false;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
    @JsonProperty(FOREIGN_BGP_GROUPS_VAR)
    public Set<String> getForeignBgpGroups() {
       return _foreignBgpGroups;
@@ -76,6 +71,8 @@ public class BgpSessionCheckQuestion extends Question {
 
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
 
          try {
             switch (paramKey) {

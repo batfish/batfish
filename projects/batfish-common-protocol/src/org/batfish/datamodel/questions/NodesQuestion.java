@@ -40,11 +40,6 @@ public class NodesQuestion extends Question {
       return false;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
    @JsonProperty(NODE_REGEX_VAR)
    public String getNodeRegex() {
       return _nodeRegex;
@@ -70,6 +65,8 @@ public class NodesQuestion extends Question {
       Iterator<?> paramKeys = parameters.keys();
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
          try {
             switch (paramKey) {
             case NODE_REGEX_VAR:

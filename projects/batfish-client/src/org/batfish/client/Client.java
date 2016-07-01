@@ -76,6 +76,8 @@ public class Client {
    private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
    private static final String COMMAND_SET_CONTAINER = "set-container";
    private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
+   private static final String COMMAND_SET_DIFF_TESTRIG = "set-diff-testrig";
+   private static final String COMMAND_SET_ENV = "set-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
    private static final String COMMAND_SHOW_API_KEY = "show-api-key";
@@ -177,13 +179,20 @@ public class Client {
       descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
             + " <container-name>\n" + "\t Set the current container");
       descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
-            + " <environment-name> [testrig-name]\n"
-            + "\t Set the current differential environment");
+            + " <environment-name>\n"
+            + "\t Set the differential environment");
+      descs.put(COMMAND_SET_DIFF_TESTRIG, COMMAND_SET_DIFF_TESTRIG 
+            + " <testrig-name> [environment name]\n"
+            + "\t Set the differential testrig");
+      descs.put(COMMAND_SET_ENV, COMMAND_SET_ENV
+            + " <environment-name>\n"
+            + "\t Set the current base environment");
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
             + " <debug|info|output|warn|error>\n"
             + "\t Set the client loglevel. Default is output");
-      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG + " <testrig-name>\n"
-            + "\t Set the current testrig");
+      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG 
+            + " <testrig-name> [environment name]\n"
+            + "\t Set the base testrig");
       descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n"
             + "\t Show API Key");
       descs.put(COMMAND_SHOW_BATFISH_LOGLEVEL, COMMAND_SHOW_BATFISH_LOGLEVEL
@@ -315,7 +324,7 @@ public class Client {
 
       Map<String, String> parameters = parseParams(paramsLine);
 
-      String questionString = QuestionHelper.getQuestionString(questionType);
+      String questionString = QuestionHelper.getQuestionString(questionType, isDiff);
       _logger.debugf("Question Json:\n%s\n", questionString);
 
       String parametersString = QuestionHelper.getParametersString(parameters);
@@ -998,15 +1007,26 @@ public class Client {
          }
          case COMMAND_SET_DIFF_ENV: {
             _currDiffEnv = parameters.get(0);
-            if (parameters.size() > 1) {
-               _currDiffTestrig = parameters.get(1);
-            }
-            else if (_currDiffTestrig == null ) {
+            if (_currDiffTestrig == null ) {
                _currDiffTestrig = _currTestrig;
             }
             _logger.outputf(
                   "Active diff testrig->environment is now %s->%s\n",
                   _currDiffTestrig, _currDiffEnv);
+            return true;
+         }
+         case COMMAND_SET_ENV: {
+            if (!isSetTestrig())
+               return false;
+            _currEnv = parameters.get(0);
+            _logger.outputf("Base testrig->env is now %s->%s\n",
+                  _currTestrig, _currEnv);
+            return true;
+         }
+         case COMMAND_SET_DIFF_TESTRIG: {
+            _currDiffTestrig = parameters.get(0);
+            _currDiffEnv = (parameters.size() > 1)? parameters.get(1) : DEFAULT_ENV_NAME;
+            _logger.outputf("Diff testrig->env is now %s->%s\n", _currDiffTestrig, _currDiffEnv);
             return true;
          }
          case COMMAND_SET_LOGLEVEL: {
@@ -1020,9 +1040,12 @@ public class Client {
             return true;
          }
          case COMMAND_SET_TESTRIG: {
+            if (!isSetContainer(true))
+               return false;
+            
             _currTestrig = parameters.get(0);
-            _currEnv = DEFAULT_ENV_NAME;
-            _logger.outputf("Active testrig is now %s\n", _currTestrig);
+            _currEnv = (parameters.size() > 1)? parameters.get(1) : DEFAULT_ENV_NAME;
+            _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig, _currEnv);
             return true;
          }
          case COMMAND_SHOW_API_KEY: {

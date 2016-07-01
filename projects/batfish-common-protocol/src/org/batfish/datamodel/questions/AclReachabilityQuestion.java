@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import java.io.Console;
 import java.util.Iterator;
 
 import org.batfish.common.BatfishException;
@@ -34,11 +35,6 @@ public class AclReachabilityQuestion extends Question {
       return false;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
    @JsonProperty(NODE_REGEX_VAR)
    public String getNodeRegex() {
       return _nodeRegex;
@@ -59,6 +55,8 @@ public class AclReachabilityQuestion extends Question {
       Iterator<?> paramKeys = parameters.keys();
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
          try {
             switch (paramKey) {
             case ACL_NAME_REGEX_VAR:

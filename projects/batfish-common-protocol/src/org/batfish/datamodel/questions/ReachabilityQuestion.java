@@ -95,11 +95,6 @@ public class ReachabilityQuestion extends Question {
       return true;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return _differential;
-   }
-
    @JsonProperty(DST_PORT_RANGE_VAR)
    public Set<SubRange> getDstPortRange() {
       return _dstPortRange;
@@ -203,6 +198,8 @@ public class ReachabilityQuestion extends Question {
 
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
 
          try {
             switch (paramKey) {

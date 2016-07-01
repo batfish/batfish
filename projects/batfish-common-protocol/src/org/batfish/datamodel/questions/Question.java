@@ -77,7 +77,7 @@ public abstract class Question {
       }
    }
 
-   private void setDifferential(boolean differential) {
+   public void setDifferential(boolean differential) {
       _differential = differential;
    }
 

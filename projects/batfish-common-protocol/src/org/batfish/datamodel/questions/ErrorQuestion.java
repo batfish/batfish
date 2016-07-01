@@ -12,11 +12,6 @@ public class ErrorQuestion extends Question {
    }
 
    @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
-   @Override
    public boolean getTraffic() {
       return false;
    }

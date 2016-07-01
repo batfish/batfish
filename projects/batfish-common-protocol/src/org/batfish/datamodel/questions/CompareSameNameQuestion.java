@@ -35,11 +35,6 @@ public final class CompareSameNameQuestion extends Question {
       return false;
    }
 
-   @Override
-   public boolean getDifferential() {
-      return false;
-   }
-
    @JsonProperty(NAMED_STRUCT_TYPE_VAR)
    public Set<NamedStructType> getNamedStructTypes() {
       return _namedStructTypes;
@@ -63,6 +58,8 @@ public final class CompareSameNameQuestion extends Question {
 
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
+         if (isBaseParamKey(paramKey))
+            continue;         
 
          try {
             switch (paramKey) {
