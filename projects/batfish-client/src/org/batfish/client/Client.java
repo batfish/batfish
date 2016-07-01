@@ -91,7 +91,7 @@ public class Client {
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DIFF_ENV_PREFIX = "env_";
-   private static final String DEFAULT_ENV_NAME = "env_default";
+   private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
    private static final String DEFAULT_QUESTION_PREFIX = "q";
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 

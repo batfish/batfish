@@ -71,7 +71,7 @@ public class BfConsts {
    public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
-   public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "default";
+   public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
    public static final String RELPATH_DIFF = "diff";
    public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
    public static final String RELPATH_ENV_DIR = "env";
