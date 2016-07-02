@@ -1,0 +1,19 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.answers.IpsecVpnCheckAnswerElement",
+    "incompatibleIkeProposals" : { },
+    "incompatibleIpsecProposals" : { },
+    "missingEndpoint" : { },
+    "nonUniqueEndpoint" : { },
+    "preSharedKeyMismatch" : { }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.IpsecVpnCheckQuestion",
+    "differential" : false,
+    "interfaceBlacklist" : [ ],
+    "node1Regex" : ".*",
+    "node2Regex" : ".*",
+    "nodeBlacklist" : [ ]
+  },
+  "status" : "SUCCESS"
+}

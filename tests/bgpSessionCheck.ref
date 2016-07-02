@@ -1,0 +1,575 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.answers.BgpSessionCheckAnswerElement",
+    "allBgpNeighbors" : {
+      "as1border1" : {
+        "1.10.1.1/32" : {
+          "@id" : 1,
+          "dynamicRemotePrefix" : "1.10.1.1/32",
+          "group" : "as1",
+          "localAs" : 1,
+          "localIp" : "1.1.1.1",
+          "name" : "as1border1:1.10.1.1",
+          "remoteAs" : 1,
+          "remoteIp" : "1.10.1.1"
+        },
+        "3.2.2.2/32" : {
+          "@id" : 2,
+          "dynamicRemotePrefix" : "3.2.2.2/32",
+          "group" : "bad-ebgp",
+          "localAs" : 1,
+          "name" : "as1border1:3.2.2.2",
+          "remoteAs" : 666,
+          "remoteIp" : "3.2.2.2"
+        },
+        "5.6.7.8/32" : {
+          "@id" : 3,
+          "dynamicRemotePrefix" : "5.6.7.8/32",
+          "group" : "xanadu",
+          "localAs" : 1,
+          "name" : "as1border1:5.6.7.8",
+          "remoteAs" : 555,
+          "remoteIp" : "5.6.7.8"
+        },
+        "10.12.11.2/32" : {
+          "@id" : 4,
+          "dynamicRemotePrefix" : "10.12.11.2/32",
+          "group" : "as2",
+          "localAs" : 1,
+          "localIp" : "10.12.11.1",
+          "name" : "as1border1:10.12.11.2",
+          "remoteAs" : 2,
+          "remoteIp" : "10.12.11.2"
+        }
+      },
+      "as1border2" : {
+        "1.10.1.1/32" : {
+          "@id" : 5,
+          "dynamicRemotePrefix" : "1.10.1.1/32",
+          "group" : "as1",
+          "localAs" : 1,
+          "localIp" : "1.2.2.2",
+          "name" : "as1border2:1.10.1.1",
+          "remoteAs" : 1,
+          "remoteIp" : "1.10.1.1"
+        },
+        "10.13.22.3/32" : {
+          "@id" : 6,
+          "dynamicRemotePrefix" : "10.13.22.3/32",
+          "group" : "as3",
+          "localAs" : 1,
+          "localIp" : "10.13.22.1",
+          "name" : "as1border2:10.13.22.3",
+          "remoteAs" : 3,
+          "remoteIp" : "10.13.22.3"
+        },
+        "10.14.22.4/32" : {
+          "@id" : 7,
+          "dynamicRemotePrefix" : "10.14.22.4/32",
+          "group" : "as4",
+          "localAs" : 1,
+          "localIp" : "10.14.22.1",
+          "name" : "as1border2:10.14.22.4",
+          "remoteAs" : 4,
+          "remoteIp" : "10.14.22.4"
+        }
+      },
+      "as1core1" : {
+        "1.1.1.1/32" : {
+          "@id" : 8,
+          "dynamicRemotePrefix" : "1.1.1.1/32",
+          "group" : "as1",
+          "localAs" : 1,
+          "localIp" : "1.10.1.1",
+          "name" : "as1core1:1.1.1.1",
+          "remoteAs" : 1,
+          "remoteIp" : "1.1.1.1"
+        },
+        "1.2.2.2/32" : {
+          "@id" : 9,
+          "dynamicRemotePrefix" : "1.2.2.2/32",
+          "group" : "as1",
+          "localAs" : 1,
+          "localIp" : "1.10.1.1",
+          "name" : "as1core1:1.2.2.2",
+          "remoteAs" : 1,
+          "remoteIp" : "1.2.2.2"
+        }
+      },
+      "as2border1" : {
+        "2.1.2.1/32" : {
+          "@id" : 10,
+          "dynamicRemotePrefix" : "2.1.2.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.1.1",
+          "name" : "as2border1:2.1.2.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.1"
+        },
+        "2.1.2.2/32" : {
+          "@id" : 11,
+          "dynamicRemotePrefix" : "2.1.2.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.1.1",
+          "name" : "as2border1:2.1.2.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.2"
+        },
+        "10.12.11.1/32" : {
+          "@id" : 12,
+          "dynamicRemotePrefix" : "10.12.11.1/32",
+          "group" : "as1",
+          "localAs" : 2,
+          "localIp" : "10.12.11.2",
+          "name" : "as2border1:10.12.11.1",
+          "remoteAs" : 1,
+          "remoteIp" : "10.12.11.1"
+        }
+      },
+      "as2border2" : {
+        "2.1.2.1/32" : {
+          "@id" : 13,
+          "dynamicRemotePrefix" : "2.1.2.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.1.2",
+          "name" : "as2border2:2.1.2.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.1"
+        },
+        "2.1.2.2/32" : {
+          "@id" : 14,
+          "dynamicRemotePrefix" : "2.1.2.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.1.2",
+          "name" : "as2border2:2.1.2.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.2"
+        },
+        "10.23.21.3/32" : {
+          "@id" : 15,
+          "dynamicRemotePrefix" : "10.23.21.3/32",
+          "group" : "as3",
+          "localAs" : 2,
+          "localIp" : "10.23.21.2",
+          "name" : "as2border2:10.23.21.3",
+          "remoteAs" : 3,
+          "remoteIp" : "10.23.21.3"
+        }
+      },
+      "as2core1" : {
+        "2.1.1.1/32" : {
+          "@id" : 16,
+          "dynamicRemotePrefix" : "2.1.1.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.1",
+          "name" : "as2core1:2.1.1.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.1.1"
+        },
+        "2.1.1.2/32" : {
+          "@id" : 17,
+          "dynamicRemotePrefix" : "2.1.1.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.1",
+          "name" : "as2core1:2.1.1.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.1.2"
+        },
+        "2.1.3.1/32" : {
+          "@id" : 18,
+          "dynamicRemotePrefix" : "2.1.3.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.1",
+          "name" : "as2core1:2.1.3.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.3.1"
+        },
+        "2.1.3.2/32" : {
+          "@id" : 19,
+          "dynamicRemotePrefix" : "2.1.3.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.1",
+          "name" : "as2core1:2.1.3.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.3.2"
+        }
+      },
+      "as2core2" : {
+        "2.1.1.1/32" : {
+          "@id" : 20,
+          "dynamicRemotePrefix" : "2.1.1.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.2",
+          "name" : "as2core2:2.1.1.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.1.1"
+        },
+        "2.1.1.2/32" : {
+          "@id" : 21,
+          "dynamicRemotePrefix" : "2.1.1.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.2",
+          "name" : "as2core2:2.1.1.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.1.2"
+        },
+        "2.1.3.1/32" : {
+          "@id" : 22,
+          "dynamicRemotePrefix" : "2.1.3.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.2",
+          "name" : "as2core2:2.1.3.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.3.1"
+        },
+        "2.1.3.2/32" : {
+          "@id" : 23,
+          "dynamicRemotePrefix" : "2.1.3.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.2.2",
+          "name" : "as2core2:2.1.3.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.3.2"
+        }
+      },
+      "as2dept1" : {
+        "2.34.101.3/32" : {
+          "@id" : 24,
+          "dynamicRemotePrefix" : "2.34.101.3/32",
+          "group" : "as2",
+          "localAs" : 65001,
+          "localIp" : "2.34.101.4",
+          "name" : "as2dept1:2.34.101.3",
+          "remoteAs" : 2,
+          "remoteIp" : "2.34.101.3"
+        },
+        "2.34.201.3/32" : {
+          "@id" : 25,
+          "dynamicRemotePrefix" : "2.34.201.3/32",
+          "group" : "as2",
+          "localAs" : 65001,
+          "localIp" : "2.34.201.4",
+          "name" : "as2dept1:2.34.201.3",
+          "remoteAs" : 2,
+          "remoteIp" : "2.34.201.3"
+        }
+      },
+      "as2dist1" : {
+        "2.1.2.1/32" : {
+          "@id" : 26,
+          "dynamicRemotePrefix" : "2.1.2.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.3.1",
+          "name" : "as2dist1:2.1.2.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.1"
+        },
+        "2.1.2.2/32" : {
+          "@id" : 27,
+          "dynamicRemotePrefix" : "2.1.2.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.3.1",
+          "name" : "as2dist1:2.1.2.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.2"
+        },
+        "2.34.101.4/32" : {
+          "@id" : 28,
+          "dynamicRemotePrefix" : "2.34.101.4/32",
+          "group" : "dept",
+          "localAs" : 2,
+          "localIp" : "2.34.101.3",
+          "name" : "as2dist1:2.34.101.4",
+          "remoteAs" : 65001,
+          "remoteIp" : "2.34.101.4"
+        }
+      },
+      "as2dist2" : {
+        "2.1.2.1/32" : {
+          "@id" : 29,
+          "dynamicRemotePrefix" : "2.1.2.1/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.3.2",
+          "name" : "as2dist2:2.1.2.1",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.1"
+        },
+        "2.1.2.2/32" : {
+          "@id" : 30,
+          "dynamicRemotePrefix" : "2.1.2.2/32",
+          "group" : "as2",
+          "localAs" : 2,
+          "localIp" : "2.1.3.2",
+          "name" : "as2dist2:2.1.2.2",
+          "remoteAs" : 2,
+          "remoteIp" : "2.1.2.2"
+        },
+        "2.34.201.4/32" : {
+          "@id" : 31,
+          "dynamicRemotePrefix" : "2.34.201.4/32",
+          "group" : "dept",
+          "localAs" : 2,
+          "localIp" : "2.34.201.3",
+          "name" : "as2dist2:2.34.201.4",
+          "remoteAs" : 65001,
+          "remoteIp" : "2.34.201.4"
+        }
+      },
+      "as3border1" : {
+        "3.10.1.1/32" : {
+          "@id" : 32,
+          "dynamicRemotePrefix" : "3.10.1.1/32",
+          "group" : "as3",
+          "localAs" : 3,
+          "localIp" : "3.1.1.1",
+          "name" : "as3border1:3.10.1.1",
+          "remoteAs" : 3,
+          "remoteIp" : "3.10.1.1"
+        },
+        "10.23.21.2/32" : {
+          "@id" : 33,
+          "dynamicRemotePrefix" : "10.23.21.2/32",
+          "group" : "as2",
+          "localAs" : 3,
+          "localIp" : "10.23.21.3",
+          "name" : "as3border1:10.23.21.2",
+          "remoteAs" : 2,
+          "remoteIp" : "10.23.21.2"
+        }
+      },
+      "as3border2" : {
+        "3.10.1.1/32" : {
+          "@id" : 34,
+          "dynamicRemotePrefix" : "3.10.1.1/32",
+          "group" : "as3",
+          "localAs" : 3,
+          "localIp" : "3.2.2.2",
+          "name" : "as3border2:3.10.1.1",
+          "remoteAs" : 3,
+          "remoteIp" : "3.10.1.1"
+        },
+        "10.13.22.1/32" : {
+          "@id" : 35,
+          "dynamicRemotePrefix" : "10.13.22.1/32",
+          "group" : "as1",
+          "localAs" : 3,
+          "localIp" : "10.13.22.3",
+          "name" : "as3border2:10.13.22.1",
+          "remoteAs" : 1,
+          "remoteIp" : "10.13.22.1"
+        }
+      },
+      "as3core1" : {
+        "3.1.1.1/32" : {
+          "@id" : 36,
+          "dynamicRemotePrefix" : "3.1.1.1/32",
+          "group" : "as3",
+          "localAs" : 3,
+          "localIp" : "3.10.1.1",
+          "name" : "as3core1:3.1.1.1",
+          "remoteAs" : 3,
+          "remoteIp" : "3.1.1.1"
+        },
+        "3.2.2.2/32" : {
+          "@id" : 37,
+          "dynamicRemotePrefix" : "3.2.2.2/32",
+          "group" : "as3",
+          "localAs" : 3,
+          "localIp" : "3.10.1.1",
+          "name" : "as3core1:3.2.2.2",
+          "remoteAs" : 3,
+          "remoteIp" : "3.2.2.2"
+        }
+      }
+    },
+    "broken" : {
+      "as1border1" : {
+        "3.2.2.2/32" : 2,
+        "5.6.7.8/32" : 3
+      },
+      "as1border2" : {
+        "1.10.1.1/32" : 5,
+        "10.14.22.4/32" : 7
+      },
+      "as2border2" : {
+        "2.1.2.1/32" : 13,
+        "2.1.2.2/32" : 14
+      },
+      "as2core2" : {
+        "2.1.1.1/32" : 20,
+        "2.1.1.2/32" : 21,
+        "2.1.3.1/32" : 22,
+        "2.1.3.2/32" : 23
+      },
+      "as2dist1" : {
+        "2.1.2.1/32" : 26,
+        "2.1.2.2/32" : 27
+      },
+      "as2dist2" : {
+        "2.1.2.1/32" : 29,
+        "2.1.2.2/32" : 30
+      },
+      "as3border2" : {
+        "3.10.1.1/32" : 34
+      }
+    },
+    "ebgpBroken" : {
+      "as1border1" : {
+        "3.2.2.2/32" : 2,
+        "5.6.7.8/32" : 3
+      },
+      "as1border2" : {
+        "10.14.22.4/32" : 7
+      }
+    },
+    "ebgpHalfOpen" : { },
+    "ebgpLocalIpOnLoopback" : { },
+    "ebgpLocalIpUnknown" : { },
+    "ebgpMissingLocalIp" : {
+      "as1border1" : {
+        "3.2.2.2/32" : 2,
+        "5.6.7.8/32" : 3
+      }
+    },
+    "ebgpNonUniqueEndpoint" : { },
+    "ebgpRemoteIpOnLoopback" : {
+      "as1border1" : {
+        "3.2.2.2/32" : 2
+      }
+    },
+    "ebgpRemoteIpUnknown" : {
+      "as1border1" : {
+        "5.6.7.8/32" : 3
+      },
+      "as1border2" : {
+        "10.14.22.4/32" : 7
+      }
+    },
+    "halfOpen" : {
+      "as1border2" : {
+        "1.10.1.1/32" : 5
+      },
+      "as2border2" : {
+        "2.1.2.1/32" : 13,
+        "2.1.2.2/32" : 14
+      },
+      "as2core2" : {
+        "2.1.1.1/32" : 20,
+        "2.1.1.2/32" : 21,
+        "2.1.3.1/32" : 22,
+        "2.1.3.2/32" : 23
+      },
+      "as2dist1" : {
+        "2.1.2.1/32" : 26,
+        "2.1.2.2/32" : 27
+      },
+      "as2dist2" : {
+        "2.1.2.1/32" : 29,
+        "2.1.2.2/32" : 30
+      },
+      "as3border2" : {
+        "3.10.1.1/32" : 34
+      }
+    },
+    "ibgpBroken" : {
+      "as1border2" : {
+        "1.10.1.1/32" : 5
+      },
+      "as2border2" : {
+        "2.1.2.1/32" : 13,
+        "2.1.2.2/32" : 14
+      },
+      "as2core2" : {
+        "2.1.1.1/32" : 20,
+        "2.1.1.2/32" : 21,
+        "2.1.3.1/32" : 22,
+        "2.1.3.2/32" : 23
+      },
+      "as2dist1" : {
+        "2.1.2.1/32" : 26,
+        "2.1.2.2/32" : 27
+      },
+      "as2dist2" : {
+        "2.1.2.1/32" : 29,
+        "2.1.2.2/32" : 30
+      },
+      "as3border2" : {
+        "3.10.1.1/32" : 34
+      }
+    },
+    "ibgpHalfOpen" : {
+      "as1border2" : {
+        "1.10.1.1/32" : 5
+      },
+      "as2border2" : {
+        "2.1.2.1/32" : 13,
+        "2.1.2.2/32" : 14
+      },
+      "as2core2" : {
+        "2.1.1.1/32" : 20,
+        "2.1.1.2/32" : 21,
+        "2.1.3.1/32" : 22,
+        "2.1.3.2/32" : 23
+      },
+      "as2dist1" : {
+        "2.1.2.1/32" : 26,
+        "2.1.2.2/32" : 27
+      },
+      "as2dist2" : {
+        "2.1.2.1/32" : 29,
+        "2.1.2.2/32" : 30
+      },
+      "as3border2" : {
+        "3.10.1.1/32" : 34
+      }
+    },
+    "ibgpLocalIpOnNonLoopback" : { },
+    "ibgpLocalIpUnknown" : { },
+    "ibgpMissingLocalIp" : { },
+    "ibgpNonUniqueEndpoint" : { },
+    "ibgpRemoteIpOnNonLoopback" : { },
+    "ibgpRemoteIpUnknown" : { },
+    "ignoredForeignEndpoints" : { },
+    "localIpUnknown" : { },
+    "missingLocalIp" : {
+      "as1border1" : {
+        "3.2.2.2/32" : 2,
+        "5.6.7.8/32" : 3
+      }
+    },
+    "nonUniqueEndpoint" : { },
+    "remoteIpUnknown" : {
+      "as1border1" : {
+        "5.6.7.8/32" : 3
+      },
+      "as1border2" : {
+        "10.14.22.4/32" : 7
+      }
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.BgpSessionCheckQuestion",
+    "differential" : false,
+    "foreignBgpGroups" : [ ],
+    "interfaceBlacklist" : [ ],
+    "node1Regex" : ".*",
+    "node2Regex" : ".*",
+    "nodeBlacklist" : [ ]
+  },
+  "status" : "SUCCESS"
+}

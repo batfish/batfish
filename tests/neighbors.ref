@@ -1,0 +1,26 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+    "contents" : {
+      "0" : "org.batfish.common.BatfishException: Failed to answer question\r",
+      "1" : "   at org.batfish.main.Batfish.answer(Batfish.java:604)\r",
+      "2" : "   at org.batfish.main.Batfish.run(Batfish.java:3389)\r",
+      "3" : "   at org.batfish.main.Driver$1.run(Driver.java:269)\r",
+      "4" : "Caused by: java.lang.NullPointerException\r",
+      "5" : "   at org.batfish.datamodel.answers.NeighborsAnswerElement.addLanEdge(NeighborsAnswerElement.java:26)\r",
+      "6" : "   at org.batfish.answerer.NeighborsAnswerer.answer(NeighborsAnswerer.java:134)\r",
+      "7" : "   at org.batfish.main.Batfish.answer(Batfish.java:600)\r",
+      "8" : "   ... 2 more\r"
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
+    "differential" : false,
+    "interfaceBlacklist" : [ ],
+    "neighborType" : [ ],
+    "node1Regex" : ".*",
+    "node2Regex" : ".*",
+    "nodeBlacklist" : [ ]
+  },
+  "status" : "FAILURE"
+}

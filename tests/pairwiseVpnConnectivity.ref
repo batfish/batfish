@@ -1,0 +1,17 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.answers.PairwiseVpnConnectivityAnswerElement",
+    "connectedNeighbors" : { },
+    "ipsecVpnNodes" : [ ],
+    "missingNeighbors" : { }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion",
+    "differential" : false,
+    "interfaceBlacklist" : [ ],
+    "node1Regex" : ".*",
+    "node2Regex" : ".*",
+    "nodeBlacklist" : [ ]
+  },
+  "status" : "SUCCESS"
+}

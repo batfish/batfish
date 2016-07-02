@@ -1,0 +1,32 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement",
+    "allIps" : {
+      "2.1.1.2" : [ {
+        "hostname" : "as2border2",
+        "interface" : "Loopback0"
+      }, {
+        "hostname" : "as2host1",
+        "interface" : "Loopback0"
+      } ]
+    },
+    "enabledIps" : {
+      "2.1.1.2" : [ {
+        "hostname" : "as2border2",
+        "interface" : "Loopback0"
+      }, {
+        "hostname" : "as2host1",
+        "interface" : "Loopback0"
+      } ]
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion",
+    "differential" : false,
+    "interfaceBlacklist" : [ ],
+    "nodeBlacklist" : [ ],
+    "nodeRegex" : ".*",
+    "verbose" : false
+  },
+  "status" : "SUCCESS"
+}
