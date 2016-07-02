@@ -82,9 +82,9 @@ public abstract class Answerer {
    public AnswerElement answerDiff() {
       _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
       _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
-      AnswerElement before = answer(_batfish
+      AnswerElement before = Create(_question, _batfish).answer(_batfish
             .getBaseTestrigSettings());
-      AnswerElement after = answer(_batfish
+      AnswerElement after = Create(_question, _batfish).answer(_batfish
             .getDeltaTestrigSettings());
       ObjectMapper mapper = new BatfishObjectMapper();
       try {

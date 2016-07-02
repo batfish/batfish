@@ -10,6 +10,7 @@ test tests/error.ref get error
 test tests/ipsecVpnCheck.ref get ipsecVpnCheck
 test tests/isisLoopbacks.ref get isisLoopbacks
 test tests/neighbors.ref get neighbors
+test tests/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
 test tests/nodes.ref get nodes
 test tests/ospfLoopbacks.ref get ospfLoopbacks
 test tests/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity

@@ -1124,22 +1124,36 @@ public class Client {
             processCommand(testCommand, testoutWriter);
             testoutWriter.close();
             
-            String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-            String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
+            boolean testPassed = false;
+            
+            try {
+               String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
+               String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-            if (referenceOutput.equals(testOutput)) {
-               _logger.output("Test passed!\n");
+               ObjectMapper mapper = new BatfishObjectMapper();
+               JsonNode referenceJson = mapper.readTree(referenceOutput);
+               JsonNode testJson = mapper.readTree(testOutput);
+               if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
+                  testPassed = true;
+               }
+            }
+            catch (Exception e) {
+               _logger.errorf("Exception in comparing test results: ", e.getMessage());
+            }
+            
+            if (testPassed) {
+               _logger.outputf("Test result for %s: Pass\n", referenceFileName);
             }
             else {
                String outFileName = referenceFile + ".testout";
                Files.move(Paths.get(testoutFile.getAbsolutePath()),  
                      Paths.get(referenceFile + ".testout"), 
                      StandardCopyOption.REPLACE_EXISTING);
-               
-               _logger.output("Test failed!\n");
+
+               _logger.outputf("Test result for %s: Fail\n", referenceFileName);
                _logger.outputf("Copied output to %s\n", outFileName);
             }
-            
+
             return true;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {

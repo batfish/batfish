@@ -1,17 +1,187 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
-    "contents" : {
-      "0" : "org.batfish.common.BatfishException: Failed to answer question\r",
-      "1" : "   at org.batfish.main.Batfish.answer(Batfish.java:604)\r",
-      "2" : "   at org.batfish.main.Batfish.run(Batfish.java:3389)\r",
-      "3" : "   at org.batfish.main.Driver$1.run(Driver.java:269)\r",
-      "4" : "Caused by: java.lang.NullPointerException\r",
-      "5" : "   at org.batfish.datamodel.answers.NeighborsAnswerElement.addLanEdge(NeighborsAnswerElement.java:26)\r",
-      "6" : "   at org.batfish.answerer.NeighborsAnswerer.answer(NeighborsAnswerer.java:134)\r",
-      "7" : "   at org.batfish.main.Batfish.answer(Batfish.java:600)\r",
-      "8" : "   ... 2 more\r"
-    }
+    "class" : "org.batfish.datamodel.answers.NeighborsAnswerElement",
+    "lanNeighbors" : [ {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as1border1",
+      "node2" : "as1core1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as1border1",
+      "node2" : "as2border1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as1border2",
+      "node2" : "as1core1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as1border2",
+      "node2" : "as3border2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as1core1",
+      "node2" : "as1border1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as1core1",
+      "node2" : "as1border2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2border1",
+      "node2" : "as1border1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2border1",
+      "node2" : "as2core1"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2border1",
+      "node2" : "as2core2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2border2",
+      "node2" : "as3border1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2border2",
+      "node2" : "as2core1"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2border2",
+      "node2" : "as2core2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2core1",
+      "node2" : "as2border1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2core1",
+      "node2" : "as2border2"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2core1",
+      "node2" : "as2dist2"
+    }, {
+      "int1" : "FastEthernet2/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2core1",
+      "node2" : "as2dist1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2core2",
+      "node2" : "as2border2"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2core2",
+      "node2" : "as2border1"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2core2",
+      "node2" : "as2dist1"
+    }, {
+      "int1" : "FastEthernet2/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2core2",
+      "node2" : "as2dist2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2dept1",
+      "node2" : "as2dist1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2dept1",
+      "node2" : "as2dist2"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2dept1",
+      "node2" : "as2host1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2dist1",
+      "node2" : "as2core2"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet2/0",
+      "node1" : "as2dist1",
+      "node2" : "as2core1"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as2dist1",
+      "node2" : "as2dept1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet2/0",
+      "node1" : "as2dist2",
+      "node2" : "as2core2"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2dist2",
+      "node2" : "as2core1"
+    }, {
+      "int1" : "FastEthernet1/0",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as2dist2",
+      "node2" : "as2dept1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet1/0",
+      "node1" : "as2host1",
+      "node2" : "as2dept1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as3border1",
+      "node2" : "as2border2"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as3border1",
+      "node2" : "as3core1"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as3border2",
+      "node2" : "as3core1"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as3border2",
+      "node2" : "as1border2"
+    }, {
+      "int1" : "FastEthernet0/0",
+      "int2" : "FastEthernet0/0",
+      "node1" : "as3core1",
+      "node2" : "as3border2"
+    }, {
+      "int1" : "FastEthernet0/1",
+      "int2" : "FastEthernet0/1",
+      "node1" : "as3core1",
+      "node2" : "as3border1"
+    } ]
   } ],
   "question" : {
     "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
@@ -22,5 +192,5 @@
     "node2Regex" : ".*",
     "nodeBlacklist" : [ ]
   },
-  "status" : "FAILURE"
+  "status" : "SUCCESS"
 }
