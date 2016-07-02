@@ -1,7 +1,6 @@
 package org.batfish.client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -14,6 +13,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -87,6 +87,7 @@ public class Client {
    private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
    private static final String COMMAND_SHOW_DIFF_TESTRIG = "show-diff-testrig";
    private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
+   private static final String COMMAND_TEST = "test";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
@@ -207,6 +208,9 @@ public class Client {
             + "\t Show differential testrig and environment");
       descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
             + "\t Show base testrig and environment");
+      descs.put(COMMAND_TEST, COMMAND_TEST 
+            + " <reference file> <command> \n" 
+            + "\t Show base testrig and environment");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
@@ -282,7 +286,7 @@ public class Client {
    }
 
    private boolean answerFile(String questionFile, String paramsLine,
-         boolean isDiff) throws Exception {
+         boolean isDiff, FileWriter outWriter) throws Exception {
 
       if (!new File(questionFile).exists()) {
          throw new FileNotFoundException("Question file not found: "
@@ -293,6 +297,7 @@ public class Client {
             + UUID.randomUUID().toString();
 
       File paramsFile = createTempFile("parameters", paramsLine);
+      paramsFile.deleteOnExit();
 
       // upload the question
       boolean resultUpload = _workHelper.uploadQuestion(_currContainerName,
@@ -316,11 +321,11 @@ public class Client {
             _currDiffTestrig, _currDiffEnv) : _workHelper
             .getWorkItemAnswerQuestion(questionName, _currContainerName,
                   _currTestrig, _currEnv, _currDiffTestrig, _currDiffEnv);
-      return execute(wItemAs);
+      return execute(wItemAs, outWriter);
    }
 
    private boolean answerType(String questionType, String paramsLine,
-         boolean isDiff) throws Exception {
+         boolean isDiff, FileWriter outWriter) throws Exception {
 
       Map<String, String> parameters = parseParams(paramsLine);
 
@@ -333,7 +338,7 @@ public class Client {
       File questionFile = createTempFile("question", questionString);
 
       boolean result = answerFile(questionFile.getAbsolutePath(),
-            parametersString, isDiff);
+            parametersString, isDiff, outWriter);
 
       if (questionFile != null) {
          questionFile.delete();
@@ -346,17 +351,19 @@ public class Client {
          throws IOException {
 
       File tempFile = Files.createTempFile(filePrefix, null).toFile();
+      tempFile.deleteOnExit();
+
       _logger.debugf("Creating temporary %s file: %s\n", filePrefix,
             tempFile.getAbsolutePath());
 
-      BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+      FileWriter writer = new FileWriter(tempFile);
       writer.write(content + "\n");
       writer.close();
 
       return tempFile;
    }
 
-   private boolean execute(WorkItem wItem) throws Exception {
+   private boolean execute(WorkItem wItem, FileWriter outWriter) throws Exception {
 
       wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
             _settings.getBatfishLogLevel());
@@ -401,7 +408,15 @@ public class Client {
       else {
          String answerString = CommonUtil
                .readFile(Paths.get(downloadedAnsFile));
-         _logger.output(answerString + "\n");
+         
+         if (outWriter == null) {
+            _logger.output(answerString + "\n");
+         }
+         else {
+            outWriter.write(answerString);
+         }
+
+         //the code below tests serialization/deserialization
          try {
             ObjectMapper mapper = new BatfishObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
@@ -429,7 +444,7 @@ public class Client {
       }
 
       // get the log
-      _logger.output("---------------- Log output --------------\n");
+      _logger.output("---------------- Service Log --------------\n");
       String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
       String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
             wItem.getTestrigName(), logFileName);
@@ -459,7 +474,7 @@ public class Client {
       }
    }
 
-   private boolean generateDataplane() throws Exception {
+   private boolean generateDataplane(FileWriter outWriter) throws Exception {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
@@ -468,10 +483,10 @@ public class Client {
       WorkItem wItemGenDp = _workHelper.getWorkItemGenerateDataPlane(
             _currContainerName, _currTestrig, _currEnv);
 
-      return execute(wItemGenDp);
+      return execute(wItemGenDp, outWriter);
    }
 
-   private boolean generateDiffDataplane() throws Exception {
+   private boolean generateDiffDataplane(FileWriter outWriter) throws Exception {
       if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
@@ -479,7 +494,7 @@ public class Client {
       WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDiffDataPlane(
             _currContainerName, _currTestrig, _currEnv, _currDiffEnv);
 
-      return execute(wItemGenDdp);
+      return execute(wItemGenDdp, outWriter);
    }
 
    private void generateQuestions() {
@@ -667,10 +682,10 @@ public class Client {
          return false;
       }
 
-      return processCommand(words);
+      return processCommand(words, null);
    }
 
-   private boolean processCommand(String[] words) {
+   private boolean processCommand(String[] words, FileWriter outWriter) {
       try {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
@@ -693,7 +708,7 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            return answerFile(questionFile, paramsLine, false);
+            return answerFile(questionFile, paramsLine, false, outWriter);
          }
          case COMMAND_ANSWER_DIFF: {
             if (!isSetDiffEnvironment() || !isSetTestrig()
@@ -705,7 +720,7 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            return answerFile(questionFile, paramsLine, true);
+            return answerFile(questionFile, paramsLine, true, outWriter);
          }
          case COMMAND_CAT: {
             String filename = words[1];
@@ -781,10 +796,10 @@ public class Client {
             return true;
          }
          case COMMAND_GEN_DP: {
-            return generateDataplane();
+            return generateDataplane(outWriter);
          }
          case COMMAND_GEN_DIFF_DP: {
-            return generateDiffDataplane();
+            return generateDiffDataplane(outWriter);
          }
          case COMMAND_GET: {
             if (!isSetTestrig() || !isSetContainer(true)) {
@@ -795,7 +810,7 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            return answerType(questionType, paramsLine, false);
+            return answerType(questionType, paramsLine, false, outWriter);
          }
          case COMMAND_GET_DIFF: {
             if (!isSetDiffEnvironment() || !isSetTestrig()
@@ -807,7 +822,7 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            return answerType(questionType, paramsLine, true);
+            return answerType(questionType, paramsLine, true, outWriter);
          }
          case COMMAND_HELP: {
             printUsage();
@@ -860,13 +875,13 @@ public class Client {
             WorkItem wItemGenDdp = _workHelper.getWorkItemCompileDiffEnvironment(
                   _currContainerName, _currDiffTestrig, _currEnv, _currDiffEnv);
 
-            if (!execute(wItemGenDdp))
+            if (!execute(wItemGenDdp, outWriter))
                return false;
 
             if (generateDiffDataplane) {
                _logger.output("Generating delta dataplane\n");
 
-               if (!generateDiffDataplane()) {
+               if (!generateDiffDataplane(outWriter)) {
                   return false;
                }
 
@@ -910,7 +925,7 @@ public class Client {
             WorkItem wItemParse = _workHelper.getWorkItemParse(
                   _currContainerName, testrigName);
 
-            if (!execute(wItemParse)) {
+            if (!execute(wItemParse, outWriter)) {
                return false;
             }
 
@@ -929,7 +944,7 @@ public class Client {
             if (generateDataplane) {
                _logger.output("Generating dataplane now\n");
 
-               if (!generateDataplane()) {
+               if (!generateDataplane(outWriter)) {
                   return false;
                }
 
@@ -1085,6 +1100,48 @@ public class Client {
             _logger.outputf("Base testrig->environment is %s->%s\n", _currTestrig, _currEnv);
             return true;
          }
+         case COMMAND_TEST: {
+            String referenceFileName = parameters.get(0);
+            
+            String[] testCommand = parameters.subList(1, parameters.size())
+                  .toArray(new String[0]);
+
+            _logger.debugf("Ref file is %s. \n", referenceFileName, parameters.size());            
+            _logger.debugf("Test command is %s\n", Arrays.toString(testCommand));
+
+            File referenceFile = new File(referenceFileName);
+            
+            if (!referenceFile.exists()) {
+               _logger.errorf("Reference file does not exist: %s\n", referenceFileName);
+               return false;
+            }
+            
+            File testoutFile = Files.createTempFile("test", "out").toFile();
+            testoutFile.deleteOnExit();
+
+            FileWriter testoutWriter = new FileWriter(testoutFile);
+            
+            processCommand(testCommand, testoutWriter);
+            testoutWriter.close();
+            
+            String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
+            String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
+
+            if (referenceOutput.equals(testOutput)) {
+               _logger.output("Test passed!\n");
+            }
+            else {
+               String outFileName = referenceFile + ".testout";
+               Files.move(Paths.get(testoutFile.getAbsolutePath()),  
+                     Paths.get(referenceFile + ".testout"), 
+                     StandardCopyOption.REPLACE_EXISTING);
+               
+               _logger.output("Test failed!\n");
+               _logger.outputf("Copied output to %s\n", outFileName);
+            }
+            
+            return true;
+         }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
@@ -1203,7 +1260,7 @@ public class Client {
 
             if (words.length > 0) {
                if (validCommandUsage(words)) {
-                  processCommand(words);
+                  processCommand(words, null);
                }
             }
          }
@@ -1221,8 +1278,9 @@ public class Client {
       String uploadFilename = fileOrDir;
 
       if (filePointer.isDirectory()) {
-         uploadFilename = File.createTempFile("testrigOrEnv", "zip")
-               .getAbsolutePath();
+         File uploadFile = File.createTempFile("testrigOrEnv", "zip");
+         uploadFile.deleteOnExit();
+         uploadFilename = uploadFile.getAbsolutePath();
          ZipUtility.zipFiles(filePointer.getAbsolutePath(), uploadFilename);
       }
 
