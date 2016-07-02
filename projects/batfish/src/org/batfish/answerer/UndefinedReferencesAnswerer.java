@@ -26,7 +26,7 @@ public class UndefinedReferencesAnswerer extends Answerer {
    public AnswerElement answer(TestrigSettings testrigSettings) {
 
       UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
-      
+
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());

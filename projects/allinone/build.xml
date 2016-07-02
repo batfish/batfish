@@ -140,6 +140,7 @@
          <lib>
             <fileset dir="lib" includes="**/*" />
             <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+            <fileset dir="../batfish-common-protocol/lib" includes="**/*"/>
             <fileset dir="../batfish/lib" includes="**/*"/>
             <fileset dir="../batfish-client/lib" includes="**/*"/>
             <fileset dir="../coordinator/lib" includes="**/*"/>

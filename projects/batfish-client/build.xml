@@ -34,6 +34,7 @@
          <srcfiles dir="bin" includes="**/*"/>
          <srcfiles dir="lib" includes="**/*"/>
          <srcfiles dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+         <srcfiles dir="../batfish-common-protocol/lib" includes="**/*"/>
       </uptodate>
    </target>
 
@@ -114,6 +115,7 @@
          <lib>
             <fileset dir="lib" includes="**/*" />
             <fileset dir="../batfish-common-protocol/out" includes="batfish-common-protocol.jar"/>
+            <fileset dir="../batfish-common-protocol/lib" includes="**/*"/>
          </lib>
 		</one-jar>
 		<delete dir="${temp.dir}" />

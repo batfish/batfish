@@ -6,7 +6,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class QuestionHelper {
 
@@ -86,12 +85,13 @@ public class QuestionHelper {
       return mapper.writeValueAsString(getQuestion(questionType));
    }
 
-   public static String getQuestionString(String questionType, boolean isDiff) throws Exception {
+   public static String getQuestionString(String questionType, boolean isDiff)
+         throws Exception {
       ObjectMapper mapper = new BatfishObjectMapper();
-      
+
       Question question = getQuestion(questionType);
       question.setDifferential(isDiff);
-      
+
       return mapper.writeValueAsString(question);
    }
 }

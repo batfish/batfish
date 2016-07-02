@@ -6,7 +6,6 @@ import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.RoutesAnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -35,7 +34,8 @@ public class RoutesAnswerer extends Answerer {
       }
 
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       _batfish.initRoutes(configurations);
       RoutesAnswerElement answerElement = new RoutesAnswerElement(
             configurations, nodeRegex);

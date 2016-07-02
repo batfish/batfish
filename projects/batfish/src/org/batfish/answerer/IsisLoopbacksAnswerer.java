@@ -39,7 +39,8 @@ public class IsisLoopbacksAnswerer extends Answerer {
 
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
       _batfish.checkConfigurations();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {

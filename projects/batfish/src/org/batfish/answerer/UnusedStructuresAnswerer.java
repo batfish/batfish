@@ -22,10 +22,11 @@ public class UnusedStructuresAnswerer extends Answerer {
       super(question, batfish);
    }
 
+   @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
 
       UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
-      
+
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());

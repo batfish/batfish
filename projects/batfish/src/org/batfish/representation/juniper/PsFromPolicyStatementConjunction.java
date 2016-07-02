@@ -2,11 +2,15 @@ package org.batfish.representation.juniper;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchPolicyConjunctionLine;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchRoutingPolicy;
 import org.batfish.main.Warnings;
 
 public final class PsFromPolicyStatementConjunction extends PsFrom {
@@ -48,6 +52,17 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
 
    public Set<String> getConjuncts() {
       return _conjuncts;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      Conjunction conj = new Conjunction();
+      conj.getConjuncts().addAll(
+            _conjuncts.stream()
+                  .map(conjunct -> new MatchRoutingPolicy(conjunct))
+                  .collect(Collectors.toList()));
+      return conj;
    }
 
 }

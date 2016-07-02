@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,6 +45,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
@@ -841,7 +850,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                            Collections.singleton(lineSpecificList));
                      lineSpecificClause.getMatchLines().add(matchRflLine);
                      for (PsThen then : line.getThens()) {
-                        then.applyTo(lineSpecificClause, _c, null);
+                        then.applyTo(lineSpecificClause, _c, _w);
                      }
                      map.getClauses().add(lineSpecificClause);
                   }
@@ -947,6 +956,88 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
       }
       return routingPolicy;
+   }
+
+   private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+      String name = ps.getName();
+      RoutingPolicy routingPolicy = new RoutingPolicy(name);
+      List<Statement> statements = routingPolicy.getStatements();
+      boolean singleton = ps.getSingletonTerm().getFroms().size() > 0
+            || ps.getSingletonTerm().getThens().size() > 0;
+      Collection<PsTerm> terms = singleton ? Collections.singleton(ps
+            .getSingletonTerm()) : ps.getTerms().values();
+      for (PsTerm term : terms) {
+         if (!term.getFroms().isEmpty()) {
+            If ifStatement = new If();
+            ifStatement.setComment(term.getName());
+            Conjunction conj = new Conjunction();
+            for (PsFrom from : term.getFroms()) {
+               if (from instanceof PsFromRouteFilter) {
+                  int actionLineCounter = 0;
+                  PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
+                  String routeFilterName = fromRouteFilter.getRouteFilterName();
+                  RouteFilter rf = _routeFilters.get(routeFilterName);
+                  for (RouteFilterLine line : rf.getLines()) {
+                     if (line.getThens().size() > 0) {
+                        String lineListName = name + "_ACTION_LINE_"
+                              + actionLineCounter;
+                        RouteFilterList lineSpecificList = new RouteFilterList(
+                              lineListName);
+                        line.applyTo(lineSpecificList);
+                        actionLineCounter++;
+                        _c.getRouteFilterLists().put(lineListName,
+                              lineSpecificList);
+                        If lineSpecificIfStatement = new If();
+                        String lineSpecificClauseName = routeFilterName
+                              + "_ACTION_LINE_" + actionLineCounter;
+                        lineSpecificIfStatement
+                              .setComment(lineSpecificClauseName);
+                        MatchRouteFilter mrf = new MatchRouteFilter(
+                              lineListName);
+                        lineSpecificIfStatement.setGuard(mrf);
+                        lineSpecificIfStatement.getTrueStatements().addAll(
+                              toStatements(line.getThens()));
+                        statements.add(lineSpecificIfStatement);
+                     }
+                  }
+               }
+               BooleanExpr booleanExpr = from.toBooleanExpr(this, _c, _w);
+               conj.getConjuncts().add(booleanExpr);
+            }
+            BooleanExpr guard = conj.simplify();
+            ifStatement.setGuard(guard);
+            ifStatement.getTrueStatements().addAll(
+                  toStatements(term.getThens()));
+            statements.add(ifStatement);
+         }
+      }
+      If endOfPolicy = new If();
+      endOfPolicy.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+      endOfPolicy.setTrueStatements(Collections
+            .singletonList(Statements.ReturnFalse.toStaticStatement()));
+      endOfPolicy.setFalseStatements(Collections
+            .singletonList(Statements.Return.toStaticStatement()));
+      statements.add(endOfPolicy);
+      return routingPolicy;
+   }
+
+   private List<Statement> toStatements(Set<PsThen> thens) {
+      List<Statement> thenStatements = new ArrayList<Statement>();
+      List<PsThen> reorderedThens = new LinkedList<PsThen>();
+      for (PsThen then : thens) {
+         if (then instanceof PsThenAccept || then instanceof PsThenReject
+               || then instanceof PsThenDefaultActionAccept
+               || then instanceof PsThenDefaultActionReject) {
+            reorderedThens.add(then);
+         }
+         else {
+            reorderedThens.add(0, then);
+         }
+      }
+      for (PsThen then : reorderedThens) {
+         then.applyTo(thenStatements, this, _c, _w);
+      }
+      return thenStatements;
    }
 
    private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
@@ -1066,6 +1157,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PolicyStatement ps = e.getValue();
          PolicyMap map = toPolicyMap(ps);
          _c.getPolicyMaps().put(name, map);
+      }
+
+      // convert policy-statements to RoutingPolicy objects
+      for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
+         String name = e.getKey();
+         PolicyStatement ps = e.getValue();
+         RoutingPolicy routingPolicy = toRoutingPolicy(ps);
+         _c.getRoutingPolicies().put(name, routingPolicy);
       }
 
       // convert interfaces

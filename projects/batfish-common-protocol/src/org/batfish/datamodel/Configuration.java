@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import org.batfish.common.BfJson;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -61,6 +62,8 @@ public final class Configuration extends ComparableStructure<String> {
    private static final String ROLES_VAR = "roles";
 
    private static final String ROUTE_FILTER_LISTS_VAR = "routeFilterLists";
+
+   private static final String ROUTING_POLICIES_VAR = "routingPolicies";
 
    private static final long serialVersionUID = 1L;
 
@@ -126,6 +129,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient NavigableSet<PrecomputedRoute> _routes;
 
+   private NavigableMap<String, RoutingPolicy> _routingPolicies;
+
    private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
 
    private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
@@ -154,6 +159,7 @@ public final class Configuration extends ComparableStructure<String> {
       _policyMaps = new TreeMap<String, PolicyMap>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<String, RouteFilterList>();
+      _routingPolicies = new TreeMap<String, RoutingPolicy>();
       _staticRoutes = new TreeSet<StaticRoute>();
       _zones = new TreeMap<String, Zone>();
    }
@@ -308,6 +314,11 @@ public final class Configuration extends ComparableStructure<String> {
       return _routes;
    }
 
+   @JsonProperty(ROUTING_POLICIES_VAR)
+   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
+      return _routingPolicies;
+   }
+
    @JsonIgnore
    public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
       return _sentAdvertisements;
@@ -453,6 +464,12 @@ public final class Configuration extends ComparableStructure<String> {
    public void setRouteFilterLists(
          NavigableMap<String, RouteFilterList> routeFilterLists) {
       _routeFilterLists = routeFilterLists;
+   }
+
+   @JsonProperty(ROUTING_POLICIES_VAR)
+   public void setRoutingPolicies(
+         NavigableMap<String, RoutingPolicy> routingPolicies) {
+      _routingPolicies = routingPolicies;
    }
 
    @JsonProperty(STATIC_ROUTES_VAR)

@@ -34,8 +34,8 @@ public class NamedStructureEquivalenceSets<T> {
             return;
          }
       }
-      equiClasses.add(new NamedStructureEquivalenceSet<T>(node,
-            namedStructure));
+      equiClasses
+            .add(new NamedStructureEquivalenceSet<T>(node, namedStructure));
    }
 
    public String get_hrName() {

@@ -26,9 +26,10 @@ public class NodesAnswerer extends Answerer {
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
       NodesQuestion question = (NodesQuestion) _question;
-      
+
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
 
       // collect nodes nodes
       Pattern nodeRegex;
@@ -55,8 +56,7 @@ public class NodesAnswerer extends Answerer {
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
 
-      return new NodesAnswerElement(answerNodes, question
-            .getSummary());
+      return new NodesAnswerElement(answerNodes, question.getSummary());
    }
 
 }

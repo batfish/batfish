@@ -93,11 +93,9 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.JsonDiffAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -122,27 +120,7 @@ import org.batfish.datamodel.collections.QualifiedNameMap;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
-import org.batfish.datamodel.questions.AclReachabilityQuestion;
-import org.batfish.datamodel.questions.BgpAdvertisementsQuestion;
-import org.batfish.datamodel.questions.BgpSessionCheckQuestion;
-import org.batfish.datamodel.questions.CompareSameNameQuestion;
-import org.batfish.datamodel.questions.ErrorQuestion;
-import org.batfish.datamodel.questions.IpsecVpnCheckQuestion;
-import org.batfish.datamodel.questions.IsisLoopbacksQuestion;
-import org.batfish.datamodel.questions.NeighborsQuestion;
-import org.batfish.datamodel.questions.NodesQuestion;
-import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
-import org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion;
-import org.batfish.datamodel.questions.ProtocolDependenciesQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilityQuestion;
-import org.batfish.datamodel.questions.RoutesQuestion;
-import org.batfish.datamodel.questions.SelfAdjacenciesQuestion;
-import org.batfish.datamodel.questions.TracerouteQuestion;
-import org.batfish.datamodel.questions.UndefinedReferencesQuestion;
-import org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion;
-import org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion;
-import org.batfish.datamodel.questions.UnusedStructuresQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -194,7 +172,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
@@ -592,21 +569,22 @@ public class Batfish implements AutoCloseable {
       AnswerElement answerElement = null;
       BatfishException exception = null;
       try {
-         
+
          if (question.getDifferential() == true) {
             answerElement = Answerer.Create(question, this).answerDiff();
          }
          else {
-            answerElement = Answerer.Create(question, this).answer(_testrigSettings);
-         }         
+            answerElement = Answerer.Create(question, this).answer(
+                  _testrigSettings);
+         }
       }
       catch (Exception e) {
          exception = new BatfishException("Failed to answer question", e);
       }
-      
+
       Answer answer = new Answer();
       answer.setQuestion(question);
-      
+
       if (exception == null) {
          // success
          answer.setStatus(AnswerStatus.SUCCESS);
@@ -619,7 +597,7 @@ public class Batfish implements AutoCloseable {
       }
       return answer;
    }
-   
+
    /**
     * This function extracts predicate type information from the logic files. It
     * is meant only to be called during the build process, and should never be
@@ -1689,8 +1667,8 @@ public class Batfish implements AutoCloseable {
    public FlowHistory getHistory() {
       return getHistory(_testrigSettings);
    }
-   
-   //TODO Ari: is this right?
+
+   // TODO Ari: is this right?
    public FlowHistory getHistory(TestrigSettings testrigSettings) {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {

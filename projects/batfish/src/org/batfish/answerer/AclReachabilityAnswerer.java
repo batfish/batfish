@@ -34,9 +34,9 @@ public class AclReachabilityAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
-      
+
       AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
-      
+
       Pattern nodeRegex;
       try {
          nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -58,7 +58,8 @@ public class AclReachabilityAnswerer extends Answerer {
       }
 
       _batfish.checkConfigurations();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = _batfish
+            .loadConfigurations(testrigSettings);
       Synthesizer aclSynthesizer = synthesizeAcls(configurations);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
@@ -159,7 +160,7 @@ public class AclReachabilityAnswerer extends Answerer {
             numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
       _logger.outputf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
             numUnreachableLines, numLines, percentUnreachableLines);
-      
+
       return answerElement;
    }
 
@@ -168,7 +169,8 @@ public class AclReachabilityAnswerer extends Answerer {
       _batfish.resetTimer();
 
       _logger.info("Synthesizing Z3 ACL logic...");
-      Synthesizer s = new Synthesizer(configurations, _batfish.getSettings().getSimplify());
+      Synthesizer s = new Synthesizer(configurations, _batfish.getSettings()
+            .getSimplify());
 
       List<String> warnings = s.getWarnings();
       int numWarnings = warnings.size();

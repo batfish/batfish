@@ -4,6 +4,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchProtocolLine;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.main.Warnings;
 
 public final class PsFromProtocol extends PsFrom {
@@ -27,6 +29,12 @@ public final class PsFromProtocol extends PsFrom {
 
    public RoutingProtocol getProtocol() {
       return _protocol;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
+         Warnings warnings) {
+      return new MatchProtocol(_protocol);
    }
 
 }

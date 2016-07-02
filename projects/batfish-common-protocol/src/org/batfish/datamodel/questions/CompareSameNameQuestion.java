@@ -58,8 +58,9 @@ public final class CompareSameNameQuestion extends Question {
 
       while (paramKeys.hasNext()) {
          String paramKey = (String) paramKeys.next();
-         if (isBaseParamKey(paramKey))
-            continue;         
+         if (isBaseParamKey(paramKey)) {
+            continue;
+         }
 
          try {
             switch (paramKey) {
