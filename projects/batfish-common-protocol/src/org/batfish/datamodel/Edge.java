@@ -9,12 +9,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
-   private static final long serialVersionUID = 1L;
+   private static final String INT1_VAR = "node1interface";
 
-   private static final String INT1_VAR = "int1";
-   private static final String INT2_VAR = "int2";
+   private static final String INT2_VAR = "node2interface";
+
    private static final String NODE1_VAR = "node1";
+
    private static final String NODE2_VAR = "node2";
+
+   private static final long serialVersionUID = 1L;
 
    public Edge(NodeInterfacePair p1, NodeInterfacePair p2) {
       super(p1, p2);
