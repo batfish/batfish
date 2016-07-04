@@ -266,6 +266,7 @@ public class Batfish implements AutoCloseable {
    public static void applyBaseDir(TestrigSettings settings, Path containerDir,
          String testrig, String envName, String questionName) {
       Path testrigDir = containerDir.resolve(testrig);
+      settings.setName(testrig);
       settings.setBasePath(testrigDir);
       if (containerDir != null) {
          EnvironmentSettings envSettings = settings.getEnvironmentSettings();
