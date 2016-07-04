@@ -1932,7 +1932,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    ).
 
 'IpAccessListMatchTcpFlags'(List, Line, Flow) :-
-   'Flow'(flow),
+   'IpAccessListLine'(List, Line),
+   'Flow'(Flow),
    (
       \+ 'SetIpAccessListLine_tcpFlags'(List, Line, _) ;
       (
@@ -3807,7 +3808,7 @@ net_ips(MatchNet, Ip) :-
 
 'FlowReachPostInInterface'(Flow, Node, Interface) :-
    'FlowReachPreInInterface'(Flow, Node, Interface),
-   \+ 'FlowDenyIn'(Flow, Node, Interface, _, _).
+   \+ 'FlowDeniedIn'(Flow, Node, Interface, _, _).
 
 'FlowReachPostOutInterface'(Flow, Node, Interface) :-
    'FlowReachPostOutboundCrossZoneAcl'(Flow, Node, Interface).
