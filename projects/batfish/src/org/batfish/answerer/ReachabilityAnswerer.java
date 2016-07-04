@@ -50,9 +50,9 @@ public class ReachabilityAnswerer extends Answerer {
       case MULTIPATH:
          return multipath(question, testrigSettings);
       case PATH_DIFF:
-         return pathDiff(question, testrigSettings);
+         return pathDiff(question);
       case REDUCED_REACHABILITY:
-         return reducedReachability(question, testrigSettings);
+         return reducedReachability(question);
       case STANDARD:
          return standard(question, testrigSettings);
       case INCREASED:
@@ -60,6 +60,26 @@ public class ReachabilityAnswerer extends Answerer {
       default:
          throw new BatfishException("Unsupported reachabilty type: "
                + type.reachabilityTypeName());
+      }
+   }
+
+   @Override
+   public AnswerElement answerDiff() {
+      ReachabilityQuestion question = (ReachabilityQuestion) _question;
+      ReachabilityType type = question.getReachabilityType();
+      switch (type) {
+      case PATH_DIFF:
+         return pathDiff(question);
+      case REDUCED_REACHABILITY:
+         return reducedReachability(question);
+      case STANDARD:
+      case MULTIPATH:
+      case INCREASED:
+      case MULTIPATH_DIFF:
+      default:
+         throw new BatfishException(
+               "Unsupported differential reachabilty type: "
+                     + type.reachabilityTypeName());
       }
    }
 
@@ -98,8 +118,7 @@ public class ReachabilityAnswerer extends Answerer {
       return answerElement;
    }
 
-   private AnswerElement pathDiff(ReachabilityQuestion question,
-         TestrigSettings testrigSettings) {
+   private AnswerElement pathDiff(ReachabilityQuestion question) {
       _batfish.checkDifferentialDataPlaneQuestionDependencies();
       String tag = _batfish.getDifferentialFlowTag();
 
@@ -214,8 +233,7 @@ public class ReachabilityAnswerer extends Answerer {
       return answerElement;
    }
 
-   private AnswerElement reducedReachability(ReachabilityQuestion question,
-         TestrigSettings testrigSettings) {
+   private AnswerElement reducedReachability(ReachabilityQuestion question) {
       _batfish.checkDifferentialDataPlaneQuestionDependencies();
       String tag = _batfish.getDifferentialFlowTag();
 
