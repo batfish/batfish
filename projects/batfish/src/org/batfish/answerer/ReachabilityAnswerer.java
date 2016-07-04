@@ -49,17 +49,16 @@ public class ReachabilityAnswerer extends Answerer {
       switch (type) {
       case MULTIPATH:
          return multipath(question, testrigSettings);
-      case PATH_DIFF:
-         return pathDiff(question);
-      case REDUCED_REACHABILITY:
-         return reducedReachability(question);
       case STANDARD:
          return standard(question, testrigSettings);
+      case PATH_DIFF:
+      case REDUCED_REACHABILITY:
       case INCREASED:
       case MULTIPATH_DIFF:
       default:
-         throw new BatfishException("Unsupported reachabilty type: "
-               + type.reachabilityTypeName());
+         throw new BatfishException(
+               "Unsupported non-differential reachabilty type: "
+                     + type.reachabilityTypeName());
       }
    }
 
