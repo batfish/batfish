@@ -51,25 +51,25 @@ public class NeighborsAnswerer extends Answerer {
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
 
-//      for (NeighborType nType : question.getNeighborTypes()) {
-//         switch (nType) {
-//         case EBGP:
-//            answerElement.initEbgpNeighbors();
-//            initRemoteBgpNeighbors(_batfish, configurations);
-//            break;
-//         case IBGP:
-//            answerElement.initIbgpNeighbors();
-//            initRemoteBgpNeighbors(_batfish, configurations);
-//            break;
-//         case LAN:
-//            answerElement.initLanNeighbors();
-//            break;
-//         default:
-//            throw new BatfishException("Unsupported NeighborType: "
-//                  + nType.toString());
-//
-//         }
-//      }
+      // for (NeighborType nType : question.getNeighborTypes()) {
+      // switch (nType) {
+      // case EBGP:
+      // answerElement.initEbgpNeighbors();
+      // initRemoteBgpNeighbors(_batfish, configurations);
+      // break;
+      // case IBGP:
+      // answerElement.initIbgpNeighbors();
+      // initRemoteBgpNeighbors(_batfish, configurations);
+      // break;
+      // case LAN:
+      // answerElement.initLanNeighbors();
+      // break;
+      // default:
+      // throw new BatfishException("Unsupported NeighborType: "
+      // + nType.toString());
+      //
+      // }
+      // }
 
       if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
          answerElement.initEbgpNeighbors();
