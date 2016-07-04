@@ -501,7 +501,20 @@ public class NlsConstants {
             "FlowReachPostOutInterface",
             "FlowUnknown",
             "IpAccessListDeny",
-            "IpAccessListMatch" };
+            "IpAccessListMatch",
+            "IpAccessListMatchDscp",
+            "IpAccessListMatchDstIp",
+            "IpAccessListMatchDstPort",
+            "IpAccessListMatchEcn",
+            "IpAccessListMatchIcmpCode",
+            "IpAccessListMatchIcmpType",
+            "IpAccessListMatchProtocol",
+            "IpAccessListMatchSrcIp",
+            "IpAccessListMatchSrcOrDstIp",
+            "IpAccessListMatchSrcOrDstPort",
+            "IpAccessListMatchSrcPort",
+            "IpAccessListMatchState",
+            "IpAccessListMatchTcpFlags" };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
