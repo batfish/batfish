@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -14,8 +13,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TracerouteQuestion extends Question {
 
@@ -307,9 +304,7 @@ public class TracerouteQuestion extends Question {
                setDscp(parameters.getInt(paramKey));
                break;
             case DST_IP_VAR:
-               setDstIp(new ObjectMapper().<Ip> readValue(
-                     parameters.getString(paramKey), new TypeReference<Ip>() {
-                     }));
+               setDstIp(new Ip(parameters.getString(paramKey)));
                break;
             case DST_PORT_VAR:
                setDstPort(parameters.getInt(paramKey));
@@ -327,15 +322,11 @@ public class TracerouteQuestion extends Question {
                setIngressNode(parameters.getString(paramKey));
                break;
             case IP_PROTOCOL_VAR:
-               setIpProtocol(new ObjectMapper().<IpProtocol> readValue(
-                     parameters.getString(paramKey),
-                     new TypeReference<IpProtocol>() {
-                     }));
+               setIpProtocol(IpProtocol.fromString(parameters
+                     .getString(paramKey)));
                break;
             case SRC_IP_VAR:
-               setDstIp(new ObjectMapper().<Ip> readValue(
-                     parameters.getString(paramKey), new TypeReference<Ip>() {
-                     }));
+               setSrcIp(new Ip(parameters.getString(paramKey)));
                break;
             case SRC_PORT_VAR:
                setSrcPort(parameters.getInt(paramKey));
@@ -369,7 +360,7 @@ public class TracerouteQuestion extends Question {
                      + getClass().getSimpleName() + ": " + paramKey);
             }
          }
-         catch (JSONException | IOException e) {
+         catch (JSONException e) {
             throw new BatfishException("JSONException in parameters", e);
          }
       }

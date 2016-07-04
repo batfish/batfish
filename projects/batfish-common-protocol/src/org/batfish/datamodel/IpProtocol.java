@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum IpProtocol {
    AHP(51),
    AN(107),
@@ -266,7 +268,7 @@ public enum IpProtocol {
 
    private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 
-   private static Map<Integer, IpProtocol> buildNumberToProtocolMap() {
+   private synchronized static Map<Integer, IpProtocol> buildNumberToProtocolMap() {
       Map<Integer, IpProtocol> map = new HashMap<Integer, IpProtocol>();
       for (IpProtocol protocol : values()) {
          map.put(protocol._number, protocol);
@@ -281,6 +283,18 @@ public enum IpProtocol {
                + number);
       }
       return ret;
+   }
+
+   @JsonCreator
+   public static IpProtocol fromString(String str) {
+      char firstChar = str.charAt(0);
+      if (firstChar >= '0' && firstChar <= '9') {
+         int number = Integer.parseInt(str);
+         return fromNumber(number);
+      }
+      else {
+         return valueOf(str.toUpperCase());
+      }
    }
 
    private int _number;
