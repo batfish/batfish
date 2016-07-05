@@ -18,7 +18,7 @@ interface_mplst_stanza
 
 mpls_ldp_stanza
 :
-   MPLS LDP NEWLINE mplsl_stanza*
+   MPLS (LABEL PROTOCOL)? LDP NEWLINE mplsl_stanza*
 ;
 
 mpls_traffic_eng_stanza

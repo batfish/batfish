@@ -460,12 +460,19 @@ ntp_access_group
    )+ NEWLINE
 ;
 
+ntp_clock_period
+:
+   CLOCK_PERIOD ~NEWLINE* NEWLINE
+;
+
 ntp_common
 :
    ntp_access_group
+   | ntp_clock_period
    | ntp_peer
    | ntp_server
    | ntp_source
+   | ntp_source_interface
    | ntp_update_calendar
 ;
 
@@ -482,6 +489,11 @@ ntp_server
 ntp_source
 :
    SOURCE ~NEWLINE* NEWLINE
+;
+
+ntp_source_interface
+:
+   SOURCE_INTERFACE ~NEWLINE* NEWLINE
 ;
 
 ntp_update_calendar
@@ -948,6 +960,7 @@ s_class_map
    (
       MATCH_ALL
       | MATCH_ANY
+      | TYPE ~NEWLINE
    )? name = variable NEWLINE s_class_map_tail*
 ;
 

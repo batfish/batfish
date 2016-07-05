@@ -1031,6 +1031,11 @@ CLOCK
    'clock'
 ;
 
+CLOCK_PERIOD
+:
+   'clock-period'
+;
+   
 CLUSTER
 :
    'cluster'
