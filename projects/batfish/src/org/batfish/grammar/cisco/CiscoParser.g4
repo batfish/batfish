@@ -981,7 +981,12 @@ s_class_map
    (
       MATCH_ALL
       | MATCH_ANY
-   )? name = variable NEWLINE s_class_map_tail*
+   )? name = variable 
+   NEWLINE 
+   (
+      DESCRIPTION ~NEWLINE+ NEWLINE
+   )?
+   s_class_map_tail*
 ;
 
 s_class_map_tail
