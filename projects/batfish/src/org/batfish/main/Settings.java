@@ -1060,7 +1060,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
       setDefaultProperty(ARG_FLATTEN, false);
       setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
-      setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, false);
+      setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
       setDefaultProperty(ARG_GEN_OSPF_TOPLOGY_PATH, null);
       setDefaultProperty(ARG_GENERATE_STUBS, false);
       setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
