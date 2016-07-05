@@ -131,6 +131,7 @@ null_block_stanza
          (
             (
                IP
+               | IPV6
                | LDP ~NEWLINE
             )
             | OAM
@@ -230,6 +231,7 @@ null_block_substanza
       NO?
       (
          ABSOLUTE_TIMEOUT
+         | ACCESS_CLASS
          | ACCEPT_DIALIN
          | ACCEPT_LIFETIME
          | ACCOUNTING
@@ -435,6 +437,7 @@ null_block_substanza
          | NODE
          | NOTIFICATION_TIMER
          | NOTIFY
+         | OBJECT
          | OPEN
          | OPTION
          | OPTIONS
@@ -447,6 +450,7 @@ null_block_substanza
          | PASSWORD_STORAGE
          | PATH_JITTER
          | PAUSE
+         | PEER
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY

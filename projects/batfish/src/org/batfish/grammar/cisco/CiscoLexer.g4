@@ -706,6 +706,11 @@ BESTPATH
    'bestpath'
 ;
 
+BEYOND_SCOPE
+:
+   'beyond-scope'
+;
+   
 BFD
 :
    'bfd'
@@ -1081,6 +1086,11 @@ COMMANDER_ADDRESS
    'commander-address'
    { enableIPV6_ADDRESS = false; }
 
+;
+
+COMMIT
+:
+   'commit'
 ;
 
 COMMUNITY
@@ -1584,6 +1594,11 @@ DISCOVERY
 DISTANCE
 :
    'distance'
+;
+
+DISTRIBUTE
+:
+   'distribute'
 ;
 
 DISTRIBUTE_LIST

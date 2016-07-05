@@ -124,6 +124,7 @@ cm_match
 cm_match_tail
 :
    cmm_access_group
+   | cmm_any
    | cmm_cos
    | cmm_default_inspection_traffic
    | cmm_dscp
@@ -148,6 +149,11 @@ cmm_access_group
    ) NEWLINE
 ;
 
+cmm_any
+:
+   ANY NEWLINE
+;
+   
 cmm_cos
 :
    COS DEC NEWLINE
@@ -162,8 +168,15 @@ cmm_dscp
 :
    IP? DSCP
    (
-      dscp_types += dscp_type
-   )+ NEWLINE
+      (
+         dscp_types += dscp_type
+      )+ 
+      |
+      (
+         dscp_range = range      
+      )
+   )         
+   NEWLINE
 ;
 
 cmm_exception
@@ -385,7 +398,10 @@ l_access_class
       )
       |
       (
-         name = variable
+         ( 
+            name = variable
+            | DEC
+         )
          (
             IN
             | OUT
@@ -483,10 +499,17 @@ ntp_clock_period
    CLOCK_PERIOD ~NEWLINE* NEWLINE
 ;
 
+ntp_commit
+:
+   COMMIT NEWLINE
+;
+   
 ntp_common
 :
    ntp_access_group
    | ntp_clock_period
+   | ntp_commit
+   | ntp_distribute
    | ntp_peer
    | ntp_server
    | ntp_source
@@ -494,6 +517,11 @@ ntp_common
    | ntp_update_calendar
 ;
 
+ntp_distribute
+:
+   DISTRIBUTE NEWLINE
+;
+   
 ntp_peer
 :
    PEER ~NEWLINE* NEWLINE
@@ -883,7 +911,8 @@ pim_rp_address
 :
    RP_ADDRESS IP_ADDRESS
    (
-      OVERRIDE
+      GROUP_LIST prefix = IP_PREFIX
+      | OVERRIDE
       | name = variable
    )? NEWLINE
 ;
@@ -943,6 +972,7 @@ pim_spt_threshold
 
 pim_ssm
 :
+   SSM
    (
       DEFAULT
       |
@@ -981,8 +1011,8 @@ s_class_map
    (
       MATCH_ALL
       | MATCH_ANY
-   )? name = variable 
-   NEWLINE 
+   )? 
+   name = variable NEWLINE 
    (
       DESCRIPTION ~NEWLINE+ NEWLINE
    )?
