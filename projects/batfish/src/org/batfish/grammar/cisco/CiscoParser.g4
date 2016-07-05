@@ -127,9 +127,12 @@ cm_match_tail
    | cmm_cos
    | cmm_default_inspection_traffic
    | cmm_dscp
+   | cmm_exception
    | cmm_mpls
    | cmm_non_client_nrt
    | cmm_port
+   | cmm_protocol
+   | cmm_redirect
    | cmm_qos_group
 ;
 
@@ -163,6 +166,11 @@ cmm_dscp
    )+ NEWLINE
 ;
 
+cmm_exception
+:
+   EXCEPTION ~NEWLINE+ NEWLINE
+;
+
 cmm_mpls
 :
    MPLS ~NEWLINE* NEWLINE
@@ -182,9 +190,19 @@ cmm_port
    ) port_specifier NEWLINE
 ;
 
+cmm_protocol
+:
+   PROTOCOL ~NEWLINE NEWLINE
+;
+
 cmm_qos_group
 :
    QOS_GROUP DEC NEWLINE
+;
+
+cmm_redirect
+:
+   REDIRECT ~NEWLINE NEWLINE
 ;
 
 cp_ip_access_group
@@ -958,9 +976,11 @@ s_class_map
 :
    CLASS_MAP
    (
+      TYPE ~NEWLINE
+   )?
+   (
       MATCH_ALL
       | MATCH_ANY
-      | TYPE ~NEWLINE
    )? name = variable NEWLINE s_class_map_tail*
 ;
 
