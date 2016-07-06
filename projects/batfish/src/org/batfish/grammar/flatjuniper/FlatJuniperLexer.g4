@@ -5053,6 +5053,11 @@ M_Interface_QUOTE
    '"' -> channel ( HIDDEN ) , mode ( M_InterfaceQuote )
 ;
 
+M_Interface_TRACEOPTIONS
+:
+   'traceoptions' -> type ( TRACEOPTIONS ) , popMode
+;
+
 M_Interface_VARIABLE
 :
    F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
