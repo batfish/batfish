@@ -67,7 +67,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                   result = future.get();
                }
                catch (InterruptedException | ExecutionException e) {
-                  throw new BatfishException("Error executing nod job", e);
+                  throw new BatfishException("Error executing job", e);
                }
                String time = CommonUtil.getTime(result.getElapsedTime());
                Throwable failureCause = result.getFailureCause();
