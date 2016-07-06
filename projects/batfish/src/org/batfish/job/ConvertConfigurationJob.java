@@ -54,7 +54,7 @@ public class ConvertConfigurationJob extends
          }
          _logger.info(" ...OK\n");
       }
-      catch (BatfishException e) {
+      catch (Exception e) {
          String error = "Conversion error";
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ConvertConfigurationResult(elapsedTime,
