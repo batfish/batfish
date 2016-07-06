@@ -88,9 +88,9 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                   }
                   else {
                      processingError = true;
+                     result.explainFailure(_logger);
                      _logger.error(failureMessage + ":"
                            + ExceptionUtils.getStackTrace(failureCause));
-                     result.explainFailure(_logger);
                   }
                }
             }
