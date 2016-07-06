@@ -8,6 +8,7 @@ public class DeleteCommunity extends AbstractStatement {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private String _list;
 
    @JsonCreator

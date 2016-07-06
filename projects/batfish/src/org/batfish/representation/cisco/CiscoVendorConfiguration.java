@@ -56,6 +56,12 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -1953,6 +1959,37 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return newRouteFilterList;
    }
 
+   private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
+      RoutingPolicy output = new RoutingPolicy(map.getName());
+      List<Statement> statements = output.getStatements();
+      for (RouteMapClause rmClause : map.getClauses().values()) {
+         Conjunction conj = new Conjunction();
+         for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
+            BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
+            conj.getConjuncts().add(matchExpr);
+         }
+         If ifExpr = new If();
+         ifExpr.setGuard(conj.simplify());
+         List<Statement> matchStatements = ifExpr.getTrueStatements();
+         for (RouteMapSetLine rmSet : rmClause.getSetList()) {
+            rmSet.applyTo(matchStatements, this, c, _w);
+         }
+         switch (rmClause.getAction()) {
+         case ACCEPT:
+            matchStatements.add(Statements.ExitAccept.toStaticStatement());
+            break;
+         case REJECT:
+            matchStatements.add(Statements.ExitReject.toStaticStatement());
+            break;
+         default:
+            throw new BatfishException("Invalid action");
+         }
+         statements.add(ifExpr);
+      }
+      statements.add(Statements.ExitReject.toStaticStatement());
+      return output;
+   }
+
    private org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c,
          StaticRoute staticRoute) {
       Ip nextHopIp = staticRoute.getNextHopIp();
@@ -2032,6 +2069,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          convertForPurpose(routingRouteMaps, map);
          PolicyMap newMap = toPolicyMap(c, map);
          c.getPolicyMaps().put(newMap.getName(), newMap);
+         // convert route maps to RoutingPolicy objects
+         RoutingPolicy newPolicy = toRoutingPolicy(c, map);
+         c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);
       }
 
       // convert interfaces

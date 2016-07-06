@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchCommunityList extends AbstractBooleanExpr {
+public class MatchIpAccessList extends AbstractBooleanExpr {
 
    /**
     *
@@ -12,10 +12,10 @@ public class MatchCommunityList extends AbstractBooleanExpr {
    private String _list;
 
    @JsonCreator
-   public MatchCommunityList() {
+   public MatchIpAccessList() {
    }
 
-   public MatchCommunityList(String list) {
+   public MatchIpAccessList(String list) {
       _list = list;
    }
 

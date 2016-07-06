@@ -1,10 +1,13 @@
 package org.batfish.representation.cisco;
 
 import java.util.List;
+import java.util.TreeSet;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
 public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
@@ -15,6 +18,12 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
 
    public RouteMapSetAdditiveCommunityLine(List<Long> communities) {
       _communities = communities;
+   }
+
+   @Override
+   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+         Configuration c, Warnings w) {
+      statements.add(new AddCommunity(new TreeSet<Long>(_communities)));
    }
 
    public List<Long> getCommunities() {

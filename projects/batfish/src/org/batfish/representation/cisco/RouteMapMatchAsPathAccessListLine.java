@@ -1,6 +1,14 @@
 package org.batfish.representation.cisco;
 
+import java.util.List;
 import java.util.Set;
+
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.main.Warnings;
+import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 
@@ -19,6 +27,26 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
    @Override
    public RouteMapMatchType getType() {
       return RouteMapMatchType.AS_PATH_ACCESS_LIST;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+         Warnings w) {
+      Disjunction d = new Disjunction();
+      List<BooleanExpr> disjuncts = d.getDisjuncts();
+      for (String listName : _listNames) {
+         IpAsPathAccessList list = cc.getAsPathAccessLists().get(listName);
+         if (list != null) {
+            list.getReferers().put(this,
+                  "route-map match ip as-path access-list");
+            disjuncts.add(new MatchAsPath(listName));
+         }
+         else {
+            w.redFlag("Reference to undefined ip as-path access-list: "
+                  + listName, VendorConfiguration.UNDEFINED);
+         }
+      }
+      return d.simplify();
    }
 
 }

@@ -2,6 +2,8 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -38,12 +40,14 @@ public final class PsThenCommunityAdd extends PsThen {
          return;
       }
       else {
+         SortedSet<Long> communities = new TreeSet<Long>();
          for (CommunityListLine clLine : namedList.getLines()) {
             // assuming that regex here is actually a literal community
             String communityStr = clLine.getRegex();
-            Long communityLong = CommonUtil.communityStringToLong(communityStr);
-            statements.add(new AddCommunity(communityLong));
+            long communityLong = CommonUtil.communityStringToLong(communityStr);
+            communities.add(communityLong);
          }
+         statements.add(new AddCommunity(communities));
       }
    }
 

@@ -2954,7 +2954,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_next_hop_rm_stanza(Set_next_hop_rm_stanzaContext ctx) {
-      Set<Ip> nextHops = new TreeSet<Ip>();
+      List<Ip> nextHops = new ArrayList<Ip>();
       for (Token t : ctx.nexthop_list) {
          Ip nextHop = toIp(t);
          nextHops.add(nextHop);
