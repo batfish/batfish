@@ -522,10 +522,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       if (redistributeStaticPolicy != null) {
          String mapName = redistributeStaticPolicy.getMap();
          if (mapName != null) {
-            RouteMap resistributeStaticRouteMap = _routeMaps.get(mapName);
-            resistributeStaticRouteMap.getReferers().put(proc,
-                  "static redistribution route-map");
-            redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
+            RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
+            if (redistributeStaticRouteMap != null) {
+               redistributeStaticRouteMap.getReferers().put(proc,
+                     "static redistribution route-map");
+               redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
+            }
+            else {
+               _w.redFlag(
+                     "Reference to undefined route-map for static-to-bgp route redistribution: '"
+                           + mapName + "'", UNDEFINED);
+            }
          }
          else {
             redistributeStaticPolicyMap = makeRouteExportPolicy(c,
