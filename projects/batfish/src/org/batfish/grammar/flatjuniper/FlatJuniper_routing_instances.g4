@@ -302,7 +302,9 @@ rot_aggregate
 
 rot_aggregate_tail
 :
-   agt_as_path
+// intentional blank
+
+   | agt_as_path
    | agt_as_path_tail
    | agt_community
    | agt_preference
