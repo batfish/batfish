@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Settings;
@@ -54,6 +55,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       int finishedJobs = 0;
       int totalJobs = jobs.size();
       double finishedPercent;
+      List<BatfishException> failureCauses = new ArrayList<BatfishException>();
       while (!futures.isEmpty()) {
          List<Future<JobResult>> currentFutures = new ArrayList<Future<JobResult>>();
          currentFutures.addAll(futures);
@@ -82,15 +84,18 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                else {
                   String failureMessage = "Failure running job after elapsed time: "
                         + time;
+                  BatfishException bfc = new BatfishException(failureMessage,
+                        failureCause);
                   if (_settings.getExitOnFirstError()) {
                      result.explainFailure(_logger);
-                     throw new BatfishException(failureMessage, failureCause);
+                     throw bfc;
                   }
                   else {
                      processingError = true;
                      result.explainFailure(_logger);
-                     _logger.error(failureMessage + ":"
+                     _logger.error(failureMessage + ":\n\t"
                            + ExceptionUtils.getStackTrace(failureCause));
+                     failureCauses.add(bfc);
                   }
                }
             }
@@ -109,8 +114,9 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       }
       pool.shutdown();
       if (processingError) {
-         throw new BatfishException(
-               "Fatal exception due to failure of at least one nod job");
+         throw new CompositeBatfishException(new BatfishException(
+               "Fatal exception due to failure of at least one nod job"),
+               failureCauses);
       }
       else {
          if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {

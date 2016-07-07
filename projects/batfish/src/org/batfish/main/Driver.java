@@ -20,6 +20,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -283,6 +284,14 @@ public class Driver {
                   logger.error(stackTrace);
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
+                  batfish.setTerminatedWithException(true);
+               }
+               catch (CompositeBatfishException e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(e);
                   batfish.setTerminatedWithException(true);
                }
                catch (Exception e) {
