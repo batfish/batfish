@@ -2,25 +2,32 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.PolicyMapSetNextHopLine;
+import org.batfish.datamodel.routing_policy.statement.SetNextHopIp;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
 public class RouteMapSetNextHopLine extends RouteMapSetLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<Ip> _nextHops;
+   private List<Ip> _nextHops;
 
-   public RouteMapSetNextHopLine(Set<Ip> nextHops) {
+   public RouteMapSetNextHopLine(List<Ip> nextHops) {
       _nextHops = nextHops;
    }
 
-   public Set<Ip> getNextHops() {
+   @Override
+   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+         Configuration c, Warnings w) {
+      statements.add(new SetNextHopIp(_nextHops));
+   }
+
+   public List<Ip> getNextHops() {
       return _nextHops;
    }
 

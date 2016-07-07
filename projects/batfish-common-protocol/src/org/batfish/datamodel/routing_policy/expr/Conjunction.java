@@ -9,6 +9,7 @@ public class Conjunction implements BooleanExpr {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private List<BooleanExpr> _conjuncts;
 
    public Conjunction() {
@@ -17,6 +18,10 @@ public class Conjunction implements BooleanExpr {
 
    public List<BooleanExpr> getConjuncts() {
       return _conjuncts;
+   }
+
+   public void setConjuncts(List<BooleanExpr> conjuncts) {
+      _conjuncts = conjuncts;
    }
 
    public BooleanExpr simplify() {

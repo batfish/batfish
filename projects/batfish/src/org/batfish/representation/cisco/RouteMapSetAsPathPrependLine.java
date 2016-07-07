@@ -5,6 +5,8 @@ import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapSetAsPathPrependLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
 public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
@@ -15,6 +17,12 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 
    public RouteMapSetAsPathPrependLine(List<Integer> asList) {
       _asList = asList;
+   }
+
+   @Override
+   public void applyTo(List<Statement> statements, CiscoConfiguration cc,
+         Configuration c, Warnings w) {
+      statements.add(new PrependAsPath(_asList));
    }
 
    public List<Integer> getAsList() {

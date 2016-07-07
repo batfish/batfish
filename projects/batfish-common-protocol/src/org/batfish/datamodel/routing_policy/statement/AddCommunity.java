@@ -1,29 +1,36 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class AddCommunity extends AbstractStatement implements Statement {
+public class AddCommunity extends AbstractStatement {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-   private long _community;
+
+   private SortedSet<Long> _communities;
 
    @JsonCreator
    public AddCommunity() {
+      _communities = new TreeSet<Long>();
    }
 
-   public AddCommunity(Long community) {
-      _community = community;
+   public AddCommunity(Set<Long> communities) {
+      this();
+      _communities.addAll(communities);
    }
 
-   public long getCommunity() {
-      return _community;
+   public SortedSet<Long> getCommunities() {
+      return _communities;
    }
 
-   public void setCommunity(long community) {
-      _community = community;
+   public void setCommunities(SortedSet<Long> communities) {
+      _communities = communities;
    }
 
 }

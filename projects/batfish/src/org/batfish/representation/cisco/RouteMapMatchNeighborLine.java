@@ -1,5 +1,9 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.main.Warnings;
+
 public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
@@ -17,6 +21,14 @@ public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
    @Override
    public RouteMapMatchType getType() {
       return RouteMapMatchType.NEIGHBOR;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
+         Warnings w) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
 }

@@ -96,7 +96,13 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       BgpProcess proc = new BgpProcess();
       BgpGroup mg = _defaultRoutingInstance.getMasterBgpGroup();
       if (mg.getLocalAs() == null) {
-         mg.setLocalAs(_defaultRoutingInstance.getAs());
+         Integer defaultRoutingInstanceAs = _defaultRoutingInstance.getAs();
+         if (defaultRoutingInstanceAs == null) {
+            _w.redFlag("BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system");
+         }
+         else {
+            mg.setLocalAs(_defaultRoutingInstance.getAs());
+         }
       }
       for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups()
             .entrySet()) {

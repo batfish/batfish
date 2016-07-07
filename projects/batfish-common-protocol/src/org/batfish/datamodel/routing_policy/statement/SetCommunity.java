@@ -12,6 +12,7 @@ public class SetCommunity extends AbstractStatement {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private SortedSet<Long> _communities;
 
    @JsonCreator

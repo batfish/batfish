@@ -183,15 +183,15 @@ public class ParseVendorConfigurationJob extends
          _logger.info("OK\n");
       }
       catch (ParserBatfishException e) {
-         String error = "Error parsing configuration file: \"" + currentPath
-               + "\"";
+         String error = "Error parsing configuration file: '" + currentPath
+               + "'";
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, new BatfishException(error, e));
       }
       catch (Exception e) {
-         String error = "Error post-processing parse tree of configuration file: \""
-               + currentPath + "\"";
+         String error = "Error post-processing parse tree of configuration file: '"
+               + currentPath + "'";
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, new BatfishException(error, e));
@@ -204,7 +204,7 @@ public class ParseVendorConfigurationJob extends
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: \"" + _file + "\"\n";
+         String error = "No hostname set in file: '" + _file + "'\n";
          try {
             _warnings.redFlag(error);
          }

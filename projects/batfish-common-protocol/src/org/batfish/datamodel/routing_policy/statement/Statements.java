@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum Statements {
    DefaultAction,
+   DeleteAllCommunities,
    ExitAccept,
    ExitReject,
    Return,

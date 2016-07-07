@@ -6,17 +6,18 @@ public class MatchColor extends AbstractBooleanExpr {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private int _color;
 
    public MatchColor(int color) {
       _color = color;
    }
 
-   public int getList() {
+   public int getColor() {
       return _color;
    }
 
-   public void setList(int color) {
+   public void setColor(int color) {
       _color = color;
    }
 
