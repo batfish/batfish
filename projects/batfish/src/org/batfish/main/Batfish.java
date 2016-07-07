@@ -1255,7 +1255,9 @@ public class Batfish implements AutoCloseable {
       Map<Path, String> configurationData = readConfigurationFiles(inputPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
       Map<Path, String> outputConfigurationData = new TreeMap<Path, String>();
-      CommonUtil.createDirectories(outputPath);
+      Path outputConfigDir = outputPath
+            .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      CommonUtil.createDirectories(outputConfigDir);
       _logger.info("\n*** FLATTENING TEST RIG ***\n");
       resetTimer();
       List<FlattenVendorConfigurationJob> jobs = new ArrayList<FlattenVendorConfigurationJob>();
@@ -1271,8 +1273,7 @@ public class Batfish implements AutoCloseable {
                _settings.printParseTree());
          String fileText = configurationData.get(inputFile);
          String name = inputFile.getFileName().toString();
-         Path outputFile = outputPath.resolve(
-               BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve(name);
+         Path outputFile = outputConfigDir.resolve(name);
          FlattenVendorConfigurationJob job = new FlattenVendorConfigurationJob(
                _settings, fileText, inputFile, outputFile, warnings);
          jobs.add(job);
