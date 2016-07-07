@@ -55,7 +55,8 @@ public class ConvertConfigurationJob extends
          _logger.info(" ...OK\n");
       }
       catch (Exception e) {
-         String error = "Conversion error";
+         String error = "Conversion error for node with hostname '" + _name
+               + "'";
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ConvertConfigurationResult(elapsedTime,
                _logger.getHistory(), _name, new BatfishException(error, e));
