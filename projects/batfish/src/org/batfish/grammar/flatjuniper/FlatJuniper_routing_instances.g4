@@ -223,6 +223,7 @@ rit_null
       | EVENT_OPTIONS
       | FORWARDING_OPTIONS
       | PROVIDER_TUNNEL
+      | ROUTING_OPTIONS
       | SERVICES
       | SNMP
    ) s_null_filler

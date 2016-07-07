@@ -124,12 +124,16 @@ cm_match
 cm_match_tail
 :
    cmm_access_group
+   | cmm_any
    | cmm_cos
    | cmm_default_inspection_traffic
    | cmm_dscp
+   | cmm_exception
    | cmm_mpls
    | cmm_non_client_nrt
    | cmm_port
+   | cmm_protocol
+   | cmm_redirect
    | cmm_qos_group
 ;
 
@@ -145,6 +149,11 @@ cmm_access_group
    ) NEWLINE
 ;
 
+cmm_any
+:
+   ANY NEWLINE
+;
+   
 cmm_cos
 :
    COS DEC NEWLINE
@@ -159,8 +168,20 @@ cmm_dscp
 :
    IP? DSCP
    (
-      dscp_types += dscp_type
-   )+ NEWLINE
+      (
+         dscp_types += dscp_type
+      )+ 
+      |
+      (
+         dscp_range = range      
+      )
+   )         
+   NEWLINE
+;
+
+cmm_exception
+:
+   EXCEPTION ~NEWLINE+ NEWLINE
 ;
 
 cmm_mpls
@@ -182,9 +203,19 @@ cmm_port
    ) port_specifier NEWLINE
 ;
 
+cmm_protocol
+:
+   PROTOCOL ~NEWLINE NEWLINE
+;
+
 cmm_qos_group
 :
    QOS_GROUP DEC NEWLINE
+;
+
+cmm_redirect
+:
+   REDIRECT ~NEWLINE NEWLINE
 ;
 
 cp_ip_access_group
@@ -367,7 +398,10 @@ l_access_class
       )
       |
       (
-         name = variable
+         ( 
+            name = variable
+            | DEC
+         )
          (
             IN
             | OUT
@@ -460,15 +494,34 @@ ntp_access_group
    )+ NEWLINE
 ;
 
+ntp_clock_period
+:
+   CLOCK_PERIOD ~NEWLINE* NEWLINE
+;
+
+ntp_commit
+:
+   COMMIT NEWLINE
+;
+   
 ntp_common
 :
    ntp_access_group
+   | ntp_clock_period
+   | ntp_commit
+   | ntp_distribute
    | ntp_peer
    | ntp_server
    | ntp_source
+   | ntp_source_interface
    | ntp_update_calendar
 ;
 
+ntp_distribute
+:
+   DISTRIBUTE NEWLINE
+;
+   
 ntp_peer
 :
    PEER ~NEWLINE* NEWLINE
@@ -482,6 +535,11 @@ ntp_server
 ntp_source
 :
    SOURCE ~NEWLINE* NEWLINE
+;
+
+ntp_source_interface
+:
+   SOURCE_INTERFACE ~NEWLINE* NEWLINE
 ;
 
 ntp_update_calendar
@@ -853,7 +911,8 @@ pim_rp_address
 :
    RP_ADDRESS IP_ADDRESS
    (
-      OVERRIDE
+      GROUP_LIST prefix = IP_PREFIX
+      | OVERRIDE
       | name = variable
    )? NEWLINE
 ;
@@ -913,6 +972,7 @@ pim_spt_threshold
 
 pim_ssm
 :
+   SSM
    (
       DEFAULT
       |
@@ -946,9 +1006,17 @@ s_class_map
 :
    CLASS_MAP
    (
+      TYPE ~NEWLINE
+   )?
+   (
       MATCH_ALL
       | MATCH_ANY
-   )? name = variable NEWLINE s_class_map_tail*
+   )? 
+   name = variable NEWLINE 
+   (
+      DESCRIPTION ~NEWLINE+ NEWLINE
+   )?
+   s_class_map_tail*
 ;
 
 s_class_map_tail

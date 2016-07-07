@@ -92,6 +92,7 @@ community_set_elem
 extended_access_list_additional_feature
 :
    ACK
+   | BEYOND_SCOPE
    | COUNT
    |
    (
