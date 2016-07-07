@@ -1238,10 +1238,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
       _currentVrf = ctx.name.getText();
-      // BgpProcess masterProc =
-      // _configuration.getBgpProcesses().get(BgpProcess.MASTER_VRF_NAME);
-      BgpProcess proc = new BgpProcess(0); // TODO: fix vrf bgp process number
+      int procNum = _configuration.getBgpProcesses()
+            .get(CiscoConfiguration.MASTER_VRF_NAME).getName();
+      BgpProcess proc = new BgpProcess(procNum);
       _configuration.getBgpProcesses().put(_currentVrf, proc);
+      pushPeer(proc.getMasterBgpPeerGroup());
+      _currentNexusNeighborAddressFamilies.clear();
+      _inNexusNeighbor = false;
    }
 
    @Override
@@ -2284,6 +2287,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
+      popPeer();
    }
 
    @Override
