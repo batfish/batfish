@@ -60,6 +60,7 @@ isisit_null
       BFD_LIVENESS_DETECTION
       | HELLO_PADDING
       | LSP_INTERVAL
+      | NO_ADJACENCY_DOWN_NOTIFICATION
    ) s_null_filler
 ;
 
