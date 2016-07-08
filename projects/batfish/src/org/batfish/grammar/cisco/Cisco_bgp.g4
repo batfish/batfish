@@ -54,7 +54,10 @@ address_family_rb_stanza
    (
       aggregate_address_rb_stanza
       | bgp_tail
-      | neighbor_rb_stanza
+      |
+      {_nonNexus}?
+
+      neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
