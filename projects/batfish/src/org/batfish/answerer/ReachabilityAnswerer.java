@@ -25,6 +25,7 @@ import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilityQuestion;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
@@ -84,6 +85,7 @@ public class ReachabilityAnswerer extends Answerer {
 
    private AnswerElement multipath(ReachabilityQuestion question,
          TestrigSettings testrigSettings) {
+      Settings settings = _batfish.getSettings();
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       String tag = _batfish.getFlowTag(testrigSettings);
       Map<String, Configuration> configurations = _batfish
@@ -99,7 +101,8 @@ public class ReachabilityAnswerer extends Answerer {
                node);
          NodeSet nodes = new NodeSet();
          nodes.add(node);
-         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
+         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
+               tag);
          jobs.add(job);
       }
 
@@ -118,6 +121,7 @@ public class ReachabilityAnswerer extends Answerer {
    }
 
    private AnswerElement pathDiff(ReachabilityQuestion question) {
+      Settings settings = _batfish.getSettings();
       _batfish.checkDifferentialDataPlaneQuestionDependencies();
       String tag = _batfish.getDifferentialFlowTag();
 
@@ -177,8 +181,8 @@ public class ReachabilityAnswerer extends Answerer {
          queries.add(blacklistQuery);
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
-         CompositeNodJob job = new CompositeNodJob(commonEdgeSynthesizers,
-               queries, nodes, tag);
+         CompositeNodJob job = new CompositeNodJob(settings,
+               commonEdgeSynthesizers, queries, nodes, tag);
          jobs.add(job);
       }
 
@@ -204,8 +208,8 @@ public class ReachabilityAnswerer extends Answerer {
             queries.add(blacklistQuery);
             NodeSet nodes = new NodeSet();
             nodes.add(ingressNode);
-            CompositeNodJob job = new CompositeNodJob(missingEdgeSynthesizers,
-                  queries, nodes, tag);
+            CompositeNodJob job = new CompositeNodJob(settings,
+                  missingEdgeSynthesizers, queries, nodes, tag);
             jobs.add(job);
          }
 
@@ -233,6 +237,7 @@ public class ReachabilityAnswerer extends Answerer {
    }
 
    private AnswerElement reducedReachability(ReachabilityQuestion question) {
+      Settings settings = _batfish.getSettings();
       _batfish.checkDifferentialDataPlaneQuestionDependencies();
       String tag = _batfish.getDifferentialFlowTag();
 
@@ -288,8 +293,8 @@ public class ReachabilityAnswerer extends Answerer {
          queries.add(reachableQuery);
          queries.add(blackHoleQuery);
          queries.add(blacklistQuery);
-         CompositeNodJob job = new CompositeNodJob(synthesizers, queries,
-               nodes, tag);
+         CompositeNodJob job = new CompositeNodJob(settings, synthesizers,
+               queries, nodes, tag);
          jobs.add(job);
       }
 
@@ -315,6 +320,7 @@ public class ReachabilityAnswerer extends Answerer {
 
    private AnswerElement standard(ReachabilityQuestion question,
          TestrigSettings testrigSettings) {
+      Settings settings = _batfish.getSettings();
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       String tag = _batfish.getFlowTag(testrigSettings);
       Map<String, Configuration> configurations = _batfish
@@ -371,7 +377,8 @@ public class ReachabilityAnswerer extends Answerer {
                                           */);
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
-         NodJob job = new NodJob(dataPlaneSynthesizer, query, nodes, tag);
+         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
+               tag);
          jobs.add(job);
       }
 

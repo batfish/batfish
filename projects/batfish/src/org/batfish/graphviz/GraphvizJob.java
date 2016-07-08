@@ -13,6 +13,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 import org.batfish.job.BatfishJob;
+import org.batfish.main.Settings;
 
 public class GraphvizJob extends BatfishJob<GraphvizResult> {
 
@@ -28,8 +29,9 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
 
    private final Path _svgFile;
 
-   public GraphvizJob(GraphvizInput input, Path graphFile, Path svgFile,
-         Path htmlFile, Prefix prefix) {
+   public GraphvizJob(Settings settings, GraphvizInput input, Path graphFile,
+         Path svgFile, Path htmlFile, Prefix prefix) {
+      super(settings);
       _input = input;
       _graphFile = graphFile;
       _htmlFile = htmlFile;
@@ -56,11 +58,13 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       if (failureCause != null) {
-         return new GraphvizResult(elapsedTime, _prefix, failureCause);
+         return new GraphvizResult(elapsedTime, _logger.getHistory(), _prefix,
+               failureCause);
       }
       else {
-         return new GraphvizResult(elapsedTime, _graphFile, graphBytes,
-               _svgFile, svgBytes, _htmlFile, htmlBytes, _prefix);
+         return new GraphvizResult(elapsedTime, _logger.getHistory(),
+               _graphFile, graphBytes, _svgFile, svgBytes, _htmlFile,
+               htmlBytes, _prefix);
       }
    }
 

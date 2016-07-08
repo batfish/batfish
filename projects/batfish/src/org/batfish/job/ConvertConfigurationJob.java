@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
@@ -17,22 +16,16 @@ public class ConvertConfigurationJob extends
 
    private Object _configObject;
 
-   private BatfishLogger _logger;
-
    private String _name;
-
-   private Settings _settings;
 
    private Warnings _warnings;
 
    public ConvertConfigurationJob(Settings settings, Object configObject,
          String name, Warnings warnings) {
-      _settings = settings;
+      super(settings);
       _configObject = configObject;
       _name = name;
       _warnings = warnings;
-      _logger = new BatfishLogger(_settings.getLogLevel(),
-            _settings.getTimestamp());
    }
 
    @Override

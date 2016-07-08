@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.batfish.job.BatfishJobResult;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.NodAnswerElement;
 
@@ -15,28 +16,31 @@ public class NodJobResult extends BatfishJobResult<Set<Flow>, NodAnswerElement> 
     */
    private Set<Flow> _flows;
 
-   public NodJobResult(long elapsedTime) {
-      super(elapsedTime);
+   public NodJobResult(long elapsedTime, BatfishLoggerHistory history) {
+      super(elapsedTime, history);
       _flows = Collections.<Flow> emptySet();
    }
 
-   public NodJobResult(long elapsedTime, Set<Flow> flows) {
-      super(elapsedTime);
+   public NodJobResult(long elapsedTime, BatfishLoggerHistory history,
+         Set<Flow> flows) {
+      super(elapsedTime, history);
       _flows = flows;
    }
 
-   public NodJobResult(long elapsedTime, Throwable failureCause) {
-      super(elapsedTime, failureCause);
+   public NodJobResult(long elapsedTime, BatfishLoggerHistory history,
+         Throwable failureCause) {
+      super(elapsedTime, history, failureCause);
+   }
+
+   @Override
+   public void appendHistory(BatfishLogger logger) {
+      logger.append(_history);
    }
 
    @Override
    public void applyTo(Set<Flow> flows, BatfishLogger logger,
          NodAnswerElement answerElement) {
       flows.addAll(_flows);
-   }
-
-   @Override
-   public void explainFailure(BatfishLogger logger) {
    }
 
    public Set<Flow> getFlows() {

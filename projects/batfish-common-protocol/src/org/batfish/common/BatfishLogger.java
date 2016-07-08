@@ -17,6 +17,17 @@ public class BatfishLogger {
        *
        */
       private static final long serialVersionUID = 1L;
+
+      public String toString(int logLevel) {
+         StringBuilder sb = new StringBuilder();
+         for (HistoryItem item : this) {
+            if (item.getLevel() <= logLevel) {
+               sb.append(item.getMessage());
+            }
+         }
+         return sb.toString();
+      }
+
    }
 
    private class HistoryItem extends Pair<Integer, String> {
@@ -79,6 +90,11 @@ public class BatfishLogger {
    private static final Map<Integer, String> LOG_LEVELSTRS = initializeLogLevelStrs();
 
    private static final int LOG_ROTATION_THRESHOLD = 10000;
+
+   public static int getLogLevel(String levelStr) {
+      String canonicalLevelStr = levelStr.toLowerCase();
+      return LOG_LEVELS.get(canonicalLevelStr);
+   }
 
    public static String getLogLevelStr(int level) {
       return LOG_LEVELSTRS.get(level);
@@ -309,8 +325,7 @@ public class BatfishLogger {
    }
 
    public void setLogLevel(String levelStr) {
-      String canonicalLevelStr = levelStr.toLowerCase();
-      _level = LOG_LEVELS.get(canonicalLevelStr);
+      _level = getLogLevel(levelStr);
    }
 
    public void unimplemented(String msg) {

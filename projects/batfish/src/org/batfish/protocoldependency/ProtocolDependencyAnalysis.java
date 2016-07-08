@@ -989,8 +989,8 @@ public final class ProtocolDependencyAnalysis {
                graphName + ".svg");
          Path htmlFile = protocolDependencyGraphPath.resolve("html").resolve(
                graphName + ".html");
-         GraphvizJob job = new GraphvizJob(input, graphFile, svgFile, htmlFile,
-               prefix);
+         GraphvizJob job = new GraphvizJob(batfish.getSettings(), input,
+               graphFile, svgFile, htmlFile, prefix);
          jobs.add(job);
       }
       // todo: do something with graphviz answer element

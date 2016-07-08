@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.GraphvizAnswerElement;
 import org.batfish.job.BatfishJobResult;
@@ -25,10 +26,10 @@ public final class GraphvizResult extends
 
    private final Path _svgFile;
 
-   public GraphvizResult(long elapsedTime, Path graphFile, byte[] graphBytes,
-         Path svgFile, byte[] svgBytes, Path htmlFile, byte[] htmlBytes,
-         Prefix prefix) {
-      super(elapsedTime);
+   public GraphvizResult(long elapsedTime, BatfishLoggerHistory history,
+         Path graphFile, byte[] graphBytes, Path svgFile, byte[] svgBytes,
+         Path htmlFile, byte[] htmlBytes, Prefix prefix) {
+      super(elapsedTime, history);
       _graphBytes = graphBytes;
       _graphFile = graphFile;
       _htmlBytes = htmlBytes;
@@ -38,8 +39,9 @@ public final class GraphvizResult extends
       _svgFile = svgFile;
    }
 
-   public GraphvizResult(long elapsedTime, Prefix prefix, Throwable failureCause) {
-      super(elapsedTime, failureCause);
+   public GraphvizResult(long elapsedTime, BatfishLoggerHistory history,
+         Prefix prefix, Throwable failureCause) {
+      super(elapsedTime, history, failureCause);
       _graphBytes = null;
       _graphFile = null;
       _htmlBytes = null;
@@ -50,15 +52,16 @@ public final class GraphvizResult extends
    }
 
    @Override
+   public void appendHistory(BatfishLogger logger) {
+      logger.append(_history);
+   }
+
+   @Override
    public void applyTo(Map<Path, byte[]> output, BatfishLogger logger,
          GraphvizAnswerElement answerElement) {
       output.put(_graphFile, _graphBytes);
       output.put(_svgFile, _svgBytes);
       output.put(_htmlFile, _htmlBytes);
-   }
-
-   @Override
-   public void explainFailure(BatfishLogger logger) {
    }
 
    @Override

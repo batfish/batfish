@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.job.BatfishJob;
+import org.batfish.main.Settings;
 
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -20,7 +21,9 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
 
    private final Synthesizer _synthesizer;
 
-   public NodSatJob(Synthesizer synthesizer, SatQuerySynthesizer<Key> query) {
+   public NodSatJob(Settings settings, Synthesizer synthesizer,
+         SatQuerySynthesizer<Key> query) {
+      super(settings);
       _synthesizer = synthesizer;
       _query = query;
    }
@@ -57,23 +60,25 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
                results.put(key, true);
                break;
             case UNKNOWN:
-               return new NodSatResult<Key>(elapsedTime, new BatfishException(
-                     "Query satisfiability unknown"));
+               return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+                     new BatfishException("Query satisfiability unknown"));
             case UNSATISFIABLE:
                results.put(key, false);
                break;
             default:
-               return new NodSatResult<Key>(elapsedTime, new BatfishException(
-                     "invalid status"));
+               return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+                     new BatfishException("invalid status"));
             }
          }
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodSatResult<Key>(results, elapsedTime);
+         return new NodSatResult<Key>(results, _logger.getHistory(),
+               elapsedTime);
       }
       catch (Z3Exception e) {
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodSatResult<Key>(elapsedTime, new BatfishException(
-               "Error running NoD on concatenated data plane", e));
+         return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+               new BatfishException(
+                     "Error running NoD on concatenated data plane", e));
       }
    }
 }
