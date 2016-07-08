@@ -83,16 +83,22 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                }
                else {
                   String failureMessage = "Failure running job after elapsed time: "
-                        + time;
+                        + time
+                        + "\n-----BEGIN JOB LOG-----\n"
+                        + result.getHistory()
+                              .toString(
+                                    BatfishLogger.getLogLevel(_settings
+                                          .getLogLevel()))
+                        + "\n-----END JOB LOG-----";
                   BatfishException bfc = new BatfishException(failureMessage,
                         failureCause);
                   if (_settings.getExitOnFirstError()) {
-                     result.explainFailure(_logger);
+                     result.appendHistory(_logger);
                      throw bfc;
                   }
                   else {
                      processingError = true;
-                     result.explainFailure(_logger);
+                     result.appendHistory(_logger);
                      _logger.error(failureMessage + ":\n\t"
                            + ExceptionUtils.getStackTrace(failureCause));
                      failureCauses.add(bfc);

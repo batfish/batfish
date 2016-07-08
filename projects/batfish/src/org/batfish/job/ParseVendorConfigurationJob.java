@@ -17,7 +17,6 @@ import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
@@ -31,20 +30,14 @@ public class ParseVendorConfigurationJob extends
 
    private String _fileText;
 
-   private final BatfishLogger _logger;
-
-   private Settings _settings;
-
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
          Path file, Warnings warnings) {
-      _settings = settings;
+      super(settings);
       _fileText = fileText;
       _file = file;
       _warnings = warnings;
-      _logger = new BatfishLogger(_settings.getLogLevel(),
-            _settings.getTimestamp());
    }
 
    @Override

@@ -4,7 +4,6 @@ import java.nio.file.Path;
 
 import org.batfish.main.Batfish;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
@@ -17,23 +16,17 @@ public class FlattenVendorConfigurationJob extends
 
    private Path _inputFile;
 
-   private final BatfishLogger _logger;
-
    private Path _outputFile;
-
-   private Settings _settings;
 
    private Warnings _warnings;
 
    public FlattenVendorConfigurationJob(Settings settings, String fileText,
          Path inputFile, Path outputFile, Warnings warnings) {
-      _settings = settings;
+      super(settings);
       _fileText = fileText;
       _inputFile = inputFile;
       _outputFile = outputFile;
       _warnings = warnings;
-      _logger = new BatfishLogger(_settings.getLogLevel(),
-            _settings.getTimestamp());
    }
 
    @Override

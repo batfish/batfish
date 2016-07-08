@@ -20,6 +20,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -34,7 +35,7 @@ public class AclReachabilityAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
-
+      Settings settings = _batfish.getSettings();
       AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
 
       Pattern nodeRegex;
@@ -88,8 +89,8 @@ public class AclReachabilityAnswerer extends Answerer {
             }
             AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
                   hostname, aclName, numLines);
-            NodSatJob<AclLine> job = new NodSatJob<AclLine>(aclSynthesizer,
-                  query);
+            NodSatJob<AclLine> job = new NodSatJob<AclLine>(settings,
+                  aclSynthesizer, query);
             jobs.add(job);
          }
       }

@@ -16,24 +16,20 @@ public class ParseVendorConfigurationResult
 
    private final Path _file;
 
-   private final BatfishLoggerHistory _history;
-
    private VendorConfiguration _vc;
 
    private Warnings _warnings;
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
-      super(elapsedTime, failureCause);
-      _history = history;
+      super(elapsedTime, history, failureCause);
       _file = file;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path file, VendorConfiguration vc,
          Warnings warnings) {
-      super(elapsedTime);
-      _history = history;
+      super(elapsedTime, history);
       _file = file;
       _vc = vc;
       _warnings = warnings;
@@ -41,13 +37,13 @@ public class ParseVendorConfigurationResult
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path file, Warnings warnings) {
-      super(elapsedTime);
-      _history = history;
+      super(elapsedTime, history);
       _file = file;
       _warnings = warnings;
    }
 
-   private void appendHistory(BatfishLogger logger) {
+   @Override
+   public void appendHistory(BatfishLogger logger) {
       String terseLogLevelPrefix;
       if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
          terseLogLevelPrefix = "";
@@ -80,15 +76,11 @@ public class ParseVendorConfigurationResult
       }
    }
 
-   @Override
-   public void explainFailure(BatfishLogger logger) {
-      appendHistory(logger);
-   }
-
    public Path getFile() {
       return _file;
    }
 
+   @Override
    public BatfishLoggerHistory getHistory() {
       return _history;
    }

@@ -2986,6 +2986,11 @@ NO_ACTIVE_BACKBONE
    'no-active-backbone'
 ;
 
+NO_ADJACENCY_DOWN_NOTIFICATION
+:
+   'no-adjacency-down-notification'
+;
+
 NO_ANTI_REPLAY
 :
    'no-anti-replay'

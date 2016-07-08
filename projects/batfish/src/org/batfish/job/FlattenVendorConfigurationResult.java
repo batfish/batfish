@@ -13,27 +13,24 @@ public class FlattenVendorConfigurationResult
 
    private final String _flattenedText;
 
-   private final BatfishLoggerHistory _history;
-
    private final Path _outputFile;
 
    public FlattenVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path outputFile, String flattenedText) {
-      super(elapsedTime);
-      _history = history;
+      super(elapsedTime, history);
       _outputFile = outputFile;
       _flattenedText = flattenedText;
    }
 
    public FlattenVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path outputFile, Throwable failureCause) {
-      super(elapsedTime, failureCause);
+      super(elapsedTime, history, failureCause);
       _outputFile = outputFile;
-      _history = history;
       _flattenedText = null;
    }
 
-   private void appendHistory(BatfishLogger logger) {
+   @Override
+   public void appendHistory(BatfishLogger logger) {
       String terseLogLevelPrefix;
       if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
          terseLogLevelPrefix = "";
@@ -52,15 +49,11 @@ public class FlattenVendorConfigurationResult
       outputConfigurationData.put(_outputFile, _flattenedText);
    }
 
-   @Override
-   public void explainFailure(BatfishLogger logger) {
-      appendHistory(logger);
-   }
-
    public String getFlattenedText() {
       return _flattenedText;
    }
 
+   @Override
    public BatfishLoggerHistory getHistory() {
       return _history;
    }

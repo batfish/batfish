@@ -15,30 +15,27 @@ public class ConvertConfigurationResult
 
    private Map<String, Configuration> _configurations;
 
-   private BatfishLoggerHistory _history;
-
    private String _name;
 
    private Warnings _warnings;
 
    public ConvertConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, String name, Throwable failureCause) {
-      super(elapsedTime, failureCause);
-      _history = history;
+      super(elapsedTime, history, failureCause);
       _name = name;
    }
 
    public ConvertConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Warnings warnings, String name,
          Map<String, Configuration> configurations) {
-      super(elapsedTime);
-      _history = history;
+      super(elapsedTime, history);
       _name = name;
       _warnings = warnings;
       _configurations = configurations;
    }
 
-   private void appendHistory(BatfishLogger logger) {
+   @Override
+   public void appendHistory(BatfishLogger logger) {
       String terseLogLevelPrefix;
       if (logger.isActive(BatfishLogger.LEVEL_INFO)) {
          terseLogLevelPrefix = "";
@@ -69,15 +66,11 @@ public class ConvertConfigurationResult
       }
    }
 
-   @Override
-   public void explainFailure(BatfishLogger logger) {
-      appendHistory(logger);
-   }
-
    public Map<String, Configuration> getConfigurations() {
       return _configurations;
    }
 
+   @Override
    public BatfishLoggerHistory getHistory() {
       return _history;
    }

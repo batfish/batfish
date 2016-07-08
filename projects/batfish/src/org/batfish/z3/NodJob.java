@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.job.BatfishJob;
+import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
@@ -126,8 +127,9 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
    private String _tag;
 
-   public NodJob(Synthesizer dataPlaneSynthesizer,
+   public NodJob(Settings settings, Synthesizer dataPlaneSynthesizer,
          QuerySynthesizer querySynthesizer, NodeSet nodeSet, String tag) {
+      super(settings);
       _dataPlaneSynthesizer = dataPlaneSynthesizer;
       _querySynthesizer = querySynthesizer;
       _nodeSet = new NodeSet();
@@ -198,7 +200,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
          case UNSATISFIABLE:
             elapsedTime = System.currentTimeMillis() - startTime;
-            return new NodJobResult(elapsedTime);
+            return new NodJobResult(elapsedTime, _logger.getHistory());
 
          default:
             throw new BatfishException("invalid status");
@@ -218,12 +220,13 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             flows.add(flow);
          }
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodJobResult(elapsedTime, flows);
+         return new NodJobResult(elapsedTime, _logger.getHistory(), flows);
       }
       catch (Z3Exception e) {
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodJobResult(elapsedTime, new BatfishException(
-               "Error running NoD on concatenated data plane", e));
+         return new NodJobResult(elapsedTime, _logger.getHistory(),
+               new BatfishException(
+                     "Error running NoD on concatenated data plane", e));
       }
    }
 
