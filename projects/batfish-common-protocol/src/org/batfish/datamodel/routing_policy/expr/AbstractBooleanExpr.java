@@ -6,6 +6,7 @@ public abstract class AbstractBooleanExpr implements BooleanExpr {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private String _comment;
 
    public String getComment() {

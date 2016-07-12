@@ -1,10 +1,18 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.main.Warnings;
+
 public class RoutePolicySetCommunity extends RoutePolicySetStatement {
 
    private static final long serialVersionUID = 1L;
 
    private boolean _additive;
+
    private RoutePolicyCommunitySet _commSet;
 
    public RoutePolicySetCommunity(RoutePolicyCommunitySet commSet,
@@ -22,8 +30,15 @@ public class RoutePolicySetCommunity extends RoutePolicySetStatement {
    }
 
    @Override
-   public RoutePolicySetType getSetType() {
-      return RoutePolicySetType.COMMUNITY;
+   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      CommunitySetExpr expr = _commSet.toCommunitySetExpr(cc, c, w);
+      if (_additive) {
+         return new AddCommunity(expr);
+      }
+      else {
+         return new SetCommunity(expr);
+      }
    }
 
 }

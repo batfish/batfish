@@ -245,13 +245,19 @@ route_policy_tail
 rp_community_set
 :
    name = variable
-   | PAREN_LEFT COMMUNITY_NUMBER PAREN_RIGHT
+   | PAREN_LEFT elems += community
+   (
+      COMMA elems += community
+   )* PAREN_RIGHT
 ;
 
 rp_prefix_set
 :
    name = variable
-   | PAREN_LEFT prefix_set_elem PAREN_RIGHT
+   | PAREN_LEFT elems += prefix_set_elem
+   (
+      COMMA elems += prefix_set_elem
+   )* PAREN_RIGHT
 ;
 
 rp_stanza

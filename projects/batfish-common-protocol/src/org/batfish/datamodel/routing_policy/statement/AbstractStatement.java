@@ -6,6 +6,7 @@ public abstract class AbstractStatement implements Statement {
     *
     */
    private static final long serialVersionUID = 1L;
+
    private String _comment;
 
    public String getComment() {

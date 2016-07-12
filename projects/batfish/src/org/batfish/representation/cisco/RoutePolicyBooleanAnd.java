@@ -1,9 +1,18 @@
 package org.batfish.representation.cisco;
 
+import java.util.List;
+
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
 
    private static final long serialVersionUID = 1L;
+
    private RoutePolicyBoolean _left;
+
    private RoutePolicyBoolean _right;
 
    public RoutePolicyBooleanAnd(RoutePolicyBoolean left,
@@ -23,6 +32,18 @@ public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
    @Override
    public RoutePolicyBooleanType getType() {
       return RoutePolicyBooleanType.AND;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      Conjunction conj = new Conjunction();
+      BooleanExpr left = _left.toBooleanExpr(cc, c, w);
+      BooleanExpr right = _right.toBooleanExpr(cc, c, w);
+      List<BooleanExpr> conjuncts = conj.getConjuncts();
+      conjuncts.add(left);
+      conjuncts.add(right);
+      return conj.simplify();
    }
 
 }

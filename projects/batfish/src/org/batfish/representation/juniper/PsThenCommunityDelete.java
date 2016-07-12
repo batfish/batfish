@@ -6,6 +6,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapSetDeleteCommunityLine;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -42,7 +43,7 @@ public final class PsThenCommunityDelete extends PsThen {
             throw new VendorConversionException("missing community list: \""
                   + _name + "\"");
          }
-         statements.add(new DeleteCommunity(_name));
+         statements.add(new DeleteCommunity(new NamedCommunitySet(_name)));
       }
    }
 

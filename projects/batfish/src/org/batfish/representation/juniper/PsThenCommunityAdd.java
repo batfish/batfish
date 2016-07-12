@@ -9,6 +9,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -47,7 +48,8 @@ public final class PsThenCommunityAdd extends PsThen {
             long communityLong = CommonUtil.communityStringToLong(communityStr);
             communities.add(communityLong);
          }
-         statements.add(new AddCommunity(communities));
+         statements
+               .add(new AddCommunity(new ExplicitCommunitySet(communities)));
       }
    }
 

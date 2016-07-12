@@ -7,7 +7,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.PolicyMapSetNextHopLine;
-import org.batfish.datamodel.routing_policy.statement.SetNextHopIp;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
@@ -24,7 +25,8 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    @Override
    public void applyTo(List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
-      statements.add(new SetNextHopIp(_nextHops));
+      // TODO: something with destination-vrf
+      statements.add(new SetNextHop(new NextHopIp(_nextHops), false));
    }
 
    public List<Ip> getNextHops() {

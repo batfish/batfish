@@ -7,7 +7,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapSetNextHopLine;
-import org.batfish.datamodel.routing_policy.statement.SetNextHopIp;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
@@ -28,7 +29,9 @@ public final class PsThenNextHopIp extends PsThen {
    public void applyTo(List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
-      statements.add(new SetNextHopIp(Collections.singletonList(_nextHopIp)));
+      // todo: something with destination-vrf
+      statements.add(new SetNextHop(new NextHopIp(Collections
+            .singletonList(_nextHopIp)), false));
    }
 
    @Override

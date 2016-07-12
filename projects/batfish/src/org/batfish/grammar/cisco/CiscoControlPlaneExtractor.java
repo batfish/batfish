@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -36,6 +37,10 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Prefix6Range;
+import org.batfish.datamodel.Prefix6Space;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
@@ -109,20 +114,18 @@ import org.batfish.representation.cisco.RoutePolicyDispositionType;
 import org.batfish.representation.cisco.RoutePolicyElseBlock;
 import org.batfish.representation.cisco.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco.RoutePolicyIfStatement;
+import org.batfish.representation.cisco.RoutePolicyInlinePrefix6Set;
+import org.batfish.representation.cisco.RoutePolicyInlinePrefixSet;
 import org.batfish.representation.cisco.RoutePolicyNextHop;
-import org.batfish.representation.cisco.RoutePolicyNextHopIP;
+import org.batfish.representation.cisco.RoutePolicyNextHopIp;
 import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
 import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
 import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
 import org.batfish.representation.cisco.RoutePolicyPrefixSet;
-import org.batfish.representation.cisco.RoutePolicyPrefixSetIp;
-import org.batfish.representation.cisco.RoutePolicyPrefixSetIpV6;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
-import org.batfish.representation.cisco.RoutePolicyPrefixSetNumber;
-import org.batfish.representation.cisco.RoutePolicyPrefixSetNumberV6;
 import org.batfish.representation.cisco.RoutePolicySetCommunity;
 import org.batfish.representation.cisco.RoutePolicySetLocalPref;
-import org.batfish.representation.cisco.RoutePolicySetMED;
+import org.batfish.representation.cisco.RoutePolicySetMed;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
@@ -3413,11 +3416,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public RoutePolicyCommunitySet toRoutePolicyCommunitySet(
          Rp_community_setContext ctxt) {
       if (ctxt.name != null) {
+         // named
          return new RoutePolicyCommunitySetName(ctxt.name.getText());
       }
       else {
-         return new RoutePolicyCommunitySetNumber(ctxt.COMMUNITY_NUMBER()
-               .getText());
+         // inline
+         return new RoutePolicyCommunitySetNumber(ctxt.elems.stream()
+               .map(elem -> toLong(elem)).collect(Collectors.toSet()));
       }
    }
 
@@ -3439,41 +3444,70 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public RoutePolicyPrefixSet toRoutePolicyPrefixSet(Rp_prefix_setContext ctxt) {
       if (ctxt.name != null) {
+         // named
          return new RoutePolicyPrefixSetName(ctxt.name.getText());
       }
       else {
-         Prefix_set_elemContext pctxt = ctxt.prefix_set_elem();
+         // inline
+         PrefixSpace prefixSpace = new PrefixSpace();
+         Prefix6Space prefix6Space = new Prefix6Space();
+         boolean ipv6 = false;
+         for (Prefix_set_elemContext pctxt : ctxt.elems) {
+            int lower;
+            int upper;
+            Prefix prefix = null;
+            Prefix6 prefix6 = null;
+            if (pctxt.prefix != null) {
+               prefix = new Prefix(pctxt.prefix.getText());
+               lower = prefix.getPrefixLength();
+               upper = Prefix.MAX_PREFIX_LENGTH;
+            }
+            else if (pctxt.ipa != null) {
+               prefix = new Prefix(toIp(pctxt.ipa), Prefix.MAX_PREFIX_LENGTH);
+               lower = prefix.getPrefixLength();
+               upper = Prefix.MAX_PREFIX_LENGTH;
+            }
+            else if (pctxt.ipv6a != null) {
+               prefix6 = new Prefix6(toIp6(pctxt.ipv6a),
+                     Prefix6.MAX_PREFIX_LENGTH);
+               lower = prefix6.getPrefixLength();
+               upper = Prefix6.MAX_PREFIX_LENGTH;
+            }
+            else if (pctxt.ipv6_prefix != null) {
+               prefix6 = new Prefix6(pctxt.ipv6_prefix.getText());
+               lower = prefix6.getPrefixLength();
+               upper = Prefix6.MAX_PREFIX_LENGTH;
+            }
+            else {
+               throw new BatfishException("Unhandled alternative");
+            }
+            if (pctxt.minpl != null) {
+               lower = toInteger(pctxt.minpl);
+            }
+            if (pctxt.maxpl != null) {
+               upper = toInteger(pctxt.maxpl);
+            }
+            if (pctxt.eqpl != null) {
+               lower = toInteger(pctxt.eqpl);
+               upper = lower;
+            }
+            if (prefix != null) {
+               prefixSpace.addPrefixRange(new PrefixRange(prefix, new SubRange(
+                     lower, upper)));
+            }
+            else {
+               prefix6Space.addPrefix6Range(new Prefix6Range(prefix6,
+                     new SubRange(lower, upper)));
+               ipv6 = true;
+            }
+         }
+         if (ipv6) {
+            return new RoutePolicyInlinePrefix6Set(prefix6Space);
+         }
+         else {
+            return new RoutePolicyInlinePrefixSet(prefixSpace);
+         }
 
-         Integer lower = null;
-         Integer upper = null;
-         if (pctxt.minpl != null) {
-            lower = new Integer(toInteger(pctxt.minpl));
-         }
-         if (pctxt.maxpl != null) {
-            upper = new Integer(toInteger(pctxt.maxpl));
-         }
-         if (pctxt.eqpl != null) {
-            lower = new Integer(toInteger(pctxt.eqpl));
-            upper = new Integer(lower);
-         }
-
-         if (pctxt.ipa != null) {
-            return new RoutePolicyPrefixSetIp(toIp(pctxt.ipa), lower, upper);
-         }
-         if (pctxt.prefix != null) {
-            return new RoutePolicyPrefixSetNumber(new Prefix(
-                  pctxt.prefix.getText()), lower, upper);
-         }
-         if (pctxt.ipv6a != null) {
-            return new RoutePolicyPrefixSetIpV6(toIp6(pctxt.ipv6a), lower,
-                  upper);
-         }
-         if (pctxt.ipv6_prefix != null) {
-            return new RoutePolicyPrefixSetNumberV6(new Prefix6(
-                  pctxt.ipv6_prefix.getText()), lower, upper);
-         }
-
-         return null;
       }
    }
 
@@ -3571,14 +3605,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public RoutePolicyStatement toRoutePolicyStatement(
          Set_med_rp_stanzaContext ctxt) {
-      return new RoutePolicySetMED(toInteger(ctxt.med));
+      return new RoutePolicySetMed(toInteger(ctxt.med));
    }
 
    public RoutePolicyStatement toRoutePolicyStatement(
          Set_next_hop_rp_stanzaContext ctxt) {
       RoutePolicyNextHop hop = null;
       if (ctxt.IP_ADDRESS() != null) {
-         hop = new RoutePolicyNextHopIP(toIp(ctxt.IP_ADDRESS()));
+         hop = new RoutePolicyNextHopIp(toIp(ctxt.IP_ADDRESS()));
       }
       else if (ctxt.IPV6_ADDRESS() != null) {
          hop = new RoutePolicyNextHopIP6(toIp6(ctxt.IPV6_ADDRESS()));

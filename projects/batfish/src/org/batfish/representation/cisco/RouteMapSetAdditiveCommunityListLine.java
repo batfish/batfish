@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -59,7 +60,7 @@ public final class RouteMapSetAdditiveCommunityListLine extends RouteMapSetLine 
                   + communityListName + "\"");
          }
       }
-      statements.add(new AddCommunity(communities));
+      statements.add(new AddCommunity(new ExplicitCommunitySet(communities)));
    }
 
    @Override

@@ -1,8 +1,14 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyBooleanNot extends RoutePolicyBoolean {
 
    private static final long serialVersionUID = 1L;
+
    private RoutePolicyBoolean _operand;
 
    public RoutePolicyBooleanNot(RoutePolicyBoolean operand) {
@@ -16,6 +22,12 @@ public class RoutePolicyBooleanNot extends RoutePolicyBoolean {
    @Override
    public RoutePolicyBooleanType getType() {
       return RoutePolicyBooleanType.NOT;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      return new Not(_operand.toBooleanExpr(cc, c, w));
    }
 
 }

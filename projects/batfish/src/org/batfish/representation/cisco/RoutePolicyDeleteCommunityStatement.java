@@ -1,9 +1,16 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
+import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyDeleteCommunityStatement extends
       RoutePolicyDeleteStatement {
 
    private static final long serialVersionUID = 1L;
+
    private RoutePolicyCommunitySet commset;
 
    private boolean negated;
@@ -25,6 +32,17 @@ public class RoutePolicyDeleteCommunityStatement extends
 
    public boolean getNegated() {
       return negated;
+   }
+
+   @Override
+   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      if (negated) {
+         return new RetainCommunity(commset.toCommunitySetExpr(cc, c, w));
+      }
+      else {
+         return new DeleteCommunity(commset.toCommunitySetExpr(cc, c, w));
+      }
    }
 
 }
