@@ -1,22 +1,30 @@
 package org.batfish.representation.cisco;
 
+import java.util.Set;
+
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyCommunitySetNumber extends RoutePolicyCommunitySet {
 
    private static final long serialVersionUID = 1L;
 
-   private String number;
+   private Set<Long> _numbers;
 
-   public RoutePolicyCommunitySetNumber(String number) {
-      this.number = number;
+   public RoutePolicyCommunitySetNumber(Set<Long> numbers) {
+      _numbers = numbers;
+   }
+
+   public Set<Long> getNumbers() {
+      return _numbers;
    }
 
    @Override
-   public RoutePolicyCommunityType getCommunityType() {
-      return RoutePolicyCommunityType.NUMBER;
-   }
-
-   public String getNumber() {
-      return this.number;
+   public CommunitySetExpr toCommunitySetExpr(CiscoConfiguration cc,
+         Configuration c, Warnings w) {
+      return new ExplicitCommunitySet(_numbers);
    }
 
 }

@@ -6,7 +6,8 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixList;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -38,7 +39,7 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
          PrefixList list = cc.getPrefixLists().get(listName);
          if (list != null) {
             list.getReferers().put(this, "route-map match prefix-list");
-            disjuncts.add(new MatchPrefixList(listName));
+            disjuncts.add(new MatchPrefixSet(new NamedPrefixSet(listName)));
          }
          else {
             w.redFlag("Reference to undefined prefix-list: " + listName,

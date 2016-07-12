@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -23,7 +24,8 @@ public class RouteMapSetAdditiveCommunityLine extends RouteMapSetLine {
    @Override
    public void applyTo(List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
-      statements.add(new AddCommunity(new TreeSet<Long>(_communities)));
+      statements.add(new AddCommunity(new ExplicitCommunitySet(
+            new TreeSet<Long>(_communities))));
    }
 
    public List<Long> getCommunities() {

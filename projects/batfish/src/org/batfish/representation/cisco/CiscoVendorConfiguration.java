@@ -58,6 +58,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1997,6 +1998,31 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return output;
    }
 
+   private RoutingPolicy toRoutingPolicy(Configuration c,
+         RoutePolicy routePolicy) {
+      String name = routePolicy.getName();
+      RoutingPolicy rp = new RoutingPolicy(name);
+      List<Statement> statements = rp.getStatements();
+      for (RoutePolicyStatement routePolicyStatement : routePolicy
+            .getStatements()) {
+         routePolicyStatement.applyTo(statements, this, c, _w);
+      }
+      If endPolicy = new If();
+      If nonBoolean = new If();
+      endPolicy.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+      endPolicy.setTrueStatements(Collections
+            .singletonList(Statements.ReturnLocalDefaultAction
+                  .toStaticStatement()));
+      endPolicy.setFalseStatements(Collections.singletonList(nonBoolean));
+      nonBoolean.setGuard(BooleanExprs.CallStatementContext
+            .toStaticBooleanExpr());
+      nonBoolean.setTrueStatements(Collections.singletonList(Statements.Return
+            .toStaticStatement()));
+      nonBoolean.setFalseStatements(Collections
+            .singletonList(Statements.DefaultAction.toStaticStatement()));
+      return rp;
+   }
+
    private org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c,
          StaticRoute staticRoute) {
       Ip nextHopIp = staticRoute.getNextHopIp();
@@ -2079,6 +2105,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // convert route maps to RoutingPolicy objects
          RoutingPolicy newPolicy = toRoutingPolicy(c, map);
          c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);
+      }
+
+      // convert RoutePolicy to RoutingPolicy
+      for (RoutePolicy routePolicy : _routePolicies.values()) {
+         RoutingPolicy routingPolicy = toRoutingPolicy(c, routePolicy);
+         c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
       }
 
       // convert interfaces

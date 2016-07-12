@@ -1,5 +1,10 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.main.Warnings;
+
 public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
 
    private static final long serialVersionUID = 1L;
@@ -15,8 +20,9 @@ public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
    }
 
    @Override
-   public RoutePolicySetType getSetType() {
-      return RoutePolicySetType.LOCAL_PREFERENCE;
+   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      return new SetLocalPreference(_pref);
    }
 
 }

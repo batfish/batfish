@@ -7,7 +7,8 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunityList;
+import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -49,7 +50,8 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
             if (expandedCommunityList != null) {
                expandedCommunityList.getReferers().put(this, msg);
             }
-            disjuncts.add(new MatchCommunityList(listName));
+            disjuncts
+                  .add(new MatchCommunitySet(new NamedCommunitySet(listName)));
          }
          else {
             w.redFlag("Reference to undefined community-list: " + listName,

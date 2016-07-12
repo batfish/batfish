@@ -1,8 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -13,24 +11,22 @@ public class SetCommunity extends AbstractStatement {
     */
    private static final long serialVersionUID = 1L;
 
-   private SortedSet<Long> _communities;
+   private CommunitySetExpr _expr;
 
    @JsonCreator
    public SetCommunity() {
-      _communities = new TreeSet<Long>();
    }
 
-   public SetCommunity(Set<Long> communities) {
-      this();
-      _communities.addAll(communities);
+   public SetCommunity(CommunitySetExpr expr) {
+      _expr = expr;
    }
 
-   public SortedSet<Long> getCommunities() {
-      return _communities;
+   public CommunitySetExpr getExpr() {
+      return _expr;
    }
 
-   public void setCommunities(SortedSet<Long> communities) {
-      _communities = communities;
+   public void setExpr(CommunitySetExpr expr) {
+      _expr = expr;
    }
 
 }

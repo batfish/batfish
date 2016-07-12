@@ -6,6 +6,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapSetDeleteCommunityLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -37,7 +38,7 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
          if (expandedCommunityList != null) {
             expandedCommunityList.getReferers().put(this, msg);
          }
-         statements.add(new DeleteCommunity(_listName));
+         statements.add(new DeleteCommunity(new NamedCommunitySet(_listName)));
       }
       else {
          w.redFlag("Reference to undefined community-list: " + _listName,

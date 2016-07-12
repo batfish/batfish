@@ -1,5 +1,10 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
 
    private static final long serialVersionUID = 1L;
@@ -18,6 +23,12 @@ public class RoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean 
    @Override
    public RoutePolicyBooleanType getType() {
       return RoutePolicyBooleanType.COMMUNITY_MATCHES_EVERY;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      return new MatchEntireCommunitySet(_commSet.toCommunitySetExpr(cc, c, w));
    }
 
 }

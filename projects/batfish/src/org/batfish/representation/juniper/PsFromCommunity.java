@@ -6,7 +6,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchCommunityListLine;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunityList;
+import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.main.Warnings;
 
 public final class PsFromCommunity extends PsFrom {
@@ -44,7 +45,7 @@ public final class PsFromCommunity extends PsFrom {
    @Override
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchCommunityList(_name);
+      return new MatchCommunitySet(new NamedCommunitySet(_name));
    }
 
 }

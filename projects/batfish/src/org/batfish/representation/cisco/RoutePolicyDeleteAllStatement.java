@@ -1,5 +1,13 @@
 package org.batfish.representation.cisco;
 
+import java.util.Collections;
+
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
 
    private static final long serialVersionUID = 1L;
@@ -7,6 +15,14 @@ public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
    @Override
    public RoutePolicyDeleteType getDeleteType() {
       return RoutePolicyDeleteType.ALL;
+   }
+
+   @Override
+   public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      // TODO: this should actually just retain all well-known communities
+      return new SetCommunity(new ExplicitCommunitySet(
+            Collections.<Long> emptySet()));
    }
 
 }

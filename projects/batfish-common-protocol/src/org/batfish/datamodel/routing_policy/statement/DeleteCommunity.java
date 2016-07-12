@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class DeleteCommunity extends AbstractStatement {
@@ -9,22 +11,22 @@ public class DeleteCommunity extends AbstractStatement {
     */
    private static final long serialVersionUID = 1L;
 
-   private String _list;
+   private CommunitySetExpr _expr;
 
    @JsonCreator
    public DeleteCommunity() {
    }
 
-   public DeleteCommunity(String list) {
-      _list = list;
+   public DeleteCommunity(CommunitySetExpr expr) {
+      _expr = expr;
    }
 
-   public String getList() {
-      return _list;
+   public CommunitySetExpr getExpr() {
+      return _expr;
    }
 
-   public void setList(String list) {
-      _list = list;
+   public void setExpr(CommunitySetExpr expr) {
+      _expr = expr;
    }
 
 }

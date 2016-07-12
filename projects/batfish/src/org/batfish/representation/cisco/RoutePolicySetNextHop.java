@@ -1,20 +1,26 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.main.Warnings;
+
 public class RoutePolicySetNextHop extends RoutePolicySetStatement {
 
    private static final long serialVersionUID = 1L;
 
-   private boolean _destination_vrf;
+   private boolean _destinationVrf;
+
    private RoutePolicyNextHop _nextHop;
 
    public RoutePolicySetNextHop(RoutePolicyNextHop nextHop,
-         boolean destination_vrf) {
+         boolean destinationVrf) {
       _nextHop = nextHop;
-      _destination_vrf = destination_vrf;
+      _destinationVrf = destinationVrf;
    }
 
-   public boolean getDestination_VRF() {
-      return _destination_vrf;
+   public boolean getDestinationVrf() {
+      return _destinationVrf;
    }
 
    public RoutePolicyNextHop getNextHop() {
@@ -22,8 +28,9 @@ public class RoutePolicySetNextHop extends RoutePolicySetStatement {
    }
 
    @Override
-   public RoutePolicySetType getSetType() {
-      return RoutePolicySetType.NEXT_HOP;
+   protected Statement toSetStatement(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      return new SetNextHop(_nextHop.toNextHopExpr(cc, c, w), _destinationVrf);
    }
 
 }

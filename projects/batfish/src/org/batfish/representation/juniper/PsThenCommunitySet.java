@@ -7,6 +7,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapSetCommunityLine;
+import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -43,7 +44,8 @@ public final class PsThenCommunitySet extends PsThen {
          // assuming this is a valid community list for setting, the regex value
          // just retrieved should just be an explicit community
          long community = CommonUtil.communityStringToLong(regex);
-         statements.add(new SetCommunity(Collections.singleton(community)));
+         statements.add(new SetCommunity(new ExplicitCommunitySet(Collections
+               .singleton(community))));
       }
    }
 

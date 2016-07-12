@@ -1,5 +1,10 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.main.Warnings;
+
 public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
 
    private static final long serialVersionUID = 1L;
@@ -15,8 +20,9 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
    }
 
    @Override
-   public RoutePolicyPrefixType getPrefixType() {
-      return RoutePolicyPrefixType.NAME;
+   public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c,
+         Warnings w) {
+      return new NamedPrefixSet(_name);
    }
 
 }
