@@ -13,6 +13,8 @@ FlatVyosLexer*.java
 FlatVyosParser*.java
 GNS3TopologyLexer*.java
 GNS3TopologyParser*.java
+IptablesLexer*.java
+IptablesParser*.java
 JuniperLexer*.java
 JuniperParser*.java
 LogiQLLexer*.java

@@ -13,6 +13,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
+import org.batfish.grammar.iptables.IptablesCombinedParser;
+import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
@@ -130,6 +132,15 @@ public class ParseVendorConfigurationJob extends
          combinedParser = flatJuniperParser;
          extractor = new FlatJuniperControlPlaneExtractor(_fileText,
                flatJuniperParser, _warnings);
+         break;
+
+      case IPTABLES:
+         System.err.print("found iptables!\n");
+         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText,
+               _settings);
+         combinedParser = iptablesParser;
+         extractor = new IptablesControlPlaneExtractor(_fileText, iptablesParser,
+               _warnings);
          break;
 
       case MRV:

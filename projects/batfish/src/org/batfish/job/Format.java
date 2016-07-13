@@ -67,6 +67,9 @@ public final class Format {
       else if (ciscoLike.find() || firstChar == '!') {
          return ConfigurationFormat.CISCO;
       }
+      else if (fileText.contains("INPUT") && fileText.contains("OUTPUT") && fileText.contains("FORWARD")) {
+         return ConfigurationFormat.IPTABLES;
+      }
       return ConfigurationFormat.UNKNOWN;
    }
 
