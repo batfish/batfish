@@ -180,6 +180,7 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.PHYSICAL;
 
       case EMPTY:
+      case IPTABLES:
       case UNKNOWN:
       case VXWORKS:
       default:
