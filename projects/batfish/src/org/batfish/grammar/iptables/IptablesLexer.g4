@@ -41,6 +41,11 @@ ALL
 	'all'
 ;
 
+COMMIT
+:
+	'COMMIT'
+;
+
 DROP
 :
 	'DROP'
@@ -326,6 +331,26 @@ UDPLITE
 VARIABLE
 :
 	F_Variable_RequiredVarChar F_Variable_VarChar*
+;
+
+ASTERISK
+:
+	'*'
+;
+
+BRACKET_LEFT
+:
+	'['
+;
+
+BRACKET_RIGHT
+:
+	']'
+;
+
+COLON
+:
+	':'
 ;
 
 DASH

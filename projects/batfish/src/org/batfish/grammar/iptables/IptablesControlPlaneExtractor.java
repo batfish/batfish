@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
 import org.batfish.grammar.iptables.IptablesParser.Command_tailContext;
+import org.batfish.grammar.iptables.IptablesParser.Declaration_chain_policyContext;
+import org.batfish.grammar.iptables.IptablesParser.Declaration_tableContext;
 import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
 import org.batfish.main.Warnings;
@@ -23,8 +25,12 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    @SuppressWarnings("unused")
    private IptablesConfiguration _configuration;
 
+   private boolean _formatIptablesSave = false;
+
    private IptablesCombinedParser _parser;
 
+   private String _tableCurrent;
+   
    private String _text;
 
    private final Set<String> _unimplementedFeatures;
@@ -33,6 +39,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
 
    private Warnings _w;
 
+   
+   
    public IptablesControlPlaneExtractor(String fileText,
          IptablesCombinedParser iptablesParser, Warnings warnings) {
       _text = fileText;
@@ -50,10 +58,10 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    @Override
    public void exitCommand(CommandContext ctx) {
 
-      //filter is the default table
-      String table = "filter";
+      //default table if not specified in the command
+      String table = (_formatIptablesSave)? _tableCurrent : "filter";
       
-      if (ctx.table() == null) {
+      if (ctx.table() != null) {
          table = ctx.table().getText();
       }
       
@@ -101,7 +109,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       else if (tailCtx.command_policy() != null) {
          String chain = tailCtx.command_policy().chain().getText();
          String target = tailCtx.command_policy().target().getText();
-         _configuration.setPolicy(table, chain, target);
+         _configuration.setChainTarget(table, chain, target);
       }
       else if (tailCtx.command_rename_chain() != null) {
          todo(tailCtx.command_rename_chain(), "Command Rename Chain");         
@@ -115,6 +123,19 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       else {
          todo(tailCtx, "Unknown command");
       }
+   }
+   
+   @Override
+   public void exitDeclaration_chain_policy(Declaration_chain_policyContext ctx) {
+      String chain = ctx.chain().getText();
+      String target = ctx.target().getText();
+      _configuration.setChainTarget(_tableCurrent, chain, target);
+   }
+   
+   @Override
+   public void exitDeclaration_table(Declaration_tableContext ctx) {      
+      _formatIptablesSave = true;      
+      _tableCurrent = ctx.table().getText();      
    }
    
    private IptablesRule extractRule(Rule_specContext rule_spec) {

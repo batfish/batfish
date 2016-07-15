@@ -1,6 +1,7 @@
 package org.batfish.representation.iptables;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 public class IptablesConfiguration implements Serializable {
@@ -10,18 +11,27 @@ public class IptablesConfiguration implements Serializable {
     */
    private static final long serialVersionUID = 1L;
    
-   Map<String, Table> _tables;
+   Map<String, Table> _tables = new HashMap<String, Table>();
 
-   public void addRule(String table, String chain, IptablesRule rule, int i) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public void addRule(String tableName, String chainName, IptablesRule rule, int index) {
+      addTable(tableName);
+      _tables.get(tableName).addRule(chainName, rule, index);
    }
 
-   public void addChain(String table, String chain) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public void addTable(String tableName) {
+      if (!_tables.containsKey(tableName)) {
+         _tables.put(tableName, new Table(tableName));
+      }
+   }
+   
+   public void addChain(String tableName, String chainName) {
+      addTable(tableName);
+      _tables.get(tableName).addChain(chainName);
    }
 
-   public void setPolicy(String table, String chain, String target) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   public void setChainTarget(String tableName, String chainName, String target) {
+      addTable(tableName);
+      _tables.get(tableName).setChainTarget(chainName, target);
    }
    
 }

@@ -11,7 +11,14 @@ package org.batfish.grammar.iptables;
 
 iptables_configuration
 :
-   command+
+	command+
+	| 
+	(
+		declaration_table
+		declaration_chain_policy
+		command+
+		COMMIT NEWLINE
+	)
 ;
 
 action
@@ -30,6 +37,16 @@ chain
 	| custom_chain = VARIABLE
 ;
 
+declaration_chain_policy
+:
+	COLON chain target BRACKET_LEFT DEC COLON DEC BRACKET_RIGHT NEWLINE
+;
+
+declaration_table
+:
+	ASTERISK table NEWLINE
+;
+
 table
 :
 	TABLE_FILTER
@@ -45,6 +62,7 @@ command
 	IPTABLES?
 	(FLAG_TABLE table)?   
 	command_tail
+	NEWLINE
 ;
 
 command_append
