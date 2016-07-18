@@ -515,7 +515,7 @@ F_PositiveDigit
 fragment
 F_Variable_RequiredVarChar
 :
-   ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"']
+   ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"'*:]
 ;
 
 fragment
