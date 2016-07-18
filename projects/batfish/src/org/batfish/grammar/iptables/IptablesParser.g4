@@ -39,7 +39,7 @@ chain
 
 declaration_chain_policy
 :
-	COLON chain target BRACKET_LEFT DEC COLON DEC BRACKET_RIGHT NEWLINE
+	COLON chain target ~NEWLINE+ NEWLINE
 ;
 
 declaration_table

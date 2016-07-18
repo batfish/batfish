@@ -450,6 +450,7 @@ NEWLINE
    F_NewlineChar+
    {
       enableIPV6_ADDRESS = true;
+      enableIP_ADDRESS = true;
    }
 ;
 
