@@ -27,6 +27,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
 
    private boolean _formatIptablesSave = false;
 
+   private String _fileName;
+   
    private IptablesCombinedParser _parser;
 
    private String _tableCurrent;
@@ -42,17 +44,19 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    
    
    public IptablesControlPlaneExtractor(String fileText,
-         IptablesCombinedParser iptablesParser, Warnings warnings) {
+         IptablesCombinedParser iptablesParser, Warnings warnings, String fileName) {
       _text = fileText;
       _parser = iptablesParser;
       _w = warnings;
       _unimplementedFeatures = new TreeSet<String>();
+      _fileName = fileName;
    }
 
    @Override
    public void enterIptables_configuration(Iptables_configurationContext ctx) {
       _vendorConfiguration = new IptablesVendorConfiguration();
       _configuration = _vendorConfiguration;
+      _vendorConfiguration.setHostname(_fileName);
    }
 
    @Override

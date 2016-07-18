@@ -1,9 +1,15 @@
 package org.batfish.representation.iptables;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class IptablesChain {
+public class IptablesChain implements Serializable {
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
    private String _name;
    

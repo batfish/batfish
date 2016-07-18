@@ -15,8 +15,8 @@ iptables_configuration
 	| 
 	(
 		declaration_table
-		declaration_chain_policy
-		command+
+		declaration_chain_policy+
+		command*
 		COMMIT NEWLINE
 	)
 ;

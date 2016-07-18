@@ -17,53 +17,47 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
     */
    private static final long serialVersionUID = 1L;
 
+   private transient Set<String> _unimplementedFeatures;
+
+   private ConfigurationFormat _vendor;
+
+   private String _hostname;
+
+   private transient Warnings _w;
+
    @Override
    public String getHostname() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      return _hostname;
    }
 
    @Override
    public RoleSet getRoles() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      return _roles;
    }
 
    @Override
    public Set<String> getUnimplementedFeatures() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      return _unimplementedFeatures;
    }
 
    @Override
    public Warnings getWarnings() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      return _w;
    }
 
    @Override
    public void setHostname(String hostname) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      _hostname = hostname;
    }
 
    @Override
    public void setRoles(RoleSet roles) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      _roles.addAll(roles);
    }
 
    @Override
    public void setVendor(ConfigurationFormat format) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      _vendor = format;
    }
 
    @Override

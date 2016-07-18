@@ -328,11 +328,6 @@ UDPLITE
 
 // Other tokens
 
-VARIABLE
-:
-	F_Variable_RequiredVarChar F_Variable_VarChar*
-;
-
 ASTERISK
 :
 	'*'
@@ -361,6 +356,8 @@ DASH
 DEC
 :
    F_Digit
+   {enableDEC}?
+
    F_Digit*
 ;
 
@@ -440,6 +437,14 @@ IPV6_PREFIX
    )? '/' F_DecByte
 ;
 
+LINE_COMMENT
+:
+   '#' F_NonNewlineChar* F_NewlineChar+
+   {enableIPV6_ADDRESS = true;}
+
+   -> channel ( HIDDEN )
+;
+
 NEWLINE
 :
    F_NewlineChar+
@@ -456,6 +461,11 @@ NOT
 WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+VARIABLE
+:
+	F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
 
 fragment
@@ -488,6 +498,12 @@ fragment
 F_NewlineChar
 :
    [\r\n]
+;
+
+fragment
+F_NonNewlineChar
+:
+   ~[\r\n]
 ;
 
 fragment

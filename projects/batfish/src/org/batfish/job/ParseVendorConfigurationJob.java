@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -140,7 +141,7 @@ public class ParseVendorConfigurationJob extends
                _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText, iptablesParser,
-               _warnings);
+               _warnings, _file.getFileName().toString());
          break;
 
       case MRV:

@@ -1,15 +1,21 @@
 package org.batfish.representation.iptables;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Table {
+public class IptablesTable implements Serializable {
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
    private String _name;
    
 	private Map<String, IptablesChain> _chains;
 	
-	public Table(String name) {
+	public IptablesTable(String name) {
 	   _name = name;
 	   _chains = new HashMap<String, IptablesChain>();
 	}

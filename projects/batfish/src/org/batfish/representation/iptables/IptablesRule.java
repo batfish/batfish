@@ -1,5 +1,12 @@
 package org.batfish.representation.iptables;
 
-public class IptablesRule {
+import java.io.Serializable;
+
+public class IptablesRule implements Serializable {
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
 }
