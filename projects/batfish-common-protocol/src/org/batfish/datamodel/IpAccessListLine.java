@@ -6,28 +6,10 @@ public final class IpAccessListLine extends HeaderSpace {
 
    private LineAction _action;
 
-   private HeaderSpace _headerSpace;
-
-   public HeaderSpace getHeaderSpace() {
-      return _headerSpace;
-   }
-
-   public void setHeaderSpace(HeaderSpace headerSpace) {
-      _headerSpace = headerSpace;
-   }
-
    private String _name;
-
-   public IpAccessListLine() {
-      _headerSpace = new HeaderSpace();
-   }
 
    public LineAction getAction() {
       return _action;
-   }
-
-   public void setName(String name) {
-      _name = name;
    }
 
    public String getName() {
@@ -38,8 +20,12 @@ public final class IpAccessListLine extends HeaderSpace {
       _action = action;
    }
 
+   public void setName(String name) {
+      _name = name;
+   }
+
    @Override
    public String toString() {
-      return "[Action:" + _action + ", Base: " + _headerSpace.toString() + "]";
+      return "[Action:" + _action + ", Base: " + super.toString() + "]";
    }
 }
