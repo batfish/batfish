@@ -7,24 +7,31 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
 import org.batfish.grammar.iptables.IptablesParser.Command_tailContext;
 import org.batfish.grammar.iptables.IptablesParser.Declaration_chain_policyContext;
 import org.batfish.grammar.iptables.IptablesParser.Declaration_tableContext;
+import org.batfish.grammar.iptables.IptablesParser.EndpointContext;
 import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext;
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
+import org.batfish.grammar.iptables.IptablesParser.TargetContext;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesConfiguration;
+import org.batfish.representation.iptables.IptablesMatch.MatchType;
 import org.batfish.representation.iptables.IptablesRule;
+import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 
 public class IptablesControlPlaneExtractor extends IptablesParserBaseListener implements
       ControlPlaneExtractor {
 
-   @SuppressWarnings("unused")
    private IptablesConfiguration _configuration;
 
    private boolean _formatIptablesSave = false;
@@ -151,16 +158,79 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       
       for (MatchContext mCtx : matches) {
          
+         boolean inverted = (mCtx.NOT() != null);
+         
          if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
             todo(mCtx, "ipv4 (--4) and ipv6 (--6) options");
          }
          else if (mCtx.OPTION_DESTINATION() != null) {
-            rule.setDstIpWildcards(dstIpWildcards);
+            rule.addMatch(inverted, MatchType.Destination, getEndpoint(mCtx.endpoint()));
          }
-         
+         else if (mCtx.OPTION_DESTINATION_PORT() != null) {
+            rule.addMatch(inverted, MatchType.DestinationPort, toInteger(mCtx.port));
+         }
+         else if (mCtx.OPTION_IN_INTERFACE() != null) {
+            rule.addMatch(inverted, MatchType.InInterface, mCtx.interface_name.getText());
+         }
+         else if (mCtx.OPTION_OUT_INTERFACE() != null) {
+            rule.addMatch(inverted, MatchType.OutInterface, mCtx.interface_name.getText());
+         }
+         else if (mCtx.OPTION_SOURCE() != null) {
+            rule.addMatch(inverted, MatchType.Source, getEndpoint(mCtx.endpoint()));
+         }
+         else if (mCtx.OPTION_SOURCE_PORT() != null) {
+            rule.addMatch(inverted, MatchType.SourcePort, toInteger(mCtx.port));
+         }
+         else {
+            todo(mCtx, "Unknown match option");            
+         }
+      }
+      
+      if (ctx.action().OPTION_JUMP() != null) {
+         TargetContext target = ctx.action().target();
+         if (target.ACCEPT() != null) {
+            rule.setAction(IptablesActionType.Accept, null);            
+         }
+         else if (target.DROP() != null) {
+            rule.setAction(IptablesActionType.Drop, null);
+         }
+         else if (target.RETURN() != null) {
+            rule.setAction(IptablesActionType.Return, null);
+         }
+         else if (target.chain() != null) {
+            rule.setAction(IptablesActionType.Chain, target.chain().getText());
+         }
+      }
+      else if (ctx.action().OPTION_GOTO() != null) {
+         rule.setAction(IptablesActionType.Goto, ctx.action().chain().getText());
+      }
+      else {
+         todo(ctx, "Unknown rule action");            
       }
       
       return rule;
+   }
+
+   private Object getEndpoint(EndpointContext endpoint) {
+      if (endpoint.IP_ADDRESS() != null) {
+         return new Ip(endpoint.IP_ADDRESS().getText());
+      }
+      else if (endpoint.IP_PREFIX() != null) {
+         return new Prefix(endpoint.IP_PREFIX().getText());
+      }
+      else if (endpoint.IPV6_ADDRESS() != null) {
+         return new Ip6(endpoint.IPV6_ADDRESS().getText());
+      }
+      else if (endpoint.IPV6_PREFIX() != null) {
+         return new Prefix6(endpoint.IPV6_PREFIX().getText());
+      }
+      else if (endpoint.name != null) {
+         return endpoint.name.getText();
+      }
+      else {
+         todo(endpoint, "Unknown endpoint");
+      }
+      return null;
    }
 
    @Override

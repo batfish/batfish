@@ -175,7 +175,8 @@ match
 		| OPTION_IN_INTERFACE interface_name = VARIABLE
 		| OPTION_OUT_INTERFACE interface_name = VARIABLE
 		| OPTION_PROTOCOL protocol
-		| OPTION_SOURCE endpoint		
+		| OPTION_SOURCE endpoint	
+		| OPTION_SOURCE_PORT port = DEC	
 	)
 	|
 	OPTION_MATCH match_module
