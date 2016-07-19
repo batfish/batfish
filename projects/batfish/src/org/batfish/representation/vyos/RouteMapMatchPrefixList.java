@@ -1,4 +1,4 @@
-package org.batfish.grammar.flatvyos;
+package org.batfish.representation.vyos;
 
 import java.util.Collections;
 
