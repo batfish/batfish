@@ -1,6 +1,7 @@
 package org.batfish.representation.vyos;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -23,6 +24,11 @@ import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -68,6 +74,8 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
          RouteMap routeMap = e.getValue();
          PolicyMap policyMap = toPolicyMap(routeMap);
          _c.getPolicyMaps().put(name, policyMap);
+         RoutingPolicy rp = toRoutingPolicy(routeMap);
+         _c.getRoutingPolicies().put(name, rp);
       }
    }
 
@@ -276,6 +284,37 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       return newList;
    }
 
+   private RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
+      String name = routeMap.getName();
+      RoutingPolicy routingPolicy = new RoutingPolicy(name);
+      List<Statement> statements = routingPolicy.getStatements();
+      for (Entry<Integer, RouteMapRule> e : routeMap.getRules().entrySet()) {
+         String ruleName = Integer.toString(e.getKey());
+         RouteMapRule rule = e.getValue();
+         If ifStatement = new If();
+         List<Statement> trueStatements = ifStatement.getTrueStatements();
+         ifStatement.setComment(ruleName);
+         Conjunction conj = new Conjunction();
+         for (RouteMapMatch match : rule.getMatches()) {
+            conj.getConjuncts().add(match.toBooleanExpr(this, _c, _w));
+         }
+         ifStatement.setGuard(conj.simplify());
+         switch (rule.getAction()) {
+         case ACCEPT:
+            trueStatements.add(Statements.ExitAccept.toStaticStatement());
+            break;
+         case REJECT:
+            trueStatements.add(Statements.ExitReject.toStaticStatement());
+            break;
+         default:
+            throw new BatfishException("Invalid action");
+         }
+         statements.add(ifStatement);
+      }
+      statements.add(Statements.ExitReject.toStaticStatement());
+      return routingPolicy;
+   }
+
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
@@ -290,6 +329,9 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
       convertRouteMaps();
       convertInterfaces();
       convertVpns();
+
+      // TODO: convert routing processes
+
       warnAndDisableUnreferencedVtiInterfaces();
 
       return _c;

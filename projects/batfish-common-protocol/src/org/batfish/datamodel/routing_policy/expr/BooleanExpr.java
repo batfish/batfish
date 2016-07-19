@@ -9,4 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 @JsonInclude(Include.NON_NULL)
 public interface BooleanExpr extends Serializable {
+
+   BooleanExpr simplify();
+
 }

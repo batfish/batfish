@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,9 +31,13 @@ public final class GeneratedRoute extends Route implements
 
    private Map<String, PolicyMap> _attributePolicies;
 
+   private RoutingPolicy _attributePolicy;
+
    private boolean _discard;
 
    private Set<PolicyMap> _generationPolicies;
+
+   private String _generationPolicy;
 
    private Integer _metric;
 
@@ -74,6 +80,10 @@ public final class GeneratedRoute extends Route implements
       return _attributePolicies;
    }
 
+   public RoutingPolicy getAttributePolicy() {
+      return _attributePolicy;
+   }
+
    @JsonProperty(DISCARD_VAR)
    public boolean getDiscard() {
       return _discard;
@@ -82,6 +92,10 @@ public final class GeneratedRoute extends Route implements
    @JsonProperty(GENERATION_POLICIES_VAR)
    public Set<PolicyMap> getGenerationPolicies() {
       return _generationPolicies;
+   }
+
+   public String getGenerationPolicy() {
+      return _generationPolicy;
    }
 
    @JsonProperty(METRIC_VAR)
@@ -120,6 +134,10 @@ public final class GeneratedRoute extends Route implements
       _attributePolicies = attributePolicies;
    }
 
+   public void setAttributePolicy(RoutingPolicy attributePolicy) {
+      _attributePolicy = attributePolicy;
+   }
+
    @JsonProperty(DISCARD_VAR)
    public void setDiscard(boolean discard) {
       _discard = discard;
@@ -128,6 +146,10 @@ public final class GeneratedRoute extends Route implements
    @JsonProperty(GENERATION_POLICIES_VAR)
    public void setGenerationPolicies(Set<PolicyMap> generationPolicies) {
       _generationPolicies = generationPolicies;
+   }
+
+   public void setGenerationPolicy(String generationPolicy) {
+      _generationPolicy = generationPolicy;
    }
 
    @JsonProperty(METRIC_VAR)

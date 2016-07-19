@@ -201,6 +201,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    private boolean _ebgpMultihop;
 
+   private String _exportPolicy;
+
    /**
     * The set of generated and/or aggregate routes to be potentially sent to
     * this peer before outbound policies are taken into account
@@ -214,6 +216,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * computation.
     */
    private String _group;
+
+   private String _importPolicy;
 
    /**
     * The set of policies applied to inbound routes. Each policy in this set is
@@ -356,6 +360,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return _ebgpMultihop;
    }
 
+   public String getExportPolicy() {
+      return _exportPolicy;
+   }
+
    /**
     * @return {@link #_generatedRoutes}
     */
@@ -370,6 +378,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(GROUP_VAR)
    public String getGroup() {
       return _group;
+   }
+
+   public String getImportPolicy() {
+      return _importPolicy;
    }
 
    /**
@@ -509,6 +521,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       _ebgpMultihop = ebgpMultihop;
    }
 
+   public void setExportPolicy(String originationPolicyName) {
+      _exportPolicy = originationPolicyName;
+   }
+
    @JsonProperty(GENERATED_ROUTES_VAR)
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
@@ -522,6 +538,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(GROUP_VAR)
    public void setGroup(String name) {
       _group = name;
+   }
+
+   public void setImportPolicy(String importPolicy) {
+      _importPolicy = importPolicy;
    }
 
    @JsonProperty(INBOUND_POLICY_MAPS_VAR)

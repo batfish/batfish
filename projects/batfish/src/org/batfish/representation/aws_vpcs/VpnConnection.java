@@ -41,6 +41,14 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -305,13 +313,25 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             Prefix outgoingPrefix = vpc.getCidrBlock();
             int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
             String originationPolicyName = vpnId + "_origination";
+            RoutingPolicy originationRoutingPolicy = new RoutingPolicy(
+                  originationPolicyName);
             PolicyMap originationPolicy = new PolicyMap(originationPolicyName);
             vpnGatewayCfgNode.getPolicyMaps().put(originationPolicyName,
                   originationPolicy);
+            vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName,
+                  originationRoutingPolicy);
             cgBgpNeighbor.getOriginationPolicies().add(originationPolicy);
+            cgBgpNeighbor.setExportPolicy(originationPolicyName);
             PolicyMapClause originationClause = new PolicyMapClause();
+            If originationIf = new If();
+            List<Statement> statements = originationRoutingPolicy
+                  .getStatements();
+            statements.add(originationIf);
+            statements.add(Statements.ExitReject.toStaticStatement());
             originationPolicy.getClauses().add(originationClause);
             originationClause.setAction(PolicyMapAction.PERMIT);
+            originationIf.getTrueStatements().add(
+                  Statements.ExitAccept.toStaticStatement());
             RouteFilterList originationRouteFilter = new RouteFilterList(
                   originationPolicyName);
             vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName,
@@ -322,6 +342,12 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             originationRouteFilter.addLine(matchOutgoingPrefix);
             PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
                   Collections.singleton(originationRouteFilter));
+            Conjunction conj = new Conjunction();
+            originationIf.setGuard(conj);
+            conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
+            conj.getConjuncts()
+                  .add(new MatchPrefixSet(new NamedPrefixSet(
+                        originationPolicyName)));
             originationClause.getMatchLines().add(matchLine);
             PolicyMapMatchProtocolLine matchStatic = new PolicyMapMatchProtocolLine(
                   RoutingProtocol.STATIC);

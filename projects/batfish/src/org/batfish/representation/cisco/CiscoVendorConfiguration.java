@@ -48,6 +48,8 @@ import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.PolicyMapSetMetricLine;
 import org.batfish.datamodel.PolicyMapSetType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -59,8 +61,17 @@ import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Warnings;
@@ -68,6 +79,12 @@ import org.batfish.representation.VendorConfiguration;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration
       implements VendorConfiguration {
+
+   private static final String BGP_AGGREGATE_NETWORKS_FILTER_NAME = "~BGP_AGGREGATE_NETWORKS_FILTER:~";
+
+   private static final String BGP_COMMON_EXPORT_POLICY_NAME = "~BGP_COMMON_EXPORT_POLICY~";
+
+   private static final String BGP_NETWORK_NETWORKS_FILTER_NAME = "~BGP_NETWORK_NETWORKS_FILTER~";
 
    private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -94,6 +111,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
    private static final String OSPF_EXPORT_CONNECTED_POLICY_NAME = "~OSPF_EXPORT_CONNECTED_POLICY~";
 
    private static final String OSPF_EXPORT_DEFAULT_POLICY_NAME = "~OSPF_EXPORT_DEFAULT_ROUTE_POLICY~";
+
+   private static final String OSPF_EXPORT_POLICY_NAME = "~OSPF_EXPORT_POLICY~";
 
    private static final String OSPF_EXPORT_STATIC_POLICY_NAME = "~OSPF_EXPORT_STATIC_POLICY~";
 
@@ -443,13 +462,26 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          // create generation policy for aggregate network
          String generationPolicyName = "~AGGREGATE_ROUTE_GEN:"
                + prefix.toString() + "~";
-         PolicyMap generationPolicy = makeRouteExportPolicy(c,
+         PolicyMap generationPolicyMap = makeRouteExportPolicy(c,
                generationPolicyName, filterName, prefix, prefixRange,
                prefixAction, null, null, PolicyMapAction.PERMIT);
+         RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
+               generationPolicyName);
+         If currentGeneratedRouteConditional = new If();
+         currentGeneratedRoutePolicy.getStatements().add(
+               currentGeneratedRouteConditional);
+         currentGeneratedRouteConditional.setGuard(new MatchPrefixSet(
+               new ExplicitPrefixSet(new PrefixSpace(Collections
+                     .singleton(new PrefixRange(prefix, prefixRange))))));
+         currentGeneratedRouteConditional.getTrueStatements().add(
+               Statements.ReturnTrue.toStaticStatement());
+         c.getRoutingPolicies().put(generationPolicyName,
+               currentGeneratedRoutePolicy);
          Set<PolicyMap> generationPolicies = new HashSet<PolicyMap>();
-         generationPolicies.add(generationPolicy);
+         generationPolicies.add(generationPolicyMap);
          GeneratedRoute gr = new GeneratedRoute(prefix,
                CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
+         gr.setGenerationPolicy(generationPolicyName);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
 
@@ -462,7 +494,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      "attribute-map of aggregate route: " + prefix.toString());
                PolicyMap attributePolicy = c.getPolicyMaps().get(
                      attributeMapName);
+               RoutingPolicy attributeRoutingPolicy = c.getRoutingPolicies()
+                     .get(attributeMapName);
                gr.getAttributePolicies().put(attributeMapName, attributePolicy);
+               gr.setAttributePolicy(attributeRoutingPolicy);
             }
             else {
                _w.redFlag(
@@ -472,18 +507,35 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
       }
 
+      /*
+       * Create common bgp export policy. This policy encompasses network
+       * statements, aggregate-address with/without summary-only, redistribution
+       * from other protocols, and default-origination
+       */
+      RoutingPolicy bgpCommonExportPolicy = new RoutingPolicy(
+            BGP_COMMON_EXPORT_POLICY_NAME);
+      c.getRoutingPolicies().put(BGP_COMMON_EXPORT_POLICY_NAME,
+            bgpCommonExportPolicy);
+      List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy
+            .getStatements();
+
       // create policy for denying suppressed summary-only networks
-      PolicyMap suppressSummaryOnly = null;
-      PolicyMap suppressSummaryOnlyDenyOnMatch = null;
+      PolicyMap suppressSummaryOnlyPolicyMap = null;
+      PolicyMap suppressSummaryOnlyDenyOnMatchPolicyMap = null;
       if (summaryOnlyNetworks.size() > 0) {
+         If suppressSummaryOnly = new If();
+         bgpCommonExportStatements.add(suppressSummaryOnly);
+         suppressSummaryOnly
+               .setComment("Suppress summarized of summary-only aggregate-address networks");
          String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
          String suppressSummaryOnlyDenyOnMatchName = "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~";
-         suppressSummaryOnly = new PolicyMap(suppressSummaryOnlyName);
-         suppressSummaryOnlyDenyOnMatch = new PolicyMap(
+         suppressSummaryOnlyPolicyMap = new PolicyMap(suppressSummaryOnlyName);
+         suppressSummaryOnlyDenyOnMatchPolicyMap = new PolicyMap(
                suppressSummaryOnlyDenyOnMatchName);
-         c.getPolicyMaps().put(suppressSummaryOnlyName, suppressSummaryOnly);
+         c.getPolicyMaps().put(suppressSummaryOnlyName,
+               suppressSummaryOnlyPolicyMap);
          c.getPolicyMaps().put(suppressSummaryOnlyDenyOnMatchName,
-               suppressSummaryOnlyDenyOnMatch);
+               suppressSummaryOnlyDenyOnMatchPolicyMap);
          String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
          RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
                matchSuppressedSummaryOnlyRoutesName);
@@ -498,35 +550,54 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
                Collections.singleton(matchSuppressedSummaryOnlyRoutes));
+         suppressSummaryOnly.setGuard(new MatchPrefixSet(new NamedPrefixSet(
+               matchSuppressedSummaryOnlyRoutesName)));
+         suppressSummaryOnly.getTrueStatements().add(
+               Statements.ReturnFalse.toStaticStatement());
          PolicyMapClause suppressSummaryOnlyClause = new PolicyMapClause();
          suppressSummaryOnlyClause.setAction(PolicyMapAction.PERMIT);
          suppressSummaryOnlyClause.getMatchLines().add(matchLine);
-         suppressSummaryOnly.getClauses().add(suppressSummaryOnlyClause);
+         suppressSummaryOnlyPolicyMap.getClauses().add(
+               suppressSummaryOnlyClause);
          PolicyMapClause suppressSummaryOnlyDenyOnMatchDenyClause = new PolicyMapClause();
          suppressSummaryOnlyDenyOnMatchDenyClause
                .setAction(PolicyMapAction.DENY);
          suppressSummaryOnlyDenyOnMatchDenyClause.getMatchLines()
                .add(matchLine);
-         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+         suppressSummaryOnlyDenyOnMatchPolicyMap.getClauses().add(
                suppressSummaryOnlyDenyOnMatchDenyClause);
          PolicyMapClause suppressSummaryOnlyDenyOnMatchPermitClause = new PolicyMapClause();
          suppressSummaryOnlyDenyOnMatchPermitClause
                .setAction(PolicyMapAction.PERMIT);
-         suppressSummaryOnlyDenyOnMatch.getClauses().add(
+         suppressSummaryOnlyDenyOnMatchPolicyMap.getClauses().add(
                suppressSummaryOnlyDenyOnMatchPermitClause);
       }
+
+      If preFilter = new If();
+      bgpCommonExportStatements.add(preFilter);
+      bgpCommonExportStatements.add(Statements.ReturnFalse.toStaticStatement());
+      Disjunction preFilterConditions = new Disjunction();
+      preFilter.setGuard(preFilterConditions);
+      preFilter.getTrueStatements().add(
+            Statements.ReturnTrue.toStaticStatement());
 
       // create redistribution origination policies
       PolicyMap redistributeStaticPolicyMap = null;
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
+         Conjunction exportStaticConditions = new Conjunction();
+         exportStaticConditions
+               .setComment("Redistribute static routes into BGP");
+         exportStaticConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.STATIC));
          String mapName = redistributeStaticPolicy.getMap();
          if (mapName != null) {
             RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
             if (redistributeStaticRouteMap != null) {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
+               exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
                redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
             }
             else {
@@ -541,6 +612,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   null, null, null, RoutingProtocol.STATIC,
                   PolicyMapAction.PERMIT);
          }
+         preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
       // cause ip peer groups to inherit unset fields from owning named peer
@@ -581,6 +653,64 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
          lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
       }
+
+      // create origination prefilter from listed advertised networks
+      RouteFilterList localFilter = new RouteFilterList(
+            BGP_NETWORK_NETWORKS_FILTER_NAME);
+      for (Prefix prefix : proc.getNetworks()) {
+         int prefixLen = prefix.getPrefixLength();
+         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
+               new SubRange(prefixLen, prefixLen));
+         localFilter.addLine(line);
+      }
+      c.getRouteFilterLists().put(localFilter.getName(), localFilter);
+
+      // add prefilter policy for explicitly advertised networks
+      Set<RouteFilterList> localRfLists = new LinkedHashSet<RouteFilterList>();
+      localRfLists.add(localFilter);
+      PolicyMapMatchRouteFilterListLine localRfLine = new PolicyMapMatchRouteFilterListLine(
+            localRfLists);
+      PolicyMapClause localAdvertisedNetworksClause = new PolicyMapClause();
+      localAdvertisedNetworksClause.setName("");
+      localAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
+      localAdvertisedNetworksClause.getMatchLines().add(localRfLine);
+      preFilterConditions.getDisjuncts().add(
+            new MatchPrefixSet(new NamedPrefixSet(
+                  BGP_NETWORK_NETWORKS_FILTER_NAME)));
+
+      // create origination prefilter from listed aggregate advertiseed
+      // networks
+      RouteFilterList aggregateFilter = new RouteFilterList(
+            BGP_AGGREGATE_NETWORKS_FILTER_NAME);
+      for (Prefix prefix : proc.getAggregateNetworks().keySet()) {
+         int prefixLen = prefix.getPrefixLength();
+         RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
+               new SubRange(prefixLen, prefixLen));
+         aggregateFilter.addLine(line);
+      }
+      c.getRouteFilterLists().put(aggregateFilter.getName(), aggregateFilter);
+      preFilterConditions.getDisjuncts().add(
+            new MatchPrefixSet(new NamedPrefixSet(
+                  BGP_AGGREGATE_NETWORKS_FILTER_NAME)));
+
+      Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<RouteFilterList>();
+      aggregateRfLists.add(aggregateFilter);
+      PolicyMapMatchRouteFilterListLine aggregateRfLine = new PolicyMapMatchRouteFilterListLine(
+            aggregateRfLists);
+      PolicyMapClause aggregatedAdvertisedNetworksClause = new PolicyMapClause();
+      aggregatedAdvertisedNetworksClause.setName("");
+      aggregatedAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
+      aggregatedAdvertisedNetworksClause.getMatchLines().add(aggregateRfLine);
+      aggregatedAdvertisedNetworksClause.getMatchLines().add(
+            new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
+      PolicyMap explicitOriginationPolicyMap = new PolicyMap(
+            "~BGP_ADVERTISED_NETWORKS_POLICY~");
+      explicitOriginationPolicyMap.getClauses().add(
+            localAdvertisedNetworksClause);
+      explicitOriginationPolicyMap.getClauses().add(
+            aggregatedAdvertisedNetworksClause);
+      c.getPolicyMaps().put(explicitOriginationPolicyMap.getName(),
+            explicitOriginationPolicyMap);
 
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
@@ -623,10 +753,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                   + lpg.getName() + "'");
          }
          PolicyMap newInboundPolicyMap = null;
+         RoutingPolicy importPolicy = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
             newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
-            if (newInboundPolicyMap == null) {
+            importPolicy = c.getRoutingPolicies().get(inboundRouteMapName);
+            if (importPolicy == null) {
                String msg = "neighbor: '" + lpg.getName() + "': ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
@@ -643,6 +775,23 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          PolicyMap newOutboundPolicyMap = null;
+         String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:"
+               + lpg.getName() + "~";
+         RoutingPolicy peerExportPolicy = new RoutingPolicy(
+               peerExportPolicyName);
+         c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         If peerExportConditional = new If();
+         peerExportPolicy.getStatements().add(peerExportConditional);
+         Conjunction peerExportConditions = new Conjunction();
+         peerExportConditional.setGuard(peerExportConditions);
+         peerExportConditional.getTrueStatements().add(
+               Statements.ExitAccept.toStaticStatement());
+         peerExportConditional.getFalseStatements().add(
+               Statements.ExitReject.toStaticStatement());
+         Disjunction localOrCommonOrigination = new Disjunction();
+         peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+         localOrCommonOrigination.getDisjuncts().add(
+               new CallExpr(BGP_COMMON_EXPORT_POLICY_NAME));
          String outboundRouteMapName = lpg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
             PolicyMap outboundPolicyMap = c.getPolicyMaps().get(
@@ -663,8 +812,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                      .put(lpg,
                            "outbound route-map for leaf peer-group: "
                                  + lpg.getName());
+               peerExportConditions.getConjuncts().add(
+                     new CallExpr(outboundRouteMapName));
             }
-            if (suppressSummaryOnly == null) {
+            if (suppressSummaryOnlyPolicyMap == null) {
                newOutboundPolicyMap = outboundPolicyMap;
             }
             else {
@@ -674,7 +825,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
                PolicyMapClause denyClause = new PolicyMapClause();
                PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
-                     suppressSummaryOnly);
+                     suppressSummaryOnlyPolicyMap);
                denyClause.getMatchLines().add(matchSuppressPolicyLine);
                denyClause.setAction(PolicyMapAction.DENY);
                newOutboundPolicyMap.getClauses().add(denyClause);
@@ -687,63 +838,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else {
-            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatch;
+            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatchPolicyMap;
          }
 
          Set<PolicyMap> originationPolicies = new LinkedHashSet<PolicyMap>();
-         // create origination prefilter from listed advertised networks
-         RouteFilterList localFilter = new RouteFilterList("~BGP_PRE_FILTER:"
-               + lpg.getName() + "~");
-         for (Prefix prefix : proc.getNetworks()) {
-            int prefixLen = prefix.getPrefixLength();
-            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
-                  prefix, new SubRange(prefixLen, prefixLen));
-            localFilter.addLine(line);
-         }
-         c.getRouteFilterLists().put(localFilter.getName(), localFilter);
-
-         // add prefilter policy for explicitly advertised networks
-         Set<RouteFilterList> localRfLists = new LinkedHashSet<RouteFilterList>();
-         localRfLists.add(localFilter);
-         PolicyMapMatchRouteFilterListLine localRfLine = new PolicyMapMatchRouteFilterListLine(
-               localRfLists);
-         PolicyMapClause localAdvertisedNetworksClause = new PolicyMapClause();
-         localAdvertisedNetworksClause.setName("");
-         localAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
-         localAdvertisedNetworksClause.getMatchLines().add(localRfLine);
-
-         // create origination prefilter from listed aggregate advertiseed
-         // networks
-         RouteFilterList aggregateFilter = new RouteFilterList(
-               "~BGP_AGGREGATE_PRE_FILTER:" + lpg.getName() + "~");
-         for (Prefix prefix : proc.getAggregateNetworks().keySet()) {
-            int prefixLen = prefix.getPrefixLength();
-            RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
-                  prefix, new SubRange(prefixLen, prefixLen));
-            aggregateFilter.addLine(line);
-         }
-         c.getRouteFilterLists()
-               .put(aggregateFilter.getName(), aggregateFilter);
-
-         Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<RouteFilterList>();
-         aggregateRfLists.add(aggregateFilter);
-         PolicyMapMatchRouteFilterListLine aggregateRfLine = new PolicyMapMatchRouteFilterListLine(
-               aggregateRfLists);
-         PolicyMapClause aggregatedAdvertisedNetworksClause = new PolicyMapClause();
-         aggregatedAdvertisedNetworksClause.setName("");
-         aggregatedAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
-         aggregatedAdvertisedNetworksClause.getMatchLines()
-               .add(aggregateRfLine);
-         aggregatedAdvertisedNetworksClause.getMatchLines().add(
-               new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
-         PolicyMap explicitOriginationPolicyMap = new PolicyMap(
-               "~BGP_ADVERTISED_NETWORKS_POLICY:" + lpg.getName() + "~");
-         explicitOriginationPolicyMap.getClauses().add(
-               localAdvertisedNetworksClause);
-         explicitOriginationPolicyMap.getClauses().add(
-               aggregatedAdvertisedNetworksClause);
-         c.getPolicyMaps().put(explicitOriginationPolicyMap.getName(),
-               explicitOriginationPolicyMap);
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
@@ -754,27 +852,35 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
 
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
-         PolicyMap defaultOriginationPolicy = null;
+         PolicyMap defaultOriginationPolicyMap = null;
          if (lpg.getDefaultOriginate()) {
+            MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
+                  new ExplicitPrefixSet(new PrefixSpace(
+                        Collections.singleton(new PrefixRange(Prefix.ZERO,
+                              new SubRange(0, 0))))));
+            localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
+            matchDefaultRoute.setComment("match default route");
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
-            defaultOriginationPolicy = makeRouteExportPolicy(
+            defaultOriginationPolicyMap = makeRouteExportPolicy(
                   c,
                   "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + lpg.getName()
                         + "~",
                   "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + lpg.getName() + "~",
                   Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
                   RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-            originationPolicies.add(defaultOriginationPolicy);
+            originationPolicies.add(defaultOriginationPolicyMap);
+
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
                                                    // generation policy
-               PolicyMap defaultRouteGenerationPolicy = c.getPolicyMaps().get(
-                     defaultOriginateMapName);
+               PolicyMap defaultRouteGenerationPolicyMap = c.getPolicyMaps()
+                     .get(defaultOriginateMapName);
+               RoutingPolicy defaultRouteGenerationPolicy = c
+                     .getRoutingPolicies().get(defaultOriginateMapName);
                if (defaultRouteGenerationPolicy == null) {
-                  _w.redFlag(
-                        "undefined reference to generated route policy map: "
-                              + defaultOriginateMapName, UNDEFINED);
+                  _w.redFlag("undefined reference to generated route policy: "
+                        + defaultOriginateMapName, UNDEFINED);
                }
                else {
                   RouteMap defaultRouteGenerationRouteMap = _routeMaps
@@ -783,9 +889,26 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                         lpg,
                         "default route generation policy for leaf peer-group: "
                               + lpg.getName());
+                  defaultRoute.setGenerationPolicy(defaultOriginateMapName);
                }
                defaultRoute.getGenerationPolicies().add(
+                     defaultRouteGenerationPolicyMap);
+            }
+            else {
+               String defaultRouteGenerationPolicyName = "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:"
+                     + lpg.getName() + "~";
+               RoutingPolicy defaultRouteGenerationPolicy = new RoutingPolicy(
+                     defaultRouteGenerationPolicyName);
+               If defaultRouteGenerationConditional = new If();
+               defaultRouteGenerationPolicy.getStatements().add(
+                     defaultRouteGenerationConditional);
+               defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
+               defaultRouteGenerationConditional.getTrueStatements().add(
+                     Statements.ReturnTrue.toStaticStatement());
+               c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
                      defaultRouteGenerationPolicy);
+               defaultRoute
+                     .setGenerationPolicy(defaultRouteGenerationPolicyName);
             }
          }
 
@@ -875,14 +998,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             if (newInboundPolicyMap != null) {
                newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
             }
+            if (importPolicy != null) {
+               newNeighbor.setImportPolicy(inboundRouteMapName);
+            }
             newNeighbor.setLocalAs(proc.getName());
             newNeighbor.setLocalIp(updateSource);
             newNeighbor.getOriginationPolicies().addAll(originationPolicies);
+            newNeighbor.setExportPolicy(peerExportPolicyName);
             if (newOutboundPolicyMap != null) {
                newNeighbor.getOutboundPolicyMaps().add(newOutboundPolicyMap);
-               if (defaultOriginationPolicy != null) {
+               if (defaultOriginationPolicyMap != null) {
                   newNeighbor.getOutboundPolicyMaps().add(
-                        defaultOriginationPolicy);
+                        defaultOriginationPolicyMap);
                }
             }
             newNeighbor.setRemoteAs(lpg.getRemoteAs());
@@ -1398,18 +1525,40 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          }
       }
 
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(
+            OSPF_EXPORT_POLICY_NAME);
+      c.getRoutingPolicies().put(OSPF_EXPORT_POLICY_NAME, ospfExportPolicy);
+      List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
+      newProcess.setExportPolicy(OSPF_EXPORT_POLICY_NAME);
+
       // policy map for default information
       if (proc.getDefaultInformationOriginate()) {
+         If ospfExportDefault = new If();
+         ospfExportStatements.add(ospfExportDefault);
+         ospfExportDefault.setComment("OSPF export default route");
+         Conjunction ospfExportDefaultConditions = new Conjunction();
+         List<Statement> ospfExportDefaultStatements = ospfExportDefault
+               .getTrueStatements();
+         ospfExportDefaultConditions.getConjuncts().add(
+               new MatchPrefixSet(new ExplicitPrefixSet(new PrefixSpace(
+                     Collections.singleton(new PrefixRange(Prefix.ZERO,
+                           new SubRange(0, 0)))))));
          SubRange defaultPrefixRange = new SubRange(0, 0);
          int metric = proc.getDefaultInformationMetric();
+         ospfExportDefaultStatements.add(new SetMetric(metric));
          OspfMetricType metricType = proc.getDefaultInformationMetricType();
+         ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
          // add default export map with metric
          PolicyMap exportDefaultPolicy;
          String mapName = proc.getDefaultInformationOriginateMap();
          Set<PolicyMap> generationPolicies = new LinkedHashSet<PolicyMap>();
+         boolean useAggregateDefaultOnly;
          if (mapName != null) {
+            useAggregateDefaultOnly = true;
             PolicyMap generationPolicy = c.getPolicyMaps().get(mapName);
-            if (generationPolicy == null) {
+            RoutingPolicy ospfDefaultGenerationPolicy = c.getRoutingPolicies()
+                  .get(mapName);
+            if (ospfDefaultGenerationPolicy == null) {
                _w.redFlag("undefined reference to generation policy map: "
                      + mapName, UNDEFINED);
             }
@@ -1428,10 +1577,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
                      MAX_ADMINISTRATIVE_COST, generationPolicies);
+               route.setGenerationPolicy(mapName);
                newProcess.getGeneratedRoutes().add(route);
             }
          }
          else if (proc.getDefaultInformationOriginateAlways()) {
+            useAggregateDefaultOnly = true;
             // add generated aggregate with no precondition
             exportDefaultPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
@@ -1449,6 +1600,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          else {
             // do not generate an aggregate default route;
             // just redistribute any existing default route with the new metric
+            useAggregateDefaultOnly = false;
             exportDefaultPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
                   Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
@@ -1459,15 +1611,32 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newProcess.getPolicyMetricTypes().put(
                   exportDefaultPolicy.getName(), metricType);
          }
+         if (useAggregateDefaultOnly) {
+            ospfExportDefaultConditions.getConjuncts().add(
+                  new MatchProtocol(RoutingProtocol.AGGREGATE));
+         }
+         ospfExportDefaultStatements.add(Statements.ExitAccept
+               .toStaticStatement());
+         ospfExportDefault.setGuard(ospfExportDefaultConditions);
       }
 
-      // policy map for redistributing connected routes
+      // policy for redistributing connected routes
       // TODO: honor subnets option
       OspfRedistributionPolicy rcp = proc.getRedistributionPolicies().get(
             RoutingProtocol.CONNECTED);
       if (rcp != null) {
+         If ospfExportConnected = new If();
+         ospfExportStatements.add(ospfExportConnected);
+         ospfExportConnected.setComment("OSPF export connected routes");
+         Conjunction ospfExportConnectedConditions = new Conjunction();
+         ospfExportConnectedConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.CONNECTED));
+         List<Statement> ospfExportConnectedStatements = ospfExportConnected
+               .getTrueStatements();
+
          Integer metric = rcp.getMetric();
          OspfMetricType metricType = rcp.getMetricType();
+         ospfExportConnectedStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          if (!explicitMetric) {
@@ -1486,13 +1655,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
                exportConnectedRouteMap.getReferers().put(proc,
                      "ospf redistribute connected route-map");
+               ospfExportConnectedConditions.getConjuncts().add(
+                     new CallExpr(mapName));
                // crash if both an explicit metric is set and one exists in the
                // route map
                for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
                   for (PolicyMapSetLine line : clause.getSetLines()) {
                      if (line.getType() == PolicyMapSetType.METRIC) {
                         if (explicitMetric) {
-                           throw new Error(
+                           throw new BatfishException(
                                  "Explicit redistribution metric set while route map also contains set metric line");
                         }
                         else {
@@ -1509,6 +1680,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                if (!routeMapMetric) {
                   // use default metric if no explicit metric is set
                   setMetricLine = new PolicyMapSetMetricLine(metric);
+                  ospfExportConnectedStatements.add(new SetMetric(metric));
                }
                for (PolicyMapClause clause : exportConnectedPolicy.getClauses()) {
                   clause.getMatchLines().add(matchConnectedLine);
@@ -1522,6 +1694,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else {
+            ospfExportConnectedStatements.add(new SetMetric(metric));
             exportConnectedPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
                   metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
@@ -1531,6 +1704,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             c.getPolicyMaps().put(exportConnectedPolicy.getName(),
                   exportConnectedPolicy);
          }
+         ospfExportConnectedStatements.add(Statements.ExitAccept
+               .toStaticStatement());
+         ospfExportConnected.setGuard(ospfExportConnectedConditions);
       }
 
       // policy map for redistributing static routes
@@ -1538,8 +1714,22 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       OspfRedistributionPolicy rsp = proc.getRedistributionPolicies().get(
             RoutingProtocol.STATIC);
       if (rsp != null) {
+         If ospfExportStatic = new If();
+         ospfExportStatements.add(ospfExportStatic);
+         ospfExportStatic.setComment("OSPF export static routes");
+         Conjunction ospfExportStaticConditions = new Conjunction();
+         ospfExportStaticConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.STATIC));
+         List<Statement> ospfExportStaticStatements = ospfExportStatic
+               .getTrueStatements();
+         ospfExportStaticConditions.getConjuncts().add(
+               new Not(new MatchPrefixSet(new ExplicitPrefixSet(
+                     new PrefixSpace(Collections.singleton(new PrefixRange(
+                           Prefix.ZERO, new SubRange(0, 0))))))));
+
          Integer metric = rsp.getMetric();
          OspfMetricType metricType = rsp.getMetricType();
+         ospfExportStaticStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          if (!explicitMetric) {
@@ -1558,6 +1748,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
                exportStaticRouteMap.getReferers().put(proc,
                      "ospf redistribute static route-map");
+               ospfExportStaticConditions.getConjuncts().add(
+                     new CallExpr(mapName));
                // crash if both an explicit metric is set and one exists in the
                // route map
                for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
@@ -1579,6 +1771,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                if (!routeMapMetric) {
                   // use default metric if no explicit metric is set
                   setMetricLine = new PolicyMapSetMetricLine(metric);
+                  ospfExportStaticStatements.add(new SetMetric(metric));
                }
 
                PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
@@ -1614,6 +1807,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else { // export static routes without named policy
+            ospfExportStaticStatements.add(new SetMetric(metric));
             exportStaticPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_STATIC_POLICY_NAME,
                   OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
@@ -1623,16 +1817,32 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newProcess.getPolicyMetricTypes().put(exportStaticPolicy.getName(),
                   metricType);
          }
+         ospfExportStaticStatements.add(Statements.ExitAccept
+               .toStaticStatement());
+         ospfExportStatic.setGuard(ospfExportStaticConditions);
       }
 
       // policy map for redistributing bgp routes
-      // policy map for redistributing static routes
       // TODO: honor subnets option
       OspfRedistributionPolicy rbp = proc.getRedistributionPolicies().get(
             RoutingProtocol.BGP);
       if (rbp != null) {
+         If ospfExportBgp = new If();
+         ospfExportStatements.add(ospfExportBgp);
+         ospfExportBgp.setComment("OSPF export bgp routes");
+         Conjunction ospfExportBgpConditions = new Conjunction();
+         ospfExportBgpConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.BGP));
+         List<Statement> ospfExportBgpStatements = ospfExportBgp
+               .getTrueStatements();
+         ospfExportBgpConditions.getConjuncts().add(
+               new Not(new MatchPrefixSet(new ExplicitPrefixSet(
+                     new PrefixSpace(Collections.singleton(new PrefixRange(
+                           Prefix.ZERO, new SubRange(0, 0))))))));
+
          Integer metric = rbp.getMetric();
          OspfMetricType metricType = rbp.getMetricType();
+         ospfExportBgpStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
          boolean routeMapMetric = false;
          if (!explicitMetric) {
@@ -1651,6 +1861,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
                exportBgpRouteMap.getReferers().put(proc,
                      "ospf redistribute bgp route-map");
+               ospfExportBgpConditions.getConjuncts()
+                     .add(new CallExpr(mapName));
                // crash if both an explicit metric is set and one exists in the
                // route map
                for (PolicyMapClause clause : exportBgpPolicy.getClauses()) {
@@ -1672,6 +1884,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
                if (!routeMapMetric) {
                   // use default metric if no explicit metric is set
                   setMetricLine = new PolicyMapSetMetricLine(metric);
+                  ospfExportBgpStatements.add(new SetMetric(metric));
                }
 
                PolicyMapMatchLine matchBgpLine = new PolicyMapMatchProtocolLine(
@@ -1707,6 +1920,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             }
          }
          else { // export bgp routes without named policy
+            ospfExportBgpStatements.add(new SetMetric(metric));
             exportBgpPolicy = makeRouteExportPolicy(c,
                   OSPF_EXPORT_BGP_POLICY_NAME,
                   OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME,
@@ -1716,6 +1930,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             newProcess.getPolicyMetricTypes().put(exportBgpPolicy.getName(),
                   metricType);
          }
+         ospfExportBgpStatements.add(Statements.ExitAccept.toStaticStatement());
+         ospfExportBgp.setGuard(ospfExportBgpConditions);
       }
 
       newProcess.setReferenceBandwidth(proc.getReferenceBandwidth());
@@ -1977,7 +2193,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
             conj.getConjuncts().add(matchExpr);
          }
          If ifExpr = new If();
-         ifExpr.setGuard(conj.simplify());
+         ifExpr.setGuard(conj);
          List<Statement> matchStatements = ifExpr.getTrueStatements();
          for (RouteMapSetLine rmSet : rmClause.getSetList()) {
             rmSet.applyTo(matchStatements, this, c, _w);
@@ -2194,6 +2410,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       warnUnusedPrefixLists();
       warnUnusedIpAsPathAccessLists();
       warnUnusedCommunityLists();
+      c.simplifyRoutingPolicies();
       return c;
    }
 

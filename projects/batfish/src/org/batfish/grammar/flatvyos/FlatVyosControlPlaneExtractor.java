@@ -33,6 +33,7 @@ import org.batfish.representation.vyos.PrefixList;
 import org.batfish.representation.vyos.PrefixListRule;
 import org.batfish.representation.vyos.RouteMap;
 import org.batfish.representation.vyos.RouteMapMatch;
+import org.batfish.representation.vyos.RouteMapMatchPrefixList;
 import org.batfish.representation.vyos.RouteMapRule;
 import org.batfish.representation.vyos.StaticNextHopRoute;
 import org.batfish.representation.vyos.VyosConfiguration;

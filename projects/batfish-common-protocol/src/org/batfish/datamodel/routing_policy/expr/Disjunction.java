@@ -24,15 +24,39 @@ public class Disjunction extends AbstractBooleanExpr {
       _disjuncts = disjuncts;
    }
 
+   @Override
    public BooleanExpr simplify() {
-      if (_disjuncts.isEmpty()) {
+      List<BooleanExpr> simpleDisjuncts = new ArrayList<BooleanExpr>();
+      boolean atLeastOneTrue = false;
+      boolean atLeastOneComplex = false;
+      for (BooleanExpr disjunct : _disjuncts) {
+         BooleanExpr simpleDisjunct = disjunct.simplify();
+         if (simpleDisjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+            atLeastOneTrue = true;
+            if (!atLeastOneComplex) {
+               return BooleanExprs.True.toStaticBooleanExpr();
+            }
+            else if (!atLeastOneTrue) {
+               simpleDisjuncts.add(simpleDisjunct);
+            }
+         }
+         else if (!simpleDisjunct.equals(BooleanExprs.False
+               .toStaticBooleanExpr())) {
+            atLeastOneComplex = true;
+            simpleDisjuncts.add(simpleDisjunct);
+         }
+      }
+
+      if (simpleDisjuncts.isEmpty()) {
          return BooleanExprs.False.toStaticBooleanExpr();
       }
-      else if (_disjuncts.size() == 1) {
-         return _disjuncts.get(0);
+      else if (simpleDisjuncts.size() == 1) {
+         return simpleDisjuncts.get(0);
       }
       else {
-         return this;
+         Disjunction simple = new Disjunction();
+         simple.setDisjuncts(simpleDisjuncts);
+         return simple;
       }
    }
 

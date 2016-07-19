@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CallExpr implements BooleanExpr {
+public class CallExpr extends AbstractBooleanExpr {
 
    /**
     *

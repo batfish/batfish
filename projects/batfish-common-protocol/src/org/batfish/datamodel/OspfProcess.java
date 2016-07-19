@@ -25,6 +25,8 @@ public class OspfProcess implements Serializable {
 
    private Ip _routerId;
 
+   private String _exportPolicy;
+
    public OspfProcess() {
       _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
       _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
@@ -36,6 +38,10 @@ public class OspfProcess implements Serializable {
 
    public Map<Long, OspfArea> getAreas() {
       return _areas;
+   }
+
+   public String getExportPolicy() {
+      return _exportPolicy;
    }
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
@@ -61,6 +67,10 @@ public class OspfProcess implements Serializable {
 
    public void setAreas(Map<Long, OspfArea> areas) {
       _areas = areas;
+   }
+
+   public void setExportPolicy(String exportPolicy) {
+      _exportPolicy = exportPolicy;
    }
 
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {

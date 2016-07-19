@@ -17,4 +17,9 @@ public abstract class AbstractBooleanExpr implements BooleanExpr {
       _comment = comment;
    }
 
+   @Override
+   public BooleanExpr simplify() {
+      return this;
+   }
+
 }
