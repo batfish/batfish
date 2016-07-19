@@ -522,7 +522,7 @@ F_Variable_RequiredVarChar
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r;{}[\]&|()"']
+   ~[ \t\n\r;{}[\]&|()"'*:/,]
 ;
 
 fragment

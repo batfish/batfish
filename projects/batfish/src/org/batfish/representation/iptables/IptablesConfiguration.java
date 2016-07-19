@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 
 public class IptablesConfiguration implements Serializable {
 
@@ -37,8 +38,8 @@ public class IptablesConfiguration implements Serializable {
       _tables.get(tableName).addChain(chainName);
    }
 
-   public void setChainTarget(String tableName, String chainName, String target) {
+   public void setChainPolicy(String tableName, String chainName, ChainPolicy policy) {
       addTable(tableName);
-      _tables.get(tableName).setChainTarget(chainName, target);
+      _tables.get(tableName).setChainPolicy(chainName, policy);
    }   
 }

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
+
 public class IptablesTable implements Serializable {
 
    /**
@@ -31,8 +33,12 @@ public class IptablesTable implements Serializable {
       _chains.get(chainName).addRule(rule, index);
    }
 
-   public void setChainTarget(String chainName, String target) {
+   public Map<String, IptablesChain> getChains() {
+      return _chains;
+   }
+   
+   public void setChainPolicy(String chainName, ChainPolicy policy) {
        addChain(chainName);
-      _chains.get(chainName).setTarget(target);
+      _chains.get(chainName).setPolicy(policy);
    }
 }

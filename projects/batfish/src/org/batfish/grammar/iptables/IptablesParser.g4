@@ -18,13 +18,17 @@ iptables_configuration
 		declaration_chain_policy+
 		command*
 		COMMIT NEWLINE
-	)
+	)+
 ;
 
 action
 :
-	OPTION_JUMP target //target_options?
-	| OPTION_GOTO chain
+	OPTION_JUMP 
+		( built_in_target 
+	  		| chain
+	  	)	//target_options?
+	| 
+	OPTION_GOTO chain
 ;
 
 chain
@@ -39,7 +43,7 @@ chain
 
 declaration_chain_policy
 :
-	COLON chain target ~NEWLINE+ NEWLINE
+	COLON chain built_in_target ~NEWLINE+ NEWLINE
 ;
 
 declaration_table
@@ -117,7 +121,7 @@ command_new_chain
 
 command_policy
 :
-	FLAG_POLICY chain target
+	FLAG_POLICY chain built_in_target
 ;
 
 command_rename_chain
@@ -223,10 +227,9 @@ rule_spec
 	action
 ;
 
-target 
+built_in_target 
 :
-	chain
-	| ACCEPT
+	ACCEPT
 	| DROP
 	| RETURN
 ;

@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
 import org.batfish.grammar.iptables.IptablesParser.Command_tailContext;
 import org.batfish.grammar.iptables.IptablesParser.Declaration_chain_policyContext;
@@ -20,9 +21,9 @@ import org.batfish.grammar.iptables.IptablesParser.EndpointContext;
 import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext;
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
-import org.batfish.grammar.iptables.IptablesParser.TargetContext;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
+import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.representation.iptables.IptablesConfiguration;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;
 import org.batfish.representation.iptables.IptablesRule;
@@ -121,8 +122,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       }
       else if (tailCtx.command_policy() != null) {
          String chain = tailCtx.command_policy().chain().getText();
-         String target = tailCtx.command_policy().target().getText();
-         _configuration.setChainTarget(table, chain, target);
+         ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy().built_in_target());
+         _configuration.setChainPolicy(table, chain, policy);
       }
       else if (tailCtx.command_rename_chain() != null) {
          todo(tailCtx.command_rename_chain(), "Command Rename Chain");         
@@ -141,8 +142,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    @Override
    public void exitDeclaration_chain_policy(Declaration_chain_policyContext ctx) {
       String chain = ctx.chain().getText();
-      String target = ctx.target().getText();
-      _configuration.setChainTarget(_tableCurrent, chain, target);
+      ChainPolicy policy = getBuiltInTarget(ctx.built_in_target());
+      _configuration.setChainPolicy(_tableCurrent, chain, policy);
    }
    
    @Override
@@ -187,18 +188,12 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       }
       
       if (ctx.action().OPTION_JUMP() != null) {
-         TargetContext target = ctx.action().target();
-         if (target.ACCEPT() != null) {
-            rule.setAction(IptablesActionType.Accept, null);            
+         if (ctx.action().built_in_target() != null) {
+            ChainPolicy policy = getBuiltInTarget(ctx.action().built_in_target());
+            rule.setAction(policy);            
          }
-         else if (target.DROP() != null) {
-            rule.setAction(IptablesActionType.Drop, null);
-         }
-         else if (target.RETURN() != null) {
-            rule.setAction(IptablesActionType.Return, null);
-         }
-         else if (target.chain() != null) {
-            rule.setAction(IptablesActionType.Chain, target.chain().getText());
+         else if (ctx.action().chain() != null) {
+            rule.setAction(IptablesActionType.Chain, ctx.action().chain().getText());
          }
       }
       else if (ctx.action().OPTION_GOTO() != null) {
@@ -209,6 +204,18 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       }
       
       return rule;
+   }
+
+   private ChainPolicy getBuiltInTarget(Built_in_targetContext ctx) {
+      if (ctx.ACCEPT() != null) 
+         return ChainPolicy.ACCEPT;
+      else if (ctx.DROP() != null)
+         return ChainPolicy.DROP;
+      else if (ctx.RETURN() != null)
+         return ChainPolicy.RETURN;
+      else 
+         todo(ctx, "Chain policy (built in target)");
+      return null;
    }
 
    private Object getEndpoint(EndpointContext endpoint) {
