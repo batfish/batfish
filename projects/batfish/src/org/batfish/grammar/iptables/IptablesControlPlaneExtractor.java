@@ -1,5 +1,6 @@
 package org.batfish.grammar.iptables;
 
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -12,6 +13,7 @@ import org.batfish.grammar.iptables.IptablesParser.Command_tailContext;
 import org.batfish.grammar.iptables.IptablesParser.Declaration_chain_policyContext;
 import org.batfish.grammar.iptables.IptablesParser.Declaration_tableContext;
 import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext;
+import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -142,8 +144,23 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       _tableCurrent = ctx.table().getText();      
    }
    
-   private IptablesRule extractRule(Rule_specContext rule_spec) {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+   private IptablesRule extractRule(Rule_specContext ctx) {
+      IptablesRule rule = new IptablesRule();
+      
+      List<MatchContext> matches = ctx.match_list;
+      
+      for (MatchContext mCtx : matches) {
+         
+         if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
+            todo(mCtx, "ipv4 (--4) and ipv6 (--6) options");
+         }
+         else if (mCtx.OPTION_DESTINATION() != null) {
+            rule.setDstIpWildcards(dstIpWildcards);
+         }
+         
+      }
+      
+      return rule;
    }
 
    @Override

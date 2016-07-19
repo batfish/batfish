@@ -184,7 +184,12 @@ match
 //this is where rich module-based matching goes; not supported yet
 match_module 
 :
+	match_module_tcp
+;
 
+match_module_tcp
+:
+	TCP 
 ;
 
 //this is where options for flush, list, zero commands go
