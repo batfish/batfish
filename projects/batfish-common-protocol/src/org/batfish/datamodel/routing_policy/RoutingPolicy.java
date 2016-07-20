@@ -36,4 +36,14 @@ public class RoutingPolicy extends ComparableStructure<String> {
       _statements = statements;
    }
 
+   public RoutingPolicy simplify() {
+      List<Statement> simpleStatements = new ArrayList<Statement>();
+      for (Statement statement : _statements) {
+         simpleStatements.addAll(statement.simplify());
+      }
+      RoutingPolicy simple = new RoutingPolicy(_key);
+      simple.setStatements(simpleStatements);
+      return simple;
+   }
+
 }

@@ -7,8 +7,12 @@ import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
-import org.batfish.representation.vyos.RouteMapMatch;
+import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchPrefixList implements RouteMapMatch {
 
@@ -41,6 +45,22 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
 
    public String getPrefixList() {
       return _prefixList;
+   }
+
+   @Override
+   public BooleanExpr toBooleanExpr(VyosConfiguration vc, Configuration c,
+         Warnings w) {
+      PrefixList pl = vc.getPrefixLists().get(_prefixList);
+      if (pl != null) {
+         pl.getReferers().put(vc, "used in route-map match prefix-list");
+         return new MatchPrefixSet(new NamedPrefixSet(_prefixList));
+      }
+      else {
+         w.redFlag("Reference to undefined prefix-list: '" + _prefixList + "'",
+               VendorConfiguration.UNDEFINED);
+         // TODO: see if vyos treats as true, false, or disallows
+         return BooleanExprs.True.toStaticBooleanExpr();
+      }
    }
 
 }

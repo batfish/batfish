@@ -1,9 +1,11 @@
 package org.batfish.datamodel;
 
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.batfish.common.BfJson;
 import org.batfish.common.util.ComparableStructure;
@@ -480,6 +482,20 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(ZONES_VAR)
    public void setZones(NavigableMap<String, Zone> zones) {
       _zones = zones;
+   }
+
+   public void simplifyRoutingPolicies() {
+      NavigableMap<String, RoutingPolicy> simpleRoutingPolicies = new TreeMap<String, RoutingPolicy>();
+      simpleRoutingPolicies
+            .putAll(_routingPolicies
+                  .entrySet()
+                  .stream()
+                  .collect(
+                        Collectors
+                              .<Entry<String, RoutingPolicy>, String, RoutingPolicy> toMap(
+                                    e -> e.getKey(), e -> e.getValue()
+                                          .simplify())));
+      _routingPolicies = simpleRoutingPolicies;
    }
 
    public JSONObject toJson() throws JSONException {

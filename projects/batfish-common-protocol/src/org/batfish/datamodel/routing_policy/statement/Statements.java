@@ -32,10 +32,19 @@ public enum Statements {
          _type = type;
       }
 
+      @Override
+      public boolean equals(Object rhs) {
+         if (rhs instanceof StaticStatement) {
+            return _type.equals(((StaticStatement) rhs)._type);
+         }
+         return false;
+      }
+
       @JsonProperty(TYPE_VAR)
       public Statements getType() {
          return _type;
       }
+
    }
 
    public StaticStatement toStaticStatement() {

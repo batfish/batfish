@@ -24,10 +24,19 @@ public enum BooleanExprs {
          _type = type;
       }
 
+      @Override
+      public boolean equals(Object rhs) {
+         if (rhs instanceof StaticBooleanExpr) {
+            return _type.equals(((StaticBooleanExpr) rhs)._type);
+         }
+         return false;
+      }
+
       @JsonProperty(TYPE_VAR)
       public BooleanExprs getType() {
          return _type;
       }
+
    }
 
    public StaticBooleanExpr toStaticBooleanExpr() {
