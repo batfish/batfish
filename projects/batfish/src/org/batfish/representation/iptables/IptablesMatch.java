@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -16,9 +17,10 @@ public class IptablesMatch implements Serializable {
       DESTINATION,
       DESTINATION_PORT,
       IN_INTERFACE,
+      PROTOCOL,
       OUT_INTERFACE,
       SOURCE,
-      SOURCE_PORT,
+      SOURCE_PORT, 
    }
    
    /**
@@ -66,21 +68,36 @@ public class IptablesMatch implements Serializable {
          return new IpWildcard((Prefix) _matchData);
       }
       else {
-         throw new BatfishException("Unknown matchdata type");
+         throw new BatfishException("Unknown matchdata type: " + _matchData);
       }      
    }
 
    public List<SubRange> toPortRanges() {
       
-      List<SubRange> subRange = new LinkedList<SubRange>();
+      List<SubRange> subRanges = new LinkedList<SubRange>();
       
-      if (! _inverted) {
-         
+      int port = (int) _matchData;
+      
+      if (_inverted) {
+         if (port != 0) 
+            subRanges.add(new SubRange(0, port - 1));
+         if (port != 65535)
+            subRanges.add(new SubRange(port + 1, 65535));
       }
       else {
-         
+         subRanges.add(new SubRange(port, port));
       }
       
-      return subRange;
+      return subRanges;
+   }
+
+   public IpProtocol toIpProtocol() {
+      if (_inverted) {
+         //_warnings.redFlag("Inversion of protocol matching is not supported. Current analysis will match everything.");
+         //return IpWildcard.ANY;
+         throw new BatfishException("Unknown matchdata type");
+      }
+
+      return (IpProtocol) _matchData;
    }
 }

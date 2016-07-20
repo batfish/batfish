@@ -1,5 +1,6 @@
 package org.batfish.representation.iptables;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -11,12 +12,11 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.juniper.Family;
-import org.batfish.representation.juniper.FirewallFilter;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration implements
       VendorConfiguration {
@@ -102,7 +102,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
    }
 
    private IpAccessList toIpAccessList(String aclName, IptablesChain chain) {
-      IpAccessList acl = new IpAccessList(aclName);
+      IpAccessList acl = new IpAccessList(aclName, new LinkedList<IpAccessListLine>());
       
       for (IptablesRule rule : chain.getRules()) {
          IpAccessListLine aclLine = new IpAccessListLine();
@@ -119,9 +119,12 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
                List<SubRange> dstPortRanges = match.toPortRanges();
                aclLine.getDstPortRanges().addAll(dstPortRanges);
                break;
-            case IN_INTERFACE:
-            case OUT_INTERFACE:
-               _warnings.unimplemented("Matching on incoming and outgoing interface not supported");
+//            case IN_INTERFACE:
+//            case OUT_INTERFACE:
+//               _warnings.unimplemented("Matching on incoming and outgoing interface not supported");
+//               break;
+            case PROTOCOL:
+               aclLine.getProtocols().add(match.toIpProtocol());
                break;
             case SOURCE:
                IpWildcard srcWildCard = match.toIpWildcard();
@@ -132,13 +135,20 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
                aclLine.getSrcPortRanges().addAll(srcPortRanges);
                break;
             default:
-               throw new BatfishException("Unknown match type");
-            }
-            
+               throw new BatfishException("Unknown match type: " + match.getMatchType().toString());
+            }            
          }
          
+         aclLine.setAction(rule.getIpAccessListLineAction());
+         acl.getLines().add(aclLine);
       }
-         
+      
+      //add a final line corresponding to default chain policy
+      LineAction chainAction = chain.getIpAccessListLineAction();
+      IpAccessListLine defaultLine = new IpAccessListLine();
+      defaultLine.setAction(chainAction);
+      acl.getLines().add(defaultLine);      
+      
       return acl;
    }
 }

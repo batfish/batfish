@@ -8,9 +8,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
@@ -20,6 +19,7 @@ import org.batfish.grammar.iptables.IptablesParser.Declaration_tableContext;
 import org.batfish.grammar.iptables.IptablesParser.EndpointContext;
 import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext;
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
+import org.batfish.grammar.iptables.IptablesParser.ProtocolContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -171,10 +171,15 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
             rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
          }
          else if (mCtx.OPTION_IN_INTERFACE() != null) {
-            rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
+            //rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
+            todo(mCtx, "matching in input interface");
+         }
+         else if (mCtx.OPTION_PROTOCOL() != null) {
+            rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
          }
          else if (mCtx.OPTION_OUT_INTERFACE() != null) {
-            rule.addMatch(inverted, MatchType.OUT_INTERFACE, mCtx.interface_name.getText());
+            //rule.addMatch(inverted, MatchType.OUT_INTERFACE, mCtx.interface_name.getText());
+            todo(mCtx, "matching on outgoing interface");
          }
          else if (mCtx.OPTION_SOURCE() != null) {
             rule.addMatch(inverted, MatchType.SOURCE, getEndpoint(mCtx.endpoint()));
@@ -193,11 +198,11 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
             rule.setAction(policy);            
          }
          else if (ctx.action().chain() != null) {
-            rule.setAction(IptablesActionType.Chain, ctx.action().chain().getText());
+            rule.setAction(IptablesActionType.CHAIN, ctx.action().chain().getText());
          }
       }
       else if (ctx.action().OPTION_GOTO() != null) {
-         rule.setAction(IptablesActionType.Goto, ctx.action().chain().getText());
+         rule.setAction(IptablesActionType.GOTO, ctx.action().chain().getText());
       }
       else {
          todo(ctx, "Unknown rule action");            
@@ -259,13 +264,19 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       walker.walk(this, tree);
    }
 
-   @SuppressWarnings("unused")
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
+      _w.unimplemented("Iptables : " + feature);
       _unimplementedFeatures.add("Iptables: " + feature);
    }
 
    public static int toInteger(Token t) {
       return Integer.parseInt(t.getText());
    }
+   
+   private IpProtocol toProtocol(ProtocolContext protocol) {
+      return IpProtocol.fromString(protocol.getText());
+   }
+
+
 }

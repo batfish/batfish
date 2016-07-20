@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.LineAction;
+import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
+
 public class IptablesChain implements Serializable {
 
    public enum ChainPolicy {
@@ -55,4 +59,12 @@ public class IptablesChain implements Serializable {
    public void setPolicy(ChainPolicy policy) {
       _policy = policy;
    }
+
+   public LineAction getIpAccessListLineAction() {
+      if (_policy == ChainPolicy.ACCEPT)
+         return LineAction.ACCEPT;
+      else if (_policy == ChainPolicy.DROP)
+         return LineAction.REJECT;
+      else 
+         throw new BatfishException("Unsupported ChainPolicy for mapping to LineAction: " + _policy.toString());   }
 }

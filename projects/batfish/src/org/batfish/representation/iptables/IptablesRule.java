@@ -4,17 +4,19 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.LineAction;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;
 
 public class IptablesRule implements Serializable {
 
    public enum IptablesActionType {
-      Accept,
-      Chain,
-      Goto,
-      Drop,
-      Return
+      ACCEPT,
+      CHAIN,
+      GOTO,
+      DROP,
+      RETURN
    }
    
    /**
@@ -47,11 +49,11 @@ public class IptablesRule implements Serializable {
    public static IptablesActionType fromChainPolicyToActionType(ChainPolicy policy) {
       switch (policy) {
       case ACCEPT:
-           return IptablesActionType.Accept;
+           return IptablesActionType.ACCEPT;
       case DROP:
-         return IptablesActionType.Drop;
+         return IptablesActionType.DROP;
       case RETURN:
-          return IptablesActionType.Return;
+          return IptablesActionType.RETURN;
       }      
       return null;
    }
@@ -66,5 +68,14 @@ public class IptablesRule implements Serializable {
    
    public String getNextChain() {
       return _nextChain;
+   }
+
+   public LineAction getIpAccessListLineAction() {
+      if (_actionType == IptablesActionType.ACCEPT)
+         return LineAction.ACCEPT;
+      else if (_actionType == IptablesActionType.DROP)
+         return LineAction.REJECT;
+      else 
+         throw new BatfishException("Unsupported IptablesActionType for mapping to LineAction: " + _actionType.toString());
    }
 }

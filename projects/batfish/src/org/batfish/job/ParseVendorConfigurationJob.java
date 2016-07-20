@@ -136,7 +136,6 @@ public class ParseVendorConfigurationJob extends
          break;
 
       case IPTABLES:
-         System.err.print("found iptables!\n");
          IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText,
                _settings);
          combinedParser = iptablesParser;
