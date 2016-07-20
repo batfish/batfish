@@ -165,22 +165,22 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
             todo(mCtx, "ipv4 (--4) and ipv6 (--6) options");
          }
          else if (mCtx.OPTION_DESTINATION() != null) {
-            rule.addMatch(inverted, MatchType.Destination, getEndpoint(mCtx.endpoint()));
+            rule.addMatch(inverted, MatchType.DESTINATION, getEndpoint(mCtx.endpoint()));
          }
          else if (mCtx.OPTION_DESTINATION_PORT() != null) {
-            rule.addMatch(inverted, MatchType.DestinationPort, toInteger(mCtx.port));
+            rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
          }
          else if (mCtx.OPTION_IN_INTERFACE() != null) {
-            rule.addMatch(inverted, MatchType.InInterface, mCtx.interface_name.getText());
+            rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
          }
          else if (mCtx.OPTION_OUT_INTERFACE() != null) {
-            rule.addMatch(inverted, MatchType.OutInterface, mCtx.interface_name.getText());
+            rule.addMatch(inverted, MatchType.OUT_INTERFACE, mCtx.interface_name.getText());
          }
          else if (mCtx.OPTION_SOURCE() != null) {
-            rule.addMatch(inverted, MatchType.Source, getEndpoint(mCtx.endpoint()));
+            rule.addMatch(inverted, MatchType.SOURCE, getEndpoint(mCtx.endpoint()));
          }
          else if (mCtx.OPTION_SOURCE_PORT() != null) {
-            rule.addMatch(inverted, MatchType.SourcePort, toInteger(mCtx.port));
+            rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
          }
          else {
             todo(mCtx, "Unknown match option");            
@@ -226,13 +226,16 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
          return new Prefix(endpoint.IP_PREFIX().getText());
       }
       else if (endpoint.IPV6_ADDRESS() != null) {
-         return new Ip6(endpoint.IPV6_ADDRESS().getText());
+         //return new Ip6(endpoint.IPV6_ADDRESS().getText());
+         todo(endpoint, "IPV6 address as endpoint");
       }
       else if (endpoint.IPV6_PREFIX() != null) {
-         return new Prefix6(endpoint.IPV6_PREFIX().getText());
+         //return new Prefix6(endpoint.IPV6_PREFIX().getText());
+         todo(endpoint, "IPV6 prefix as endpoint");
       }
       else if (endpoint.name != null) {
-         return endpoint.name.getText();
+         //return endpoint.name.getText();
+         todo(endpoint, "hostname as endpoint");
       }
       else {
          todo(endpoint, "Unknown endpoint");
@@ -259,7 +262,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    @SuppressWarnings("unused")
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
-      _unimplementedFeatures.add("Cisco: " + feature);
+      _unimplementedFeatures.add("Iptables: " + feature);
    }
 
    public static int toInteger(Token t) {

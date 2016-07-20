@@ -1,13 +1,22 @@
 package org.batfish.representation.iptables;
 
+import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
+import org.batfish.representation.juniper.Family;
+import org.batfish.representation.juniper.FirewallFilter;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration implements
       VendorConfiguration {
@@ -17,14 +26,16 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
     */
    private static final long serialVersionUID = 1L;
 
+   private Configuration _c;
+
    private transient Set<String> _unimplementedFeatures;
 
    private ConfigurationFormat _vendor;
 
    private String _hostname;
-
-   private transient Warnings _w;
-
+   
+   private transient Warnings _warnings;
+   
    @Override
    public String getHostname() {
       return _hostname;
@@ -42,7 +53,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
 
    @Override
    public Warnings getWarnings() {
-      return _w;
+      return _warnings;
    }
 
    @Override
@@ -63,8 +74,71 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      _warnings = warnings;
+      String hostname = getHostname();
+      _c = new Configuration(hostname);
+      _c.setConfigurationFormat(_vendor);
+      _c.setRoles(_roles);
+
+      for (Entry<String, IptablesTable> e : _tables.entrySet()) {
+         String tableName = e.getKey();
+         IptablesTable table = e.getValue();
+         for (Entry<String,IptablesChain> ec : table.getChains().entrySet()) {
+            String chainName = ec.getKey();
+            IptablesChain chain = ec.getValue();
+            
+            String aclName = toIpAccessListName(tableName, chainName);            
+            IpAccessList list = toIpAccessList(aclName, chain);
+            
+            _c.getIpAccessLists().put(aclName, list);
+         }
+      }
+      
+      return _c;
+   }
+
+   private String toIpAccessListName(String tableName, String chainName) {
+      return tableName + "::" + chainName;
+   }
+
+   private IpAccessList toIpAccessList(String aclName, IptablesChain chain) {
+      IpAccessList acl = new IpAccessList(aclName);
+      
+      for (IptablesRule rule : chain.getRules()) {
+         IpAccessListLine aclLine = new IpAccessListLine();
+         
+         for (IptablesMatch match : rule.getMatchList()) {
+            
+            switch (match.getMatchType()) {
+            
+            case DESTINATION:
+               IpWildcard dstWildCard = match.toIpWildcard();
+               aclLine.getDstIpWildcards().add(dstWildCard);
+               break;
+            case DESTINATION_PORT:
+               List<SubRange> dstPortRanges = match.toPortRanges();
+               aclLine.getDstPortRanges().addAll(dstPortRanges);
+               break;
+            case IN_INTERFACE:
+            case OUT_INTERFACE:
+               _warnings.unimplemented("Matching on incoming and outgoing interface not supported");
+               break;
+            case SOURCE:
+               IpWildcard srcWildCard = match.toIpWildcard();
+               aclLine.getSrcIpWildcards().add(srcWildCard);
+               break;
+            case SOURCE_PORT:
+               List<SubRange> srcPortRanges = match.toPortRanges();
+               aclLine.getSrcPortRanges().addAll(srcPortRanges);
+               break;
+            default:
+               throw new BatfishException("Unknown match type");
+            }
+            
+         }
+         
+      }
+         
+      return acl;
    }
 }

@@ -17,7 +17,7 @@ public class IptablesConfiguration implements Serializable {
    Map<String, IptablesTable> _tables = new HashMap<String, IptablesTable>();
 
    protected final RoleSet _roles;
-
+   
    public IptablesConfiguration() {
       _roles = new RoleSet();
    }
