@@ -12,7 +12,8 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
 
 public final class PsFromPrefixListFilterOrLonger extends PsFrom {
@@ -90,7 +91,7 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
                c.getRouteFilterLists().put(orLongerListName, orLongerList);
             }
          }
-         return new MatchRouteFilter(orLongerListName);
+         return new MatchPrefixSet(new NamedPrefixSet(orLongerListName));
       }
       else {
          warnings.redFlag("Reference to undefined prefix-list: \""

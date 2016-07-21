@@ -49,7 +49,8 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -998,8 +999,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                               + "_ACTION_LINE_" + actionLineCounter;
                         lineSpecificIfStatement
                               .setComment(lineSpecificClauseName);
-                        MatchRouteFilter mrf = new MatchRouteFilter(
-                              lineListName);
+                        MatchPrefixSet mrf = new MatchPrefixSet(
+                              new NamedPrefixSet(lineListName));
                         lineSpecificIfStatement.setGuard(mrf);
                         lineSpecificIfStatement.getTrueStatements().addAll(
                               toStatements(line.getThens()));

@@ -9,7 +9,8 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchIpAccessList;
-import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
@@ -76,7 +77,7 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
                standardAccessList.getReferers().put(this, msg);
             }
             if (_routing) {
-               disjuncts.add(new MatchRouteFilter(listName));
+               disjuncts.add(new MatchPrefixSet(new NamedPrefixSet(listName)));
             }
             else {
                disjuncts.add(new MatchIpAccessList(listName));
