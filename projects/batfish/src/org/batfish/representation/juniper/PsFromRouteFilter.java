@@ -8,7 +8,8 @@ import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchRouteFilter;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
 
 public final class PsFromRouteFilter extends PsFrom {
@@ -43,7 +44,6 @@ public final class PsFromRouteFilter extends PsFrom {
    @Override
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchRouteFilter(_routeFilterName);
+      return new MatchPrefixSet(new NamedPrefixSet(_routeFilterName));
    }
-
 }

@@ -9,8 +9,8 @@ import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchPolicyConjunctionLine;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchRoutingPolicy;
 import org.batfish.main.Warnings;
 
 public final class PsFromPolicyStatementConjunction extends PsFrom {
@@ -59,8 +59,7 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
          Warnings warnings) {
       Conjunction conj = new Conjunction();
       conj.getConjuncts().addAll(
-            _conjuncts.stream()
-                  .map(conjunct -> new MatchRoutingPolicy(conjunct))
+            _conjuncts.stream().map(conjunct -> new CallExpr(conjunct))
                   .collect(Collectors.toList()));
       return conj;
    }
