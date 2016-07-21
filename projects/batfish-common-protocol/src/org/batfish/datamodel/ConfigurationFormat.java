@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 public enum ConfigurationFormat {
+   ALCATEL_AOS("alcatel_aos"),
    ARISTA("arista"),
    AWS_VPC("aws_vpc"),
    CISCO("cisco"),
@@ -11,6 +12,7 @@ public enum ConfigurationFormat {
    JUNIPER("juniper"),
    JUNIPER_SWITCH("juniper"),
    MRV("mrv"),
+   MSS("mss"),
    UNKNOWN("unknown"),
    VXWORKS("vxworks"),
    VYOS("vyos");

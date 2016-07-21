@@ -29,6 +29,10 @@ public final class Format {
             .matcher(fileText);
       Matcher ciscoLike = Pattern.compile(
             "(?m)(^boot system flash.*$)|(^interface .*$)").matcher(fileText);
+      Matcher alcatelAosMatcher = Pattern.compile("(?m)^system name").matcher(
+            fileText);
+      Matcher mssMatcher = Pattern.compile("(?m)^set system name").matcher(
+            fileText);
       if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
@@ -66,6 +70,12 @@ public final class Format {
       }
       else if (ciscoLike.find() || firstChar == '!') {
          return ConfigurationFormat.CISCO;
+      }
+      else if (alcatelAosMatcher.find()) {
+         return ConfigurationFormat.ALCATEL_AOS;
+      }
+      else if (mssMatcher.find()) {
+         return ConfigurationFormat.MSS;
       }
       return ConfigurationFormat.UNKNOWN;
    }
