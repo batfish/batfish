@@ -85,6 +85,8 @@ public class Interface extends ComparableStructure<String> {
 
    private Set<Prefix> _secondaryPrefixes;
 
+   private Prefix _standbyPrefix;
+
    private boolean _switchportAccessDynamic;
 
    private SwitchportMode _switchportMode;
@@ -180,6 +182,10 @@ public class Interface extends ComparableStructure<String> {
       return _secondaryPrefixes;
    }
 
+   public Prefix getStandbyPrefix() {
+      return _standbyPrefix;
+   }
+
    public boolean getSwitchportAccessDynamic() {
       return _switchportAccessDynamic;
    }
@@ -250,6 +256,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setRoutingPolicy(String routingPolicy) {
       _routingPolicy = routingPolicy;
+   }
+
+   public void setStandbyPrefix(Prefix standbyPrefix) {
+      _standbyPrefix = standbyPrefix;
    }
 
    public void setSwitchportAccessDynamic(boolean switchportAccessDynamic) {

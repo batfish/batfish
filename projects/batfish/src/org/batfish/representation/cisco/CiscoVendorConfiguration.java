@@ -417,6 +417,38 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       return containsRouteFilterList;
    }
 
+   private void processFailoverSettings() {
+      if (_failover) {
+         Interface commIface;
+         Prefix commPrefix;
+         Interface sigIface;
+         Prefix sigPrefix;
+         if (_failoverSecondary) {
+            commIface = _interfaces.get(_failoverCommunicationInterface);
+            commPrefix = _failoverStandbyPrefixes
+                  .get(_failoverCommunicationInterfaceAlias);
+            sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
+            sigPrefix = _failoverStandbyPrefixes
+                  .get(_failoverStatefulSignalingInterfaceAlias);
+            for (Interface iface : _interfaces.values()) {
+               iface.setPrefix(iface.getStandbyPrefix());
+            }
+         }
+         else {
+            commIface = _interfaces.get(_failoverCommunicationInterface);
+            commPrefix = _failoverPrimaryPrefixes
+                  .get(_failoverCommunicationInterfaceAlias);
+            sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
+            sigPrefix = _failoverPrimaryPrefixes
+                  .get(_failoverStatefulSignalingInterfaceAlias);
+         }
+         commIface.setPrefix(commPrefix);
+         commIface.setActive(true);
+         sigIface.setPrefix(sigPrefix);
+         sigIface.setActive(true);
+      }
+   }
+
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
@@ -2259,6 +2291,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+
+      processFailoverSettings();
 
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {

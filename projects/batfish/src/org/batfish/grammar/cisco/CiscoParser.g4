@@ -266,6 +266,42 @@ del_stanza
    DEL ~NEWLINE* NEWLINE
 ;
 
+failover_lan
+:
+   LAN failover_lan_tail
+;
+
+failover_lan_tail
+:
+   flan_interface
+   | flan_unit
+;
+
+failover_link
+:
+   LINK name = variable iface = interface_name NEWLINE
+;
+
+failover_interface
+:
+   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
+   = IP_ADDRESS smask = IP_ADDRESS NEWLINE
+;
+
+flan_interface
+:
+   INTERFACE name = variable iface = interface_name NEWLINE
+;
+
+flan_unit
+:
+   UNIT
+   (
+      PRIMARY
+      | SECONDARY
+   ) NEWLINE
+;
+
 hostname_stanza
 :
    (
@@ -448,6 +484,11 @@ multicast_routing_stanza
    )*
 ;
 
+no_failover
+:
+   NO FAILOVER NEWLINE
+;
+
 no_ip_access_list_stanza
 :
    NO IP ACCESS_LIST ~NEWLINE* NEWLINE
@@ -553,6 +594,7 @@ null_stanza
    | banner_stanza
    | certificate_stanza
    | del_stanza
+   | no_failover
    | no_ip_access_list_stanza
    | null_block_stanza
    | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
@@ -1039,6 +1081,19 @@ s_control_plane_tail
    | cp_service_policy
 ;
 
+s_failover
+:
+   FAILOVER s_failover_tail
+;
+
+s_failover_tail
+:
+   NEWLINE
+   | failover_lan
+   | failover_link
+   | failover_interface
+;
+
 s_ip
 :
    IP s_ip_tail
@@ -1167,6 +1222,7 @@ stanza
    | rsvp_stanza
    | s_class_map
    | s_control_plane
+   | s_failover
    | s_ip
    | s_line
    | s_management

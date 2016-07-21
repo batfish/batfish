@@ -3048,6 +3048,11 @@ LINECODE
    'linecode'
 ;
 
+LINK
+:
+   'link'
+;
+
 LINK_FAULT_SIGNALING
 :
    'link-fault-signaling'
@@ -4406,6 +4411,11 @@ PREPEND
 PRI_GROUP
 :
    'pri-group'
+;
+
+PRIMARY
+:
+   'primary'
 ;
 
 PRIMARY_PRIORITY
@@ -6003,6 +6013,11 @@ UNABLE
 UNICAST_ROUTING
 :
    'unicast-routing'
+;
+
+UNIT
+:
+   'unit'
 ;
 
 UNNUMBERED

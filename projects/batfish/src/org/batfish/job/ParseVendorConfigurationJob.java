@@ -140,8 +140,10 @@ public class ParseVendorConfigurationJob extends
                _warnings);
          break;
 
+      case ALCATEL_AOS:
       case AWS_VPC:
       case JUNIPER_SWITCH:
+      case MSS:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: \""
                + format.toString() + "\" for file: \"" + currentPath + "\"\n";

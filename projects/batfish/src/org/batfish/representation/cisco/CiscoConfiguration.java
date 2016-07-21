@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.datamodel.Prefix;
+
 public class CiscoConfiguration implements Serializable {
 
    public static final String MANAGEMENT_VRF_NAME = "management";
@@ -26,6 +28,24 @@ public class CiscoConfiguration implements Serializable {
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
+
+   protected boolean _failover;
+
+   protected String _failoverCommunicationInterface;
+
+   protected String _failoverCommunicationInterfaceAlias;
+
+   protected final Map<String, String> _failoverInterfaces;
+
+   protected final Map<String, Prefix> _failoverPrimaryPrefixes;
+
+   protected boolean _failoverSecondary;
+
+   protected final Map<String, Prefix> _failoverStandbyPrefixes;
+
+   protected String _failoverStatefulSignalingInterface;
+
+   protected String _failoverStatefulSignalingInterfaceAlias;
 
    protected String _hostname;
 
@@ -66,6 +86,9 @@ public class CiscoConfiguration implements Serializable {
       _controlPlaneAccessGroups = new TreeSet<String>();
       _expandedCommunityLists = new TreeMap<String, ExpandedCommunityList>();
       _extendedAccessLists = new TreeMap<String, ExtendedAccessList>();
+      _failoverInterfaces = new TreeMap<String, String>();
+      _failoverPrimaryPrefixes = new TreeMap<String, Prefix>();
+      _failoverStandbyPrefixes = new TreeMap<String, Prefix>();
       _interfaces = new TreeMap<String, Interface>();
       _lineAccessClassLists = new TreeSet<String>();
       _managementAccessGroups = new TreeSet<String>();
@@ -103,6 +126,42 @@ public class CiscoConfiguration implements Serializable {
 
    public final Map<String, ExtendedAccessList> getExtendedAcls() {
       return _extendedAccessLists;
+   }
+
+   public boolean getFailover() {
+      return _failover;
+   }
+
+   public String getFailoverCommunicationInterface() {
+      return _failoverCommunicationInterface;
+   }
+
+   public String getFailoverCommunicationInterfaceAlias() {
+      return _failoverCommunicationInterfaceAlias;
+   }
+
+   public Map<String, String> getFailoverInterfaces() {
+      return _failoverInterfaces;
+   }
+
+   public Map<String, Prefix> getFailoverPrimaryPrefixes() {
+      return _failoverPrimaryPrefixes;
+   }
+
+   public boolean getFailoverSecondary() {
+      return _failoverSecondary;
+   }
+
+   public Map<String, Prefix> getFailoverStandbyPrefixes() {
+      return _failoverStandbyPrefixes;
+   }
+
+   public String getFailoverStatefulSignalingInterface() {
+      return _failoverStatefulSignalingInterface;
+   }
+
+   public String getFailoverStatefulSignalingInterfaceAlias() {
+      return _failoverStatefulSignalingInterfaceAlias;
    }
 
    public final String getHostname() {
@@ -167,6 +226,34 @@ public class CiscoConfiguration implements Serializable {
 
    public final Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
+   }
+
+   public void setFailover(boolean failover) {
+      _failover = failover;
+   }
+
+   public void setFailoverCommunicationInterface(
+         String failoverCommunicationInterface) {
+      _failoverCommunicationInterface = failoverCommunicationInterface;
+   }
+
+   public void setFailoverCommunicationInterfaceAlias(
+         String failoverCommunicationInterfaceAlias) {
+      _failoverCommunicationInterfaceAlias = failoverCommunicationInterfaceAlias;
+   }
+
+   public void setFailoverSecondary(boolean failoverSecondary) {
+      _failoverSecondary = failoverSecondary;
+   }
+
+   public void setFailoverStatefulSignalingInterface(
+         String failoverStatefulSignalingInterface) {
+      _failoverStatefulSignalingInterface = failoverStatefulSignalingInterface;
+   }
+
+   public void setFailoverStatefulSignalingInterfaceAlias(
+         String failoverStatefulSignalingInterfaceAlias) {
+      _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
    }
 
    public final void setHostname(String hostname) {

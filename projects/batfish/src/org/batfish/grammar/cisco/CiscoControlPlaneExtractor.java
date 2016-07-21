@@ -1757,6 +1757,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitFailover_interface(Failover_interfaceContext ctx) {
+      String name = ctx.name.getText();
+      Ip primaryIp = toIp(ctx.pip);
+      Ip primaryMask = toIp(ctx.pmask);
+      Prefix primaryPrefix = new Prefix(primaryIp, primaryMask);
+      Ip standbyIp = toIp(ctx.sip);
+      Ip standbyMask = toIp(ctx.smask);
+      Prefix standbyPrefix = new Prefix(standbyIp, standbyMask);
+      _configuration.getFailoverPrimaryPrefixes().put(name, primaryPrefix);
+      _configuration.getFailoverStandbyPrefixes().put(name, standbyPrefix);
+   }
+
+   @Override
+   public void exitFailover_link(Failover_linkContext ctx) {
+      String alias = ctx.name.getText();
+      String ifaceName = ctx.iface.getText();
+      _configuration.getFailoverInterfaces().put(alias, ifaceName);
+      _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
+      _configuration.setFailoverStatefulSignalingInterface(ifaceName);
+   }
+
+   @Override
+   public void exitFlan_interface(Flan_interfaceContext ctx) {
+      String alias = ctx.name.getText();
+      String ifaceName = ctx.iface.getText();
+      _configuration.getFailoverInterfaces().put(alias, ifaceName);
+      _configuration.setFailoverCommunicationInterface(ifaceName);
+      _configuration.setFailoverCommunicationInterfaceAlias(alias);
+   }
+
+   @Override
+   public void exitFlan_unit(Flan_unitContext ctx) {
+      if (ctx.PRIMARY() != null) {
+         _configuration.setFailoverSecondary(false);
+      }
+      else if (ctx.SECONDARY() != null) {
+         _configuration.setFailoverSecondary(true);
+         _configuration.setHostname(_configuration.getHostname()
+               + "-FAILOVER-SECONDARY");
+      }
+      _configuration.setFailover(true);
+   }
+
+   @Override
    public void exitHostname_stanza(Hostname_stanzaContext ctx) {
       String hostname = ctx.name.getText();
       _configuration.setHostname(hostname);
@@ -1823,6 +1867,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setPrefix(prefix);
+      }
+      if (ctx.STANDBY() != null) {
+         Ip standbyAddress = toIp(ctx.standby_address);
+         Prefix standbyPrefix = new Prefix(standbyAddress,
+               prefix.getPrefixLength());
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setStandbyPrefix(standbyPrefix);
+         }
       }
    }
 

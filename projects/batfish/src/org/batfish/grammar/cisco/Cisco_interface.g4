@@ -132,7 +132,7 @@ ip_address_if_stanza
       | prefix = IP_PREFIX
    )
    (
-      STANDBY IP_ADDRESS
+      STANDBY standby_address = IP_ADDRESS
    )? NEWLINE
 ;
 

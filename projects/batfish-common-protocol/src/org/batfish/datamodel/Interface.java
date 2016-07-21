@@ -71,6 +71,18 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String ZONE_VAR = "zone";
 
+   private static InterfaceType computeAosInteraceType(String name) {
+      if (name.startsWith("vlan")) {
+         return InterfaceType.VLAN;
+      }
+      else if (name.startsWith("loopback")) {
+         return InterfaceType.LOOPBACK;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
+
    private static InterfaceType computeAwsInterfaceType(String name) {
       if (name.startsWith("v")) {
          return InterfaceType.VPN;
@@ -115,7 +127,7 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.AGGREGATED;
       }
       else if (name.startsWith("Loopback")) {
-         return InterfaceType.PHYSICAL;
+         return InterfaceType.LOOPBACK;
       }
       else if (name.startsWith("Management")) {
          return InterfaceType.PHYSICAL;
@@ -159,6 +171,8 @@ public final class Interface extends ComparableStructure<String> {
    public static InterfaceType computeInterfaceType(String name,
          ConfigurationFormat format) {
       switch (format) {
+      case ALCATEL_AOS:
+         return computeAosInteraceType(name);
       case AWS_VPC:
          return computeAwsInterfaceType(name);
       case ARISTA:
@@ -180,6 +194,7 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.PHYSICAL;
 
       case EMPTY:
+      case MSS:
       case UNKNOWN:
       case VXWORKS:
       default:
@@ -207,6 +222,9 @@ public final class Interface extends ComparableStructure<String> {
    private static InterfaceType computeVyosInterfaceType(String name) {
       if (name.startsWith("vti")) {
          return InterfaceType.VPN;
+      }
+      else if (name.startsWith("lo")) {
+         return InterfaceType.LOOPBACK;
       }
       else {
          return InterfaceType.PHYSICAL;

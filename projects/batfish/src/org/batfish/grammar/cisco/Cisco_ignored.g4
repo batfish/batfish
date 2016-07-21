@@ -696,7 +696,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | EXEC
       | FABRIC
       | FACILITY_ALARM
-      | FAILOVER
       | FEATURE
       | FILE
       | FIREWALL
