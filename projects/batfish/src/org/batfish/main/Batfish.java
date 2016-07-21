@@ -3498,6 +3498,27 @@ public class Batfish implements AutoCloseable {
       return answer;
    }
 
+   private Answer serializeHostConfigs(Path testRigPath, Path outputPath) {
+      Answer answer = new Answer();
+      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+            BfConsts.RELPATH_HOST_CONFIGS_DIR);
+      HostConfiguration config = parseHostConfigurations(configurationData);
+
+      if (!_settings.getNoOutput()) {
+         _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         outputPath.toFile().mkdirs();
+         Path currentOutputPath = outputPath
+               .resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
+         _logger.debug("Serializing AWS VPCs to "
+               + currentOutputPath.toString() + "\"...");
+         serializeObject(config, currentOutputPath);
+         _logger.debug("OK\n");
+      }
+      printElapsedTime();
+      return answer;
+   }
+
    private void serializeIndependentConfigs(
          Map<String, Configuration> configurations, Path outputPath) {
       if (configurations == null) {
@@ -3626,6 +3647,15 @@ public class Batfish implements AutoCloseable {
          answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
          configsFound = true;
       }
+
+      // look for host configs
+      Path hostConfigsPath = testRigPath
+            .resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+      if (Files.exists(hostConfigsPath)) {
+         answer.append(serializeHostConfigs(testRigPath, outputPath));
+         configsFound = true;
+      }
+
 
       if (!configsFound) {
          throw new BatfishException("No valid configurations found");
