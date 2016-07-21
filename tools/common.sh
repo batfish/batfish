@@ -352,11 +352,13 @@ export -f batfish_prepare_default_environment
 batfish_prepare_test_rig() {
    batfish_date
    echo ": START: Prepare test-rig"
-   batfish_expect_args 2 $# || return 1
+   batfish_expect_args 3 $# || return 1
    local TEST_RIG=$1
    local BASE=$2
-   mkdir -p $BASE/testrig || return 1
-   cp -r $TEST_RIG/. $BASE/testrig/.
+   local NAME=$3
+   mkdir -p $BASE/$NAME/testrig || return 1
+   mkdir -p $BASE/$NAME/environments/default/env
+   cp -r $TEST_RIG/. $BASE/$NAME/testrig/.
    batfish_date
    echo ": END: Prepare test-rig"
 }
