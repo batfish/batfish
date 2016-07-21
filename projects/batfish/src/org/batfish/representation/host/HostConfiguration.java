@@ -9,11 +9,11 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
-import org.batfish.representation.vyos.Interface;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,13 +30,15 @@ public class HostConfiguration implements VendorConfiguration {
 
    private static final String HOSTNAME_VAR = "hostname";
    
-   private static final String INTERFACES_VAR = "interfaces";
+   private static final String HOST_INTERFACES_VAR = "hostInterfaces";
    
    private static final String IPTABLES_FILE_VAR = "iptablesFile";
    
+   private Configuration _c;
+
    private String _hostname;
    
-   protected final Map<String, Interface> _interfaces = new HashMap<String, Interface>();
+   protected final Map<String, HostInterface> _hostInterfaces = new HashMap<String, HostInterface>();
    
    private String _iptablesFile;
    
@@ -68,9 +70,13 @@ public class HostConfiguration implements VendorConfiguration {
       return _hostname;
    }
    
-   @JsonProperty(INTERFACES_VAR)
+   @JsonProperty(HOST_INTERFACES_VAR)
+   public Map<String, HostInterface> getHostInterfaces() {
+      return _hostInterfaces;
+   }
+
    public Map<String, Interface> getInterfaces() {
-      return _interfaces;
+      throw new UnsupportedOperationException("no implementation for generated method");
    }
    
    @JsonProperty(IPTABLES_FILE_VAR)
@@ -124,7 +130,21 @@ public class HostConfiguration implements VendorConfiguration {
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
-      throw new UnsupportedOperationException("no implementation for generated method"); // TODO Auto-generated method stub
+      _warnings = warnings;
+      String hostname = getHostname();
+      _c = new Configuration(hostname);
+      _c.setConfigurationFormat(ConfigurationFormat.HOST);
+      _c.setRoles(_roles);
+      
+      //add interfaces
+      for (HostInterface hostInterface : _hostInterfaces.values()) {
+         _c.getInterfaces().put(hostInterface.getName(), hostInterface.toInterface(_c));         
+      }
+      
+      //add iptables
+      _iptablesVendorConfig.addAsIpAccessLists(_c);
+      
+      return _c;
    }
 
 }

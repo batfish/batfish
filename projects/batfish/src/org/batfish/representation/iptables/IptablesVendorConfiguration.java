@@ -36,6 +36,22 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
    
    private transient Warnings _warnings;
    
+   public void addAsIpAccessLists(Configuration config) {
+      for (Entry<String, IptablesTable> e : _tables.entrySet()) {
+         String tableName = e.getKey();
+         IptablesTable table = e.getValue();
+         for (Entry<String,IptablesChain> ec : table.getChains().entrySet()) {
+            String chainName = ec.getKey();
+            IptablesChain chain = ec.getValue();
+            
+            String aclName = toIpAccessListName(tableName, chainName);            
+            IpAccessList list = toIpAccessList(aclName, chain);
+            
+            config.getIpAccessLists().put(aclName, list);
+         }
+      }
+   }
+
    @Override
    public String getHostname() {
       return _hostname;
@@ -79,20 +95,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration implement
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
-
-      for (Entry<String, IptablesTable> e : _tables.entrySet()) {
-         String tableName = e.getKey();
-         IptablesTable table = e.getValue();
-         for (Entry<String,IptablesChain> ec : table.getChains().entrySet()) {
-            String chainName = ec.getKey();
-            IptablesChain chain = ec.getValue();
-            
-            String aclName = toIpAccessListName(tableName, chainName);            
-            IpAccessList list = toIpAccessList(aclName, chain);
-            
-            _c.getIpAccessLists().put(aclName, list);
-         }
-      }
+      
+      addAsIpAccessLists(_c);
       
       return _c;
    }

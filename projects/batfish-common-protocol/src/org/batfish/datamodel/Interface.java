@@ -115,7 +115,7 @@ public final class Interface extends ComparableStructure<String> {
          return InterfaceType.AGGREGATED;
       }
       else if (name.startsWith("Loopback")) {
-         return InterfaceType.PHYSICAL;
+         return InterfaceType.LOOPBACK;
       }
       else if (name.startsWith("Management")) {
          return InterfaceType.PHYSICAL;
@@ -156,6 +156,15 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
+   private static InterfaceType computeHostInterfaceType(String name) {
+      if (name.startsWith("lo")) {
+         return InterfaceType.LOOPBACK;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
+
    public static InterfaceType computeInterfaceType(String name,
          ConfigurationFormat format) {
       switch (format) {
@@ -175,6 +184,9 @@ public final class Interface extends ComparableStructure<String> {
       case FLAT_VYOS:
          return computeVyosInterfaceType(name);
 
+      case HOST:
+         return computeHostInterfaceType(name);
+         
       case MRV:
          // TODO: find out if other interface types are possible
          return InterfaceType.PHYSICAL;
