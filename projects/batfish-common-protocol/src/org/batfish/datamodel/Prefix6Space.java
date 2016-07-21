@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -12,9 +13,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class Prefix6Space {
+public class Prefix6Space implements Serializable {
 
-   private static class BitTrie {
+   private static class BitTrie implements Serializable {
+
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
 
       private BitTrieNode _root;
 
@@ -56,7 +62,12 @@ public class Prefix6Space {
 
    }
 
-   private static class BitTrieNode {
+   private static class BitTrieNode implements Serializable {
+
+      /**
+       *
+       */
+      private static final long serialVersionUID = 1L;
 
       private BitTrieNode _left;
 
@@ -169,6 +180,11 @@ public class Prefix6Space {
       }
 
    }
+
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
    private static final int NUM_BITS = 128;
 
