@@ -153,7 +153,7 @@ cmm_any
 :
    ANY NEWLINE
 ;
-   
+
 cmm_cos
 :
    COS DEC NEWLINE
@@ -170,13 +170,12 @@ cmm_dscp
    (
       (
          dscp_types += dscp_type
-      )+ 
+      )+
       |
       (
-         dscp_range = range      
+         dscp_range = range
       )
-   )         
-   NEWLINE
+   ) NEWLINE
 ;
 
 cmm_exception
@@ -434,7 +433,7 @@ l_access_class
       )
       |
       (
-         ( 
+         (
             name = variable
             | DEC
          )
@@ -474,6 +473,15 @@ mgmt_null
 mgp_stanza
 :
    inband_mgp_stanza
+;
+
+mp_null
+:
+   (
+      CONNECT_SOURCE
+      | DESCRIPTION
+      | REMOTE_AS
+   ) ~NEWLINE* NEWLINE
 ;
 
 multicast_routing_stanza
@@ -535,6 +543,11 @@ ntp_access_group
    )+ NEWLINE
 ;
 
+ntp_authenticate
+:
+   AUTHENTICATE NEWLINE
+;
+
 ntp_clock_period
 :
    CLOCK_PERIOD ~NEWLINE* NEWLINE
@@ -544,17 +557,21 @@ ntp_commit
 :
    COMMIT NEWLINE
 ;
-   
+
 ntp_common
 :
    ntp_access_group
+   | ntp_authenticate
    | ntp_clock_period
    | ntp_commit
    | ntp_distribute
+   | ntp_logging
+   | ntp_max_associations
    | ntp_peer
    | ntp_server
    | ntp_source
    | ntp_source_interface
+   | ntp_trusted_key
    | ntp_update_calendar
 ;
 
@@ -562,7 +579,17 @@ ntp_distribute
 :
    DISTRIBUTE NEWLINE
 ;
-   
+
+ntp_logging
+:
+   LOGGING NEWLINE
+;
+
+ntp_max_associations
+:
+   MAX_ASSOCIATIONS DEC NEWLINE
+;
+
 ntp_peer
 :
    PEER ~NEWLINE* NEWLINE
@@ -581,6 +608,11 @@ ntp_source
 ntp_source_interface
 :
    SOURCE_INTERFACE ~NEWLINE* NEWLINE
+;
+
+ntp_trusted_key
+:
+   TRUSTED_KEY DEC NEWLINE
 ;
 
 ntp_update_calendar
@@ -904,7 +936,7 @@ peer_stanza
 :
    PEER IP_ADDRESS NEWLINE
    (
-      null_block_substanza
+      mp_null
       | peer_sa_filter
    )*
 ;
@@ -1053,12 +1085,10 @@ s_class_map
    (
       MATCH_ALL
       | MATCH_ANY
-   )? 
-   name = variable NEWLINE 
+   )? name = variable NEWLINE
    (
       DESCRIPTION ~NEWLINE+ NEWLINE
-   )?
-   s_class_map_tail*
+   )? s_class_map_tail*
 ;
 
 s_class_map_tail

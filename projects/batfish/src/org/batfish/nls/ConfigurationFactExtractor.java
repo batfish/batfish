@@ -1421,8 +1421,11 @@ public class ConfigurationFactExtractor {
             break;
 
          // TODO: create derived switchport facts in logic and here
+         case DOT1Q_TUNNEL:
          case DYNAMIC_AUTO:
          case DYNAMIC_DESIRABLE:
+         case TAP:
+         case TOOL:
          case NONE:
             break;
 

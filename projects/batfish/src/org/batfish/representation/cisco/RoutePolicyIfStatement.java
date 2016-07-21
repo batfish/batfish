@@ -59,8 +59,10 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
       }
       List<Statement> elseStatements = new ArrayList<Statement>();
       currentIf.setFalseStatements(elseStatements);
-      for (RoutePolicyStatement stmt : _elseBlock.getStatements()) {
-         stmt.applyTo(elseStatements, cc, c, w);
+      if (_elseBlock != null) {
+         for (RoutePolicyStatement stmt : _elseBlock.getStatements()) {
+            stmt.applyTo(elseStatements, cc, c, w);
+         }
       }
       statements.add(mainIf);
    }

@@ -165,6 +165,7 @@ bgp_tail
    | shutdown_bgp_tail
    | subnet_bgp_tail
    | update_source_bgp_tail
+   | weight_bgp_tail
 ;
 
 cluster_id_bgp_tail
@@ -781,3 +782,7 @@ use_neighbor_group_bgp_tail
    USE NEIGHBOR_GROUP name = VARIABLE NEWLINE
 ;
 
+weight_bgp_tail
+:
+   WEIGHT weight = DEC NEWLINE
+;

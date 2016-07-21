@@ -561,6 +561,11 @@ AUTH_PROXY
    'auth-proxy'
 ;
 
+AUTHENTICATE
+:
+   'authenticate'
+;
+
 AUTHENTICATION
 :
    'authentication'
@@ -710,7 +715,7 @@ BEYOND_SCOPE
 :
    'beyond-scope'
 ;
-   
+
 BFD
 :
    'bfd'
@@ -991,6 +996,11 @@ CIRCUIT_TYPE
    'circuit-type'
 ;
 
+CISP
+:
+   'cisp'
+;
+
 CITRIX_ICA
 :
    'citrix-ica'
@@ -1040,7 +1050,7 @@ CLOCK_PERIOD
 :
    'clock-period'
 ;
-   
+
 CLUSTER
 :
    'cluster'
@@ -3313,6 +3323,11 @@ MATCHES_EVERY
    'matches-every'
 ;
 
+MAX_ASSOCIATIONS
+:
+   'max-associations'
+;
+
 MAX_LSA
 :
    'max-lsa'
@@ -4043,6 +4058,11 @@ OWNER
    'owner'
 ;
 
+P2P
+:
+   'p2p'
+;
+
 PACKET_TOO_BIG
 :
    'packet-too-big'
@@ -4488,6 +4508,11 @@ PROTOCOL_OBJECT
    'protocol-object'
 ;
 
+PROVISION
+:
+   'provision'
+;
+
 PROXY_ARP
 :
    'proxy-arp'
@@ -4506,11 +4531,6 @@ PSEUDOWIRE_CLASS
 PTP
 :
    'ptp'
-;
-
-P2P
-:
-   'p2p'
 ;
 
 QOS
@@ -4676,6 +4696,11 @@ REFERENCE_BANDWIDTH
 REFLECT
 :
    'reflect'
+;
+
+REFLEXIVE_LIST
+:
+   'reflexive-list'
 ;
 
 REGEX_MODE
@@ -5635,6 +5660,11 @@ SYSLOG
    'syslog'
 ;
 
+SYSLOGD
+:
+   'syslogd'
+;
+
 SYSOPT
 :
    'sysopt'
@@ -5703,6 +5733,11 @@ TAGGED
 TALK
 :
    'talk'
+;
+
+TAP
+:
+   'tap'
 ;
 
 TASKGROUP
@@ -5850,6 +5885,11 @@ TLS_PROXY
    'tls-proxy'
 ;
 
+TOOL
+:
+   'tool'
+;
+
 TOP
 :
    'top'
@@ -5923,6 +5963,11 @@ TRUNK
 TRUST
 :
    'trust'
+;
+
+TRUSTED_KEY
+:
+   'trusted-key'
 ;
 
 TRUSTPOINT
@@ -6340,6 +6385,11 @@ WINDOW_SIZE
 WINS_SERVER
 :
    'wins-server'
+;
+
+WISM
+:
+   'wism'
 ;
 
 WITHOUT_CSD
@@ -7355,12 +7405,15 @@ M_Interface_PRECFONFIGURE
 
 M_Interface_PREFIX
 :
-   F_Letter
    (
       F_Letter
-      | '-'
-      | '_'
-   )*
+      (
+         F_Letter
+         | '-'
+         | '_'
+      )*
+   )
+   | 'Dot11Radio'
 ;
 
 M_Interface_SLASH

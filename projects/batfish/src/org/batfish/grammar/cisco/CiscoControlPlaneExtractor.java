@@ -231,6 +231,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("HundredGigE", "HundredGigE");
       prefixes.put("ip", "ip");
       prefixes.put("Group-Async", "Group-Async");
+      prefixes.put("LongReachEthernet", "LongReachEthernet");
       prefixes.put("Loopback", "Loopback");
       prefixes.put("Management", "Management");
       prefixes.put("ManagementEthernet", "ManagementEthernet");
@@ -3170,34 +3171,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitSwitchport_mode_access_stanza(
-         Switchport_mode_access_stanzaContext ctx) {
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+   public void exitSwitchport_mode_stanza(Switchport_mode_stanzaContext ctx) {
+      SwitchportMode mode;
+      if (ctx.ACCESS() != null) {
+         mode = SwitchportMode.ACCESS;
       }
-   }
-
-   @Override
-   public void exitSwitchport_mode_dynamic_auto_stanza(
-         Switchport_mode_dynamic_auto_stanzaContext ctx) {
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.DYNAMIC_AUTO);
+      else if (ctx.DOT1Q_TUNNEL() != null) {
+         mode = SwitchportMode.DOT1Q_TUNNEL;
       }
-   }
-
-   @Override
-   public void exitSwitchport_mode_dynamic_desirable_stanza(
-         Switchport_mode_dynamic_desirable_stanzaContext ctx) {
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.DYNAMIC_DESIRABLE);
+      else if (ctx.DYNAMIC() != null && ctx.AUTO() != null) {
+         mode = SwitchportMode.DYNAMIC_AUTO;
       }
-   }
-
-   @Override
-   public void exitSwitchport_mode_trunk_stanza(
-         Switchport_mode_trunk_stanzaContext ctx) {
+      else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
+         mode = SwitchportMode.DYNAMIC_DESIRABLE;
+      }
+      else if (ctx.TAP() != null) {
+         mode = SwitchportMode.TAP;
+      }
+      else if (ctx.TRUNK() != null) {
+         mode = SwitchportMode.TRUNK;
+      }
+      else if (ctx.TOOL() != null) {
+         mode = SwitchportMode.TOOL;
+      }
+      else {
+         throw new BatfishException("Unhandled switchport mode");
+      }
       for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+         currentInterface.setSwitchportMode(mode);
       }
    }
 

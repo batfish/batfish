@@ -26,6 +26,7 @@ null_block_stanza
       | CAM_PROFILE
       | CEF
       | CHAT_SCRIPT
+      | CISP
       | CLI
       | CLOCK
       | CONFDCONFIG
@@ -42,8 +43,9 @@ null_block_stanza
       | DEFAULT_MAX_FRAME_SIZE
       | DEFAULT_VALUE
       | DIAL_PEER
-      | DOMAIN
       | DO STOP
+      | DOMAIN
+      | DOT11
       | END
       | EVENT_HANDLER
       | FEX
@@ -54,6 +56,7 @@ null_block_stanza
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | HSRP
       | HW_SWITCH
       | INTERFACE BREAKOUT
       |
@@ -74,11 +77,13 @@ null_block_stanza
             | HARDWARE
             | ICMP_ERRORS
             | INSPECT
+            | NAME_SERVER
             |
             (
                OSPF NAME_LOOKUP
             )
             | POLICY_LIST
+            | REFLEXIVE_LIST
             | ROUTER_ID
             | SLA
             | SOURCE
@@ -115,6 +120,7 @@ null_block_stanza
       | LACP
       | LINECARD
       | LOGGING
+      | LOGIN
       | MAC
       | MAC_LEARN
       | MACRO
@@ -176,6 +182,7 @@ null_block_stanza
       | SDR
       | SERVICE_CLASS
       | SFLOW
+      | SLOT
       | SPANNING_TREE
       | STACK_MAC
       | STACK_UNIT
@@ -184,11 +191,13 @@ null_block_stanza
       | SWITCH
       | SWITCH_PROFILE
       | SWITCH_TYPE
+      | SYSLOGD
       | SYSTEM_INIT
       | SYSTEM_MAX
       | TABLE_MAP
       | TACACS
       | TACACS_SERVER
+      | TAP
       | TCP
       | TEMPLATE
       | TERMINAL
@@ -196,6 +205,7 @@ null_block_stanza
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | TUNNEL_GROUP
       | UDF
       | USERGROUP
       | USERNAME
@@ -215,6 +225,7 @@ null_block_stanza
       | VPC
       | VPDN_GROUP
       | WEBVPN
+      | WISM
       | WRED_PROFILE
    ) ~NEWLINE* NEWLINE
    (
@@ -420,6 +431,7 @@ null_block_substanza
          | MAIN_CPU
          | MAP
          | MATCH
+         | MAX_ASSOCIATIONS
          | MAXIMUM
          | MEMBER
          | MESH_GROUP
@@ -450,7 +462,6 @@ null_block_substanza
          | PASSWORD_STORAGE
          | PATH_JITTER
          | PAUSE
-         | PEER
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
@@ -477,6 +488,7 @@ null_block_substanza
          | PROBE
          | PROPOSAL
          | PROTOCOL
+         | PROVISION
          | PROXY_SERVER
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
@@ -681,7 +693,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DNS
       | DNS_GUARD
       | DOMAIN_NAME
-      | DOT11
       | DSP
       | DSPFARM
       | DSS
@@ -755,7 +766,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
-            | NAME_SERVER
             | NAT
             | RADIUS
             | RCMD

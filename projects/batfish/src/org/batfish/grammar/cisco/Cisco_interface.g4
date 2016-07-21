@@ -40,7 +40,6 @@ if_stanza
 :
    default_gw_if_stanza
    | description_if_stanza
-   | if_switchport_mode_dot1q_tunnel
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_dhcp_if_stanza
@@ -65,10 +64,7 @@ if_stanza
    | switchport_trunk_native_if_stanza
    | switchport_trunk_encapsulation_if_stanza
    | switchport_trunk_allowed_if_stanza
-   | switchport_mode_access_stanza
-   | switchport_mode_dynamic_auto_stanza
-   | switchport_mode_dynamic_desirable_stanza
-   | switchport_mode_trunk_stanza
+   | switchport_mode_stanza
    | unrecognized_line
    | vrf_forwarding_if_stanza
    | vrf_if_stanza
@@ -401,7 +397,11 @@ null_block_if_stanza
       | NMSP
       |
       (
-         NTP BROADCAST
+         NTP
+         (
+            BROADCAST
+            | DISABLE
+         )
       )
       | OPENFLOW
       | PATH_OPTION
@@ -452,6 +452,8 @@ null_block_if_stanza
             | MONITOR
             | NONEGOTIATE
             | PORT_SECURITY
+            | TAP
+            | TOOL
             |
             (
                TRUNK GROUP
@@ -462,6 +464,7 @@ null_block_if_stanza
       )
       | TAG_SWITCHING
       | TAGGED
+      | TAP
       | TCAM
       | TRUST
       | TUNNEL
@@ -516,29 +519,24 @@ switchport_access_if_stanza
    ) NEWLINE
 ;
 
-switchport_mode_access_stanza
+switchport_mode_stanza
 :
-   SWITCHPORT MODE ACCESS NEWLINE
-;
-
-if_switchport_mode_dot1q_tunnel
-:
-   SWITCHPORT MODE DOT1Q_TUNNEL NEWLINE
-;
-
-switchport_mode_dynamic_auto_stanza
-:
-   SWITCHPORT MODE DYNAMIC AUTO NEWLINE
-;
-
-switchport_mode_dynamic_desirable_stanza
-:
-   SWITCHPORT MODE DYNAMIC DESIRABLE NEWLINE
-;
-
-switchport_mode_trunk_stanza
-:
-   SWITCHPORT MODE TRUNK NEWLINE
+   SWITCHPORT MODE
+   (
+      ACCESS
+      | DOT1Q_TUNNEL
+      |
+      (
+         DYNAMIC
+         (
+            AUTO
+            | DESIRABLE
+         )
+      )
+      | TAP
+      | TOOL
+      | TRUNK
+   ) NEWLINE
 ;
 
 switchport_trunk_allowed_if_stanza

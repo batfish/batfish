@@ -21,6 +21,8 @@ public class Interface extends ComparableStructure<String> {
 
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
 
+   private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
+
    /**
     * dirty hack: just chose a very large number
     */
@@ -37,6 +39,9 @@ public class Interface extends ComparableStructure<String> {
       }
       else if (name.startsWith("GigabitEthernet")) {
          bandwidth = GIGABIT_ETHERNET_BANDWIDTH;
+      }
+      else if (name.startsWith("LongReachEthernet")) {
+         bandwidth = LONG_REACH_ETHERNET_BANDWIDTH;
       }
       else if (name.startsWith("TenGigabitEthernet")) {
          bandwidth = TEN_GIGABIT_ETHERNET_BANDWIDTH;
