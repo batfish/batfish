@@ -3543,29 +3543,21 @@ public class Batfish implements AutoCloseable {
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(), 
-                  hostConfig.getIptablesFile());
+            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
             String fileText = CommonUtil.readFile(path);
             iptablesData.put(path, fileText);
          }
       }
+
       Map<String, VendorConfiguration> iptablesConfigurations = parseVendorConfigurations(
             iptablesData, answerElement, ConfigurationFormat.IPTABLES);
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(), 
-                  hostConfig.getIptablesFile());
-            String fileText = CommonUtil.readFile(path);
-            iptablesData.put(path, fileText);
-         }
-      }
-      for (VendorConfiguration vc : hostConfigurations.values()) {
-         HostConfiguration hostConfig = (HostConfiguration) vc;
-         if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(), 
-                  BfConsts.RELPATH_HOST_CONFIGS_DIR, 
-                  hostConfig.getIptablesFile());
+            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+            if (!iptablesConfigurations.containsKey(path.toString())) {
+               throw new BatfishException("Key not found for iptables!");
+            }
             hostConfig.setIptablesConfig((IptablesVendorConfiguration) iptablesConfigurations.get(path.toString()));
          }
       }

@@ -142,7 +142,9 @@ public class HostConfiguration implements VendorConfiguration {
       }
       
       //add iptables
-      _iptablesVendorConfig.addAsIpAccessLists(_c);
+      if (_iptablesVendorConfig != null) {
+         _iptablesVendorConfig.addAsIpAccessLists(_c);
+      }
       
       return _c;
    }

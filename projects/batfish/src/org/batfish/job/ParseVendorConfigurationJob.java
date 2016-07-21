@@ -149,7 +149,7 @@ public class ParseVendorConfigurationJob extends
                _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText, iptablesParser,
-               _warnings, _file.getFileName().toString());
+               _warnings, _file.toString());
          break;
 
       case MRV:
