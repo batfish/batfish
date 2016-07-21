@@ -1,0 +1,4 @@
+{
+	"hostname" : "h1",
+	"iptablesFile" : "iptables/h1.iptables"
+}
