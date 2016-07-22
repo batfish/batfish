@@ -15,15 +15,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class HostInterface implements Serializable {
 
    private static final String BANDWIDTH_VAR = "bandwidth";
+
    private static final String NAME_VAR = "name";
+
    private static final String OTHER_PREFIXES_VAR = "otherPrefixes";
+
    private static final String PREFIX_VAR = "prefix";
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private Double _bandwidth = 1000*1000*1000.0;  //default is 1 Gbps
+   private Double _bandwidth = 1000 * 1000 * 1000.0; // default is 1 Gbps
    private String _name;
    private Set<Prefix> _otherPrefixes;
    private Prefix _prefix;
@@ -68,7 +71,7 @@ public class HostInterface implements Serializable {
 
    public Interface toInterface(Configuration configuration, Warnings warnings) {
       Interface iFace = new Interface(_name, configuration);
-      iFace.setBandwidth(_bandwidth);      
+      iFace.setBandwidth(_bandwidth);
       iFace.setPrefix(_prefix);
       iFace.getAllPrefixes().add(_prefix);
       iFace.getAllPrefixes().addAll(_otherPrefixes);
