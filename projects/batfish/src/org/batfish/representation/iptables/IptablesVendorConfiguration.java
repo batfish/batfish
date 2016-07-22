@@ -36,7 +36,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
 
    private transient Warnings _warnings;
 
-   public void addAsIpAccessLists(Configuration config) {
+   public void addAsIpAccessLists(Configuration config, Warnings warnings) {
       for (Entry<String, IptablesTable> e : _tables.entrySet()) {
          String tableName = e.getKey();
          IptablesTable table = e.getValue();
@@ -155,7 +155,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
 
-      addAsIpAccessLists(_c);
+      addAsIpAccessLists(_c, _warnings);
 
       return _c;
    }
