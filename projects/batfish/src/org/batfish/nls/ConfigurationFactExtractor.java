@@ -1424,6 +1424,7 @@ public class ConfigurationFactExtractor {
          case DOT1Q_TUNNEL:
          case DYNAMIC_AUTO:
          case DYNAMIC_DESIRABLE:
+         case FEX_FABRIC:
          case TAP:
          case TOOL:
          case NONE:

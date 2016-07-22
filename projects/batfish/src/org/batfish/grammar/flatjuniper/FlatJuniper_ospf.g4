@@ -170,6 +170,7 @@ at_nssa_tail
 
    | nssat_area_range
    | nssat_default_lsa
+   | nssat_no_summaries
 ;
 
 at_null
@@ -223,6 +224,11 @@ nssat_default_lsa_tail
    dlsat_default_metric
    | dlsat_metric_type
    | dlsat_type_7
+;
+
+nssat_no_summaries
+:
+   NO_SUMMARIES
 ;
 
 ot_apply_groups

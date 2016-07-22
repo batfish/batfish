@@ -61,6 +61,8 @@ if_stanza
    | null_if_stanza
    | shutdown_if_stanza
    | switchport_access_if_stanza
+   | switchport_private_vlan_association_if_stanza
+   | switchport_private_vlan_mapping_if_stanza
    | switchport_trunk_native_if_stanza
    | switchport_trunk_encapsulation_if_stanza
    | switchport_trunk_allowed_if_stanza
@@ -533,10 +535,23 @@ switchport_mode_stanza
             | DESIRABLE
          )
       )
+      | FEX_FABRIC
       | TAP
       | TOOL
       | TRUNK
    ) NEWLINE
+;
+
+switchport_private_vlan_association_if_stanza
+:
+   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
+   secondary_vlan_id = DEC
+;
+
+switchport_private_vlan_mapping_if_stanza
+:
+   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
+   secondary_vlan_list = range
 ;
 
 switchport_trunk_allowed_if_stanza

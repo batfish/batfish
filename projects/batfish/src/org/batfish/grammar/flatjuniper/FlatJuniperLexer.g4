@@ -4061,6 +4061,11 @@ SWITCH_OPTIONS
    'switch-options'
 ;
 
+SWITCHOVER_ON_ROUTING_CRASH
+:
+   'switchover-on-routing-crash'
+;
+
 SYSLOG
 :
    'syslog'
@@ -4687,7 +4692,10 @@ IPV6_PREFIX
 
 LINE_COMMENT
 :
-   ('#'|'!') F_NonNewlineChar* F_NewlineChar+
+   (
+      '#'
+      | '!'
+   ) F_NonNewlineChar* F_NewlineChar+
    {enableIPV6_ADDRESS = true;}
 
    -> channel ( HIDDEN )

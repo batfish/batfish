@@ -567,6 +567,7 @@ ntp_common
    | ntp_distribute
    | ntp_logging
    | ntp_max_associations
+   | ntp_master
    | ntp_peer
    | ntp_server
    | ntp_source
@@ -588,6 +589,11 @@ ntp_logging
 ntp_max_associations
 :
    MAX_ASSOCIATIONS DEC NEWLINE
+;
+
+ntp_master
+:
+   MASTER NEWLINE
 ;
 
 ntp_peer

@@ -194,6 +194,7 @@ st_null
       | ROOT_AUTHENTICATION
       | SCRIPTS
       | SERVICES
+      | SWITCHOVER_ON_ROUTING_CRASH
       | SYSLOG
       | TACPLUS_SERVER
       | TIME_ZONE

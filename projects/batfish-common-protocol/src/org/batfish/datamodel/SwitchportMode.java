@@ -5,6 +5,7 @@ public enum SwitchportMode {
    DOT1Q_TUNNEL,
    DYNAMIC_AUTO,
    DYNAMIC_DESIRABLE,
+   FEX_FABRIC,
    NONE,
    TAP,
    TOOL,

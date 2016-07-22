@@ -2118,6 +2118,11 @@ FEX
    'fex'
 ;
 
+FEX_FABRIC
+:
+   'fex-fabric'
+;
+
 FILE
 :
    'file'
@@ -3283,6 +3288,11 @@ MAP_LIST
    'map-list'
 ;
 
+MAPPING
+:
+   'mapping'
+;
+
 MASK
 :
    'mask'
@@ -3296,6 +3306,11 @@ MASK_REPLY
 MASK_REQUEST
 :
    'mask-request'
+;
+
+MASTER
+:
+   'master'
 ;
 
 MATCH

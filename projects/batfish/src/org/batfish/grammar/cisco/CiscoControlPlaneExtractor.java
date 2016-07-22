@@ -3185,6 +3185,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
          mode = SwitchportMode.DYNAMIC_DESIRABLE;
       }
+      else if (ctx.FEX_FABRIC() != null) {
+         mode = SwitchportMode.FEX_FABRIC;
+      }
       else if (ctx.TAP() != null) {
          mode = SwitchportMode.TAP;
       }
@@ -3266,7 +3269,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _parser.getParserErrorListener().syntaxError(ctx, ctx.getStart(),
                ctx.getStart().getLine(),
                ctx.getStart().getCharPositionInLine(), msg);
-         throw new BatfishException(msg);
+         // throw new BatfishException(msg);
       }
    }
 
