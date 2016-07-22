@@ -44,6 +44,7 @@
                <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
             </targetfiles>
             <sequential>
+               <echo message="Compiling lexer: src/@{grammar.packagedir}/@{grammar.name}.g4"/>
                <java fork="true" failonerror="true" jar="@{antlrjar}">
                   <arg path="src/@{grammar.packagedir}/@{grammar.name}.g4"/>
                   <arg value="-o"/>
@@ -80,6 +81,7 @@
                <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
             </targetfiles>
             <sequential>
+               <echo message="Compiling parser: src/@{grammar.packagedir}/@{grammar.name}.g4"/>
                <java fork="true" failonerror="true" jar="@{antlrjar}">
                   <arg path="src/@{grammar.packagedir}/@{grammar.name}.g4"/>
                   <arg value="-o"/>
