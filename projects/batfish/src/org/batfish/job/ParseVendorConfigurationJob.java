@@ -29,11 +29,11 @@ import org.batfish.representation.host.HostConfiguration;
 public class ParseVendorConfigurationJob extends
       BatfishJob<ParseVendorConfigurationResult> {
 
-   private ConfigurationFormat _format;
-   
    private Path _file;
 
    private String _fileText;
+
+   private ConfigurationFormat _format;
 
    private Warnings _warnings;
 
@@ -56,8 +56,9 @@ public class ParseVendorConfigurationJob extends
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = _format;
-      if (format == ConfigurationFormat.UNKNOWN)
-          format =   Format.identifyConfigurationFormat(_fileText);
+      if (format == ConfigurationFormat.UNKNOWN) {
+         format = Format.identifyConfigurationFormat(_fileText);
+      }
       if (format == ConfigurationFormat.EMPTY) {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
@@ -81,7 +82,7 @@ public class ParseVendorConfigurationJob extends
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, vc, _warnings);
-         
+
       case VYOS:
          if (_settings.flattenOnTheFly()) {
             String msg = "Flattening: \""
@@ -145,11 +146,11 @@ public class ParseVendorConfigurationJob extends
          break;
 
       case IPTABLES:
-         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText,
-               _settings);
+         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(
+               _fileText, _settings);
          combinedParser = iptablesParser;
-         extractor = new IptablesControlPlaneExtractor(_fileText, iptablesParser,
-               _warnings, _file.toString());
+         extractor = new IptablesControlPlaneExtractor(_fileText,
+               iptablesParser, _warnings, _file.toString());
          break;
 
       case MRV:

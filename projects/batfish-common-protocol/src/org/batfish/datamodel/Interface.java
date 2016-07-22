@@ -200,7 +200,7 @@ public final class Interface extends ComparableStructure<String> {
 
       case HOST:
          return computeHostInterfaceType(name);
-         
+
       case MRV:
          // TODO: find out if other interface types are possible
          return InterfaceType.PHYSICAL;

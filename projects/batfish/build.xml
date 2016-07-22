@@ -210,8 +210,8 @@
          <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/flatvyos/FlatVyosLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/flatvyos/FlatVyosParser*.java"/>
-        <fileset dir="src" includes="org/batfish/grammar/iptables/IptablesLexer*.java"/>
-        <fileset dir="src" includes="org/batfish/grammar/iptables/IptablesParser*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/iptables/IptablesLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/iptables/IptablesParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/juniper/JuniperParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/mrv/MrvLexer*.java"/>

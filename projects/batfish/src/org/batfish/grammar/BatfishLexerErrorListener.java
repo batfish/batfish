@@ -52,7 +52,8 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       }
       sb.append(String.format("%-11s%s\n", ">>>" + (errorLineIndex + 1) + ":",
             lines[errorLineIndex]));
-      for (int i = errorLineIndex + 1; i <= errorContextEndLine && i < lines.length; i++) {
+      for (int i = errorLineIndex + 1; i <= errorContextEndLine
+            && i < lines.length; i++) {
          sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));
       }
 

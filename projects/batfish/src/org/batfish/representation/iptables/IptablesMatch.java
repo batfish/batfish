@@ -17,49 +17,59 @@ public class IptablesMatch implements Serializable {
       DESTINATION,
       DESTINATION_PORT,
       IN_INTERFACE,
-      PROTOCOL,
       OUT_INTERFACE,
+      PROTOCOL,
       SOURCE,
-      SOURCE_PORT, 
+      SOURCE_PORT,
    }
-   
+
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
-   
+
    private boolean _inverted;
-   
-   private MatchType _matchType;
 
    private Object _matchData;
-   
+
+   private MatchType _matchType;
+
    public IptablesMatch(boolean inverted, MatchType matchType, Object matchData) {
       _inverted = inverted;
       _matchType = matchType;
       _matchData = matchData;
    }
-   
+
    public boolean getInverted() {
       return _inverted;
    }
-   
+
    public Object getMatchData() {
       return _matchData;
    }
-   
+
    public MatchType getMatchType() {
       return _matchType;
    }
 
-   public IpWildcard toIpWildcard() {
-      
+   public IpProtocol toIpProtocol() {
       if (_inverted) {
-         //_warnings.redFlag("Inversion of src/dst matching is not supported. Current analysis will match everything.");
-         //return IpWildcard.ANY;
+         // _warnings.redFlag("Inversion of protocol matching is not supported. Current analysis will match everything.");
+         // return IpWildcard.ANY;
          throw new BatfishException("Unknown matchdata type");
       }
-      
+
+      return (IpProtocol) _matchData;
+   }
+
+   public IpWildcard toIpWildcard() {
+
+      if (_inverted) {
+         // _warnings.redFlag("Inversion of src/dst matching is not supported. Current analysis will match everything.");
+         // return IpWildcard.ANY;
+         throw new BatfishException("Unknown matchdata type");
+      }
+
       if (_matchData instanceof Ip) {
          Prefix pfx = new Prefix((Ip) _matchData, 32);
          return new IpWildcard(pfx);
@@ -69,35 +79,27 @@ public class IptablesMatch implements Serializable {
       }
       else {
          throw new BatfishException("Unknown matchdata type: " + _matchData);
-      }      
+      }
    }
 
    public List<SubRange> toPortRanges() {
-      
+
       List<SubRange> subRanges = new LinkedList<SubRange>();
-      
+
       int port = (int) _matchData;
-      
+
       if (_inverted) {
-         if (port != 0) 
+         if (port != 0) {
             subRanges.add(new SubRange(0, port - 1));
-         if (port != 65535)
+         }
+         if (port != 65535) {
             subRanges.add(new SubRange(port + 1, 65535));
+         }
       }
       else {
          subRanges.add(new SubRange(port, port));
       }
-      
+
       return subRanges;
-   }
-
-   public IpProtocol toIpProtocol() {
-      if (_inverted) {
-         //_warnings.redFlag("Inversion of protocol matching is not supported. Current analysis will match everything.");
-         //return IpWildcard.ANY;
-         throw new BatfishException("Unknown matchdata type");
-      }
-
-      return (IpProtocol) _matchData;
    }
 }

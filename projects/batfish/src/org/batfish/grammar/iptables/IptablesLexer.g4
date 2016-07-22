@@ -28,324 +28,324 @@ public String printStateVariables() {
 
 ACCEPT
 :
-	'ACCEPT'
+   'ACCEPT'
 ;
 
 AH
 :
-	'ah'
+   'ah'
 ;
 
 ALL
 :
-	'all'
+   'all'
 ;
 
 COMMIT
 :
-	'COMMIT'
+   'COMMIT'
 ;
 
 DROP
 :
-	'DROP'
+   'DROP'
 ;
 
 ESP
 :
-	'esp'
+   'esp'
 ;
 
 FLAG_APPEND
 :
-	'-A' 
-	| '--append'
+   '-A'
+   | '--append'
 ;
 
 FLAG_CHECK
 :
-	'-C' 
-	| '--check'
+   '-C'
+   | '--check'
 ;
 
 FLAG_DELETE
 :
-	'-D' 
-	| '--delete'
+   '-D'
+   | '--delete'
 ;
 
 FLAG_DELETE_CHAIN
 :
-	'-X' 
-	| '--delete-chain'
+   '-X'
+   | '--delete-chain'
 ;
 
 FLAG_FLUSH
 :
-	'-F' 
-	| '--flush'
+   '-F'
+   | '--flush'
 ;
 
 FLAG_HELP
 :
-	'-h' 
+   '-h'
 ;
 
 FLAG_INSERT
 :
-	'-I' 
-	| '--insert'
+   '-I'
+   | '--insert'
 ;
 
 FLAG_LIST
 :
-	'-L' 
-	| '--list'
+   '-L'
+   | '--list'
 ;
 
 FLAG_LIST_RULES
 :
-	'-S' 
-	| '--list-rules'
+   '-S'
+   | '--list-rules'
 ;
 
 FLAG_NEW_CHAIN
 :
-	'-N' 
-	| '--new-chain'
+   '-N'
+   | '--new-chain'
 ;
 
 FLAG_POLICY
 :
-	'-P' 
-	| '--policy'
+   '-P'
+   | '--policy'
 ;
 
 FLAG_RENAME_CHAIN
 :
-	'-E' 
-	| '--rename-chain'
+   '-E'
+   | '--rename-chain'
 ;
 
 FLAG_REPLACE
 :
-	'-R' 
-	| '--replace'
+   '-R'
+   | '--replace'
 ;
 
 FLAG_TABLE
 :
-	'-t' 
-	| '--table'
+   '-t'
+   | '--table'
 ;
 
 FLAG_ZERO
 :
-	'-Z' 
-	| '--zero'
+   '-Z'
+   | '--zero'
 ;
 
 FORWARD
 :
-	'FORWARD'
+   'FORWARD'
 ;
 
 ICMP
 :
-	'icmp'
+   'icmp'
 ;
 
 ICMPV6
 :
-	'icmpv6'
+   'icmpv6'
 ;
 
 INPUT
 :
-	'INPUT'
+   'INPUT'
 ;
 
 IPTABLES
 :
-	'iptables'
+   'iptables'
 ;
-	
+
 MH
 :
-	'mh'
+   'mh'
 ;
 
 OUTPUT
 :
-	'OUTPUT'
+   'OUTPUT'
 ;
 
 OPTION_DESTINATION
 :
-	'-d'
-	| '--dst'
-	| '--destination'
+   '-d'
+   | '--dst'
+   | '--destination'
 ;
 
 OPTION_DESTINATION_PORT
 :
-	'--dport' 
-	| '--destination-port' 
+   '--dport'
+   | '--destination-port'
 ;
 
 OPTION_GOTO
 :
-	'-g'
-	| '--goto'
+   '-g'
+   | '--goto'
 ;
 
 OPTION_IN_INTERFACE
 :
-	'-i'
-	| '--in-interface'
+   '-i'
+   | '--in-interface'
 ;
 
 OPTION_IPV4
 :
-	'-4'
-	| '--ipv4'
+   '-4'
+   | '--ipv4'
 ;
 
 OPTION_IPV6
 :
-	'-6'
-	| '--ipv6'
+   '-6'
+   | '--ipv6'
 ;
 
 OPTION_FRAGMENT
 :
-	'-f'
-	| '--fragment'
-;	
+   '-f'
+   | '--fragment'
+;
 
 OPTION_JUMP
 :
-	'-j'
-	| '--jump'
+   '-j'
+   | '--jump'
 ;
 
 OPTION_MATCH
 :
-	'-m'
-	| '--match'
+   '-m'
+   | '--match'
 ;
-	
+
 OPTION_OUT_INTERFACE
 :
-	'-o'
-	| '--out-interface'
+   '-o'
+   | '--out-interface'
 ;
 
 OPTION_PROTOCOL
 :
-	'-p'
-	| '--protocol'
+   '-p'
+   | '--protocol'
 ;
 
 OPTION_SOURCE
 :
-	'-s'
-	| '--src'
-	| '--source'
+   '-s'
+   | '--src'
+   | '--source'
 ;
 
 OPTION_SOURCE_PORT
 :
-	'--sport' 
-	| '--source-port' 
+   '--sport'
+   | '--source-port'
 ;
 
 OPTION_VERBOSE
 :
-	'-v'
-	| '--verbose'
+   '-v'
+   | '--verbose'
 ;
 
 POSTROUTING
 :
-	'POSTROTUING'
+   'POSTROTUING'
 ;
-	
+
 PREROUTING
 :
-	'PREROTUING'
+   'PREROTUING'
 ;
 
 RETURN
 :
-	'RETURN'
+   'RETURN'
 ;
 
 SCTP
 :
-	'sctp'
+   'sctp'
 ;
 
 TABLE_FILTER
 :
-	'filter'
+   'filter'
 ;
-	
+
 TABLE_MANGLE
 :
-	'mangle'
+   'mangle'
 ;
-	
+
 TABLE_NAT
 :
-	'nat'
+   'nat'
 ;
-	
+
 TABLE_RAW
 :
-	'raw'
+   'raw'
 ;
-	
+
 TABLE_SECURITY
 :
-	'security'
+   'security'
 ;
 
 TCP
 :
-	'tcp'
+   'tcp'
 ;
 
 UDP
 :
-	'udp'
+   'udp'
 ;
 
 UDPLITE
 :
-	'udplite'
+   'udplite'
 ;
 
 // Other tokens
 
 ASTERISK
 :
-	'*'
+   '*'
 ;
 
 BRACKET_LEFT
 :
-	'['
+   '['
 ;
 
 BRACKET_RIGHT
 :
-	']'
+   ']'
 ;
 
 COLON
 :
-	':'
+   ':'
 ;
 
 DASH
@@ -452,11 +452,12 @@ NEWLINE
       enableIPV6_ADDRESS = true;
       enableIP_ADDRESS = true;
    }
+
 ;
 
 NOT
 :
-	'!'
+   '!'
 ;
 
 WS
@@ -466,7 +467,7 @@ WS
 
 VARIABLE
 :
-	F_Variable_RequiredVarChar F_Variable_VarChar*
+   F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
 
 fragment

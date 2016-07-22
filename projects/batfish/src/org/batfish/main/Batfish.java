@@ -1958,7 +1958,8 @@ public class Batfish implements AutoCloseable {
       // todo: either remove histogram function or do something userful with
       // answer
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
-            configurationData, new ParseVendorConfigurationAnswerElement(), ConfigurationFormat.UNKNOWN);
+            configurationData, new ParseVendorConfigurationAnswerElement(),
+            ConfigurationFormat.UNKNOWN);
       _logger.info("Building feature histogram...");
       MultiSet<String> histogram = new TreeMultiSet<String>();
       for (VendorConfiguration vc : vendorConfigurations.values()) {
@@ -2614,7 +2615,7 @@ public class Batfish implements AutoCloseable {
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
          Map<Path, String> configurationData,
-         ParseVendorConfigurationAnswerElement answerElement, 
+         ParseVendorConfigurationAnswerElement answerElement,
          ConfigurationFormat configurationFormat) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
@@ -3507,15 +3508,15 @@ public class Batfish implements AutoCloseable {
             BfConsts.RELPATH_HOST_CONFIGS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
       answer.addAnswerElement(answerElement);
-      
-      //read the host files
+
+      // read the host files
       Map<String, VendorConfiguration> hostConfigurations = parseVendorConfigurations(
             configurationData, answerElement, ConfigurationFormat.HOST);
       if (hostConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors");
       }
-      
-      //assign roles if that file exists
+
+      // assign roles if that file exists
       Path nodeRolesPath = _settings.getNodeRolesPath();
       if (nodeRolesPath != null) {
          NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
@@ -3537,13 +3538,14 @@ public class Batfish implements AutoCloseable {
             _logger.info("OK\n");
          }
       }
-      
-      //read and associate iptables files for specified hosts
+
+      // read and associate iptables files for specified hosts
       Map<Path, String> iptablesData = new TreeMap<Path, String>();
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+            Path path = Paths.get(testRigPath.toString(),
+                  hostConfig.getIptablesFile());
             String fileText = CommonUtil.readFile(path);
             iptablesData.put(path, fileText);
          }
@@ -3554,15 +3556,18 @@ public class Batfish implements AutoCloseable {
       for (VendorConfiguration vc : hostConfigurations.values()) {
          HostConfiguration hostConfig = (HostConfiguration) vc;
          if (hostConfig.getIptablesFile() != null) {
-            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+            Path path = Paths.get(testRigPath.toString(),
+                  hostConfig.getIptablesFile());
             if (!iptablesConfigurations.containsKey(path.toString())) {
                throw new BatfishException("Key not found for iptables!");
             }
-            hostConfig.setIptablesConfig((IptablesVendorConfiguration) iptablesConfigurations.get(path.toString()));
+            hostConfig
+                  .setIptablesConfig((IptablesVendorConfiguration) iptablesConfigurations
+                        .get(path.toString()));
          }
       }
-      
-      //now, serialize
+
+      // now, serialize
       if (!_settings.getNoOutput()) {
          _logger
                .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
@@ -3720,7 +3725,6 @@ public class Batfish implements AutoCloseable {
          answer.append(serializeHostConfigs(testRigPath, outputPath));
          configsFound = true;
       }
-
 
       if (!configsFound) {
          throw new BatfishException("No valid configurations found");

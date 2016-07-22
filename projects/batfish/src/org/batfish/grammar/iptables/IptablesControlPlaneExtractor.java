@@ -30,19 +30,23 @@ import org.batfish.representation.iptables.IptablesRule;
 import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 
-public class IptablesControlPlaneExtractor extends IptablesParserBaseListener implements
-      ControlPlaneExtractor {
+public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
+      implements ControlPlaneExtractor {
+
+   public static int toInteger(Token t) {
+      return Integer.parseInt(t.getText());
+   }
 
    private IptablesConfiguration _configuration;
 
+   private String _fileName;
+
    private boolean _formatIptablesSave = false;
 
-   private String _fileName;
-   
    private IptablesCombinedParser _parser;
 
    private String _tableCurrent;
-   
+
    private String _text;
 
    private final Set<String> _unimplementedFeatures;
@@ -51,10 +55,9 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
 
    private Warnings _w;
 
-   
-   
    public IptablesControlPlaneExtractor(String fileText,
-         IptablesCombinedParser iptablesParser, Warnings warnings, String fileName) {
+         IptablesCombinedParser iptablesParser, Warnings warnings,
+         String fileName) {
       _text = fileText;
       _parser = iptablesParser;
       _w = warnings;
@@ -72,20 +75,20 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
    @Override
    public void exitCommand(CommandContext ctx) {
 
-      //default table if not specified in the command
-      String table = (_formatIptablesSave)? _tableCurrent : "filter";
-      
+      // default table if not specified in the command
+      String table = (_formatIptablesSave) ? _tableCurrent : "filter";
+
       if (ctx.table() != null) {
          table = ctx.table().getText();
       }
-      
+
       Command_tailContext tailCtx = ctx.command_tail();
-      
+
       if (tailCtx.command_append() != null) {
          String chain = tailCtx.command_append().chain().getText();
          IptablesRule rule = extractRule(tailCtx.command_append().rule_spec());
          _configuration.addRule(table, chain, rule, -1);
-      } 
+      }
       else if (tailCtx.command_check() != null) {
          todo(tailCtx.command_check(), "Command Check");
       }
@@ -111,10 +114,10 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
          _configuration.addRule(table, chain, rule, ruleNum);
       }
       else if (tailCtx.command_list() != null) {
-         todo(tailCtx.command_list(), "Command List");         
+         todo(tailCtx.command_list(), "Command List");
       }
       else if (tailCtx.command_list_rules() != null) {
-         todo(tailCtx.command_list_rules(), "Command List Rules");         
+         todo(tailCtx.command_list_rules(), "Command List Rules");
       }
       else if (tailCtx.command_new_chain() != null) {
          String chain = tailCtx.command_new_chain().chain().getText();
@@ -122,104 +125,117 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       }
       else if (tailCtx.command_policy() != null) {
          String chain = tailCtx.command_policy().chain().getText();
-         ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy().built_in_target());
+         ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy()
+               .built_in_target());
          _configuration.setChainPolicy(table, chain, policy);
       }
       else if (tailCtx.command_rename_chain() != null) {
-         todo(tailCtx.command_rename_chain(), "Command Rename Chain");         
+         todo(tailCtx.command_rename_chain(), "Command Rename Chain");
       }
       else if (tailCtx.command_replace() != null) {
-         todo(tailCtx.command_replace(), "Command Replace");         
+         todo(tailCtx.command_replace(), "Command Replace");
       }
       else if (tailCtx.command_zero() != null) {
-         todo(tailCtx.command_zero(), "Command Zero");         
+         todo(tailCtx.command_zero(), "Command Zero");
       }
       else {
          todo(tailCtx, "Unknown command");
       }
    }
-   
+
    @Override
    public void exitDeclaration_chain_policy(Declaration_chain_policyContext ctx) {
       String chain = ctx.chain().getText();
       ChainPolicy policy = getBuiltInTarget(ctx.built_in_target());
       _configuration.setChainPolicy(_tableCurrent, chain, policy);
    }
-   
+
    @Override
-   public void exitDeclaration_table(Declaration_tableContext ctx) {      
-      _formatIptablesSave = true;      
-      _tableCurrent = ctx.table().getText();      
+   public void exitDeclaration_table(Declaration_tableContext ctx) {
+      _formatIptablesSave = true;
+      _tableCurrent = ctx.table().getText();
    }
-   
+
    private IptablesRule extractRule(Rule_specContext ctx) {
       IptablesRule rule = new IptablesRule();
-      
+
       List<MatchContext> matches = ctx.match_list;
-      
+
       for (MatchContext mCtx : matches) {
-         
+
          boolean inverted = (mCtx.NOT() != null);
-         
+
          if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
             todo(mCtx, "ipv4 (--4) and ipv6 (--6) options");
          }
          else if (mCtx.OPTION_DESTINATION() != null) {
-            rule.addMatch(inverted, MatchType.DESTINATION, getEndpoint(mCtx.endpoint()));
+            rule.addMatch(inverted, MatchType.DESTINATION,
+                  getEndpoint(mCtx.endpoint()));
          }
          else if (mCtx.OPTION_DESTINATION_PORT() != null) {
-            rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
+            rule.addMatch(inverted, MatchType.DESTINATION_PORT,
+                  toInteger(mCtx.port));
          }
          else if (mCtx.OPTION_IN_INTERFACE() != null) {
-            //rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
+            // rule.addMatch(inverted, MatchType.IN_INTERFACE,
+            // mCtx.interface_name.getText());
             todo(mCtx, "matching in input interface");
          }
          else if (mCtx.OPTION_PROTOCOL() != null) {
-            rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
+            rule.addMatch(inverted, MatchType.PROTOCOL,
+                  toProtocol(mCtx.protocol()));
          }
          else if (mCtx.OPTION_OUT_INTERFACE() != null) {
-            //rule.addMatch(inverted, MatchType.OUT_INTERFACE, mCtx.interface_name.getText());
+            // rule.addMatch(inverted, MatchType.OUT_INTERFACE,
+            // mCtx.interface_name.getText());
             todo(mCtx, "matching on outgoing interface");
          }
          else if (mCtx.OPTION_SOURCE() != null) {
-            rule.addMatch(inverted, MatchType.SOURCE, getEndpoint(mCtx.endpoint()));
+            rule.addMatch(inverted, MatchType.SOURCE,
+                  getEndpoint(mCtx.endpoint()));
          }
          else if (mCtx.OPTION_SOURCE_PORT() != null) {
             rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
          }
          else {
-            todo(mCtx, "Unknown match option");            
+            todo(mCtx, "Unknown match option");
          }
       }
-      
+
       if (ctx.action().OPTION_JUMP() != null) {
          if (ctx.action().built_in_target() != null) {
-            ChainPolicy policy = getBuiltInTarget(ctx.action().built_in_target());
-            rule.setAction(policy);            
+            ChainPolicy policy = getBuiltInTarget(ctx.action()
+                  .built_in_target());
+            rule.setAction(policy);
          }
          else if (ctx.action().chain() != null) {
-            rule.setAction(IptablesActionType.CHAIN, ctx.action().chain().getText());
+            rule.setAction(IptablesActionType.CHAIN, ctx.action().chain()
+                  .getText());
          }
       }
       else if (ctx.action().OPTION_GOTO() != null) {
          rule.setAction(IptablesActionType.GOTO, ctx.action().chain().getText());
       }
       else {
-         todo(ctx, "Unknown rule action");            
+         todo(ctx, "Unknown rule action");
       }
-      
+
       return rule;
    }
 
    private ChainPolicy getBuiltInTarget(Built_in_targetContext ctx) {
-      if (ctx.ACCEPT() != null) 
+      if (ctx.ACCEPT() != null) {
          return ChainPolicy.ACCEPT;
-      else if (ctx.DROP() != null)
+      }
+      else if (ctx.DROP() != null) {
          return ChainPolicy.DROP;
-      else if (ctx.RETURN() != null)
+      }
+      else if (ctx.RETURN() != null) {
          return ChainPolicy.RETURN;
-      else 
+      }
+      else {
          todo(ctx, "Chain policy (built in target)");
+      }
       return null;
    }
 
@@ -231,15 +247,15 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
          return new Prefix(endpoint.IP_PREFIX().getText());
       }
       else if (endpoint.IPV6_ADDRESS() != null) {
-         //return new Ip6(endpoint.IPV6_ADDRESS().getText());
+         // return new Ip6(endpoint.IPV6_ADDRESS().getText());
          todo(endpoint, "IPV6 address as endpoint");
       }
       else if (endpoint.IPV6_PREFIX() != null) {
-         //return new Prefix6(endpoint.IPV6_PREFIX().getText());
+         // return new Prefix6(endpoint.IPV6_PREFIX().getText());
          todo(endpoint, "IPV6 prefix as endpoint");
       }
       else if (endpoint.name != null) {
-         //return endpoint.name.getText();
+         // return endpoint.name.getText();
          todo(endpoint, "hostname as endpoint");
       }
       else {
@@ -270,13 +286,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener im
       _unimplementedFeatures.add("Iptables: " + feature);
    }
 
-   public static int toInteger(Token t) {
-      return Integer.parseInt(t.getText());
-   }
-   
    private IpProtocol toProtocol(ProtocolContext protocol) {
       return IpProtocol.fromString(protocol.getText());
    }
-
 
 }

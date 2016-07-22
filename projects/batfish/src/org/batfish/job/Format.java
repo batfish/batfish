@@ -36,7 +36,8 @@ public final class Format {
       if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
-      else if (fileText.contains("INPUT") && fileText.contains("OUTPUT") && fileText.contains("FORWARD")) {
+      else if (fileText.contains("INPUT") && fileText.contains("OUTPUT")
+            && fileText.contains("FORWARD")) {
          return ConfigurationFormat.IPTABLES;
       }
       else if (fileText.contains("System.SystemName")) {

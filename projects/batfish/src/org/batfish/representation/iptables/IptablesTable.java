@@ -1,26 +1,24 @@
 package org.batfish.representation.iptables;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 
-public class IptablesTable implements Serializable {
+public class IptablesTable extends ComparableStructure<String> {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
-   private String _name;
-   
-	private Map<String, IptablesChain> _chains;
-	
-	public IptablesTable(String name) {
-	   _name = name;
-	   _chains = new HashMap<String, IptablesChain>();
-	}
+   private Map<String, IptablesChain> _chains;
+
+   public IptablesTable(String name) {
+      super(name);
+      _chains = new HashMap<String, IptablesChain>();
+   }
 
    public void addChain(String chainName) {
       if (!_chains.containsKey(chainName)) {
@@ -36,9 +34,9 @@ public class IptablesTable implements Serializable {
    public Map<String, IptablesChain> getChains() {
       return _chains;
    }
-   
+
    public void setChainPolicy(String chainName, ChainPolicy policy) {
-       addChain(chainName);
+      addChain(chainName);
       _chains.get(chainName).setPolicy(policy);
    }
 }

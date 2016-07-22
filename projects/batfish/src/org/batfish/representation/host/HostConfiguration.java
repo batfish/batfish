@@ -23,45 +23,52 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HostConfiguration implements VendorConfiguration {
 
+   private static final String HOST_INTERFACES_VAR = "hostInterfaces";
+
+   private static final String HOSTNAME_VAR = "hostname";
+
+   private static final String IPTABLES_FILE_VAR = "iptablesFile";
+
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
-   private static final String HOSTNAME_VAR = "hostname";
-   
-   private static final String HOST_INTERFACES_VAR = "hostInterfaces";
-   
-   private static final String IPTABLES_FILE_VAR = "iptablesFile";
-   
+   public static HostConfiguration fromJson(String text, Warnings warnings)
+         throws JsonParseException, JsonMappingException, IOException {
+      ObjectMapper mapper = new BatfishObjectMapper();
+      HostConfiguration hostConfiguration = mapper.readValue(text,
+            HostConfiguration.class);
+      hostConfiguration._warnings = warnings;
+      return hostConfiguration;
+   }
+
    private Configuration _c;
 
-   private String _hostname;
-   
    protected final Map<String, HostInterface> _hostInterfaces = new HashMap<String, HostInterface>();
-   
+
+   private String _hostname;
+
    private String _iptablesFile;
-   
+
    private IptablesVendorConfiguration _iptablesVendorConfig;
-    
+
    protected final RoleSet _roles = new RoleSet();
 
    private transient Set<String> _unimplementedFeatures;
-   
+
+   // @JsonCreator
+   // public HostConfiguration(@JsonProperty(HOSTNAME_VAR) String name) {
+   // _hostname = name;
+   // _interfaces = new HashMap<String, Interface>();
+   // _roles = new RoleSet();
+   // }
+
    private transient Warnings _warnings;
-   
-//   @JsonCreator
-//   public HostConfiguration(@JsonProperty(HOSTNAME_VAR) String name) {
-//      _hostname = name;      
-//      _interfaces = new HashMap<String, Interface>();
-//      _roles = new RoleSet();
-//   }
-   
-   public static HostConfiguration fromJson(String text, Warnings warnings) throws JsonParseException, JsonMappingException, IOException {      
-      ObjectMapper mapper = new BatfishObjectMapper();
-      HostConfiguration hostConfiguration = mapper.readValue(text, HostConfiguration.class);
-      hostConfiguration._warnings = warnings;
-      return hostConfiguration;
+
+   @JsonProperty(HOST_INTERFACES_VAR)
+   public Map<String, HostInterface> getHostInterfaces() {
+      return _hostInterfaces;
    }
 
    @JsonProperty(HOSTNAME_VAR)
@@ -69,21 +76,16 @@ public class HostConfiguration implements VendorConfiguration {
    public String getHostname() {
       return _hostname;
    }
-   
-   @JsonProperty(HOST_INTERFACES_VAR)
-   public Map<String, HostInterface> getHostInterfaces() {
-      return _hostInterfaces;
-   }
 
    public Map<String, Interface> getInterfaces() {
-      throw new UnsupportedOperationException("no implementation for generated method");
+      throw new UnsupportedOperationException(
+            "no implementation for generated method");
    }
-   
+
    @JsonProperty(IPTABLES_FILE_VAR)
    public String getIptablesFile() {
       return _iptablesFile;
    }
-
 
    @JsonIgnore
    @Override
@@ -108,13 +110,13 @@ public class HostConfiguration implements VendorConfiguration {
       _hostname = hostname;
    }
 
+   public void setIptablesConfig(IptablesVendorConfiguration config) {
+      _iptablesVendorConfig = config;
+   }
+
    public void setIptablesFile(String file) {
       _iptablesFile = file;
    }
-
-   public void setIptablesConfig(IptablesVendorConfiguration config) {
-      _iptablesVendorConfig = config;
-   }   
 
    @Override
    public void setRoles(RoleSet roles) {
@@ -124,7 +126,8 @@ public class HostConfiguration implements VendorConfiguration {
    @JsonIgnore
    @Override
    public void setVendor(ConfigurationFormat format) {
-      throw new UnsupportedOperationException("Cannot set vendor for host configuration");
+      throw new UnsupportedOperationException(
+            "Cannot set vendor for host configuration");
    }
 
    @Override
@@ -135,17 +138,18 @@ public class HostConfiguration implements VendorConfiguration {
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(ConfigurationFormat.HOST);
       _c.setRoles(_roles);
-      
-      //add interfaces
+
+      // add interfaces
       for (HostInterface hostInterface : _hostInterfaces.values()) {
-         _c.getInterfaces().put(hostInterface.getName(), hostInterface.toInterface(_c));         
+         _c.getInterfaces().put(hostInterface.getName(),
+               hostInterface.toInterface(_c));
       }
-      
-      //add iptables
+
+      // add iptables
       if (_iptablesVendorConfig != null) {
          _iptablesVendorConfig.addAsIpAccessLists(_c);
       }
-      
+
       return _c;
    }
 

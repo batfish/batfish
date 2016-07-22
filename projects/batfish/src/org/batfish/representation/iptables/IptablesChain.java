@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
-import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
 
 public class IptablesChain implements Serializable {
 
@@ -15,56 +14,62 @@ public class IptablesChain implements Serializable {
       DROP,
       RETURN
    }
-   
+
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
    private String _name;
-   
-   private List<IptablesRule> _rules;
 
    private ChainPolicy _policy;
 
+   private List<IptablesRule> _rules;
+
    public IptablesChain(String name) {
       _name = name;
-      _rules = new LinkedList<IptablesRule>();      
+      _rules = new LinkedList<IptablesRule>();
    }
 
    public void addRule(IptablesRule rule, int ruleIndex) {
-      
-      if (ruleIndex == -1) { //-1 implies append
-         _rules.add(rule);         
+
+      if (ruleIndex == -1) { // -1 implies append
+         _rules.add(rule);
       }
       else {
-         //rule indices in iptables start at 1
+         // rule indices in iptables start at 1
          int listIndex = ruleIndex - 1;
          _rules.add(listIndex, rule);
       }
-   }     
+   }
+
+   public LineAction getIpAccessListLineAction() {
+      if (_policy == ChainPolicy.ACCEPT) {
+         return LineAction.ACCEPT;
+      }
+      else if (_policy == ChainPolicy.DROP) {
+         return LineAction.REJECT;
+      }
+      else {
+         throw new BatfishException(
+               "Unsupported ChainPolicy for mapping to LineAction: "
+                     + _policy.toString());
+      }
+   }
 
    public String getName() {
       return _name;
    }
-   
+
    public ChainPolicy getPolicy() {
       return _policy;
    }
-   
+
    public List<IptablesRule> getRules() {
       return _rules;
    }
-   
+
    public void setPolicy(ChainPolicy policy) {
       _policy = policy;
    }
-
-   public LineAction getIpAccessListLineAction() {
-      if (_policy == ChainPolicy.ACCEPT)
-         return LineAction.ACCEPT;
-      else if (_policy == ChainPolicy.DROP)
-         return LineAction.REJECT;
-      else 
-         throw new BatfishException("Unsupported ChainPolicy for mapping to LineAction: " + _policy.toString());   }
 }

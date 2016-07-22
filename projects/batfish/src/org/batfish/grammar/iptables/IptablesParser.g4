@@ -11,232 +11,269 @@ package org.batfish.grammar.iptables;
 
 iptables_configuration
 :
-	command+
-	| 
-	(
-		declaration_table
-		declaration_chain_policy+
-		command*
-		COMMIT NEWLINE
-	)+
+   command+
+   |
+   (
+      declaration_table declaration_chain_policy+ command* COMMIT NEWLINE
+   )+
 ;
 
 action
 :
-	OPTION_JUMP 
-		( built_in_target 
-	  		| chain
-	  	)	//target_options?
-	| 
-	OPTION_GOTO chain
+   OPTION_JUMP
+   (
+      built_in_target
+      | chain
+   ) //target_options?
+
+   | OPTION_GOTO chain
 ;
 
 chain
 :
-	FORWARD
-	| INPUT
-	| OUTPUT
-	| PREROUTING
-	| POSTROUTING
-	| custom_chain = VARIABLE
+   FORWARD
+   | INPUT
+   | OUTPUT
+   | PREROUTING
+   | POSTROUTING
+   | custom_chain = VARIABLE
 ;
 
 declaration_chain_policy
 :
-	COLON chain built_in_target ~NEWLINE+ NEWLINE
+   COLON chain built_in_target ~NEWLINE+ NEWLINE
 ;
 
 declaration_table
 :
-	ASTERISK table NEWLINE
+   ASTERISK table NEWLINE
 ;
 
 table
 :
-	TABLE_FILTER
-	| TABLE_MANGLE
-   	| TABLE_NAT
-   	| TABLE_RAW
-   	| TABLE_SECURITY
-   	| custom_table = VARIABLE
+   TABLE_FILTER
+   | TABLE_MANGLE
+   | TABLE_NAT
+   | TABLE_RAW
+   | TABLE_SECURITY
+   | custom_table = VARIABLE
 ;
 
 command
 :
-	IPTABLES?
-	(FLAG_TABLE table)?   
-	command_tail
-	NEWLINE
+   IPTABLES?
+   (
+      FLAG_TABLE table
+   )? command_tail NEWLINE
 ;
 
 command_append
 :
-	FLAG_APPEND chain rule_spec
+   FLAG_APPEND chain rule_spec
 ;
 
 command_check
 :
-	FLAG_CHECK chain rule_spec
+   FLAG_CHECK chain rule_spec
 ;
 
 command_delete
 :
-	FLAG_DELETE chain (rule_spec | rulenum = DEC)
+   FLAG_DELETE chain
+   (
+      rule_spec
+      | rulenum = DEC
+   )
 ;
 
 command_delete_chain
 :
-	FLAG_DELETE_CHAIN chain?
+   FLAG_DELETE_CHAIN chain?
 ;
 
 command_flush
 :
-	FLAG_FLUSH (chain (rulenum = DEC)?)? (other_options)?
+   FLAG_FLUSH
+   (
+      chain
+      (
+         rulenum = DEC
+      )?
+   )?
+   (
+      other_options
+   )?
 ;
 
 command_help
 :
-	FLAG_HELP
+   FLAG_HELP
 ;
 
 command_insert
 :
-	FLAG_INSERT chain (rulenum = DEC)? rule_spec
+   FLAG_INSERT chain
+   (
+      rulenum = DEC
+   )? rule_spec
 ;
 
 command_list
 :
-	FLAG_LIST (chain (rulenum = DEC)?)? (other_options)?
+   FLAG_LIST
+   (
+      chain
+      (
+         rulenum = DEC
+      )?
+   )?
+   (
+      other_options
+   )?
 ;
 
 command_list_rules
 :
-	FLAG_LIST_RULES (chain (rulenum = DEC)?)?
+   FLAG_LIST_RULES
+   (
+      chain
+      (
+         rulenum = DEC
+      )?
+   )?
 ;
 
 command_new_chain
 :
-	FLAG_NEW_CHAIN chain
+   FLAG_NEW_CHAIN chain
 ;
 
 command_policy
 :
-	FLAG_POLICY chain built_in_target
+   FLAG_POLICY chain built_in_target
 ;
 
 command_rename_chain
 :
-	FLAG_RENAME_CHAIN oldchain = chain newchain = chain
+   FLAG_RENAME_CHAIN oldchain = chain newchain = chain
 ;
 
 command_replace
 :
-	FLAG_REPLACE chain rulenum = DEC rule_spec
-;
-	
-command_zero
-:
-	FLAG_ZERO (chain (rulenum = DEC)?)? (other_options)?
+   FLAG_REPLACE chain rulenum = DEC rule_spec
 ;
 
+command_zero
+:
+   FLAG_ZERO
+   (
+      chain
+      (
+         rulenum = DEC
+      )?
+   )?
+   (
+      other_options
+   )?
+;
 
 command_tail
 :
-	command_append
-	| command_check
-	| command_delete
-	| command_delete_chain
-	| command_flush
-	| command_help
-	| command_insert
-	| command_list
-	| command_list_rules
-	| command_new_chain
-	| command_policy
-	| command_rename_chain
-	| command_replace
-	| command_zero
+   command_append
+   | command_check
+   | command_delete
+   | command_delete_chain
+   | command_flush
+   | command_help
+   | command_insert
+   | command_list
+   | command_list_rules
+   | command_new_chain
+   | command_policy
+   | command_rename_chain
+   | command_replace
+   | command_zero
 ;
 
 endpoint
-:	
-	IP_ADDRESS
-	| IP_PREFIX
-	| IPV6_ADDRESS
-	| IPV6_PREFIX
-	| name = VARIABLE
+:
+   IP_ADDRESS
+   | IP_PREFIX
+   | IPV6_ADDRESS
+   | IPV6_PREFIX
+   | name = VARIABLE
 ;
 
 match
 :
-	OPTION_IPV4
-	| OPTION_IPV6
-	| 
-	NOT?
-	(
-		OPTION_DESTINATION endpoint
-		| OPTION_DESTINATION_PORT port = DEC
-		| OPTION_IN_INTERFACE interface_name = VARIABLE
-		| OPTION_OUT_INTERFACE interface_name = VARIABLE
-		| OPTION_PROTOCOL protocol
-		| OPTION_SOURCE endpoint	
-		| OPTION_SOURCE_PORT port = DEC	
-	)
-	|
-	OPTION_MATCH match_module
+   OPTION_IPV4
+   | OPTION_IPV6
+   | NOT?
+   (
+      OPTION_DESTINATION endpoint
+      | OPTION_DESTINATION_PORT port = DEC
+      | OPTION_IN_INTERFACE interface_name = VARIABLE
+      | OPTION_OUT_INTERFACE interface_name = VARIABLE
+      | OPTION_PROTOCOL protocol
+      | OPTION_SOURCE endpoint
+      | OPTION_SOURCE_PORT port = DEC
+   )
+   | OPTION_MATCH match_module
 ;
 
 //this is where rich module-based matching goes; not supported yet
-match_module 
+
+match_module
 :
-	match_module_tcp
+   match_module_tcp
 ;
 
 match_module_tcp
 :
-	TCP 
+   TCP
 ;
 
 //this is where options for flush, list, zero commands go
 //fill this in later
+
 other_options
 :
-	OPTION_VERBOSE
+   OPTION_VERBOSE
 ;
 
 protocol
 :
-	TCP
-	| UDP
-	| UDPLITE
-	| ICMP
-	| ICMPV6
-	| ESP
-	| AH
-	| SCTP
-	| MH
-	| ALL
-	| protocolnum = DEC
+   TCP
+   | UDP
+   | UDPLITE
+   | ICMP
+   | ICMPV6
+   | ESP
+   | AH
+   | SCTP
+   | MH
+   | ALL
+   | protocolnum = DEC
 ;
 
 rule_spec
 :
-	(
-		match_list += match
-	)* 
-	action
+   (
+      match_list += match
+   )* action
 ;
 
-built_in_target 
+built_in_target
 :
-	ACCEPT
-	| DROP
-	| RETURN
+   ACCEPT
+   | DROP
+   | RETURN
 ;
 
 //not sure what target options are valid yet; fill in later
+
 target_options
 :
-	OPTION_VERBOSE	
+   OPTION_VERBOSE
 ;
 
