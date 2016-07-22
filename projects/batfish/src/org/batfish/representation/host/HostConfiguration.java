@@ -1,15 +1,19 @@
 package org.batfish.representation.host;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -45,7 +49,7 @@ public class HostConfiguration implements VendorConfiguration {
 
    private Configuration _c;
 
-   protected final Map<String, HostInterface> _hostInterfaces = new HashMap<String, HostInterface>();
+   protected final Map<String, HostInterface> _hostInterfaces;
 
    private String _hostname;
 
@@ -55,7 +59,7 @@ public class HostConfiguration implements VendorConfiguration {
 
    protected final RoleSet _roles = new RoleSet();
 
-   private transient Set<String> _unimplementedFeatures;
+   private final Set<HostStaticRoute> _staticRoutes;
 
    // @JsonCreator
    // public HostConfiguration(@JsonProperty(HOSTNAME_VAR) String name) {
@@ -64,7 +68,14 @@ public class HostConfiguration implements VendorConfiguration {
    // _roles = new RoleSet();
    // }
 
+   private transient Set<String> _unimplementedFeatures;
+
    private transient Warnings _warnings;
+
+   public HostConfiguration() {
+      _hostInterfaces = new TreeMap<String, HostInterface>();
+      _staticRoutes = new TreeSet<HostStaticRoute>();
+   }
 
    @JsonProperty(HOST_INTERFACES_VAR)
    public Map<String, HostInterface> getHostInterfaces() {
@@ -150,7 +161,19 @@ public class HostConfiguration implements VendorConfiguration {
          _iptablesVendorConfig.addAsIpAccessLists(_c);
       }
 
+      if (_staticRoutes.isEmpty()) {
+         for (String ifaceName : _c.getInterfaces().keySet()) {
+            StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
+                  StaticRoute.NO_TAG);
+            sr.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+            _c.getStaticRoutes().add(sr);
+         }
+      }
+      else {
+         _c.getStaticRoutes().addAll(
+               _staticRoutes.stream().map(hsr -> hsr.toStaticRoute())
+                     .collect(Collectors.toSet()));
+      }
       return _c;
    }
-
 }

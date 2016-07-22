@@ -7,6 +7,8 @@ public class StaticRoute extends Route implements Comparable<StaticRoute> {
 
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
 
+   public static final int NO_TAG = -1;
+
    private static final long serialVersionUID = 1L;
 
    private static final String TAG_VAR = "tag";
