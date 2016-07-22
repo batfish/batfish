@@ -153,12 +153,12 @@ public class HostConfiguration implements VendorConfiguration {
       // add interfaces
       for (HostInterface hostInterface : _hostInterfaces.values()) {
          _c.getInterfaces().put(hostInterface.getName(),
-               hostInterface.toInterface(_c));
+               hostInterface.toInterface(_c, warnings));
       }
 
       // add iptables
       if (_iptablesVendorConfig != null) {
-         _iptablesVendorConfig.addAsIpAccessLists(_c);
+         _iptablesVendorConfig.addAsIpAccessLists(_c, warnings);
       }
 
       if (_staticRoutes.isEmpty()) {

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
@@ -13,8 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class HostInterface implements Serializable {
 
+   private static final String BANDWIDTH_VAR = "bandwidth";
    private static final String NAME_VAR = "name";
-
    private static final String OTHER_PREFIXES_VAR = "otherPrefixes";
    private static final String PREFIX_VAR = "prefix";
    /**
@@ -22,6 +23,7 @@ public class HostInterface implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   private Double _bandwidth = 1000*1000*1000.0;  //default is 1 Gbps
    private String _name;
    private Set<Prefix> _otherPrefixes;
    private Prefix _prefix;
@@ -30,6 +32,11 @@ public class HostInterface implements Serializable {
    public HostInterface(@JsonProperty(NAME_VAR) String name) {
       _name = name;
       _otherPrefixes = new TreeSet<Prefix>();
+   }
+
+   @JsonProperty(BANDWIDTH_VAR)
+   public Double getBandwidth() {
+      return _bandwidth;
    }
 
    @JsonProperty(NAME_VAR)
@@ -47,6 +54,10 @@ public class HostInterface implements Serializable {
       return _prefix;
    }
 
+   public void setBandwidth(Double bandwidth) {
+      _bandwidth = bandwidth;
+   }
+
    public void setOtherPrefixes(Set<Prefix> otherPrefixes) {
       _otherPrefixes = otherPrefixes;
    }
@@ -55,8 +66,9 @@ public class HostInterface implements Serializable {
       _prefix = prefix;
    }
 
-   public Interface toInterface(Configuration configuration) {
+   public Interface toInterface(Configuration configuration, Warnings warnings) {
       Interface iFace = new Interface(_name, configuration);
+      iFace.setBandwidth(_bandwidth);      
       iFace.setPrefix(_prefix);
       iFace.getAllPrefixes().add(_prefix);
       iFace.getAllPrefixes().addAll(_otherPrefixes);
