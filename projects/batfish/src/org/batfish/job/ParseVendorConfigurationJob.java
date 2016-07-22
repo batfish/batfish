@@ -13,6 +13,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
+import org.batfish.grammar.iptables.IptablesCombinedParser;
+import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
@@ -22,10 +24,13 @@ import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
+import org.batfish.representation.host.HostConfiguration;
 
 public class ParseVendorConfigurationJob extends
       BatfishJob<ParseVendorConfigurationResult> {
 
+   private ConfigurationFormat _format;
+   
    private Path _file;
 
    private String _fileText;
@@ -33,11 +38,12 @@ public class ParseVendorConfigurationJob extends
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
-         Path file, Warnings warnings) {
+         Path file, Warnings warnings, ConfigurationFormat configurationFormat) {
       super(settings);
       _fileText = fileText;
       _file = file;
       _warnings = warnings;
+      _format = configurationFormat;
    }
 
    @Override
@@ -49,9 +55,9 @@ public class ParseVendorConfigurationJob extends
       BatfishCombinedParser<?, ?> combinedParser = null;
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
-      ConfigurationFormat format = Format
-            .identifyConfigurationFormat(_fileText);
-
+      ConfigurationFormat format = _format;
+      if (format == ConfigurationFormat.UNKNOWN)
+          format =   Format.identifyConfigurationFormat(_fileText);
       if (format == ConfigurationFormat.EMPTY) {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
@@ -70,6 +76,12 @@ public class ParseVendorConfigurationJob extends
                _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 
+      case HOST:
+         vc = HostConfiguration.fromJson(_fileText, _warnings);
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file, vc, _warnings);
+         
       case VYOS:
          if (_settings.flattenOnTheFly()) {
             String msg = "Flattening: \""
@@ -130,6 +142,14 @@ public class ParseVendorConfigurationJob extends
          combinedParser = flatJuniperParser;
          extractor = new FlatJuniperControlPlaneExtractor(_fileText,
                flatJuniperParser, _warnings);
+         break;
+
+      case IPTABLES:
+         IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText,
+               _settings);
+         combinedParser = iptablesParser;
+         extractor = new IptablesControlPlaneExtractor(_fileText, iptablesParser,
+               _warnings, _file.toString());
          break;
 
       case MRV:

@@ -162,6 +162,8 @@ import org.batfish.protocoldependency.PotentialExport;
 import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.representation.host.HostConfiguration;
+import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
@@ -1956,7 +1958,7 @@ public class Batfish implements AutoCloseable {
       // todo: either remove histogram function or do something userful with
       // answer
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
-            configurationData, new ParseVendorConfigurationAnswerElement());
+            configurationData, new ParseVendorConfigurationAnswerElement(), ConfigurationFormat.UNKNOWN);
       _logger.info("Building feature histogram...");
       MultiSet<String> histogram = new TreeMultiSet<String>();
       for (VendorConfiguration vc : vendorConfigurations.values()) {
@@ -2612,7 +2614,8 @@ public class Batfish implements AutoCloseable {
 
    private Map<String, VendorConfiguration> parseVendorConfigurations(
          Map<Path, String> configurationData,
-         ParseVendorConfigurationAnswerElement answerElement) {
+         ParseVendorConfigurationAnswerElement answerElement, 
+         ConfigurationFormat configurationFormat) {
       _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
       resetTimer();
       Map<String, VendorConfiguration> vendorConfigurations = new TreeMap<String, VendorConfiguration>();
@@ -2629,7 +2632,7 @@ public class Batfish implements AutoCloseable {
                _settings.printParseTree());
          String fileText = configurationData.get(currentFile);
          ParseVendorConfigurationJob job = new ParseVendorConfigurationJob(
-               _settings, fileText, currentFile, warnings);
+               _settings, fileText, currentFile, warnings, configurationFormat);
          jobs.add(job);
       }
       BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>>(
@@ -3498,6 +3501,89 @@ public class Batfish implements AutoCloseable {
       return answer;
    }
 
+   private Answer serializeHostConfigs(Path testRigPath, Path outputPath) {
+      Answer answer = new Answer();
+      Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
+            BfConsts.RELPATH_HOST_CONFIGS_DIR);
+      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answer.addAnswerElement(answerElement);
+      
+      //read the host files
+      Map<String, VendorConfiguration> hostConfigurations = parseVendorConfigurations(
+            configurationData, answerElement, ConfigurationFormat.HOST);
+      if (hostConfigurations == null) {
+         throw new BatfishException("Exiting due to parser errors");
+      }
+      
+      //assign roles if that file exists
+      Path nodeRolesPath = _settings.getNodeRolesPath();
+      if (nodeRolesPath != null) {
+         NodeRoleMap nodeRoles = parseNodeRoles(testRigPath);
+         for (Entry<String, RoleSet> nodeRolesEntry : nodeRoles.entrySet()) {
+            String hostname = nodeRolesEntry.getKey();
+            VendorConfiguration config = hostConfigurations.get(hostname);
+            if (config == null) {
+               throw new BatfishException(
+                     "role set assigned to non-existent node: \"" + hostname
+                           + "\"");
+            }
+            RoleSet roles = nodeRolesEntry.getValue();
+            config.setRoles(roles);
+         }
+         if (!_settings.getNoOutput()) {
+            _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
+                  + "\"...");
+            serializeObject(nodeRoles, nodeRolesPath);
+            _logger.info("OK\n");
+         }
+      }
+      
+      //read and associate iptables files for specified hosts
+      Map<Path, String> iptablesData = new TreeMap<Path, String>();
+      for (VendorConfiguration vc : hostConfigurations.values()) {
+         HostConfiguration hostConfig = (HostConfiguration) vc;
+         if (hostConfig.getIptablesFile() != null) {
+            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+            String fileText = CommonUtil.readFile(path);
+            iptablesData.put(path, fileText);
+         }
+      }
+
+      Map<String, VendorConfiguration> iptablesConfigurations = parseVendorConfigurations(
+            iptablesData, answerElement, ConfigurationFormat.IPTABLES);
+      for (VendorConfiguration vc : hostConfigurations.values()) {
+         HostConfiguration hostConfig = (HostConfiguration) vc;
+         if (hostConfig.getIptablesFile() != null) {
+            Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+            if (!iptablesConfigurations.containsKey(path.toString())) {
+               throw new BatfishException("Key not found for iptables!");
+            }
+            hostConfig.setIptablesConfig((IptablesVendorConfiguration) iptablesConfigurations.get(path.toString()));
+         }
+      }
+      
+      //now, serialize
+      if (!_settings.getNoOutput()) {
+         _logger
+               .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+         resetTimer();
+         CommonUtil.createDirectories(outputPath);
+         for (String name : hostConfigurations.keySet()) {
+            VendorConfiguration vc = hostConfigurations.get(name);
+            Path currentOutputPath = outputPath.resolve(name);
+            _logger.debug("Serializing: \"" + name + "\" ==> \""
+                  + currentOutputPath.toString() + "\"...");
+            serializeObject(vc, currentOutputPath);
+            _logger.debug("OK\n");
+         }
+         // serialize warnings
+         serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+         printElapsedTime();
+
+      }
+      return answer;
+   }
+
    private void serializeIndependentConfigs(
          Map<String, Configuration> configurations, Path outputPath) {
       if (configurations == null) {
@@ -3539,7 +3625,7 @@ public class Batfish implements AutoCloseable {
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
       answer.addAnswerElement(answerElement);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
-            configurationData, answerElement);
+            configurationData, answerElement, ConfigurationFormat.UNKNOWN);
       if (vendorConfigurations == null) {
          throw new BatfishException("Exiting due to parser errors");
       }
@@ -3626,6 +3712,15 @@ public class Batfish implements AutoCloseable {
          answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
          configsFound = true;
       }
+
+      // look for host configs
+      Path hostConfigsPath = testRigPath
+            .resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
+      if (Files.exists(hostConfigsPath)) {
+         answer.append(serializeHostConfigs(testRigPath, outputPath));
+         configsFound = true;
+      }
+
 
       if (!configsFound) {
          throw new BatfishException("No valid configurations found");

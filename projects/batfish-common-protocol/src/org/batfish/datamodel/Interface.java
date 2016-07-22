@@ -168,6 +168,15 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
+   private static InterfaceType computeHostInterfaceType(String name) {
+      if (name.startsWith("lo")) {
+         return InterfaceType.LOOPBACK;
+      }
+      else {
+         return InterfaceType.PHYSICAL;
+      }
+   }
+
    public static InterfaceType computeInterfaceType(String name,
          ConfigurationFormat format) {
       switch (format) {
@@ -189,12 +198,16 @@ public final class Interface extends ComparableStructure<String> {
       case FLAT_VYOS:
          return computeVyosInterfaceType(name);
 
+      case HOST:
+         return computeHostInterfaceType(name);
+         
       case MRV:
          // TODO: find out if other interface types are possible
          return InterfaceType.PHYSICAL;
 
       case EMPTY:
       case MSS:
+      case IPTABLES:
       case UNKNOWN:
       case VXWORKS:
       default:

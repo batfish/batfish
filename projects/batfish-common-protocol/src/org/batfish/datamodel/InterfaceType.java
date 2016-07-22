@@ -6,5 +6,5 @@ public enum InterfaceType {
    PHYSICAL,
    REDUNDANT,
    VLAN,
-   VPN
+   VPN, 
 }

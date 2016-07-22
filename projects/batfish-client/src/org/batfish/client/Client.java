@@ -246,6 +246,15 @@ public class Client {
                _settings.getLogFile(), false, false);
          break;
       case genquestions:
+         if (_settings.getQuestionsDir() == null) {
+            System.err
+            .println("org.batfish.client: Out dir not specified while running in genquestions mode.");
+            System.err
+            .printf(
+                  "Use '-%s <cmdfile>'\n",
+                  Settings.ARG_QUESTIONS_DIR);
+            System.exit(1);            
+         }
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
                _settings.getLogFile(), false, false);
          break;

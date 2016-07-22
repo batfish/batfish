@@ -80,6 +80,7 @@ public class BfConsts {
    public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
    public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
+   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
    public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";

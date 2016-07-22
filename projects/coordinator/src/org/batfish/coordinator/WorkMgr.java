@@ -915,19 +915,19 @@ public class WorkMgr {
 
       File[] subFileList = fileList[0].listFiles();
 
-      boolean foundConfigs = false;
-      for (File file : subFileList) {
-         if (file.isDirectory() && file.getName().equals("configs")) {
-            foundConfigs = true;
-            break;
-         }
-      }
-
-      if (!foundConfigs) {
-         FileUtils.deleteDirectory(testrigDir);
-         throw new Exception(
-               "Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");
-      }
+//      boolean foundConfigs = false;
+//      for (File file : subFileList) {
+//         if (file.isDirectory() && file.getName().equals("configs")) {
+//            foundConfigs = true;
+//            break;
+//         }
+//      }
+//
+//      if (!foundConfigs) {
+//         FileUtils.deleteDirectory(testrigDir);
+//         throw new Exception(
+//               "Unexpected packaging of test rig. Did not find configs folder inside the top-level folder");
+//      }
 
       // things look ok, now make the move
       for (File file : subFileList) {

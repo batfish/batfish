@@ -25,7 +25,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_LOG_LEVEL = "loglevel";
    private static final String ARG_NO_SANITY_CHECK = "nosanitycheck";
    private static final String ARG_PERIOD_CHECK_WORK = "periodcheckworkms";
-   private static final String ARG_QUESTIONS_DIR = "questionsdir";
+   public static final String ARG_QUESTIONS_DIR = "questionsdir";
    public static final String ARG_RUN_MODE = "runmode";
    public static final String ARG_TESTRIG_DIR = "testrigdir";
    public static final String ARG_TESTRIG_ID = "testrigid";
@@ -145,7 +145,6 @@ public class Settings extends BaseSettings {
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_NO_SANITY_CHECK, false);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-      setDefaultProperty(ARG_QUESTIONS_DIR, "questions_lib");
       setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
