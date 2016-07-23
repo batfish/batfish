@@ -28,7 +28,6 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.util.BatfishObjectMapper;

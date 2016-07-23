@@ -5,11 +5,9 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.QuestionException;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Answer {
 
