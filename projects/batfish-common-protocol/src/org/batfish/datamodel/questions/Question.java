@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.codehaus.jettison.json.JSONException;
@@ -13,6 +14,8 @@ import org.codehaus.jettison.json.JSONObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Question {
@@ -77,6 +80,13 @@ public abstract class Question {
       }
    }
 
+   //by default, pretty printing is Json
+   //override this function in derived classes to do something more meaningful
+   public String prettyPrint() throws JsonProcessingException {
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);      
+   }
+   
    public void setDifferential(boolean differential) {
       _differential = differential;
    }
@@ -107,5 +117,10 @@ public abstract class Question {
          }
       }
 
+   }
+   
+   public String toJsonString() throws JsonProcessingException {
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 }

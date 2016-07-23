@@ -28,6 +28,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -336,13 +337,21 @@ public class Client {
 
       Map<String, String> parameters = parseParams(paramsLine);
 
-      String questionString = QuestionHelper.getQuestionString(questionType,
-            isDiff);
-      _logger.debugf("Question Json:\n%s\n", questionString);
+      String questionString;
+      String parametersString = "";
+      
+      if (questionType.startsWith("#")) {
+         questionString = QuestionHelper.resolveMacro(questionType, paramsLine);
+      }
+      else {
+         questionString = QuestionHelper.getQuestionString(questionType,
+               isDiff);
+         _logger.debugf("Question Json:\n%s\n", questionString);
 
-      String parametersString = QuestionHelper.getParametersString(parameters);
-      _logger.debugf("Parameters Json:\n%s\n", parametersString);
-
+          parametersString = QuestionHelper.getParametersString(parameters);
+         _logger.debugf("Parameters Json:\n%s\n", parametersString);
+      }
+      
       File questionFile = createTempFile("question", questionString);
 
       boolean result = answerFile(questionFile.getAbsolutePath(),
@@ -417,11 +426,19 @@ public class Client {
          String answerString = CommonUtil
                .readFile(Paths.get(downloadedAnsFile));
          
+         //check if we need to pretty things
+         String answerStringToPrint = answerString;
+         if (_settings.getPrettyPrintAnswers()) {
+            ObjectMapper mapper = new BatfishObjectMapper();
+            Answer answer = mapper.readValue(answerString, Answer.class);
+            answerStringToPrint = answer.prettyPrint();
+         }
+         
          if (outWriter == null) {
-            _logger.output(answerString + "\n");
+            _logger.output(answerStringToPrint + "\n");
          }
          else {
-            outWriter.write(answerString);
+            outWriter.write(answerStringToPrint);
          }
 
          //the code below tests serialization/deserialization

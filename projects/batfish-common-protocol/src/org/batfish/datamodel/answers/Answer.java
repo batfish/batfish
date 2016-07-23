@@ -5,7 +5,11 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.QuestionException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Question;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Answer {
 
@@ -63,4 +67,18 @@ public class Answer {
    public void setStatus(AnswerStatus status) {
       _status = status;
    }
+   
+   public String prettyPrint() throws JsonProcessingException {
+      StringBuilder string = new StringBuilder();
+      
+      string.append("Status: " + _status + "\n");
+      if (_question != null)
+         string.append("Question: " + _question.prettyPrint());
+      else 
+         string.append("Question: null");
+      for (AnswerElement ae : _answerElements) {
+         string.append("\nAnswerElement: " + ae.prettyPrint());
+      }
+      return string.toString();
+   }   
 }

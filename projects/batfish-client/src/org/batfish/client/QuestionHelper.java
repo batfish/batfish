@@ -1,14 +1,63 @@
 package org.batfish.client;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.questions.*;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class QuestionHelper {
 
+   public enum MacroType {
+      ISOLATION("isolation"),
+      REACHABILITY("reachability"),
+      TRACEROUTE("traceroute");
+      
+      private final static Map<String, MacroType> _map = buildMap();
+
+      private static Map<String, MacroType> buildMap() {
+         Map<String, MacroType> map = new HashMap<String, MacroType>();
+         for (MacroType value : MacroType.values()) {
+            String name = value._name;
+            map.put(name, value);
+         }
+         return Collections.unmodifiableMap(map);
+      }
+
+      @JsonCreator
+      public static MacroType fromName(String name) {
+         MacroType instance = _map.get(name.toLowerCase());
+         if (instance == null) {
+            throw new BatfishException("Not a valid MacroType: \"" + name
+                  + "\"");
+         }
+         return instance;
+      }
+
+      private final String _name;
+
+      private MacroType(String name) {
+         _name = name;
+      }
+
+      public String macroTypeName() {
+         return _name;
+      }
+
+   }
+   
    public static String getParametersString(Map<String, String> parameters)
          throws Exception {
       String retString = "{\n";
@@ -23,8 +72,7 @@ public class QuestionHelper {
       return retString;
    }
 
-   public static Question getQuestion(QuestionType questionType)
-         throws Exception {
+   public static Question getQuestion(QuestionType questionType) {
 
       switch (questionType) {
       case ACL_REACHABILITY:
@@ -71,27 +119,56 @@ public class QuestionHelper {
          break;
       }
 
-      throw new Exception("Unsupported question type " + questionType);
+      throw new BatfishException("Unsupported question type " + questionType);
    }
 
-   public static Question getQuestion(String questionTypeStr) throws Exception {
+   public static Question getQuestion(String questionTypeStr) {
       QuestionType qType = QuestionType.fromName(questionTypeStr);
       return getQuestion(qType);
    }
 
-   public static String getQuestionString(QuestionType questionType)
-         throws Exception {
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(getQuestion(questionType));
+   public static String getQuestionString(QuestionType questionType) 
+         throws JsonProcessingException {      
+      return getQuestion(questionType).toJsonString();
    }
 
-   public static String getQuestionString(String questionType, boolean isDiff)
-         throws Exception {
-      ObjectMapper mapper = new BatfishObjectMapper();
-
-      Question question = getQuestion(questionType);
+   public static String getQuestionString(String questionTypeStr, boolean isDiff)
+         throws JsonProcessingException {
+      Question question = getQuestion(questionTypeStr);
       question.setDifferential(isDiff);
+      return question.toJsonString();
+   }
 
-      return mapper.writeValueAsString(question);
+   public static String resolveMacro(String macroName, String paramsLine) 
+         throws JsonProcessingException {
+      String macro = macroName.replace("#", "");
+      MacroType macroType = MacroType.fromName(macro);
+      
+      switch(macroType) {
+      case ISOLATION:
+      case REACHABILITY:
+         throw new BatfishException("Unimplemented macrotype: " + macroType);
+         
+      case TRACEROUTE:
+         String[] words = paramsLine.split(" ");
+         if (words.length < 2) {
+            throw new BatfishException("Incorrect usage for traceroute macro. " + 
+                  "Should be:\n #traceroute <srcNode> <dstip> [<protocol> [<port>]]");
+         }
+         ReachabilityQuestion question = new ReachabilityQuestion();
+         question.setReachabilityType(ReachabilityType.STANDARD);
+         String srcNode = words[0];
+         String dstIp = words[1];
+         
+         question.setIngressNodeRegex(srcNode);
+         Set<Prefix> prefixSet = new HashSet<Prefix>();
+         prefixSet.add(new Prefix(new Ip(dstIp), 32));
+         question.setDstPrefixes(prefixSet);
+         
+         return question.toJsonString();
+
+      default:
+         throw new BatfishException("Unknown macrotype: " + macroType);
+      }
    }
 }

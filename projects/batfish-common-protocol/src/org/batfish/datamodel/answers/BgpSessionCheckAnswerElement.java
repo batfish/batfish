@@ -3,11 +3,14 @@ package org.batfish.datamodel.answers;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BgpSessionCheckAnswerElement implements AnswerElement {
 
@@ -337,5 +340,12 @@ public class BgpSessionCheckAnswerElement implements AnswerElement {
    public void setRemoteIpUnknown(
          SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> remoteIpUnknown) {
       _remoteIpUnknown = remoteIpUnknown;
+   }
+   
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 }
