@@ -38,6 +38,13 @@ public class UniqueBgpPrefixOriginationAnswerElement implements AnswerElement {
       return _prefixSpaces;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setIntersections(
          SortedMap<String, SortedMap<String, PrefixSpace>> intersections) {
       _intersections = intersections;
@@ -45,13 +52,6 @@ public class UniqueBgpPrefixOriginationAnswerElement implements AnswerElement {
 
    public void setPrefixSpaces(SortedMap<String, PrefixSpace> prefixSpaces) {
       _prefixSpaces = prefixSpaces;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

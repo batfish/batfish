@@ -28,15 +28,15 @@ public class ParseVendorConfigurationAnswerElement implements AnswerElement,
       return _warnings;
    }
 
-   public void setWarnings(SortedMap<String, Warnings> warnings) {
-      _warnings = warnings;
-   }
-
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
+      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
+   }
+
+   public void setWarnings(SortedMap<String, Warnings> warnings) {
+      _warnings = warnings;
    }
 
 }

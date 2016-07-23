@@ -43,6 +43,13 @@ public class CompositeBatfishException extends RuntimeException implements
          return _contributingCauses;
       }
 
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         // TODO: change this function to pretty print the answer
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
+
       public void setCause(BatfishStackTrace cause) {
          _cause = cause;
       }
@@ -50,13 +57,6 @@ public class CompositeBatfishException extends RuntimeException implements
       public void setContributingCauses(
             List<BatfishStackTrace> contributingCauses) {
          _contributingCauses = contributingCauses;
-      }
-      
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         //TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
    }
 
@@ -81,7 +81,7 @@ public class CompositeBatfishException extends RuntimeException implements
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
+      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }

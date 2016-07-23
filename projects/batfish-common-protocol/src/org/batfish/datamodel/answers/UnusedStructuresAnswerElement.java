@@ -29,15 +29,15 @@ public class UnusedStructuresAnswerElement implements AnswerElement {
       return _unusedStructures;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setUnusedStructures(
          SortedMap<String, SortedMap<Integer, String>> undefinedReferences) {
       _unusedStructures = undefinedReferences;
-   }
-   
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

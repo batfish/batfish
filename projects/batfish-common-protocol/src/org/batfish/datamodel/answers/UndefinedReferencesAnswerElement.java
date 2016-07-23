@@ -29,16 +29,16 @@ public class UndefinedReferencesAnswerElement implements AnswerElement {
       return _undefinedReferences;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setUndefinedReferences(
          SortedMap<String, SortedMap<Integer, String>> undefinedReferences) {
       _undefinedReferences = undefinedReferences;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

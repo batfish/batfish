@@ -41,6 +41,13 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
       return _enabledIps;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setAllIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> allIps) {
       _allIps = allIps;
    }
@@ -48,13 +55,6 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
    public void setEnabledIps(
          SortedMap<Ip, SortedSet<NodeInterfacePair>> enabledIps) {
       _enabledIps = enabledIps;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

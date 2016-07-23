@@ -147,6 +147,13 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
       return _sentIbgpAdvertisements;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)
    public void setAllRequestedAdvertisements(
          SortedSet<BgpAdvertisement> allRequestedAdvertisements) {
@@ -175,13 +182,6 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    public void setSentIbgpAdvertisements(
          SortedMap<String, SortedSet<BgpAdvertisement>> sentIbgpAdvertisements) {
       _sentIbgpAdvertisements = sentIbgpAdvertisements;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

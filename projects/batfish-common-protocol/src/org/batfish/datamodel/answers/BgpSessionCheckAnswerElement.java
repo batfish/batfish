@@ -222,6 +222,13 @@ public class BgpSessionCheckAnswerElement implements AnswerElement {
       return _remoteIpUnknown;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setAllBgpNeighborSummarys(
          SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> allBgpNeighborSummarys) {
       _allBgpNeighborSummarys = allBgpNeighborSummarys;
@@ -340,12 +347,5 @@ public class BgpSessionCheckAnswerElement implements AnswerElement {
    public void setRemoteIpUnknown(
          SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> remoteIpUnknown) {
       _remoteIpUnknown = remoteIpUnknown;
-   }
-   
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

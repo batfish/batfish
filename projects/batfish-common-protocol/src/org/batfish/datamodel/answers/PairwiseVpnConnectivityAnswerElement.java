@@ -36,6 +36,13 @@ public class PairwiseVpnConnectivityAnswerElement implements AnswerElement {
       return _missingNeighbors;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setConnectedNeighbors(
          SortedMap<String, SortedSet<String>> connectedNeighbors) {
       _connectedNeighbors = connectedNeighbors;
@@ -48,13 +55,6 @@ public class PairwiseVpnConnectivityAnswerElement implements AnswerElement {
    public void setMissingNeighbors(
          SortedMap<String, SortedSet<String>> missingNeighbors) {
       _missingNeighbors = missingNeighbors;
-   }
-   
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

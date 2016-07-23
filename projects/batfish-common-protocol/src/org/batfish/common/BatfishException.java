@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * necessary cleanup and terminate gracefully with a non-zero exit status. A
  * BatfishException should always contain a detail message.
  */
-public class BatfishException extends RuntimeException implements AnswerElement{
+public class BatfishException extends RuntimeException implements AnswerElement {
 
    public static class BatfishStackTrace implements AnswerElement {
 
@@ -45,7 +45,7 @@ public class BatfishException extends RuntimeException implements AnswerElement{
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         //TODO: change this function to pretty print the answer
+         // TODO: change this function to pretty print the answer
          ObjectMapper mapper = new BatfishObjectMapper();
          return mapper.writeValueAsString(this);
       }
@@ -82,7 +82,7 @@ public class BatfishException extends RuntimeException implements AnswerElement{
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
+      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }

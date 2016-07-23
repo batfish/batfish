@@ -81,6 +81,13 @@ public class IsisLoopbacksAnswerElement implements AnswerElement {
       return _running;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setInactive(SortedMap<String, SortedSet<String>> inactive) {
       _inactive = inactive;
    }
@@ -111,12 +118,5 @@ public class IsisLoopbacksAnswerElement implements AnswerElement {
 
    public void setRunning(SortedMap<String, SortedSet<String>> running) {
       _running = running;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

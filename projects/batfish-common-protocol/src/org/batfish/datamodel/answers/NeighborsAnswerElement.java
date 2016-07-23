@@ -56,6 +56,13 @@ public class NeighborsAnswerElement implements AnswerElement {
       _lanNeighbors = new TreeSet<Edge>();
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    @JsonProperty(EBGP_NEIGHBORS_VAR)
    public void setEbgpNeighbors(SortedSet<IpEdge> ebgpNeighbors) {
       _ebgpNeighbors = ebgpNeighbors;
@@ -69,12 +76,5 @@ public class NeighborsAnswerElement implements AnswerElement {
    @JsonProperty(LAN_NEIGHBORS_VAR)
    public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
       _lanNeighbors = lanNeighbors;
-   }
-   
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

@@ -28,10 +28,10 @@ public class CompareSameNameAnswerElement implements AnswerElement {
    public Map<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
       return _equivalenceSets;
    }
-   
+
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
+      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }

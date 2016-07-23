@@ -296,7 +296,7 @@ public class NodesAnswerElement implements AnswerElement {
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
+      // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }

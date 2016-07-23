@@ -73,6 +73,13 @@ public class AclLinesAnswerElement implements AnswerElement {
       return _unreachableLines;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
       _acls = acls;
    }
@@ -85,12 +92,5 @@ public class AclLinesAnswerElement implements AnswerElement {
    public void setUnreachableLines(
          SortedMap<String, SortedMap<String, SortedSet<Integer>>> unreachableLines) {
       _unreachableLines = unreachableLines;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

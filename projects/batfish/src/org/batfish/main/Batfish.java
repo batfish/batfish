@@ -3551,11 +3551,12 @@ public class Batfish implements AutoCloseable {
             // testrig
             try {
                if (testRigPath.toFile().getCanonicalPath()
-                     .contains(path.toFile().getCanonicalPath()))
+                     .contains(path.toFile().getCanonicalPath())) {
                   throw new BatfishException("Iptables file "
                         + hostConfig.getIptablesFile() + " for host "
                         + hostConfig.getHostname()
                         + "is not contained within the testrig");
+               }
             }
             catch (IOException e) {
                throw new BatfishException("Could not get canonical path", e);

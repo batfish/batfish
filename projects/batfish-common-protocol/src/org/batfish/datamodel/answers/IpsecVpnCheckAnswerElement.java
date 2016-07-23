@@ -132,6 +132,13 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
       return _preSharedKeyMismatch;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setIncompatibleIkeProposals(
          SortedMap<String, SortedSet<IpsecVpnPair>> incompatibleIkeProposals) {
       _incompatibleIkeProposals = incompatibleIkeProposals;
@@ -155,12 +162,5 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
    public void setPreSharedKeyMismatch(
          SortedMap<String, SortedSet<IpsecVpnPair>> preSharedKeyMismatch) {
       _preSharedKeyMismatch = preSharedKeyMismatch;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

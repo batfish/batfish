@@ -52,6 +52,13 @@ public class RoutesAnswerElement implements AnswerElement {
       return _routesByHostname;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setRoutes(SortedSet<PrecomputedRoute> routes) {
       _routes = routes;
    }
@@ -59,13 +66,6 @@ public class RoutesAnswerElement implements AnswerElement {
    public void setRoutesByHostname(
          SortedMap<String, SortedSet<PrecomputedRoute>> routesByHostname) {
       _routesByHostname = routesByHostname;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
 }

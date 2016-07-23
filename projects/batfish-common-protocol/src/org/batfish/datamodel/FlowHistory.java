@@ -64,6 +64,13 @@ public class FlowHistory implements AnswerElement {
       return _traces;
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      // TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
+
    public void setFlows(SortedSet<Flow> flows) {
       _flows = flows;
    }
@@ -100,12 +107,5 @@ public class FlowHistory implements AnswerElement {
          }
       }
       return sb.toString();
-   }
-   
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      //TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 }

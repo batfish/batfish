@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReachabilityType;
@@ -16,7 +14,6 @@ import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class QuestionHelper {
 

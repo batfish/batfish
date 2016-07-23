@@ -80,13 +80,13 @@ public abstract class Question {
       }
    }
 
-   //by default, pretty printing is Json
-   //override this function in derived classes to do something more meaningful
+   // by default, pretty printing is Json
+   // override this function in derived classes to do something more meaningful
    public String prettyPrint() throws JsonProcessingException {
       ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);      
+      return mapper.writeValueAsString(this);
    }
-   
+
    public void setDifferential(boolean differential) {
       _differential = differential;
    }
@@ -118,7 +118,7 @@ public abstract class Question {
       }
 
    }
-   
+
    public String toJsonString() throws JsonProcessingException {
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
