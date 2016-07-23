@@ -5,6 +5,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.batfish.common.Warnings;
+import org.batfish.common.util.BatfishObjectMapper;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ParseVendorConfigurationAnswerElement implements AnswerElement,
       Serializable {
@@ -26,6 +30,13 @@ public class ParseVendorConfigurationAnswerElement implements AnswerElement,
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
+   }
+
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 
 }

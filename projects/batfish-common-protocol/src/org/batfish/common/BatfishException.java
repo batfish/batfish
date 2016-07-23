@@ -3,19 +3,22 @@ package org.batfish.common;
 import java.util.SortedMap;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Thrown as a fatal exception. When caught, Batfish should perform any
  * necessary cleanup and terminate gracefully with a non-zero exit status. A
  * BatfishException should always contain a detail message.
  */
-public class BatfishException extends RuntimeException implements AnswerElement {
+public class BatfishException extends RuntimeException implements AnswerElement{
 
    public static class BatfishStackTrace implements AnswerElement {
 
@@ -40,6 +43,12 @@ public class BatfishException extends RuntimeException implements AnswerElement 
          return _lineMap;
       }
 
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         //TODO: change this function to pretty print the answer
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
    }
 
    private static final long serialVersionUID = 1L;
@@ -71,4 +80,10 @@ public class BatfishException extends RuntimeException implements AnswerElement 
       return new BatfishStackTrace(this);
    }
 
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
 }

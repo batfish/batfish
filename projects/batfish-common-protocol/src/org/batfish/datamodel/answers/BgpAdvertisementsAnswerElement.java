@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -21,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonInclude(Include.NON_NULL)
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
@@ -172,6 +175,13 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    public void setSentIbgpAdvertisements(
          SortedMap<String, SortedSet<BgpAdvertisement>> sentIbgpAdvertisements) {
       _sentIbgpAdvertisements = sentIbgpAdvertisements;
+   }
+
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 
 }

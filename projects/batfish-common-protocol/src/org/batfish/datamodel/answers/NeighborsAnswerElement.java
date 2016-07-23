@@ -3,10 +3,13 @@ package org.batfish.datamodel.answers;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.IpEdge;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NeighborsAnswerElement implements AnswerElement {
 
@@ -66,5 +69,12 @@ public class NeighborsAnswerElement implements AnswerElement {
    @JsonProperty(LAN_NEIGHBORS_VAR)
    public void setLanNeighbors(SortedSet<Edge> lanNeighbors) {
       _lanNeighbors = lanNeighbors;
+   }
+   
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 }

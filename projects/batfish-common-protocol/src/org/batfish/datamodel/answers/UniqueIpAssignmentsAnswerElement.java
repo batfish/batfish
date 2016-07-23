@@ -5,8 +5,12 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
 
@@ -44,6 +48,13 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
    public void setEnabledIps(
          SortedMap<Ip, SortedSet<NodeInterfacePair>> enabledIps) {
       _enabledIps = enabledIps;
+   }
+
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 
 }

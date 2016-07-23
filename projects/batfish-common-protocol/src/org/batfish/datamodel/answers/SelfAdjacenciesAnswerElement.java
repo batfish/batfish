@@ -6,11 +6,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.Pair;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SelfAdjacenciesAnswerElement implements AnswerElement {
 
@@ -71,6 +74,13 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
    public void setSelfAdjacencies(
          SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> selfAdjacencies) {
       _selfAdjacencies = selfAdjacencies;
+   }
+
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 
 }

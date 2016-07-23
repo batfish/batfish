@@ -3,6 +3,11 @@ package org.batfish.datamodel.answers;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.batfish.common.util.BatfishObjectMapper;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class UnusedStructuresAnswerElement implements AnswerElement {
 
    private SortedMap<String, SortedMap<Integer, String>> _unusedStructures;
@@ -28,5 +33,11 @@ public class UnusedStructuresAnswerElement implements AnswerElement {
          SortedMap<String, SortedMap<Integer, String>> undefinedReferences) {
       _unusedStructures = undefinedReferences;
    }
-
+   
+   @Override
+   public String prettyPrint() throws JsonProcessingException {
+      //TODO: change this function to pretty print the answer
+      ObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
+   }
 }
