@@ -194,6 +194,8 @@ function_sig('VlanNumber', 2).
 'AdministrativeDistance'('cisco', 'ospfE1', 110).
 'AdministrativeDistance'('cisco', 'ospfE2', 110).
 
+'AdministrativeDistance'('host', 'connected', 0).
+
 'AdministrativeDistance'('juniper', 'bgp', 170).
 'AdministrativeDistance'('juniper', 'ibgp', 170).
 'AdministrativeDistance'('juniper', 'connected', 0).
