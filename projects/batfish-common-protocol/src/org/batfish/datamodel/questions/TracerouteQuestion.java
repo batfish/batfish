@@ -121,6 +121,9 @@ public class TracerouteQuestion extends Question {
       if (_srcIp != null) {
          flowBuilder.setSrcIp(_srcIp);
       }
+      else {
+         flowBuilder.setSrcIp(Ip.AUTO);
+      }
       if (_srcPort != null) {
          flowBuilder.setSrcPort(_srcPort);
       }

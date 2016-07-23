@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class Ip implements Comparable<Ip>, Serializable {
 
+   public static final Ip AUTO = new Ip(-1l);
+
    public static final Ip MAX = new Ip(0xFFFFFFFFl);
 
    private static final long serialVersionUID = 1L;
@@ -162,7 +164,12 @@ public class Ip implements Comparable<Ip>, Serializable {
    @JsonValue
    public String toString() {
       if (!valid()) {
-         return "INVALID_IP(" + _ip + "l)";
+         if (_ip == -1l) {
+            return "AUTO/NONE(-1l)";
+         }
+         else {
+            return "INVALID_IP(" + _ip + "l)";
+         }
       }
       else {
          return ((_ip >> 24) & 0xFF) + "." + ((_ip >> 16) & 0xFF) + "."

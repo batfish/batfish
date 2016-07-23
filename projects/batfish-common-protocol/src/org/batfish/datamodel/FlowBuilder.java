@@ -24,6 +24,8 @@ public class FlowBuilder {
 
    private Integer _srcPort;
 
+   private Integer _state;
+
    private String _tag;
 
    private Integer _tcpFlagsAck;
@@ -41,8 +43,6 @@ public class FlowBuilder {
    private Integer _tcpFlagsSyn;
 
    private Integer _tcpFlagsUrg;
-
-   private Integer _state;
 
    public FlowBuilder() {
       _dscp = 0;
@@ -79,6 +79,86 @@ public class FlowBuilder {
             _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
    }
 
+   public Integer getDscp() {
+      return _dscp;
+   }
+
+   public Ip getDstIp() {
+      return _dstIp;
+   }
+
+   public Integer getDstPort() {
+      return _dstPort;
+   }
+
+   public Integer getEcn() {
+      return _ecn;
+   }
+
+   public Integer getIcmpCode() {
+      return _icmpCode;
+   }
+
+   public Integer getIcmpType() {
+      return _icmpType;
+   }
+
+   public String getIngressNode() {
+      return _ingressNode;
+   }
+
+   public IpProtocol getIpProtocol() {
+      return _ipProtocol;
+   }
+
+   public Ip getSrcIp() {
+      return _srcIp;
+   }
+
+   public Integer getSrcPort() {
+      return _srcPort;
+   }
+
+   public Integer getState() {
+      return _state;
+   }
+
+   public String getTag() {
+      return _tag;
+   }
+
+   public Integer getTcpFlagsAck() {
+      return _tcpFlagsAck;
+   }
+
+   public Integer getTcpFlagsCwr() {
+      return _tcpFlagsCwr;
+   }
+
+   public Integer getTcpFlagsEce() {
+      return _tcpFlagsEce;
+   }
+
+   public Integer getTcpFlagsFin() {
+      return _tcpFlagsFin;
+   }
+
+   public Integer getTcpFlagsPsh() {
+      return _tcpFlagsPsh;
+   }
+
+   public Integer getTcpFlagsRst() {
+      return _tcpFlagsRst;
+   }
+
+   public Integer getTcpFlagsSyn() {
+      return _tcpFlagsSyn;
+   }
+
+   public Integer getTcpFlagsUrg() {
+      return _tcpFlagsUrg;
+   }
+
    public void setDscp(Integer dscp) {
       _dscp = dscp;
    }
@@ -88,6 +168,10 @@ public class FlowBuilder {
    }
 
    public void setDstPort(int dstPort) {
+      _dstPort = dstPort;
+   }
+
+   public void setDstPort(Integer dstPort) {
       _dstPort = dstPort;
    }
 
@@ -116,6 +200,10 @@ public class FlowBuilder {
    }
 
    public void setSrcPort(int srcPort) {
+      _srcPort = srcPort;
+   }
+
+   public void setSrcPort(Integer srcPort) {
       _srcPort = srcPort;
    }
 
