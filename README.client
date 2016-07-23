@@ -19,13 +19,13 @@
 # initialize the testrig; only parsing for now; we'll do dataplane later
 init-testrig -nodataplane test_rigs/example
 
-# answer two simple questiosn around what routers are running
-answer example_questions/print_ebgp_nodes.q
-answer example_questions/print_ibgp_nodes.q
+# answer two simple questions on adjacencies
+get neighbors 
+get neighbors neighborType=["ebgp"]
 
 # unique IP assignments and if loopbacks are correctly configured
-answer example_questions/unique_ip_assignments.q
-answer example_questions/ospf_loopbacks.q
+get uniqueipassignments
+get ospfloopbacks
 
 # generate the dataplanne
 generate-dataplane
