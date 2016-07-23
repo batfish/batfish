@@ -2,14 +2,11 @@ package org.batfish.client;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.ReachabilityType;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,9 +14,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class QuestionHelper {
 
+
    public enum MacroType {
       ISOLATION("isolation"),
-      REACHABILITY("reachability"),
+      REACHABILITY("universalreachability"),
       TRACEROUTE("traceroute");
       
       private final static Map<String, MacroType> _map = buildMap();
@@ -52,7 +50,6 @@ public class QuestionHelper {
       public String macroTypeName() {
          return _name;
       }
-
    }
    
    public static String getParametersString(Map<String, String> parameters)
@@ -143,24 +140,33 @@ public class QuestionHelper {
       
       switch(macroType) {
       case ISOLATION:
-      case REACHABILITY:
          throw new BatfishException("Unimplemented macrotype: " + macroType);
+
+      case REACHABILITY:
          
       case TRACEROUTE:
          String[] words = paramsLine.split(" ");
-         if (words.length < 2) {
+         if (words.length < 2 || words.length > 3) {
             throw new BatfishException("Incorrect usage for traceroute macro. " + 
-                  "Should be:\n #traceroute <srcNode> <dstip> [<protocol> [<port>]]");
+                  "Should be:\n #traceroute <srcNode> <dstip> [<protocol>]");
          }
-         ReachabilityQuestion question = new ReachabilityQuestion();
-         question.setReachabilityType(ReachabilityType.STANDARD);
+         TracerouteQuestion question = new TracerouteQuestion();
          String srcNode = words[0];
          String dstIp = words[1];
          
-         question.setIngressNodeRegex(srcNode);
-         Set<Prefix> prefixSet = new HashSet<Prefix>();
-         prefixSet.add(new Prefix(new Ip(dstIp), 32));
-         question.setDstPrefixes(prefixSet);
+         question.setIngressNode(srcNode);
+         question.setDstIp(new Ip(dstIp));
+
+         if (words.length == 3) {
+            String protocol = words[2];
+            MyApplication application = new MyApplication(protocol);
+            question.setIpProtocol(application.getIpProtocol());
+            if (application.getPort() != null)
+               question.setDstPort(application.getPort());            
+         }
+         else {
+            question.setIpProtocol(IpProtocol.ICMP);
+         }
          
          return question.toJsonString();
 

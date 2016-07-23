@@ -30,9 +30,9 @@ get ospfloopbacks
 # generate the dataplanne
 generate-dataplane
 
-# virtual traceroutes
-answer example_questions/traceroute.q ingress_node=as2host1
-answer example_questions/traceroute.q ingress_node=as3core1 dst_ip=2.128.0.101
+# traceroutes (shows multipath)
+# get #traceroute host1 1.0.2.2
+get traceroute ingressNode=host1 | dstIp=1.0.2.2 | srcIp=2.128.0.101
 
 # reachability analysis
 answer example_questions/reachability.q
