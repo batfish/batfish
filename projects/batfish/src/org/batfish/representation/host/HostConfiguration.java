@@ -203,6 +203,8 @@ public class HostConfiguration implements VendorConfiguration {
       String hostname = getHostname();
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(ConfigurationFormat.HOST);
+      _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+      _c.setDefaultInboundAction(LineAction.ACCEPT);
       _c.setRoles(_roles);
 
       // add interfaces

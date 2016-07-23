@@ -38,6 +38,16 @@ public class ConvertConfigurationJob extends
          if (VendorConfiguration.class.isInstance(_configObject)) {
             Configuration configuration = ((VendorConfiguration) _configObject)
                   .toVendorIndependentConfiguration(_warnings);
+            if (configuration.getDefaultCrossZoneAction() == null) {
+               throw new BatfishException(
+                     "Implementation error: missing default cross-zone action for host: '"
+                           + configuration.getHostname() + "'");
+            }
+            if (configuration.getDefaultInboundAction() == null) {
+               throw new BatfishException(
+                     "Implementation error: missing default inbound action for host: '"
+                           + configuration.getHostname() + "'");
+            }
             configurations.put(_name, configuration);
          }
          // so far we have only two options. its AWS VPCs or router configs

@@ -4,7 +4,7 @@
 	"hostInterfaces" : {
 		"eth0" : {
 			"name": "eth0",
-                        "prefix" : "2.128.1.101/32"
+                        "prefix" : "2.128.1.101/16"
 		}
 	}
 }
