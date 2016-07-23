@@ -172,4 +172,15 @@ public class HeaderSpace implements Serializable {
             + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
+   public final boolean unrestricted() {
+      boolean ret = _dscps.isEmpty() && _dstIpWildcards.isEmpty()
+            && _dstPortRanges.isEmpty() && _ecns.isEmpty()
+            && _icmpCode == IcmpCode.UNSET && _icmpType == IcmpType.UNSET
+            && _protocols.isEmpty() && _srcIpWildcards.isEmpty()
+            && _srcOrDstIpWildcards.isEmpty() && _srcOrDstPortRanges.isEmpty()
+            && _srcPortRanges.isEmpty() && _states.isEmpty()
+            && _tcpFlags.isEmpty();
+      return ret;
+   }
+
 }

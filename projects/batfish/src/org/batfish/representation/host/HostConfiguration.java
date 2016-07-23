@@ -12,6 +12,9 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.collections.RoleSet;
@@ -27,11 +30,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HostConfiguration implements VendorConfiguration {
 
+   private static final String FILTER_FORWARD = "filter::FORWARD";
+
+   private static final Object FILTER_INPUT = "filter::INPUT";
+
+   private static final Object FILTER_OUTPUT = "filter::OUTPUT";
+
    private static final String HOST_INTERFACES_VAR = "hostInterfaces";
 
    private static final String HOSTNAME_VAR = "hostname";
 
    private static final String IPTABLES_FILE_VAR = "iptablesFile";
+
+   private static final String MANGLE_FORWARD = "mangle::FORWARD";
+
+   private static final String MANGLE_INPUT = "mangle::INPUT";
+
+   private static final String MANGLE_OUTPUT = "mangle::OUTPUT";
+
+   private static final String MANGLE_POSTROUTING = "mangle::POSTROUTING";
+
+   private static final String MANGLE_PREROUTING = "mangle::PREROUTING";
+
+   private static final String NAT_OUTPUT = "nat::OUTPUT";
+
+   private static final String NAT_PREROUTING = "nat::PREROUTING";
+
+   private static final String RAW_OUTPUT = "raw::OUTPUT";
+
+   private static final String RAW_PREROUTING = "raw::PREROUTING";
 
    /**
     *
@@ -141,6 +168,34 @@ public class HostConfiguration implements VendorConfiguration {
             "Cannot set vendor for host configuration");
    }
 
+   private boolean simple() {
+      String[] aclsToCheck = new String[] {
+            RAW_PREROUTING,
+            MANGLE_PREROUTING,
+            NAT_PREROUTING,
+            MANGLE_INPUT,
+            RAW_OUTPUT,
+            MANGLE_OUTPUT,
+            NAT_OUTPUT,
+            MANGLE_FORWARD,
+            FILTER_FORWARD,
+            MANGLE_POSTROUTING };
+      for (String aclName : aclsToCheck) {
+         IpAccessList acl = _c.getIpAccessLists().get(aclName);
+         if (acl != null) {
+            for (IpAccessListLine line : acl.getLines()) {
+               if (line.getAction() == LineAction.REJECT) {
+                  return false;
+               }
+               if (!line.unrestricted()) {
+                  return false;
+               }
+            }
+         }
+      }
+      return true;
+   }
+
    @Override
    public Configuration toVendorIndependentConfiguration(Warnings warnings)
          throws VendorConversionException {
@@ -159,6 +214,18 @@ public class HostConfiguration implements VendorConfiguration {
       // add iptables
       if (_iptablesVendorConfig != null) {
          _iptablesVendorConfig.addAsIpAccessLists(_c, warnings);
+      }
+
+      // apply acls to interfaces
+      if (simple()) {
+         for (Interface iface : _c.getInterfaces().values()) {
+            iface.setIncomingFilter(_c.getIpAccessLists().get(FILTER_INPUT));
+            iface.setOutgoingFilter(_c.getIpAccessLists().get(FILTER_OUTPUT));
+         }
+      }
+      else {
+         _warnings
+               .unimplemented("Do not support complicated iptables rules yet");
       }
 
       if (_staticRoutes.isEmpty()) {
