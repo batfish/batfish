@@ -20,7 +20,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    private static long ipStrToLong(String addr) {
       String[] addrArray = addr.split("\\.");
       if (addrArray.length != 4) {
-         if (addr.startsWith("INVALID_IP")) {
+         if (addr.startsWith("INVALID_IP") || addr.startsWith("AUTO/NONE")) {
             String[] tail = addr.split("\\(");
             if (tail.length == 2) {
                String[] longStrParts = tail[1].split("l");
