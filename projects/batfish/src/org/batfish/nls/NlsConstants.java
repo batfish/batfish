@@ -217,6 +217,7 @@ public class NlsConstants {
             "BgpNeighbors",
             "BgpNeighborSendCommunity",
             "ConnectedRoute",
+            "Fib",
             "GeneratedRouteAttributePolicy",
             "IbgpNeighbors",
             "Ip",

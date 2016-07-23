@@ -194,6 +194,8 @@ function_sig('VlanNumber', 2).
 'AdministrativeDistance'('cisco', 'ospfE1', 110).
 'AdministrativeDistance'('cisco', 'ospfE2', 110).
 
+'AdministrativeDistance'('host', 'connected', 0).
+
 'AdministrativeDistance'('juniper', 'bgp', 170).
 'AdministrativeDistance'('juniper', 'ibgp', 170).
 'AdministrativeDistance'('juniper', 'connected', 0).
@@ -1462,7 +1464,9 @@ need_PolicyMapMatchAdvert(Map, Advert)
          \+ 'HasIp'(NextHop, Ip),
          'Fib'(NextHop, Ip, _, NextHopOutInt, _, _, _),
          NextHopOutInt \== NextHopInt
-      )
+      ) ;
+      % network address is matchNet - workaround for z3 not being able to predict reachability of yet-unseen ips
+      'Network_address'(MatchNet,Ip)
    ).
 % static null interface-only route -- drop
 'Fib'(Node, Ip, Prefix_length, Interface, NextHop, NextHopInt, NextHopIp) :-
