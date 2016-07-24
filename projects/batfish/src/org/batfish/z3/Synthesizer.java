@@ -342,7 +342,7 @@ public class Synthesizer {
             .add(new Comment(
                   "Rules for sending destination routed packets to preoutIface stage"));
       for (String hostname : _fibs.keySet()) {
-         TreeSet<FibRow> fibSet = _fibs.get(hostname);
+         TreeSet<FibRow> fibSet = new TreeSet<FibRow>(_fibs.get(hostname));
          FibRow firstRow = fibSet.first();
          if (!firstRow.getPrefix().equals(Prefix.ZERO)) {
             // no default route, so add one that drops traffic
