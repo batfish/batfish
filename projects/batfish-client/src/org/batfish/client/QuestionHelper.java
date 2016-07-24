@@ -20,7 +20,8 @@ public class QuestionHelper {
 
 
    public enum MacroType {
-      REACHABILITY("reachability"),
+      CHECKPROTECTION("checkprotection"),
+      CHECKREACHABILITY("checkreachability"),
       TRACEROUTE("traceroute");
       
       private final static Map<String, MacroType> _map = buildMap();
@@ -136,71 +137,88 @@ public class QuestionHelper {
       return question.toJsonString();
    }
 
+   public static ReachabilityQuestion getReachabilityQuestion(
+         String dstIp, String protocol, String ingressNodeRegex, 
+         ForwardingAction action) {
+      ReachabilityQuestion question = new ReachabilityQuestion();
+      
+      Set<Prefix> prefixSet = new HashSet<Prefix>();
+      prefixSet.add(new Prefix(new Ip(dstIp), 32));
+      question.setDstPrefixes(prefixSet);
+
+      boolean inverted = false;
+      
+      if (protocol.startsWith("!")) {
+         inverted = true;
+         protocol = protocol.replace("!", ""); 
+      }
+      
+      MyApplication application = new MyApplication(protocol);
+      
+      int protoNum = application.getIpProtocol().number();
+      Set<SubRange> protocolRanges = new HashSet<SubRange>();
+      if (inverted) {
+         protocolRanges.addAll(SubRange.invertedRange(protoNum, 0 , 255));
+      }
+      else {
+         protocolRanges.add(new SubRange(protoNum));        
+      }
+      question.setIpProtocolRange(protocolRanges);
+      
+      if (application.getPort() != null) {
+         int portNum = application.getPort();
+         Set<SubRange> portRanges = new HashSet<SubRange>();
+         if (inverted) {
+            portRanges.addAll(SubRange.invertedRange(portNum, 0, 65535));
+         }
+         else {
+            portRanges.add(new SubRange(portNum));                                   
+         }
+         question.setDstPortRange(portRanges);            
+      }
+      
+      if (ingressNodeRegex != null) {
+         question.setIngressNodeRegex(ingressNodeRegex);
+      }
+      
+      Set<ForwardingAction> actionSet = new HashSet<ForwardingAction>();
+      actionSet.add(action);
+      question.setActions(actionSet);
+
+      return question;
+   }
+   
    public static String resolveMacro(String macroName, String paramsLine) 
          throws JsonProcessingException {
       String macro = macroName.replace("#", "");
       MacroType macroType = MacroType.fromName(macro);
       
       switch(macroType) {
-      case REACHABILITY: {
+      case CHECKPROTECTION: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
             throw new BatfishException("Incorrect usage for noreachability macro. " + 
-                  "Should be:\n #reachability <dstip> <protocol> [<ingressNodeRegex>]");
+                  "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
-         ReachabilityQuestion question = new ReachabilityQuestion();
          String dstIp = words[0];
          String protocol = words[1];
+         String ingressNodeRegex = (words.length == 3)? words[2] : null;
          
-         Set<Prefix> prefixSet = new HashSet<Prefix>();
-         prefixSet.add(new Prefix(new Ip(dstIp), 32));
-         question.setDstPrefixes(prefixSet);
-
-         boolean inverted = false;
+         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.ACCEPT)
+               .toJsonString();
+      }
+      case CHECKREACHABILITY: {
+         String[] words = paramsLine.split(" ");
+         if (words.length < 2 || words.length > 3) {
+            throw new BatfishException("Incorrect usage for noreachability macro. " + 
+                  "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
+         }
+         String dstIp = words[0];
+         String protocol = words[1];
+         String ingressNodeRegex = (words.length == 3)? words[2] : null;
          
-         if (protocol.startsWith("!")) {
-            inverted = true;
-            protocol = protocol.replace("!", ""); 
-         }
-         
-         MyApplication application = new MyApplication(protocol);
-         
-         int protoNum = application.getIpProtocol().number();
-         Set<SubRange> protocolRanges = new HashSet<SubRange>();
-         if (inverted) {
-            protocolRanges.addAll(SubRange.invertedRange(protoNum, 0 , 255));
-         }
-         else {
-            protocolRanges.add(new SubRange(protoNum));        
-         }
-         question.setIpProtocolRange(protocolRanges);
-         
-         if (application.getPort() != null) {
-            int portNum = application.getPort();
-            Set<SubRange> portRanges = new HashSet<SubRange>();
-            if (inverted) {
-               portRanges.addAll(SubRange.invertedRange(portNum, 0, 65535));
-            }
-            else {
-               portRanges.add(new SubRange(portNum));                                   
-            }
-            question.setDstPortRange(portRanges);            
-         }
-         
-         if (words.length == 3) {
-            question.setIngressNodeRegex(words[2]);
-         }
-         
-         Set<ForwardingAction> actionSet = new HashSet<ForwardingAction>();
-         if (inverted) {
-            actionSet.add(ForwardingAction.ACCEPT);
-         }
-         else {
-            actionSet.add(ForwardingAction.DROP);
-         }
-         question.setActions(actionSet);
-
-         return question.toJsonString();
+         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.DROP)
+               .toJsonString();
       }
       case TRACEROUTE: {
          String[] words = paramsLine.split(" ");

@@ -263,43 +263,42 @@ public class TracerouteQuestion extends Question {
    @Override 
    public String prettyPrint() {
       try {
-         String retString = String.format("traceroute %singressNode=\"%s\"", 
+         String retString = String.format("traceroute %singressNode=%s", 
                prettyPrintBase(), _ingressNode);
-         //we only print non-default values
-         TracerouteQuestion defaultQuestion = new TracerouteQuestion();
-         if (_dscp != null && !_dscp.equals(defaultQuestion._dscp)) 
+         //we only print "interesting" values
+         if (_dscp != null) 
             retString += String.format(" | dscp=%s", _dscp); 
-         if (_dstIp != null && !_dstIp.equals(defaultQuestion._dstIp)) 
+         if (_dstIp != null) 
             retString += String.format(" | dstIp=%s", _dstIp); 
-         if (_dstPort != null && !_dstPort.equals(defaultQuestion._dstPort)) 
+         if (_dstPort != null) 
             retString += String.format(" | dstPort=%s", _dstPort); 
-         if (_ecn != null && !_ecn.equals(defaultQuestion._ecn)) 
+         if (_ecn != null) 
             retString += String.format(" | ecn=%s", _ecn); 
-         if (_icmpCode != null && !_icmpCode.equals(defaultQuestion._icmpCode)) 
+         if (_icmpCode != null) 
             retString += String.format(" | icmpCode=%s", _icmpCode); 
-         if (_icmpType != null && !_icmpType.equals(defaultQuestion._icmpType)) 
+         if (_icmpType != null) 
             retString += String.format(" | icmpType=%s", _icmpType); 
-         if (_ipProtocol != null && !_ipProtocol.equals(defaultQuestion._ipProtocol)) 
+         if (_ipProtocol != null) 
             retString += String.format(" | ipProtocol=%s", _ipProtocol); 
-         if (_srcIp != null && !_srcIp.equals(defaultQuestion._srcIp)) 
+         if (_srcIp != null) 
             retString += String.format(" | srcIp=%s", _srcIp); 
-         if (_srcPort != null && !_srcPort.equals(defaultQuestion._srcPort)) 
+         if (_srcPort != null) 
             retString += String.format(" | srcPort=%s", _srcPort); 
-         if (_tcpFlagsAck != null && !_tcpFlagsAck.equals(defaultQuestion._tcpFlagsAck)) 
+         if (_tcpFlagsAck != null) 
             retString += String.format(" | tcpFlagsAck=%s", _tcpFlagsAck); 
-         if (_tcpFlagsCwr != null && !_tcpFlagsCwr.equals(defaultQuestion._tcpFlagsCwr)) 
+         if (_tcpFlagsCwr != null) 
             retString += String.format(" | tcpFlagsCwr=%s", _tcpFlagsCwr); 
-         if (_tcpFlagsEce != null && !_tcpFlagsEce.equals(defaultQuestion._tcpFlagsEce)) 
+         if (_tcpFlagsEce != null) 
             retString += String.format(" | tcpFlagsEce=%s", _tcpFlagsEce); 
-         if (_tcpFlagsFin != null && !_tcpFlagsFin.equals(defaultQuestion._tcpFlagsFin)) 
+         if (_tcpFlagsFin != null) 
             retString += String.format(" | tcpFlagsFin=%s", _tcpFlagsFin); 
-         if (_tcpFlagsPsh != null && !_tcpFlagsPsh.equals(defaultQuestion._tcpFlagsPsh)) 
+         if (_tcpFlagsPsh != null) 
             retString += String.format(" | tcpFlagsPsh=%s", _tcpFlagsPsh); 
-         if (_tcpFlagsRst != null && !_tcpFlagsRst.equals(defaultQuestion._tcpFlagsRst)) 
+         if (_tcpFlagsRst != null) 
             retString += String.format(" | tcpFlagsRst=%s", _tcpFlagsRst); 
-         if (_tcpFlagsSyn != null && !_tcpFlagsSyn.equals(defaultQuestion._tcpFlagsSyn)) 
+         if (_tcpFlagsSyn != null) 
             retString += String.format(" | tcpFlagsSyn=%s", _tcpFlagsSyn);          
-         if (_tcpFlagsUrg != null && !_tcpFlagsUrg.equals(defaultQuestion._tcpFlagsUrg)) 
+         if (_tcpFlagsUrg != null) 
             retString += String.format(" | tcpFlagsUrg=%s", _tcpFlagsUrg); 
          return retString;
       } 

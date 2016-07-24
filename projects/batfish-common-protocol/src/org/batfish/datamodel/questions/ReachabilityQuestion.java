@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -146,6 +147,38 @@ public class ReachabilityQuestion extends Question {
    @Override
    public boolean getTraffic() {
       return true;
+   }
+
+   @Override 
+   public String prettyPrint() {
+      try {
+         String retString = String.format("reachability %sactions=%s", 
+               prettyPrintBase(), _actions.toString());
+         //we only print "interesting" values
+         if (_dstPrefixes != null && _dstPrefixes.size() != 0) 
+            retString += String.format(" | dstPrefixes=%s", _dstPrefixes); 
+         if (_dstPortRange != null && _dstPortRange.size() != 0) 
+            retString += String.format(" | dstPorts=%s", _dstPortRange); 
+         if (_srcPrefixes != null && _srcPrefixes.size() != 0) 
+            retString += String.format(" | srcPrefixes=%s", _srcPrefixes); 
+         if (_srcPortRange != null && _srcPortRange.size() != 0) 
+            retString += String.format(" | srcPorts=%s", _srcPortRange); 
+         if (_ipProtocolRange != null && _ipProtocolRange.size() != 0) 
+            retString += String.format(" | ipProtocols=%s", _ipProtocolRange.toString()); 
+         if (_icmpCode != IcmpCode.UNSET) 
+            retString += String.format(" | icmpCode=%s", _icmpCode); 
+         if (_icmpType != IcmpType.UNSET) 
+            retString += String.format(" | icmpType=%s", _icmpType); 
+         return retString;
+      } 
+      catch (Exception e) {
+         try {
+            return "Pretty printing failed. Printing Json\n" + toJsonString();
+         }
+         catch (JsonProcessingException e1) {
+            throw new BatfishException("Both pretty and json printing failed\n");
+         }
+      }
    }
 
    @JsonProperty(ACTIONS_VAR)
