@@ -393,11 +393,42 @@ public final class Flow implements Comparable<Flow> {
          icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
          icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
       }
-      return "Flow<ingress_node:" + _ingressNode + " srcIp:" + _srcIp
+      return "Flow<ingressNode:" + _ingressNode + " srcIp:" + _srcIp
             + " dstIp:" + _dstIp + " ipProtocol:" + _ipProtocol
             + srcPortStr + dstPortStr + " dscp: " + _dscp 
             + " ecn:" + _ecn + icmpTypeStr + icmpCodeStr 
             + " state:" + _state + tcpFlagsStr + " tag:" + _tag + ">";
    }
 
+   public String prettyPrint(String prefixString) {
+      boolean icmp = _ipProtocol == IpProtocol.ICMP;
+      boolean tcp = _ipProtocol == IpProtocol.TCP;
+      boolean udp = _ipProtocol == IpProtocol.UDP;
+      String srcPortStr="";
+      String dstPortStr = "";
+      String icmpTypeStr = "";
+      String icmpCodeStr = "";
+      String tcpFlagsStr = "";
+      if (tcp || udp) {
+         srcPortStr = " sport:" + NamedPort.nameFromNumber(_srcPort);
+         dstPortStr = " dort:" + NamedPort.nameFromNumber(_dstPort);
+      }
+      if (tcp) {
+         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
+               _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
+               _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
+      }
+      if (icmp) {
+         icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
+         icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
+      }
+      String dscpStr = (_dscp != 0)? " dscp:" + _dscp : "";
+      String ecnStr = (_ecn != 0)? " ecn:" + _ecn : "";
+      
+      return prefixString + "Flow: ingress:" + _ingressNode + " " 
+            + _srcIp + "->" + _dstIp + " " + _ipProtocol
+            + srcPortStr + dstPortStr  
+            + dscpStr + ecnStr + icmpTypeStr + icmpCodeStr 
+            + " state:" + _state + tcpFlagsStr;
+   }
 }

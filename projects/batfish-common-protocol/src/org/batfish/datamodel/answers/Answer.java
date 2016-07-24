@@ -65,7 +65,7 @@ public class Answer {
          string.append("Question: null");
       }
       for (AnswerElement ae : _answerElements) {
-         string.append("\nAnswerElement: " + ae.prettyPrint());
+         string.append("\n" + ae.prettyPrint());
       }
       return string.toString();
    }
