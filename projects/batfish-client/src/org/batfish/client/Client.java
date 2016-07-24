@@ -452,53 +452,48 @@ public class Client {
             outWriter.write(answerStringToPrint);
          }
 
-         //the code below tests serialization/deserialization
-         try {
-            ObjectMapper mapper = new BatfishObjectMapper();
-            Answer answer = mapper.readValue(answerString, Answer.class);
+         //tests serialization/deserialization when running in debug mode
+         if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
+            try {
+               ObjectMapper mapper = new BatfishObjectMapper();
+               Answer answer = mapper.readValue(answerString, Answer.class);
 
-            // printf debugging
-            // org.batfish.datamodel.answers.CompareSameNameAnswerElement
-            // csnAnswer =
-            // (org.batfish.datamodel.answers.CompareSameNameAnswerElement)
-            // answer.getAnswerElements().get(0);
-            // _logger.outputf("answer: %s",
-            // csnAnswer.getEquivalenceSets().get("RouteFilterList").get_sameNamedStructures().size());
-
-            String newAnswerString = mapper.writeValueAsString(answer);
-            JsonNode tree = mapper.readTree(answerString);
-            JsonNode newTree = mapper.readTree(newAnswerString);
-            if (!CommonUtil.checkJsonEqual(tree, newTree)) {
-               // if (!tree.equals(newTree)) {
-               _logger
-                     .errorf(
-                           "Original and recovered Json are different. Recovered = %s\n",
-                           newAnswerString);
+               String newAnswerString = mapper.writeValueAsString(answer);
+               JsonNode tree = mapper.readTree(answerString);
+               JsonNode newTree = mapper.readTree(newAnswerString);
+               if (!CommonUtil.checkJsonEqual(tree, newTree)) {
+                  // if (!tree.equals(newTree)) {
+                  _logger
+                  .errorf(
+                        "Original and recovered Json are different. Recovered = %s\n",
+                        newAnswerString);
+               }
             }
-         }
-         catch (Exception e) {
-            _logger.outputf("Could NOT deserialize Json to Answer: %s\n",
-                  e.getMessage());
+            catch (Exception e) {
+               _logger.outputf("Could NOT deserialize Json to Answer: %s\n",
+                     e.getMessage());
+            }
          }
       }
 
       // get and print the log when in debugging mode
-      if (_settings.getLogLevel())
-      _logger.output("---------------- Service Log --------------\n");
-      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-      String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
-            wItem.getTestrigName(), logFileName);
+      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
+         _logger.output("---------------- Service Log --------------\n");
+         String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
+         String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+               wItem.getTestrigName(), logFileName);
 
-      if (downloadedFile == null) {
-         _logger.errorf("Failed to get log file %s\n", logFileName);
-         return false;
-      }
-      else {
-         try (BufferedReader br = new BufferedReader(new FileReader(
-               downloadedFile))) {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-               _logger.output(line + "\n");
+         if (downloadedFile == null) {
+            _logger.errorf("Failed to get log file %s\n", logFileName);
+            return false;
+         }
+         else {
+            try (BufferedReader br = new BufferedReader(new FileReader(
+                  downloadedFile))) {
+               String line = null;
+               while ((line = br.readLine()) != null) {
+                  _logger.output(line + "\n");
+               }
             }
          }
       }
