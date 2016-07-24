@@ -242,6 +242,10 @@ public class Settings extends BaseSettings {
    public void setBatfishLogLevel(String logLevel) {
       _batfishLogLevel = logLevel;
    }
+
+   public void setLogLevel(String logLevel) {
+      _logLevel = logLevel;
+   }
    
    public void setPrettyPrintAnswers(boolean prettyPrint) {
       _prettyPrintAnswers = prettyPrint;

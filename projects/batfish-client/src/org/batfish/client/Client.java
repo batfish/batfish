@@ -482,7 +482,8 @@ public class Client {
          }
       }
 
-      // get the log
+      // get and print the log when in debugging mode
+      if (_settings.getLogLevel())
       _logger.output("---------------- Service Log --------------\n");
       String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
       String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
@@ -1093,6 +1094,7 @@ public class Client {
                return false;
             }
             _logger.setLogLevel(logLevelStr);
+            _settings.setLogLevel(logLevelStr);
             _logger.output("Changed client loglevel to " + logLevelStr + "\n");
             return true;
          }
