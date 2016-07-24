@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
 import org.batfish.client.Settings.RunMode;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.WorkItem;
@@ -79,6 +80,7 @@ public class Client {
    private static final String COMMAND_SET_DIFF_TESTRIG = "set-diff-testrig";
    private static final String COMMAND_SET_ENV = "set-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
+   private static final String COMMAND_SET_PRETTY_PRINT = "set-pretty-print";
    private static final String COMMAND_SET_TESTRIG = "set-testrig";
    private static final String COMMAND_SHOW_API_KEY = "show-api-key";
    private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
@@ -189,6 +191,9 @@ public class Client {
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
             + " <debug|info|output|warn|error>\n"
             + "\t Set the client loglevel. Default is output");
+      descs.put(COMMAND_SET_PRETTY_PRINT, COMMAND_SET_PRETTY_PRINT
+            + " <true|false>\n"
+            + "\t Whether to pretty print answers");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG
             + " <testrig-name> [environment name]\n"
             + "\t Set the base testrig");
@@ -262,6 +267,7 @@ public class Client {
          try {
             _reader = new ConsoleReader();
             _reader.setPrompt("batfish> ");
+            _reader.setExpandEvents(false);
 
             List<Completer> completors = new LinkedList<Completer>();
             completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
@@ -340,7 +346,13 @@ public class Client {
       String parametersString = "";
       
       if (questionType.startsWith("#")) {
-         questionString = QuestionHelper.resolveMacro(questionType, paramsLine);
+         try {
+            questionString = QuestionHelper.resolveMacro(questionType, paramsLine);
+         }
+         catch (BatfishException e) {
+            _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
+            return false;
+         }
       }
       else {
          questionString = QuestionHelper.getQuestionString(questionType,
@@ -1082,6 +1094,13 @@ public class Client {
             }
             _logger.setLogLevel(logLevelStr);
             _logger.output("Changed client loglevel to " + logLevelStr + "\n");
+            return true;
+         }
+         case COMMAND_SET_PRETTY_PRINT: {
+            String ppStr = parameters.get(0).toLowerCase();
+            boolean prettyPrint = Boolean.parseBoolean(ppStr);
+            _settings.setPrettyPrintAnswers(prettyPrint);
+            _logger.output("Set pretty printing answers to " + ppStr + "\n");
             return true;
          }
          case COMMAND_SET_TESTRIG: {

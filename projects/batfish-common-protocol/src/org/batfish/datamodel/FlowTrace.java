@@ -151,15 +151,18 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
    @Override
    public String toString() {
+      return toString("");
+   }
+
+   public String toString(String prefixString) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < _hops.size(); i++) {
          Edge hop = _hops.get(i);
          int num = i + 1;
-         sb.append("Hop " + num + ": " + hop.getNode1() + ":" + hop.getInt1()
+         sb.append(prefixString + "Hop " + num + ": " + hop.getNode1() + ":" + hop.getInt1()
                + " -> " + hop.getNode2() + ":" + hop.getInt2() + "\n");
       }
-      sb.append(_notes);
-      sb.append("\n");
+      sb.append(prefixString + _notes + "\n");
       return sb.toString();
    }
 

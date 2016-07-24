@@ -86,6 +86,24 @@ public abstract class Question {
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }
+   
+   protected String prettyPrintBase() {
+      String retString = "";
+      //for brevity, print only if the values are non-default
+      if (_differential) {
+         String.format("differential=%s", _differential);
+      }
+      if (_interfaceBlacklist.size() != 0) {
+         retString += String.format(" | interfaceBlacklist: %s", _interfaceBlacklist);
+      }
+      if (_nodeBlacklist.size() != 0) {
+         retString += String.format(" | interfaceBlacklist: %s", _interfaceBlacklist);
+      }
+      if (retString == "")
+         return "";
+      else 
+         return retString + " | ";
+   }
 
    public void setDifferential(boolean differential) {
       _differential = differential;

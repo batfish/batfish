@@ -66,9 +66,17 @@ public class FlowHistory implements AnswerElement {
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      // TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
+      StringBuilder retString = new StringBuilder();
+      for (String flow : _traces.keySet()) {
+         retString.append(flow + "\n");
+         for (String environment : _traces.get(flow).keySet()) {
+            retString.append("  environment:" + environment + "\n");
+            for (FlowTrace trace : _traces.get(flow).get(environment)) {
+               retString.append(trace.toString("    ") + "\n");
+            }
+         }
+      }
+      return retString.toString();
    }
 
    public void setFlows(SortedSet<Flow> flows) {

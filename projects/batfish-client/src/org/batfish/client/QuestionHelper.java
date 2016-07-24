@@ -2,11 +2,15 @@ package org.batfish.client;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.*;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,8 +20,7 @@ public class QuestionHelper {
 
 
    public enum MacroType {
-      ISOLATION("isolation"),
-      REACHABILITY("universalreachability"),
+      REACHABILITY("reachability"),
       TRACEROUTE("traceroute");
       
       private final static Map<String, MacroType> _map = buildMap();
@@ -139,12 +142,67 @@ public class QuestionHelper {
       MacroType macroType = MacroType.fromName(macro);
       
       switch(macroType) {
-      case ISOLATION:
-         throw new BatfishException("Unimplemented macrotype: " + macroType);
-
-      case REACHABILITY:
+      case REACHABILITY: {
+         String[] words = paramsLine.split(" ");
+         if (words.length < 2 || words.length > 3) {
+            throw new BatfishException("Incorrect usage for noreachability macro. " + 
+                  "Should be:\n #reachability <dstip> <protocol> [<ingressNodeRegex>]");
+         }
+         ReachabilityQuestion question = new ReachabilityQuestion();
+         String dstIp = words[0];
+         String protocol = words[1];
          
-      case TRACEROUTE:
+         Set<Prefix> prefixSet = new HashSet<Prefix>();
+         prefixSet.add(new Prefix(new Ip(dstIp), 32));
+         question.setDstPrefixes(prefixSet);
+
+         boolean inverted = false;
+         
+         if (protocol.startsWith("!")) {
+            inverted = true;
+            protocol = protocol.replace("!", ""); 
+         }
+         
+         MyApplication application = new MyApplication(protocol);
+         
+         int protoNum = application.getIpProtocol().number();
+         Set<SubRange> protocolRanges = new HashSet<SubRange>();
+         if (inverted) {
+            protocolRanges.addAll(SubRange.invertedRange(protoNum, 0 , 255));
+         }
+         else {
+            protocolRanges.add(new SubRange(protoNum));        
+         }
+         question.setIpProtocolRange(protocolRanges);
+         
+         if (application.getPort() != null) {
+            int portNum = application.getPort();
+            Set<SubRange> portRanges = new HashSet<SubRange>();
+            if (inverted) {
+               portRanges.addAll(SubRange.invertedRange(portNum, 0, 65535));
+            }
+            else {
+               portRanges.add(new SubRange(portNum));                                   
+            }
+            question.setDstPortRange(portRanges);            
+         }
+         
+         if (words.length == 3) {
+            question.setIngressNodeRegex(words[2]);
+         }
+         
+         Set<ForwardingAction> actionSet = new HashSet<ForwardingAction>();
+         if (inverted) {
+            actionSet.add(ForwardingAction.ACCEPT);
+         }
+         else {
+            actionSet.add(ForwardingAction.DROP);
+         }
+         question.setActions(actionSet);
+
+         return question.toJsonString();
+      }
+      case TRACEROUTE: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
             throw new BatfishException("Incorrect usage for traceroute macro. " + 
@@ -164,12 +222,11 @@ public class QuestionHelper {
             if (application.getPort() != null)
                question.setDstPort(application.getPort());            
          }
-         else {
-            question.setIpProtocol(IpProtocol.ICMP);
-         }
-         
+//         else {
+//            question.setIpProtocol(IpProtocol.ICMP);
+//         }         
          return question.toJsonString();
-
+      }
       default:
          throw new BatfishException("Unknown macrotype: " + macroType);
       }

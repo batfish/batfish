@@ -13,6 +13,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class TracerouteQuestion extends Question {
 
@@ -259,6 +260,59 @@ public class TracerouteQuestion extends Question {
       return true;
    }
 
+   @Override 
+   public String prettyPrint() {
+      try {
+         String retString = String.format("traceroute %singressNode=\"%s\"", 
+               prettyPrintBase(), _ingressNode);
+         //we only print non-default values
+         TracerouteQuestion defaultQuestion = new TracerouteQuestion();
+         if (_dscp != null && !_dscp.equals(defaultQuestion._dscp)) 
+            retString += String.format(" | dscp=%s", _dscp); 
+         if (_dstIp != null && !_dstIp.equals(defaultQuestion._dstIp)) 
+            retString += String.format(" | dstIp=%s", _dstIp); 
+         if (_dstPort != null && !_dstPort.equals(defaultQuestion._dstPort)) 
+            retString += String.format(" | dstPort=%s", _dstPort); 
+         if (_ecn != null && !_ecn.equals(defaultQuestion._ecn)) 
+            retString += String.format(" | ecn=%s", _ecn); 
+         if (_icmpCode != null && !_icmpCode.equals(defaultQuestion._icmpCode)) 
+            retString += String.format(" | icmpCode=%s", _icmpCode); 
+         if (_icmpType != null && !_icmpType.equals(defaultQuestion._icmpType)) 
+            retString += String.format(" | icmpType=%s", _icmpType); 
+         if (_ipProtocol != null && !_ipProtocol.equals(defaultQuestion._ipProtocol)) 
+            retString += String.format(" | ipProtocol=%s", _ipProtocol); 
+         if (_srcIp != null && !_srcIp.equals(defaultQuestion._srcIp)) 
+            retString += String.format(" | srcIp=%s", _srcIp); 
+         if (_srcPort != null && !_srcPort.equals(defaultQuestion._srcPort)) 
+            retString += String.format(" | srcPort=%s", _srcPort); 
+         if (_tcpFlagsAck != null && !_tcpFlagsAck.equals(defaultQuestion._tcpFlagsAck)) 
+            retString += String.format(" | tcpFlagsAck=%s", _tcpFlagsAck); 
+         if (_tcpFlagsCwr != null && !_tcpFlagsCwr.equals(defaultQuestion._tcpFlagsCwr)) 
+            retString += String.format(" | tcpFlagsCwr=%s", _tcpFlagsCwr); 
+         if (_tcpFlagsEce != null && !_tcpFlagsEce.equals(defaultQuestion._tcpFlagsEce)) 
+            retString += String.format(" | tcpFlagsEce=%s", _tcpFlagsEce); 
+         if (_tcpFlagsFin != null && !_tcpFlagsFin.equals(defaultQuestion._tcpFlagsFin)) 
+            retString += String.format(" | tcpFlagsFin=%s", _tcpFlagsFin); 
+         if (_tcpFlagsPsh != null && !_tcpFlagsPsh.equals(defaultQuestion._tcpFlagsPsh)) 
+            retString += String.format(" | tcpFlagsPsh=%s", _tcpFlagsPsh); 
+         if (_tcpFlagsRst != null && !_tcpFlagsRst.equals(defaultQuestion._tcpFlagsRst)) 
+            retString += String.format(" | tcpFlagsRst=%s", _tcpFlagsRst); 
+         if (_tcpFlagsSyn != null && !_tcpFlagsSyn.equals(defaultQuestion._tcpFlagsSyn)) 
+            retString += String.format(" | tcpFlagsSyn=%s", _tcpFlagsSyn);          
+         if (_tcpFlagsUrg != null && !_tcpFlagsUrg.equals(defaultQuestion._tcpFlagsUrg)) 
+            retString += String.format(" | tcpFlagsUrg=%s", _tcpFlagsUrg); 
+         return retString;
+      } 
+      catch (Exception e) {
+         try {
+            return "Pretty printing failed. Printing Json\n" + toJsonString();
+         }
+         catch (JsonProcessingException e1) {
+            throw new BatfishException("Both pretty and json printing failed\n");
+         }
+      }
+   }
+   
    public void setDscp(Integer dscp) {
       _dscp = dscp;
    }

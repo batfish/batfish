@@ -375,41 +375,29 @@ public final class Flow implements Comparable<Flow> {
       boolean icmp = _ipProtocol == IpProtocol.ICMP;
       boolean tcp = _ipProtocol == IpProtocol.TCP;
       boolean udp = _ipProtocol == IpProtocol.UDP;
-      String srcPort;
-      String dstPort;
-      String icmpType;
-      String icmpCode;
-      String tcpFlags;
+      String srcPortStr="";
+      String dstPortStr = "";
+      String icmpTypeStr = "";
+      String icmpCodeStr = "";
+      String tcpFlagsStr = "";
       if (tcp || udp) {
-         srcPort = NamedPort.nameFromNumber(_srcPort);
-         dstPort = NamedPort.nameFromNumber(_dstPort);
-      }
-      else {
-         srcPort = "N/A";
-         dstPort = "N/A";
+         srcPortStr = " srcPort:" + NamedPort.nameFromNumber(_srcPort);
+         dstPortStr = " dstPort:" + NamedPort.nameFromNumber(_dstPort);
       }
       if (tcp) {
-         tcpFlags = String.format("%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
+         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
                _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
                _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
       }
-      else {
-         tcpFlags = "N/A";
-      }
       if (icmp) {
-         icmpCode = Integer.toString(_icmpCode);
-         icmpType = Integer.toString(_icmpType);
+         icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
+         icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
       }
-      else {
-         icmpCode = "N/A";
-         icmpType = "N/A";
-      }
-      return "Flow<ingress_node:" + _ingressNode + ", src_ip:" + _srcIp
-            + ", dst_ip:" + _dstIp + ", ip_protocol:" + _ipProtocol
-            + ", src_port:" + srcPort + ", dst_port:" + dstPort + ", dscp: "
-            + _dscp + ", ecn:" + _ecn + ", icmp_type:" + icmpType
-            + ", icmp_code:" + icmpCode + ", state:" + _state + ", tcp_flags:"
-            + tcpFlags + ", tag:" + _tag + ">";
+      return "Flow<ingress_node:" + _ingressNode + " srcIp:" + _srcIp
+            + " dstIp:" + _dstIp + " ipProtocol:" + _ipProtocol
+            + srcPortStr + dstPortStr + " dscp: " + _dscp 
+            + " ecn:" + _ecn + icmpTypeStr + icmpCodeStr 
+            + " state:" + _state + tcpFlagsStr + " tag:" + _tag + ">";
    }
 
 }

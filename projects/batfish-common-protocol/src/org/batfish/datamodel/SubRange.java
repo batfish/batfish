@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.batfish.common.BatfishException;
 
@@ -96,6 +98,15 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
       return result;
    }
 
+   public static List<SubRange> invertedRange(int value, int min, int max) {
+      List<SubRange> returnRange = new LinkedList<SubRange>();
+      if (value > min) 
+         returnRange.add(new SubRange(min, value - 1));
+      if (value < max) 
+         returnRange.add(new SubRange(value + 1, max));
+      return returnRange;
+   }
+   
    @JsonValue
    public String serializedForm() {
       return String.format("%d-%d", _start, _end);
