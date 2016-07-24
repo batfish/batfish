@@ -1528,6 +1528,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitDefault_information_originate_rb_stanza(
+         Default_information_originate_rb_stanzaContext ctx) {
+      _currentPeerGroup.setDefaultOriginate(true);
+   }
+
+   @Override
    public void exitDefault_information_ro_stanza(
          Default_information_ro_stanzaContext ctx) {
       OspfProcess proc = _currentOspfProcess;
