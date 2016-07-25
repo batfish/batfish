@@ -837,10 +837,15 @@ public class Client {
          case COMMAND_GEN_DIFF_DP: {
             return generateDiffDataplane(outWriter);
          }
-         case COMMAND_GET: {
-            if (!isSetTestrig() || !isSetContainer(true)) {
+         case COMMAND_GET: 
+         case COMMAND_GET_DIFF: {
+            boolean isDiff = (command == COMMAND_GET_DIFF);
+
+            if (!isSetTestrig() || !isSetContainer(true) || 
+                 (isDiff && !isSetDiffEnvironment())) {
                return false;
             }
+            
 
             String questionType = parameters.get(0);
             String paramsLine = CommonUtil.joinStrings(" ",
@@ -858,7 +863,7 @@ public class Client {
                      
                System.err.println("paramsline = " + paramsLine);
                
-               if (!answerType(questionType, paramsLine, false, outWriter)) {
+               if (!answerType(questionType, paramsLine, isDiff, outWriter)) {
                   return false;
                }
 
@@ -871,20 +876,8 @@ public class Client {
                return true;
             }
             else {              
-               return answerType(questionType, paramsLine, false, outWriter);
+               return answerType(questionType, paramsLine, isDiff, outWriter);
             }
-         }
-         case COMMAND_GET_DIFF: {
-            if (!isSetDiffEnvironment() || !isSetTestrig()
-                  || !isSetContainer(true)) {
-               return false;
-            }
-
-            String questionType = parameters.get(0);
-            String paramsLine = CommonUtil.joinStrings(" ",
-                  Arrays.copyOfRange(words, 2 + options.size(), words.length));
-
-            return answerType(questionType, paramsLine, true, outWriter);
          }
          case COMMAND_HELP: {
             printUsage();
