@@ -11,6 +11,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,6 +61,27 @@ public class NeighborsQuestion extends Question {
       return false;
    }
 
+   @Override 
+   public String prettyPrint() {
+      try {
+         String retString = String.format("neighbors %s%s=%s | %s=%s | %s=%s", 
+               prettyPrintBase(),  
+               NODE1_REGEX_VAR, _node1Regex, 
+               NODE2_REGEX_VAR, _node2Regex, 
+               NEIGHBOR_TYPE_VAR, _neighborTypes.toString());
+         return retString;
+      } 
+      catch (Exception e) {
+         try {
+            return "Pretty printing failed. Printing Json\n" + toJsonString();
+         }
+         catch (JsonProcessingException e1) {
+            throw new BatfishException("Both pretty and json printing failed\n");
+         }
+      }
+   
+   }
+   
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
