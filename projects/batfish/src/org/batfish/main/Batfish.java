@@ -44,6 +44,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.answerer.Answerer;
 import org.batfish.common.BatfishLogger;
@@ -1757,7 +1758,14 @@ public class Batfish implements AutoCloseable {
          @Override
          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                throws IOException {
-            String fileStr = file.toString();
+
+            String fileStr;
+            if (SystemUtils.IS_OS_WINDOWS) {
+               fileStr = "\\\\?\\" + file.toString();
+            }
+            else {
+               fileStr = file.toString();
+            }
             if (fileStr.endsWith(".pl")) {
                filenames.add(fileStr);
             }
@@ -3418,6 +3426,16 @@ public class Batfish implements AutoCloseable {
       resetTimer();
       File logicDir = retrieveLogicDir();
       String[] logicFilenames = getNlsLogicFilenames(logicDir);
+      String nlsOutputDirStr;
+      String nlsInputFileStr;
+      if (SystemUtils.IS_OS_WINDOWS) {
+         nlsOutputDirStr = "\\\\?\\" + nlsOutputDir.toString();
+         nlsInputFileStr = "\\\\?\\" + nlsInputFile.toString();
+      }
+      else {
+         nlsOutputDirStr = nlsOutputDir.toString();
+         nlsInputFileStr = nlsInputFile.toString();
+      }
       DefaultExecutor executor = new DefaultExecutor();
       ByteArrayOutputStream outStream = new ByteArrayOutputStream();
       ByteArrayOutputStream errStream = new ByteArrayOutputStream();
@@ -3425,10 +3443,10 @@ public class Batfish implements AutoCloseable {
       executor.setExitValue(0);
       CommandLine cmdLine = new CommandLine(NLS_COMMAND);
       cmdLine.addArgument("-dir");
-      cmdLine.addArgument(nlsOutputDir.toString());
+      cmdLine.addArgument(nlsOutputDirStr);
       cmdLine.addArgument("-rev-lookup");
       cmdLine.addArgument("-mcc");
-      cmdLine.addArgument(nlsInputFile.toString());
+      cmdLine.addArgument(nlsInputFileStr);
       cmdLine.addArguments(logicFilenames);
       StringBuilder cmdLineSb = new StringBuilder();
       cmdLineSb.append(NLS_COMMAND + " ");
