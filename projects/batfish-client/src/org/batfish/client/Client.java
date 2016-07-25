@@ -35,6 +35,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.questions.EnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -845,7 +846,33 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            return answerType(questionType, paramsLine, false, outWriter);
+            if (QuestionType.fromName(questionType) == QuestionType.ENVIRONMENT_CREATION) {
+
+               String diffEnvName = DEFAULT_DIFF_ENV_PREFIX + 
+                     UUID.randomUUID().toString();
+
+               String prefixString = (paramsLine.trim().length() > 0)? " | " : "";
+               paramsLine += String.format("%s %s=%s", prefixString,
+                        EnvironmentCreationQuestion.ENVIRONMENT_NAME_VAR,
+                        diffEnvName);
+                     
+               System.err.println("paramsline = " + paramsLine);
+               
+               if (!answerType(questionType, paramsLine, false, outWriter)) {
+                  return false;
+               }
+
+               _currDiffEnv = diffEnvName;
+               _currDiffTestrig = _currTestrig;
+
+               _logger.outputf("Active diff testrig->environment is now %s->%s\n",
+                     _currDiffTestrig, _currDiffEnv);
+               
+               return true;
+            }
+            else {              
+               return answerType(questionType, paramsLine, false, outWriter);
+            }
          }
          case COMMAND_GET_DIFF: {
             if (!isSetDiffEnvironment() || !isSetTestrig()

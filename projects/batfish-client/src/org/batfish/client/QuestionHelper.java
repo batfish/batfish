@@ -81,6 +81,8 @@ public class QuestionHelper {
          return new BgpSessionCheckQuestion();
       case COMPARE_SAME_NAME:
          return new CompareSameNameQuestion();
+      case ENVIRONMENT_CREATION:
+         return new EnvironmentCreationQuestion();
       case ERROR:
          return new ErrorQuestion();
       case IPSEC_VPN_CHECK:

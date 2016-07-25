@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EnvironmentCreationQuestion extends Question {
 
-   private static final String ENVIRONMENT_NAME_VAR = "environmentName";
+   public static final String ENVIRONMENT_NAME_VAR = "environmentName";
    private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
    private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
