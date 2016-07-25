@@ -55,6 +55,8 @@ public class QuestionHelper {
          return _name;
       }
    }
+
+   public static final String MACRO_PREFIX = "#";
    
    public static String getParametersString(Map<String, String> parameters)
          throws Exception {
@@ -192,7 +194,7 @@ public class QuestionHelper {
    
    public static String resolveMacro(String macroName, String paramsLine) 
          throws JsonProcessingException {
-      String macro = macroName.replace("#", "");
+      String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
       
       switch(macroType) {

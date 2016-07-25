@@ -48,7 +48,7 @@ import jline.console.completer.StringsCompleter;
 public class Client {
 
    private static final String COMMAND_ANSWER = "answer";
-   private static final String COMMAND_ANSWER_DIFF = "answer-diff";
+   private static final String COMMAND_ANSWER_DELTA = "answer-delta";
    private static final String COMMAND_CAT = "cat";
    private static final String COMMAND_CHECK_API_KEY = "checkapikey";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
@@ -107,8 +107,8 @@ public class Client {
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question in the file for the default environment");
       descs.put(
-            COMMAND_ANSWER_DIFF,
-            COMMAND_ANSWER_DIFF
+            COMMAND_ANSWER_DELTA,
+            COMMAND_ANSWER_DELTA
                   + " <question-file>  [param1=value1 [param2=value2] ...]\n"
                   + "\t Answer the question in the file for the differential environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
@@ -346,7 +346,7 @@ public class Client {
       String questionString;
       String parametersString = "";
       
-      if (questionType.startsWith("#")) {
+      if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
          try {
             questionString = QuestionHelper.resolveMacro(questionType, paramsLine);
          }
@@ -746,7 +746,7 @@ public class Client {
 
             return answerFile(questionFile, paramsLine, false, outWriter);
          }
-         case COMMAND_ANSWER_DIFF: {
+         case COMMAND_ANSWER_DELTA: {
             if (!isSetDiffEnvironment() || !isSetTestrig()
                   || !isSetContainer(true)) {
                return false;
@@ -839,19 +839,22 @@ public class Client {
          }
          case COMMAND_GET: 
          case COMMAND_GET_DIFF: {
-            boolean isDiff = (command == COMMAND_GET_DIFF);
+            boolean isDiff = (command.equals(COMMAND_GET_DIFF));
 
+            System.err.printf("isDiff/command = %s/%s\n", isDiff, command);
+            
             if (!isSetTestrig() || !isSetContainer(true) || 
                  (isDiff && !isSetDiffEnvironment())) {
                return false;
             }
             
 
-            String questionType = parameters.get(0);
+            String qTypeStr = parameters.get(0);
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            if (QuestionType.fromName(questionType) == QuestionType.ENVIRONMENT_CREATION) {
+            if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX) &&
+                QuestionType.fromName(qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
 
                String diffEnvName = DEFAULT_DIFF_ENV_PREFIX + 
                      UUID.randomUUID().toString();
@@ -863,7 +866,7 @@ public class Client {
                      
                System.err.println("paramsline = " + paramsLine);
                
-               if (!answerType(questionType, paramsLine, isDiff, outWriter)) {
+               if (!answerType(qTypeStr, paramsLine, isDiff, outWriter)) {
                   return false;
                }
 
@@ -876,7 +879,7 @@ public class Client {
                return true;
             }
             else {              
-               return answerType(questionType, paramsLine, isDiff, outWriter);
+               return answerType(qTypeStr, paramsLine, isDiff, outWriter);
             }
          }
          case COMMAND_HELP: {
