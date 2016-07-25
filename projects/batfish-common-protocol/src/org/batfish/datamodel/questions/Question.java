@@ -91,7 +91,7 @@ public abstract class Question {
       String retString = "";
       //for brevity, print only if the values are non-default
       if (_differential) {
-         String.format("differential=%s", _differential);
+         retString += String.format("differential=%s", _differential);
       }
       if (_interfaceBlacklist.size() != 0) {
          retString += String.format(" | interfaceBlacklist: %s", _interfaceBlacklist);
