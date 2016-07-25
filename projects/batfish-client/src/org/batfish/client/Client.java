@@ -354,7 +354,7 @@ public class Client {
       }
       else {
          questionString = QuestionHelper
-               .getQuestionString(questionType, isDiff);
+               .getQuestionString(questionType);
          _logger.debugf("Question Json:\n%s\n", questionString);
 
          parametersString = QuestionHelper.getParametersString(parameters);
@@ -837,7 +837,7 @@ public class Client {
          }
          case COMMAND_GET:
          case COMMAND_GET_DIFF: {
-            boolean isDiff = (command == COMMAND_GET_DIFF);
+            boolean isDiff = (command.equals(COMMAND_GET_DIFF));
 
             if (!isSetTestrig() || !isSetContainer(true)
                   || (isDiff && !isSetDiffEnvironment())) {
