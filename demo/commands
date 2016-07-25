@@ -71,10 +71,10 @@ get #checkprotection 2.128.1.101 ssh as(1|3).*
 # comparing two sets of is a powerful debugging aid
 
 # initialize the delta environment and generate its dataplane
-init-diff-environment example_environments/delta
+init-diff-environment test_rigs/example-with-delta
 
 # reduced reachability between default and delta environments
-answer example_questions/reduced_reachability.q
+get-diff reachability
 
 ##############
 # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
