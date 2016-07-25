@@ -9,7 +9,7 @@
 ## % allinone -runmode interactive
 #
 ## If you want to run against www.batfish.org
-## % batfish_client 
+## % batfish_client -runmode interactive
 
 # load the testing 
 init-testrig test_rigs/example
@@ -72,11 +72,21 @@ get #checkprotection 2.128.1.101 ssh as(1|3).*
 # --> any earlier query can be executed differentially, to see if how behavior differs
 
 # initialize the delta environment and generate its dataplane
-init-diff-environment test_rigs/example-with-delta
+init-delta-environment test_rigs/example-with-delta
 
 # a particularly powerful query: reachability diff between the two environments
 get reachability type=reduced
 # --> any collateral damage is easy to see
+
+#############
+# fault-tolerance can be ensured in a similar manner by studying the impact of failures
+
+# this command creates a network view after an interface failure
+get environmentcreation interfaceBlacklist=[{hostname=as2border2,interface="FastEthernet0/0"}]
+
+# we can see if reachability changes at all after this failure
+get reachability type=reduced
+# --> any lack of fault tolerance is easy to see
 
 ##############
 # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)

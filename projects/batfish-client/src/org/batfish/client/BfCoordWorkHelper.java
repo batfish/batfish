@@ -311,42 +311,43 @@ public class BfCoordWorkHelper {
       return client.target(urlString);
    }
 
-   public WorkItem getWorkItemAnswerDiffQuestion(String questionName,
-         String containerName, String testrigName, String envName,
-         String deltaTestrig, String diffEnvName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
-      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
-      if (deltaTestrig != null) {
-         wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
-      }
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
-      return wItem;
-   }
-
    public WorkItem getWorkItemAnswerQuestion(String questionName,
          String containerName, String testrigName, String envName,
-         String deltaTestrig, String diffEnvName) {
+         String deltaTestrig, String deltaEnvName, boolean isDelta) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
       wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      if (diffEnvName != null) {
-         wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
-      }
-      if (deltaTestrig != null) {
+      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);      
+      if (deltaEnvName != null)
+         wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, deltaEnvName);         
+      if (deltaTestrig != null)
          wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
-      }
+      if (isDelta)
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");         
       wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
       wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
       return wItem;
    }
 
-   public WorkItem getWorkItemCompileDiffEnvironment(String containerName,
+//   public WorkItem getWorkItemAnswerQuestion(String questionName,
+//         String containerName, String testrigName, String envName,
+//         String deltaTestrig, String diffEnvName) {
+//      WorkItem wItem = new WorkItem(containerName, testrigName);
+//      wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
+//      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
+//      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+//      if (diffEnvName != null) {
+//         wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
+//      }
+//      if (deltaTestrig != null) {
+//         wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+//      }
+//      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
+//      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
+//      return wItem;
+//   }
+
+   public WorkItem getWorkItemCompileDeltaEnvironment(String containerName,
          String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
@@ -366,7 +367,7 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGenerateDiffDataPlane(String containerName,
+   public WorkItem getWorkItemGenerateDeltaDataPlane(String containerName,
          String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");

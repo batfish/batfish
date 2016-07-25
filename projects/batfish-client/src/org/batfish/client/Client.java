@@ -48,7 +48,7 @@ import jline.console.completer.StringsCompleter;
 public class Client {
 
    private static final String COMMAND_ANSWER = "answer";
-   private static final String COMMAND_ANSWER_DIFF = "answer-diff";
+   private static final String COMMAND_ANSWER_DELTA = "answer-delta";
    private static final String COMMAND_CAT = "cat";
    private static final String COMMAND_CHECK_API_KEY = "checkapikey";
    private static final String COMMAND_CLEAR_SCREEN = "cls";
@@ -59,14 +59,14 @@ public class Client {
    private static final String COMMAND_DIR = "dir";
    private static final String COMMAND_ECHO = "echo";
    private static final String COMMAND_EXIT = "exit";
-   private static final String COMMAND_GEN_DIFF_DP = "generate-diff-dataplane";
+   private static final String COMMAND_GEN_DELTA_DP = "generate-delta-dataplane";
    private static final String COMMAND_GEN_DP = "generate-dataplane";
    private static final String COMMAND_GET = "get";
-   private static final String COMMAND_GET_DIFF = "get-diff";
+   private static final String COMMAND_GET_DELTA = "get-delta";
    private static final String COMMAND_HELP = "help";
    private static final String COMMAND_INIT_CONTAINER = "init-container";
-   private static final String COMMAND_INIT_DIFF_ENV = "init-diff-environment";
-   private static final String COMMAND_INIT_DIFF_TESTRIG = "init-diff-testrig";
+   private static final String COMMAND_INIT_DELTA_ENV = "init-delta-environment";
+   private static final String COMMAND_INIT_DELTA_TESTRIG = "init-delta-testrig";
    private static final String COMMAND_INIT_TESTRIG = "init-testrig";
    private static final String COMMAND_LIST_CONTAINERS = "list-containers";
    private static final String COMMAND_LIST_ENVIRONMENTS = "list-environments";
@@ -77,8 +77,8 @@ public class Client {
    private static final String COMMAND_QUIT = "quit";
    private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
    private static final String COMMAND_SET_CONTAINER = "set-container";
-   private static final String COMMAND_SET_DIFF_ENV = "set-diff-environment";
-   private static final String COMMAND_SET_DIFF_TESTRIG = "set-diff-testrig";
+   private static final String COMMAND_SET_DELTA_ENV = "set-delta-environment";
+   private static final String COMMAND_SET_DELTA_TESTRIG = "set-delta-testrig";
    private static final String COMMAND_SET_ENV = "set-environment";
    private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
    private static final String COMMAND_SET_PRETTY_PRINT = "set-pretty-print";
@@ -88,13 +88,13 @@ public class Client {
    private static final String COMMAND_SHOW_CONTAINER = "show-container";
    private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
    private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
-   private static final String COMMAND_SHOW_DIFF_TESTRIG = "show-diff-testrig";
+   private static final String COMMAND_SHOW_DELTA_TESTRIG = "show-delta-testrig";
    private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
    private static final String COMMAND_TEST = "test";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
-   private static final String DEFAULT_DIFF_ENV_PREFIX = "env_";
+   private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
    private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
    private static final String DEFAULT_QUESTION_PREFIX = "q";
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
@@ -107,10 +107,10 @@ public class Client {
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question in the file for the default environment");
       descs.put(
-            COMMAND_ANSWER_DIFF,
-            COMMAND_ANSWER_DIFF
+            COMMAND_ANSWER_DELTA,
+            COMMAND_ANSWER_DELTA
                   + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-                  + "\t Answer the question in the file for the differential environment");
+                  + "\t Answer the question in the file for the delta environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
       // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
@@ -132,16 +132,16 @@ public class Client {
             + "\t Echo the message");
       descs.put(COMMAND_EXIT, COMMAND_EXIT + "\n"
             + "\t Terminate interactive client session");
-      descs.put(COMMAND_GEN_DIFF_DP, COMMAND_GEN_DIFF_DP + "\n"
-            + "\t Generate dataplane for the differential environment");
+      descs.put(COMMAND_GEN_DELTA_DP, COMMAND_GEN_DELTA_DP + "\n"
+            + "\t Generate dataplane for the delta environment");
       descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
             + "\t Generate dataplane for the default environment");
       descs.put(COMMAND_GET, COMMAND_GET
             + " <question-type>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question by type for the differential environment");
-      descs.put(COMMAND_GET_DIFF, COMMAND_GET_DIFF
+            + "\t Answer the question by type for the delta environment");
+      descs.put(COMMAND_GET_DELTA, COMMAND_GET_DELTA
             + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question by type for the differential environment");
+            + "\t Answer the question by type for the delta environment");
       descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
             + "\t Print the list of supported commands");
       descs.put(COMMAND_CHECK_API_KEY, COMMAND_CHECK_API_KEY
@@ -149,15 +149,15 @@ public class Client {
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
             + " [<container-name-prefix>]\n" + "\t Initialize a new container");
       descs.put(
-            COMMAND_INIT_DIFF_ENV,
-            COMMAND_INIT_DIFF_ENV
+            COMMAND_INIT_DELTA_ENV,
+            COMMAND_INIT_DELTA_ENV
                   + " [-nodataplane] <environment zipfile or directory> [<environment-name>]\n"
-                  + "\t Initialize the differential environment");
+                  + "\t Initialize the delta environment");
       descs.put(
-            COMMAND_INIT_DIFF_TESTRIG,
-            COMMAND_INIT_DIFF_TESTRIG
+            COMMAND_INIT_DELTA_TESTRIG,
+            COMMAND_INIT_DELTA_TESTRIG
                   + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
-                  + "\t Initialize the diff testrig with default environment");
+                  + "\t Initialize the delta testrig with default environment");
       descs.put(
             COMMAND_INIT_TESTRIG,
             COMMAND_INIT_TESTRIG
@@ -182,11 +182,11 @@ public class Client {
             + "\t Set the batfish loglevel. Default is warn");
       descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
             + " <container-name>\n" + "\t Set the current container");
-      descs.put(COMMAND_SET_DIFF_ENV, COMMAND_SET_DIFF_ENV
-            + " <environment-name>\n" + "\t Set the differential environment");
-      descs.put(COMMAND_SET_DIFF_TESTRIG, COMMAND_SET_DIFF_TESTRIG
+      descs.put(COMMAND_SET_DELTA_ENV, COMMAND_SET_DELTA_ENV
+            + " <environment-name>\n" + "\t Set the delta environment");
+      descs.put(COMMAND_SET_DELTA_TESTRIG, COMMAND_SET_DELTA_TESTRIG
             + " <testrig-name> [environment name]\n"
-            + "\t Set the differential testrig");
+            + "\t Set the delta testrig");
       descs.put(COMMAND_SET_ENV, COMMAND_SET_ENV + " <environment-name>\n"
             + "\t Set the current base environment");
       descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
@@ -207,8 +207,8 @@ public class Client {
             + "\n" + "\t Show coordinator host");
       descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n"
             + "\t Show current client loglevel");
-      descs.put(COMMAND_SHOW_DIFF_TESTRIG, COMMAND_SHOW_DIFF_TESTRIG + "\n"
-            + "\t Show differential testrig and environment");
+      descs.put(COMMAND_SHOW_DELTA_TESTRIG, COMMAND_SHOW_DELTA_TESTRIG + "\n"
+            + "\t Show delta testrig and environment");
       descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
             + "\t Show base testrig and environment");
       descs.put(COMMAND_TEST, COMMAND_TEST + " <reference file> <command> \n"
@@ -219,8 +219,8 @@ public class Client {
    }
 
    private String _currContainerName = null;
-   private String _currDiffEnv = null;
-   private String _currDiffTestrig;
+   private String _currDeltaEnv = null;
+   private String _currDeltaTestrig;
    private String _currEnv = null;
    private String _currTestrig = null;
 
@@ -296,7 +296,7 @@ public class Client {
    }
 
    private boolean answerFile(String questionFile, String paramsLine,
-         boolean isDiff, FileWriter outWriter) throws Exception {
+         boolean isDelta, FileWriter outWriter) throws Exception {
 
       if (!new File(questionFile).exists()) {
          throw new FileNotFoundException("Question file not found: "
@@ -326,23 +326,21 @@ public class Client {
       }
 
       // answer the question
-      WorkItem wItemAs = (isDiff) ? _workHelper.getWorkItemAnswerDiffQuestion(
+      WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
             questionName, _currContainerName, _currTestrig, _currEnv,
-            _currDiffTestrig, _currDiffEnv) : _workHelper
-            .getWorkItemAnswerQuestion(questionName, _currContainerName,
-                  _currTestrig, _currEnv, _currDiffTestrig, _currDiffEnv);
+            _currDeltaTestrig, _currDeltaEnv, isDelta); 
+
       return execute(wItemAs, outWriter);
    }
 
    private boolean answerType(String questionType, String paramsLine,
-         boolean isDiff, FileWriter outWriter) throws Exception {
+         boolean isDelta, FileWriter outWriter) throws Exception {
 
       Map<String, String> parameters = parseParams(paramsLine);
 
       String questionString;
       String parametersString = "";
-
-      if (questionType.startsWith("#")) {
+      if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
          try {
             questionString = QuestionHelper.resolveMacro(questionType,
                   paramsLine);
@@ -364,7 +362,7 @@ public class Client {
       File questionFile = createTempFile("question", questionString);
 
       boolean result = answerFile(questionFile.getAbsolutePath(),
-            parametersString, isDiff, outWriter);
+            parametersString, isDelta, outWriter);
 
       if (questionFile != null) {
          questionFile.delete();
@@ -520,13 +518,13 @@ public class Client {
       return execute(wItemGenDp, outWriter);
    }
 
-   private boolean generateDiffDataplane(FileWriter outWriter) throws Exception {
-      if (!isSetDiffEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
+   private boolean generateDeltaDataplane(FileWriter outWriter) throws Exception {
+      if (!isSetDeltaEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
 
-      WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDiffDataPlane(
-            _currContainerName, _currTestrig, _currEnv, _currDiffEnv);
+      WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDeltaDataPlane(
+            _currContainerName, _currTestrig, _currEnv, _currDeltaEnv);
 
       return execute(wItemGenDdp, outWriter);
    }
@@ -640,18 +638,18 @@ public class Client {
       return true;
    }
 
-   private boolean isSetDiffEnvironment() {
+   private boolean isSetDeltaEnvironment() {
       if (!_settings.getSanityCheck()) {
          return true;
       }
 
-      if (_currDiffTestrig == null) {
-         _logger.errorf("Active diff testrig is not set\n");
+      if (_currDeltaTestrig == null) {
+         _logger.errorf("Active delta testrig is not set\n");
          return false;
       }
 
-      if (_currDiffEnv == null) {
-         _logger.errorf("Active diff environment is not set\n");
+      if (_currDeltaEnv == null) {
+         _logger.errorf("Active delta environment is not set\n");
          return false;
       }
       return true;
@@ -744,8 +742,8 @@ public class Client {
 
             return answerFile(questionFile, paramsLine, false, outWriter);
          }
-         case COMMAND_ANSWER_DIFF: {
-            if (!isSetDiffEnvironment() || !isSetTestrig()
+         case COMMAND_ANSWER_DELTA: {
+            if (!isSetDeltaEnvironment() || !isSetTestrig()
                   || !isSetContainer(true)) {
                return false;
             }
@@ -832,50 +830,49 @@ public class Client {
          case COMMAND_GEN_DP: {
             return generateDataplane(outWriter);
          }
-         case COMMAND_GEN_DIFF_DP: {
-            return generateDiffDataplane(outWriter);
+         case COMMAND_GEN_DELTA_DP: {
+            return generateDeltaDataplane(outWriter);
          }
          case COMMAND_GET:
-         case COMMAND_GET_DIFF: {
-            boolean isDiff = (command.equals(COMMAND_GET_DIFF));
+         case COMMAND_GET_DELTA: {
+            boolean isDelta = (command.equals(COMMAND_GET_DELTA));
 
-            if (!isSetTestrig() || !isSetContainer(true)
-                  || (isDiff && !isSetDiffEnvironment())) {
+            if (!isSetTestrig() || !isSetContainer(true) || 
+                 (isDelta && !isSetDeltaEnvironment())) {
                return false;
             }
 
-            String questionType = parameters.get(0);
+            String qTypeStr = parameters.get(0);
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            if (QuestionType.fromName(questionType) == QuestionType.ENVIRONMENT_CREATION) {
+            if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX) &&
+                QuestionType.fromName(qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
 
-               String diffEnvName = DEFAULT_DIFF_ENV_PREFIX
+               String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX
                      + UUID.randomUUID().toString();
 
                String prefixString = (paramsLine.trim().length() > 0) ? " | "
                      : "";
                paramsLine += String.format("%s %s=%s", prefixString,
                      EnvironmentCreationQuestion.ENVIRONMENT_NAME_VAR,
-                     diffEnvName);
+                     deltaEnvName);
 
-               System.err.println("paramsline = " + paramsLine);
-
-               if (!answerType(questionType, paramsLine, isDiff, outWriter)) {
+               if (!answerType(qTypeStr, paramsLine, isDelta, outWriter)) {
                   return false;
                }
 
-               _currDiffEnv = diffEnvName;
-               _currDiffTestrig = _currTestrig;
+               _currDeltaEnv = deltaEnvName;
+               _currDeltaTestrig = _currTestrig;
 
                _logger.outputf(
-                     "Active diff testrig->environment is now %s->%s\n",
-                     _currDiffTestrig, _currDiffEnv);
+                     "Active delta testrig->environment is now %s->%s\n",
+                     _currDeltaTestrig, _currDeltaEnv);
 
                return true;
             }
-            else {
-               return answerType(questionType, paramsLine, isDiff, outWriter);
+            else {              
+               return answerType(qTypeStr, paramsLine, isDelta, outWriter);
             }
          }
          case COMMAND_HELP: {
@@ -894,17 +891,17 @@ public class Client {
             _logger.outputf("Active container set to %s\n", _currContainerName);
             return true;
          }
-         case COMMAND_INIT_DIFF_ENV: {
+         case COMMAND_INIT_DELTA_ENV: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
 
             // check if we are being asked to not generate the dataplane
-            boolean generateDiffDataplane = true;
+            boolean generateDeltaDataplane = true;
 
             if (options.size() == 1) {
                if (options.get(0).equals("-nodataplane")) {
-                  generateDiffDataplane = false;
+                  generateDeltaDataplane = false;
                }
                else {
                   _logger.outputf("Unknown option %s\n", options.get(0));
@@ -912,32 +909,32 @@ public class Client {
                }
             }
 
-            String diffEnvLocation = parameters.get(0);
-            String diffEnvName = (parameters.size() > 1) ? parameters.get(1)
-                  : DEFAULT_DIFF_ENV_PREFIX + UUID.randomUUID().toString();
+            String deltaEnvLocation = parameters.get(0);
+            String deltaEnvName = (parameters.size() > 1) ? parameters.get(1)
+                  : DEFAULT_DELTA_ENV_PREFIX + UUID.randomUUID().toString();
 
-            if (!uploadTestrigOrEnv(diffEnvLocation, diffEnvName, false)) {
+            if (!uploadTestrigOrEnv(deltaEnvLocation, deltaEnvName, false)) {
                return false;
             }
 
-            _currDiffEnv = diffEnvName;
-            _currDiffTestrig = _currTestrig;
+            _currDeltaEnv = deltaEnvName;
+            _currDeltaTestrig = _currTestrig;
 
-            _logger.outputf("Active diff testrig->environment is now %s->%s\n",
-                  _currDiffTestrig, _currDiffEnv);
+            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
+                  _currDeltaTestrig, _currDeltaEnv);
 
             WorkItem wItemGenDdp = _workHelper
-                  .getWorkItemCompileDiffEnvironment(_currContainerName,
-                        _currDiffTestrig, _currEnv, _currDiffEnv);
+                  .getWorkItemCompileDeltaEnvironment(_currContainerName,
+                        _currDeltaTestrig, _currEnv, _currDeltaEnv);
 
             if (!execute(wItemGenDdp, outWriter)) {
                return false;
             }
 
-            if (generateDiffDataplane) {
+            if (generateDeltaDataplane) {
                _logger.output("Generating delta dataplane\n");
 
-               if (!generateDiffDataplane(outWriter)) {
+               if (!generateDeltaDataplane(outWriter)) {
                   return false;
                }
 
@@ -946,7 +943,7 @@ public class Client {
 
             return true;
          }
-         case COMMAND_INIT_DIFF_TESTRIG:
+         case COMMAND_INIT_DELTA_TESTRIG:
          case COMMAND_INIT_TESTRIG: {
             boolean generateDataplane = true;
 
@@ -991,9 +988,9 @@ public class Client {
                _logger.outputf("Base testrig is now %s\n", _currTestrig);
             }
             else {
-               _currDiffTestrig = testrigName;
-               _currDiffEnv = DEFAULT_ENV_NAME;
-               _logger.outputf("Diff testrig is now %s\n", _currTestrig);
+               _currDeltaTestrig = testrigName;
+               _currDeltaEnv = DEFAULT_ENV_NAME;
+               _logger.outputf("Delta testrig is now %s\n", _currTestrig);
             }
 
             if (generateDataplane) {
@@ -1075,13 +1072,13 @@ public class Client {
                   _currContainerName);
             return true;
          }
-         case COMMAND_SET_DIFF_ENV: {
-            _currDiffEnv = parameters.get(0);
-            if (_currDiffTestrig == null) {
-               _currDiffTestrig = _currTestrig;
+         case COMMAND_SET_DELTA_ENV: {
+            _currDeltaEnv = parameters.get(0);
+            if (_currDeltaTestrig == null) {
+               _currDeltaTestrig = _currTestrig;
             }
-            _logger.outputf("Active diff testrig->environment is now %s->%s\n",
-                  _currDiffTestrig, _currDiffEnv);
+            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
+                  _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
          case COMMAND_SET_ENV: {
@@ -1093,12 +1090,12 @@ public class Client {
                   _currEnv);
             return true;
          }
-         case COMMAND_SET_DIFF_TESTRIG: {
-            _currDiffTestrig = parameters.get(0);
-            _currDiffEnv = (parameters.size() > 1) ? parameters.get(1)
+         case COMMAND_SET_DELTA_TESTRIG: {
+            _currDeltaTestrig = parameters.get(0);
+            _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1)
                   : DEFAULT_ENV_NAME;
-            _logger.outputf("Diff testrig->env is now %s->%s\n",
-                  _currDiffTestrig, _currDiffEnv);
+            _logger.outputf("Delta testrig->env is now %s->%s\n",
+                  _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
          case COMMAND_SET_LOGLEVEL: {
@@ -1154,12 +1151,12 @@ public class Client {
                   _logger.getLogLevelStr());
             return true;
          }
-         case COMMAND_SHOW_DIFF_TESTRIG: {
-            if (!isSetDiffEnvironment()) {
+         case COMMAND_SHOW_DELTA_TESTRIG: {
+            if (!isSetDeltaEnvironment()) {
                return false;
             }
-            _logger.outputf("Diff testrig->environment is %s->%s\n",
-                  _currDiffTestrig, _currDiffEnv);
+            _logger.outputf("Delta testrig->environment is %s->%s\n",
+                  _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
          case COMMAND_SHOW_TESTRIG: {
