@@ -13,6 +13,17 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
 
    private static final long serialVersionUID = 1L;
 
+   public static List<SubRange> invertedRange(int value, int min, int max) {
+      List<SubRange> returnRange = new LinkedList<SubRange>();
+      if (value > min) {
+         returnRange.add(new SubRange(min, value - 1));
+      }
+      if (value < max) {
+         returnRange.add(new SubRange(value + 1, max));
+      }
+      return returnRange;
+   }
+
    private final int _end;
 
    private final int _start;
@@ -98,15 +109,6 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
       return result;
    }
 
-   public static List<SubRange> invertedRange(int value, int min, int max) {
-      List<SubRange> returnRange = new LinkedList<SubRange>();
-      if (value > min) 
-         returnRange.add(new SubRange(min, value - 1));
-      if (value < max) 
-         returnRange.add(new SubRange(value + 1, max));
-      return returnRange;
-   }
-   
    @JsonValue
    public String serializedForm() {
       return String.format("%d-%d", _start, _end);

@@ -159,8 +159,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
       for (int i = 0; i < _hops.size(); i++) {
          Edge hop = _hops.get(i);
          int num = i + 1;
-         sb.append(prefixString + "Hop " + num + ": " + hop.getNode1() + ":" + hop.getInt1()
-               + " -> " + hop.getNode2() + ":" + hop.getInt2() + "\n");
+         sb.append(prefixString + "Hop " + num + ": " + hop.getNode1() + ":"
+               + hop.getInt1() + " -> " + hop.getNode2() + ":" + hop.getInt2()
+               + "\n");
       }
       sb.append(prefixString + _notes + "\n");
       return sb.toString();

@@ -26,6 +26,8 @@ public final class Settings extends BaseSettings {
 
       private Path _edgeBlacklistPath;
 
+      private Path _environmentBasePath;
+
       private Path _envPath;
 
       private Path _externalBgpAnnouncementsPath;
@@ -74,6 +76,10 @@ public final class Settings extends BaseSettings {
 
       public Path getEdgeBlacklistPath() {
          return _edgeBlacklistPath;
+      }
+
+      public Path getEnvironmentBasePath() {
+         return _environmentBasePath;
       }
 
       public Path getEnvPath() {
@@ -152,6 +158,10 @@ public final class Settings extends BaseSettings {
 
       public void setEdgeBlacklistPath(Path edgeBlacklistPath) {
          _edgeBlacklistPath = edgeBlacklistPath;
+      }
+
+      public void setEnvironmentBasePath(Path environmentBasePath) {
+         _environmentBasePath = environmentBasePath;
       }
 
       public void setEnvPath(Path envPath) {

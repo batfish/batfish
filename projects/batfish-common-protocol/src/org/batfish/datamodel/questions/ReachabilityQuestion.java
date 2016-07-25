@@ -149,30 +149,40 @@ public class ReachabilityQuestion extends Question {
       return true;
    }
 
-   @Override 
+   @Override
    public String prettyPrint() {
       try {
-         String retString = String.format("reachability %sactions=%s", 
+         String retString = String.format("reachability %sactions=%s",
                prettyPrintBase(), _reachabilityType, _actions.toString());
-         //we only print "interesting" values
-         if (_reachabilityType != ReachabilityType.STANDARD)
-            retString += String.format(" | %s=%s", REACHABILITY_TYPE_VAR, _reachabilityType); 
-         if (_dstPrefixes != null && _dstPrefixes.size() != 0) 
-            retString += String.format(" | dstPrefixes=%s", _dstPrefixes); 
-         if (_dstPortRange != null && _dstPortRange.size() != 0) 
-            retString += String.format(" | dstPorts=%s", _dstPortRange); 
-         if (_srcPrefixes != null && _srcPrefixes.size() != 0) 
-            retString += String.format(" | srcPrefixes=%s", _srcPrefixes); 
-         if (_srcPortRange != null && _srcPortRange.size() != 0) 
-            retString += String.format(" | srcPorts=%s", _srcPortRange); 
-         if (_ipProtocolRange != null && _ipProtocolRange.size() != 0) 
-            retString += String.format(" | ipProtocols=%s", _ipProtocolRange.toString()); 
-         if (_icmpCode != IcmpCode.UNSET) 
-            retString += String.format(" | icmpCode=%s", _icmpCode); 
-         if (_icmpType != IcmpType.UNSET) 
-            retString += String.format(" | icmpType=%s", _icmpType); 
+         // we only print "interesting" values
+         if (_reachabilityType != ReachabilityType.STANDARD) {
+            retString += String.format(" | %s=%s", REACHABILITY_TYPE_VAR,
+                  _reachabilityType);
+         }
+         if (_dstPrefixes != null && _dstPrefixes.size() != 0) {
+            retString += String.format(" | dstPrefixes=%s", _dstPrefixes);
+         }
+         if (_dstPortRange != null && _dstPortRange.size() != 0) {
+            retString += String.format(" | dstPorts=%s", _dstPortRange);
+         }
+         if (_srcPrefixes != null && _srcPrefixes.size() != 0) {
+            retString += String.format(" | srcPrefixes=%s", _srcPrefixes);
+         }
+         if (_srcPortRange != null && _srcPortRange.size() != 0) {
+            retString += String.format(" | srcPorts=%s", _srcPortRange);
+         }
+         if (_ipProtocolRange != null && _ipProtocolRange.size() != 0) {
+            retString += String.format(" | ipProtocols=%s",
+                  _ipProtocolRange.toString());
+         }
+         if (_icmpCode != IcmpCode.UNSET) {
+            retString += String.format(" | icmpCode=%s", _icmpCode);
+         }
+         if (_icmpType != IcmpType.UNSET) {
+            retString += String.format(" | icmpType=%s", _icmpType);
+         }
          return retString;
-      } 
+      }
       catch (Exception e) {
          try {
             return "Pretty printing failed. Printing Json\n" + toJsonString();

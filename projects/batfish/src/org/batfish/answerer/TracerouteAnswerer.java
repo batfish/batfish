@@ -41,8 +41,8 @@ public class TracerouteAnswerer extends Answerer {
                configurations = _batfish.loadConfigurations(testrigSettings);
             }
             String hostname = flowBuilder.getIngressNode();
-            Configuration node = (hostname == null)? null 
-                  : configurations.get(hostname);
+            Configuration node = (hostname == null) ? null : configurations
+                  .get(hostname);
             if (node != null) {
                Set<Ip> ips = new TreeSet<Ip>();
                for (Interface i : node.getInterfaces().values()) {

@@ -28,6 +28,8 @@ public abstract class Answerer {
          return new BgpSessionCheckAnswerer(question, batfish);
       case COMPARE_SAME_NAME:
          return new CompareSameNameAnswerer(question, batfish);
+      case ENVIRONMENT_CREATION:
+         return new EnvironmentCreationAnswerer(question, batfish);
       case ERROR:
          return new ErrorAnswerer(question, batfish);
       case IPSEC_VPN_CHECK:

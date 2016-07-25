@@ -30,12 +30,6 @@ public abstract class Question {
    @JsonIgnore
    public abstract boolean getDataPlane();
 
-   @JsonIgnore
-   public boolean getDiffActive() {
-      return !getDifferential();
-            //&& (!_nodeBlacklist.isEmpty() || !_interfaceBlacklist.isEmpty());
-   }
-
    @JsonProperty(DIFF_VAR)
    public boolean getDifferential() {
       return _differential;
@@ -64,17 +58,19 @@ public abstract class Question {
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }
-   
+
    protected String prettyPrintBase() {
       String retString = "";
-      //for brevity, print only if the values are non-default
+      // for brevity, print only if the values are non-default
       if (_differential) {
          retString += String.format("differential=%s", _differential);
       }
-      if (retString == "")
+      if (retString == "") {
          return "";
-      else 
+      }
+      else {
          return retString + " | ";
+      }
    }
 
    public void setDifferential(boolean differential) {

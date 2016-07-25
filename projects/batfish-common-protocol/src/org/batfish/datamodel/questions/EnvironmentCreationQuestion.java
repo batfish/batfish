@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.codehaus.jettison.json.JSONException;
@@ -14,7 +13,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EnvironmentCreationQuestion extends Question {
@@ -58,6 +56,14 @@ public class EnvironmentCreationQuestion extends Question {
       return false;
    }
 
+   private void setEnvironmentName(String environmentName) {
+      _environmentName = environmentName;
+   }
+
+   private void setInterfaceBlacklist(Set<NodeInterfacePair> blacklist) {
+      _interfaceBlacklist = blacklist;
+   }
+
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);
@@ -76,10 +82,11 @@ public class EnvironmentCreationQuestion extends Question {
                setEnvironmentName(parameters.getString(paramKey));
                break;
             case INTERFACE_BLACKLIST_VAR:
-               setInterfaceBlacklist(new ObjectMapper().<Set<NodeInterfacePair>> readValue(
-                     parameters.getString(paramKey),
-                     new TypeReference<Set<NodeInterfacePair>>() {
-                     }));
+               setInterfaceBlacklist(new ObjectMapper()
+                     .<Set<NodeInterfacePair>> readValue(
+                           parameters.getString(paramKey),
+                           new TypeReference<Set<NodeInterfacePair>>() {
+                           }));
                break;
             case NODE_BLACKLIST_VAR:
                setNodeBlacklist(new ObjectMapper().readValue(
@@ -95,14 +102,6 @@ public class EnvironmentCreationQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
-   }
-
-   private void setEnvironmentName(String environmentName) {
-      _environmentName = environmentName;
-   }
-
-   private void setInterfaceBlacklist(Set<NodeInterfacePair> blacklist) {
-      _interfaceBlacklist = blacklist;
    }
 
    private void setNodeBlacklist(NodeSet blacklist) {

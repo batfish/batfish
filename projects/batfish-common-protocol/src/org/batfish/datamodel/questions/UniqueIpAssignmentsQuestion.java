@@ -43,13 +43,14 @@ public class UniqueIpAssignmentsQuestion extends Question {
       return _verbose;
    }
 
-   @Override 
+   @Override
    public String prettyPrint() {
-      String retString = String.format("ospfLoopbacks %snodeRegex=\"%s\" | verbose=%s", 
-            prettyPrintBase(), _nodeRegex, _verbose);
+      String retString = String.format(
+            "ospfLoopbacks %snodeRegex=\"%s\" | verbose=%s", prettyPrintBase(),
+            _nodeRegex, _verbose);
       return retString;
    }
-   
+
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);

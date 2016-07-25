@@ -61,16 +61,15 @@ public class NeighborsQuestion extends Question {
       return false;
    }
 
-   @Override 
+   @Override
    public String prettyPrint() {
       try {
-         String retString = String.format("neighbors %s%s=%s | %s=%s | %s=%s", 
-               prettyPrintBase(),  
-               NODE1_REGEX_VAR, _node1Regex, 
-               NODE2_REGEX_VAR, _node2Regex, 
-               NEIGHBOR_TYPE_VAR, _neighborTypes.toString());
+         String retString = String.format("neighbors %s%s=%s | %s=%s | %s=%s",
+               prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
+               NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPE_VAR,
+               _neighborTypes.toString());
          return retString;
-      } 
+      }
       catch (Exception e) {
          try {
             return "Pretty printing failed. Printing Json\n" + toJsonString();
@@ -79,9 +78,9 @@ public class NeighborsQuestion extends Question {
             throw new BatfishException("Both pretty and json printing failed\n");
          }
       }
-   
+
    }
-   
+
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);

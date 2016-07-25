@@ -34,12 +34,13 @@ public class OspfLoopbacksQuestion extends Question {
       return false;
    }
 
-   @Override 
+   @Override
    public String prettyPrint() {
-      String retString = String.format("ospfLoopbacks %snodeRegex=\"%s\"", prettyPrintBase(), _nodeRegex);
+      String retString = String.format("ospfLoopbacks %snodeRegex=\"%s\"",
+            prettyPrintBase(), _nodeRegex);
       return retString;
    }
-   
+
    @Override
    public void setJsonParameters(JSONObject parameters) {
       super.setJsonParameters(parameters);

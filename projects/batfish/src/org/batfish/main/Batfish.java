@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,6 +92,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
@@ -121,6 +121,7 @@ import org.batfish.datamodel.collections.QualifiedNameMap;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.EnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -291,6 +292,7 @@ public class Batfish implements AutoCloseable {
             envSettings.setName(envName);
             Path envPath = testrigDir
                   .resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR).resolve(envName);
+            envSettings.setEnvironmentBasePath(envPath);
             envSettings.setControlPlaneFactsDir(envPath
                   .resolve(BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR));
             envSettings.setNlsDataPlaneInputFile(envPath
@@ -565,8 +567,7 @@ public class Batfish implements AutoCloseable {
       Question question = parseQuestion();
       boolean dp = question.getDataPlane();
       boolean diff = question.getDifferential();
-      boolean diffActive = (question.getDiffActive() || _settings
-            .getDiffActive()) && !diff;
+      boolean diffActive = _settings.getDiffActive() && !diff;
       _settings.setDiffActive(diffActive);
       _settings.setDiffQuestion(diff);
       initQuestionEnvironments(question, diff, diffActive, dp);
@@ -1096,6 +1097,71 @@ public class Batfish implements AutoCloseable {
       executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
       return configurations;
+   }
+
+   public EnvironmentCreationAnswerElement createEnvironment(
+         TestrigSettings testrigSettings, EnvironmentCreationQuestion question,
+         boolean dp) {
+      EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
+      String newEnvName = question.getEnvironmentName();
+      EnvironmentSettings envSettings = testrigSettings
+            .getEnvironmentSettings();
+      String oldEnvName = envSettings.getName();
+      if (oldEnvName.equals(newEnvName)) {
+         throw new BatfishException(
+               "Cannot create new environment: name of environment is same as that of old");
+      }
+      answerElement.setNewEnvironmentName(newEnvName);
+      answerElement.setOldEnvironmentName(oldEnvName);
+      Path envPath = envSettings.getEnvironmentBasePath();
+      applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
+            _settings.getTestrig(), newEnvName, _settings.getQuestionName());
+      EnvironmentSettings newEnvSettings = testrigSettings
+            .getEnvironmentSettings();
+      Path newEnvPath = newEnvSettings.getEnvironmentBasePath();
+      try {
+         FileUtils.copyDirectory(envPath.toFile(), newEnvPath.toFile());
+      }
+      catch (IOException e) {
+         throw new BatfishException(
+               "Failed to intialize new environment from old environment", e);
+      }
+
+      // write node blacklist from question
+      if (!question.getNodeBlacklist().isEmpty()) {
+         StringBuilder nodeBlacklistSb = new StringBuilder();
+         for (String node : question.getNodeBlacklist()) {
+            nodeBlacklistSb.append(node + "\n");
+         }
+         String nodeBlacklist = nodeBlacklistSb.toString();
+         CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(),
+               nodeBlacklist);
+      }
+      // write interface blacklist from question
+      if (!question.getInterfaceBlacklist().isEmpty()) {
+         StringBuilder interfaceBlacklistSb = new StringBuilder();
+         for (NodeInterfacePair pair : question.getInterfaceBlacklist()) {
+            interfaceBlacklistSb.append(pair.getHostname() + ":"
+                  + pair.getInterface() + "\n");
+         }
+         String interfaceBlacklist = interfaceBlacklistSb.toString();
+         CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(),
+               interfaceBlacklist);
+      }
+
+      if (dp && !dataPlaneDependenciesExist(testrigSettings)) {
+         _settings.setDumpControlPlaneFacts(true);
+         boolean usePrecomputedFacts = _settings.getUsePrecomputedFacts();
+         Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
+         initControlPlaneFactBins(cpFactBins, !usePrecomputedFacts);
+         if (!usePrecomputedFacts) {
+            computeControlPlaneFacts(cpFactBins, false, testrigSettings);
+         }
+         nlsDataPlane(testrigSettings);
+         computeDataPlane(testrigSettings);
+         _entityTables.clear();
+      }
+      return answerElement;
    }
 
    private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
@@ -2139,27 +2205,6 @@ public class Batfish implements AutoCloseable {
          Path envPath = envSettings.getEnvPath();
          // create environment required folders
          CommonUtil.createDirectories(envPath);
-         // write node blacklist from question
-         if (!question.getNodeBlacklist().isEmpty()) {
-            StringBuilder nodeBlacklistSb = new StringBuilder();
-            for (String node : question.getNodeBlacklist()) {
-               nodeBlacklistSb.append(node + "\n");
-            }
-            String nodeBlacklist = nodeBlacklistSb.toString();
-            CommonUtil.writeFile(envSettings.getNodeBlacklistPath(),
-                  nodeBlacklist);
-         }
-         // write interface blacklist from question
-         if (!question.getInterfaceBlacklist().isEmpty()) {
-            StringBuilder interfaceBlacklistSb = new StringBuilder();
-            for (NodeInterfacePair pair : question.getInterfaceBlacklist()) {
-               interfaceBlacklistSb.append(pair.getHostname() + ":"
-                     + pair.getInterface() + "\n");
-            }
-            String interfaceBlacklist = interfaceBlacklistSb.toString();
-            CommonUtil.writeFile(envSettings.getInterfaceBlacklistPath(),
-                  interfaceBlacklist);
-         }
       }
       if (dp && !dataPlaneDependenciesExist(testrigSettings)) {
          _settings.setDumpControlPlaneFacts(true);
@@ -2182,14 +2227,6 @@ public class Batfish implements AutoCloseable {
          initQuestionEnvironment(_baseTestrigSettings, question, dp, false);
       }
       if (diff || diffActive) {
-         if (_settings.getDeltaEnvironmentName() == null
-               || (diffActive && !_settings.getDiffActive())) {
-            String deltaEnvironmentName = UUID.randomUUID().toString();
-            _settings.setDeltaTestrig(_settings.getTestrig());
-            _settings.setDeltaEnvironmentName(deltaEnvironmentName);
-            initTestrigSettings(_settings);
-            _testrigSettings = _deltaTestrigSettings;
-         }
          initQuestionEnvironment(_deltaTestrigSettings, question, dp, true);
       }
    }
