@@ -1,0 +1,84 @@
+# This demo operates over the example test rigs in the batfish repository.
+# It assumes that it is being run from the top-level directory in the repository.
+
+# Do this first, so you have the relevant shell commands
+# % source tools/batfish_function.sh
+
+# Select one of the two options below
+## If you want to run analysis locally
+## % allinone -runmode interactive
+#
+## If you want to run against www.batfish.org
+## % batfish_client 
+
+# load the testing 
+init-testrig -nodataplane test_rigs/example
+
+###############
+# we have now built a logical representation of the network that can be queried in various ways. 
+# we have many queries and can write more
+
+# for example, we can ask simple questions on adjacencies
+get neighbors 
+# --> can help ensure that adjacencies are as expected (i.e., interfaces are properly configured)
+
+# we can also ask for protocol-level adjacencies 
+get neighbors neighborType=["ebgp"]
+# --> can help ensure that protocol sessions are configured correctly
+
+##############
+# we can also do other simple checks based on best practices of our network
+
+# this will check if all interface ips are unique
+get uniqueipassignments
+
+# this will check if all loopbacks are being correctly announced within OSPF
+get ospfloopbacks
+
+################
+# more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
+
+# for example, we can see how host1 reaches a particular IP address 
+# the query will take time if the dataplane has not been comptued before
+get #traceroute host1 1.0.2.2
+# (the macro above expands to "get traceroute ingressNode=host1 | dstIp=1.0.2.2")
+# --> unlike a regular traceroute we show multipath and interface information
+
+# suppose host1 (2.128.0.101) is running DNS and we want to ensure that the server is reachable 
+# can easily do this using protocol-specific traceroutes
+get #traceroute as2border1 2.128.0.101 dns
+
+################
+# while the above could be done using testing/emulation, we alone can be comprehensive 
+
+# for example, find *all* situations (i.e., starting node, packet header combinations) where the DNS server is not reachable
+get #checkreachability 2.128.0.101 dns
+# (macro expands to "get reachability dstPrefixes=["2.128.0.101/32"] | dstPortRange=["53-53"] | ipProtoRange=["17-17"] | actions=["drop"])
+# --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
+# --> but also shows that a bad ACL on host2 is blocking access (bad)
+
+# another example: host2 (2.128.1.101) is running SSH. we can run similar queries to learn who cannot reach it
+# but we can also ensure that non-ssh traffic can *never* reach host2 
+get #checkprotection 2.128.1.101 !ssh
+# --> all good! hard to guarantee with testing but easy for us
+
+# another example: we also want to ensure that outsiders can *never* reach the SSH server
+# we have ACLs on as2's border routers to prevent this. to test that things are correctly implemented:
+get #checkprotection 2.128.1.101 ssh as(1|3).*
+# --> buggy ACL on as2border2!
+
+#############
+# comparing two sets of is a powerful debugging aid
+
+# initialize the delta environment and generate its dataplane
+init-diff-environment example_environments/delta
+
+# reduced reachability between default and delta environments
+answer example_questions/reduced_reachability.q
+
+##############
+# finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
+
+# a powerful example: multipath consistency. 
+get reachability type=multipath
+# --> will catch hard-to-debug, bad interactions between routing and ACLs
