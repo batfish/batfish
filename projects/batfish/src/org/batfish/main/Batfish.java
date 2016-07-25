@@ -1113,14 +1113,15 @@ public class Batfish implements AutoCloseable {
       }
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
-      Path envPath = envSettings.getEnvironmentBasePath();
+      Path oldEnvPath = envSettings.getEnvPath();
       applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
             _settings.getTestrig(), newEnvName, _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = testrigSettings
             .getEnvironmentSettings();
-      Path newEnvPath = newEnvSettings.getEnvironmentBasePath();
+      Path newEnvPath = newEnvSettings.getEnvPath();
+      newEnvPath.toFile().mkdirs();
       try {
-         FileUtils.copyDirectory(envPath.toFile(), newEnvPath.toFile());
+         FileUtils.copyDirectory(oldEnvPath.toFile(), newEnvPath.toFile());
       }
       catch (IOException e) {
          throw new BatfishException(
