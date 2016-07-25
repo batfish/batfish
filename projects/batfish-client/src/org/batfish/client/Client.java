@@ -193,8 +193,7 @@ public class Client {
             + " <debug|info|output|warn|error>\n"
             + "\t Set the client loglevel. Default is output");
       descs.put(COMMAND_SET_PRETTY_PRINT, COMMAND_SET_PRETTY_PRINT
-            + " <true|false>\n"
-            + "\t Whether to pretty print answers");
+            + " <true|false>\n" + "\t Whether to pretty print answers");
       descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG
             + " <testrig-name> [environment name]\n"
             + "\t Set the base testrig");
@@ -212,8 +211,7 @@ public class Client {
             + "\t Show differential testrig and environment");
       descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
             + "\t Show base testrig and environment");
-      descs.put(COMMAND_TEST, COMMAND_TEST 
-            + " <reference file> <command> \n" 
+      descs.put(COMMAND_TEST, COMMAND_TEST + " <reference file> <command> \n"
             + "\t Show base testrig and environment");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
@@ -254,12 +252,10 @@ public class Client {
       case genquestions:
          if (_settings.getQuestionsDir() == null) {
             System.err
-            .println("org.batfish.client: Out dir not specified while running in genquestions mode.");
-            System.err
-            .printf(
-                  "Use '-%s <cmdfile>'\n",
+                  .println("org.batfish.client: Out dir not specified while running in genquestions mode.");
+            System.err.printf("Use '-%s <cmdfile>'\n",
                   Settings.ARG_QUESTIONS_DIR);
-            System.exit(1);            
+            System.exit(1);
          }
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
                _settings.getLogFile(), false, false);
@@ -345,10 +341,11 @@ public class Client {
 
       String questionString;
       String parametersString = "";
-      
+
       if (questionType.startsWith("#")) {
          try {
-            questionString = QuestionHelper.resolveMacro(questionType, paramsLine);
+            questionString = QuestionHelper.resolveMacro(questionType,
+                  paramsLine);
          }
          catch (BatfishException e) {
             _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
@@ -356,14 +353,14 @@ public class Client {
          }
       }
       else {
-         questionString = QuestionHelper.getQuestionString(questionType,
-               isDiff);
+         questionString = QuestionHelper
+               .getQuestionString(questionType, isDiff);
          _logger.debugf("Question Json:\n%s\n", questionString);
 
-          parametersString = QuestionHelper.getParametersString(parameters);
+         parametersString = QuestionHelper.getParametersString(parameters);
          _logger.debugf("Parameters Json:\n%s\n", parametersString);
       }
-      
+
       File questionFile = createTempFile("question", questionString);
 
       boolean result = answerFile(questionFile.getAbsolutePath(),
@@ -392,7 +389,8 @@ public class Client {
       return tempFile;
    }
 
-   private boolean execute(WorkItem wItem, FileWriter outWriter) throws Exception {
+   private boolean execute(WorkItem wItem, FileWriter outWriter)
+         throws Exception {
 
       wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
             _settings.getBatfishLogLevel());
@@ -437,15 +435,15 @@ public class Client {
       else {
          String answerString = CommonUtil
                .readFile(Paths.get(downloadedAnsFile));
-         
-         //check if we need to pretty things
+
+         // check if we need to pretty things
          String answerStringToPrint = answerString;
          if (_settings.getPrettyPrintAnswers()) {
             ObjectMapper mapper = new BatfishObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
             answerStringToPrint = answer.prettyPrint();
          }
-         
+
          if (outWriter == null) {
             _logger.output(answerStringToPrint + "\n");
          }
@@ -453,7 +451,7 @@ public class Client {
             outWriter.write(answerStringToPrint);
          }
 
-         //tests serialization/deserialization when running in debug mode
+         // tests serialization/deserialization when running in debug mode
          if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
             try {
                ObjectMapper mapper = new BatfishObjectMapper();
@@ -465,9 +463,9 @@ public class Client {
                if (!CommonUtil.checkJsonEqual(tree, newTree)) {
                   // if (!tree.equals(newTree)) {
                   _logger
-                  .errorf(
-                        "Original and recovered Json are different. Recovered = %s\n",
-                        newAnswerString);
+                        .errorf(
+                              "Original and recovered Json are different. Recovered = %s\n",
+                              newAnswerString);
                }
             }
             catch (Exception e) {
@@ -481,8 +479,8 @@ public class Client {
       if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
          _logger.output("---------------- Service Log --------------\n");
          String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-         String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
-               wItem.getTestrigName(), logFileName);
+         String downloadedFile = _workHelper.getObject(
+               wItem.getContainerName(), wItem.getTestrigName(), logFileName);
 
          if (downloadedFile == null) {
             _logger.errorf("Failed to get log file %s\n", logFileName);
@@ -837,15 +835,14 @@ public class Client {
          case COMMAND_GEN_DIFF_DP: {
             return generateDiffDataplane(outWriter);
          }
-         case COMMAND_GET: 
+         case COMMAND_GET:
          case COMMAND_GET_DIFF: {
             boolean isDiff = (command == COMMAND_GET_DIFF);
 
-            if (!isSetTestrig() || !isSetContainer(true) || 
-                 (isDiff && !isSetDiffEnvironment())) {
+            if (!isSetTestrig() || !isSetContainer(true)
+                  || (isDiff && !isSetDiffEnvironment())) {
                return false;
             }
-            
 
             String questionType = parameters.get(0);
             String paramsLine = CommonUtil.joinStrings(" ",
@@ -853,16 +850,17 @@ public class Client {
 
             if (QuestionType.fromName(questionType) == QuestionType.ENVIRONMENT_CREATION) {
 
-               String diffEnvName = DEFAULT_DIFF_ENV_PREFIX + 
-                     UUID.randomUUID().toString();
+               String diffEnvName = DEFAULT_DIFF_ENV_PREFIX
+                     + UUID.randomUUID().toString();
 
-               String prefixString = (paramsLine.trim().length() > 0)? " | " : "";
+               String prefixString = (paramsLine.trim().length() > 0) ? " | "
+                     : "";
                paramsLine += String.format("%s %s=%s", prefixString,
-                        EnvironmentCreationQuestion.ENVIRONMENT_NAME_VAR,
-                        diffEnvName);
-                     
+                     EnvironmentCreationQuestion.ENVIRONMENT_NAME_VAR,
+                     diffEnvName);
+
                System.err.println("paramsline = " + paramsLine);
-               
+
                if (!answerType(questionType, paramsLine, isDiff, outWriter)) {
                   return false;
                }
@@ -870,12 +868,13 @@ public class Client {
                _currDiffEnv = diffEnvName;
                _currDiffTestrig = _currTestrig;
 
-               _logger.outputf("Active diff testrig->environment is now %s->%s\n",
+               _logger.outputf(
+                     "Active diff testrig->environment is now %s->%s\n",
                      _currDiffTestrig, _currDiffEnv);
-               
+
                return true;
             }
-            else {              
+            else {
                return answerType(questionType, paramsLine, isDiff, outWriter);
             }
          }
@@ -1173,33 +1172,38 @@ public class Client {
          }
          case COMMAND_TEST: {
             String referenceFileName = parameters.get(0);
-            
+
             String[] testCommand = parameters.subList(1, parameters.size())
                   .toArray(new String[0]);
 
-            _logger.debugf("Ref file is %s. \n", referenceFileName, parameters.size());            
-            _logger.debugf("Test command is %s\n", Arrays.toString(testCommand));
+            _logger.debugf("Ref file is %s. \n", referenceFileName,
+                  parameters.size());
+            _logger
+                  .debugf("Test command is %s\n", Arrays.toString(testCommand));
 
             File referenceFile = new File(referenceFileName);
-            
+
             if (!referenceFile.exists()) {
-               _logger.errorf("Reference file does not exist: %s\n", referenceFileName);
+               _logger.errorf("Reference file does not exist: %s\n",
+                     referenceFileName);
                return false;
             }
-            
+
             File testoutFile = Files.createTempFile("test", "out").toFile();
             testoutFile.deleteOnExit();
 
             FileWriter testoutWriter = new FileWriter(testoutFile);
-            
+
             processCommand(testCommand, testoutWriter);
             testoutWriter.close();
-            
+
             boolean testPassed = false;
-            
+
             try {
-               String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-               String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
+               String referenceOutput = CommonUtil.readFile(Paths
+                     .get(referenceFileName));
+               String testOutput = CommonUtil.readFile(Paths.get(testoutFile
+                     .getAbsolutePath()));
 
                ObjectMapper mapper = new BatfishObjectMapper();
                JsonNode referenceJson = mapper.readTree(referenceOutput);
@@ -1209,16 +1213,17 @@ public class Client {
                }
             }
             catch (Exception e) {
-               _logger.errorf("Exception in comparing test results: ", e.getMessage());
+               _logger.errorf("Exception in comparing test results: ",
+                     e.getMessage());
             }
-            
+
             if (testPassed) {
                _logger.outputf("Test result for %s: Pass\n", referenceFileName);
             }
             else {
                String outFileName = referenceFile + ".testout";
-               Files.move(Paths.get(testoutFile.getAbsolutePath()),  
-                     Paths.get(referenceFile + ".testout"), 
+               Files.move(Paths.get(testoutFile.getAbsolutePath()),
+                     Paths.get(referenceFile + ".testout"),
                      StandardCopyOption.REPLACE_EXISTING);
 
                _logger.outputf("Test result for %s: Fail\n", referenceFileName);
@@ -1332,7 +1337,7 @@ public class Client {
          String rawLine;
          while ((rawLine = _reader.readLine()) != null) {
             String line = rawLine.trim();
-            if (line.length() == 0) {
+            if (line.length() == 0 || line.startsWith("#")) {
                continue;
             }
 
