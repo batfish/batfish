@@ -1,6 +1,6 @@
-Init'ed and set active container to cp_c47c55bf-ffcd-47ba-a196-325899c8438e
+Init'ed and set active container to cp_c7e4094c-dab4-4503-a292-2fa522509f4b
 Uploaded testrig. Parsing now.
-. . . . . 
+. . . . . . . . 
 Status: SUCCESS
 Question: null
 {
@@ -90,7 +90,7 @@ Question: null
     }
   }
 }
-Base testrig is now tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2
+Base testrig is now tr_41cb945e-bf18-4017-9f91-939a4a2359e8
 Generating dataplane now
 . . . . . . . . . . . . . . . . . . . . . . . . . 
 Status: SUCCESS
@@ -98,15 +98,7 @@ Question: null
 Generated dataplane
 . . 
 Status: SUCCESS
-Question: {
-  "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "neighborType" : [ ],
-  "node1Regex" : ".*",
-  "node2Regex" : ".*",
-  "nodeBlacklist" : [ ]
-}
+Question: neighbors node1Regex=.* | node2Regex=.* | neighborType=[]
 {
   "class" : "org.batfish.datamodel.answers.NeighborsAnswerElement",
   "lanNeighbors" : [ {
@@ -311,17 +303,9 @@ Question: {
     "node2interface" : "FastEthernet1/1"
   } ]
 }
-. 
+. . 
 Status: SUCCESS
-Question: {
-  "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "neighborType" : [ "ebgp" ],
-  "node1Regex" : ".*",
-  "node2Regex" : ".*",
-  "nodeBlacklist" : [ ]
-}
+Question: neighbors node1Regex=.* | node2Regex=.* | neighborType=[EBGP]
 {
   "class" : "org.batfish.datamodel.answers.NeighborsAnswerElement",
   "ebgpNeighbors" : [ {
@@ -376,7 +360,7 @@ Question: {
     "node2" : "as1border2"
   } ]
 }
-. . 
+. 
 Status: SUCCESS
 Question: ospfLoopbacks nodeRegex=".*" | verbose=false
 {
@@ -400,7 +384,7 @@ Question: ospfLoopbacks nodeRegex=".*" | verbose=false
     } ]
   }
 }
-. 
+. . 
 Status: SUCCESS
 Question: ospfLoopbacks nodeRegex=".*"
 {
@@ -438,11 +422,11 @@ Question: ospfLoopbacks nodeRegex=".*"
     "as3core1" : [ "Loopback0" ]
   }
 }
-. . . . . . . . . . . . . . 
+. . . . . . . . . . . . 
 Status: SUCCESS
 Question: traceroute ingressNode=host1 | dstIp=1.0.2.2
 Flow: ingress:host1 2.128.0.101->1.0.2.2 IP state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
     Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
     Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
@@ -476,11 +460,11 @@ Flow: ingress:host1 2.128.0.101->1.0.2.2 IP state:0
     Disposition: ACCEPTED
 
 
-. . . . . . . . . . . . . 
+. . . . . . . . . . . 
 Status: SUCCESS
 Question: traceroute ingressNode=as2border1 | dstIp=2.128.0.101 | dstPort=53 | ipProtocol=UDP
 Flow: ingress:as2border1 2.1.1.1->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0
     Hop 2: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1
     Hop 3: as2dist2:FastEthernet1/0 -> as2dept1:FastEthernet0/1
@@ -510,52 +494,52 @@ Flow: ingress:as2border1 2.1.1.1->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:
 Status: SUCCESS
 Question: reachability actions=[DROP] | dstPrefixes=[2.128.0.101/32] | dstPorts=[[53,53]] | ipProtocols=[[17,17]]
 Flow: ingress:as1border1 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0
     Disposition: DENIED_IN{as2border1}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:as1border2 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1
     Hop 2: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
     Hop 3: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0
     Disposition: DENIED_IN{as2border1}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:as1core1 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
     Hop 2: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0
     Disposition: DENIED_IN{as2border1}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:as3border1 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
     Disposition: DENIED_IN{as2border2}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:as3border2 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0
     Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1
     Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
     Disposition: DENIED_IN{as2border2}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:as3core1 2.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1
     Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
     Disposition: DENIED_IN{as2border2}{OUTSIDE_TO_INSIDE}{0}
 
 Flow: ingress:host2 0.0.0.0->2.128.0.101 UDP sport:0 dort:DOMAIN(53) state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
     Disposition: DENIED_OUT{host2}{filter}{}{OUTPUT}{0}
 
 
-. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . 
 Status: SUCCESS
 Question: reachability actions=[ACCEPT] | dstPrefixes=[2.128.1.101/32] | dstPorts=[[23,65535], [0,21]] | ipProtocols=[[7,255], [0,5]]
 Flow: ingress:host2 0.0.0.0->2.128.1.101 UDP sport:0 dort:65532 state:0
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Disposition: ACCEPTED
 
 
@@ -563,7 +547,7 @@ Flow: ingress:host2 0.0.0.0->2.128.1.101 UDP sport:0 dort:65532 state:0
 Status: SUCCESS
 Question: reachability actions=[ACCEPT] | dstPrefixes=[2.128.1.101/32] | dstPorts=[[22,22]] | ipProtocols=[[6,6]]
 Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0 tcpFlags:00000000
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
     Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1
     Hop 3: as2core1:FastEthernet1/0 -> as2dist2:FastEthernet0/1
@@ -593,7 +577,7 @@ Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0
     Disposition: ACCEPTED
 
 Flow: ingress:as3border2 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0 tcpFlags:00000000
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3border2:FastEthernet0/0 -> as3core1:FastEthernet0/0
     Hop 2: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1
     Hop 3: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
@@ -631,7 +615,7 @@ Flow: ingress:as3border2 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0
     Disposition: ACCEPTED
 
 Flow: ingress:as3core1 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0 tcpFlags:00000000
-  environment:tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2:env_default
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
     Hop 1: as3core1:FastEthernet0/1 -> as3border1:FastEthernet0/1
     Hop 2: as3border1:FastEthernet0/0 -> as2border2:FastEthernet0/0
     Hop 3: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1
@@ -665,7 +649,7 @@ Flow: ingress:as3core1 253.0.0.0->2.128.1.101 TCP sport:0 dort:SSH(22) state:0 t
     Disposition: ACCEPTED
 
 
-Active diff testrig->environment is now tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2->env_ed16baac-d8a3-4835-862c-50c8a006e7e6
+Active diff testrig->environment is now tr_41cb945e-bf18-4017-9f91-939a4a2359e8->env_9efaabed-55b2-4df7-91ee-7518de91542d
 . . . . . 
 Status: SUCCESS
 Question: null
@@ -760,26 +744,258 @@ Generating delta dataplane
 Status: SUCCESS
 Question: null
 Generated delta dataplane
-. . . . . . . . . . . . . . . . . . 
-Status: FAILURE
+. . . . . . . . . . . . . . . . . 
+Status: SUCCESS
 Question: reachability actions=[ACCEPT]
-{
-  "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
-  "contents" : {
-    "0" : "org.batfish.common.BatfishException: Failed to answer question\r",
-    "1" : "   at org.batfish.main.Batfish.answer(Batfish.java:585)\r",
-    "2" : "   at org.batfish.main.Batfish.run(Batfish.java:3373)\r",
-    "3" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r",
-    "4" : "Caused by: org.batfish.common.BatfishException: nls terminated abnormally:",
-    "5" : "nls command line: [nls, -dir, C:\\Users\\ratul.REDMOND\\work\\netver\\batfish\\containers\\cp_c47c55bf-ffcd-47ba-a196-325899c8438e\\tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2\\questions\\q_6579b531-2be6-43c0-bd88-feb7e4d991ee\\diff\\env_default\\env_ed16baac-d8a3-4835-862c-50c8a006e7e6\\nls_output, -rev-lookup, -mcc, C:\\Users\\ratul.REDMOND\\work\\netver\\batfish\\containers\\cp_c47c55bf-ffcd-47ba-a196-325899c8438e\\tr_e679932f-a2a0-43e1-bfdc-cfdbbe3cace2\\questions\\q_6579b531-2be6-43c0-bd88-feb7e4d991ee\\diff\\env_default\\env_ed16baac-d8a3-4835-862c-50c8a006e7e6\\nls_input.pl, C:\\cygwin\\tmp\\batfish_tmp_logic3349575251317722092\\org\\batfish\\logic\\nls\\common.pl]",
-    "6" : "! System error\r",
-    "7" : "! 'create_directory error: SPIO_E_INVALID_NAME'\r",
-    "8" : "\r",
-    "9" : "   at org.batfish.main.Batfish.runNls(Batfish.java:3467)\r",
-    "10" : "   at org.batfish.main.Batfish.nlsTraffic(Batfish.java:2419)\r",
-    "11" : "   at org.batfish.answerer.ReachabilityAnswerer.standard(ReachabilityAnswerer.java:396)\r",
-    "12" : "   at org.batfish.answerer.ReachabilityAnswerer.answer(ReachabilityAnswerer.java:54)\r",
-    "13" : "   at org.batfish.main.Batfish.answer(Batfish.java:580)\r",
-    "14" : "   ... 2 more\r"
-  }
-}
+Flow: ingress:as1border1 2.0.0.0->10.13.22.3 TCP sport:0 dort:0 state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as1border1:FastEthernet0/0 -> as1core1:FastEthernet0/0
+    Hop 2: as1core1:FastEthernet0/1 -> as1border2:FastEthernet0/0
+    Hop 3: as1border2:FastEthernet0/1 -> as3border2:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as1border2 253.0.0.0->10.12.11.2 TCP sport:0 dort:0 state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1
+    Hop 2: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
+    Hop 3: as1border1:FastEthernet0/1 -> as2border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+Flow: ingress:as1core1 2.0.0.0->3.0.2.1 TCP sport:0 dort:0 state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as1core1:FastEthernet0/1 -> as1border2:FastEthernet0/0
+    Hop 2: as1border2:FastEthernet0/1 -> as3border2:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2border1 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2border2 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2border2:FastEthernet1/0 -> as2core2:FastEthernet0/0
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2core1 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1
+    Hop 2: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2core2 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 2: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2dept1 2.128.0.0->3.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 2: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 3: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0
+    Hop 4: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+    Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 2: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Hop 3: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1
+    Hop 4: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+    Hop 1: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 2: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 3: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0
+    Hop 4: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+    Hop 1: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 2: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Hop 3: as2core1:FastEthernet0/1 -> as2border2:FastEthernet0/1
+    Hop 4: as2border2:FastEthernet0/0 -> as3border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+Flow: ingress:as2dist1 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as2dist2 2.128.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Hop 2: as2core1:FastEthernet0/0 -> as2border1:FastEthernet0/1
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+Flow: ingress:as3border1 2.0.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as3border1:FastEthernet0/1 -> as3core1:FastEthernet0/1
+    Hop 2: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0
+    Hop 3: as3border2:FastEthernet0/1 -> as1border2:FastEthernet0/1
+    Hop 4: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1
+    Hop 5: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+Flow: ingress:as3border2 2.0.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as3border2:FastEthernet0/1 -> as1border2:FastEthernet0/1
+    Hop 2: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1
+    Hop 3: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+Flow: ingress:as3core1 2.0.0.0->1.0.1.1 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: as3core1:FastEthernet0/0 -> as3border2:FastEthernet0/0
+    Hop 2: as3border2:FastEthernet0/1 -> as1border2:FastEthernet0/1
+    Hop 3: as1border2:FastEthernet0/0 -> as1core1:FastEthernet0/1
+    Hop 4: as1core1:FastEthernet0/0 -> as1border1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+Flow: ingress:host1 2.128.0.0->2.34.201.3 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Disposition: ACCEPTED
+
+Flow: ingress:host2 2.128.0.0->2.34.201.3 UDP sport:0 dort:0 state:0
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_9efaabed-55b2-4df7-91ee-7518de91542d
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Disposition: ACCEPTED
+
+
+. . . . . . . . . . . . . . . . 
+Status: SUCCESS
+Question: reachability actions=[ACCEPT]
+Flow: ingress:as2core2 0.0.0.0->2.1.2.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: as2core2:FastEthernet0/0 -> as2border2:FastEthernet1/0
+    Hop 2: as2border2:FastEthernet0/1 -> as2core1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 2: as2border1:FastEthernet0/1 -> as2core1:FastEthernet0/0
+    Disposition: ACCEPTED
+
+    Hop 1: as2core2:FastEthernet1/0 -> as2dist1:FastEthernet0/0
+    Hop 2: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+    Hop 1: as2core2:FastEthernet2/0 -> as2dist2:FastEthernet0/0
+    Hop 2: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+Flow: ingress:as2dept1 0.0.0.0->1.0.1.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 2: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 3: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 4: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 2: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+    Hop 1: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 2: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 3: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 4: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 2: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+Flow: ingress:as2dist1 0.0.0.0->1.0.1.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+Flow: ingress:as2dist2 0.0.0.0->1.0.1.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 2: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 3: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+Flow: ingress:host1 2.128.0.0->1.0.1.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: host1:eth0 -> as2dept1:FastEthernet1/0
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+Flow: ingress:host2 2.128.0.0->1.0.1.1 TCP sport:0 dort:TELNET(23) state:0 tcpFlags:00000000
+  environment:tr_41cb945e-bf18-4017-9f91-939a4a2359e8:env_default
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 3: as2dist1:FastEthernet0/0 -> as2core2:FastEthernet1/0
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
+    Hop 2: as2dept1:FastEthernet0/0 -> as2dist1:FastEthernet1/0
+    Hop 3: as2dist1:FastEthernet0/1 -> as2core1:FastEthernet2/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 3: as2dist2:FastEthernet0/0 -> as2core2:FastEthernet2/0
+    Hop 4: as2core2:FastEthernet0/1 -> as2border1:FastEthernet1/0
+    Hop 5: as2border1:FastEthernet0/0 -> as1border1:FastEthernet0/1
+    Disposition: ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:FastEthernet1/1
+    Hop 2: as2dept1:FastEthernet0/1 -> as2dist2:FastEthernet1/0
+    Hop 3: as2dist2:FastEthernet0/1 -> as2core1:FastEthernet1/0
+    Disposition: DENIED_IN{as2core1}{blocktelnet}{0}
+
+

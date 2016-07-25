@@ -13,6 +13,7 @@ public enum QuestionType {
    BGP_ADVERTISEMENTS("bgpadvertisements"),
    BGP_SESSION_CHECK("bgpsessioncheck"),
    COMPARE_SAME_NAME("comparesamename"),
+   ENVIRONMENT_CREATION("environmentcreation"),
    ERROR("error"),
    IPSEC_VPN_CHECK("ipsecvpncheck"),
    ISIS_LOOPBACKS("isisloopbacks"),

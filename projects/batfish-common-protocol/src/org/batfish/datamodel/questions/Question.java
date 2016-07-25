@@ -1,13 +1,9 @@
 package org.batfish.datamodel.questions;
 
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeSet;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -21,19 +17,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class Question {
 
    private static final String DIFF_VAR = "differential";
-   private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
-   private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
    private boolean _differential;
-   private final Set<NodeInterfacePair> _interfaceBlacklist;
-   private final NodeSet _nodeBlacklist;
 
    private final QuestionType _type;
 
    public Question(QuestionType type) {
       _type = type;
-      _nodeBlacklist = new NodeSet();
-      _interfaceBlacklist = new TreeSet<NodeInterfacePair>();
       _differential = false;
    }
 
@@ -42,23 +32,13 @@ public abstract class Question {
 
    @JsonIgnore
    public boolean getDiffActive() {
-      return !getDifferential()
-            && (!_nodeBlacklist.isEmpty() || !_interfaceBlacklist.isEmpty());
+      return !getDifferential();
+            //&& (!_nodeBlacklist.isEmpty() || !_interfaceBlacklist.isEmpty());
    }
 
    @JsonProperty(DIFF_VAR)
    public boolean getDifferential() {
       return _differential;
-   }
-
-   @JsonProperty(INTERFACE_BLACKLIST_VAR)
-   public Set<NodeInterfacePair> getInterfaceBlacklist() {
-      return _interfaceBlacklist;
-   }
-
-   @JsonProperty(NODE_BLACKLIST_VAR)
-   public NodeSet getNodeBlacklist() {
-      return _nodeBlacklist;
    }
 
    @JsonIgnore
@@ -72,8 +52,6 @@ public abstract class Question {
    protected boolean isBaseParamKey(String paramKey) {
       switch (paramKey) {
       case DIFF_VAR:
-      case INTERFACE_BLACKLIST_VAR:
-      case NODE_BLACKLIST_VAR:
          return true;
       default:
          return false;
@@ -92,12 +70,6 @@ public abstract class Question {
       //for brevity, print only if the values are non-default
       if (_differential) {
          retString += String.format("differential=%s", _differential);
-      }
-      if (_interfaceBlacklist.size() != 0) {
-         retString += String.format(" | interfaceBlacklist: %s", _interfaceBlacklist);
-      }
-      if (_nodeBlacklist.size() != 0) {
-         retString += String.format(" | interfaceBlacklist: %s", _interfaceBlacklist);
       }
       if (retString == "")
          return "";
@@ -124,7 +96,6 @@ public abstract class Question {
             case DIFF_VAR:
                setDifferential(parameters.getBoolean(paramKey));
                break;
-            // TODO: interface and node blacklists
             default:
                throw new BatfishException("Unhandled base param key in "
                      + getClass().getSimpleName() + ": " + paramKey);

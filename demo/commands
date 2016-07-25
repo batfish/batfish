@@ -75,7 +75,7 @@ get #checkprotection 2.128.1.101 ssh as(1|3).*
 init-diff-environment test_rigs/example-with-delta
 
 # a particularly powerful query: reachability diff between the two environments
-get-diff reachability
+get reachability type=reduced
 # --> any collateral damage is easy to see
 
 ##############
