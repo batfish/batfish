@@ -1,1 +1,0 @@
-../../../example_questions/reduced_reachability.q
