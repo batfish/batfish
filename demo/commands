@@ -12,10 +12,10 @@
 ## % batfish_client 
 
 # load the testing 
-init-testrig -nodataplane test_rigs/example
+init-testrig test_rigs/example
 
-###############
-# we have now built a logical representation of the network that can be queried in various ways. 
+#####################
+# our logical representation of the network that can be queried in various ways. 
 # we have many queries and can write more
 
 # for example, we can ask simple questions on adjacencies
@@ -51,7 +51,7 @@ get #traceroute as2border1 2.128.0.101 dns
 ################
 # while the above could be done using testing/emulation, we alone can be comprehensive 
 
-# for example, find *all* situations (i.e., starting node, packet header combinations) where the DNS server is not reachable
+# for example, find *all* (starting node, packet header) combinations where the DNS server is unreachable
 get #checkreachability 2.128.0.101 dns
 # (macro expands to "get reachability dstPrefixes=["2.128.0.101/32"] | dstPortRange=["53-53"] | ipProtoRange=["17-17"] | actions=["drop"])
 # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
@@ -68,13 +68,15 @@ get #checkprotection 2.128.1.101 ssh as(1|3).*
 # --> buggy ACL on as2border2!
 
 #############
-# comparing two sets of is a powerful debugging aid
+# comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
+# --> any earlier query can be executed differentially, to see if how behavior differs
 
 # initialize the delta environment and generate its dataplane
 init-diff-environment test_rigs/example-with-delta
 
-# reduced reachability between default and delta environments
+# a particularly powerful query: reachability diff between the two environments
 get-diff reachability
+# --> any collateral damage is easy to see
 
 ##############
 # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
