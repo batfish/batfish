@@ -364,7 +364,7 @@ public final class Flow implements Comparable<Flow> {
       String tcpFlagsStr = "";
       if (tcp || udp) {
          srcPortStr = " sport:" + NamedPort.nameFromNumber(_srcPort);
-         dstPortStr = " dort:" + NamedPort.nameFromNumber(_dstPort);
+         dstPortStr = " dport:" + NamedPort.nameFromNumber(_dstPort);
       }
       if (tcp) {
          tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d",

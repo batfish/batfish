@@ -134,10 +134,9 @@ public class QuestionHelper {
       return getQuestion(questionType).toJsonString();
    }
 
-   public static String getQuestionString(String questionTypeStr, boolean isDiff)
+   public static String getQuestionString(String questionTypeStr)
          throws JsonProcessingException {
       Question question = getQuestion(questionTypeStr);
-      question.setDifferential(isDiff);
       return question.toJsonString();
    }
 
