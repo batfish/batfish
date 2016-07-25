@@ -153,7 +153,7 @@ public class ReachabilityQuestion extends Question {
    public String prettyPrint() {
       try {
          String retString = String.format("reachability %sactions=%s",
-               prettyPrintBase(), _reachabilityType, _actions.toString());
+               prettyPrintBase(), _actions.toString());
          // we only print "interesting" values
          if (_reachabilityType != ReachabilityType.STANDARD) {
             retString += String.format(" | %s=%s", REACHABILITY_TYPE_VAR,
