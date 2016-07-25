@@ -1,1 +1,0 @@
-../../../example_questions/bgp_session_check.q
