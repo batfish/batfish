@@ -36,10 +36,16 @@ public class RouteFilterLine implements Serializable {
          return true;
       }
       RouteFilterLine other = (RouteFilterLine) obj;
-      if (other.toString().equals(this.toString())) {
-         return true;
+      if (_action != other._action) {
+         return false;
       }
-      return false;
+      if (!_lengthRange.equals(other._lengthRange)) {
+         return false;
+      }
+      if (!_prefix.equals(other._prefix)) {
+         return false;
+      }
+      return true;
    }
 
    @JsonProperty(ACTION_VAR)
@@ -55,6 +61,16 @@ public class RouteFilterLine implements Serializable {
    @JsonProperty(PREFIX_VAR)
    public Prefix getPrefix() {
       return _prefix;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _action.hashCode();
+      result = prime * result + _lengthRange.hashCode();
+      result = prime * result + _prefix.hashCode();
+      return result;
    }
 
    @Override

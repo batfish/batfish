@@ -35,12 +35,25 @@ public final class AsPathAccessListLine implements Serializable,
          return true;
       }
       AsPathAccessListLine other = (AsPathAccessListLine) obj;
-      if (other._as1Range != _as1Range) {
+      if (_action != other._action) {
          return false;
       }
-      if (other._as2Range != _as2Range) {
-         return false;
+      if (_as1Range == null) {
+         if (other._as1Range != null)
+            return false;
       }
+      else if (!_as1Range.equals(other._as1Range))
+         return false;
+      if (_as2Range == null) {
+         if (other._as2Range != null)
+            return false;
+      }
+      else if (!_as2Range.equals(other._as2Range))
+         return false;
+      if (_atBeginning != other._atBeginning)
+         return false;
+      if (_matchEmpty != other._matchEmpty)
+         return false;
       return true;
    }
 
@@ -62,6 +75,20 @@ public final class AsPathAccessListLine implements Serializable,
 
    public boolean getMatchEmpty() {
       return _matchEmpty;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_action == null) ? 0 : _action.hashCode());
+      result = prime * result
+            + ((_as1Range == null) ? 0 : _as1Range.hashCode());
+      result = prime * result
+            + ((_as2Range == null) ? 0 : _as2Range.hashCode());
+      result = prime * result + (_atBeginning ? 1231 : 1237);
+      result = prime * result + (_matchEmpty ? 1231 : 1237);
+      return result;
    }
 
    public void setAction(LineAction action) {
