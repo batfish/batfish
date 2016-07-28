@@ -39,21 +39,27 @@ public final class AsPathAccessListLine implements Serializable,
          return false;
       }
       if (_as1Range == null) {
-         if (other._as1Range != null)
+         if (other._as1Range != null) {
             return false;
+         }
       }
-      else if (!_as1Range.equals(other._as1Range))
+      else if (!_as1Range.equals(other._as1Range)) {
          return false;
+      }
       if (_as2Range == null) {
-         if (other._as2Range != null)
+         if (other._as2Range != null) {
             return false;
+         }
       }
-      else if (!_as2Range.equals(other._as2Range))
+      else if (!_as2Range.equals(other._as2Range)) {
          return false;
-      if (_atBeginning != other._atBeginning)
+      }
+      if (_atBeginning != other._atBeginning) {
          return false;
-      if (_matchEmpty != other._matchEmpty)
+      }
+      if (_matchEmpty != other._matchEmpty) {
          return false;
+      }
       return true;
    }
 

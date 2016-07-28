@@ -45,6 +45,8 @@ public class Facts {
       map.put("SetIpAccessListLine_permit", "LIST|LINE");
       map.put("SetIpAccessListLine_protocol", "LIST|LINE|PROTOCOL");
       map.put("SetIpAccessListLine_srcIpRange", "LIST|LINE|SRCIPSTART|SRCIPEND");
+      map.put("SetIpAccessListLine_srcIpRangeBlacklist",
+            "LIST|LINE|SRCIPSTART|SRCIPEND");
       map.put("SetIpAccessListLine_srcOrDstIpRange",
             "LIST|LINE|SRCORDSTIPSTART|SRCORDSTIPEND");
       map.put("SetIpAccessListLine_srcOrDstPortRange",

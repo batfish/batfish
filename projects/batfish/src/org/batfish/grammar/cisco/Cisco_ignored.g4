@@ -47,7 +47,9 @@ null_block_stanza
       | DOMAIN
       | DOT11
       | END
+      | EVENT
       | EVENT_HANDLER
+      | EXIT
       | FEX
       | FLOW
       | FPD
@@ -347,7 +349,6 @@ null_block_substanza
          | EXPORTER
          | FABRIC
          | FAILED
-         | FAILOVER
          | FAIR_QUEUE
          | FALLBACK_DN
          | FILE_BROWSING
@@ -484,6 +485,7 @@ null_block_substanza
          | PRI_GROUP
          | PRIMARY_PRIORITY
          | PRIORITY
+         | PRIVATE_VLAN
          | PRIVILEGE
          | PROBE
          | PROPOSAL
@@ -702,7 +704,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ENVIRONMENT
       | ERRDISABLE
       | ESCAPE_CHARACTER
-      | EVENT
       | EXCEPTION
       | EXEC
       | FABRIC

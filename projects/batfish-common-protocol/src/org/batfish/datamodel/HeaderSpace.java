@@ -18,6 +18,8 @@ public class HeaderSpace implements Serializable {
 
    private Set<IpWildcard> _dstIpWildcards;
 
+   private Set<IpWildcard> _dstIpWildcardsBlacklist;
+
    private List<SubRange> _dstPortRanges;
 
    private Set<Integer> _ecns;
@@ -29,6 +31,8 @@ public class HeaderSpace implements Serializable {
    private Set<IpProtocol> _protocols;
 
    private Set<IpWildcard> _srcIpWildcards;
+
+   private Set<IpWildcard> _srcIpWildcardsBlacklist;
 
    private Set<IpWildcard> _srcOrDstIpWildcards;
 
@@ -44,9 +48,11 @@ public class HeaderSpace implements Serializable {
       _dscps = new TreeSet<Integer>();
       _protocols = EnumSet.noneOf(IpProtocol.class);
       _dstIpWildcards = new TreeSet<IpWildcard>();
+      _dstIpWildcardsBlacklist = new TreeSet<IpWildcard>();
       _dstPortRanges = new ArrayList<SubRange>();
       _ecns = new TreeSet<Integer>();
       _srcIpWildcards = new TreeSet<IpWildcard>();
+      _srcIpWildcardsBlacklist = new TreeSet<IpWildcard>();
       _srcOrDstIpWildcards = new TreeSet<IpWildcard>();
       _srcOrDstPortRanges = new ArrayList<SubRange>();
       _srcPortRanges = new ArrayList<SubRange>();
@@ -62,6 +68,10 @@ public class HeaderSpace implements Serializable {
 
    public Set<IpWildcard> getDstIpWildcards() {
       return _dstIpWildcards;
+   }
+
+   public Set<IpWildcard> getDstIpWildcardsBlacklist() {
+      return _dstIpWildcardsBlacklist;
    }
 
    public List<SubRange> getDstPortRanges() {
@@ -86,6 +96,10 @@ public class HeaderSpace implements Serializable {
 
    public Set<IpWildcard> getSrcIpWildcards() {
       return _srcIpWildcards;
+   }
+
+   public Set<IpWildcard> getSrcIpWildcardsBlacklist() {
+      return _srcIpWildcardsBlacklist;
    }
 
    public Set<IpWildcard> getSrcOrDstIpWildcards() {
@@ -116,6 +130,11 @@ public class HeaderSpace implements Serializable {
       _dstIpWildcards = dstIpWildcards;
    }
 
+   public void setDstIpWildcardsBlacklist(
+         Set<IpWildcard> dstIpWildcardsBlacklist) {
+      _dstIpWildcardsBlacklist = dstIpWildcardsBlacklist;
+   }
+
    public void setDstPortRanges(List<SubRange> dstPortRanges) {
       _dstPortRanges = dstPortRanges;
    }
@@ -138,6 +157,11 @@ public class HeaderSpace implements Serializable {
 
    public void setSrcIpWildcards(Set<IpWildcard> srcIpWildcards) {
       _srcIpWildcards = srcIpWildcards;
+   }
+
+   public void setSrcIpWildcardsBlacklist(
+         Set<IpWildcard> srcIpWildcardsBlacklist) {
+      _srcIpWildcardsBlacklist = srcIpWildcardsBlacklist;
    }
 
    public void setSrcOrDstIpWildcards(Set<IpWildcard> srcOrDstIpWildcards) {
@@ -163,20 +187,24 @@ public class HeaderSpace implements Serializable {
    @Override
    public String toString() {
       return "[Protocols:" + _protocols.toString() + ", SourceIpWildcards:"
-            + _srcIpWildcards + ", DestinationIpWildcards:" + _dstIpWildcards
-            + ", SrcOrDstIpWildcards:" + _srcOrDstIpWildcards
-            + ", SrcPortRanges:" + _srcPortRanges + ", DstPortRanges:"
-            + _dstPortRanges + ", SrcOrDstPortRanges:" + _srcOrDstPortRanges
-            + ", Dscps: " + _dscps.toString() + ", IcmpType:" + _icmpType
-            + ", IcmpCode:" + _icmpCode + ", States:" + _states.toString()
-            + ", TcpFlags:" + _tcpFlags.toString() + "]";
+            + _srcIpWildcards + ", SourceIpWildcardsBlacklist:"
+            + _srcIpWildcardsBlacklist + ", DestinationIpWildcards:"
+            + _dstIpWildcards + ", DestinationIpWildcardsBlacklist:"
+            + _dstIpWildcardsBlacklist + ", SrcOrDstIpWildcards:"
+            + _srcOrDstIpWildcards + ", SrcPortRanges:" + _srcPortRanges
+            + ", DstPortRanges:" + _dstPortRanges + ", SrcOrDstPortRanges:"
+            + _srcOrDstPortRanges + ", Dscps: " + _dscps.toString()
+            + ", IcmpType:" + _icmpType + ", IcmpCode:" + _icmpCode
+            + ", States:" + _states.toString() + ", TcpFlags:"
+            + _tcpFlags.toString() + "]";
    }
 
    public final boolean unrestricted() {
       boolean ret = _dscps.isEmpty() && _dstIpWildcards.isEmpty()
-            && _dstPortRanges.isEmpty() && _ecns.isEmpty()
-            && _icmpCode == IcmpCode.UNSET && _icmpType == IcmpType.UNSET
-            && _protocols.isEmpty() && _srcIpWildcards.isEmpty()
+            && _dstIpWildcardsBlacklist.isEmpty() && _dstPortRanges.isEmpty()
+            && _ecns.isEmpty() && _icmpCode == IcmpCode.UNSET
+            && _icmpType == IcmpType.UNSET && _protocols.isEmpty()
+            && _srcIpWildcards.isEmpty() && _srcIpWildcardsBlacklist.isEmpty()
             && _srcOrDstIpWildcards.isEmpty() && _srcOrDstPortRanges.isEmpty()
             && _srcPortRanges.isEmpty() && _states.isEmpty()
             && _tcpFlags.isEmpty();

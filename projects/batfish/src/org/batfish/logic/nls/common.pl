@@ -1785,12 +1785,14 @@ need_PolicyMapMatchRoute(Map, Route) :-
 'IpAccessListMatch'(List, Line, Flow) :-
    'IpAccessListMatchDscp'(List, Line, Flow),
    'IpAccessListMatchDstIp'(List, Line, Flow),
+   \+ 'IpAccessListMatchDstIpBlacklist'(List, Line, Flow),
    'IpAccessListMatchDstPort'(List, Line, Flow),
    'IpAccessListMatchEcn'(List, Line, Flow),
    'IpAccessListMatchIcmpCode'(List, Line, Flow),
    'IpAccessListMatchIcmpType'(List, Line, Flow),
    'IpAccessListMatchProtocol'(List, Line, Flow),
    'IpAccessListMatchSrcIp'(List, Line, Flow),
+   \+ 'IpAccessListMatchSrcIpBlacklist'(List, Line, Flow),
    'IpAccessListMatchSrcOrDstIp'(List, Line, Flow),
    'IpAccessListMatchSrcOrDstPort'(List, Line, Flow),
    'IpAccessListMatchSrcPort'(List, Line, Flow),
@@ -1812,6 +1814,18 @@ need_PolicyMapMatchRoute(Map, Route) :-
       \+ 'SetIpAccessListLine_dstIpRange'(List, Line, _, _) ;
       (
          'SetIpAccessListLine_dstIpRange'(List, Line, DstIp_start, DstIp_end),
+         DstIp_start =< DstIp,
+         DstIp =< DstIp_end
+      )
+   ).
+
+'IpAccessListMatchDstIpBlacklist'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_dstIp'(Flow, DstIp),
+   (
+      \+ 'SetIpAccessListLine_dstIpRangeBlacklist'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_dstIpRangeBlacklist'(List, Line, DstIp_start, DstIp_end),
          DstIp_start =< DstIp,
          DstIp =< DstIp_end
       )
@@ -1868,6 +1882,18 @@ need_PolicyMapMatchRoute(Map, Route) :-
       \+ 'SetIpAccessListLine_srcIpRange'(List, Line, _, _) ;
       (
          'SetIpAccessListLine_srcIpRange'(List, Line, SrcIp_start, SrcIp_end),
+         SrcIp_start =< SrcIp,
+         SrcIp =< SrcIp_end
+      )
+   ).
+
+'IpAccessListMatchSrcIpBlacklist'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_srcIp'(Flow, SrcIp),
+   (
+      \+ 'SetIpAccessListLine_srcIpRangeBlacklist'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_srcIpRangeBlacklist'(List, Line, SrcIp_start, SrcIp_end),
          SrcIp_start =< SrcIp,
          SrcIp =< SrcIp_end
       )

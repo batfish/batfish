@@ -124,6 +124,7 @@ cm_match
 cm_match_tail
 :
    cmm_access_group
+   | cmm_access_list
    | cmm_any
    | cmm_cos
    | cmm_default_inspection_traffic
@@ -147,6 +148,11 @@ cmm_access_group
          NAME name = variable
       )
    ) NEWLINE
+;
+
+cmm_access_list
+:
+   ACCESS_LIST name = variable NEWLINE
 ;
 
 cmm_any
@@ -284,7 +290,7 @@ failover_link
 failover_interface
 :
    INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
-   = IP_ADDRESS smask = IP_ADDRESS NEWLINE
+   = IP_ADDRESS NEWLINE
 ;
 
 flan_interface
@@ -1262,6 +1268,7 @@ stanza
    | s_ip
    | s_line
    | s_management
+   | s_mac_access_list
    | s_ntp
    | s_object
    | s_object_group

@@ -545,6 +545,8 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_deny");
       StringBuilder wSetIpAccessListLine_dstIpRange = _factBins
             .get("SetIpAccessListLine_dstIpRange");
+      StringBuilder wSetIpAccessListLine_dstIpRangeBlacklist = _factBins
+            .get("SetIpAccessListLine_dstIpRangeBlacklist");
       StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
             .get("SetIpAccessListLine_dstPortRange");
       StringBuilder wSetIpAccessListLine_dscp = _factBins
@@ -561,6 +563,8 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_protocol");
       StringBuilder wSetIpAccessListLine_srcIpRange = _factBins
             .get("SetIpAccessListLine_srcIpRange");
+      StringBuilder wSetIpAccessListLine_srcIpRangeBlacklist = _factBins
+            .get("SetIpAccessListLine_srcIpRangeBlacklist");
       StringBuilder wSetIpAccessListLine_srcOrDstIpRange = _factBins
             .get("SetIpAccessListLine_srcOrDstIpRange");
       StringBuilder wSetIpAccessListLine_srcOrDstPortRange = _factBins
@@ -613,6 +617,13 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_dstIpRange.append(name + "|" + i + "|"
                      + dstIpStart + "|" + dstIpEnd + "\n");
             }
+            for (IpWildcard dstIpWildcard : line.getDstIpWildcardsBlacklist()) {
+               Prefix dstIpRange = dstIpWildcard.toPrefix();
+               long dstIpStart = dstIpRange.getAddress().asLong();
+               long dstIpEnd = dstIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_dstIpRangeBlacklist.append(name + "|" + i
+                     + "|" + dstIpStart + "|" + dstIpEnd + "\n");
+            }
             for (SubRange dstPortRange : line.getDstPortRanges()) {
                long startPort = dstPortRange.getStart();
                long endPort = dstPortRange.getEnd();
@@ -637,6 +648,13 @@ public class ConfigurationFactExtractor {
                long srcIpEnd = srcIpRange.getEndAddress().asLong();
                wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
+            }
+            for (IpWildcard srcIpWildcard : line.getSrcIpWildcardsBlacklist()) {
+               Prefix srcIpRange = srcIpWildcard.toPrefix();
+               long srcIpStart = srcIpRange.getAddress().asLong();
+               long srcIpEnd = srcIpRange.getEndAddress().asLong();
+               wSetIpAccessListLine_srcIpRangeBlacklist.append(name + "|" + i
+                     + "|" + srcIpStart + "|" + srcIpEnd + "\n");
             }
             for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIpWildcards()) {
                Prefix srcOrDstIpRange = srcOrDstIpWildcard.toPrefix();

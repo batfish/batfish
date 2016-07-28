@@ -274,6 +274,7 @@ protocol
    | GRE
    | ICMP
    | ICMP6
+   | ICMPV6
    | IGMP
    | IGRP
    | IP

@@ -34,6 +34,7 @@ s_protocols_null
       | L2CIRCUIT
       | L2VPN
       | LACP
+      | LAYER2_CONTROL
       | LDP
       | LLDP
       | LLDP_MED

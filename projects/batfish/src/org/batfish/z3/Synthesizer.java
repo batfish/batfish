@@ -813,9 +813,13 @@ public class Synthesizer {
             for (int i = 0; i < lines.size(); i++) {
                IpAccessListLine line = lines.get(i);
                Set<IpWildcard> srcIpWildcards = line.getSrcIpWildcards();
+               Set<IpWildcard> srcIpWildcardsBlacklist = line
+                     .getSrcIpWildcardsBlacklist();
                Set<IpWildcard> srcOrDstIpWildcards = line
                      .getSrcOrDstIpWildcards();
                Set<IpWildcard> dstIpWildcards = line.getDstIpWildcards();
+               Set<IpWildcard> dstIpWildcardsBlacklist = line
+                     .getDstIpWildcardsBlacklist();
 
                Set<IpProtocol> protocols = line.getProtocols();
                Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
@@ -903,6 +907,57 @@ public class Synthesizer {
                      }
                   }
                   matchLineCriteria.addConjunct(matchSomeSrcIpRange);
+               }
+
+               // don't match srcIpBlacklist
+               if (srcIpWildcardsBlacklist.size() > 0) {
+                  OrExpr matchSomeSrcIpRange = new OrExpr();
+                  for (IpWildcard srcIpWildcard : srcIpWildcardsBlacklist) {
+                     if (srcIpWildcard.isPrefix()) {
+                        Prefix srcPrefix = srcIpWildcard.toPrefix();
+                        long srcIp = srcPrefix.getAddress().asLong();
+
+                        int srcIpWildcardBits = IP_BITS
+                              - srcPrefix.getPrefixLength();
+                        int srcIpStart = srcIpWildcardBits;
+                        int srcIpEnd = IP_BITS - 1;
+                        if (srcIpStart < IP_BITS) {
+                           IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
+                                 srcIpStart, srcIpEnd);
+                           LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
+                                 srcIpStart, srcIpEnd);
+                           EqExpr matchsrcIp = new EqExpr(extractSrcIp,
+                                 srcIpMatchLit);
+                           matchSomeSrcIpRange.addDisjunct(matchsrcIp);
+                        }
+                        else {
+                           matchSomeSrcIpRange.addDisjunct(TrueExpr.INSTANCE);
+                        }
+                     }
+                     else {
+                        long srcIp = srcIpWildcard.getIp().asLong();
+                        long wildcard = srcIpWildcard.getWildcard().asLong();
+                        AndExpr matchSrcIp = new AndExpr();
+                        for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                           long mask = 1l << currentBitIndex;
+                           long currentWildcardBit = mask & wildcard;
+                           boolean useBit = currentWildcardBit == 0;
+                           if (useBit) {
+                              IntExpr extractSrcIp = new ExtractExpr(
+                                    SRC_IP_VAR, currentBitIndex,
+                                    currentBitIndex);
+                              LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
+                                    currentBitIndex, currentBitIndex);
+                              EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                                    srcIpMatchLit);
+                              matchSrcIp.addConjunct(matchSrcIpBit);
+                           }
+                        }
+                        matchSomeSrcIpRange.addDisjunct(matchSrcIp);
+                     }
+                  }
+                  matchLineCriteria
+                        .addConjunct(new NotExpr(matchSomeSrcIpRange));
                }
 
                // match srcOrDstIp
@@ -1019,6 +1074,57 @@ public class Synthesizer {
                      }
                   }
                   matchLineCriteria.addConjunct(matchSomeDstIpRange);
+               }
+
+               // don't match dstIpBlacklist
+               if (dstIpWildcardsBlacklist.size() > 0) {
+                  OrExpr matchSomeDstIpRange = new OrExpr();
+                  for (IpWildcard dstIpWildcard : dstIpWildcardsBlacklist) {
+                     if (dstIpWildcard.isPrefix()) {
+                        Prefix dstPrefix = dstIpWildcard.toPrefix();
+                        long dstIp = dstPrefix.getAddress().asLong();
+
+                        int dstIpWildcardBits = IP_BITS
+                              - dstPrefix.getPrefixLength();
+                        int dstIpStart = dstIpWildcardBits;
+                        int dstIpEnd = IP_BITS - 1;
+                        if (dstIpStart < IP_BITS) {
+                           IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
+                                 dstIpStart, dstIpEnd);
+                           LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
+                                 dstIpStart, dstIpEnd);
+                           EqExpr matchDstIp = new EqExpr(extractDstIp,
+                                 dstIpMatchLit);
+                           matchSomeDstIpRange.addDisjunct(matchDstIp);
+                        }
+                        else {
+                           matchSomeDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+                        }
+                     }
+                     else {
+                        long dstIp = dstIpWildcard.getIp().asLong();
+                        long wildcard = dstIpWildcard.getWildcard().asLong();
+                        AndExpr matchDstIp = new AndExpr();
+                        for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                           long mask = 1l << currentBitIndex;
+                           long currentWildcardBit = mask & wildcard;
+                           boolean useBit = currentWildcardBit == 0;
+                           if (useBit) {
+                              IntExpr extractSrcIp = new ExtractExpr(
+                                    DST_IP_VAR, currentBitIndex,
+                                    currentBitIndex);
+                              LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
+                                    currentBitIndex, currentBitIndex);
+                              EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
+                                    dstIpMatchLit);
+                              matchDstIp.addConjunct(matchDstIpBit);
+                           }
+                        }
+                        matchSomeDstIpRange.addDisjunct(matchDstIp);
+                     }
+                  }
+                  matchLineCriteria
+                        .addConjunct(new NotExpr(matchSomeDstIpRange));
                }
 
                // match srcPort

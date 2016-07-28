@@ -218,11 +218,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("Async", "Async");
       prefixes.put("ATM", "ATM");
       prefixes.put("Bundle-Ether", "Bundle-Ether");
+      prefixes.put("BVI", "BVI");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
       prefixes.put("Dialer", "Dialer");
+      prefixes.put("Dot11Radio", "Dot11Radio");
       prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
       prefixes.put("Ethernet", "Ethernet");
       prefixes.put("FastEthernet", "FastEthernet");
+      prefixes.put("fc", "fc");
       prefixes.put("fe", "FastEthernet");
       prefixes.put("fortyGigE", "FortyGigabitEthernet");
       prefixes.put("GigabitEthernet", "GigabitEthernet");
@@ -1325,6 +1328,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       String name;
+      boolean ipv6 = (ctx.IPV6() != null);
       if (ctx.name != null) {
          name = ctx.name.getText();
       }
@@ -1337,6 +1341,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentStandardAcl = _configuration.getStandardAcls().get(name);
       if (_currentStandardAcl == null) {
          _currentStandardAcl = new StandardAccessList(name);
+         _currentStandardAcl.setIpv6(ipv6);
          _configuration.getStandardAcls().put(name, _currentStandardAcl);
       }
    }
@@ -1768,10 +1773,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.name.getText();
       Ip primaryIp = toIp(ctx.pip);
       Ip primaryMask = toIp(ctx.pmask);
-      Prefix primaryPrefix = new Prefix(primaryIp, primaryMask);
       Ip standbyIp = toIp(ctx.sip);
-      Ip standbyMask = toIp(ctx.smask);
-      Prefix standbyPrefix = new Prefix(standbyIp, standbyMask);
+      Prefix primaryPrefix = new Prefix(primaryIp, primaryMask);
+      Prefix standbyPrefix = new Prefix(standbyIp, primaryMask);
       _configuration.getFailoverPrimaryPrefixes().put(name, primaryPrefix);
       _configuration.getFailoverStandbyPrefixes().put(name, standbyPrefix);
    }
