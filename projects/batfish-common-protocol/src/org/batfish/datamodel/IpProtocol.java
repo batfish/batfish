@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -265,6 +266,9 @@ public enum IpProtocol {
    XNET(15),
    XNS_IDP(22),
    XTP(36);
+
+   public static final Comparator<IpProtocol> BY_NUMBER = (p1, p2) -> Integer
+         .compare(p1.number(), p2.number());
 
    private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 

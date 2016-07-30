@@ -9,7 +9,8 @@ import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.*;
 
@@ -23,7 +24,7 @@ public class QuestionHelper {
       CHECKPROTECTION("checkprotection"),
       CHECKREACHABILITY("checkreachability"),
       TRACEROUTE("traceroute");
-      
+
       private final static Map<String, MacroType> _map = buildMap();
 
       private static Map<String, MacroType> buildMap() {
@@ -57,7 +58,7 @@ public class QuestionHelper {
    }
 
    public static final String MACRO_PREFIX = "#";
-   
+
    public static String getParametersString(Map<String, String> parameters)
          throws Exception {
       String retString = "{\n";
@@ -129,8 +130,8 @@ public class QuestionHelper {
       return getQuestion(qType);
    }
 
-   public static String getQuestionString(QuestionType questionType) 
-         throws JsonProcessingException {      
+   public static String getQuestionString(QuestionType questionType)
+         throws JsonProcessingException {
       return getQuestion(questionType).toJsonString();
    }
 
@@ -141,98 +142,93 @@ public class QuestionHelper {
    }
 
    public static ReachabilityQuestion getReachabilityQuestion(
-         String dstIp, String protocol, String ingressNodeRegex, 
+         String dstIp, String protocol, String ingressNodeRegex,
          ForwardingAction action) {
       ReachabilityQuestion question = new ReachabilityQuestion();
-      
-      Set<Prefix> prefixSet = new HashSet<Prefix>();
-      prefixSet.add(new Prefix(new Ip(dstIp), 32));
-      question.setDstPrefixes(prefixSet);
+
+      question.setDstIps(Collections.singleton(new IpWildcard(new Ip(dstIp))));
 
       boolean inverted = false;
-      
+
       if (protocol.startsWith("!")) {
          inverted = true;
-         protocol = protocol.replace("!", ""); 
+         protocol = protocol.replace("!", "");
       }
-      
+
       MyApplication application = new MyApplication(protocol);
-      
-      int protoNum = application.getIpProtocol().number();
-      Set<SubRange> protocolRanges = new HashSet<SubRange>();
+
+      IpProtocol ipProtocol = application.getIpProtocol();
       if (inverted) {
-         protocolRanges.addAll(SubRange.invertedRange(protoNum, 0 , 255));
+         question.setNotIpProtocols(Collections.singleton(ipProtocol));
       }
       else {
-         protocolRanges.add(new SubRange(protoNum));        
+         question.setIpProtocols(Collections.singleton(ipProtocol));
       }
-      question.setIpProtocolRange(protocolRanges);
-      
+
       if (application.getPort() != null) {
          int portNum = application.getPort();
-         Set<SubRange> portRanges = new HashSet<SubRange>();
+         Set<SubRange> portRanges = Collections.singleton(new SubRange(portNum));
          if (inverted) {
-            portRanges.addAll(SubRange.invertedRange(portNum, 0, 65535));
+            question.setNotDstPorts(portRanges);
          }
          else {
-            portRanges.add(new SubRange(portNum));                                   
+            question.setDstPorts(portRanges);
          }
-         question.setDstPortRange(portRanges);            
       }
-      
+
       if (ingressNodeRegex != null) {
          question.setIngressNodeRegex(ingressNodeRegex);
       }
-      
+
       Set<ForwardingAction> actionSet = new HashSet<ForwardingAction>();
       actionSet.add(action);
       question.setActions(actionSet);
 
       return question;
    }
-   
-   public static String resolveMacro(String macroName, String paramsLine) 
+
+   public static String resolveMacro(String macroName, String paramsLine)
          throws JsonProcessingException {
       String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
-      
+
       switch(macroType) {
       case CHECKPROTECTION: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for noreachability macro. " + 
+            throw new BatfishException("Incorrect usage for noreachability macro. " +
                   "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];
          String ingressNodeRegex = (words.length == 3)? words[2] : null;
-         
+
          return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.ACCEPT)
                .toJsonString();
       }
       case CHECKREACHABILITY: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for noreachability macro. " + 
+            throw new BatfishException("Incorrect usage for noreachability macro. " +
                   "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];
          String ingressNodeRegex = (words.length == 3)? words[2] : null;
-         
+
          return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.DROP)
                .toJsonString();
       }
       case TRACEROUTE: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for traceroute macro. " + 
+            throw new BatfishException("Incorrect usage for traceroute macro. " +
                   "Should be:\n #traceroute <srcNode> <dstip> [<protocol>]");
          }
          TracerouteQuestion question = new TracerouteQuestion();
          String srcNode = words[0];
          String dstIp = words[1];
-         
+
          question.setIngressNode(srcNode);
          question.setDstIp(new Ip(dstIp));
 
@@ -241,11 +237,11 @@ public class QuestionHelper {
             MyApplication application = new MyApplication(protocol);
             question.setIpProtocol(application.getIpProtocol());
             if (application.getPort() != null)
-               question.setDstPort(application.getPort());            
+               question.setDstPort(application.getPort());
          }
 //         else {
 //            question.setIpProtocol(IpProtocol.ICMP);
-//         }         
+//         }
          return question.toJsonString();
       }
       default:

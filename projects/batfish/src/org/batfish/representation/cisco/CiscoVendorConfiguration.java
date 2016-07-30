@@ -1201,19 +1201,19 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration
          newLine.setAction(fromLine.getAction());
          IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
          if (srcIpWildcard != null) {
-            newLine.getSrcIpWildcards().add(srcIpWildcard);
+            newLine.getSrcIps().add(srcIpWildcard);
          }
          IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
          if (dstIpWildcard != null) {
-            newLine.getDstIpWildcards().add(dstIpWildcard);
+            newLine.getDstIps().add(dstIpWildcard);
          }
          // TODO: src/dst address group
          IpProtocol protocol = fromLine.getProtocol();
          if (protocol != IpProtocol.IP) {
-            newLine.getProtocols().add(protocol);
+            newLine.getIpProtocols().add(protocol);
          }
-         newLine.getDstPortRanges().addAll(fromLine.getDstPortRanges());
-         newLine.getSrcPortRanges().addAll(fromLine.getSrcPortRanges());
+         newLine.getDstPorts().addAll(fromLine.getDstPorts());
+         newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
          Integer icmpType = fromLine.getIcmpType();
          if (icmpType != null) {
             newLine.setIcmpType(icmpType);

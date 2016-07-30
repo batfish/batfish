@@ -22,7 +22,7 @@ public final class FwFromDestinationAddressExcept extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      line.getDstIpWildcardsBlacklist().add(new IpWildcard(_prefix));
+      line.getNotDstIps().add(new IpWildcard(_prefix));
    }
 
    public Prefix getPrefix() {

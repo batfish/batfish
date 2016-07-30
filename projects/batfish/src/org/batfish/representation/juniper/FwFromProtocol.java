@@ -21,7 +21,7 @@ public final class FwFromProtocol extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      line.getProtocols().add(_protocol);
+      line.getIpProtocols().add(_protocol);
    }
 
    public IpProtocol getProtocol() {

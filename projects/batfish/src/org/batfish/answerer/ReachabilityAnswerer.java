@@ -15,6 +15,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -34,7 +36,6 @@ import org.batfish.z3.NodJob;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
-import org.batfish.z3.ReachableQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 
 public class ReachabilityAnswerer extends Answerer {
@@ -98,7 +99,7 @@ public class ReachabilityAnswerer extends Answerer {
       List<NodJob> jobs = new ArrayList<NodJob>();
       for (String node : configurations.keySet()) {
          MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
-               node);
+               node, question.getHeaderSpace());
          NodeSet nodes = new NodeSet();
          nodes.add(node);
          NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
@@ -171,9 +172,9 @@ public class ReachabilityAnswerer extends Answerer {
       for (Edge edge : diffEdges) {
          String ingressNode = edge.getNode1();
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true);
+               ingressNode, edge, true, question.getHeaderSpace());
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true);
+               ingressNode, edge, true, new HeaderSpace());
          noReachQuery.setNegate(true);
          List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
          queries.add(reachQuery);
@@ -187,8 +188,7 @@ public class ReachabilityAnswerer extends Answerer {
       }
 
       // we also need queries for nodes next to edges that are now missing,
-      // in
-      // the case that those nodes still exist
+      // in the case that those nodes still exist
       List<Synthesizer> missingEdgeSynthesizers = new ArrayList<Synthesizer>();
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
@@ -202,7 +202,7 @@ public class ReachabilityAnswerer extends Answerer {
          String ingressNode = missingEdge.getNode1();
          if (diffConfigurations.containsKey(ingressNode)) {
             ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-                  ingressNode, missingEdge, true);
+                  ingressNode, missingEdge, true, question.getHeaderSpace());
             List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
             queries.add(reachQuery);
             queries.add(blacklistQuery);
@@ -282,16 +282,20 @@ public class ReachabilityAnswerer extends Answerer {
 
       // generate base reachability and diff blackhole and blacklist queries
       for (String node : commonNodes) {
-         ReachableQuerySynthesizer reachableQuery = new ReachableQuerySynthesizer(
-               node, null);
-         ReachableQuerySynthesizer blackHoleQuery = new ReachableQuerySynthesizer(
-               node, null);
-         blackHoleQuery.setNegate(true);
+         ReachabilityQuerySynthesizer acceptQuery = new ReachabilityQuerySynthesizer(
+               Collections.singleton(ForwardingAction.ACCEPT),
+               question.getHeaderSpace(), Collections.<String> emptySet(),
+               Collections.singleton(node));
+         ReachabilityQuerySynthesizer notAcceptQuery = new ReachabilityQuerySynthesizer(
+               Collections.singleton(ForwardingAction.ACCEPT),
+               new HeaderSpace(), Collections.<String> emptySet(),
+               Collections.singleton(node));
+         notAcceptQuery.setNegate(true);
          NodeSet nodes = new NodeSet();
          nodes.add(node);
          List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
-         queries.add(reachableQuery);
-         queries.add(blackHoleQuery);
+         queries.add(acceptQuery);
+         queries.add(notAcceptQuery);
          queries.add(blacklistQuery);
          CompositeNodJob job = new CompositeNodJob(settings, synthesizers,
                queries, nodes, tag);
@@ -334,47 +338,35 @@ public class ReachabilityAnswerer extends Answerer {
       // collect ingress nodes
       Pattern ingressNodeRegex = Pattern
             .compile(question.getIngressNodeRegex());
+      Pattern notIngressNodeRegex = Pattern.compile(question
+            .getNotIngressNodeRegex());
       Set<String> activeIngressNodes = new TreeSet<String>();
-      if (ingressNodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
-            if (ingressNodeMatcher.matches()) {
-               activeIngressNodes.add(node);
-            }
+      for (String node : configurations.keySet()) {
+         Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
+         Matcher notIngressNodeMatcher = notIngressNodeRegex.matcher(node);
+         if (ingressNodeMatcher.matches() && !notIngressNodeMatcher.matches()) {
+            activeIngressNodes.add(node);
          }
-      }
-      else {
-         activeIngressNodes.addAll(configurations.keySet());
       }
 
       // collect final nodes
       Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
+      Pattern notFinalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
       Set<String> activeFinalNodes = new TreeSet<String>();
-      if (finalNodeRegex != null) {
-         for (String node : configurations.keySet()) {
-            Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
-            if (finalNodeMatcher.matches()) {
-               activeFinalNodes.add(node);
-            }
+      for (String node : configurations.keySet()) {
+         Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
+         Matcher notFinalNodeMatcher = notFinalNodeRegex.matcher(node);
+         if (finalNodeMatcher.matches() && !notFinalNodeMatcher.matches()) {
+            activeFinalNodes.add(node);
          }
-      }
-      else {
-         activeFinalNodes.addAll(configurations.keySet());
       }
 
       // build query jobs
       List<NodJob> jobs = new ArrayList<NodJob>();
       for (String ingressNode : activeIngressNodes) {
          ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
-               question.getActions(), question.getDstPrefixes(),
-               question.getDstPortRange(), activeFinalNodes,
-               Collections.singleton(ingressNode),
-               question.getIpProtocolRange(), question.getSrcPrefixes(),
-               question.getSrcPortRange(), question.getIcmpType(),
-               question.getIcmpCode(), 0 /*
-                                          * TODO: allow constraining tcpFlags
-                                          * question.getTcpFlags()
-                                          */);
+               question.getActions(), question.getHeaderSpace(),
+               activeFinalNodes, Collections.singleton(ingressNode));
          NodeSet nodes = new NodeSet();
          nodes.add(ingressNode);
          NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
@@ -398,5 +390,4 @@ public class ReachabilityAnswerer extends Answerer {
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
    }
-
 }

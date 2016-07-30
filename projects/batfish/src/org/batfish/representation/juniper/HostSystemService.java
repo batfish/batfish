@@ -70,16 +70,16 @@ public enum HostSystemService {
       case ANY_SERVICE: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getProtocols().add(IpProtocol.UDP);
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getIpProtocols().add(IpProtocol.UDP);
          break;
       }
 
       case DHCP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC
                      .number()));
          break;
@@ -88,9 +88,9 @@ public enum HostSystemService {
       case DNS: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN
                      .number()));
          break;
@@ -99,8 +99,8 @@ public enum HostSystemService {
       case FINGER: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER
                      .number()));
          break;
@@ -109,8 +109,8 @@ public enum HostSystemService {
       case FTP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number()));
          break;
       }
@@ -118,8 +118,8 @@ public enum HostSystemService {
       case HTTP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number()));
          break;
       }
@@ -127,8 +127,8 @@ public enum HostSystemService {
       case HTTPS: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges()
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts()
                .add(new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS
                      .number()));
          break;
@@ -142,11 +142,11 @@ public enum HostSystemService {
       case IKE: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP
                      .number()));
-         line.getDstPortRanges().add(
+         line.getDstPorts().add(
                new SubRange(NamedPort.NON500_ISAKMP.number(),
                      NamedPort.NON500_ISAKMP.number()));
          break;
@@ -161,8 +161,8 @@ public enum HostSystemService {
       case NETCONF: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.NETCONF_SSH.number(),
                      NamedPort.NETCONF_SSH.number()));
          break;
@@ -171,8 +171,8 @@ public enum HostSystemService {
       case NTP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number()));
          break;
       }
@@ -180,7 +180,7 @@ public enum HostSystemService {
       case PING: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.ICMP);
+         line.getIpProtocols().add(IpProtocol.ICMP);
          // TODO: PING (ECHO REQUEST) uses ICMP (an IP Protocol) type 8. need to
          // add support for ICMP types in packet headers
          break;
@@ -189,8 +189,8 @@ public enum HostSystemService {
       case R2CP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number()));
          break;
       }
@@ -198,8 +198,8 @@ public enum HostSystemService {
       case REVERSE_SSH: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.REVERSE_SSH.number(),
                      NamedPort.REVERSE_SSH.number()));
          break;
@@ -208,8 +208,8 @@ public enum HostSystemService {
       case REVERSE_TELNET: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.REVERSE_TELNET.number(),
                      NamedPort.REVERSE_TELNET.number()));
          break;
@@ -218,8 +218,8 @@ public enum HostSystemService {
       case RLOGIN: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.LOGINtcp_OR_WHOudp.number(),
                      NamedPort.LOGINtcp_OR_WHOudp.number()));
          break;
@@ -234,8 +234,8 @@ public enum HostSystemService {
       case RSH: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.CMDtcp_OR_SYSLOGudp.number(),
                      NamedPort.CMDtcp_OR_SYSLOGudp.number()));
          break;
@@ -244,9 +244,9 @@ public enum HostSystemService {
       case SIP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061
                      .number()));
          break;
@@ -255,8 +255,8 @@ public enum HostSystemService {
       case SNMP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number()));
          break;
       }
@@ -264,8 +264,8 @@ public enum HostSystemService {
       case SNMP_TRAP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP
                      .number()));
          break;
@@ -274,8 +274,8 @@ public enum HostSystemService {
       case SSH: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number()));
          break;
       }
@@ -283,8 +283,8 @@ public enum HostSystemService {
       case TELNET: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET
                      .number()));
          break;
@@ -293,8 +293,8 @@ public enum HostSystemService {
       case TFTP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number()));
          break;
       }
@@ -302,8 +302,8 @@ public enum HostSystemService {
       case TRACEROUTE: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE
                      .number()));
          break;
@@ -312,8 +312,8 @@ public enum HostSystemService {
       case XNM_CLEAR_TEXT: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.XNM_CLEAR_TEXT.number(),
                      NamedPort.XNM_CLEAR_TEXT.number()));
          break;
@@ -322,8 +322,8 @@ public enum HostSystemService {
       case XNM_SSL: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL
                      .number()));
          break;

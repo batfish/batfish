@@ -24,10 +24,12 @@ public class Facts {
       map.put("SetInterfaceFilterOut", "NODE|INTERFACE|FILTER");
       map.put("SetInterfaceRoutingPolicy", "NODE|INTERFACE|POLICY");
       map.put("SetNetwork", "STARTIP|START|END|PREFIXLENGTH");
+
+      // IpAccessList
       map.put("SetIpAccessListLine_deny", "LIST|LINE");
       map.put("SetIpAccessListLine_dscp", "LIST|LINE|DSCP");
-      map.put("SetIpAccessListLine_dstIpRange", "LIST|LINE|DSTIPSTART|DSTIPEND");
-      map.put("SetIpAccessListLine_dstPortRange",
+      map.put("SetIpAccessListLine_dstIps", "LIST|LINE|DSTIPSTART|DSTIPEND");
+      map.put("SetIpAccessListLine_dstPorts",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
       map.put("SetIpAccessListLine_ecn", "LIST|LINE|ECN");
       map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
@@ -44,15 +46,27 @@ public class Facts {
       map.put("SetIpAccessListLine_tcpFlagsFIN", "LIST|LINE|ALTERNATIVE|BIT");
       map.put("SetIpAccessListLine_permit", "LIST|LINE");
       map.put("SetIpAccessListLine_protocol", "LIST|LINE|PROTOCOL");
-      map.put("SetIpAccessListLine_srcIpRange", "LIST|LINE|SRCIPSTART|SRCIPEND");
-      map.put("SetIpAccessListLine_srcIpRangeBlacklist",
-            "LIST|LINE|SRCIPSTART|SRCIPEND");
-      map.put("SetIpAccessListLine_srcOrDstIpRange",
+      map.put("SetIpAccessListLine_srcIps", "LIST|LINE|SRCIPSTART|SRCIPEND");
+      map.put("SetIpAccessListLine_srcOrDstIps",
             "LIST|LINE|SRCORDSTIPSTART|SRCORDSTIPEND");
-      map.put("SetIpAccessListLine_srcOrDstPortRange",
+      map.put("SetIpAccessListLine_srcOrDstPorts",
             "LIST|LINE|SRCORDSTPORTSTART|SRCORDSTPORTEND");
-      map.put("SetIpAccessListLine_srcPortRange",
+      map.put("SetIpAccessListLine_srcPorts",
             "LIST|LINE|SRCPORTSTART|SRCPORTEND");
+      // IpAccessList not
+      map.put("SetIpAccessListLine_notDscp", "LIST|LINE|DSCP");
+      map.put("SetIpAccessListLine_notDstIps", "LIST|LINE|DSTIPSTART|DSTIPEND");
+      map.put("SetIpAccessListLine_notDstPorts",
+            "LIST|LINE|DSTPORTSTART|DSTPORTEND");
+      map.put("SetIpAccessListLine_notEcn", "LIST|LINE|ECN");
+      map.put("SetIpAccessListLine_notIcmpCode", "LIST|LINE|ICMPCODE");
+      map.put("SetIpAccessListLine_notIcmpType", "LIST|LINE|ICMPTYPE");
+      map.put("SetIpAccessListLine_notState", "LIST|LINE|STATE");
+      map.put("SetIpAccessListLine_notProtocol", "LIST|LINE|PROTOCOL");
+      map.put("SetIpAccessListLine_notSrcIps", "LIST|LINE|SRCIPSTART|SRCIPEND");
+      map.put("SetIpAccessListLine_notSrcPorts",
+            "LIST|LINE|SRCPORTSTART|SRCPORTEND");
+
       map.put("SetActiveInt", "NODE|INTERFACE");
       map.put("SetIpInt", "NODE|INTERFACE|IP|PREFIXLENGTH");
       map.put("SetLinkLoadLimitIn", "NODE|INTERFACE|LIMIT");

@@ -2272,19 +2272,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitApptt_destination_port(Apptt_destination_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
-      _currentApplicationTerm.getLine().getDstPortRanges().add(subrange);
+      _currentApplicationTerm.getLine().getDstPorts().add(subrange);
    }
 
    @Override
    public void exitApptt_protocol(Apptt_protocolContext ctx) {
       IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-      _currentApplicationTerm.getLine().getProtocols().add(protocol);
+      _currentApplicationTerm.getLine().getIpProtocols().add(protocol);
    }
 
    @Override
    public void exitApptt_source_port(Apptt_source_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
-      _currentApplicationTerm.getLine().getSrcPortRanges().add(subrange);
+      _currentApplicationTerm.getLine().getSrcPorts().add(subrange);
    }
 
    @Override

@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import java.util.List;
 
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.DropExpr;
@@ -17,11 +18,14 @@ import com.microsoft.z3.Z3Exception;
 public class MultipathInconsistencyQuerySynthesizer extends
       BaseQuerySynthesizer {
 
-   private String _hostname;
-   private String _queryText;
+   private HeaderSpace _headerSpace;
 
-   public MultipathInconsistencyQuerySynthesizer(String hostname) {
+   private String _hostname;
+
+   public MultipathInconsistencyQuerySynthesizer(String hostname,
+         HeaderSpace headerSpace) {
       _hostname = hostname;
+      _headerSpace = headerSpace;
    }
 
    @Override
@@ -33,6 +37,7 @@ public class MultipathInconsistencyQuerySynthesizer extends
       queryConditions.addConjunct(AcceptExpr.INSTANCE);
       queryConditions.addConjunct(DropExpr.INSTANCE);
       queryConditions.addConjunct(SaneExpr.INSTANCE);
+      queryConditions.addConjunct(Synthesizer.matchHeaderSpace(_headerSpace));
       RuleExpr queryRule = new RuleExpr(queryConditions,
             QueryRelationExpr.INSTANCE);
       List<BoolExpr> rules = program.getRules();
@@ -44,29 +49,6 @@ public class MultipathInconsistencyQuerySynthesizer extends
       BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
       program.getQueries().add(queryBoolExpr);
       return program;
-   }
-
-   @Override
-   public String getQueryText() {
-      OriginateExpr originate = new OriginateExpr(_hostname);
-      RuleExpr injectSymbolicPackets = new RuleExpr(originate);
-      AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(AcceptExpr.INSTANCE);
-      queryConditions.addConjunct(DropExpr.INSTANCE);
-      queryConditions.addConjunct(SaneExpr.INSTANCE);
-      RuleExpr queryRule = new RuleExpr(queryConditions,
-            QueryRelationExpr.INSTANCE);
-      QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
-      StringBuilder sb = new StringBuilder();
-      injectSymbolicPackets.print(sb, 0);
-      sb.append("\n");
-      queryRule.print(sb, 0);
-      sb.append("\n");
-      query.print(sb, 0);
-      sb.append("\n");
-      String queryText = sb.toString();
-      _queryText = queryText;
-      return _queryText;
    }
 
 }

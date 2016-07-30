@@ -28,9 +28,9 @@ public class BaseApplication extends ComparableStructure<String> implements
       }
 
       public void applyTo(IpAccessListLine destinationLine) {
-         destinationLine.getProtocols().addAll(_line.getProtocols());
-         destinationLine.getDstPortRanges().addAll(_line.getDstPortRanges());
-         destinationLine.getSrcPortRanges().addAll(_line.getSrcPortRanges());
+         destinationLine.getIpProtocols().addAll(_line.getIpProtocols());
+         destinationLine.getDstPorts().addAll(_line.getDstPorts());
+         destinationLine.getSrcPorts().addAll(_line.getSrcPorts());
       }
 
       public IpAccessListLine getLine() {
@@ -68,8 +68,8 @@ public class BaseApplication extends ComparableStructure<String> implements
       }
       for (Term term : terms) {
          IpAccessListLine newLine = new IpAccessListLine();
-         newLine.getDstIpWildcards().addAll(srcLine.getDstIpWildcards());
-         newLine.getSrcIpWildcards().addAll(srcLine.getSrcIpWildcards());
+         newLine.getDstIps().addAll(srcLine.getDstIps());
+         newLine.getSrcIps().addAll(srcLine.getSrcIps());
          newLine.setAction(srcLine.getAction());
          term.applyTo(newLine);
          lines.add(newLine);

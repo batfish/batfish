@@ -100,26 +100,26 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
 
             case DESTINATION:
                IpWildcard dstWildCard = match.toIpWildcard();
-               aclLine.getDstIpWildcards().add(dstWildCard);
+               aclLine.getDstIps().add(dstWildCard);
                break;
             case DESTINATION_PORT:
                List<SubRange> dstPortRanges = match.toPortRanges();
-               aclLine.getDstPortRanges().addAll(dstPortRanges);
+               aclLine.getDstPorts().addAll(dstPortRanges);
                break;
             // case IN_INTERFACE:
             // case OUT_INTERFACE:
             // _warnings.unimplemented("Matching on incoming and outgoing interface not supported");
             // break;
             case PROTOCOL:
-               aclLine.getProtocols().add(match.toIpProtocol());
+               aclLine.getIpProtocols().add(match.toIpProtocol());
                break;
             case SOURCE:
                IpWildcard srcWildCard = match.toIpWildcard();
-               aclLine.getSrcIpWildcards().add(srcWildCard);
+               aclLine.getSrcIps().add(srcWildCard);
                break;
             case SOURCE_PORT:
                List<SubRange> srcPortRanges = match.toPortRanges();
-               aclLine.getSrcPortRanges().addAll(srcPortRanges);
+               aclLine.getSrcPorts().addAll(srcPortRanges);
                break;
             case IN_INTERFACE:
             case OUT_INTERFACE:

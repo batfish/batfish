@@ -38,8 +38,7 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
                      "Expected accept action for routerfilterlist from juniper");
             }
             else {
-               line.getSrcIpWildcardsBlacklist().add(
-                     new IpWildcard(rfLine.getPrefix()));
+               line.getNotSrcIps().add(new IpWildcard(rfLine.getPrefix()));
             }
          }
       }

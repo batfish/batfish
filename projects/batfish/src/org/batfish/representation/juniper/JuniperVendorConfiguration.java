@@ -917,14 +917,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             IpAccessListLine line = new IpAccessListLine();
             for (Prefix dstPrefix : destinationPrefixes) {
                IpWildcard dstWildcard = new IpWildcard(dstPrefix);
-               line.getDstIpWildcards().add(dstWildcard);
+               line.getDstIps().add(dstWildcard);
             }
-            line.getDstPortRanges().addAll(destinationPortRanges);
+            line.getDstPorts().addAll(destinationPortRanges);
             for (Prefix srcPrefix : sourcePrefixes) {
                IpWildcard srcWildcard = new IpWildcard(srcPrefix);
-               line.getSrcIpWildcards().add(srcWildcard);
+               line.getSrcIps().add(srcWildcard);
             }
-            line.getDstPortRanges().addAll(sourcePortRanges);
+            line.getDstPorts().addAll(sourcePortRanges);
             line.setAction(LineAction.ACCEPT);
             IpAccessList termIpAccessList = new IpAccessList(
                   termIpAccessListName, Collections.singletonList(line));

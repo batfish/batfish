@@ -61,9 +61,9 @@ public enum HostProtocol {
       case BFD: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO
                      .number()));
          break;
@@ -72,8 +72,8 @@ public enum HostProtocol {
       case BGP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.BGP.number(), NamedPort.BGP.number()));
          break;
       }
@@ -83,23 +83,23 @@ public enum HostProtocol {
          // for IGMP types in packet headers
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.IGMP);
+         line.getIpProtocols().add(IpProtocol.IGMP);
          break;
       }
 
       case IGMP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.IGMP);
+         line.getIpProtocols().add(IpProtocol.IGMP);
          break;
       }
 
       case LDP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.LDP.number(), NamedPort.LDP.number()));
          break;
       }
@@ -107,8 +107,8 @@ public enum HostProtocol {
       case MSDP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.TCP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.TCP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.MSDP.number(), NamedPort.MSDP.number()));
          break;
       }
@@ -116,14 +116,14 @@ public enum HostProtocol {
       case NHRP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.NARP);
+         line.getIpProtocols().add(IpProtocol.NARP);
          break;
       }
 
       case OSPF: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.OSPF);
+         line.getIpProtocols().add(IpProtocol.OSPF);
          break;
       }
 
@@ -135,22 +135,22 @@ public enum HostProtocol {
       case PGM: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.PGM);
+         line.getIpProtocols().add(IpProtocol.PGM);
          break;
       }
 
       case PIM: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.PIM);
+         line.getIpProtocols().add(IpProtocol.PIM);
          break;
       }
 
       case RIP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.RIP.number(), NamedPort.RIP.number()));
          break;
       }
@@ -166,33 +166,32 @@ public enum HostProtocol {
          // for ICMP types in packet headers
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.ICMP);
+         line.getIpProtocols().add(IpProtocol.ICMP);
          break;
       }
 
       case RSVP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.RSVP);
-         line.getProtocols().add(IpProtocol.RSVP_E2E_IGNORE);
+         line.getIpProtocols().add(IpProtocol.RSVP);
+         line.getIpProtocols().add(IpProtocol.RSVP_E2E_IGNORE);
          break;
       }
 
       case SAP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.UDP);
-         line.getDstPortRanges().add(
+         line.getIpProtocols().add(IpProtocol.UDP);
+         line.getDstPorts().add(
                new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number()));
-         line.getDstIpWildcards().add(
-               new IpWildcard(new Prefix("224.2.127.285/32")));
+         line.getDstIps().add(new IpWildcard(new Prefix("224.2.127.285/32")));
          break;
       }
 
       case VRRP: {
          IpAccessListLine line = new IpAccessListLine();
          _lines.add(line);
-         line.getProtocols().add(IpProtocol.VRRP);
+         line.getIpProtocols().add(IpProtocol.VRRP);
          break;
       }
 

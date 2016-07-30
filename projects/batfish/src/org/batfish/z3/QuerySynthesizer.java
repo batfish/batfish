@@ -8,6 +8,4 @@ public interface QuerySynthesizer {
 
    NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception;
 
-   String getQueryText();
-
 }

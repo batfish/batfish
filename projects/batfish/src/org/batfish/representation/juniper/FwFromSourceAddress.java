@@ -23,7 +23,7 @@ public final class FwFromSourceAddress extends FwFrom {
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
       IpWildcard wildcard = new IpWildcard(_prefix);
-      line.getSrcIpWildcards().add(wildcard);
+      line.getSrcIps().add(wildcard);
    }
 
    public Prefix getPrefix() {

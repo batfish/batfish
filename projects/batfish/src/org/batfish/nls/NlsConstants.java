@@ -80,19 +80,26 @@ public class NlsConstants {
             "SetInterfaceZone",
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dscp",
-            "SetIpAccessListLine_dstIpRange",
-            "SetIpAccessListLine_dstIpRangeBlacklist",
-            "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_dstIps",
+            "SetIpAccessListLine_dstPorts",
             "SetIpAccessListLine_ecn",
             "SetIpAccessListLine_icmpCode",
             "SetIpAccessListLine_icmpType",
+            "SetIpAccessListLine_notDscp",
+            "SetIpAccessListLine_notDstIps",
+            "SetIpAccessListLine_notDstPorts",
+            "SetIpAccessListLine_notEcn",
+            "SetIpAccessListLine_notIcmpCode",
+            "SetIpAccessListLine_notIcmpType",
+            "SetIpAccessListLine_notProtocol",
+            "SetIpAccessListLine_notSrcIps",
+            "SetIpAccessListLine_notSrcPorts",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
-            "SetIpAccessListLine_srcIpRange",
-            "SetIpAccessListLine_srcIpRangeBlacklist",
-            "SetIpAccessListLine_srcOrDstIpRange",
-            "SetIpAccessListLine_srcOrDstPortRange",
-            "SetIpAccessListLine_srcPortRange",
+            "SetIpAccessListLine_srcIps",
+            "SetIpAccessListLine_srcOrDstIps",
+            "SetIpAccessListLine_srcOrDstPorts",
+            "SetIpAccessListLine_srcPorts",
             "SetIpAccessListLine_state",
             "SetIpAccessListLine_tcpFlags",
             "SetIpAccessListLine_tcpFlagsCWR",
@@ -164,7 +171,9 @@ public class NlsConstants {
             "SetSwitchportTrunkNative",
             "SetVlanInterface",
             "SetZoneFromHostFilter",
-            "SetZoneToHostFilter" };
+            "SetZoneToHostFilter"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -197,7 +206,9 @@ public class NlsConstants {
             "RouteDetails_tag",
             "Route_network",
             "Route_node",
-            "Route_protocol" };
+            "Route_protocol"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -270,8 +281,29 @@ public class NlsConstants {
             "SetExternalBgpRemoteIp",
             "SetGeneratedRouteAttributePolicy",
             "SetGeneratedRouteAttributePolicy_flat",
+
+            "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dscp",
+            "SetIpAccessListLine_dstIps",
+            "SetIpAccessListLine_dstPorts",
             "SetIpAccessListLine_ecn",
+            "SetIpAccessListLine_icmpCode",
+            "SetIpAccessListLine_icmpType",
+            "SetIpAccessListLine_notDscp",
+            "SetIpAccessListLine_notDstIps",
+            "SetIpAccessListLine_notDstPorts",
+            "SetIpAccessListLine_notEcn",
+            "SetIpAccessListLine_notIcmpCode",
+            "SetIpAccessListLine_notIcmpType",
+            "SetIpAccessListLine_notProtocol",
+            "SetIpAccessListLine_notSrcIps",
+            "SetIpAccessListLine_notSrcPorts",
+            "SetIpAccessListLine_permit",
+            "SetIpAccessListLine_protocol",
+            "SetIpAccessListLine_srcIps",
+            "SetIpAccessListLine_srcOrDstIps",
+            "SetIpAccessListLine_srcOrDstPorts",
+            "SetIpAccessListLine_srcPorts",
             "SetIpAccessListLine_state",
             "SetIpAccessListLine_tcpFlags",
             "SetIpAccessListLine_tcpFlagsCWR",
@@ -297,7 +329,9 @@ public class NlsConstants {
             "SetPolicyMapClauseSetCommunity",
             "SetPolicyMapClauseSetLocalPreference",
             "SetPolicyMapClauseSetMetric",
-            "SetPolicyMapOspfExternalRouteType" };
+            "SetPolicyMapOspfExternalRouteType"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -337,7 +371,9 @@ public class NlsConstants {
             "Route_network",
             "Route_node",
             "Route_protocol",
-            "SetFlowSinkInterface", };
+            "SetFlowSinkInterface"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -368,19 +404,26 @@ public class NlsConstants {
             "SetInterfaceRoutingPolicy",
             "SetIpAccessListLine_deny",
             "SetIpAccessListLine_dscp",
-            "SetIpAccessListLine_dstIpRange",
-            "SetIpAccessListLine_dstIpRangeBlacklist",
-            "SetIpAccessListLine_dstPortRange",
+            "SetIpAccessListLine_dstIps",
+            "SetIpAccessListLine_dstPorts",
             "SetIpAccessListLine_ecn",
             "SetIpAccessListLine_icmpCode",
             "SetIpAccessListLine_icmpType",
+            "SetIpAccessListLine_notDscp",
+            "SetIpAccessListLine_notDstIps",
+            "SetIpAccessListLine_notDstPorts",
+            "SetIpAccessListLine_notEcn",
+            "SetIpAccessListLine_notIcmpCode",
+            "SetIpAccessListLine_notIcmpType",
+            "SetIpAccessListLine_notProtocol",
+            "SetIpAccessListLine_notSrcIps",
+            "SetIpAccessListLine_notSrcPorts",
             "SetIpAccessListLine_permit",
             "SetIpAccessListLine_protocol",
-            "SetIpAccessListLine_srcIpRange",
-            "SetIpAccessListLine_srcIpRangeBlacklist",
-            "SetIpAccessListLine_srcOrDstIpRange",
-            "SetIpAccessListLine_srcOrDstPortRange",
-            "SetIpAccessListLine_srcPortRange",
+            "SetIpAccessListLine_srcIps",
+            "SetIpAccessListLine_srcOrDstIps",
+            "SetIpAccessListLine_srcOrDstPorts",
+            "SetIpAccessListLine_srcPorts",
             "SetIpAccessListLine_state",
             "SetIpAccessListLine_tcpFlags",
             "SetIpAccessListLine_tcpFlagsCWR",
@@ -432,7 +475,9 @@ public class NlsConstants {
             "SetSwitchportTrunkNative",
             "SetVlanInterface",
             "SetZoneFromHostFilter",
-            "SetZoneToHostFilter" };
+            "SetZoneToHostFilter"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -469,7 +514,9 @@ public class NlsConstants {
             "Flow_tcpFlagsRST",
             "Flow_tcpFlagsSYN",
             "Flow_tcpFlagsFIN",
-            "Flow_tag" };
+            "Flow_tag"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -508,18 +555,29 @@ public class NlsConstants {
             "IpAccessListDeny",
             "IpAccessListMatch",
             "IpAccessListMatchDscp",
+            "IpAccessListMatchNotDscp",
             "IpAccessListMatchDstIp",
+            "IpAccessListMatchNotDstIp",
             "IpAccessListMatchDstPort",
+            "IpAccessListMatchNotDstPort",
             "IpAccessListMatchEcn",
+            "IpAccessListMatchNotEcn",
             "IpAccessListMatchIcmpCode",
+            "IpAccessListMatchNotIcmpCode",
             "IpAccessListMatchIcmpType",
+            "IpAccessListMatchNotIcmpType",
             "IpAccessListMatchProtocol",
+            "IpAccessListMatchNotProtocol",
             "IpAccessListMatchSrcIp",
+            "IpAccessListMatchNotSrcIp",
             "IpAccessListMatchSrcOrDstIp",
             "IpAccessListMatchSrcOrDstPort",
             "IpAccessListMatchSrcPort",
+            "IpAccessListMatchSrcPort",
             "IpAccessListMatchState",
-            "IpAccessListMatchTcpFlags" };
+            "IpAccessListMatchTcpFlags"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }
@@ -554,7 +612,9 @@ public class NlsConstants {
             "FlowPathIntermediateEdge",
             "FlowPathNeighborUnreachableEdge",
             "FlowPathNoRouteEdge",
-            "FlowPathNullRoutedEdge" };
+            "FlowPathNullRoutedEdge"
+
+      };
       factSet.addAll(Arrays.asList(facts));
       return Collections.unmodifiableSet(factSet);
    }

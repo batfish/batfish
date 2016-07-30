@@ -39,7 +39,7 @@ public final class FwFromDestinationPrefixList extends FwFrom {
                      "Expected accept action for routerfilterlist from juniper");
             }
             else {
-               line.getDstIpWildcards().add(new IpWildcard(rfLine.getPrefix()));
+               line.getDstIps().add(new IpWildcard(rfLine.getPrefix()));
             }
          }
       }
