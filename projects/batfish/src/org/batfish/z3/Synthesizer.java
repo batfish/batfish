@@ -660,7 +660,12 @@ public class Synthesizer {
             }
          }
       }
-      return match;
+      if (headerSpace.getNegate()) {
+         return new NotExpr(match);
+      }
+      else {
+         return match;
+      }
    }
 
    private static IntExpr newExtractExpr(String var, int low, int high) {

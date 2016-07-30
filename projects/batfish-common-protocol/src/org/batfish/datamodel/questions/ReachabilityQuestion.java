@@ -50,6 +50,8 @@ public class ReachabilityQuestion extends Question {
 
    private static final String IP_PROTOCOLS_VAR = "ipProtocols";
 
+   private static final String NEGATE_HEADER_VAR = "negateHeader";
+
    private static final String NOT_DST_IPS_VAR = "notDstIps";
 
    private static final String NOT_DST_PORTS_VAR = "notDstPors";
@@ -153,6 +155,11 @@ public class ReachabilityQuestion extends Question {
       return _headerSpace.getIpProtocols();
    }
 
+   @JsonProperty(NEGATE_HEADER_VAR)
+   public boolean getNegateHeader() {
+      return _headerSpace.getNegate();
+   }
+
    @JsonProperty(NOT_DST_IPS_VAR)
    public Set<IpWildcard> getNotDstIps() {
       return _headerSpace.getNotDstIps();
@@ -238,6 +245,9 @@ public class ReachabilityQuestion extends Question {
             retString += String.format(" | %s=%s", REACHABILITY_TYPE_VAR,
                   _reachabilityType);
          }
+         if (getNegateHeader()) {
+            retString += " | negateHeader=true";
+         }
          if (getDstPorts() != null && getDstPorts().size() != 0) {
             retString += String.format(" | dstPorts=%s", getDstPorts());
          }
@@ -254,7 +264,8 @@ public class ReachabilityQuestion extends Question {
             retString += String.format(" | icmpType=%s", getIcmpType());
          }
          if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
-            retString += String.format(" | finalNodeRegex=%s", _finalNodeRegex);
+            retString += String.format(" | ingressNodeRegex=%s",
+                  _finalNodeRegex);
          }
          if (getIpProtocols() != null && getIpProtocols().size() != 0) {
             retString += String.format(" | ipProtocols=%s", getIpProtocols()
@@ -290,8 +301,8 @@ public class ReachabilityQuestion extends Question {
             retString += String.format(" | notIcmpType=%s", getNotIcmpType());
          }
          if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
-            retString += String.format(" | notFinalNodeRegex=%s",
-                  _notFinalNodeRegex);
+            retString += String.format(" | notIngressNodeRegex=%s",
+                  _notIngressNodeRegex);
          }
          if (getNotIpProtocols() != null && getNotIpProtocols().size() != 0) {
             retString += String.format(" | notIpProtocols=%s",
@@ -405,6 +416,9 @@ public class ReachabilityQuestion extends Question {
                      new TypeReference<Set<IpProtocol>>() {
                      }));
                break;
+            case NEGATE_HEADER_VAR:
+               setNegateHeader(parameters.getBoolean(paramKey));
+               break;
             case REACHABILITY_TYPE_VAR:
                setReachabilityType(ReachabilityType.fromName(parameters
                      .getString(paramKey)));
@@ -485,6 +499,11 @@ public class ReachabilityQuestion extends Question {
             throw new BatfishException("JSONException in parameters", e);
          }
       }
+   }
+
+   @JsonProperty(NEGATE_HEADER_VAR)
+   public void setNegateHeader(boolean negateHeader) {
+      _headerSpace.setNegate(negateHeader);
    }
 
    @JsonProperty(NOT_DST_IPS_VAR)

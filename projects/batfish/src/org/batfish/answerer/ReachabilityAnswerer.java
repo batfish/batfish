@@ -21,6 +21,7 @@ import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
@@ -348,10 +349,18 @@ public class ReachabilityAnswerer extends Answerer {
             activeIngressNodes.add(node);
          }
       }
+      if (activeIngressNodes.isEmpty()) {
+         return new StringAnswerElement(
+               "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
+                     + question.getIngressNodeRegex()
+                     + "' and fail to match notIngressNodeRegex: '"
+                     + question.getNotIngressNodeRegex() + "'");
+      }
 
       // collect final nodes
       Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
-      Pattern notFinalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
+      Pattern notFinalNodeRegex = Pattern.compile(question
+            .getNotFinalNodeRegex());
       Set<String> activeFinalNodes = new TreeSet<String>();
       for (String node : configurations.keySet()) {
          Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
@@ -359,6 +368,13 @@ public class ReachabilityAnswerer extends Answerer {
          if (finalNodeMatcher.matches() && !notFinalNodeMatcher.matches()) {
             activeFinalNodes.add(node);
          }
+      }
+      if (activeFinalNodes.isEmpty()) {
+         return new StringAnswerElement(
+               "NOTHING TO DO: No nodes both match finalNodeRegex: '"
+                     + question.getFinalNodeRegex()
+                     + "' and fail to match notFinalNodeRegex: '"
+                     + question.getNotFinalNodeRegex() + "'");
       }
 
       // build query jobs
