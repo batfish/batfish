@@ -205,9 +205,7 @@ public class BgpSessionCheckAnswerer extends Answerer {
                               answerElement.getIbgpLocalIpUnknown(), c,
                               bgpNeighborSummary);
                      }
-                     if (!allInterfaceIps.contains(remoteIp)
-                           && node2RegexMatchesIp(remoteIp, ipOwners,
-                                 node2Regex)) {
+                     if (!allInterfaceIps.contains(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
                               bgpNeighborSummary);
                         answerElement.add(answerElement.getIbgpBroken(), c,
