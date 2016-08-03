@@ -103,7 +103,7 @@
                <fileset dir="." includes="doxygen.cfg"/>
             </sourcefiles>
             <targetfiles>
-               <fileset dir="doc/html" includes="index.html"/>
+               <pathelement path="doc/html/index.html"/>
             </targetfiles>
             <sequential>
                <loadfile srcfile=".gitignore" property="doxygen.ignore.files">
