@@ -15,10 +15,20 @@ public class PolicyMap extends ComparableStructure<String> {
 
    private static final String CLAUSES_VAR = "clauses";
 
+   public static final PolicyMap PERMIT_ALL = initPermitAll();
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private synchronized static PolicyMap initPermitAll() {
+      PolicyMap permitAll = new PolicyMap("PERMIT_ALL");
+      PolicyMapClause clause = new PolicyMapClause();
+      permitAll._clauses.add(clause);
+      clause.setAction(PolicyMapAction.PERMIT);
+      return permitAll;
+   }
 
    /**
     * Clauses in this list are checked in order against a candidate route until
