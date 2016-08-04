@@ -1,6 +1,7 @@
 package org.batfish.answerer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,6 @@ public class AclReachabilityAnswerer extends Answerer {
       _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      Synthesizer aclSynthesizer = synthesizeAcls(configurations);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
@@ -89,6 +89,8 @@ public class AclReachabilityAnswerer extends Answerer {
             }
             AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
                   hostname, aclName, numLines);
+            Synthesizer aclSynthesizer = synthesizeAcls(Collections
+                  .singletonMap(hostname, c));
             NodSatJob<AclLine> job = new NodSatJob<AclLine>(settings,
                   aclSynthesizer, query);
             jobs.add(job);
