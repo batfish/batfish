@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export BATFISH_ROOT="$BATFISH_TOOLS_PATH/.."
+export BATFISH_ROOT="$($GNU_READLINK -f "$BATFISH_TOOLS_PATH/..")"
 export BATFISH_PATH="$BATFISH_ROOT/projects/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
