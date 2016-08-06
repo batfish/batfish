@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.batfish.common.util.BatfishObjectMapper;
@@ -10,22 +11,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UnusedStructuresAnswerElement implements AnswerElement {
 
-   private SortedMap<String, SortedMap<Integer, String>> _unusedStructures;
+   private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
 
    public UnusedStructuresAnswerElement() {
-      _unusedStructures = new TreeMap<String, SortedMap<Integer, String>>();
+      _unusedStructures = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
    }
 
-   public void add(String hostname, String text) {
-      SortedMap<Integer, String> mapByHost = _unusedStructures.get(hostname);
-      if (mapByHost == null) {
-         mapByHost = new TreeMap<Integer, String>();
-         _unusedStructures.put(hostname, mapByHost);
-      }
-      mapByHost.put(mapByHost.size() + 1, text);
-   }
-
-   public SortedMap<String, SortedMap<Integer, String>> getUnusedStructures() {
+   public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {
       return _unusedStructures;
    }
 
@@ -37,7 +29,7 @@ public class UnusedStructuresAnswerElement implements AnswerElement {
    }
 
    public void setUnusedStructures(
-         SortedMap<String, SortedMap<Integer, String>> undefinedReferences) {
+         SortedMap<String, SortedMap<String, SortedSet<String>>> undefinedReferences) {
       _unusedStructures = undefinedReferences;
    }
 }

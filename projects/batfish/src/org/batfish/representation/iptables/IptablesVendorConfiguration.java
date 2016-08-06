@@ -16,10 +16,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
-public class IptablesVendorConfiguration extends IptablesConfiguration
-      implements VendorConfiguration {
+public class IptablesVendorConfiguration extends IptablesConfiguration {
 
    /**
     *
@@ -33,8 +31,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
    private transient Set<String> _unimplementedFeatures;
 
    private ConfigurationFormat _vendor;
-
-   private transient Warnings _warnings;
 
    public void addAsIpAccessLists(Configuration config, Warnings warnings) {
       for (Entry<String, IptablesTable> e : _tables.entrySet()) {
@@ -65,11 +61,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
    @Override
    public Set<String> getUnimplementedFeatures() {
       return _unimplementedFeatures;
-   }
-
-   @Override
-   public Warnings getWarnings() {
-      return _warnings;
    }
 
    @Override
@@ -147,15 +138,14 @@ public class IptablesVendorConfiguration extends IptablesConfiguration
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
-      _warnings = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
 
-      addAsIpAccessLists(_c, _warnings);
+      addAsIpAccessLists(_c, _w);
 
       return _c;
    }

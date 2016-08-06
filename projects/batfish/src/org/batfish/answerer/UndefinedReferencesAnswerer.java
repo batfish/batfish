@@ -1,12 +1,12 @@
 package org.batfish.answerer;
 
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
-import org.batfish.common.Warning;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.UndefinedReferencesAnswerElement;
@@ -14,7 +14,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.UndefinedReferencesQuestion;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
-import org.batfish.representation.VendorConfiguration;
 
 public class UndefinedReferencesAnswerer extends Answerer {
 
@@ -41,19 +40,14 @@ public class UndefinedReferencesAnswerer extends Answerer {
       UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
       ConvertConfigurationAnswerElement ccae = (ConvertConfigurationAnswerElement) _batfish
             .deserializeObject(testrigSettings.getConvertAnswerPath());
-      for (Entry<String, Warnings> e : ccae.getWarnings().entrySet()) {
+      for (Entry<String, SortedMap<String, SortedSet<String>>> e : ccae
+            .getUndefinedReferences().entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
             continue;
          }
-         Warnings warnings = e.getValue();
-         for (Warning warning : warnings.getRedFlagWarnings()) {
-            String tag = warning.getTag();
-            String text = warning.getText();
-            if (tag.equals(VendorConfiguration.UNDEFINED)) {
-               answerElement.add(hostname, text);
-            }
-         }
+         SortedMap<String, SortedSet<String>> byType = e.getValue();
+         answerElement.getUndefinedReferences().put(hostname, byType);
       }
       return answerElement;
    }

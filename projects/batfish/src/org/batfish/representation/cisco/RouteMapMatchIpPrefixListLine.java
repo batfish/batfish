@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
 
@@ -42,8 +41,8 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
             disjuncts.add(new MatchPrefixSet(new NamedPrefixSet(listName)));
          }
          else {
-            w.redFlag("Reference to undefined prefix-list: " + listName,
-                  VendorConfiguration.UNDEFINED);
+            cc.undefined("Reference to undefined prefix-list: " + listName,
+                  CiscoVendorConfiguration.PREFIX_LIST, listName);
          }
       }
       return d.simplify();

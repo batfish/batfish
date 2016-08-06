@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 
@@ -42,8 +41,9 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
             disjuncts.add(new MatchAsPath(listName));
          }
          else {
-            w.redFlag("Reference to undefined ip as-path access-list: "
-                  + listName, VendorConfiguration.UNDEFINED);
+            cc.undefined("Reference to undefined ip as-path access-list: "
+                  + listName, CiscoVendorConfiguration.AS_PATH_ACCESS_LIST,
+                  listName);
          }
       }
       return d.simplify();

@@ -1,13 +1,13 @@
 package org.batfish.representation.iptables;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 
-public class IptablesConfiguration implements Serializable {
+public abstract class IptablesConfiguration extends VendorConfiguration {
 
    /**
     *

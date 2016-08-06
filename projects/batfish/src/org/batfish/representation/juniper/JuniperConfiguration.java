@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,8 +8,9 @@ import java.util.TreeMap;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.LineAction;
+import org.batfish.representation.VendorConfiguration;
 
-public class JuniperConfiguration implements Serializable {
+public abstract class JuniperConfiguration extends VendorConfiguration {
 
    private static final String DEFAULT_ROUTING_INSTANCE = "<default-routing-instance>";
 
@@ -114,6 +114,7 @@ public class JuniperConfiguration implements Serializable {
       return _globalAddressBooks;
    }
 
+   @Override
    public final String getHostname() {
       return _defaultRoutingInstance.getHostname();
    }
@@ -178,6 +179,7 @@ public class JuniperConfiguration implements Serializable {
       _defaultInboundAction = defaultInboundAction;
    }
 
+   @Override
    public final void setHostname(String hostname) {
       _defaultRoutingInstance.setHostname(hostname);
    }

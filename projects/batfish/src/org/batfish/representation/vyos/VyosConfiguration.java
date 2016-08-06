@@ -1,6 +1,5 @@
 package org.batfish.representation.vyos;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,8 +8,9 @@ import java.util.TreeSet;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.RoleSet;
+import org.batfish.representation.VendorConfiguration;
 
-public class VyosConfiguration implements Serializable {
+public abstract class VyosConfiguration extends VendorConfiguration {
 
    /**
     *
@@ -59,6 +59,7 @@ public class VyosConfiguration implements Serializable {
       return _espGroups;
    }
 
+   @Override
    public String getHostname() {
       return _hostname;
    }
@@ -83,6 +84,7 @@ public class VyosConfiguration implements Serializable {
       return _prefixLists;
    }
 
+   @Override
    public RoleSet getRoles() {
       return _roles;
    }
@@ -99,10 +101,12 @@ public class VyosConfiguration implements Serializable {
       _bgpProcess = bgpProcess;
    }
 
+   @Override
    public void setHostname(String hostname) {
       _hostname = hostname;
    }
 
+   @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
    }

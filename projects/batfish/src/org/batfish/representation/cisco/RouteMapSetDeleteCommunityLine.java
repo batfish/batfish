@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
 
@@ -41,8 +40,8 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
          statements.add(new DeleteCommunity(new NamedCommunitySet(_listName)));
       }
       else {
-         w.redFlag("Reference to undefined community-list: " + _listName,
-               VendorConfiguration.UNDEFINED);
+         cc.undefined("Reference to undefined community-list: " + _listName,
+               CiscoVendorConfiguration.COMMUNITY_LIST, _listName);
       }
    }
 

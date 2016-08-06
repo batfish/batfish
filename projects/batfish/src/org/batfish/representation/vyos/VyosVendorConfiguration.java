@@ -29,11 +29,10 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
-public class VyosVendorConfiguration extends VyosConfiguration implements
-      VendorConfiguration {
+public class VyosVendorConfiguration extends VyosConfiguration {
+
+   protected static final String PREFIX_LIST = "prefix-list";
 
    /**
     *
@@ -47,8 +46,6 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    private transient Map<Ip, org.batfish.datamodel.Interface> _ipToInterfaceMap;
 
    private transient Set<String> _unimplementedFeatures;
-
-   private transient Warnings _w;
 
    private void convertInterfaces() {
       for (Entry<String, Interface> e : _interfaces.entrySet()) {
@@ -229,11 +226,6 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    }
 
    @Override
-   public Warnings getWarnings() {
-      return _w;
-   }
-
-   @Override
    public void setVendor(ConfigurationFormat format) {
       _format = format;
    }
@@ -316,10 +308,9 @@ public class VyosVendorConfiguration extends VyosConfiguration implements
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
       _ipToInterfaceMap = new HashMap<Ip, org.batfish.datamodel.Interface>();
-      _w = warnings;
       _c = new Configuration(_hostname);
       _c.setConfigurationFormat(_format);
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);

@@ -54,16 +54,31 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
-public final class JuniperVendorConfiguration extends JuniperConfiguration
-      implements VendorConfiguration {
+public final class JuniperVendorConfiguration extends JuniperConfiguration {
 
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
 
+   private static final String FILTER = "filter";
+
    private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
+
+   private static final String IKE_GATEWAY = "ike-gateway";
+
+   private static final String IKE_POLICY = "ike-policy";
+
+   private static final String IKE_PROPOSAL = "ike-proposal";
+
+   private static final String INTERFACE = "interface";
+
+   private static final String IPSEC_POLICY = "ipsec-policy";
+
+   private static final String IPSEC_PROPOSAL = "ipsec-proposal";
+
+   private static final String POLICY_STATEMENT = "policy-statement";
+
+   private static final String PREFIX_LIST = "prefix-list";
 
    private static final long serialVersionUID = 1L;
 
@@ -85,8 +100,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    private transient Set<String> _unimplementedFeatures;
 
    private ConfigurationFormat _vendor;
-
-   private transient Warnings _w;
 
    public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
@@ -219,8 +232,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (String policyName : settings.getExportPolicies()) {
          PolicyMap policy = _c.getPolicyMaps().get(policyName);
          if (policy == null) {
-            _w.redFlag("Reference to undefined to is-is export policy: '"
-                  + policyName + "'", UNDEFINED);
+            undefined("Reference to undefined is-is export policy-statement: '"
+                  + policyName + "'", POLICY_STATEMENT, policyName);
          }
          else {
             setPolicyStatementReferent(policyName,
@@ -252,8 +265,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             .getOspfExportPolicies()) {
          PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
          if (exportPolicy == null) {
-            _w.redFlag("Reference to undefined to OSPF export policy: '"
-                  + exportPolicyName + "'", UNDEFINED);
+            undefined(
+                  "Reference to undefined to OSPF export policy-statement: '"
+                        + exportPolicyName + "'", POLICY_STATEMENT,
+                  exportPolicyName);
          }
          else {
             setPolicyStatementReferent(exportPolicyName,
@@ -302,11 +317,6 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    @Override
    public Set<String> getUnimplementedFeatures() {
       return _unimplementedFeatures;
-   }
-
-   @Override
-   public Warnings getWarnings() {
-      return _w;
    }
 
    private void initFirstLoopbackInterface() {
@@ -489,9 +499,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          org.batfish.datamodel.Interface newExternalInterface = _c
                .getInterfaces().get(externalInterfaceName);
          if (newExternalInterface == null) {
-            _w.redFlag("Reference to undefined interface: '"
+            undefined("Reference to undefined interface: '"
                   + externalInterfaceName + "' in ike gateway: '" + name + "'",
-                  UNDEFINED);
+                  INTERFACE, externalInterfaceName);
          }
          else {
             newIkeGateway.setExternalInterface(newExternalInterface);
@@ -506,8 +516,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(
             ikePolicyName);
       if (newIkePolicy == null) {
-         _w.redFlag("Reference to undefined ike policy: '" + ikePolicyName
-               + "' in ike gateway: '" + name + "'", UNDEFINED);
+         undefined("Reference to undefined ike policy: '" + ikePolicyName
+               + "' in ike gateway: '" + name + "'", IKE_POLICY, ikePolicyName);
       }
       else {
          _ikePolicies
@@ -533,9 +543,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       for (String ikeProposalName : oldIkePolicy.getProposals()) {
          IkeProposal ikeProposal = _c.getIkeProposals().get(ikeProposalName);
          if (ikeProposal == null) {
-            _w.redFlag("Reference to undefined ike proposal: '"
+            undefined("Reference to undefined ike proposal: '"
                   + ikeProposalName + "' in ike policy: '" + name + "'",
-                  UNDEFINED);
+                  IKE_PROPOSAL, ikeProposalName);
          }
          else {
             _ikeProposals
@@ -746,9 +756,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          IpsecProposal ipsecProposal = _c.getIpsecProposals().get(
                ipsecProposalName);
          if (ipsecProposal == null) {
-            _w.redFlag("Reference to undefined ipsec proposal: '"
+            undefined("Reference to undefined ipsec proposal: '"
                   + ipsecProposalName + "' in ipsec policy: '" + name + "'",
-                  UNDEFINED);
+                  IPSEC_PROPOSAL, ipsecProposalName);
          }
          else {
             _ipsecProposals
@@ -778,9 +788,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces()
                .get(bindInterfaceName);
          if (newBindInterface == null) {
-            _w.redFlag("Reference to undefined interface: '"
-                  + bindInterfaceName + "' in ipsec vpn: '" + name + "'",
-                  UNDEFINED);
+            undefined("Reference to undefined interface: '" + bindInterfaceName
+                  + "' in ipsec vpn: '" + name + "'", INTERFACE,
+                  bindInterfaceName);
          }
          else {
             oldBindInterface.getReferers().put(oldIpsecVpn,
@@ -797,8 +807,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(
             ikeGatewayName);
       if (ikeGateway == null) {
-         _w.redFlag("Reference to undefined ike gateway: '" + ikeGatewayName
-               + "' in ipsec vpn: '" + name + "'", UNDEFINED);
+         undefined("Reference to undefined ike gateway: '" + ikeGatewayName
+               + "' in ipsec vpn: '" + name + "'", IKE_GATEWAY, ikeGatewayName);
       }
       else {
          _ikeGateways.get(ikeGatewayName).getReferers()
@@ -811,8 +821,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
       org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c.getIpsecPolicies()
             .get(ipsecPolicyName);
       if (ipsecPolicy == null) {
-         _w.redFlag("Reference to undefined ipsec policy: '" + ipsecPolicyName
-               + "' in ipsec vpn: '" + name + "'", UNDEFINED);
+         undefined("Reference to undefined ipsec policy: '" + ipsecPolicyName
+               + "' in ipsec vpn: '" + name + "'", IPSEC_POLICY,
+               ipsecPolicyName);
       }
       else {
          _ipsecPolicies.get(ipsecPolicyName).getReferers()
@@ -1062,9 +1073,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
-      _w = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(_vendor);
@@ -1323,9 +1333,10 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
                   _defaultRoutingInstance, "Forwarding-table export policy");
          }
          else {
-            _w.redFlag(
-                  "Reference to undefined forwarding-table export policy: '"
-                        + forwardingTableExportPolicyName + "'", UNDEFINED);
+            undefined(
+                  "Reference to undefined forwarding-table export policy-statement: '"
+                        + forwardingTableExportPolicyName + "'",
+                  POLICY_STATEMENT, forwardingTableExportPolicyName);
          }
       }
 
@@ -1437,7 +1448,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
             Interface iface = e.getValue();
             if (org.batfish.datamodel.Interface.computeInterfaceType(name,
                   _vendor) == InterfaceType.VPN && iface.isUnused()) {
-               _w.redFlag("Unused vpn tunnel interface: '" + name + "'", UNUSED);
+               unused("Unused vpn tunnel interface: '" + name + "'", INTERFACE,
+                     name);
                _c.getInterfaces().remove(name);
             }
          }
@@ -1459,7 +1471,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          FirewallFilter filter = e.getValue();
          if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
-            _w.redFlag("Unused firewall-filter: '" + name + "'", UNUSED);
+            unused("Unused firewall filter: '" + name + "'", FILTER, name);
          }
       }
    }
@@ -1469,7 +1481,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          IkeGateway ikeGateway = e.getValue();
          if (ikeGateway.isUnused()) {
-            _w.redFlag("Unused IKE gateway: '" + name + "'", UNUSED);
+            unused("Unused IKE gateway: '" + name + "'", IKE_GATEWAY, name);
          }
       }
    }
@@ -1479,7 +1491,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          IkePolicy ikePolicy = e.getValue();
          if (ikePolicy.isUnused()) {
-            _w.redFlag("Unused IKE policy: '" + name + "'", UNUSED);
+            unused("Unused IKE policy: '" + name + "'", IKE_POLICY, name);
          }
       }
    }
@@ -1489,7 +1501,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          IkeProposal ikeProposal = e.getValue();
          if (ikeProposal.isUnused()) {
-            _w.redFlag("Unused IKE proposal: '" + name + "'", UNUSED);
+            unused("Unused IKE proposal: '" + name + "'", IKE_PROPOSAL, name);
          }
       }
    }
@@ -1499,7 +1511,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          IpsecPolicy ipsecPolicy = e.getValue();
          if (ipsecPolicy.isUnused()) {
-            _w.redFlag("Unused IKE policy: '" + name + "'", UNUSED);
+            unused("Unused IPSEC policy: '" + name + "'", IPSEC_POLICY, name);
          }
       }
    }
@@ -1509,7 +1521,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          String name = e.getKey();
          IpsecProposal ipsecProposal = e.getValue();
          if (ipsecProposal.isUnused()) {
-            _w.redFlag("Unused IKE proposal: '" + name + "'", UNUSED);
+            unused("Unused IPSEC proposal: '" + name + "'", IPSEC_PROPOSAL,
+                  name);
          }
       }
    }
@@ -1522,7 +1535,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          }
          PolicyStatement ps = e.getValue();
          if (!ps.getIpv6() && ps.isUnused()) {
-            _w.redFlag("Unused policy-statement: '" + name + "'", UNUSED);
+            unused("Unused policy-statement: '" + name + "'", POLICY_STATEMENT,
+                  name);
          }
       }
    }
@@ -1533,7 +1547,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration
          PrefixList prefixList = e.getValue();
          if (!prefixList.getIpv6() && prefixList.isUnused()
                && !_ignoredPrefixLists.contains(name)) {
-            _w.redFlag("Unused prefix-list: '" + name + "'", UNUSED);
+            unused("Unused prefix-list: '" + name + "'", PREFIX_LIST, name);
          }
       }
    }
