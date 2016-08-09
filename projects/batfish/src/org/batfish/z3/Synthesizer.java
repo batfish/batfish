@@ -1236,67 +1236,71 @@ public class Synthesizer {
       for (Entry<String, Map<String, IpAccessList>> e : matchAcls.entrySet()) {
          String hostname = e.getKey();
          Map<String, IpAccessList> aclMap = e.getValue();
-         for (Entry<String, IpAccessList> e2 : aclMap.entrySet()) {
-            String aclName = e2.getKey();
-            IpAccessList acl = e2.getValue();
-            List<IpAccessListLine> lines = acl.getLines();
-            for (int i = 0; i < lines.size(); i++) {
-               IpAccessListLine line = lines.get(i);
-
-               AndExpr matchConditions = new AndExpr();
-
-               // ** must not match previous rule **
-               BooleanExpr prevNoMatch = (i > 0) ? new AclNoMatchExpr(hostname,
-                     aclName, i - 1) : TrueExpr.INSTANCE;
-
-               AndExpr matchLineCriteria = new AndExpr();
-               matchConditions.addConjunct(matchLineCriteria);
-               matchConditions.addConjunct(prevNoMatch);
-               BooleanExpr matchHeaderSpace = matchHeaderSpace(line);
-               matchConditions.addConjunct(matchHeaderSpace);
-
-               AclMatchExpr match = new AclMatchExpr(hostname, aclName, i);
-
-               RuleExpr matchRule = new RuleExpr(matchConditions, match);
-               statements.add(matchRule);
-
-               // no match rule
-               AndExpr noMatchConditions = new AndExpr();
-               BooleanExpr noMatchLineCriteria = new NotExpr(matchLineCriteria);
-               noMatchConditions.addConjunct(noMatchLineCriteria);
-               noMatchConditions.addConjunct(prevNoMatch);
-               AclNoMatchExpr noMatch = new AclNoMatchExpr(hostname, aclName, i);
-               RuleExpr noMatchRule = new RuleExpr(noMatchConditions, noMatch);
-               statements.add(noMatchRule);
-
-               // permit/deny rule for match
-               PolicyExpr aclAction;
-               switch (line.getAction()) {
-               case ACCEPT:
-                  aclAction = new AclPermitExpr(hostname, aclName);
-                  break;
-
-               case REJECT:
-                  aclAction = new AclDenyExpr(hostname, aclName);
-                  break;
-
-               default:
-                  throw new Error("invalid action");
-               }
-               RuleExpr action = new RuleExpr(match, aclAction);
-               statements.add(action);
-
-            }
-            // deny rule for not matching last line
-
-            int lastLineIndex = acl.getLines().size() - 1;
-            AclDenyExpr aclDeny = new AclDenyExpr(hostname, aclName);
-            AclNoMatchExpr noMatchLast = new AclNoMatchExpr(hostname, aclName,
-                  lastLineIndex);
-            RuleExpr implicitDeny = new RuleExpr(noMatchLast, aclDeny);
-            statements.add(implicitDeny);
+         for (String aclName : aclMap.keySet()) {
+            statements.addAll(getMatchAclRules(hostname, aclName));
          }
       }
+      return statements;
+   }
+
+   private List<Statement> getMatchAclRules(String hostname, String aclName) {
+      List<Statement> statements = new ArrayList<Statement>();
+      Configuration c = _configurations.get(hostname);
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      List<IpAccessListLine> lines = acl.getLines();
+      for (int i = 0; i < lines.size(); i++) {
+         IpAccessListLine line = lines.get(i);
+
+         AndExpr matchConditions = new AndExpr();
+
+         // ** must not match previous rule **
+         BooleanExpr prevNoMatch = (i > 0) ? new AclNoMatchExpr(hostname,
+               aclName, i - 1) : TrueExpr.INSTANCE;
+
+         BooleanExpr matchLineCriteria = matchHeaderSpace(line);
+         matchConditions.addConjunct(prevNoMatch);
+         matchConditions.addConjunct(matchLineCriteria);
+
+         AclMatchExpr match = new AclMatchExpr(hostname, aclName, i);
+
+         RuleExpr matchRule = new RuleExpr(matchConditions, match);
+         statements.add(matchRule);
+
+         // no match rule
+         AndExpr noMatchConditions = new AndExpr();
+         BooleanExpr noMatchLineCriteria = new NotExpr(matchLineCriteria);
+         noMatchConditions.addConjunct(noMatchLineCriteria);
+         noMatchConditions.addConjunct(prevNoMatch);
+         AclNoMatchExpr noMatch = new AclNoMatchExpr(hostname, aclName, i);
+         RuleExpr noMatchRule = new RuleExpr(noMatchConditions, noMatch);
+         statements.add(noMatchRule);
+
+         // permit/deny rule for match
+         PolicyExpr aclAction;
+         switch (line.getAction()) {
+         case ACCEPT:
+            aclAction = new AclPermitExpr(hostname, aclName);
+            break;
+
+         case REJECT:
+            aclAction = new AclDenyExpr(hostname, aclName);
+            break;
+
+         default:
+            throw new Error("invalid action");
+         }
+         RuleExpr action = new RuleExpr(match, aclAction);
+         statements.add(action);
+
+      }
+      // deny rule for not matching last line
+
+      int lastLineIndex = acl.getLines().size() - 1;
+      AclDenyExpr aclDeny = new AclDenyExpr(hostname, aclName);
+      AclNoMatchExpr noMatchLast = new AclNoMatchExpr(hostname, aclName,
+            lastLineIndex);
+      RuleExpr implicitDeny = new RuleExpr(noMatchLast, aclDeny);
+      statements.add(implicitDeny);
       return statements;
    }
 
@@ -2073,11 +2077,12 @@ public class Synthesizer {
       }
    }
 
-   public NodProgram synthesizeNodAclProgram(Context ctx) throws Z3Exception {
+   public NodProgram synthesizeNodAclProgram(String hostname, String aclName,
+         Context ctx) throws Z3Exception {
 
       List<Statement> ruleStatements = new ArrayList<Statement>();
       List<Statement> sane = getSane();
-      List<Statement> matchAclRules = getMatchAclRules();
+      List<Statement> matchAclRules = getMatchAclRules(hostname, aclName);
 
       ruleStatements.addAll(sane);
       ruleStatements.addAll(matchAclRules);

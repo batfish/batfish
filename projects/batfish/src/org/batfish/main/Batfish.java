@@ -95,6 +95,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
+import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
@@ -167,6 +168,8 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.z3.CompositeNodJob;
+import org.batfish.z3.NodFirstUnsatJob;
+import org.batfish.z3.NodFirstUnsatResult;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
@@ -998,6 +1001,16 @@ public class Batfish implements AutoCloseable {
          }
       }
       return flowSinks;
+   }
+
+   public <Key, Result> void computeNodFirstUnsatOutput(
+         List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
+      _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
+      resetTimer();
+      BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
+      printElapsedTime();
    }
 
    public Set<Flow> computeNodOutput(List<NodJob> jobs) {
