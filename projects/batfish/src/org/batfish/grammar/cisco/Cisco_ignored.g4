@@ -46,6 +46,7 @@ null_block_stanza
       | DO STOP
       | DOMAIN
       | DOT11
+      | ENABLE
       | END
       | EVENT
       | EVENT_HANDLER

@@ -1142,6 +1142,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.vrf != null) {
          _currentVrf = ctx.vrf.getText();
       }
+      if (ctx.MANAGEMENT() != null) {
+         _currentVrf = CiscoConfiguration.MANAGEMENT_VRF_NAME;
+      }
    }
 
    @Override
