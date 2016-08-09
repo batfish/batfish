@@ -211,6 +211,10 @@ public class AclReachabilityAnswerer extends Answerer {
                   line.setEarliestMoreGeneralLineIndex(earliestMoreGeneralLineIndex);
                   line.setEarliestMoreGeneralLineName(earliestMoreGeneralLine
                         .getName());
+                  if (!earliestMoreGeneralLine.getAction().equals(
+                        ipAccessListLine.getAction())) {
+                     line.setDifferentAction(true);
+                  }
                }
                answerElement.addUnreachableLine(hostname, ipAccessList, line);
                aclsWithUnreachableLines.add(qualifiedAclName);

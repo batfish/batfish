@@ -22,9 +22,11 @@ public class AclLinesAnswerElement implements AnswerElement {
 
       private static final String NAME_VAR = "name";
 
-      private String _earliestMoreGeneralLineName;
+      private boolean _differentAction;
 
       private Integer _earliestMoreGeneralLineIndex;
+
+      private String _earliestMoreGeneralLineName;
 
       private final int _index;
 
@@ -47,6 +49,10 @@ public class AclLinesAnswerElement implements AnswerElement {
          return _index == ((AclReachabilityEntry) obj)._index;
       }
 
+      public boolean getDifferentAction() {
+         return _differentAction;
+      }
+
       public Integer getEarliestMoreGeneralLineIndex() {
          return _earliestMoreGeneralLineIndex;
       }
@@ -66,6 +72,10 @@ public class AclLinesAnswerElement implements AnswerElement {
       @Override
       public int hashCode() {
          return _name.hashCode();
+      }
+
+      public void setDifferentAction(boolean differentAction) {
+         _differentAction = differentAction;
       }
 
       public void setEarliestMoreGeneralLineIndex(
