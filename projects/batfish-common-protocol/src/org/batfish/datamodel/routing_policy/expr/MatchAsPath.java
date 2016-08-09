@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 public class MatchAsPath extends AbstractBooleanExpr {
 
    /**
@@ -10,6 +14,13 @@ public class MatchAsPath extends AbstractBooleanExpr {
 
    public MatchAsPath(String list) {
       _list = list;
+   }
+
+   @Override
+   public Result evaluate(Environment environment, Route route) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    public String getList() {

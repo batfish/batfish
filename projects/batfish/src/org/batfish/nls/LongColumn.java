@@ -8,7 +8,7 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LBValueType;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 
 public final class LongColumn extends BaseColumn<Long> {
@@ -57,10 +57,10 @@ public final class LongColumn extends BaseColumn<Long> {
    }
 
    @Override
-   public List<PrecomputedRoute> asRouteList(EntityTable entityTable) {
-      List<PrecomputedRoute> routeList = new ArrayList<PrecomputedRoute>();
+   public List<Route> asRouteList(EntityTable entityTable) {
+      List<Route> routeList = new ArrayList<Route>();
       for (Long index : _items) {
-         PrecomputedRoute advert = entityTable.getRoute(index);
+         Route advert = entityTable.getRoute(index);
          routeList.add(advert);
       }
       return routeList;

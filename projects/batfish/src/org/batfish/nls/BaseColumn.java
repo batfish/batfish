@@ -7,7 +7,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 
 import com.google.common.collect.ImmutableList;
@@ -44,7 +44,7 @@ public abstract class BaseColumn<T> implements Column {
    }
 
    @Override
-   public List<PrecomputedRoute> asRouteList(EntityTable entityTable) {
+   public List<Route> asRouteList(EntityTable entityTable) {
       throw new BatfishException("unsupported column view");
    }
 

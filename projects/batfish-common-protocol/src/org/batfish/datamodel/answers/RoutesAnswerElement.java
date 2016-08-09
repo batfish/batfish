@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
@@ -19,9 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutesAnswerElement implements AnswerElement {
 
-   private SortedSet<PrecomputedRoute> _routes;
+   private SortedSet<Route> _routes;
 
-   private SortedMap<String, SortedSet<PrecomputedRoute>> _routesByHostname;
+   private SortedMap<String, SortedSet<Route>> _routesByHostname;
 
    @JsonCreator
    public RoutesAnswerElement() {
@@ -29,26 +29,26 @@ public class RoutesAnswerElement implements AnswerElement {
 
    public RoutesAnswerElement(Map<String, Configuration> configurations,
          Pattern nodeRegex) {
-      _routes = new TreeSet<PrecomputedRoute>();
-      _routesByHostname = new TreeMap<String, SortedSet<PrecomputedRoute>>();
+      _routes = new TreeSet<Route>();
+      _routesByHostname = new TreeMap<String, SortedSet<Route>>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {
             continue;
          }
          Configuration c = e.getValue();
-         SortedSet<PrecomputedRoute> routes = c.getRoutes();
+         SortedSet<Route> routes = c.getRoutes();
          _routes.addAll(routes);
          _routesByHostname.put(hostname, routes);
       }
    }
 
-   public SortedSet<PrecomputedRoute> getRoutes() {
+   public SortedSet<Route> getRoutes() {
       return _routes;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
-   public SortedMap<String, SortedSet<PrecomputedRoute>> getRoutesByHostname() {
+   public SortedMap<String, SortedSet<Route>> getRoutesByHostname() {
       return _routesByHostname;
    }
 
@@ -59,12 +59,12 @@ public class RoutesAnswerElement implements AnswerElement {
       return mapper.writeValueAsString(this);
    }
 
-   public void setRoutes(SortedSet<PrecomputedRoute> routes) {
+   public void setRoutes(SortedSet<Route> routes) {
       _routes = routes;
    }
 
    public void setRoutesByHostname(
-         SortedMap<String, SortedSet<PrecomputedRoute>> routesByHostname) {
+         SortedMap<String, SortedSet<Route>> routesByHostname) {
       _routesByHostname = routesByHostname;
    }
 

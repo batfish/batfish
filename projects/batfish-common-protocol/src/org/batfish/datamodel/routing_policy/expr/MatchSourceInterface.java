@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class MatchSourceInterface extends AbstractBooleanExpr {
@@ -16,6 +20,13 @@ public class MatchSourceInterface extends AbstractBooleanExpr {
 
    public MatchSourceInterface(String srcInterface) {
       _srcInterface = srcInterface;
+   }
+
+   @Override
+   public Result evaluate(Environment environment, Route route) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    public String getList() {

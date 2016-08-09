@@ -1,5 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,6 +25,13 @@ public class SetNextHop extends AbstractStatement {
    public SetNextHop(NextHopExpr expr, boolean destinationVrf) {
       _expr = expr;
       _destinationVrf = destinationVrf;
+   }
+
+   @Override
+   public Result execute(Environment environment, Route route) {
+      Result result = new Result();
+      result.setReturn(false);
+      return result;
    }
 
    public boolean getDestinationVrf() {

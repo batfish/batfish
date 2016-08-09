@@ -79,7 +79,7 @@ import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapAction;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
@@ -2009,7 +2009,7 @@ public class Batfish implements AutoCloseable {
       EntityTable entityTable = initEntityTable(testrigSettings);
       Relation relation = getRelation(testrigSettings,
             INSTALLED_ROUTE_PREDICATE_NAME);
-      List<PrecomputedRoute> routeList = relation.getColumns().get(0)
+      List<Route> routeList = relation.getColumns().get(0)
             .asRouteList(entityTable);
       routes.addAll(routeList);
       return routes;
@@ -2352,11 +2352,11 @@ public class Batfish implements AutoCloseable {
    }
 
    public void initRoutes(Map<String, Configuration> configurations) {
-      Set<PrecomputedRoute> globalRoutes = getRoutes(_testrigSettings);
+      Set<Route> globalRoutes = getRoutes(_testrigSettings);
       for (Configuration node : configurations.values()) {
          node.initRoutes();
       }
-      for (PrecomputedRoute route : globalRoutes) {
+      for (Route route : globalRoutes) {
          String nodeName = route.getNode();
          Configuration node = configurations.get(nodeName);
          if (node != null) {
@@ -2926,7 +2926,7 @@ public class Batfish implements AutoCloseable {
       Set<Prefix> networks = new HashSet<Prefix>();
       for (Path precomputedRoutesPath : precomputedRoutesPaths) {
          RouteSet routes = (RouteSet) deserializeObject(precomputedRoutesPath);
-         for (PrecomputedRoute route : routes) {
+         for (Route route : routes) {
             String node = route.getNode();
             Prefix prefix = route.getPrefix();
             networks.add(prefix);

@@ -129,7 +129,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
-   private transient NavigableSet<PrecomputedRoute> _routes;
+   private transient NavigableSet<Route> _routes;
 
    private NavigableMap<String, RoutingPolicy> _routingPolicies;
 
@@ -312,7 +312,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonIgnore
-   public NavigableSet<PrecomputedRoute> getRoutes() {
+   public NavigableSet<Route> getRoutes() {
       return _routes;
    }
 
@@ -360,7 +360,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    public void initRoutes() {
-      _routes = new TreeSet<PrecomputedRoute>();
+      _routes = new TreeSet<Route>();
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)

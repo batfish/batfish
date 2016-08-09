@@ -450,13 +450,17 @@ public final class Interface extends ComparableStructure<String> {
    }
 
    public boolean isLoopback(ConfigurationFormat vendor) {
+      String name = _key.toLowerCase();
       if (vendor == ConfigurationFormat.JUNIPER
             || vendor == ConfigurationFormat.FLAT_JUNIPER) {
-         if (!_key.contains(".")) {
+         if (!name.contains(".")) {
             return false;
          }
       }
-      return _key.toLowerCase().startsWith("lo");
+      else if (name.contains("longreach")) {
+         return false;
+      }
+      return name.startsWith("lo");
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)

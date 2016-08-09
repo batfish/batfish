@@ -40,6 +40,12 @@ public class RouteFilterList extends ComparableStructure<String> {
       return _lines;
    }
 
+   public boolean permits(Prefix prefix) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
    @JsonProperty(LINES_VAR)
    public void setLines(List<RouteFilterLine> lines) {
       _lines = lines;

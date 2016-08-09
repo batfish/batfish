@@ -3,6 +3,10 @@ package org.batfish.datamodel.routing_policy.expr;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 public class Conjunction extends AbstractBooleanExpr {
 
    /**
@@ -14,6 +18,23 @@ public class Conjunction extends AbstractBooleanExpr {
 
    public Conjunction() {
       _conjuncts = new ArrayList<BooleanExpr>();
+   }
+
+   @Override
+   public Result evaluate(Environment environment, Route route) {
+      for (BooleanExpr conjunct : _conjuncts) {
+         Result result = conjunct.evaluate(environment, route);
+         if (result.getExit()) {
+            return result;
+         }
+         else if (!result.getBooleanValue()) {
+            result.setBooleanValue(false);
+            return result;
+         }
+      }
+      Result result = new Result();
+      result.setBooleanValue(true);
+      return result;
    }
 
    public List<BooleanExpr> getConjuncts() {

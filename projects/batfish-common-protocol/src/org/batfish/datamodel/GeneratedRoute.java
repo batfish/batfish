@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class GeneratedRoute extends Route implements
+public final class GeneratedRoute extends AbstractRoute implements
       Comparable<GeneratedRoute> {
 
    private static final String AS_PATH_VAR = "asPath";

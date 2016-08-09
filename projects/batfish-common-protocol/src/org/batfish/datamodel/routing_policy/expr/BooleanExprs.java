@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,6 +34,26 @@ public enum BooleanExprs {
             return _type.equals(((StaticBooleanExpr) rhs)._type);
          }
          return false;
+      }
+
+      @Override
+      public Result evaluate(Environment environment, Route route) {
+         Result result = new Result();
+         switch (_type) {
+         case CallExprContext:
+            result.setBooleanValue(environment.getCallExprContext());
+            break;
+         case CallStatementContext:
+            result.setBooleanValue(environment.getCallStatementContext());
+            break;
+         case False:
+            result.setBooleanValue(false);
+            break;
+         case True:
+            result.setBooleanValue(true);
+            break;
+         }
+         return result;
       }
 
       @JsonProperty(TYPE_VAR)
