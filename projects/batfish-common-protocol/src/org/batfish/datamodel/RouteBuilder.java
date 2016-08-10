@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-public class PrecomputedRouteBuilder {
+public class RouteBuilder {
 
    private int _administrativeCost;
 
@@ -20,17 +20,17 @@ public class PrecomputedRouteBuilder {
 
    private int _tag;
 
-   public PrecomputedRouteBuilder() {
-      _administrativeCost = PrecomputedRoute.UNSET_ROUTE_ADMIN;
-      _cost = PrecomputedRoute.UNSET_ROUTE_COST;
-      _tag = PrecomputedRoute.UNSET_ROUTE_TAG;
-      _nextHopInterface = PrecomputedRoute.UNSET_NEXT_HOP_INTERFACE;
-      _nextHopIp = PrecomputedRoute.UNSET_ROUTE_NEXT_HOP_IP;
-      _nextHop = PrecomputedRoute.UNSET_NEXT_HOP;
+   public RouteBuilder() {
+      _administrativeCost = Route.UNSET_ROUTE_ADMIN;
+      _cost = Route.UNSET_ROUTE_COST;
+      _tag = Route.UNSET_ROUTE_TAG;
+      _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
+      _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
+      _nextHop = Route.UNSET_NEXT_HOP;
    }
 
-   public PrecomputedRoute build() {
-      return new PrecomputedRoute(_node, _network, _nextHopIp, _nextHop,
+   public Route build() {
+      return new Route(_node, _network, _nextHopIp, _nextHop,
             _nextHopInterface, _administrativeCost, _cost, _protocol, _tag);
    }
 

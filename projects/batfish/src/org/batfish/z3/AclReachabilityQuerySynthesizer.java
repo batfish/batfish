@@ -58,4 +58,9 @@ public final class AclReachabilityQuerySynthesizer extends
       return program;
    }
 
+   @Override
+   public NodProgram synthesizeBaseProgram(Synthesizer synthesizer, Context ctx) {
+      return synthesizer.synthesizeNodAclProgram(_hostname, _aclName, ctx);
+   }
+
 }

@@ -1,6 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -23,6 +26,13 @@ public class ExplicitPrefixSet implements PrefixSetExpr {
 
    public PrefixSpace getPrefixSpace() {
       return _prefixSpace;
+   }
+
+   @Override
+   public boolean matches(Environment environment, Route route) {
+      Prefix prefix = route.getPrefix();
+      boolean value = _prefixSpace.containsPrefix(prefix);
+      return value;
    }
 
    public void setPrefixSpace(PrefixSpace prefixSpace) {

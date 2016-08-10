@@ -387,7 +387,10 @@ ip_pim_tail
 
 ip_route_stanza
 :
-   IP ROUTE
+   (
+      IP
+      | MANAGEMENT
+   ) ROUTE
    (
       VRF vrf = ~NEWLINE
    )? ip_route_tail
@@ -446,7 +449,7 @@ l_access_class
          (
             IN
             | OUT
-         )
+         )?
       )
    ) VRF_ALSO? NEWLINE
 ;

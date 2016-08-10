@@ -1,5 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.routing_policy.Environment;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NamedPrefixSet implements PrefixSetExpr {
@@ -21,6 +26,20 @@ public class NamedPrefixSet implements PrefixSetExpr {
 
    public String getName() {
       return _name;
+   }
+
+   @Override
+   public boolean matches(Environment environment, Route route) {
+      Prefix prefix = route.getPrefix();
+      RouteFilterList list = environment.getConfiguration()
+            .getRouteFilterLists().get(_name);
+      if (list != null) {
+         return list.permits(prefix);
+      }
+      else {
+         environment.setError(true);
+         return false;
+      }
    }
 
    public void setName(String name) {

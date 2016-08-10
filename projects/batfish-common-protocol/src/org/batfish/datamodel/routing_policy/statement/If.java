@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
@@ -26,6 +29,27 @@ public class If extends AbstractStatement {
    public If() {
       _falseStatements = new ArrayList<Statement>();
       _trueStatements = new ArrayList<Statement>();
+   }
+
+   @Override
+   public Result execute(Environment environment, Route route) {
+      Result exprResult = _guard.evaluate(environment, route);
+      if (exprResult.getExit()) {
+         return exprResult;
+      }
+      List<Statement> toExecute = exprResult.getBooleanValue() ? _trueStatements
+            : _falseStatements;
+      for (Statement statement : toExecute) {
+         Result result = statement.execute(environment, route);
+         if (result.getExit()) {
+            return result;
+         }
+         if (result.getReturn()) {
+            result.setReturn(false);
+            return result;
+         }
+      }
+      return new Result();
    }
 
    public List<Statement> getFalseStatements() {

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class HostConfiguration implements VendorConfiguration {
+public class HostConfiguration extends VendorConfiguration {
 
    private static final String FILTER_FORWARD = "filter::FORWARD";
 
@@ -70,7 +70,7 @@ public class HostConfiguration implements VendorConfiguration {
       ObjectMapper mapper = new BatfishObjectMapper();
       HostConfiguration hostConfiguration = mapper.readValue(text,
             HostConfiguration.class);
-      hostConfiguration._warnings = warnings;
+      hostConfiguration._w = warnings;
       return hostConfiguration;
    }
 
@@ -96,8 +96,6 @@ public class HostConfiguration implements VendorConfiguration {
    // }
 
    private transient Set<String> _unimplementedFeatures;
-
-   private transient Warnings _warnings;
 
    public HostConfiguration() {
       _hostInterfaces = new TreeMap<String, HostInterface>();
@@ -135,12 +133,6 @@ public class HostConfiguration implements VendorConfiguration {
    @Override
    public Set<String> getUnimplementedFeatures() {
       return _unimplementedFeatures;
-   }
-
-   @JsonIgnore
-   @Override
-   public Warnings getWarnings() {
-      return _warnings;
    }
 
    @Override
@@ -197,9 +189,8 @@ public class HostConfiguration implements VendorConfiguration {
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
-      _warnings = warnings;
       String hostname = getHostname();
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(ConfigurationFormat.HOST);
@@ -210,12 +201,12 @@ public class HostConfiguration implements VendorConfiguration {
       // add interfaces
       for (HostInterface hostInterface : _hostInterfaces.values()) {
          _c.getInterfaces().put(hostInterface.getName(),
-               hostInterface.toInterface(_c, warnings));
+               hostInterface.toInterface(_c, _w));
       }
 
       // add iptables
       if (_iptablesVendorConfig != null) {
-         _iptablesVendorConfig.addAsIpAccessLists(_c, warnings);
+         _iptablesVendorConfig.addAsIpAccessLists(_c, _w);
       }
 
       // apply acls to interfaces
@@ -226,8 +217,7 @@ public class HostConfiguration implements VendorConfiguration {
          }
       }
       else {
-         _warnings
-               .unimplemented("Do not support complicated iptables rules yet");
+         _w.unimplemented("Do not support complicated iptables rules yet");
       }
 
       if (_staticRoutes.isEmpty()) {

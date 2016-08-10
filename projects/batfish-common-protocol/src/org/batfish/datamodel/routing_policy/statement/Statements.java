@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -38,6 +42,66 @@ public enum Statements {
             return _type.equals(((StaticStatement) rhs)._type);
          }
          return false;
+      }
+
+      @Override
+      public Result execute(Environment environment, Route route) {
+         Result result = new Result();
+         switch (this._type) {
+         case DefaultAction:
+            result.setExit(true);
+            result.setAction(environment.getDefaultAction());
+            break;
+
+         case DeleteAllCommunities:
+            break;
+
+         case ExitAccept:
+            result.setExit(true);
+            result.setAction(true);
+            break;
+
+         case ExitReject:
+            result.setExit(true);
+            result.setAction(false);
+            break;
+
+         case Return:
+            result.setReturn(true);
+            break;
+
+         case ReturnFalse:
+            result.setReturn(true);
+            result.setAction(false);
+            break;
+
+         case ReturnLocalDefaultAction:
+            result.setReturn(true);
+            result.setAction(environment.getLocalDefaultAction());
+            break;
+
+         case ReturnTrue:
+            result.setReturn(true);
+            result.setAction(true);
+            break;
+
+         case SetDefaultActionAccept:
+            environment.setDefaultAction(true);
+            break;
+
+         case SetDefaultActionReject:
+            environment.setDefaultAction(false);
+            break;
+
+         case SetLocalDefaultActionAccept:
+            environment.setLocalDefaultAction(true);
+            break;
+
+         case SetLocalDefaultActionReject:
+            environment.setLocalDefaultAction(false);
+            break;
+         }
+         return result;
       }
 
       @JsonProperty(TYPE_VAR)

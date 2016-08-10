@@ -29,6 +29,8 @@ public class HeaderSpace implements Serializable {
 
    private Set<IpProtocol> _ipProtocols;
 
+   private boolean _negate;
+
    private SortedSet<Integer> _notDscps;
 
    private SortedSet<IpWildcard> _notDstIps;
@@ -110,6 +112,10 @@ public class HeaderSpace implements Serializable {
 
    public Set<IpProtocol> getIpProtocols() {
       return _ipProtocols;
+   }
+
+   public boolean getNegate() {
+      return _negate;
    }
 
    public SortedSet<Integer> getNotDscps() {
@@ -199,6 +205,10 @@ public class HeaderSpace implements Serializable {
    public void setIpProtocols(Set<IpProtocol> ipProtocols) {
       _ipProtocols.clear();
       _ipProtocols.addAll(ipProtocols);
+   }
+
+   public void setNegate(boolean negate) {
+      _negate = negate;
    }
 
    public void setNotDscps(SortedSet<Integer> notDscps) {

@@ -2,35 +2,103 @@ package org.batfish.representation;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.main.Warnings;
 
-public interface VendorConfiguration extends Serializable, GenericConfigObject {
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-   String UNDEFINED = "UNDEFINED";
+public abstract class VendorConfiguration implements Serializable,
+      GenericConfigObject {
 
-   String UNUSED = "UNUSED";
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   String getHostname();
+   private static final String UNDEFINED = "UNDEFINED";
 
-   RoleSet getRoles();
+   private static final String UNUSED = "UNUSED";
 
-   Set<String> getUnimplementedFeatures();
+   private transient ConvertConfigurationAnswerElement _answerElement;
 
-   Warnings getWarnings();
+   protected transient Warnings _w;
 
-   void setHostname(String hostname);
+   @JsonIgnore
+   public final ConvertConfigurationAnswerElement getAnswerElement() {
+      return _answerElement;
+   }
 
-   void setRoles(RoleSet roles);
+   public abstract String getHostname();
 
-   void setVendor(ConfigurationFormat format);
+   public abstract RoleSet getRoles();
 
-   Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public abstract Set<String> getUnimplementedFeatures();
+
+   @JsonIgnore
+   public final Warnings getWarnings() {
+      return _w;
+   }
+
+   public final void setAnswerElement(
+         ConvertConfigurationAnswerElement answerElement) {
+      _answerElement = answerElement;
+   }
+
+   public abstract void setHostname(String hostname);
+
+   public abstract void setRoles(RoleSet roles);
+
+   public abstract void setVendor(ConfigurationFormat format);
+
+   public final void setWarnings(Warnings warnings) {
+      _w = warnings;
+   }
+
+   public abstract Configuration toVendorIndependentConfiguration()
          throws VendorConversionException;
+
+   public void undefined(String message, String type, String name) {
+      _w.redFlag(message, UNDEFINED);
+      String hostname = getHostname();
+      SortedMap<String, SortedSet<String>> byHostname = _answerElement
+            .getUndefinedReferences().get(hostname);
+      if (byHostname == null) {
+         byHostname = new TreeMap<String, SortedSet<String>>();
+         _answerElement.getUndefinedReferences().put(hostname, byHostname);
+      }
+      SortedSet<String> byType = byHostname.get(type);
+      if (byType == null) {
+         byType = new TreeSet<String>();
+         byHostname.put(type, byType);
+      }
+      byType.add(name);
+   }
+
+   protected void unused(String message, String type, String name) {
+      _w.redFlag(message, UNUSED);
+      String hostname = getHostname();
+      SortedMap<String, SortedSet<String>> byHostname = _answerElement
+            .getUnusedStructures().get(hostname);
+      if (byHostname == null) {
+         byHostname = new TreeMap<String, SortedSet<String>>();
+         _answerElement.getUnusedStructures().put(hostname, byHostname);
+      }
+      SortedSet<String> byType = byHostname.get(type);
+      if (byType == null) {
+         byType = new TreeSet<String>();
+         byHostname.put(type, byType);
+      }
+      byType.add(name);
+   }
 
 }

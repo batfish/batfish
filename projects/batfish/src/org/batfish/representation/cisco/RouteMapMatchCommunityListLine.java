@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
@@ -54,8 +53,8 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
                   .add(new MatchCommunitySet(new NamedCommunitySet(listName)));
          }
          else {
-            w.redFlag("Reference to undefined community-list: " + listName,
-                  VendorConfiguration.UNDEFINED);
+            cc.undefined("Reference to undefined community-list: " + listName,
+                  CiscoVendorConfiguration.COMMUNITY_LIST, listName);
          }
       }
       return d.simplify();

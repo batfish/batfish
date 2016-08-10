@@ -12,7 +12,7 @@ import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.CommunitySet;
@@ -33,7 +33,7 @@ public class EntityTable {
 
    private final Map<String, Relation> _relations;
 
-   private final Map<Long, PrecomputedRoute> _routes;
+   private final Map<Long, Route> _routes;
 
    public EntityTable(Map<String, String> nlsPredicateContents,
          PredicateInfo predicateInfo) {
@@ -44,7 +44,7 @@ public class EntityTable {
       _communities = new HashMap<Long, CommunitySet>();
       _flows = new HashMap<Long, Flow>();
       _networks = new HashMap<Long, Prefix>();
-      _routes = new HashMap<Long, PrecomputedRoute>();
+      _routes = new HashMap<Long, Route>();
       populateNetworks();
       populateFlows();
       populateRoutes();
@@ -82,19 +82,18 @@ public class EntityTable {
       return _networks.get(index);
    }
 
-   public PrecomputedRoute getPrecomputedRoute(Long index) {
-      PrecomputedRoute route = _routes.get(index);
-      if (route.getNextHopIp().equals(PrecomputedRoute.UNSET_ROUTE_NEXT_HOP_IP)) {
+   public Route getPrecomputedRoute(Long index) {
+      Route route = _routes.get(index);
+      if (route.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
          return null;
       }
-      if (!route.getNextHopInterface().equals(
-            PrecomputedRoute.UNSET_NEXT_HOP_INTERFACE)) {
+      if (!route.getNextHopInterface().equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
          return null;
       }
       return route;
    }
 
-   public PrecomputedRoute getRoute(Long index) {
+   public Route getRoute(Long index) {
       return _routes.get(index);
    }
 
@@ -357,9 +356,8 @@ public class EntityTable {
                .fromProtocolName(routeProtocols.get(i));
          int tag = routeTags.get(i).intValue();
          String nextHop = routeNextHops.get(i);
-         PrecomputedRoute route = new PrecomputedRoute(node, network,
-               nextHopIp, nextHop, nextHopInterface, admin, cost,
-               routingProtocol, tag);
+         Route route = new Route(node, network, nextHopIp, nextHop,
+               nextHopInterface, admin, cost, routingProtocol, tag);
          _routes.put(routeIndex, route);
       }
    }

@@ -12,7 +12,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpAccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
 public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
@@ -61,8 +60,8 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
             list = ipAccessList;
          }
          if (list == null) {
-            w.redFlag("Reference to undefined ip access-list: " + listName,
-                  VendorConfiguration.UNDEFINED);
+            cc.undefined("Reference to undefined ip access-list: " + listName,
+                  CiscoVendorConfiguration.IP_ACCESS_LIST, listName);
          }
          else {
             String msg = "route-map match ip access-list line";

@@ -6,11 +6,8 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.collections.RoleSet;
-import org.batfish.main.Warnings;
-import org.batfish.representation.VendorConfiguration;
 
-public class MrvVendorConfiguration extends MrvConfiguration implements
-      VendorConfiguration {
+public class MrvVendorConfiguration extends MrvConfiguration {
 
    /**
     *
@@ -39,13 +36,6 @@ public class MrvVendorConfiguration extends MrvConfiguration implements
    }
 
    @Override
-   public Warnings getWarnings() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-   }
-
-   @Override
    public void setHostname(String hostname) {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
@@ -67,7 +57,7 @@ public class MrvVendorConfiguration extends MrvConfiguration implements
    }
 
    @Override
-   public Configuration toVendorIndependentConfiguration(Warnings warnings)
+   public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated

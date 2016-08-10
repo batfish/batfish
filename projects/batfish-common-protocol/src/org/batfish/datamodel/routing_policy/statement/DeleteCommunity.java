@@ -1,5 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,6 +22,13 @@ public class DeleteCommunity extends AbstractStatement {
 
    public DeleteCommunity(CommunitySetExpr expr) {
       _expr = expr;
+   }
+
+   @Override
+   public Result execute(Environment environment, Route route) {
+      Result result = new Result();
+      result.setReturn(false);
+      return result;
    }
 
    public CommunitySetExpr getExpr() {

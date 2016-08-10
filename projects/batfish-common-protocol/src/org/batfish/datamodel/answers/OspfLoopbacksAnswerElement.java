@@ -14,6 +14,8 @@ public class OspfLoopbacksAnswerElement implements AnswerElement {
 
    private SortedMap<String, SortedSet<String>> _active;
 
+   private SortedMap<String, SortedSet<String>> _exported;
+
    private SortedMap<String, SortedSet<String>> _inactive;
 
    private SortedMap<String, SortedSet<String>> _passive;
@@ -21,8 +23,9 @@ public class OspfLoopbacksAnswerElement implements AnswerElement {
    private SortedMap<String, SortedSet<String>> _running;
 
    public OspfLoopbacksAnswerElement() {
-      _inactive = new TreeMap<String, SortedSet<String>>();
       _active = new TreeMap<String, SortedSet<String>>();
+      _exported = new TreeMap<String, SortedSet<String>>();
+      _inactive = new TreeMap<String, SortedSet<String>>();
       _passive = new TreeMap<String, SortedSet<String>>();
       _running = new TreeMap<String, SortedSet<String>>();
    }
@@ -39,6 +42,10 @@ public class OspfLoopbacksAnswerElement implements AnswerElement {
 
    public SortedMap<String, SortedSet<String>> getActive() {
       return _active;
+   }
+
+   public SortedMap<String, SortedSet<String>> getExported() {
+      return _exported;
    }
 
    public SortedMap<String, SortedSet<String>> getInactive() {
@@ -62,6 +69,10 @@ public class OspfLoopbacksAnswerElement implements AnswerElement {
 
    public void setActive(SortedMap<String, SortedSet<String>> active) {
       _active = active;
+   }
+
+   public void setExported(SortedMap<String, SortedSet<String>> exported) {
+      _exported = exported;
    }
 
    public void setInactive(SortedMap<String, SortedSet<String>> inactive) {

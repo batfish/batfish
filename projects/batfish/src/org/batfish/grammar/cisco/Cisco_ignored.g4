@@ -46,6 +46,7 @@ null_block_stanza
       | DO STOP
       | DOMAIN
       | DOT11
+      | ENABLE
       | END
       | EVENT
       | EVENT_HANDLER
@@ -244,7 +245,6 @@ null_block_substanza
       NO?
       (
          ABSOLUTE_TIMEOUT
-         | ACCESS_CLASS
          | ACCEPT_DIALIN
          | ACCEPT_LIFETIME
          | ACCOUNTING
@@ -417,7 +417,6 @@ null_block_substanza
          | LEASE
          | LENGTH
          | LIMIT_RESOURCE
-         | LINE
          | LINECODE
          | LLDP
          | LOCAL_INTERFACE

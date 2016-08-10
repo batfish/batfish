@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
@@ -34,10 +35,14 @@ public class ConvertConfigurationJob extends
       long elapsedTime;
       _logger.info("Processing: \"" + _name + "\"");
       Map<String, Configuration> configurations = new HashMap<String, Configuration>();
+      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
       try {
          if (VendorConfiguration.class.isInstance(_configObject)) {
-            Configuration configuration = ((VendorConfiguration) _configObject)
-                  .toVendorIndependentConfiguration(_warnings);
+            VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
+            vendorConfiguration.setWarnings(_warnings);
+            vendorConfiguration.setAnswerElement(answerElement);
+            Configuration configuration = vendorConfiguration
+                  .toVendorIndependentConfiguration();
             if (configuration.getDefaultCrossZoneAction() == null) {
                throw new BatfishException(
                      "Implementation error: missing default cross-zone action for host: '"
@@ -69,6 +74,6 @@ public class ConvertConfigurationJob extends
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ConvertConfigurationResult(elapsedTime, _logger.getHistory(),
-            _warnings, _name, configurations);
+            _warnings, _name, configurations, answerElement);
    }
 }

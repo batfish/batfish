@@ -13,6 +13,8 @@ public class ConvertConfigurationResult
       extends
       BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
 
+   private ConvertConfigurationAnswerElement _answerElement;
+
    private Map<String, Configuration> _configurations;
 
    private String _name;
@@ -27,11 +29,13 @@ public class ConvertConfigurationResult
 
    public ConvertConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Warnings warnings, String name,
-         Map<String, Configuration> configurations) {
+         Map<String, Configuration> configurations,
+         ConvertConfigurationAnswerElement answerElement) {
       super(elapsedTime, history);
       _name = name;
       _warnings = warnings;
       _configurations = configurations;
+      _answerElement = answerElement;
    }
 
    @Override
@@ -60,6 +64,10 @@ public class ConvertConfigurationResult
                configurations.put(hostname, config);
                if (!_warnings.isEmpty()) {
                   answerElement.getWarnings().put(hostname, _warnings);
+                  answerElement.getUnusedStructures().putAll(
+                        _answerElement.getUnusedStructures());
+                  answerElement.getUndefinedReferences().putAll(
+                        _answerElement.getUnusedStructures());
                }
             }
          }

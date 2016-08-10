@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Result;
+
 public class MatchTag extends AbstractBooleanExpr {
 
    /**
@@ -11,6 +15,13 @@ public class MatchTag extends AbstractBooleanExpr {
 
    public MatchTag(int tag) {
       _tag = tag;
+   }
+
+   @Override
+   public Result evaluate(Environment environment, Route route) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    public int getTag() {

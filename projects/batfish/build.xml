@@ -40,8 +40,8 @@
                <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.g4"/>
             </sourcefiles>
             <targetfiles>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}.java"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}.tokens"/>
             </targetfiles>
             <sequential>
                <echo message="Compiling lexer: src/@{grammar.packagedir}/@{grammar.name}.g4"/>
@@ -73,12 +73,10 @@
                <dependencies/>
             </sourcefiles>
             <targetfiles>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}Listener.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}Visitor.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}BaseListener.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}BaseVisitor.java"/>
-               <fileset dir="src/@{grammar.packagedir}" includes="@{grammar.name}.tokens"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}.java"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}Listener.java"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}BaseListener.java"/>
+               <pathelement path="src/@{grammar.packagedir}/@{grammar.name}.tokens"/>
             </targetfiles>
             <sequential>
                <echo message="Compiling parser: src/@{grammar.packagedir}/@{grammar.name}.g4"/>
@@ -178,7 +176,7 @@
                <fileset dir="." includes="doxygen.cfg"/>
             </sourcefiles>
             <targetfiles>
-               <fileset dir="doc/html" includes="index.html"/>
+               <pathelement path="doc/html/index.html"/>
             </targetfiles>
             <sequential>
                <loadfile srcfile=".gitignore" property="doxygen.ignore.files">

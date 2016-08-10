@@ -79,7 +79,7 @@ import org.batfish.datamodel.PolicyMap;
 import org.batfish.datamodel.PolicyMapAction;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
@@ -95,6 +95,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
+import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
@@ -167,6 +168,8 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.z3.CompositeNodJob;
+import org.batfish.z3.NodFirstUnsatJob;
+import org.batfish.z3.NodFirstUnsatResult;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
@@ -998,6 +1001,16 @@ public class Batfish implements AutoCloseable {
          }
       }
       return flowSinks;
+   }
+
+   public <Key, Result> void computeNodFirstUnsatOutput(
+         List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
+      _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
+      resetTimer();
+      BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>>(
+            _settings, _logger);
+      executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
+      printElapsedTime();
    }
 
    public Set<Flow> computeNodOutput(List<NodJob> jobs) {
@@ -1996,7 +2009,7 @@ public class Batfish implements AutoCloseable {
       EntityTable entityTable = initEntityTable(testrigSettings);
       Relation relation = getRelation(testrigSettings,
             INSTALLED_ROUTE_PREDICATE_NAME);
-      List<PrecomputedRoute> routeList = relation.getColumns().get(0)
+      List<Route> routeList = relation.getColumns().get(0)
             .asRouteList(entityTable);
       routes.addAll(routeList);
       return routes;
@@ -2339,11 +2352,11 @@ public class Batfish implements AutoCloseable {
    }
 
    public void initRoutes(Map<String, Configuration> configurations) {
-      Set<PrecomputedRoute> globalRoutes = getRoutes(_testrigSettings);
+      Set<Route> globalRoutes = getRoutes(_testrigSettings);
       for (Configuration node : configurations.values()) {
          node.initRoutes();
       }
-      for (PrecomputedRoute route : globalRoutes) {
+      for (Route route : globalRoutes) {
          String nodeName = route.getNode();
          Configuration node = configurations.get(nodeName);
          if (node != null) {
@@ -2913,7 +2926,7 @@ public class Batfish implements AutoCloseable {
       Set<Prefix> networks = new HashSet<Prefix>();
       for (Path precomputedRoutesPath : precomputedRoutesPaths) {
          RouteSet routes = (RouteSet) deserializeObject(precomputedRoutesPath);
-         for (PrecomputedRoute route : routes) {
+         for (Route route : routes) {
             String node = route.getNode();
             Prefix prefix = route.getPrefix();
             networks.add(prefix);

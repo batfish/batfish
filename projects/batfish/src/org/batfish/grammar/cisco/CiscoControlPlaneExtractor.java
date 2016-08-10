@@ -70,6 +70,7 @@ import org.batfish.representation.cisco.IsisProcess;
 import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
+import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
@@ -854,6 +855,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final Set<String> _currentNexusNeighborAddressFamilies;
 
+   private Long _currentOspfArea;
+
+   private String _currentOspfInterface;
+
    private OspfProcess _currentOspfProcess;
 
    private BgpPeerGroup _currentPeerGroup;
@@ -939,6 +944,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          pushPeer(_currentPeerGroup);
       }
+   }
+
+   @Override
+   public void enterArea_xr_ro_stanza(Area_xr_ro_stanzaContext ctx) {
+      long area;
+      if (ctx.area_int != null) {
+         area = toInteger(ctx.area_int);
+      }
+      else if (ctx.area_ip != null) {
+         area = toIp(ctx.area_ip).asLong();
+      }
+      else {
+         throw new BatfishException("Missing area");
+      }
+      _currentOspfArea = area;
    }
 
    @Override
@@ -1029,6 +1049,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterInterface_xr_ro_stanza(Interface_xr_ro_stanzaContext ctx) {
+      String ifaceName = ctx.interface_name().getText();
+      // may have to change if interfaces are ever declared after ospf
+      Interface iface = _configuration.getInterfaces().get(ifaceName);
+      if (iface == null) {
+         throw new BatfishException(
+               "fixme: reference to undefined interface in ospf area");
+      }
+      for (Prefix prefix : iface.getAllPrefixes()) {
+         OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
+         _currentOspfProcess.getNetworks().add(network);
+      }
+      _currentOspfInterface = ifaceName;
+   }
+
+   @Override
    public void enterIp_as_path_access_list_stanza(
          Ip_as_path_access_list_stanzaContext ctx) {
       String name = ctx.name.getText();
@@ -1105,6 +1141,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterIp_route_stanza(Ip_route_stanzaContext ctx) {
       if (ctx.vrf != null) {
          _currentVrf = ctx.vrf.getText();
+      }
+      if (ctx.MANAGEMENT() != null) {
+         _currentVrf = CiscoConfiguration.MANAGEMENT_VRF_NAME;
       }
    }
 
@@ -1462,6 +1501,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          todo(ctx, F_OSPF_AREA_NSSA);
       }
       proc.getNssas().put(area, noSummary);
+   }
+
+   @Override
+   public void exitArea_xr_ro_stanza(Area_xr_ro_stanzaContext ctx) {
+      _currentOspfArea = null;
    }
 
    @Override
@@ -1844,6 +1888,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitInterface_stanza(Interface_stanzaContext ctx) {
       _currentInterfaces = null;
+   }
+
+   @Override
+   public void exitInterface_xr_ro_stanza(Interface_xr_ro_stanzaContext ctx) {
+      _currentOspfInterface = null;
+   }
+
+   @Override
+   public void exitInterface_xr_ro_tail(Interface_xr_ro_tailContext ctx) {
+      if (ctx.PASSIVE() != null && ctx.ENABLE() != null) {
+         _currentOspfProcess.getInterfaceBlacklist().add(_currentOspfInterface);
+      }
    }
 
    @Override

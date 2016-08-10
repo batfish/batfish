@@ -6,7 +6,7 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LBValueType;
-import org.batfish.datamodel.PrecomputedRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 
 public interface Column {
@@ -19,7 +19,7 @@ public interface Column {
 
    List<Prefix> asPrefixList(EntityTable entityTable);
 
-   List<PrecomputedRoute> asRouteList(EntityTable entityTable);
+   List<Route> asRouteList(EntityTable entityTable);
 
    List<String> asStringList();
 

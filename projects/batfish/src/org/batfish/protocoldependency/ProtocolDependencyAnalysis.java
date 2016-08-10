@@ -5,12 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -302,9 +304,9 @@ public final class ProtocolDependencyAnalysis {
          String node = e.getKey();
          Configuration c = e.getValue();
          for (Interface iface : c.getInterfaces().values()) {
-            Prefix interfacePrefix = iface.getPrefix();
-            if (interfacePrefix != null) {
-               Prefix prefix = interfacePrefix.getNetworkPrefix();
+            for (Prefix prefix : iface.getAllPrefixes().stream()
+                  .map(prefix -> prefix.getNetworkPrefix())
+                  .collect(Collectors.toSet())) {
                RoutingProtocol protocol = RoutingProtocol.CONNECTED;
                DependentRoute dependentRoute = new DependentRoute(node, prefix,
                      protocol);
@@ -444,6 +446,8 @@ public final class ProtocolDependencyAnalysis {
 
    private void initPolicyPrefixSpaces() {
       for (Configuration c : _configurations.values()) {
+         c.getPolicyMaps().put(PolicyMap.PERMIT_ALL.getName(),
+               PolicyMap.PERMIT_ALL);
          for (PolicyMap p : c.getPolicyMaps().values()) {
             for (PolicyMapClause clause : p.getClauses()) {
                boolean matchRouteFilter = false;
@@ -548,7 +552,12 @@ public final class ProtocolDependencyAnalysis {
 
                }
                else {
-                  throw new BatfishException("todo");
+                  Set<PotentialExport> exportExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        Collections.singleton(PolicyMap.PERMIT_ALL));
+                  for (PotentialExport exportExport : exportExports) {
+                     _dependencyDatabase.addPotentialExport(exportExport);
+                  }
                }
             }
          }
@@ -672,7 +681,12 @@ public final class ProtocolDependencyAnalysis {
 
                }
                else {
-                  throw new BatfishException("todo");
+                  Set<PotentialExport> exportExports = getPermittedExports(
+                        exportProtocol, permittedProtocols, node,
+                        Collections.singleton(PolicyMap.PERMIT_ALL));
+                  for (PotentialExport exportExport : exportExports) {
+                     _dependencyDatabase.addPotentialExport(exportExport);
+                  }
                }
             }
          }
@@ -786,12 +800,15 @@ public final class ProtocolDependencyAnalysis {
                Set<Long> areas = c.getOspfProcess().getAreas().keySet();
                for (OspfArea area : c.getOspfProcess().getAreas().values()) {
                   for (Interface iface : area.getInterfaces()) {
-                     Prefix prefix = iface.getPrefix().getNetworkPrefix();
-                     DependentRoute dependentRoute = _dependencyDatabase
-                           .getConnectedRoute(node, prefix);
-                     PotentialExport potentialExport = new OspfInterAreaPotentialExport(
-                           node, prefix, dependentRoute, areas);
-                     _dependencyDatabase.addPotentialExport(potentialExport);
+                     for (Prefix prefix : iface.getAllPrefixes().stream()
+                           .map(prefix -> prefix.getNetworkPrefix())
+                           .collect(Collectors.toSet())) {
+                        DependentRoute dependentRoute = _dependencyDatabase
+                              .getConnectedRoute(node, prefix);
+                        PotentialExport potentialExport = new OspfInterAreaPotentialExport(
+                              node, prefix, dependentRoute, areas);
+                        _dependencyDatabase.addPotentialExport(potentialExport);
+                     }
                   }
                }
             }
@@ -845,12 +862,16 @@ public final class ProtocolDependencyAnalysis {
                long areaNum = e2.getKey();
                OspfArea area = e2.getValue();
                for (Interface iface : area.getInterfaces()) {
-                  Prefix prefix = iface.getPrefix().getNetworkPrefix();
-                  DependentRoute dependentRoute = _dependencyDatabase
-                        .getConnectedRoute(node, prefix);
-                  PotentialExport potentialExport = new OspfIntraAreaPotentialExport(
-                        node, prefix, dependentRoute, areaNum);
-                  _dependencyDatabase.addPotentialExport(potentialExport);
+                  Set<Prefix> allNetworkPrefixes = iface.getAllPrefixes()
+                        .stream().map(prefix -> prefix.getNetworkPrefix())
+                        .collect(Collectors.toSet());
+                  for (Prefix prefix : allNetworkPrefixes) {
+                     DependentRoute dependentRoute = _dependencyDatabase
+                           .getConnectedRoute(node, prefix);
+                     PotentialExport potentialExport = new OspfIntraAreaPotentialExport(
+                           node, prefix, dependentRoute, areaNum);
+                     _dependencyDatabase.addPotentialExport(potentialExport);
+                  }
                }
             }
          }

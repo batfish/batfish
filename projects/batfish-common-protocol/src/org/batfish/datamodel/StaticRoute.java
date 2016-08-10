@@ -3,7 +3,8 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StaticRoute extends Route implements Comparable<StaticRoute> {
+public class StaticRoute extends AbstractRoute implements
+      Comparable<StaticRoute> {
 
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
 

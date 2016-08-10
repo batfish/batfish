@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -8,8 +7,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.datamodel.Prefix;
+import org.batfish.representation.VendorConfiguration;
 
-public class CiscoConfiguration implements Serializable {
+public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public static final String MANAGEMENT_VRF_NAME = "management";
 
@@ -164,6 +164,7 @@ public class CiscoConfiguration implements Serializable {
       return _failoverStatefulSignalingInterfaceAlias;
    }
 
+   @Override
    public final String getHostname() {
       return _hostname;
    }
@@ -256,6 +257,7 @@ public class CiscoConfiguration implements Serializable {
       _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
    }
 
+   @Override
    public final void setHostname(String hostname) {
       _hostname = hostname;
    }

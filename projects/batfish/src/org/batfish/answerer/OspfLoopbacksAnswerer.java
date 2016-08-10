@@ -8,10 +8,15 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.Route;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.OspfLoopbacksAnswerElement;
 import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
 
@@ -53,6 +58,7 @@ public class OspfLoopbacksAnswerer extends Answerer {
             Interface iface = e2.getValue();
             if (iface.isLoopback(c.getConfigurationFormat())) {
                if (iface.getOspfEnabled()) {
+                  // ospf is running either passively or actively
                   answerElement.add(answerElement.getRunning(), hostname,
                         interfaceName);
                   if (iface.getOspfPassive()) {
@@ -65,8 +71,36 @@ public class OspfLoopbacksAnswerer extends Answerer {
                   }
                }
                else {
-                  answerElement.add(answerElement.getInactive(), hostname,
-                        interfaceName);
+                  // check if exported as external ospf route
+                  boolean exported = false;
+                  OspfProcess proc = c.getOspfProcess();
+                  if (proc != null) {
+                     String exportPolicyName = proc.getExportPolicy();
+                     if (exportPolicyName != null) {
+                        RoutingPolicy exportPolicy = c.getRoutingPolicies()
+                              .get(exportPolicyName);
+                        if (exportPolicy != null) {
+                           for (Prefix prefix : iface.getAllPrefixes()) {
+                              Route route = new Route(hostname, prefix, null,
+                                    null, interfaceName, 0, 0,
+                                    RoutingProtocol.CONNECTED, -1);
+                              if (exportPolicy.permits(route)) {
+                                 exported = true;
+                              }
+                           }
+                        }
+                     }
+                  }
+
+                  if (exported) {
+                     answerElement.add(answerElement.getExported(), hostname,
+                           interfaceName);
+                  }
+                  else {
+                     // not exported, so should be inactive
+                     answerElement.add(answerElement.getInactive(), hostname,
+                           interfaceName);
+                  }
                }
             }
          }
