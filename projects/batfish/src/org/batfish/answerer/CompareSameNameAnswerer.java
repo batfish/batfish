@@ -68,6 +68,9 @@ public class CompareSameNameAnswerer extends Answerer {
          Configuration node = configurations.get(hostname);
          Map<String, T> structureMap = structureMapRetriever.apply(node);
          for (String listName : structureMap.keySet()) {
+            if (listName.startsWith("~")) {
+               continue;
+            }
             ae.add(hostname, listName, structureMap.get(listName));
          }
       }
