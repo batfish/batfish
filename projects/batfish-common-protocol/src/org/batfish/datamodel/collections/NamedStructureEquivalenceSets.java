@@ -1,36 +1,40 @@
 package org.batfish.datamodel.collections;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class NamedStructureEquivalenceSets<T> {
 
-   private String _hrName;
+   private SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> _sameNamedStructures;
 
-   private Map<String, Set<NamedStructureEquivalenceSet<T>>> _sameNamedStructures;
+   private String _structureClassName;
 
+   @JsonCreator
    public NamedStructureEquivalenceSets() {
       this("");
    }
 
-   public NamedStructureEquivalenceSets(String hrName) {
-      _hrName = hrName;
-      _sameNamedStructures = new HashMap<String, Set<NamedStructureEquivalenceSet<T>>>();
+   public NamedStructureEquivalenceSets(String structureClassName) {
+      _structureClassName = structureClassName;
+      _sameNamedStructures = new TreeMap<String, SortedSet<NamedStructureEquivalenceSet<T>>>();
    }
 
    public void add(String node, String name, T namedStructure) {
       if (!_sameNamedStructures.containsKey(name)) {
          _sameNamedStructures.put(name,
-               new HashSet<NamedStructureEquivalenceSet<T>>());
+               new TreeSet<NamedStructureEquivalenceSet<T>>());
       }
-      Set<NamedStructureEquivalenceSet<T>> equiClasses = _sameNamedStructures
+      SortedSet<NamedStructureEquivalenceSet<T>> equiClasses = _sameNamedStructures
             .get(name);
 
       for (NamedStructureEquivalenceSet<T> equiClass : equiClasses) {
          if (equiClass.compareStructure(namedStructure)) {
-            equiClass.addNode(node);
+            equiClass.getNodes().add(node);
             return;
          }
       }
@@ -38,20 +42,35 @@ public class NamedStructureEquivalenceSets<T> {
             .add(new NamedStructureEquivalenceSet<T>(node, namedStructure));
    }
 
-   public String get_hrName() {
-      return _hrName;
+   /**
+    * Remove structures with only one equivalence class, since they indicate
+    * nothing of note
+    */
+   public void clean() {
+      Set<String> structureNames = new TreeSet<String>(
+            _sameNamedStructures.keySet());
+      for (String structureName : structureNames) {
+         if (_sameNamedStructures.get(structureName).size() == 1) {
+            _sameNamedStructures.remove(structureName);
+         }
+      }
    }
 
-   public Map<String, Set<NamedStructureEquivalenceSet<T>>> get_sameNamedStructures() {
+   public SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> getSameNamedStructures() {
       return _sameNamedStructures;
    }
 
-   public void set_hrName(String _hrName) {
-      this._hrName = _hrName;
+   public String getStructureClassName() {
+      return _structureClassName;
    }
 
-   public void set_sameNamedStructures(
-         Map<String, Set<NamedStructureEquivalenceSet<T>>> _sameNamedStructures) {
-      this._sameNamedStructures = _sameNamedStructures;
+   public void setSameNamedStructures(
+         SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> sameNamedStructures) {
+      _sameNamedStructures = sameNamedStructures;
    }
+
+   public void setStructureClassName(String structureClassName) {
+      _structureClassName = structureClassName;
+   }
+
 }
