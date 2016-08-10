@@ -41,6 +41,7 @@ tokens {
    ACL_NUM_EXTENDED_IPX,
    ACL_NUM_IPX,
    ACL_NUM_IPX_SAP,
+   ACL_NUM_MAC,
    ACL_NUM_OTHER,
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
@@ -2485,6 +2486,11 @@ HOST
    'host'
 ;
 
+HOST_ASSOCIATION
+:
+   'host-association'
+;
+
 HOST_INFO
 :
    'host-info'
@@ -2563,6 +2569,11 @@ ICMP_TYPE
 ICMP6
 :
    'icmp6'
+;
+
+ICMPV6
+:
+   'icmpv6'
 ;
 
 IDENT
@@ -6493,6 +6504,12 @@ COMMUNITY_NUMBER
    F_Digit* ':' F_Digit+
 ;
 
+MAC_ADDRESS_LITERAL
+:
+   F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit
+   F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit F_HexDigit F_HexDigit
+;
+
 VARIABLE
 :
    (
@@ -6562,6 +6579,9 @@ ACL_NUM
 	else if (600 <= val && val <= 699) {
 		_type = ACL_NUM_APPLETALK;
 	}
+   else if (700 <= val && val <= 799) {
+      _type = ACL_NUM_MAC;
+   }
 	else if (800 <= val && val <= 899) {
 		_type = ACL_NUM_IPX;
 	}
@@ -7290,6 +7310,11 @@ M_DES_HEX_PART
    F_HexDigit+ -> popMode
 ;
 
+M_DES_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
 M_DES_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
@@ -7356,6 +7381,11 @@ M_Interface_BREAKOUT
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
+;
+
+M_Interface_IP
+:
+   'ip' -> type ( IP ) , popMode
 ;
 
 M_Interface_POINT_TO_POINT

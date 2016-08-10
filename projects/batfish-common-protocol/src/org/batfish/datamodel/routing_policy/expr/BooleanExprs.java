@@ -37,6 +37,11 @@ public enum BooleanExprs {
          return _type;
       }
 
+      @Override
+      public int hashCode() {
+         return _type.hashCode();
+      }
+
    }
 
    public StaticBooleanExpr toStaticBooleanExpr() {

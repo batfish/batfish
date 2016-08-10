@@ -25,7 +25,7 @@ public final class FwFromSourcePort extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      line.getSrcPortRanges().add(_portRange);
+      line.getSrcPorts().add(_portRange);
    }
 
    public SubRange getPortRange() {

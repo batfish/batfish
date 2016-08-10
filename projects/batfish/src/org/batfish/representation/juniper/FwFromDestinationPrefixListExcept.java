@@ -9,7 +9,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.main.Warnings;
 
-public final class FwFromDestinationPrefixList extends FwFrom {
+public final class FwFromDestinationPrefixListExcept extends FwFrom {
 
    /**
     *
@@ -18,7 +18,7 @@ public final class FwFromDestinationPrefixList extends FwFrom {
 
    private final String _name;
 
-   public FwFromDestinationPrefixList(String name) {
+   public FwFromDestinationPrefixListExcept(String name) {
       _name = name;
    }
 
@@ -39,7 +39,7 @@ public final class FwFromDestinationPrefixList extends FwFrom {
                      "Expected accept action for routerfilterlist from juniper");
             }
             else {
-               line.getDstIps().add(new IpWildcard(rfLine.getPrefix()));
+               line.getNotDstIps().add(new IpWildcard(rfLine.getPrefix()));
             }
          }
       }

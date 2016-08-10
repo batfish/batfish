@@ -3,6 +3,7 @@ package org.batfish.z3;
 import java.util.List;
 
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.OriginateExpr;
@@ -20,15 +21,18 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
    private Edge _edge;
 
+   private HeaderSpace _headerSpace;
+
    private String _originationNode;
 
    private boolean _requireAcceptance;
 
    public ReachEdgeQuerySynthesizer(String originationNode, Edge edge,
-         boolean requireAcceptance) {
+         boolean requireAcceptance, HeaderSpace headerSpace) {
       _originationNode = originationNode;
       _edge = edge;
       _requireAcceptance = requireAcceptance;
+      _headerSpace = headerSpace;
    }
 
    @Override
@@ -40,6 +44,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditions.addConjunct(new PreOutEdgeExpr(_edge));
       queryConditions.addConjunct(new PreInInterfaceExpr(_edge.getNode2(),
             _edge.getInt2()));
+      queryConditions.addConjunct(Synthesizer.matchHeaderSpace(_headerSpace));
       if (_requireAcceptance) {
          queryConditions.addConjunct(AcceptExpr.INSTANCE);
       }
@@ -55,13 +60,6 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
       program.getQueries().add(queryBoolExpr);
       return program;
-   }
-
-   @Override
-   public String getQueryText() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
    }
 
 }

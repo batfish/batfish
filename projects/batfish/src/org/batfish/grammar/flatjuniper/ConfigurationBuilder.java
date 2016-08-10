@@ -45,6 +45,7 @@ import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromDestinationAddress;
+import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
 import org.batfish.representation.juniper.FwFromDestinationPort;
 import org.batfish.representation.juniper.FwFromProtocol;
 import org.batfish.representation.juniper.FwFromSourceAddress;
@@ -69,11 +70,14 @@ import org.batfish.representation.juniper.Application;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
+import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
+import org.batfish.representation.juniper.FwFromSourceAddressExcept;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
+import org.batfish.representation.juniper.FwFromSourcePrefixListExcept;
 import org.batfish.representation.juniper.FwFromTcpFlags;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.HostProtocol;
@@ -144,8 +148,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    private static final String F_BGP_LOCAL_AS_PRIVATE = "protocols - bgp - group? - local-as - private";
 
    private static final String F_FIREWALL_TERM_THEN_ROUTING_INSTANCE = "firewall - filter - term - then - routing-instance";
-
-   private static final String F_FROM_DESTINATION_PREFIX_LIST_EXCEPT = "from destination prefix-list except";
 
    private static final String F_IPV6 = "ipv6 - other";
 
@@ -2270,19 +2272,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitApptt_destination_port(Apptt_destination_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
-      _currentApplicationTerm.getLine().getDstPortRanges().add(subrange);
+      _currentApplicationTerm.getLine().getDstPorts().add(subrange);
    }
 
    @Override
    public void exitApptt_protocol(Apptt_protocolContext ctx) {
       IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-      _currentApplicationTerm.getLine().getProtocols().add(protocol);
+      _currentApplicationTerm.getLine().getIpProtocols().add(protocol);
    }
 
    @Override
    public void exitApptt_source_port(Apptt_source_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
-      _currentApplicationTerm.getLine().getSrcPortRanges().add(subrange);
+      _currentApplicationTerm.getLine().getSrcPorts().add(subrange);
    }
 
    @Override
@@ -2515,7 +2517,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Fwfromt_destination_addressContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-         FwFrom from = new FwFromDestinationAddress(prefix);
+         FwFrom from;
+         if (ctx.EXCEPT() != null) {
+            from = new FwFromDestinationAddressExcept(prefix);
+         }
+         else {
+            from = new FwFromDestinationAddress(prefix);
+         }
          _currentFwTerm.getFroms().add(from);
       }
    }
@@ -2540,15 +2548,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_destination_prefix_list(
          Fwfromt_destination_prefix_listContext ctx) {
-      if (ctx.EXCEPT() != null) {
-         todo(ctx, F_FROM_DESTINATION_PREFIX_LIST_EXCEPT);
-      }
       String name = ctx.name.getText();
       // temporary
       if (_currentFilter.getFamily() != Family.INET) {
          _configuration.getIgnoredPrefixLists().add(name);
       }
-      FwFrom from = new FwFromDestinationPrefixList(name);
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+         from = new FwFromDestinationPrefixListExcept(name);
+      }
+      else {
+         from = new FwFromDestinationPrefixList(name);
+      }
       _currentFwTerm.getFroms().add(from);
    }
 
@@ -2591,7 +2602,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitFwfromt_source_address(Fwfromt_source_addressContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-         FwFrom from = new FwFromSourceAddress(prefix);
+         FwFrom from;
+         if (ctx.EXCEPT() != null) {
+            from = new FwFromSourceAddressExcept(prefix);
+         }
+         else {
+            from = new FwFromSourceAddress(prefix);
+         }
          _currentFwTerm.getFroms().add(from);
       }
    }
@@ -2621,7 +2638,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (_currentFilter.getFamily() != Family.INET) {
          _configuration.getIgnoredPrefixLists().add(name);
       }
-      FwFrom from = new FwFromSourcePrefixList(name);
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+         from = new FwFromSourcePrefixListExcept(name);
+      }
+      else {
+         from = new FwFromSourcePrefixList(name);
+      }
       _currentFwTerm.getFroms().add(from);
    }
 

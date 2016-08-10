@@ -28,4 +28,5 @@ public final class IpAccessListLine extends HeaderSpace {
    public String toString() {
       return "[Action:" + _action + ", Base: " + super.toString() + "]";
    }
+
 }

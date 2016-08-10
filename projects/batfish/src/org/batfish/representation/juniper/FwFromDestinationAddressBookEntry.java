@@ -32,7 +32,7 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
             _addressBookEntryName, w);
       for (Prefix prefix : prefixes) {
          IpWildcard wildcard = new IpWildcard(prefix);
-         line.getDstIpWildcards().add(wildcard);
+         line.getDstIps().add(wildcard);
       }
    }
 

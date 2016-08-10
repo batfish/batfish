@@ -543,10 +543,10 @@ public class ConfigurationFactExtractor {
    private void writeIpAccessLists() {
       StringBuilder wSetIpAccessListLine_deny = _factBins
             .get("SetIpAccessListLine_deny");
-      StringBuilder wSetIpAccessListLine_dstIpRange = _factBins
-            .get("SetIpAccessListLine_dstIpRange");
-      StringBuilder wSetIpAccessListLine_dstPortRange = _factBins
-            .get("SetIpAccessListLine_dstPortRange");
+      StringBuilder wSetIpAccessListLine_dstIps = _factBins
+            .get("SetIpAccessListLine_dstIps");
+      StringBuilder wSetIpAccessListLine_dstPorts = _factBins
+            .get("SetIpAccessListLine_dstPorts");
       StringBuilder wSetIpAccessListLine_dscp = _factBins
             .get("SetIpAccessListLine_dscp");
       StringBuilder wSetIpAccessListLine_ecn = _factBins
@@ -555,18 +555,38 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_icmpCode");
       StringBuilder wSetIpAccessListLine_icmpType = _factBins
             .get("SetIpAccessListLine_icmpType");
+
+      StringBuilder wSetIpAccessListLine_notDscp = _factBins
+            .get("SetIpAccessListLine_notDscp");
+      StringBuilder wSetIpAccessListLine_notEcn = _factBins
+            .get("SetIpAccessListLine_notEcn");
+      StringBuilder wSetIpAccessListLine_notIcmpCode = _factBins
+            .get("SetIpAccessListLine_notIcmpCode");
+      StringBuilder wSetIpAccessListLine_notIcmpType = _factBins
+            .get("SetIpAccessListLine_notIcmpType");
+      StringBuilder wSetIpAccessListLine_notDstIps = _factBins
+            .get("SetIpAccessListLine_notDstIps");
+      StringBuilder wSetIpAccessListLine_notDstPorts = _factBins
+            .get("SetIpAccessListLine_notDstPorts");
+      StringBuilder wSetIpAccessListLine_notSrcIps = _factBins
+            .get("SetIpAccessListLine_notSrcIps");
+      StringBuilder wSetIpAccessListLine_notSrcPorts = _factBins
+            .get("SetIpAccessListLine_notSrcPorts");
+      StringBuilder wSetIpAccessListLine_notProtocol = _factBins
+            .get("SetIpAccessListLine_notProtocol");
+
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
             .get("SetIpAccessListLine_protocol");
-      StringBuilder wSetIpAccessListLine_srcIpRange = _factBins
-            .get("SetIpAccessListLine_srcIpRange");
-      StringBuilder wSetIpAccessListLine_srcOrDstIpRange = _factBins
-            .get("SetIpAccessListLine_srcOrDstIpRange");
-      StringBuilder wSetIpAccessListLine_srcOrDstPortRange = _factBins
-            .get("SetIpAccessListLine_srcOrDstPortRange");
-      StringBuilder wSetIpAccessListLine_srcPortRange = _factBins
-            .get("SetIpAccessListLine_srcPortRange");
+      StringBuilder wSetIpAccessListLine_srcIps = _factBins
+            .get("SetIpAccessListLine_srcIps");
+      StringBuilder wSetIpAccessListLine_srcOrDstIps = _factBins
+            .get("SetIpAccessListLine_srcOrDstIps");
+      StringBuilder wSetIpAccessListLine_srcOrDstPorts = _factBins
+            .get("SetIpAccessListLine_srcOrDstPorts");
+      StringBuilder wSetIpAccessListLine_srcPorts = _factBins
+            .get("SetIpAccessListLine_srcPorts");
       StringBuilder wSetIpAccessListLine_state = _factBins
             .get("SetIpAccessListLine_state");
       StringBuilder wSetIpAccessListLine_tcpFlags = _factBins
@@ -606,61 +626,93 @@ public class ConfigurationFactExtractor {
             default:
                throw new BatfishException("bad action");
             }
-            for (IpWildcard dstIpWildcard : line.getDstIpWildcards()) {
-               Prefix dstIpRange = dstIpWildcard.toPrefix();
-               long dstIpStart = dstIpRange.getAddress().asLong();
-               long dstIpEnd = dstIpRange.getEndAddress().asLong();
-               wSetIpAccessListLine_dstIpRange.append(name + "|" + i + "|"
+            for (IpWildcard dstIpWildcard : line.getDstIps()) {
+               Prefix dstIps = dstIpWildcard.toPrefix();
+               long dstIpStart = dstIps.getAddress().asLong();
+               long dstIpEnd = dstIps.getEndAddress().asLong();
+               wSetIpAccessListLine_dstIps.append(name + "|" + i + "|"
                      + dstIpStart + "|" + dstIpEnd + "\n");
             }
-            for (SubRange dstPortRange : line.getDstPortRanges()) {
-               long startPort = dstPortRange.getStart();
-               long endPort = dstPortRange.getEnd();
-               wSetIpAccessListLine_dstPortRange.append(name + "|" + i + "|"
+            for (IpWildcard dstIpWildcard : line.getNotDstIps()) {
+               Prefix dstIps = dstIpWildcard.toPrefix();
+               long dstIpStart = dstIps.getAddress().asLong();
+               long dstIpEnd = dstIps.getEndAddress().asLong();
+               wSetIpAccessListLine_notDstIps.append(name + "|" + i + "|"
+                     + dstIpStart + "|" + dstIpEnd + "\n");
+            }
+            for (SubRange dstPorts : line.getDstPorts()) {
+               long startPort = dstPorts.getStart();
+               long endPort = dstPorts.getEnd();
+               wSetIpAccessListLine_dstPorts.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
+            }
+            for (SubRange dstPorts : line.getNotDstPorts()) {
+               long startPort = dstPorts.getStart();
+               long endPort = dstPorts.getEnd();
+               wSetIpAccessListLine_notDstPorts.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
             if (line.getIcmpCode() != IcmpCode.UNSET) {
                wSetIpAccessListLine_icmpCode.append(name + "|" + i + "|"
                      + line.getIcmpCode() + "\n");
             }
+            if (line.getNotIcmpCode() != IcmpCode.UNSET) {
+               wSetIpAccessListLine_notIcmpCode.append(name + "|" + i + "|"
+                     + line.getNotIcmpCode() + "\n");
+            }
             if (line.getIcmpType() != IcmpType.UNSET) {
                wSetIpAccessListLine_icmpType.append(name + "|" + i + "|"
                      + line.getIcmpType() + "\n");
             }
-            for (IpProtocol protocol : line.getProtocols()) {
+            if (line.getNotIcmpType() != IcmpType.UNSET) {
+               wSetIpAccessListLine_notIcmpType.append(name + "|" + i + "|"
+                     + line.getNotIcmpType() + "\n");
+            }
+            for (IpProtocol protocol : line.getIpProtocols()) {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
                      + protocol.number() + "\n");
             }
-            for (IpWildcard srcIpWildcard : line.getSrcIpWildcards()) {
-               Prefix srcIpRange = srcIpWildcard.toPrefix();
-               long srcIpStart = srcIpRange.getAddress().asLong();
-               long srcIpEnd = srcIpRange.getEndAddress().asLong();
-               wSetIpAccessListLine_srcIpRange.append(name + "|" + i + "|"
+            for (IpProtocol protocol : line.getNotIpProtocols()) {
+               wSetIpAccessListLine_notProtocol.append(name + "|" + i + "|"
+                     + protocol.number() + "\n");
+            }
+            for (IpWildcard srcIpWildcard : line.getSrcIps()) {
+               Prefix srcIps = srcIpWildcard.toPrefix();
+               long srcIpStart = srcIps.getAddress().asLong();
+               long srcIpEnd = srcIps.getEndAddress().asLong();
+               wSetIpAccessListLine_srcIps.append(name + "|" + i + "|"
                      + srcIpStart + "|" + srcIpEnd + "\n");
             }
-            for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIpWildcards()) {
-               Prefix srcOrDstIpRange = srcOrDstIpWildcard.toPrefix();
-               long srcOrDstIpStart = srcOrDstIpRange.getAddress().asLong();
-               long srcOrDstIpEnd = srcOrDstIpRange.getEndAddress().asLong();
-               wSetIpAccessListLine_srcOrDstIpRange.append(name + "|" + i + "|"
+            for (IpWildcard srcIpWildcard : line.getNotSrcIps()) {
+               Prefix srcIps = srcIpWildcard.toPrefix();
+               long srcIpStart = srcIps.getAddress().asLong();
+               long srcIpEnd = srcIps.getEndAddress().asLong();
+               wSetIpAccessListLine_notSrcIps.append(name + "|" + i + "|"
+                     + srcIpStart + "|" + srcIpEnd + "\n");
+            }
+            for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIps()) {
+               Prefix srcOrDstIps = srcOrDstIpWildcard.toPrefix();
+               long srcOrDstIpStart = srcOrDstIps.getAddress().asLong();
+               long srcOrDstIpEnd = srcOrDstIps.getEndAddress().asLong();
+               wSetIpAccessListLine_srcOrDstIps.append(name + "|" + i + "|"
                      + srcOrDstIpStart + "|" + srcOrDstIpEnd + "\n");
             }
-            for (SubRange srcOrDstPortRange : line.getSrcOrDstPortRanges()) {
-               long startPort = srcOrDstPortRange.getStart();
-               long endPort = srcOrDstPortRange.getEnd();
-               wSetIpAccessListLine_srcOrDstPortRange.append(name + "|" + i
-                     + "|" + startPort + "|" + endPort + "\n");
-            }
-            for (SubRange srcPortRange : line.getSrcPortRanges()) {
-               long startPort = srcPortRange.getStart();
-               long endPort = srcPortRange.getEnd();
-               wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
+            for (SubRange srcOrDstPorts : line.getSrcOrDstPorts()) {
+               long startPort = srcOrDstPorts.getStart();
+               long endPort = srcOrDstPorts.getEnd();
+               wSetIpAccessListLine_srcOrDstPorts.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            for (SubRange srcPortRange : line.getSrcPortRanges()) {
-               long startPort = srcPortRange.getStart();
-               long endPort = srcPortRange.getEnd();
-               wSetIpAccessListLine_srcPortRange.append(name + "|" + i + "|"
+            for (SubRange srcPorts : line.getSrcPorts()) {
+               long startPort = srcPorts.getStart();
+               long endPort = srcPorts.getEnd();
+               wSetIpAccessListLine_srcPorts.append(name + "|" + i + "|"
+                     + startPort + "|" + endPort + "\n");
+            }
+            for (SubRange srcPorts : line.getNotSrcPorts()) {
+               long startPort = srcPorts.getStart();
+               long endPort = srcPorts.getEnd();
+               wSetIpAccessListLine_notSrcPorts.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
             for (State state : line.getStates()) {
@@ -717,8 +769,16 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_dscp.append(name + "|" + i + "|" + dscp
                      + "\n");
             }
+            for (int dscp : line.getNotDscps()) {
+               wSetIpAccessListLine_notDscp.append(name + "|" + i + "|" + dscp
+                     + "\n");
+            }
             for (int ecn : line.getEcns()) {
                wSetIpAccessListLine_ecn.append(name + "|" + i + "|" + ecn
+                     + "\n");
+            }
+            for (int ecn : line.getNotEcns()) {
+               wSetIpAccessListLine_notEcn.append(name + "|" + i + "|" + ecn
                      + "\n");
             }
          }

@@ -16,6 +16,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Interface;
@@ -151,6 +152,11 @@ public class Synthesizer {
       statements.add(rule);
    }
 
+   private static BooleanExpr getMatchAclRules_portHelper(Set<SubRange> ranges,
+         String portVar) {
+      return new RangeMatchExpr(portVar, PORT_BITS, ranges);
+   }
+
    private static List<String> getPacketVars() {
       List<String> vars = new ArrayList<String>();
       vars.add(SRC_IP_VAR);
@@ -236,6 +242,425 @@ public class Synthesizer {
    private static boolean isLoopbackInterface(String ifaceName) {
       String lcIfaceName = ifaceName.toLowerCase();
       return lcIfaceName.startsWith("lo");
+   }
+
+   public static BooleanExpr matchHeaderSpace(HeaderSpace headerSpace) {
+      AndExpr match = new AndExpr();
+      Set<IpWildcard> srcIpWildcards = headerSpace.getSrcIps();
+      Set<IpWildcard> srcIpWildcardsBlacklist = headerSpace.getNotSrcIps();
+      Set<IpWildcard> srcOrDstIpWildcards = headerSpace.getSrcOrDstIps();
+      Set<IpWildcard> dstIpWildcards = headerSpace.getDstIps();
+      Set<IpWildcard> dstIpWildcardsBlacklist = headerSpace.getNotDstIps();
+
+      Set<IpProtocol> protocols = headerSpace.getIpProtocols();
+      Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
+      srcPortRanges.addAll(headerSpace.getSrcPorts());
+      Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
+      srcOrDstPortRanges.addAll(headerSpace.getSrcOrDstPorts());
+      Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
+      dstPortRanges.addAll(headerSpace.getDstPorts());
+      int icmpType = headerSpace.getIcmpType();
+      int icmpCode = headerSpace.getIcmpCode();
+      Set<State> states = headerSpace.getStates();
+      List<TcpFlags> tcpFlags = headerSpace.getTcpFlags();
+      Set<Integer> dscps = headerSpace.getDscps();
+      Set<Integer> ecns = headerSpace.getEcns();
+      // match protocol
+      if (protocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (IpProtocol protocol : protocols) {
+            int protocolNumber = protocol.number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchesSomeProtocol.addDisjunct(matchProtocol);
+         }
+         match.addConjunct(matchesSomeProtocol);
+      }
+
+      // match srcIp
+      if (srcIpWildcards.size() > 0) {
+         OrExpr matchSomeSrcIpRange = new OrExpr();
+         for (IpWildcard srcIpWildcard : srcIpWildcards) {
+            if (srcIpWildcard.isPrefix()) {
+               Prefix srcPrefix = srcIpWildcard.toPrefix();
+               long srcIp = srcPrefix.getAddress().asLong();
+
+               int srcIpWildcardBits = IP_BITS - srcPrefix.getPrefixLength();
+               int srcIpStart = srcIpWildcardBits;
+               int srcIpEnd = IP_BITS - 1;
+               if (srcIpStart < IP_BITS) {
+                  IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR, srcIpStart,
+                        srcIpEnd);
+                  LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp, srcIpStart,
+                        srcIpEnd);
+                  EqExpr matchsrcIp = new EqExpr(extractSrcIp, srcIpMatchLit);
+                  matchSomeSrcIpRange.addDisjunct(matchsrcIp);
+               }
+               else {
+                  matchSomeSrcIpRange.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               long srcIp = srcIpWildcard.getIp().asLong();
+               long wildcard = srcIpWildcard.getWildcard().asLong();
+               AndExpr matchSrcIp = new AndExpr();
+               for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                  long mask = 1l << currentBitIndex;
+                  long currentWildcardBit = mask & wildcard;
+                  boolean useBit = currentWildcardBit == 0;
+                  if (useBit) {
+                     IntExpr extractSrcIp = new ExtractExpr(SRC_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
+                           currentBitIndex, currentBitIndex);
+                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                           srcIpMatchLit);
+                     matchSrcIp.addConjunct(matchSrcIpBit);
+                  }
+               }
+               matchSomeSrcIpRange.addDisjunct(matchSrcIp);
+            }
+         }
+         match.addConjunct(matchSomeSrcIpRange);
+      }
+
+      // don't match srcIpBlacklist
+      if (srcIpWildcardsBlacklist.size() > 0) {
+         OrExpr matchSomeSrcIpRange = new OrExpr();
+         for (IpWildcard srcIpWildcard : srcIpWildcardsBlacklist) {
+            if (srcIpWildcard.isPrefix()) {
+               Prefix srcPrefix = srcIpWildcard.toPrefix();
+               long srcIp = srcPrefix.getAddress().asLong();
+
+               int srcIpWildcardBits = IP_BITS - srcPrefix.getPrefixLength();
+               int srcIpStart = srcIpWildcardBits;
+               int srcIpEnd = IP_BITS - 1;
+               if (srcIpStart < IP_BITS) {
+                  IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR, srcIpStart,
+                        srcIpEnd);
+                  LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp, srcIpStart,
+                        srcIpEnd);
+                  EqExpr matchsrcIp = new EqExpr(extractSrcIp, srcIpMatchLit);
+                  matchSomeSrcIpRange.addDisjunct(matchsrcIp);
+               }
+               else {
+                  matchSomeSrcIpRange.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               long srcIp = srcIpWildcard.getIp().asLong();
+               long wildcard = srcIpWildcard.getWildcard().asLong();
+               AndExpr matchSrcIp = new AndExpr();
+               for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                  long mask = 1l << currentBitIndex;
+                  long currentWildcardBit = mask & wildcard;
+                  boolean useBit = currentWildcardBit == 0;
+                  if (useBit) {
+                     IntExpr extractSrcIp = new ExtractExpr(SRC_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
+                           currentBitIndex, currentBitIndex);
+                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                           srcIpMatchLit);
+                     matchSrcIp.addConjunct(matchSrcIpBit);
+                  }
+               }
+               matchSomeSrcIpRange.addDisjunct(matchSrcIp);
+            }
+         }
+         match.addConjunct(new NotExpr(matchSomeSrcIpRange));
+      }
+
+      // match srcOrDstIp
+      if (srcOrDstIpWildcards.size() > 0) {
+         OrExpr matchSomeSrcOrDstIpRange = new OrExpr();
+         for (IpWildcard srcOrDstIpWildcard : srcOrDstIpWildcards) {
+            if (srcOrDstIpWildcard.isPrefix()) {
+               Prefix srcOrDstPrefix = srcOrDstIpWildcard.toPrefix();
+               long srcOrDstIp = srcOrDstPrefix.getAddress().asLong();
+
+               int srcOrDstIpWildcardBits = IP_BITS
+                     - srcOrDstPrefix.getPrefixLength();
+               int srcOrDstIpStart = srcOrDstIpWildcardBits;
+               int srcOrDstIpEnd = IP_BITS - 1;
+               if (srcOrDstIpStart < IP_BITS) {
+                  IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
+                        srcOrDstIpStart, srcOrDstIpEnd);
+                  IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
+                        srcOrDstIpStart, srcOrDstIpEnd);
+                  LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(srcOrDstIp,
+                        srcOrDstIpStart, srcOrDstIpEnd);
+                  EqExpr matchSrcIp = new EqExpr(extractSrcIp,
+                        srcOrDstIpMatchLit);
+                  EqExpr matchDstIp = new EqExpr(extractDstIp,
+                        srcOrDstIpMatchLit);
+                  matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
+                  matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
+               }
+               else {
+                  matchSomeSrcOrDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               long srcOrDstIp = srcOrDstIpWildcard.getIp().asLong();
+               long wildcard = srcOrDstIpWildcard.getWildcard().asLong();
+               AndExpr matchSrcIp = new AndExpr();
+               AndExpr matchDstIp = new AndExpr();
+               for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                  long mask = 1l << currentBitIndex;
+                  long currentWildcardBit = mask & wildcard;
+                  boolean useBit = currentWildcardBit == 0;
+                  if (useBit) {
+                     IntExpr extractSrcIp = new ExtractExpr(SRC_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     IntExpr extractDstIp = new ExtractExpr(DST_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(srcOrDstIp,
+                           currentBitIndex, currentBitIndex);
+                     EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
+                           srcOrDstIpMatchLit);
+                     EqExpr matchDstIpBit = new EqExpr(extractDstIp,
+                           srcOrDstIpMatchLit);
+                     matchSrcIp.addConjunct(matchSrcIpBit);
+                     matchDstIp.addConjunct(matchDstIpBit);
+                  }
+               }
+               matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
+               matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
+            }
+         }
+         match.addConjunct(matchSomeSrcOrDstIpRange);
+      }
+
+      // match dstIp
+      if (dstIpWildcards.size() > 0) {
+         OrExpr matchSomeDstIpRange = new OrExpr();
+         for (IpWildcard dstIpWildcard : dstIpWildcards) {
+            if (dstIpWildcard.isPrefix()) {
+               Prefix dstPrefix = dstIpWildcard.toPrefix();
+               long dstIp = dstPrefix.getAddress().asLong();
+
+               int dstIpWildcardBits = IP_BITS - dstPrefix.getPrefixLength();
+               int dstIpStart = dstIpWildcardBits;
+               int dstIpEnd = IP_BITS - 1;
+               if (dstIpStart < IP_BITS) {
+                  IntExpr extractDstIp = newExtractExpr(DST_IP_VAR, dstIpStart,
+                        dstIpEnd);
+                  LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp, dstIpStart,
+                        dstIpEnd);
+                  EqExpr matchDstIp = new EqExpr(extractDstIp, dstIpMatchLit);
+                  matchSomeDstIpRange.addDisjunct(matchDstIp);
+               }
+               else {
+                  matchSomeDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               long dstIp = dstIpWildcard.getIp().asLong();
+               long wildcard = dstIpWildcard.getWildcard().asLong();
+               AndExpr matchDstIp = new AndExpr();
+               for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                  long mask = 1l << currentBitIndex;
+                  long currentWildcardBit = mask & wildcard;
+                  boolean useBit = currentWildcardBit == 0;
+                  if (useBit) {
+                     IntExpr extractSrcIp = new ExtractExpr(DST_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
+                           currentBitIndex, currentBitIndex);
+                     EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
+                           dstIpMatchLit);
+                     matchDstIp.addConjunct(matchDstIpBit);
+                  }
+               }
+               matchSomeDstIpRange.addDisjunct(matchDstIp);
+            }
+         }
+         match.addConjunct(matchSomeDstIpRange);
+      }
+
+      // don't match dstIpBlacklist
+      if (dstIpWildcardsBlacklist.size() > 0) {
+         OrExpr matchSomeDstIpRange = new OrExpr();
+         for (IpWildcard dstIpWildcard : dstIpWildcardsBlacklist) {
+            if (dstIpWildcard.isPrefix()) {
+               Prefix dstPrefix = dstIpWildcard.toPrefix();
+               long dstIp = dstPrefix.getAddress().asLong();
+
+               int dstIpWildcardBits = IP_BITS - dstPrefix.getPrefixLength();
+               int dstIpStart = dstIpWildcardBits;
+               int dstIpEnd = IP_BITS - 1;
+               if (dstIpStart < IP_BITS) {
+                  IntExpr extractDstIp = newExtractExpr(DST_IP_VAR, dstIpStart,
+                        dstIpEnd);
+                  LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp, dstIpStart,
+                        dstIpEnd);
+                  EqExpr matchDstIp = new EqExpr(extractDstIp, dstIpMatchLit);
+                  matchSomeDstIpRange.addDisjunct(matchDstIp);
+               }
+               else {
+                  matchSomeDstIpRange.addDisjunct(TrueExpr.INSTANCE);
+               }
+            }
+            else {
+               long dstIp = dstIpWildcard.getIp().asLong();
+               long wildcard = dstIpWildcard.getWildcard().asLong();
+               AndExpr matchDstIp = new AndExpr();
+               for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
+                  long mask = 1l << currentBitIndex;
+                  long currentWildcardBit = mask & wildcard;
+                  boolean useBit = currentWildcardBit == 0;
+                  if (useBit) {
+                     IntExpr extractSrcIp = new ExtractExpr(DST_IP_VAR,
+                           currentBitIndex, currentBitIndex);
+                     LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
+                           currentBitIndex, currentBitIndex);
+                     EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
+                           dstIpMatchLit);
+                     matchDstIp.addConjunct(matchDstIpBit);
+                  }
+               }
+               matchSomeDstIpRange.addDisjunct(matchDstIp);
+            }
+         }
+         match.addConjunct(new NotExpr(matchSomeDstIpRange));
+      }
+
+      // match srcPort
+      if (srcPortRanges != null && srcPortRanges.size() > 0) {
+         BooleanExpr matchSrcPort = getMatchAclRules_portHelper(srcPortRanges,
+               SRC_PORT_VAR);
+         match.addConjunct(matchSrcPort);
+      }
+
+      // match srcOrDstPort
+      if (srcOrDstPortRanges != null && srcOrDstPortRanges.size() > 0) {
+         BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
+               srcOrDstPortRanges, SRC_PORT_VAR);
+         BooleanExpr matchDstPort = getMatchAclRules_portHelper(
+               srcOrDstPortRanges, DST_PORT_VAR);
+         OrExpr matchSrcOrDstPort = new OrExpr();
+         matchSrcOrDstPort.addDisjunct(matchSrcPort);
+         matchSrcOrDstPort.addDisjunct(matchDstPort);
+         match.addConjunct(matchSrcOrDstPort);
+      }
+
+      // match dstPort
+      if (dstPortRanges != null && dstPortRanges.size() > 0) {
+         BooleanExpr matchDstPort = getMatchAclRules_portHelper(dstPortRanges,
+               DST_PORT_VAR);
+         match.addConjunct(matchDstPort);
+      }
+
+      // match dscp
+      if (!dscps.isEmpty()) {
+         OrExpr matchSomeDscp = new OrExpr();
+         match.addConjunct(matchSomeDscp);
+         for (int dscp : dscps) {
+            EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(DSCP_VAR),
+                  new LitIntExpr(dscp, DSCP_BITS));
+            matchSomeDscp.addDisjunct(matchCurrentDscp);
+         }
+      }
+
+      // match ecn
+      if (!ecns.isEmpty()) {
+         OrExpr matchSomeEcn = new OrExpr();
+         match.addConjunct(matchSomeEcn);
+         for (int ecn : ecns) {
+            EqExpr matchCurrentEcn = new EqExpr(new VarIntExpr(ECN_VAR),
+                  new LitIntExpr(ecn, ECN_BITS));
+            matchSomeEcn.addDisjunct(matchCurrentEcn);
+         }
+      }
+
+      // match connection-tracking state
+      if (!states.isEmpty()) {
+         OrExpr matchSomeState = new OrExpr();
+         match.addConjunct(matchSomeState);
+         for (State state : states) {
+            EqExpr matchCurrentState = new EqExpr(new VarIntExpr(STATE_VAR),
+                  new LitIntExpr(state.number(), STATE_BITS));
+            matchSomeState.addDisjunct(matchCurrentState);
+         }
+      }
+
+      // match icmp-type
+      if (icmpType != IcmpType.UNSET) {
+         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
+               new LitIntExpr(icmpType, ICMP_TYPE_BITS));
+         match.addConjunct(exactMatch);
+      }
+
+      // match icmp-code
+      if (icmpCode != IcmpCode.UNSET) {
+         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
+               new LitIntExpr(icmpCode, ICMP_CODE_BITS));
+         match.addConjunct(exactMatch);
+      }
+
+      // match tcp-flags
+      if (!tcpFlags.isEmpty()) {
+         OrExpr matchSomeTcpFlags = new OrExpr();
+         match.addConjunct(matchSomeTcpFlags);
+         for (TcpFlags currentTcpFlags : tcpFlags) {
+            AndExpr matchCurrentTcpFlags = new AndExpr();
+            matchSomeTcpFlags.addDisjunct(matchCurrentTcpFlags);
+            LitIntExpr one = new LitIntExpr(1, 1);
+            LitIntExpr zero = new LitIntExpr(0, 1);
+            if (currentTcpFlags.getUseCwr()) {
+               LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_CWR_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseEce()) {
+               LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_ECE_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseUrg()) {
+               LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_URG_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseAck()) {
+               LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_ACK_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUsePsh()) {
+               LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_PSH_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseRst()) {
+               LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_RST_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseSyn()) {
+               LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_SYN_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+            if (currentTcpFlags.getUseFin()) {
+               LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
+               EqExpr matchFlag = new EqExpr(new VarIntExpr(TCP_FLAGS_FIN_VAR),
+                     bit);
+               matchCurrentTcpFlags.addConjunct(matchFlag);
+            }
+         }
+      }
+      return match;
    }
 
    private static IntExpr newExtractExpr(String var, int low, int high) {
@@ -812,24 +1237,6 @@ public class Synthesizer {
             List<IpAccessListLine> lines = acl.getLines();
             for (int i = 0; i < lines.size(); i++) {
                IpAccessListLine line = lines.get(i);
-               Set<IpWildcard> srcIpWildcards = line.getSrcIpWildcards();
-               Set<IpWildcard> srcOrDstIpWildcards = line
-                     .getSrcOrDstIpWildcards();
-               Set<IpWildcard> dstIpWildcards = line.getDstIpWildcards();
-
-               Set<IpProtocol> protocols = line.getProtocols();
-               Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
-               srcPortRanges.addAll(line.getSrcPortRanges());
-               Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
-               srcOrDstPortRanges.addAll(line.getSrcOrDstPortRanges());
-               Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
-               dstPortRanges.addAll(line.getDstPortRanges());
-               int icmpType = line.getIcmpType();
-               int icmpCode = line.getIcmpCode();
-               Set<State> states = line.getStates();
-               List<TcpFlags> tcpFlags = line.getTcpFlags();
-               Set<Integer> dscps = line.getDscps();
-               Set<Integer> ecns = line.getEcns();
 
                AndExpr matchConditions = new AndExpr();
 
@@ -840,326 +1247,14 @@ public class Synthesizer {
                AndExpr matchLineCriteria = new AndExpr();
                matchConditions.addConjunct(matchLineCriteria);
                matchConditions.addConjunct(prevNoMatch);
-
-               // match protocol
-               if (protocols.size() > 0) {
-                  OrExpr matchesSomeProtocol = new OrExpr();
-                  for (IpProtocol protocol : protocols) {
-                     int protocolNumber = protocol.number();
-                     VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
-                     LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
-                           PROTOCOL_BITS);
-                     EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
-                     matchesSomeProtocol.addDisjunct(matchProtocol);
-                  }
-                  matchLineCriteria.addConjunct(matchesSomeProtocol);
-               }
-
-               // match srcIp
-               if (srcIpWildcards.size() > 0) {
-                  OrExpr matchSomeSrcIpRange = new OrExpr();
-                  for (IpWildcard srcIpWildcard : srcIpWildcards) {
-                     if (srcIpWildcard.isPrefix()) {
-                        Prefix srcPrefix = srcIpWildcard.toPrefix();
-                        long srcIp = srcPrefix.getAddress().asLong();
-
-                        int srcIpWildcardBits = IP_BITS
-                              - srcPrefix.getPrefixLength();
-                        int srcIpStart = srcIpWildcardBits;
-                        int srcIpEnd = IP_BITS - 1;
-                        if (srcIpStart < IP_BITS) {
-                           IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
-                                 srcIpStart, srcIpEnd);
-                           LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
-                                 srcIpStart, srcIpEnd);
-                           EqExpr matchsrcIp = new EqExpr(extractSrcIp,
-                                 srcIpMatchLit);
-                           matchSomeSrcIpRange.addDisjunct(matchsrcIp);
-                        }
-                        else {
-                           matchSomeSrcIpRange.addDisjunct(TrueExpr.INSTANCE);
-                        }
-                     }
-                     else {
-                        long srcIp = srcIpWildcard.getIp().asLong();
-                        long wildcard = srcIpWildcard.getWildcard().asLong();
-                        AndExpr matchSrcIp = new AndExpr();
-                        for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
-                           long mask = 1l << currentBitIndex;
-                           long currentWildcardBit = mask & wildcard;
-                           boolean useBit = currentWildcardBit == 0;
-                           if (useBit) {
-                              IntExpr extractSrcIp = new ExtractExpr(
-                                    SRC_IP_VAR, currentBitIndex,
-                                    currentBitIndex);
-                              LitIntExpr srcIpMatchLit = new LitIntExpr(srcIp,
-                                    currentBitIndex, currentBitIndex);
-                              EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
-                                    srcIpMatchLit);
-                              matchSrcIp.addConjunct(matchSrcIpBit);
-                           }
-                        }
-                        matchSomeSrcIpRange.addDisjunct(matchSrcIp);
-                     }
-                  }
-                  matchLineCriteria.addConjunct(matchSomeSrcIpRange);
-               }
-
-               // match srcOrDstIp
-               if (srcOrDstIpWildcards.size() > 0) {
-                  OrExpr matchSomeSrcOrDstIpRange = new OrExpr();
-                  for (IpWildcard srcOrDstIpWildcard : srcOrDstIpWildcards) {
-                     if (srcOrDstIpWildcard.isPrefix()) {
-                        Prefix srcOrDstPrefix = srcOrDstIpWildcard.toPrefix();
-                        long srcOrDstIp = srcOrDstPrefix.getAddress().asLong();
-
-                        int srcOrDstIpWildcardBits = IP_BITS
-                              - srcOrDstPrefix.getPrefixLength();
-                        int srcOrDstIpStart = srcOrDstIpWildcardBits;
-                        int srcOrDstIpEnd = IP_BITS - 1;
-                        if (srcOrDstIpStart < IP_BITS) {
-                           IntExpr extractSrcIp = newExtractExpr(SRC_IP_VAR,
-                                 srcOrDstIpStart, srcOrDstIpEnd);
-                           IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
-                                 srcOrDstIpStart, srcOrDstIpEnd);
-                           LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(
-                                 srcOrDstIp, srcOrDstIpStart, srcOrDstIpEnd);
-                           EqExpr matchSrcIp = new EqExpr(extractSrcIp,
-                                 srcOrDstIpMatchLit);
-                           EqExpr matchDstIp = new EqExpr(extractDstIp,
-                                 srcOrDstIpMatchLit);
-                           matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
-                           matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
-                        }
-                        else {
-                           matchSomeSrcOrDstIpRange
-                                 .addDisjunct(TrueExpr.INSTANCE);
-                        }
-                     }
-                     else {
-                        long srcOrDstIp = srcOrDstIpWildcard.getIp().asLong();
-                        long wildcard = srcOrDstIpWildcard.getWildcard()
-                              .asLong();
-                        AndExpr matchSrcIp = new AndExpr();
-                        AndExpr matchDstIp = new AndExpr();
-                        for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
-                           long mask = 1l << currentBitIndex;
-                           long currentWildcardBit = mask & wildcard;
-                           boolean useBit = currentWildcardBit == 0;
-                           if (useBit) {
-                              IntExpr extractSrcIp = new ExtractExpr(
-                                    SRC_IP_VAR, currentBitIndex,
-                                    currentBitIndex);
-                              IntExpr extractDstIp = new ExtractExpr(
-                                    DST_IP_VAR, currentBitIndex,
-                                    currentBitIndex);
-                              LitIntExpr srcOrDstIpMatchLit = new LitIntExpr(
-                                    srcOrDstIp, currentBitIndex,
-                                    currentBitIndex);
-                              EqExpr matchSrcIpBit = new EqExpr(extractSrcIp,
-                                    srcOrDstIpMatchLit);
-                              EqExpr matchDstIpBit = new EqExpr(extractDstIp,
-                                    srcOrDstIpMatchLit);
-                              matchSrcIp.addConjunct(matchSrcIpBit);
-                              matchDstIp.addConjunct(matchDstIpBit);
-                           }
-                        }
-                        matchSomeSrcOrDstIpRange.addDisjunct(matchSrcIp);
-                        matchSomeSrcOrDstIpRange.addDisjunct(matchDstIp);
-                     }
-                  }
-                  matchLineCriteria.addConjunct(matchSomeSrcOrDstIpRange);
-               }
-
-               // match dstIp
-               if (dstIpWildcards.size() > 0) {
-                  OrExpr matchSomeDstIpRange = new OrExpr();
-                  for (IpWildcard dstIpWildcard : dstIpWildcards) {
-                     if (dstIpWildcard.isPrefix()) {
-                        Prefix dstPrefix = dstIpWildcard.toPrefix();
-                        long dstIp = dstPrefix.getAddress().asLong();
-
-                        int dstIpWildcardBits = IP_BITS
-                              - dstPrefix.getPrefixLength();
-                        int dstIpStart = dstIpWildcardBits;
-                        int dstIpEnd = IP_BITS - 1;
-                        if (dstIpStart < IP_BITS) {
-                           IntExpr extractDstIp = newExtractExpr(DST_IP_VAR,
-                                 dstIpStart, dstIpEnd);
-                           LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
-                                 dstIpStart, dstIpEnd);
-                           EqExpr matchDstIp = new EqExpr(extractDstIp,
-                                 dstIpMatchLit);
-                           matchSomeDstIpRange.addDisjunct(matchDstIp);
-                        }
-                        else {
-                           matchSomeDstIpRange.addDisjunct(TrueExpr.INSTANCE);
-                        }
-                     }
-                     else {
-                        long dstIp = dstIpWildcard.getIp().asLong();
-                        long wildcard = dstIpWildcard.getWildcard().asLong();
-                        AndExpr matchDstIp = new AndExpr();
-                        for (int currentBitIndex = 0; currentBitIndex < IP_BITS; currentBitIndex++) {
-                           long mask = 1l << currentBitIndex;
-                           long currentWildcardBit = mask & wildcard;
-                           boolean useBit = currentWildcardBit == 0;
-                           if (useBit) {
-                              IntExpr extractSrcIp = new ExtractExpr(
-                                    DST_IP_VAR, currentBitIndex,
-                                    currentBitIndex);
-                              LitIntExpr dstIpMatchLit = new LitIntExpr(dstIp,
-                                    currentBitIndex, currentBitIndex);
-                              EqExpr matchDstIpBit = new EqExpr(extractSrcIp,
-                                    dstIpMatchLit);
-                              matchDstIp.addConjunct(matchDstIpBit);
-                           }
-                        }
-                        matchSomeDstIpRange.addDisjunct(matchDstIp);
-                     }
-                  }
-                  matchLineCriteria.addConjunct(matchSomeDstIpRange);
-               }
-
-               // match srcPort
-               if (srcPortRanges != null && srcPortRanges.size() > 0) {
-                  BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
-                        srcPortRanges, SRC_PORT_VAR);
-                  matchLineCriteria.addConjunct(matchSrcPort);
-               }
-
-               // match srcOrDstPort
-               if (srcOrDstPortRanges != null && srcOrDstPortRanges.size() > 0) {
-                  BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
-                        srcOrDstPortRanges, SRC_PORT_VAR);
-                  BooleanExpr matchDstPort = getMatchAclRules_portHelper(
-                        srcOrDstPortRanges, DST_PORT_VAR);
-                  OrExpr matchSrcOrDstPort = new OrExpr();
-                  matchSrcOrDstPort.addDisjunct(matchSrcPort);
-                  matchSrcOrDstPort.addDisjunct(matchDstPort);
-                  matchLineCriteria.addConjunct(matchSrcOrDstPort);
-               }
-
-               // match dstPort
-               if (dstPortRanges != null && dstPortRanges.size() > 0) {
-                  BooleanExpr matchDstPort = getMatchAclRules_portHelper(
-                        dstPortRanges, DST_PORT_VAR);
-                  matchLineCriteria.addConjunct(matchDstPort);
-               }
+               BooleanExpr matchHeaderSpace = matchHeaderSpace(line);
+               matchConditions.addConjunct(matchHeaderSpace);
 
                AclMatchExpr match = new AclMatchExpr(hostname, aclName, i);
 
                RuleExpr matchRule = new RuleExpr(matchConditions, match);
                statements.add(matchRule);
 
-               // match dscp
-               if (!dscps.isEmpty()) {
-                  OrExpr matchSomeDscp = new OrExpr();
-                  matchLineCriteria.addConjunct(matchSomeDscp);
-                  for (int dscp : dscps) {
-                     EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(
-                           DSCP_VAR), new LitIntExpr(dscp, DSCP_BITS));
-                     matchSomeDscp.addDisjunct(matchCurrentDscp);
-                  }
-               }
-
-               // match ecn
-               if (!ecns.isEmpty()) {
-                  OrExpr matchSomeEcn = new OrExpr();
-                  matchLineCriteria.addConjunct(matchSomeEcn);
-                  for (int ecn : ecns) {
-                     EqExpr matchCurrentEcn = new EqExpr(
-                           new VarIntExpr(ECN_VAR), new LitIntExpr(ecn,
-                                 ECN_BITS));
-                     matchSomeEcn.addDisjunct(matchCurrentEcn);
-                  }
-               }
-
-               // match connection-tracking state
-               if (!states.isEmpty()) {
-                  OrExpr matchSomeState = new OrExpr();
-                  matchLineCriteria.addConjunct(matchSomeState);
-                  for (State state : states) {
-                     EqExpr matchCurrentState = new EqExpr(new VarIntExpr(
-                           STATE_VAR), new LitIntExpr(state.number(),
-                           STATE_BITS));
-                     matchSomeState.addDisjunct(matchCurrentState);
-                  }
-               }
-
-               // match icmp-type
-               if (icmpType != IcmpType.UNSET) {
-                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
-                        new LitIntExpr(icmpType, ICMP_TYPE_BITS));
-                  matchLineCriteria.addConjunct(exactMatch);
-               }
-
-               // match icmp-code
-               if (icmpCode != IcmpCode.UNSET) {
-                  EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
-                        new LitIntExpr(icmpCode, ICMP_CODE_BITS));
-                  matchLineCriteria.addConjunct(exactMatch);
-               }
-
-               // match tcp-flags
-               if (!tcpFlags.isEmpty()) {
-                  OrExpr matchSomeTcpFlags = new OrExpr();
-                  matchLineCriteria.addConjunct(matchSomeTcpFlags);
-                  for (TcpFlags currentTcpFlags : tcpFlags) {
-                     AndExpr matchCurrentTcpFlags = new AndExpr();
-                     matchSomeTcpFlags.addDisjunct(matchCurrentTcpFlags);
-                     LitIntExpr one = new LitIntExpr(1, 1);
-                     LitIntExpr zero = new LitIntExpr(0, 1);
-                     if (currentTcpFlags.getUseCwr()) {
-                        LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_CWR_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseEce()) {
-                        LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_ECE_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseUrg()) {
-                        LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_URG_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseAck()) {
-                        LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_ACK_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUsePsh()) {
-                        LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_PSH_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseRst()) {
-                        LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_RST_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseSyn()) {
-                        LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_SYN_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                     if (currentTcpFlags.getUseFin()) {
-                        LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
-                        EqExpr matchFlag = new EqExpr(new VarIntExpr(
-                              TCP_FLAGS_FIN_VAR), bit);
-                        matchCurrentTcpFlags.addConjunct(matchFlag);
-                     }
-                  }
-               }
                // no match rule
                AndExpr noMatchConditions = new AndExpr();
                BooleanExpr noMatchLineCriteria = new NotExpr(matchLineCriteria);
@@ -1198,11 +1293,6 @@ public class Synthesizer {
          }
       }
       return statements;
-   }
-
-   private BooleanExpr getMatchAclRules_portHelper(Set<SubRange> ranges,
-         String portVar) {
-      return new RangeMatchExpr(portVar, PORT_BITS, ranges);
    }
 
    private List<Statement> getNodeAcceptToRoleAcceptRules() {

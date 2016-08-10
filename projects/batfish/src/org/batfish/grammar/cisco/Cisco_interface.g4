@@ -62,6 +62,7 @@ if_stanza
    | shutdown_if_stanza
    | switchport_access_if_stanza
    | switchport_private_vlan_association_if_stanza
+   | switchport_private_vlan_host_association_if_stanza
    | switchport_private_vlan_mapping_if_stanza
    | switchport_trunk_native_if_stanza
    | switchport_trunk_encapsulation_if_stanza
@@ -269,6 +270,7 @@ null_block_if_stanza
       | DUPLEX
       | ENABLE
       | ENCAPSULATION
+      | ENCRYPTION
       | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
@@ -294,6 +296,7 @@ null_block_if_stanza
       (
          INTERFACE BREAKOUT
       )
+      | INGRESS
       |
       (
          IP
@@ -545,13 +548,19 @@ switchport_mode_stanza
 switchport_private_vlan_association_if_stanza
 :
    SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
-   secondary_vlan_id = DEC
+   secondary_vlan_id = DEC NEWLINE
+;
+
+switchport_private_vlan_host_association_if_stanza
+:
+   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
+   secondary_vlan_id = DEC NEWLINE
 ;
 
 switchport_private_vlan_mapping_if_stanza
 :
    SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
-   secondary_vlan_list = range
+   secondary_vlan_list = range NEWLINE
 ;
 
 switchport_trunk_allowed_if_stanza

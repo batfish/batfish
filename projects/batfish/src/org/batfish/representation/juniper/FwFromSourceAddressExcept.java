@@ -6,7 +6,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Warnings;
 
-public final class FwFromDestinationAddress extends FwFrom {
+public final class FwFromSourceAddressExcept extends FwFrom {
 
    /**
     *
@@ -15,14 +15,15 @@ public final class FwFromDestinationAddress extends FwFrom {
 
    private final Prefix _prefix;
 
-   public FwFromDestinationAddress(Prefix prefix) {
+   public FwFromSourceAddressExcept(Prefix prefix) {
       _prefix = prefix;
    }
 
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      line.getDstIps().add(new IpWildcard(_prefix));
+      IpWildcard wildcard = new IpWildcard(_prefix);
+      line.getNotSrcIps().add(wildcard);
    }
 
    public Prefix getPrefix() {

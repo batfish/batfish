@@ -21,7 +21,7 @@ fwfromt_destination_address
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) EXCEPT?
 ;
 
 fwfromt_destination_port
@@ -130,7 +130,7 @@ fwfromt_source_address
    (
       IP_PREFIX
       | IPV6_PREFIX
-   )
+   ) EXCEPT?
 ;
 
 fwfromt_source_port
@@ -144,7 +144,7 @@ fwfromt_source_port
 
 fwfromt_source_prefix_list
 :
-   SOURCE_PREFIX_LIST name = variable
+   SOURCE_PREFIX_LIST name = variable EXCEPT?
 ;
 
 fwfromt_tcp_established

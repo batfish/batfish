@@ -234,9 +234,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.FTP.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -245,9 +245,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.HTTP.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -256,9 +256,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.HTTPS.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -267,7 +267,7 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.ICMP);
+         l1.getIpProtocols().add(IpProtocol.ICMP);
          terms.put(t1Name, t1);
          break;
       }
@@ -282,9 +282,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.NNTP.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -293,9 +293,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.UDP);
+         l1.getIpProtocols().add(IpProtocol.UDP);
          int portNum = NamedPort.NTP.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -304,9 +304,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.PPTP.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }
@@ -315,9 +315,9 @@ public enum JunosApplication implements Application {
          String t1Name = "t1";
          Term t1 = new Term(t1Name);
          IpAccessListLine l1 = t1.getLine();
-         l1.getProtocols().add(IpProtocol.TCP);
+         l1.getIpProtocols().add(IpProtocol.TCP);
          int portNum = NamedPort.SSH.number();
-         l1.getDstPortRanges().add(new SubRange(portNum, portNum));
+         l1.getDstPorts().add(new SubRange(portNum, portNum));
          terms.put(t1Name, t1);
          break;
       }

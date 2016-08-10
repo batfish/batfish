@@ -1086,7 +1086,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
-      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, false);
+      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, true);
       setDefaultProperty(ARG_NLS_DRY, false);
       setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);

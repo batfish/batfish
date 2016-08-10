@@ -73,7 +73,7 @@ public class IpPermissions implements Serializable {
       IpAccessListLine line = toIpAccessListLine();
       for (Prefix ipRange : _ipRanges) {
          IpWildcard wildcard = new IpWildcard(ipRange);
-         line.getDstIpWildcards().add(wildcard);
+         line.getDstIps().add(wildcard);
       }
       return line;
    }
@@ -82,7 +82,7 @@ public class IpPermissions implements Serializable {
       IpAccessListLine line = toIpAccessListLine();
       for (Prefix ipRange : _ipRanges) {
          IpWildcard wildcard = new IpWildcard(ipRange);
-         line.getSrcIpWildcards().add(wildcard);
+         line.getSrcIps().add(wildcard);
       }
       return line;
    }
@@ -92,13 +92,13 @@ public class IpPermissions implements Serializable {
       line.setAction(LineAction.ACCEPT);
       IpProtocol protocol = toIpProtocol(_ipProtocol);
       if (protocol != null) {
-         line.getProtocols().add(protocol);
+         line.getIpProtocols().add(protocol);
       }
       if (_fromPort != -1) {
-         line.getSrcPortRanges().add(new SubRange(_fromPort, _fromPort));
+         line.getSrcPorts().add(new SubRange(_fromPort, _fromPort));
       }
       if (_toPort != -1) {
-         line.getDstPortRanges().add(new SubRange(_toPort, _toPort));
+         line.getDstPorts().add(new SubRange(_toPort, _toPort));
       }
       return line;
    }

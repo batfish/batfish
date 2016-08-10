@@ -36,12 +36,13 @@ public class CommunityListLine implements Serializable {
          return true;
       }
       CommunityListLine other = (CommunityListLine) obj;
-      if (other._action != _action) {
+      if (_action != other._action) {
          return false;
       }
-      else {
-         return other._regex.equals(_regex);
+      if (!_regex.equals(other._regex)) {
+         return false;
       }
+      return true;
    }
 
    @JsonProperty(ACTION_VAR)
@@ -80,6 +81,15 @@ public class CommunityListLine implements Serializable {
    @JsonProperty(REGEX_VAR)
    public String getRegex() {
       return _regex;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _action.hashCode();
+      result = prime * result + _regex.hashCode();
+      return result;
    }
 
 }

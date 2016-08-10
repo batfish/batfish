@@ -357,7 +357,7 @@ batfish_prepare_test_rig() {
    local BASE=$2
    local NAME=$3
    mkdir -p $BASE/$NAME/testrig || return 1
-   mkdir -p $BASE/$NAME/environments/default/env
+   mkdir -p $BASE/$NAME/environments/default/env_default
    cp -r $TEST_RIG/. $BASE/$NAME/testrig/.
    batfish_date
    echo ": END: Prepare test-rig"
@@ -606,14 +606,12 @@ batfish_serialize_vendor_with_roles() {
 export -f batfish_serialize_vendor_with_roles
 
 batfish_unit_tests_parser() {
-   batfish_expect_min_args 1 $# || return 1
-   local OUTPUT_DIR=$1
-   shift
-   local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/unit-tests
+   local UNIT_TEST_NAME=unit-tests
+   local UNIT_TEST_DIR=$BATFISH_TEST_RIG_PATH/$UNIT_TEST_NAME
    batfish_date
    echo ": START UNIT TEST: Vendor configuration parser"
-   batfish_prepare_test_rig $UNIT_TEST_DIR $OUTPUT_DIR
-   batfish -autobasedir $OUTPUT_DIR -sv "$@"
+   batfish_prepare_test_rig $UNIT_TEST_DIR $PWD $UNIT_TEST_NAME
+   batfish -containerdir $PWD -testrig $UNIT_TEST_NAME -sv "$@"
    batfish_date
    echo ": END UNIT TEST: Vendor configuration parser"
 }

@@ -98,11 +98,4 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
       return program;
    }
 
-   @Override
-   public String getQueryText() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-   }
-
 }

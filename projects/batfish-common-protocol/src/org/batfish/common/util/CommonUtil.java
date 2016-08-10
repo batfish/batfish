@@ -30,7 +30,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Ip;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
@@ -269,14 +268,6 @@ public class CommonUtil {
    public static boolean isNullInterface(String ifaceName) {
       String lcIfaceName = ifaceName.toLowerCase();
       return lcIfaceName.startsWith("null");
-   }
-
-   public static boolean isValidWildcard(Ip wildcard) {
-      long w = wildcard.asLong();
-      long wp = w + 1l;
-      int numTrailingZeros = Long.numberOfTrailingZeros(wp);
-      long check = 1l << numTrailingZeros;
-      return wp == check;
    }
 
    public static String joinStrings(String delimiter, String[] parts) {

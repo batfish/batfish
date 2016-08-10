@@ -58,11 +58,4 @@ public final class AclReachabilityQuerySynthesizer extends
       return program;
    }
 
-   @Override
-   public String getQueryText() {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
-   }
-
 }

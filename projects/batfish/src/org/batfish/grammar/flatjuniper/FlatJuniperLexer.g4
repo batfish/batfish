@@ -841,6 +841,11 @@ EXTERNAL_PREFERENCE
    'external-preference'
 ;
 
+EXTENSIONS
+:
+   'extensions'
+;
+
 FABRIC
 :
    'fabric'
@@ -2486,6 +2491,11 @@ LAST_AS
    'last-as'
 ;
 
+LAYER2_CONTROL
+:
+   'layer2-control'
+;
+
 LDP_SYNCHRONIZATION
 :
    'ldp-synchronization'
@@ -3561,6 +3571,11 @@ RECEIVE
    'receive'
 ;
 
+REDIRECT
+:
+   'redirect'
+;
+
 REDUNDANCY_GROUP
 :
    'redundancy-group'
@@ -3709,6 +3724,11 @@ ROUTER_DISCOVERY
 ROUTER_ID
 :
    'router-id'
+;
+
+ROUTER_SOLICIT
+:
+   'router-solicit'
 ;
 
 ROUTING_INSTANCE

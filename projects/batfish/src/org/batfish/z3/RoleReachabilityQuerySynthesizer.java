@@ -14,8 +14,6 @@ import com.microsoft.z3.Z3Exception;
 
 public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
-   private String _queryText;
-
    public RoleReachabilityQuerySynthesizer(String hostname, String role) {
       OriginateExpr originate = new OriginateExpr(hostname);
       RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
@@ -35,8 +33,6 @@ public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       sb.append("\n");
       query.print(sb, 0);
       sb.append("\n");
-      String queryText = sb.toString();
-      _queryText = queryText;
    }
 
    @Override
@@ -44,11 +40,6 @@ public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub
-   }
-
-   @Override
-   public String getQueryText() {
-      return _queryText;
    }
 
 }

@@ -209,7 +209,7 @@ extended_access_list_tail
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
    (
-      NEXTHOP1 
+      NEXTHOP1
       (
          (
             nh4 = IPV4 nexthop1 = IP_ADDRESS
@@ -443,6 +443,12 @@ rsvp_stanza
    RSVP NEWLINE rs_stanza*
 ;
 
+s_mac_access_list
+:
+   ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
+   MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL NEWLINE
+;
+
 standard_access_list_additional_feature
 :
    (
@@ -464,15 +470,19 @@ standard_access_list_null_tail
       )? num = DEC
    )?
    (
-      REMARK remark = M_REMARK_REMARK NEWLINE
-   )
+      REMARK
+      | STATISTICS
+   ) ~NEWLINE* NEWLINE
 ;
 
 standard_access_list_stanza
 :
    (
       (
-         IP ACCESS_LIST STANDARD name = variable
+         (
+            IP
+            | IPV6
+         ) ACCESS_LIST STANDARD name = variable
       )
       |
       (

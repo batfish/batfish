@@ -177,6 +177,7 @@ st_null
       | DDOS_PROTECTION
       | DOMAIN_NAME
       | DOMAIN_SEARCH
+      | EXTENSIONS
       | INTERNET_OPTIONS
       | LICENSE
       | LOCATION

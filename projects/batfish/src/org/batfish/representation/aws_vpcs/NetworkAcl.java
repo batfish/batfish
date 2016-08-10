@@ -60,16 +60,16 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             Prefix prefix = entry.getCidrBlock();
             if (!prefix.equals(Prefix.ZERO)) {
                if (isEgress) {
-                  line.getDstIpWildcards().add(new IpWildcard(prefix));
+                  line.getDstIps().add(new IpWildcard(prefix));
                }
                else {
-                  line.getSrcIpWildcards().add(new IpWildcard(prefix));
+                  line.getSrcIps().add(new IpWildcard(prefix));
                }
             }
             IpProtocol protocol = IpPermissions.toIpProtocol(entry
                   .getProtocol());
             if (protocol != null) {
-               line.getProtocols().add(protocol);
+               line.getIpProtocols().add(protocol);
             }
             int fromPort = entry.getFromPort();
             int toPort = entry.getToPort();
@@ -81,7 +81,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
                   toPort = 65535;
                }
                SubRange portRange = new SubRange(fromPort, toPort);
-               line.getDstPortRanges().add(portRange);
+               line.getDstPorts().add(portRange);
             }
             lineMap.put(key, line);
          }

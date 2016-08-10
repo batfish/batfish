@@ -84,7 +84,7 @@ public class ExtendedAccessListLine implements Serializable {
       return _dstAddressGroup;
    }
 
-   public List<SubRange> getDstPortRanges() {
+   public List<SubRange> getDstPorts() {
       return _dstPortRanges;
    }
 
@@ -116,7 +116,7 @@ public class ExtendedAccessListLine implements Serializable {
       return _srcAddressGroup;
    }
 
-   public List<SubRange> getSrcPortRanges() {
+   public List<SubRange> getSrcPorts() {
       return _srcPortRanges;
    }
 

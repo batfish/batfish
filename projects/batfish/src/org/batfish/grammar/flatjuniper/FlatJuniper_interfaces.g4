@@ -36,7 +36,11 @@ efamt_filter
 
 efamt_interface_mode
 :
-   INTERFACE_MODE ACCESS
+   INTERFACE_MODE
+   (
+      ACCESS
+      | TRUNK
+   )
 ;
 
 efamt_native_vlan_id
