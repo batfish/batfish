@@ -449,7 +449,7 @@ l_access_class
          (
             IN
             | OUT
-         )
+         )?
       )
    ) VRF_ALSO? NEWLINE
 ;
