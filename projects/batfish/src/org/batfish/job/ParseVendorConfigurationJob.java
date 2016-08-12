@@ -29,6 +29,38 @@ import org.batfish.representation.host.HostConfiguration;
 public class ParseVendorConfigurationJob extends
       BatfishJob<ParseVendorConfigurationResult> {
 
+   private static Pattern BANNER_PATTERN = Pattern
+         .compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
+
+   private static String preprocessBanner(String fileText) {
+      Matcher matcher = BANNER_PATTERN.matcher(fileText);
+      if (matcher.find()) {
+         int delimiterIndex = matcher.start(1);
+         char delimiter = fileText.charAt(delimiterIndex);
+         Pattern finalDelimiterPattern = Pattern.compile("(?m)" + delimiter
+               + "[\r\n]");
+         Matcher finalDelimiterMatcher = finalDelimiterPattern
+               .matcher(fileText);
+         if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
+            int finalDelimiterIndex = finalDelimiterMatcher.start();
+            String beforeDelimiter = fileText.substring(0, delimiterIndex);
+            String betweenDelimiters = fileText.substring(delimiterIndex + 1,
+                  finalDelimiterIndex);
+            String afterDelimiter = fileText.substring(finalDelimiterIndex + 1,
+                  fileText.length());
+            String newFileText = beforeDelimiter + "^C" + betweenDelimiters
+                  + "^C" + afterDelimiter;
+            return newFileText;
+         }
+         else {
+            throw new BatfishException("Invalid banner");
+         }
+      }
+      else {
+         return fileText;
+      }
+   }
+
    private Path _file;
 
    private String _fileText;
@@ -70,10 +102,16 @@ public class ParseVendorConfigurationJob extends
       case CISCO:
       case CISCO_IOS_XR:
          boolean nonNexus = checkNonNexus(_fileText);
-         CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText,
+         String newFileText = _fileText;
+         String fileText;
+         do {
+            fileText = newFileText;
+            newFileText = preprocessBanner(fileText);
+         } while (newFileText != fileText);
+         CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText,
                _settings, nonNexus);
          combinedParser = ciscoParser;
-         extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser,
+         extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
                _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 

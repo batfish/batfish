@@ -1,7 +1,7 @@
 package org.batfish.datamodel.answers;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -12,20 +12,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CompareSameNameAnswerElement implements AnswerElement {
 
+   /**
+    * Equivalence sets are keyed by classname
+    */
+   private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
+
    private final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
 
-   private Map<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
-
    public CompareSameNameAnswerElement() {
-      _equivalenceSets = new HashMap<String, NamedStructureEquivalenceSets<?>>();
+      _equivalenceSets = new TreeMap<String, NamedStructureEquivalenceSets<?>>();
    }
 
-   public void add(String key, NamedStructureEquivalenceSets<?> sets) {
-      _equivalenceSets.put(key, sets);
+   public void add(String className, NamedStructureEquivalenceSets<?> sets) {
+      _equivalenceSets.put(className, sets);
    }
 
    @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
-   public Map<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
+   public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
       return _equivalenceSets;
    }
 
@@ -34,5 +37,11 @@ public class CompareSameNameAnswerElement implements AnswerElement {
       // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
+   }
+
+   @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
+   public void setEquivalenceSets(
+         SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
+      _equivalenceSets = equivalenceSets;
    }
 }

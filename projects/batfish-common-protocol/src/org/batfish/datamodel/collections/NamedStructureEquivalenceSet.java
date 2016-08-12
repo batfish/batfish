@@ -1,30 +1,35 @@
 package org.batfish.datamodel.collections;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.batfish.common.util.CommonUtil;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.batfish.common.util.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NamedStructureEquivalenceSet<T> {
+public class NamedStructureEquivalenceSet<T> implements
+      Comparable<NamedStructureEquivalenceSet<T>> {
 
-   // Jackson cannot serialize generics correctly.
-   @JsonIgnore
-   private T _namedStructure = null;
+   private static final String REPRESENTATIVE_ELEMENT_VAR = "representativeElement";
 
-   private Set<String> _nodes = null;
+   private T _namedStructure;
 
-   public NamedStructureEquivalenceSet() {
+   private SortedSet<String> _nodes;
+
+   private final String _representativeElement;
+
+   @JsonCreator
+   public NamedStructureEquivalenceSet(
+         @JsonProperty(REPRESENTATIVE_ELEMENT_VAR) String representativeElement) {
+      _representativeElement = representativeElement;
    }
 
    public NamedStructureEquivalenceSet(String node, T namedStructure) {
+      this(node);
       _namedStructure = namedStructure;
-      _nodes = new HashSet<String>();
-      _nodes.add(node);
-      addNode(node);
-   }
-
-   public void addNode(String node) {
+      _nodes = new TreeSet<String>();
       _nodes.add(node);
    }
 
@@ -32,20 +37,43 @@ public class NamedStructureEquivalenceSet<T> {
       return CommonUtil.checkJsonEqual(_namedStructure, s);
    }
 
-   public T get_namedStructure() {
+   @Override
+   public int compareTo(NamedStructureEquivalenceSet<T> rhs) {
+      return _representativeElement.compareTo(rhs._representativeElement);
+   }
+
+   @Override
+   public boolean equals(Object o) {
+      NamedStructureEquivalenceSet<?> rhs = (NamedStructureEquivalenceSet<?>) o;
+      return _representativeElement.equals(rhs._representativeElement);
+   }
+
+   // ignore for now to avoid encoding large amounts of information in answer
+   @JsonIgnore
+   public T getNamedStructure() {
       return _namedStructure;
    }
 
-   public Set<String> get_nodes() {
+   public SortedSet<String> getNodes() {
       return _nodes;
    }
 
-   public void set_namedStructure(T _namedStructure) {
-      this._namedStructure = _namedStructure;
+   @JsonProperty(REPRESENTATIVE_ELEMENT_VAR)
+   public String getRepresentativeElement() {
+      return _representativeElement;
    }
 
-   public void set_nodes(Set<String> _nodes) {
-      this._nodes = _nodes;
+   @Override
+   public int hashCode() {
+      return _representativeElement.hashCode();
+   }
+
+   public void setNamedStructure(T namedStructure) {
+      _namedStructure = namedStructure;
+   }
+
+   public void setNodes(SortedSet<String> nodes) {
+      _nodes = nodes;
    }
 
 }

@@ -2,6 +2,7 @@ package org.batfish.answerer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
@@ -19,91 +20,62 @@ import org.batfish.main.Settings.TestrigSettings;
 
 public class CompareSameNameAnswerer extends Answerer {
 
+   private CompareSameNameAnswerElement _answerElement;
+
+   private Map<String, Configuration> _configurations;
+
+   private List<String> _nodes;
+
    public CompareSameNameAnswerer(Question question, Batfish batfish) {
       super(question, batfish);
+   }
+
+   private <T> void add(Class<T> structureClass,
+         Function<Configuration, Map<String, T>> structureMapRetriever) {
+      _answerElement.add(
+            structureClass.getSimpleName(),
+            processStructures(structureClass, _nodes, _configurations,
+                  structureMapRetriever));
    }
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
 
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
-
       _batfish.checkConfigurations(testrigSettings);
-      Map<String, Configuration> configurations = _batfish
-            .loadConfigurations(testrigSettings);
-
-      CompareSameNameAnswerElement answerElement = new CompareSameNameAnswerElement();
-
+      _configurations = _batfish.loadConfigurations(testrigSettings);
+      _answerElement = new CompareSameNameAnswerElement();
       // collect relevant nodes in a list.
-      List<String> nodes = CommonUtil.getMatchingStrings(
-            question.getNodeRegex(), configurations.keySet());
+      _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(),
+            _configurations.keySet());
 
-      answerElement.add(AsPathAccessList.class.getSimpleName(),
-            processAccessPathLists(nodes, configurations));
-      answerElement.add(CommunityList.class.getSimpleName(),
-            processCommunityLists(nodes, configurations));
-      answerElement.add(IkeGateway.class.getSimpleName(),
-            processIkeGateways(nodes, configurations));
-      answerElement.add(RouteFilterList.class.getSimpleName(),
-            processRouteFilterLists(nodes, configurations));
+      add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
+      add(CommunityList.class, c -> c.getCommunityLists());
+      add(IkeGateway.class, c -> c.getIkeGateways());
+      add(RouteFilterList.class, c -> c.getRouteFilterLists());
 
-      return answerElement;
+      return _answerElement;
    }
 
-   private NamedStructureEquivalenceSets<AsPathAccessList> processAccessPathLists(
-         List<String> nodes, Map<String, Configuration> configurations) {
-      NamedStructureEquivalenceSets<AsPathAccessList> ae = new NamedStructureEquivalenceSets<AsPathAccessList>(
-            AsPathAccessList.class.getSimpleName());
-      for (String node : nodes) {
-         Map<String, AsPathAccessList> lists = configurations.get(node)
-               .getAsPathAccessLists();
-         for (String listName : lists.keySet()) {
-            ae.add(node, listName, lists.get(listName));
-         }
-      }
-      return ae;
-   }
-
-   private NamedStructureEquivalenceSets<CommunityList> processCommunityLists(
-         List<String> nodes, Map<String, Configuration> configurations) {
-      NamedStructureEquivalenceSets<CommunityList> ae = new NamedStructureEquivalenceSets<CommunityList>(
-            CommunityList.class.getSimpleName());
-      for (String node : nodes) {
-         Map<String, CommunityList> lists = configurations.get(node)
-               .getCommunityLists();
-         for (String listName : lists.keySet()) {
-            ae.add(node, listName, lists.get(listName));
-         }
-      }
-      return ae;
-   }
-
-   private NamedStructureEquivalenceSets<IkeGateway> processIkeGateways(
-         List<String> nodes, Map<String, Configuration> configurations) {
-      NamedStructureEquivalenceSets<IkeGateway> ae = new NamedStructureEquivalenceSets<IkeGateway>(
-            IkeGateway.class.getSimpleName());
-      for (String node : nodes) {
-         Map<String, IkeGateway> lists = configurations.get(node)
-               .getIkeGateways();
-         for (String listName : lists.keySet()) {
-            ae.add(node, listName, lists.get(listName));
-         }
-      }
-      return ae;
-   }
-
-   private NamedStructureEquivalenceSets<RouteFilterList> processRouteFilterLists(
-         List<String> nodes, Map<String, Configuration> configurations) {
-      NamedStructureEquivalenceSets<RouteFilterList> ae = new NamedStructureEquivalenceSets<RouteFilterList>(
-            RouteFilterList.class.getSimpleName());
-      for (String node : nodes) {
+   private <T> NamedStructureEquivalenceSets<T> processStructures(
+         Class<T> structureClass, List<String> hostnames,
+         Map<String, Configuration> configurations,
+         Function<Configuration, Map<String, T>> structureMapRetriever) {
+      NamedStructureEquivalenceSets<T> ae = new NamedStructureEquivalenceSets<T>(
+            structureClass.getSimpleName());
+      for (String hostname : hostnames) {
          // Process route filters
-         Map<String, RouteFilterList> lists = configurations.get(node)
-               .getRouteFilterLists();
-         for (String listName : lists.keySet()) {
-            ae.add(node, listName, lists.get(listName));
+         Configuration node = configurations.get(hostname);
+         Map<String, T> structureMap = structureMapRetriever.apply(node);
+         for (String listName : structureMap.keySet()) {
+            if (listName.startsWith("~")) {
+               continue;
+            }
+            ae.add(hostname, listName, structureMap.get(listName));
          }
       }
+      ae.clean();
       return ae;
    }
+
 }
