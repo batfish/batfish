@@ -67,6 +67,16 @@ fwfromt_forwarding_class
    FORWARDING_CLASS variable
 ;
 
+fwfromt_fragment_offset
+:
+   FRAGMENT_OFFSET range
+;
+
+fwfromt_fragment_offset_except
+:
+   FRAGMENT_OFFSET_EXCEPT range
+;
+
 fwfromt_icmp_code
 :
    ICMP_CODE icmp_code
@@ -313,6 +323,7 @@ fwtt_from_tail
    | fwfromt_exp
    | fwfromt_first_fragment
    | fwfromt_forwarding_class
+   | fwfromt_fragment_offset
    | fwfromt_icmp_code
    | fwfromt_icmp_type
    | fwfromt_ip_options

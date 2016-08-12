@@ -39,6 +39,16 @@ INTERFACE
    'Interface'
 ;
 
+LX
+:
+   'LX' F_NonNewline* F_Newline -> channel ( HIDDEN )
+;
+
+SIGNATURE
+:
+   'Signature' F_NonNewline* F_Newline -> channel ( HIDDEN )
+;
+
 SYSTEM
 :
    'System'

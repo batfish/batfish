@@ -946,6 +946,16 @@ FRAGMENTATION_NEEDED
    'fragmentation-needed'
 ;
 
+FRAGMENT_OFFSET
+:
+   'fragment-offset'
+;
+
+FRAGMENT_OFFSET_EXCEPT
+:
+   'fragment-offset-except'
+;
+
 FRAMING
 :
    'framing'
@@ -1264,6 +1274,11 @@ INCOMPLETE
 INDIRECT_NEXT_HOP
 :
    'indirect-next-hop'
+;
+
+INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
+:
+   'indirect-next-hop-change-acknowledgements'
 ;
 
 INET

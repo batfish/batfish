@@ -160,6 +160,11 @@ ACK
    'ack'
 ;
 
+ACLLOG
+:
+   'acllog'
+;
+
 ACTION
 :
    'action'
@@ -1207,6 +1212,11 @@ CONVERSION_ERROR
    'conversion-error'
 ;
 
+COPP
+:
+   'copp'
+;
+
 COPY
 :
    'copy'
@@ -1365,6 +1375,11 @@ DCBX
 DEAD_INTERVAL
 :
    'dead-interval'
+;
+
+DEADTIME
+:
+   'deadtime'
 ;
 
 DEBUG
@@ -3739,6 +3754,11 @@ NEIGHBOR
    'neighbor' -> pushMode ( M_NEIGHBOR )
 ;
 
+NEIGHBOR_DOWN
+:
+   'neighbor-down'
+;
+
 NEIGHBOR_GROUP
 :
    'neighbor-group'
@@ -5629,6 +5649,11 @@ SUNRPC
 SUPPLEMENTARY_SERVICES
 :
    'supplementary-services'
+;
+
+SUPPRESS_FIB_PENDING
+:
+   'suppress-fib-pending'
 ;
 
 SVCLC

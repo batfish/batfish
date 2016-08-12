@@ -13,6 +13,7 @@ null_block_stanza
       AAA
       | ACCESS_GROUP
       | ACCESS
+      | ACLLOG
       | ADMIN
       | ALLOW
       | ARCHIVE
@@ -32,6 +33,7 @@ null_block_stanza
       | CONFDCONFIG
       | CONFIGURATION
       | CONTROLLER
+      | COPP
       | COPY
       | CPD
       | CRYPTO
@@ -309,6 +311,7 @@ null_block_substanza
          | CRYPTOGRAPHIC_ALGORITHM
          | DATABITS
          | DBL
+         | DEADTIME
          | DEFAULT
          | DEFAULT_ACTION
          | DEFAULT_DOMAIN
