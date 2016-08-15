@@ -25,6 +25,10 @@ Flow_ecn[flow] = ecn ->
    Flow(flow),
    int(ecn).
 
+Flow_fragmentOffset[flow] = fragmentOffset ->
+   Flow(flow),
+   int(fragmentOffset).
+
 Flow_icmpCode[flow] = icmpCode ->
    Flow(flow),
    int(icmpCode).

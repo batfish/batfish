@@ -8,6 +8,48 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public final class Flow implements Comparable<Flow> {
 
+   private static final String DSCP_VAR = "dscp";
+
+   private static final String DST_IP_VAR = "dstIp";
+
+   private static final String DST_PORT_VAR = "dstPort";
+
+   private static final String ECN_VAR = "ecn";
+
+   private static final String FRAGMENT_OFFSET_VAR = "fragmentOffset";
+
+   private static final String ICMP_CODE_VAR = "icmpCode";
+
+   private static final String ICMP_TYPE_VAR = "icmpVar";
+
+   private static final String INGRESS_NODE_VAR = "ingressNode";
+
+   private static final String IP_PROTOCOL_VAR = "ipProtocol";
+
+   private static final String SRC_IP_VAR = "srcIp";
+
+   private static final String SRC_PORT_VAR = "srcPort";
+
+   private static final String STATE_VAR = "state";
+
+   private static final String TAG_VAR = "tag";
+
+   private static final String TCP_FLAGS_ACK_VAR = "tcpFlagsAck";
+
+   private static final String TCP_FLAGS_CWR_VAR = "tcpFlagsCwr";
+
+   private static final String TCP_FLAGS_ECE_VAR = "tcpFlagsEce";
+
+   private static final String TCP_FLAGS_FIN_VAR = "tcpFlagsFin";
+
+   private static final String TCP_FLAGS_PSH_VAR = "tcpFlagsPsh";
+
+   private static final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
+
+   private static final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
+
+   private static final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
+
    private final int _dscp;
 
    private final Ip _dstIp;
@@ -15,6 +57,8 @@ public final class Flow implements Comparable<Flow> {
    private final int _dstPort;
 
    private final int _ecn;
+
+   private final int _fragmentOffset;
 
    private final int _icmpCode;
 
@@ -48,46 +92,6 @@ public final class Flow implements Comparable<Flow> {
 
    private final int _tcpFlagsUrg;
 
-   private final String DSCP_VAR = "dscp";
-
-   private final String DST_IP_VAR = "dstIp";
-
-   private final String DST_PORT_VAR = "dstPort";
-
-   private final String ECN_VAR = "ecn";
-
-   private final String ICMP_CODE_VAR = "icmpCode";
-
-   private final String ICMP_TYPE_VAR = "icmpVar";
-
-   private final String INGRESS_NODE_VAR = "ingressNode";
-
-   private final String IP_PROTOCOL_VAR = "ipProtocol";
-
-   private final String SRC_IP_VAR = "srcIp";
-
-   private final String SRC_PORT_VAR = "srcPort";
-
-   private final String STATE_VAR = "state";
-
-   private final String TAG_VAR = "tag";
-
-   private final String TCP_FLAGS_ACK_VAR = "tcpFlagsAck";
-
-   private final String TCP_FLAGS_CWR_VAR = "tcpFlagsCwr";
-
-   private final String TCP_FLAGS_ECE_VAR = "tcpFlagsEce";
-
-   private final String TCP_FLAGS_FIN_VAR = "tcpFlagsFin";
-
-   private final String TCP_FLAGS_PSH_VAR = "tcpFlagsPsh";
-
-   private final String TCP_FLAGS_RST_VAR = "tcpFlagsRst";
-
-   private final String TCP_FLAGS_SYN_VAR = "tcpFlagsSyn";
-
-   private final String TCP_FLAGS_URG_VAR = "tcpFlagsUrg";
-
    @JsonCreator
    public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
          @JsonProperty(SRC_IP_VAR) Ip srcIp,
@@ -96,6 +100,7 @@ public final class Flow implements Comparable<Flow> {
          @JsonProperty(DST_PORT_VAR) int dstPort,
          @JsonProperty(IP_PROTOCOL_VAR) IpProtocol ipProtocol,
          @JsonProperty(DSCP_VAR) int dscp, @JsonProperty(ECN_VAR) int ecn,
+         @JsonProperty(FRAGMENT_OFFSET_VAR) int fragmentOffset,
          @JsonProperty(ICMP_TYPE_VAR) int icmpType,
          @JsonProperty(ICMP_CODE_VAR) int icmpCode,
          @JsonProperty(STATE_VAR) int state,
@@ -116,6 +121,7 @@ public final class Flow implements Comparable<Flow> {
       _ipProtocol = ipProtocol;
       _dscp = dscp;
       _ecn = ecn;
+      _fragmentOffset = fragmentOffset;
       _icmpType = icmpType;
       _icmpCode = icmpCode;
       _state = state;
@@ -162,6 +168,10 @@ public final class Flow implements Comparable<Flow> {
          return ret;
       }
       ret = Integer.compare(_ecn, rhs._ecn);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = Integer.compare(_fragmentOffset, rhs._fragmentOffset);
       if (ret != 0) {
          return ret;
       }
@@ -221,6 +231,9 @@ public final class Flow implements Comparable<Flow> {
          return false;
       }
       if (_ecn != other._ecn) {
+         return false;
+      }
+      if (_fragmentOffset != other._fragmentOffset) {
          return false;
       }
       if (!_ingressNode.equals(other._ingressNode)) {
@@ -334,6 +347,7 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _dstIp.hashCode();
       result = prime * result + _dstPort;
       result = prime * result + _ecn;
+      result = prime * result + _fragmentOffset;
       result = prime * result + _ingressNode.hashCode();
       result = prime * result + _ipProtocol.hashCode();
       result = prime * result + _srcIp.hashCode();
@@ -394,10 +408,10 @@ public final class Flow implements Comparable<Flow> {
       long icmpCode = _icmpCode;
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
             + "|" + dst_port + "|" + protocol + "|" + _dscp + "|" + _ecn + "|"
-            + icmpType + "|" + icmpCode + "|" + _state + "|" + _tcpFlagsCwr
-            + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|" + _tcpFlagsAck
-            + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|" + _tcpFlagsSyn
-            + "|" + _tcpFlagsFin + "|" + _tag + "\n";
+            + _fragmentOffset + "|" + icmpType + "|" + icmpCode + "|" + _state
+            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg
+            + "|" + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst
+            + "|" + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
       return line;
    }
 
@@ -426,8 +440,8 @@ public final class Flow implements Comparable<Flow> {
       }
       return "Flow<ingressNode:" + _ingressNode + " srcIp:" + _srcIp
             + " dstIp:" + _dstIp + " ipProtocol:" + _ipProtocol + srcPortStr
-            + dstPortStr + " dscp: " + _dscp + " ecn:" + _ecn + icmpTypeStr
-            + icmpCodeStr + " state:" + _state + tcpFlagsStr + " tag:" + _tag
-            + ">";
+            + dstPortStr + " dscp: " + _dscp + " ecn:" + _ecn
+            + " fragmentOffset:" + _fragmentOffset + icmpTypeStr + icmpCodeStr
+            + " state:" + _state + tcpFlagsStr + " tag:" + _tag + ">";
    }
 }

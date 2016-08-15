@@ -69,12 +69,12 @@ fwfromt_forwarding_class
 
 fwfromt_fragment_offset
 :
-   FRAGMENT_OFFSET range
+   FRAGMENT_OFFSET subrange
 ;
 
 fwfromt_fragment_offset_except
 :
-   FRAGMENT_OFFSET_EXCEPT range
+   FRAGMENT_OFFSET_EXCEPT subrange
 ;
 
 fwfromt_icmp_code
@@ -92,6 +92,11 @@ fwfromt_ip_options
    IP_OPTIONS ip_option
 ;
 
+fwfromt_is_fragment
+:
+   IS_FRAGMENT
+;
+
 fwfromt_learn_vlan_1p_priority
 :
    LEARN_VLAN_1P_PRIORITY DEC
@@ -105,8 +110,7 @@ fwfromt_next_header
 fwfromt_null
 :
    (
-      IS_FRAGMENT
-      | PAYLOAD_PROTOCOL
+      PAYLOAD_PROTOCOL
    ) s_null_filler
 ;
 

@@ -71,6 +71,7 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
+import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromPort;
@@ -2560,6 +2561,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else {
          from = new FwFromDestinationPrefixList(name);
       }
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_first_fragment(Fwfromt_first_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_fragment_offset(Fwfromt_fragment_offsetContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_fragment_offset_except(
+         Fwfromt_fragment_offset_exceptContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_is_fragment(Fwfromt_is_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
       _currentFwTerm.getFroms().add(from);
    }
 
