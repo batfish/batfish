@@ -331,6 +331,7 @@ fwtt_from_tail
    | fwfromt_icmp_code
    | fwfromt_icmp_type
    | fwfromt_ip_options
+   | fwfromt_is_fragment
    | fwfromt_learn_vlan_1p_priority
    | fwfromt_next_header
    | fwfromt_null

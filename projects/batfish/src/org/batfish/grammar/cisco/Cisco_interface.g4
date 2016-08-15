@@ -374,6 +374,7 @@ null_block_if_stanza
       | LANE
       | LAPB
       | LACP
+      | LINK
       | LINK_FAULT_SIGNALING
       | LLDP
       | LOAD_BALANCING

@@ -169,6 +169,11 @@ bpast_as
    as = DEC
 ;
 
+bt_advertise_external
+:
+   ADVERTISE_EXTERNAL
+;
+
 bt_advertise_inactive
 :
    ADVERTISE_INACTIVE
@@ -196,7 +201,8 @@ bt_cluster
 
 bt_common
 :
-   bt_advertise_inactive
+   bt_advertise_external
+   | bt_advertise_inactive
    | bt_advertise_peer_as
    | bt_apply_groups
    | bt_as_override

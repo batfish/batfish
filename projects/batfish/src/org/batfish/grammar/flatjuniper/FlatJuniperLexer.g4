@@ -97,6 +97,11 @@ ADDRESS_SET
    'address-set'
 ;
 
+ADVERTISE_EXTERNAL
+:
+   'advertise-external'
+;
+
 ADVERTISE_INACTIVE
 :
    'advertise-inactive'
