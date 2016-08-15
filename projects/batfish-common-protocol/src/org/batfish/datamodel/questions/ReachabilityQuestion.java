@@ -9,8 +9,6 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IcmpCode;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.ReachabilityType;
@@ -42,9 +40,11 @@ public class ReachabilityQuestion extends Question {
 
    private static final String FINAL_NODE_REGEX_VAR = "finalNodeRegex";
 
-   private static final String ICMP_CODE_VAR = "icmpCode";
+   private static final String FRAGMENT_OFFSETS_VAR = "fragmentOffsets";
 
-   private static final String ICMP_TYPE_VAR = "icmpType";
+   private static final String ICMP_CODES_VAR = "icmpCodes";
+
+   private static final String ICMP_TYPES_VAR = "icmpTypes";
 
    private static final String INGRESS_NODE_REGEX_VAR = "ingressNodeRegex";
 
@@ -58,9 +58,11 @@ public class ReachabilityQuestion extends Question {
 
    private static final String NOT_FINAL_NODE_REGEX_VAR = "notFinalNodeRegex";
 
-   private static final String NOT_ICMP_CODE_VAR = "notIcmpCode";
+   private static final String NOT_FRAGMENT_OFFSETS_VAR = "notFragmentOffsets";
 
-   private static final String NOT_ICMP_TYPE_VAR = "notIcmpType";
+   private static final String NOT_ICMP_CODE_VAR = "notIcmpCodes";
+
+   private static final String NOT_ICMP_TYPE_VAR = "notIcmpTypes";
 
    private static final String NOT_INGRESS_NODE_REGEX_VAR = "notIngressNodeRegex";
 
@@ -130,19 +132,24 @@ public class ReachabilityQuestion extends Question {
       return _finalNodeRegex;
    }
 
+   @JsonProperty(FRAGMENT_OFFSETS_VAR)
+   public Set<SubRange> getFragmentOffsets() {
+      return _headerSpace.getFragmentOffsets();
+   }
+
    @JsonIgnore
    public HeaderSpace getHeaderSpace() {
       return _headerSpace;
    }
 
-   @JsonProperty(ICMP_CODE_VAR)
-   public int getIcmpCode() {
-      return _headerSpace.getIcmpCode();
+   @JsonProperty(ICMP_CODES_VAR)
+   public Set<SubRange> getIcmpCodes() {
+      return _headerSpace.getIcmpCodes();
    }
 
-   @JsonProperty(ICMP_TYPE_VAR)
-   public int getIcmpType() {
-      return _headerSpace.getIcmpType();
+   @JsonProperty(ICMP_TYPES_VAR)
+   public Set<SubRange> getIcmpTypes() {
+      return _headerSpace.getIcmpTypes();
    }
 
    @JsonProperty(INGRESS_NODE_REGEX_VAR)
@@ -175,14 +182,19 @@ public class ReachabilityQuestion extends Question {
       return _notFinalNodeRegex;
    }
 
+   @JsonProperty(NOT_FRAGMENT_OFFSETS_VAR)
+   private Set<SubRange> getNotFragmentOffsets() {
+      return _headerSpace.getNotFragmentOffsets();
+   }
+
    @JsonProperty(NOT_ICMP_CODE_VAR)
-   public int getNotIcmpCode() {
-      return _headerSpace.getNotIcmpCode();
+   public Set<SubRange> getNotIcmpCodes() {
+      return _headerSpace.getNotIcmpCodes();
    }
 
    @JsonProperty(NOT_ICMP_TYPE_VAR)
-   public int getNotIcmpType() {
-      return _headerSpace.getNotIcmpType();
+   public Set<SubRange> getNotIcmpTypes() {
+      return _headerSpace.getNotIcmpTypes();
    }
 
    @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
@@ -257,11 +269,15 @@ public class ReachabilityQuestion extends Question {
          if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
             retString += String.format(" | finalNodeRegex=%s", _finalNodeRegex);
          }
-         if (getIcmpCode() != IcmpCode.UNSET) {
-            retString += String.format(" | icmpCode=%s", getIcmpCode());
+         if (getFragmentOffsets() != null && getFragmentOffsets().size() != 0) {
+            retString += String.format(" | fragmentOffsets=%s",
+                  getFragmentOffsets());
          }
-         if (getIcmpType() != IcmpType.UNSET) {
-            retString += String.format(" | icmpType=%s", getIcmpType());
+         if (getIcmpCodes() != null && getIcmpCodes().size() != 0) {
+            retString += String.format(" | icmpCodes=%s", getIcmpCodes());
+         }
+         if (getIcmpTypes() != null && getIcmpTypes().size() != 0) {
+            retString += String.format(" | icmpTypes=%s", getIcmpTypes());
          }
          if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
             retString += String.format(" | ingressNodeRegex=%s",
@@ -294,11 +310,16 @@ public class ReachabilityQuestion extends Question {
             retString += String.format(" | notFinalNodeRegex=%s",
                   _notFinalNodeRegex);
          }
-         if (getNotIcmpCode() != IcmpCode.UNSET) {
-            retString += String.format(" | notIcmpCode=%s", getNotIcmpCode());
+         if (getNotFragmentOffsets() != null
+               && getNotFragmentOffsets().size() != 0) {
+            retString += String.format(" | notFragmentOffsets=%s",
+                  getNotFragmentOffsets());
          }
-         if (getNotIcmpType() != IcmpType.UNSET) {
-            retString += String.format(" | notIcmpType=%s", getNotIcmpType());
+         if (getNotIcmpCodes() != null && getNotIcmpCodes().size() != 0) {
+            retString += String.format(" | notIcmpCodes=%s", getNotIcmpCodes());
+         }
+         if (getNotIcmpTypes() != null && getNotIcmpTypes().size() != 0) {
+            retString += String.format(" | notIcmpTypes=%s", getNotIcmpTypes());
          }
          if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
             retString += String.format(" | notIngressNodeRegex=%s",
@@ -346,14 +367,14 @@ public class ReachabilityQuestion extends Question {
       _finalNodeRegex = regex;
    }
 
-   @JsonProperty(ICMP_CODE_VAR)
-   public void setIcmpCode(int icmpCode) {
-      _headerSpace.setIcmpCode(icmpCode);
+   @JsonProperty(ICMP_CODES_VAR)
+   public void setIcmpCodes(Set<SubRange> icmpCodes) {
+      _headerSpace.setIcmpCodes(new TreeSet<SubRange>(icmpCodes));
    }
 
-   @JsonProperty(ICMP_TYPE_VAR)
-   public void setIcmpType(int icmpType) {
-      _headerSpace.setIcmpType(icmpType);
+   @JsonProperty(ICMP_TYPES_VAR)
+   public void setIcmpTypes(Set<SubRange> icmpTypes) {
+      _headerSpace.setIcmpTypes(new TreeSet<SubRange>(icmpTypes));
    }
 
    @JsonProperty(INGRESS_NODE_REGEX_VAR)
@@ -401,11 +422,17 @@ public class ReachabilityQuestion extends Question {
             case FINAL_NODE_REGEX_VAR:
                setFinalNodeRegex(parameters.getString(paramKey));
                break;
-            case ICMP_CODE_VAR:
-               setIcmpCode(parameters.getInt(paramKey));
+            case ICMP_CODES_VAR:
+               setIcmpCodes(new ObjectMapper().<Set<SubRange>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<SubRange>>() {
+                     }));
                break;
-            case ICMP_TYPE_VAR:
-               setIcmpType(parameters.getInt(paramKey));
+            case ICMP_TYPES_VAR:
+               setIcmpTypes(new ObjectMapper().<Set<SubRange>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<SubRange>>() {
+                     }));
                break;
             case INGRESS_NODE_REGEX_VAR:
                setIngressNodeRegex(parameters.getString(paramKey));
@@ -463,10 +490,17 @@ public class ReachabilityQuestion extends Question {
                setNotFinalNodeRegex(parameters.getString(paramKey));
                break;
             case NOT_ICMP_CODE_VAR:
-               setNotIcmpCode(parameters.getInt(paramKey));
+               setNotIcmpCodes(new ObjectMapper().<Set<SubRange>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<SubRange>>() {
+                     }));
+
                break;
             case NOT_ICMP_TYPE_VAR:
-               setNotIcmpType(parameters.getInt(paramKey));
+               setNotIcmpTypes(new ObjectMapper().<Set<SubRange>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<SubRange>>() {
+                     }));
                break;
             case NOT_INGRESS_NODE_REGEX_VAR:
                setNotIngressNodeRegex(parameters.getString(paramKey));
@@ -522,13 +556,13 @@ public class ReachabilityQuestion extends Question {
    }
 
    @JsonProperty(NOT_ICMP_CODE_VAR)
-   public void setNotIcmpCode(int notIcmpCode) {
-      _headerSpace.setNotIcmpCode(notIcmpCode);
+   public void setNotIcmpCodes(Set<SubRange> notIcmpCodes) {
+      _headerSpace.setNotIcmpCodes(new TreeSet<SubRange>(notIcmpCodes));
    }
 
    @JsonProperty(NOT_ICMP_TYPE_VAR)
-   public void setNotIcmpType(int notIcmpType) {
-      _headerSpace.setNotIcmpType(notIcmpType);
+   public void setNotIcmpTypes(Set<SubRange> notIcmpType) {
+      _headerSpace.setNotIcmpTypes(new TreeSet<SubRange>(notIcmpType));
    }
 
    @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)

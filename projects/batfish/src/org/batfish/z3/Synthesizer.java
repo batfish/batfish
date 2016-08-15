@@ -278,11 +278,11 @@ public class Synthesizer {
       Set<SubRange> notFragmentOffsetRanges = new LinkedHashSet<SubRange>();
       notFragmentOffsetRanges.addAll(headerSpace.getNotFragmentOffsets());
 
-      int icmpType = headerSpace.getIcmpType();
-      int notIcmpType = headerSpace.getNotIcmpType();
+      Set<SubRange> icmpTypes = headerSpace.getIcmpTypes();
+      Set<SubRange> notIcmpTypes = headerSpace.getNotIcmpTypes();
 
-      int icmpCode = headerSpace.getIcmpCode();
-      int notIcmpCode = headerSpace.getIcmpCode();
+      Set<SubRange> icmpCodes = headerSpace.getIcmpCodes();
+      Set<SubRange> notIcmpCodes = headerSpace.getNotIcmpCodes();
 
       Set<State> states = headerSpace.getStates();
 
@@ -681,32 +681,32 @@ public class Synthesizer {
          }
       }
 
-      // match icmp-type
-      if (icmpType != IcmpType.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
-               new LitIntExpr(icmpType, ICMP_TYPE_BITS));
-         match.addConjunct(exactMatch);
+      // match icmpTypes
+      if (icmpTypes != null && icmpTypes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_TYPE_VAR,
+               ICMP_TYPE_BITS, icmpTypes);
+         match.addConjunct(matchRange);
       }
 
-      // don't match notIcmpType
-      if (notIcmpType != IcmpType.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
-               new LitIntExpr(notIcmpType, ICMP_TYPE_BITS));
-         match.addConjunct(new NotExpr(exactMatch));
+      // don't match notIcmpTypes
+      if (notIcmpTypes != null && notIcmpTypes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_TYPE_VAR,
+               ICMP_TYPE_BITS, notIcmpTypes);
+         match.addConjunct(new NotExpr(matchRange));
       }
 
-      // match icmp-code
-      if (icmpCode != IcmpCode.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
-               new LitIntExpr(icmpCode, ICMP_CODE_BITS));
-         match.addConjunct(exactMatch);
+      // match icmpCodes
+      if (icmpCodes != null && icmpCodes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
+               ICMP_CODE_BITS, icmpCodes);
+         match.addConjunct(matchRange);
       }
 
-      // don't match notIcmpCode
-      if (notIcmpCode != IcmpCode.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
-               new LitIntExpr(notIcmpCode, ICMP_CODE_BITS));
-         match.addConjunct(new NotExpr(exactMatch));
+      // don't match notIcmpCodes
+      if (notIcmpCodes != null && notIcmpCodes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
+               ICMP_CODE_BITS, notIcmpCodes);
+         match.addConjunct(new NotExpr(matchRange));
       }
 
       // match tcp-flags

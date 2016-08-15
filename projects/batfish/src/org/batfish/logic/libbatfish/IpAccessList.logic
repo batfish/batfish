@@ -212,25 +212,28 @@ SetIpAccessListLine_notDstPorts(list, line, dstPort_start, dstPort_end) ->
    int(dstPort_start),
    int(dstPort_end).
 
-SetIpAccessListLine_icmpCode(list, line, icmpCode) ->
+SetIpAccessListLine_icmpCodes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
    int(icmpCode).
 
-SetIpAccessListLine_notIcmpCode(list, line, icmpCode) ->
+SetIpAccessListLine_notIcmpCodes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpCode).
+   int(start),
+   int(end).
 
-SetIpAccessListLine_icmpType(list, line, icmpType) ->
+SetIpAccessListLine_icmpTypes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpType).
+   int(start),
+   int(end).
 
-SetIpAccessListLine_notIcmpType(list, line, icmpType) ->
+SetIpAccessListLine_notIcmpTypes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpType).
+   int(start),
+   int(end).
 
 SetIpAccessListLine_permit(list, line) ->
    IpAccessList(list),

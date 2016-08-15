@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -1225,11 +1226,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
          Integer icmpType = fromLine.getIcmpType();
          if (icmpType != null) {
-            newLine.setIcmpType(icmpType);
+            newLine.setIcmpTypes(new TreeSet<SubRange>(Collections
+                  .singleton(new SubRange(icmpType))));
          }
          Integer icmpCode = fromLine.getIcmpCode();
          if (icmpCode != null) {
-            newLine.setIcmpCode(icmpCode);
+            newLine.setIcmpCodes(new TreeSet<SubRange>(Collections
+                  .singleton(new SubRange(icmpCode))));
          }
          Set<State> states = fromLine.getStates();
          newLine.getStates().addAll(states);

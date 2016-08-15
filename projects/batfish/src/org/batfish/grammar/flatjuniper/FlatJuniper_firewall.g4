@@ -79,12 +79,20 @@ fwfromt_fragment_offset_except
 
 fwfromt_icmp_code
 :
-   ICMP_CODE icmp_code
+   ICMP_CODE
+   (
+      icmp_code
+      | subrange
+   )
 ;
 
 fwfromt_icmp_type
 :
-   ICMP_TYPE icmp_type
+   ICMP_TYPE
+   (
+      icmp_type
+      | subrange
+   )
 ;
 
 fwfromt_ip_options

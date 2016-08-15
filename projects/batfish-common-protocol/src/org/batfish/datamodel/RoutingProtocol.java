@@ -25,6 +25,7 @@ public enum RoutingProtocol {
    OSPF_E1("ospfE1"),
    OSPF_E2("ospfE2"),
    OSPF_IA("ospfIA"),
+   OSPF3("ospf3"),
    RSVP("rsvp"),
    STATIC("static");
 

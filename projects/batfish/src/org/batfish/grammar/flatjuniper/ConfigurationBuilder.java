@@ -12,6 +12,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.JuniperUtils;
@@ -74,6 +76,8 @@ import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
 import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
 import org.batfish.representation.juniper.FwFromSourceAddressExcept;
@@ -1147,6 +1151,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    }
 
+   private static int toIcmpCode(Icmp_codeContext ctx) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   private static int toIcmpType(Icmp_typeContext ctx) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
    private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
          Ike_authentication_algorithmContext ctx) {
       if (ctx.MD5() != null) {
@@ -1311,6 +1327,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.OSPF() != null) {
          return RoutingProtocol.OSPF;
+      }
+      else if (ctx.OSPF3() != null) {
+         return RoutingProtocol.OSPF3;
       }
       else if (ctx.RSVP() != null) {
          return RoutingProtocol.RSVP;
@@ -2583,6 +2602,40 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Fwfromt_fragment_offset_exceptContext ctx) {
       SubRange subRange = toSubRange(ctx.subrange());
       FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_icmp_code(Fwfromt_icmp_codeContext ctx) {
+      SubRange icmpCodeRange;
+      if (ctx.subrange() != null) {
+         icmpCodeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_code() != null) {
+         int icmpCode = toIcmpCode(ctx.icmp_code());
+         icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-code");
+      }
+      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_icmp_type(Fwfromt_icmp_typeContext ctx) {
+      SubRange icmpTypeRange;
+      if (ctx.subrange() != null) {
+         icmpTypeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_type() != null) {
+         int icmpType = toIcmpType(ctx.icmp_type());
+         icmpTypeRange = new SubRange(icmpType, icmpType);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-type");
+      }
+      FwFrom from = new FwFromIcmpType(icmpTypeRange);
       _currentFwTerm.getFroms().add(from);
    }
 

@@ -25,9 +25,9 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _fragmentOffsets;
 
-   private int _icmpCode;
+   private SortedSet<SubRange> _icmpCodes;
 
-   private int _icmpType;
+   private SortedSet<SubRange> _icmpTypes;
 
    private Set<IpProtocol> _ipProtocols;
 
@@ -43,9 +43,9 @@ public class HeaderSpace implements Serializable {
 
    private SortedSet<SubRange> _notFragmentOffsets;
 
-   private int _notIcmpCode;
+   private SortedSet<SubRange> _notIcmpCodes;
 
-   private int _notIcmpType;
+   private SortedSet<SubRange> _notIcmpTypes;
 
    private Set<IpProtocol> _notIpProtocols;
 
@@ -76,8 +76,8 @@ public class HeaderSpace implements Serializable {
       _srcOrDstIps = new TreeSet<IpWildcard>();
       _srcOrDstPorts = new TreeSet<SubRange>();
       _srcPorts = new TreeSet<SubRange>();
-      _icmpType = IcmpType.UNSET;
-      _icmpCode = IcmpCode.UNSET;
+      _icmpTypes = new TreeSet<SubRange>();
+      _icmpCodes = new TreeSet<SubRange>();
       _states = EnumSet.noneOf(State.class);
       _tcpFlags = new ArrayList<TcpFlags>();
       _notDscps = new TreeSet<Integer>();
@@ -85,8 +85,8 @@ public class HeaderSpace implements Serializable {
       _notDstPorts = new TreeSet<SubRange>();
       _notEcns = new TreeSet<Integer>();
       _notFragmentOffsets = new TreeSet<SubRange>();
-      _notIcmpCode = IcmpCode.UNSET;
-      _notIcmpType = IcmpType.UNSET;
+      _notIcmpCodes = new TreeSet<SubRange>();
+      _notIcmpTypes = new TreeSet<SubRange>();
       _notIpProtocols = EnumSet.noneOf(IpProtocol.class);
       _notSrcIps = new TreeSet<IpWildcard>();
       _notSrcPorts = new TreeSet<SubRange>();
@@ -112,12 +112,12 @@ public class HeaderSpace implements Serializable {
       return _fragmentOffsets;
    }
 
-   public int getIcmpCode() {
-      return _icmpCode;
+   public SortedSet<SubRange> getIcmpCodes() {
+      return _icmpCodes;
    }
 
-   public int getIcmpType() {
-      return _icmpType;
+   public SortedSet<SubRange> getIcmpTypes() {
+      return _icmpTypes;
    }
 
    public Set<IpProtocol> getIpProtocols() {
@@ -148,12 +148,12 @@ public class HeaderSpace implements Serializable {
       return _notFragmentOffsets;
    }
 
-   public int getNotIcmpCode() {
-      return _notIcmpCode;
+   public SortedSet<SubRange> getNotIcmpCodes() {
+      return _notIcmpCodes;
    }
 
-   public int getNotIcmpType() {
-      return _notIcmpType;
+   public SortedSet<SubRange> getNotIcmpTypes() {
+      return _notIcmpTypes;
    }
 
    public Set<IpProtocol> getNotIpProtocols() {
@@ -212,12 +212,12 @@ public class HeaderSpace implements Serializable {
       _fragmentOffsets = fragmentOffsets;
    }
 
-   public void setIcmpCode(int icmpCode) {
-      _icmpCode = icmpCode;
+   public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
+      _icmpCodes = icmpCodes;
    }
 
-   public void setIcmpType(int icmpType) {
-      _icmpType = icmpType;
+   public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
+      _icmpTypes = icmpTypes;
    }
 
    public void setIpProtocols(Set<IpProtocol> ipProtocols) {
@@ -249,12 +249,12 @@ public class HeaderSpace implements Serializable {
       _notFragmentOffsets = notFragmentOffsets;
    }
 
-   public void setNotIcmpCode(int notIcmpCode) {
-      _notIcmpCode = notIcmpCode;
+   public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
+      _notIcmpCodes = notIcmpCodes;
    }
 
-   public void setNotIcmpType(int notIcmpType) {
-      _notIcmpType = notIcmpType;
+   public void setNotIcmpTypes(SortedSet<SubRange> notIcmpTypes) {
+      _notIcmpTypes = notIcmpTypes;
    }
 
    public void setNotIpProtocols(Set<IpProtocol> notIpProtocols) {
@@ -306,9 +306,9 @@ public class HeaderSpace implements Serializable {
             + ", Ecns: " + _ecns.toString() + ", NotEcns: "
             + _notEcns.toString() + ", FragmentOffsets: "
             + _fragmentOffsets.toString() + ", NotFragmentOffsets: "
-            + _notFragmentOffsets.toString() + ", IcmpType:" + _icmpType
-            + ", NotIcmpType:" + _notIcmpType + ", IcmpCode:" + _icmpCode
-            + ", NotIcmpCode:" + _notIcmpCode + ", States:"
+            + _notFragmentOffsets.toString() + ", IcmpType:" + _icmpTypes
+            + ", NotIcmpType:" + _notIcmpTypes + ", IcmpCode:" + _icmpCodes
+            + ", NotIcmpCode:" + _notIcmpCodes + ", States:"
             + _states.toString() + ", TcpFlags:" + _tcpFlags.toString() + "]";
    }
 
@@ -317,8 +317,8 @@ public class HeaderSpace implements Serializable {
             && _dstIps.isEmpty() && _notDstIps.isEmpty() && _dstPorts.isEmpty()
             && _notDstPorts.isEmpty() && _ecns.isEmpty() && _notEcns.isEmpty()
             && _fragmentOffsets.isEmpty() && _notFragmentOffsets.isEmpty()
-            && _icmpCode == IcmpCode.UNSET && _notIcmpCode == IcmpCode.UNSET
-            && _icmpType == IcmpType.UNSET && _notIcmpType == IcmpType.UNSET
+            && _icmpCodes.isEmpty() && _notIcmpCodes.isEmpty()
+            && _icmpTypes.isEmpty() && _notIcmpTypes.isEmpty()
             && _ipProtocols.isEmpty() && _notIpProtocols.isEmpty()
             && _srcIps.isEmpty() && _notSrcIps.isEmpty()
             && _srcOrDstIps.isEmpty() && _srcOrDstPorts.isEmpty()

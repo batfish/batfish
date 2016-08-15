@@ -1896,27 +1896,39 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpCode'(Flow, IcmpCode),
    (
-      \+ 'SetIpAccessListLine_icmpCode'(List, Line, _) ;
-      'SetIpAccessListLine_icmpCode'(List, Line, IcmpCode)
+      \+ 'SetIpAccessListLine_icmpCodes'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_icmpCodes'(List, Line, Start, End),
+         Start =< IcmpCode,
+         IcmpCode =< End
+      )
    ).
 
 'IpAccessListMatchNotIcmpCode'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpCode'(Flow, IcmpCode),
-   'SetIpAccessListLine_notIcmpCode'(List, Line, IcmpCode).
+   'SetIpAccessListLine_notIcmpCodes'(List, Line, Start, End),
+   Start =< IcmpCode,
+   IcmpCode =< End.
 
 'IpAccessListMatchIcmpType'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpType'(Flow, IcmpType),
    (
-      \+ 'SetIpAccessListLine_icmpType'(List, Line, _) ;
-      'SetIpAccessListLine_icmpType'(List, Line, IcmpType)
+      \+ 'SetIpAccessListLine_icmpTypes'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_icmpTypes'(List, Line, Start, End),
+         Start =< IcmpType,
+         IcmpType =< End
+      )
    ).
 
 'IpAccessListMatchNotIcmpType'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpType'(Flow, IcmpType),
-   'SetIpAccessListLine_notIcmpType'(List, Line, IcmpType).
+   'SetIpAccessListLine_notIcmpTypes'(List, Line, Start, End),
+   Start =< IcmpType,
+   IcmpType =< End.
 
 'IpAccessListMatchProtocol'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
