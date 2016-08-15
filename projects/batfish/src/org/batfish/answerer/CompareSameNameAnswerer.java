@@ -9,12 +9,19 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
 
@@ -52,7 +59,14 @@ public class CompareSameNameAnswerer extends Answerer {
       add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
       add(CommunityList.class, c -> c.getCommunityLists());
       add(IkeGateway.class, c -> c.getIkeGateways());
+      add(IkePolicy.class, c -> c.getIkePolicies());
+      add(IkeProposal.class, c -> c.getIkeProposals());
+      add(IpAccessList.class, c -> c.getIpAccessLists());
+      add(IpsecPolicy.class, c -> c.getIpsecPolicies());
+      add(IpsecProposal.class, c -> c.getIpsecProposals());
+      add(IpsecVpn.class, c -> c.getIpsecVpns());
       add(RouteFilterList.class, c -> c.getRouteFilterLists());
+      add(RoutingPolicy.class, c -> c.getRoutingPolicies());
 
       return _answerElement;
    }
