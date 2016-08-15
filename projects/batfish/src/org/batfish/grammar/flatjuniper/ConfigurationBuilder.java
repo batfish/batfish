@@ -12,8 +12,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.JuniperUtils;
@@ -2386,6 +2384,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.EXTERNAL() != null) {
          _currentBgpGroup.setType(BgpGroupType.EXTERNAL);
       }
+   }
+
+   @Override
+   public void exitCt_invert_match(Ct_invert_matchContext ctx) {
+      _currentCommunityList.setInvertMatch(true);
    }
 
    @Override

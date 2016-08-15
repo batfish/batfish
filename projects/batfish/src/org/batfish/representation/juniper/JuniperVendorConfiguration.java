@@ -452,6 +452,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       }
       org.batfish.datamodel.CommunityList newCl = new org.batfish.datamodel.CommunityList(
             name, newLines);
+      newCl.setInvertMatch(cl.getInvertMatch());
       return newCl;
    }
 

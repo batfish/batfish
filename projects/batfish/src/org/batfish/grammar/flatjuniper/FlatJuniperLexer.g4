@@ -1416,6 +1416,11 @@ INTERNET_OPTIONS
    'internet-options'
 ;
 
+INVERT_MATCH
+:
+   'invert-match'
+;
+
 IP
 :
    'ip'

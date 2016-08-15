@@ -20,6 +20,8 @@ public class CommunityList extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
+   private boolean _invertMatch;
+
    /**
     * The list of lines that are checked in order against the community
     * attribute(s) of a bgp advertisement
@@ -49,6 +51,10 @@ public class CommunityList extends ComparableStructure<String> {
       return other._lines.equals(_lines);
    }
 
+   public boolean getInvertMatch() {
+      return _invertMatch;
+   }
+
    @JsonProperty(LINES_VAR)
    public List<CommunityListLine> getLines() {
       return _lines;
@@ -59,4 +65,9 @@ public class CommunityList extends ComparableStructure<String> {
    public String getName() {
       return _key;
    }
+
+   public void setInvertMatch(boolean invertMatch) {
+      _invertMatch = invertMatch;
+   }
+
 }
