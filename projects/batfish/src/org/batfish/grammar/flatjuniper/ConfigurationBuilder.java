@@ -1152,26 +1152,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private static int toIcmpCode(Icmp_codeContext ctx) {
-      if (ctx.HOST_UNREACHABLE() != null) {
+      if (ctx.FRAGMENTATION_NEEDED() != null) {
+         return IcmpCode.PACKET_TOO_BIG;
+      }
+      else if (ctx.HOST_UNREACHABLE() != null) {
          return IcmpCode.DESTINATION_HOST_UNREACHABLE;
       }
       else {
-         throw new BatfishException("Missing mapping for icmp-code: '" + ctx.getText() + "'");
+         throw new BatfishException("Missing mapping for icmp-code: '"
+               + ctx.getText() + "'");
       }
    }
 
    private static int toIcmpType(Icmp_typeContext ctx) {
-      if (ctx.DESTINATION_UNREACHABLE() != null) {
-         return IcmpType.DESTINATION_UNREACHABLE;
-      }
-      else if (ctx.ECHO_REPLY() != null) {
+      if (ctx.ECHO_REPLY() != null) {
          return IcmpType.ECHO_REPLY;
       }
       else if (ctx.ECHO_REQUEST() != null) {
          return IcmpType.ECHO_REQUEST;
       }
+      else if (ctx.PARAMETER_PROBLEM() != null) {
+         return IcmpType.PARAMETER_PROBLEM;
+      }
+      else if (ctx.TIME_EXCEEDED() != null) {
+         return IcmpType.TIME_EXCEEDED;
+      }
+      else if (ctx.UNREACHABLE() != null) {
+         return IcmpType.DESTINATION_UNREACHABLE;
+      }
       else {
-         throw new BatfishException("Missing mapping for icmp-type: '" + ctx.getText() + "'");
+         throw new BatfishException("Missing mapping for icmp-type: '"
+               + ctx.getText() + "'");
       }
    }
 
@@ -2625,7 +2636,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_icmp_code(Fwfromt_icmp_codeContext ctx) {
       if (_currentFirewallFamily == Family.INET6) {
-         //TODO: support icmpv6
+         // TODO: support icmpv6
          return;
       }
       SubRange icmpCodeRange;
@@ -2646,7 +2657,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_icmp_type(Fwfromt_icmp_typeContext ctx) {
       if (_currentFirewallFamily == Family.INET6) {
-         //TODO: support icmpv6
+         // TODO: support icmpv6
          return;
       }
       SubRange icmpTypeRange;
