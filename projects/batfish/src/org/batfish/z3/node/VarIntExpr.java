@@ -49,7 +49,8 @@ public class VarIntExpr extends IntExpr {
          throws Z3Exception {
       com.microsoft.z3.BitVecExpr ret = nodProgram.getVariables().get(_var);
       if (ret == null) {
-         throw new BatfishException("nodProgram missing mapping for variable: '" + _var + "'");
+         throw new BatfishException(
+               "nodProgram missing mapping for variable: '" + _var + "'");
       }
       return ret;
    }

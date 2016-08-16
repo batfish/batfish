@@ -168,6 +168,7 @@ public class Synthesizer {
       vars.add(IP_PROTOCOL_VAR);
       vars.add(DSCP_VAR);
       vars.add(ECN_VAR);
+      vars.add(FRAGMENT_OFFSET_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
       vars.add(STATE_VAR);
@@ -227,6 +228,7 @@ public class Synthesizer {
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
       varSizes.put(DSCP_VAR, DSCP_BITS);
       varSizes.put(ECN_VAR, ECN_BITS);
+      varSizes.put(FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
       varSizes.put(STATE_VAR, STATE_BITS);
