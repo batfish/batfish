@@ -26,7 +26,7 @@ public class GeneratedRoute implements Serializable {
       _policies = new ArrayList<String>();
    }
 
-   public int getMetric() {
+   public Integer getMetric() {
       return _metric;
    }
 
