@@ -58,6 +58,8 @@ import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
 public final class JuniperVendorConfiguration extends JuniperConfiguration {
 
+   private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
+
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
 
    private static final String FILTER = "filter";
@@ -464,6 +466,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
          administrativeCost = DEFAULT_AGGREGATE_ROUTE_PREFERENCE;
       }
       Integer metric = route.getMetric();
+      if (metric == null) {
+         metric = DEFAULT_AGGREGATE_ROUTE_COST;
+      }
       Set<PolicyMap> policies = new LinkedHashSet<PolicyMap>();
       for (String policyName : route.getPolicies()) {
          PolicyMap policy = _c.getPolicyMaps().get(policyName);
