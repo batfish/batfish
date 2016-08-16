@@ -92,14 +92,28 @@ public class AclLinesAnswerElement implements AnswerElement {
 
    private SortedMap<String, SortedMap<String, IpAccessList>> _acls;
 
+   private SortedMap<String, SortedMap<String, SortedSet<String>>> _equivalenceClasses;
+
    private SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> _reachableLines;
 
    private SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> _unreachableLines;
 
    public AclLinesAnswerElement() {
       _acls = new TreeMap<String, SortedMap<String, IpAccessList>>();
+      _equivalenceClasses = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
       _reachableLines = new TreeMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>>();
       _unreachableLines = new TreeMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>>();
+   }
+
+   public void addEquivalenceClass(String aclName, String hostname,
+         SortedSet<String> eqClassNodes) {
+      SortedMap<String, SortedSet<String>> byRep = _equivalenceClasses
+            .get(aclName);
+      if (byRep == null) {
+         byRep = new TreeMap<String, SortedSet<String>>();
+         _equivalenceClasses.put(aclName, byRep);
+      }
+      byRep.put(hostname, eqClassNodes);
    }
 
    private void addLine(
@@ -142,6 +156,10 @@ public class AclLinesAnswerElement implements AnswerElement {
       return _acls;
    }
 
+   public SortedMap<String, SortedMap<String, SortedSet<String>>> getEquivalenceClasses() {
+      return _equivalenceClasses;
+   }
+
    public SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> getReachableLines() {
       return _reachableLines;
    }
@@ -159,6 +177,11 @@ public class AclLinesAnswerElement implements AnswerElement {
 
    public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
       _acls = acls;
+   }
+
+   public void setEquivalenceClasses(
+         SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {
+      _equivalenceClasses = equivalenceClasses;
    }
 
    public void setReachableLines(

@@ -23,7 +23,7 @@ public final class CommunityList extends ComparableStructure<String> implements
       _lines = new ArrayList<CommunityListLine>();
    }
 
-   public boolean  getInvertMatch() {
+   public boolean getInvertMatch() {
       return _invertMatch;
    }
 

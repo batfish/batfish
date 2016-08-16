@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
@@ -17,9 +18,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.CompareSameNameAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.AclReachabilityQuestion;
+import org.batfish.datamodel.questions.CompareSameNameQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
@@ -39,18 +44,9 @@ public class AclReachabilityAnswerer extends Answerer {
 
    @Override
    public AnswerElement answer(TestrigSettings testrigSettings) {
+      AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
       Settings settings = _batfish.getSettings();
       AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
-
-      Pattern nodeRegex;
-      try {
-         nodeRegex = Pattern.compile(question.getNodeRegex());
-      }
-      catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
-      }
 
       Pattern aclNameRegex;
       try {
@@ -66,24 +62,37 @@ public class AclReachabilityAnswerer extends Answerer {
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
       List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-         String hostname = e.getKey();
-         if (!nodeRegex.matcher(hostname).matches()) {
+
+      // get comparesamename results for acls
+      CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
+      csnQuestion.setNodeRegex(question.getNodeRegex());
+      csnQuestion.setNamedStructTypes(Collections.singleton(IpAccessList.class
+            .getSimpleName()));
+      CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(
+            csnQuestion, _batfish);
+      CompareSameNameAnswerElement csnAnswer = (CompareSameNameAnswerElement) csnAnswerer
+            .answer(testrigSettings);
+      NamedStructureEquivalenceSets<?> aclEqSets = csnAnswer
+            .getEquivalenceSets().get(IpAccessList.class.getSimpleName());
+      for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
+         String aclName = e.getKey();
+         if (!aclNameRegex.matcher(aclName).matches()) {
             continue;
          }
-         Configuration c = e.getValue();
-         for (Entry<String, IpAccessList> e2 : c.getIpAccessLists().entrySet()) {
-            String aclName = e2.getKey();
-            if (!aclNameRegex.matcher(aclName).matches()) {
-               continue;
-            }
-            // skip juniper srx inbound filters, as they can't really contain
-            // operator error
-            if (aclName.contains("~ZONE_INTERFACE_FILTER~")
-                  || aclName.contains("~INBOUND_ZONE_FILTER~")) {
-               continue;
-            }
-            IpAccessList acl = e2.getValue();
+         // skip juniper srx inbound filters, as they can't really contain
+         // operator error
+         if (aclName.contains("~ZONE_INTERFACE_FILTER~")
+               || aclName.contains("~INBOUND_ZONE_FILTER~")) {
+            continue;
+         }
+         SortedSet<?> s = (SortedSet<?>) e.getValue();
+         for (Object o : s) {
+            NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
+            String hostname = aclEqSet.getRepresentativeElement();
+            SortedSet<String> eqClassNodes = aclEqSet.getNodes();
+            answerElement.addEquivalenceClass(aclName, hostname, eqClassNodes);
+            Configuration c = configurations.get(hostname);
+            IpAccessList acl = c.getIpAccessLists().get(aclName);
             int numLines = acl.getLines().size();
             if (numLines == 0) {
                _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName
@@ -99,6 +108,7 @@ public class AclReachabilityAnswerer extends Answerer {
             jobs.add(job);
          }
       }
+
       Map<AclLine, Boolean> output = new TreeMap<AclLine, Boolean>();
       _batfish.computeNodSatOutput(jobs, output);
 
@@ -179,7 +189,6 @@ public class AclReachabilityAnswerer extends Answerer {
             aclsWithUnreachableLines.add(qualifiedAclName);
          }
       }
-      AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
       for (Entry<AclLine, Boolean> e : output.entrySet()) {
          AclLine aclLine = e.getKey();
          int index = aclLine.getLine();

@@ -2,7 +2,9 @@ package org.batfish.answerer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
@@ -31,6 +33,8 @@ public class CompareSameNameAnswerer extends Answerer {
 
    private Map<String, Configuration> _configurations;
 
+   private Set<String> _namedStructTypes;
+
    private List<String> _nodes;
 
    public CompareSameNameAnswerer(Question question, Batfish batfish) {
@@ -39,10 +43,14 @@ public class CompareSameNameAnswerer extends Answerer {
 
    private <T> void add(Class<T> structureClass,
          Function<Configuration, Map<String, T>> structureMapRetriever) {
-      _answerElement.add(
-            structureClass.getSimpleName(),
-            processStructures(structureClass, _nodes, _configurations,
-                  structureMapRetriever));
+      if (_namedStructTypes.isEmpty()
+            || _namedStructTypes.contains(structureClass.getSimpleName()
+                  .toLowerCase())) {
+         _answerElement.add(
+               structureClass.getSimpleName(),
+               processStructures(structureClass, _nodes, _configurations,
+                     structureMapRetriever));
+      }
    }
 
    @Override
@@ -55,6 +63,8 @@ public class CompareSameNameAnswerer extends Answerer {
       // collect relevant nodes in a list.
       _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(),
             _configurations.keySet());
+      _namedStructTypes = question.getNamedStructTypes().stream()
+            .map(s -> s.toLowerCase()).collect(Collectors.toSet());
 
       add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
       add(CommunityList.class, c -> c.getCommunityLists());
