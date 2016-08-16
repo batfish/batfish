@@ -21,6 +21,8 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExtendedCommunity;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeProposal;
@@ -1150,15 +1152,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private static int toIcmpCode(Icmp_codeContext ctx) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      if (ctx.HOST_UNREACHABLE() != null) {
+         return IcmpCode.DESTINATION_HOST_UNREACHABLE;
+      }
+      else {
+         throw new BatfishException("Missing mapping for icmp-code: '" + ctx.getText() + "'");
+      }
    }
 
    private static int toIcmpType(Icmp_typeContext ctx) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      if (ctx.DESTINATION_UNREACHABLE() != null) {
+         return IcmpType.DESTINATION_UNREACHABLE;
+      }
+      else if (ctx.ECHO_REPLY() != null) {
+         return IcmpType.ECHO_REPLY;
+      }
+      else if (ctx.ECHO_REQUEST() != null) {
+         return IcmpType.ECHO_REQUEST;
+      }
+      else {
+         throw new BatfishException("Missing mapping for icmp-type: '" + ctx.getText() + "'");
+      }
    }
 
    private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
@@ -2610,6 +2624,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_icmp_code(Fwfromt_icmp_codeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         //TODO: support icmpv6
+         return;
+      }
       SubRange icmpCodeRange;
       if (ctx.subrange() != null) {
          icmpCodeRange = toSubRange(ctx.subrange());
@@ -2627,6 +2645,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_icmp_type(Fwfromt_icmp_typeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         //TODO: support icmpv6
+         return;
+      }
       SubRange icmpTypeRange;
       if (ctx.subrange() != null) {
          icmpTypeRange = toSubRange(ctx.subrange());
