@@ -2769,7 +2769,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_tcp_established(Fwfromt_tcp_establishedContext ctx) {
-      todo(ctx, "firewall from tcp established");
+      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(true);
+      tcpFlags.add(alt1);
+      TcpFlags alt2 = new TcpFlags();
+      alt2.setUseRst(true);
+      alt2.setRst(true);
+      tcpFlags.add(alt2);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
    }
 
    @Override
@@ -2781,7 +2791,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_tcp_initial(Fwfromt_tcp_initialContext ctx) {
-      todo(ctx, "firewall from tcp initial");
+      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(false);
+      alt1.setUseSyn(true);
+      alt1.setSyn(true);
+      tcpFlags.add(alt1);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
    }
 
    @Override
