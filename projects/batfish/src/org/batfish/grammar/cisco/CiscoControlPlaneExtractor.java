@@ -1798,13 +1798,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
          }
       }
-      String name;
-      if (ctx.num != null) {
-         name = ctx.num.getText();
-      }
-      else {
-         name = getFullText(ctx).trim();
-      }
+      String name = getFullText(ctx).trim();
       ExtendedAccessListLine line = new ExtendedAccessListLine(name, action,
             protocol, new IpWildcard(srcIp, srcWildcard), srcAddressGroup,
             new IpWildcard(dstIp, dstWildcard), dstAddressGroup, srcPortRanges,
