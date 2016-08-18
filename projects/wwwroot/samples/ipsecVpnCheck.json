@@ -1,0 +1,8 @@
+{
+  "class" : "org.batfish.datamodel.questions.IpsecVpnCheckQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "node1Regex" : ".*",
+  "node2Regex" : ".*",
+  "nodeBlacklist" : [ ]
+}

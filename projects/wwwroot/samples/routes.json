@@ -1,0 +1,7 @@
+{
+  "class" : "org.batfish.datamodel.questions.RoutesQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "nodeBlacklist" : [ ],
+  "nodeRegex" : ".*"
+}

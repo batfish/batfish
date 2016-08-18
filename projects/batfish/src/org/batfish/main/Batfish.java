@@ -1577,7 +1577,8 @@ public class Batfish implements AutoCloseable {
          TestrigSettings testrigSettings) {
       EnvironmentSettings envSettings = testrigSettings
             .getEnvironmentSettings();
-      if (Files.exists(envSettings.getDeltaConfigurationsDir())) {
+      Path deltaDir = envSettings.getDeltaConfigurationsDir();
+      if (deltaDir != null && Files.exists(deltaDir)) {
          if (Files.exists(envSettings.getDeltaCompiledConfigurationsDir())) {
             return deserializeConfigurations(envSettings
                   .getDeltaCompiledConfigurationsDir());

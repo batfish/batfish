@@ -171,8 +171,8 @@
 	<div id="tabs">
 		<ul>
 			<li><a href="#login">Login</a></li>
-			<li><a href="#upload">Upload config</a></li>
-			<li><a href="#topology">Topology and Output</a></li>
+			<li><a href="#upload">Upload configs</a></li>
+			<li><a href="#topology">Ask questions</a></li>
 			<li><a href="#debug">Debug</a></li>
 		</ul>
 		
@@ -206,86 +206,115 @@
 		
 		<div id="upload">
 			<table>
-				<tr>
-					<td>
-						<table>
-							<tr>
-								<td>
-									<select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
-										<option disabled selected>-- select a sample config -- </option>
-										<option value="samples/as1border1.cfg.txt">Example border router</option>
-										<option value="samples/as1core1.cfg.txt">Example core router</option>
-										<option value="samples/example.zip">Example base testrig</option>
-									</select>
-									&nbsp or &nbsp
-									<input type="file" id="fileConfig" size="20"/> 
-									<script>
-									jQuery('#fileConfig').change({
-										testrigFile : elementTestrigFile,
-										configText : elementConfigText,
-										configSelect : elementConfigSelect
-									}, loadConfigText);
-									</script>
-									&nbsp or &nbsp
-									<select id="prevTestrigs" onchange="startCalls('prevTestrigs', 'showOldTestrig::drawtopology::posttestriginit')" style="width:250px">
-										<option disabled selected>-- select a previously uploaded testrig --</option>
-									</select>
-									
-								</td>
-							</tr>
-							<tr>
-								<td colspan> <textarea id="txtConfig">--config--</textarea></td>
-							</tr>
-							<tr>
-								<td>
-									<button id="btnUploadConfig" disabled
-										onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')">
-										Process base configuration
-									</button>
-								</td>
-							</tr>
-						</table>			
-					</td>
-					<td>
-						<table>
-							<tr>
-								<td>
-									<select id="deltaConfigSelect" onchange="loadText(elementDeltaConfigSelect, elementDeltaConfigText, elementDeltaTestrigFile)">
-										<option disabled selected>-- select a sample delta config -- </option>
-										<option value="samples/delta.zip">Example delta testrig</option>
-									</select>
-									&nbsp or &nbsp
-									<input type="file" id="deltaFileConfig" />
-									<script>
-										jQuery('#deltaFileConfig').change({
+					<tr>
+						<td valign="top">
+							1. <select id="configSelect" onchange="loadText(elementConfigSelect, elementConfigText, elementTestrigFile)">
+								<option disabled selected>-- select a sample config -- </option>
+								<option value="samples/as1border1.cfg.txt">Example border router</option>
+								<option value="samples/as1core1.cfg.txt">Example core router</option>
+								<option value="samples/example.zip">Example base testrig</option>
+							</select>
+							<p>&nbsp&nbsp&nbsp&nbsp or &nbsp
+							<input type="file" id="fileConfig" size="20"/> 
+							<script>
+								jQuery('#fileConfig').change({
+									testrigFile : elementTestrigFile,
+									configText : elementConfigText,
+									configSelect : elementConfigSelect
+								}, loadConfigText);
+							</script>
+							<p>&nbsp&nbsp&nbsp&nbsp or &nbsp
+							<select id="prevTestrigs" onchange="startCalls('prevTestrigs', 'showOldTestrig::drawtopology::posttestriginit')" style="width:240px">
+								<option disabled selected>-- select a previously uploaded testrig --</option>
+							</select>
+							<p><br><br><br><br>
+							2. <button id="btnUploadConfig" disabled
+								onclick="startCalls('btnUploadConfigText', 'initcontainer::uploadtestrigsmart::parsevendorspecific::parsevendorindependent::drawtopology::posttestriginit')">
+								Process base configuration
+							</button>		
+						</td>
+						<td> <textarea id="txtConfig">--config--</textarea></td>
+					</tr>
+					<tr><td valign="top">
+							3. <select id="deltaConfigSelect" onchange="loadText(elementDeltaConfigSelect, elementDeltaConfigText, elementDeltaTestrigFile)">
+								<option disabled selected>-- select a sample delta config -- </option>
+								<option value="samples/delta.zip">Example delta testrig</option>
+							</select>
+							<p>&nbsp&nbsp&nbsp&nbsp or &nbsp
+							<input type="file" id="deltaFileConfig" />
+							<script>
+								jQuery('#deltaFileConfig').change({
 											testrigFile : elementDeltaTestrigFile,
 											configText : elementDeltaConfigText,
 											configSelect : elementDeltaConfigSelect
-										}, loadConfigText);
-									</script>						
-								</td>
-							</tr>
-							<tr>
-								<td> <textarea id="deltaTxtConfig">--delta config--</textarea></td>
-							</tr>
-							<tr>
-								<td>
-									<button id="btnUploadDiffEnv" disabled 
+								}, loadConfigText);
+							</script>	
+							<p><br><br><br><br>
+							4. <button id="btnUploadDiffEnv" 
 									onclick="startCalls('btnUploadConfigText', 'uploaddiffenvsmart::postdiffenvinit')">
 										Process delta configuration
-									</button>	
-									
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-			</table>	
+							</button>					
+						</td>
+						<td> <textarea id="deltaTxtConfig">--delta config--</textarea></td>
+					</tr>
+			</table>
 		</div>
 		
 		<div id="topology">
 			<table>
 				<tr>
+					<td valign="top">
+						<table>
+							<tr>
+								<td> Results<textarea id="txtOutput" readonly>--output--</textarea> </td>			
+							</tr>
+							<tr>
+								<td>&nbsp</td>
+							</tr>
+							<tr>
+								<td>
+									<select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
+										<option disabled selected>-- select a sample question -- </option>
+										<option value="samples/aclReachability.json">Reachability of ACL lines</option>
+										<option value="samples/bgpAdvertisements.json">Print computed BGP advertisements</option>
+										<option value="samples/bgpSessionCheck.json">BGP session check</option>
+										<option value="samples/ipsecVpnCheck.json">IPSEC VPN check</option>
+										<option value="samples/isisLoopbacks.json">IS-IS loopback announcements</option>
+										<option value="samples/neighbors.json">List neighbors</option>
+										<option value="samples/ospfLoopbacks.json">OSPF loopback announcements</option>
+										<option value="samples/selfAdjacencies.json">No self-adjacencies</option>
+										<option value="samples/traceroute.json">Traceroute</option>
+										<option value="samples/reachability.json">Reachability between devices</option>
+										<option value="samples/routes.json">Print computed routing tables</option>
+										<option value="samples/uniqueBgpPrefixOrigination.json">Unique BGP prefix origination (overapproximation)</option>
+										<option value="samples/uniqueIpAssignments.json">Unique IP assignments</option>
+									</select>
+									&nbsp or &nbsp 
+									<select id="prevQuestions" onchange="showOldQuestion(elementPrevQuestionSelect)" style="width:250px">
+										<option disabled selected>-- select a previously answered question --</option>
+									</select>
+									&nbsp or &nbsp
+									<input type="file" id="fileQuestion" size="20"/>	
+									</td>		
+								
+							</tr>
+							<tr>
+								<td><textarea id="txtQuestion" tabindex="0">--question--</textarea></td>
+							</tr>
+							<tr>
+								<td>
+									<button id="btnAnswerQuestion" onclick="startCalls('btnAnswerQuestion', 'uploadquestiontext::answerquestion')" >
+									Answer about base
+									</button>
+									&nbsp
+									<button id="btnAnswerDiffQuestion" onclick="startCalls(
+									'btnAnswerDiffQuestion', 'uploadquestiontext::answerdiffquestion')">
+									Answer about delta
+									</button>
+								</td>
+							</tr>
+						</table>
+					</td>
 					<td>
 						<table>
 							<tr>
@@ -303,61 +332,8 @@
 								</td>
 							</tr>
 						</table>
-					</td>
-					<td valign="top">
-						<table>
-							<tr>
-								<td> <textarea id="txtOutput" readonly>--output--</textarea> </td>			
-							</tr>
-							<tr>
-								<td>&nbsp</td>
-							</tr>
-							<tr>
-								<td>
-									<select id="questionSelect" onchange="loadText(elementQuestionSelect, elementQuestionText, elementQuestionFile)">
-										<option disabled selected>-- select a sample question -- </option>
-										<option value="samples/acl_reachability.q.txt">Reachability of ACL lines</option>
-										<option value="samples/bgp_advertisements.q.txt">Print computed BGP advertisements</option>
-										<option value="samples/bgp_session_check.q.txt">BGP session check</option>
-										<option value="samples/ipsec_vpn_check.q.txt">IPSEC VPN check</option>
-										<option value="samples/isis_loopbacks.q.txt">IS-IS loopback announcements</option>
-										<option value="samples/no_self_adjacencies.q.txt">No self-adjacencies</option>
-										<option value="samples/print_ebgp_nodes.q.txt">List EBGP nodes</option>
-										<option value="samples/ospf_loopbacks.q.txt">OSPF loopback announcements</option>
-										<option value="samples/traceroute.q.txt">Traceroute</option>
-										<option value="samples/multipath.q.txt">Multipath consistency</option>
-										<option value="samples/reachability.q.txt">Reachability between devices</option>
-										<option value="samples/reduced_reachability.q.txt">Base vs delta reduced reachability</option>
-										<option value="samples/routes.q.txt">Print computed routing tables</option>
-										<option value="samples/unique_bgp_prefix_origination.q.txt">Unique BGP prefix origination (overapproximation)</option>
-										<option value="samples/unique_ip_assignments.q.txt">Unique IP assignments</option>
-									</select>
-									&nbsp or &nbsp 
-									<select id="prevQuestions" onchange="showOldQuestion(elementPrevQuestionSelect)" style="width:250px">
-										<option disabled selected>-- select a previously answered question --</option>
-									</select>
-									&nbsp or &nbsp
-									<input type="file" id="fileQuestion" size="20"/>	
-									</td>		
-								
-							</tr>
-							<tr>
-								<td><textarea id="txtQuestion" tabindex="0">--question--</textarea></td>
-							</tr>
-							<tr>
-								<td>
-									<button id="btnAnswerQuestion" onclick="startCalls('btnAnswerQuestion', 'uploadquestiontext::answerquestion')" disabled>
-									Answer about base
-									</button>
-									&nbsp
-									<button id="btnAnswerDiffQuestion" onclick="startCalls('btnAnswerDiffQuestion', 'uploadquestiontext::answerdiffquestion')" disabled>
-									Answer about delta
-									</button>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
+					</td>				
+					</tr>
 			</table>
 		</div>
 	

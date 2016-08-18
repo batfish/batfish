@@ -1,0 +1,6 @@
+{
+  "class" : "org.batfish.datamodel.questions.ErrorQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "nodeBlacklist" : [ ]
+}
