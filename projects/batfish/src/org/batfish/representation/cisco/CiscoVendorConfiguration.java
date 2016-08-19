@@ -655,41 +655,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
       // cause ip peer groups to inherit unset fields from owning named peer
       // group if it exists, and then always from process master peer group
-      for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
-            .entrySet()) {
-         String namedPeerGroupName = e.getKey();
-         NamedBgpPeerGroup namedPeerGroup = e.getValue();
-         String peerSessionName = namedPeerGroup.getPeerSession();
-         if (peerSessionName != null) {
-            NamedBgpPeerGroup peerSession = proc.getPeerSessions().get(
-                  peerSessionName);
-            if (peerSession == null) {
-               _w.redFlag("peer group '" + namedPeerGroupName
-                     + "' inherits from non-existent peer-session: '"
-                     + peerSessionName + "'");
-            }
-            else {
-               namedPeerGroup.inheritUnsetFields(peerSession);
-            }
-         }
+      Set<NamedBgpPeerGroup> namedGroups = new LinkedHashSet<NamedBgpPeerGroup>();
+      namedGroups.addAll(proc.getNamedPeerGroups().values());
+      namedGroups.addAll(proc.getPeerSessions().values());
+      for (NamedBgpPeerGroup namedPeerGroup : namedGroups) {
+         namedPeerGroup.inheritUnsetFields(proc, this);
       }
       Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<LeafBgpPeerGroup>();
       leafGroups.addAll(proc.getIpPeerGroups().values());
       leafGroups.addAll(proc.getDynamicPeerGroups().values());
       for (LeafBgpPeerGroup lpg : leafGroups) {
-         String groupName = lpg.getGroupName();
-         if (groupName != null) {
-            NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
-                  groupName);
-            if (parentPeerGroup != null) {
-               lpg.inheritUnsetFields(parentPeerGroup);
-            }
-            else {
-               undefined("Reference to undefined parent peer group: '"
-                     + groupName + "'", BGP_PEER_GROUP, groupName);
-            }
-         }
-         lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
+         lpg.inheritUnsetFields(proc, this);
       }
 
       // create origination prefilter from listed advertised networks

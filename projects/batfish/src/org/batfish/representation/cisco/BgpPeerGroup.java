@@ -32,6 +32,8 @@ public abstract class BgpPeerGroup implements Serializable {
 
    protected String _inboundRouteMap;
 
+   private transient boolean _inherited;
+
    protected String _outboundPrefixList;
 
    protected String _outboundRouteMap;
@@ -106,6 +108,9 @@ public abstract class BgpPeerGroup implements Serializable {
       return _outboundRouteMap;
    }
 
+   protected abstract BgpPeerGroup getParent(BgpProcess proc,
+         CiscoVendorConfiguration cv);
+
    public Integer getRemoteAs() {
       return _remoteAs;
    }
@@ -130,7 +135,16 @@ public abstract class BgpPeerGroup implements Serializable {
       return _updateSource;
    }
 
-   public void inheritUnsetFields(BgpPeerGroup pg) {
+   public void inheritUnsetFields(BgpProcess proc, CiscoVendorConfiguration cv) {
+      if (_inherited) {
+         return;
+      }
+      _inherited = true;
+      BgpPeerGroup pg = getParent(proc, cv);
+      if (pg == null) {
+         return;
+      }
+      pg.inheritUnsetFields(proc, cv);
       if (_active == null) {
          _active = pg.getActive();
       }

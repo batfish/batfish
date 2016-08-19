@@ -19,22 +19,28 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
 
    public abstract Prefix getNeighborPrefix();
 
-   public String getPeerTemplateName() {
-      return _peerTemplateName;
+   @Override
+   protected BgpPeerGroup getParent(BgpProcess proc, CiscoVendorConfiguration cv) {
+      BgpPeerGroup parent = null;
+      if (_groupName != null) {
+         parent = proc.getNamedPeerGroups().get(_groupName);
+         if (parent == null) {
+            cv.undefined("Reference to undefined parent peer group: '"
+                  + _groupName + "'", CiscoVendorConfiguration.BGP_PEER_GROUP,
+                  _groupName);
+         }
+      }
+      if (parent == null) {
+         parent = proc.getMasterBgpPeerGroup();
+      }
+      return parent;
    }
 
    public void setGroupName(String name) throws IllegalArgumentException {
       if (_peerTemplateName != null) {
-         throw new IllegalArgumentException("Peer Template name has been set.");
-      }
-      _groupName = name;
-   }
-
-   public void setPeerTemplateName(String name) throws IllegalArgumentException {
-      if (_groupName != null) {
          throw new IllegalArgumentException("Group name has been set.");
       }
-      _peerTemplateName = name;
+      _groupName = name;
    }
 
 }
