@@ -620,6 +620,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             Statements.ReturnTrue.toStaticStatement());
 
       // create redistribution origination policies
+      // redistribute static
       PolicyMap redistributeStaticPolicyMap = null;
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
@@ -651,6 +652,41 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                   PolicyMapAction.PERMIT);
          }
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
+      }
+
+      // redistribute connected
+      PolicyMap redistributeConnectedPolicyMap = null;
+      BgpRedistributionPolicy redistributeConnectedPolicy = proc
+            .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+      if (redistributeConnectedPolicy != null) {
+         Conjunction exportConnectedConditions = new Conjunction();
+         exportConnectedConditions
+               .setComment("Redistribute connected routes into BGP");
+         exportConnectedConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.CONNECTED));
+         String mapName = redistributeConnectedPolicy.getMap();
+         if (mapName != null) {
+            RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
+            if (redistributeConnectedRouteMap != null) {
+               redistributeConnectedRouteMap.getReferers().put(proc,
+                     "connected redistribution route-map");
+               exportConnectedConditions.getConjuncts().add(
+                     new CallExpr(mapName));
+               redistributeConnectedPolicyMap = c.getPolicyMaps().get(mapName);
+            }
+            else {
+               undefined(
+                     "Reference to undefined route-map for connected-to-bgp route redistribution: '"
+                           + mapName + "'", ROUTE_MAP, mapName);
+            }
+         }
+         else {
+            redistributeConnectedPolicyMap = makeRouteExportPolicy(c,
+                  "~BGP_REDISTRIBUTE_CONNECTED_ORIGINATION_POLICY~", null,
+                  null, null, null, null, RoutingProtocol.CONNECTED,
+                  PolicyMapAction.PERMIT);
+         }
+         preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
 
       // cause ip peer groups to inherit unset fields from owning named peer
@@ -863,6 +899,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          if (proc.getRedistributionPolicies().containsKey(
                RoutingProtocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
+         }
+         if (proc.getRedistributionPolicies().containsKey(
+               RoutingProtocol.CONNECTED)) {
+            originationPolicies.add(redistributeConnectedPolicyMap);
          }
 
          // set up default export policy for this peer group
