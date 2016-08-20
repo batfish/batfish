@@ -1851,7 +1851,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitHostname_stanza(Hostname_stanzaContext ctx) {
-      String hostname = ctx.name.getText();
+      StringBuilder sb = new StringBuilder();
+      for (Token namePart : ctx.name_parts) {
+         sb.append(namePart.getText());
+      }
+      String hostname = sb.toString();
       _configuration.setHostname(hostname);
    }
 
