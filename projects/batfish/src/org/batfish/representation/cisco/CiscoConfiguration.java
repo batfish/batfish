@@ -51,6 +51,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, Interface> _interfaces;
 
+   protected final Set<String> _ipv6PeerGroups;
+
    protected IsisProcess _isisProcess;
 
    protected final Set<String> _lineAccessClassLists;
@@ -68,6 +70,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
    protected final Set<String> _pimRouteMaps;
 
    protected final Map<String, PrefixList> _prefixLists;
+
+   protected final Set<String> _referencedRouteMaps;
 
    protected final Map<String, RouteMap> _routeMaps;
 
@@ -90,6 +94,7 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _failoverPrimaryPrefixes = new TreeMap<String, Prefix>();
       _failoverStandbyPrefixes = new TreeMap<String, Prefix>();
       _interfaces = new TreeMap<String, Interface>();
+      _ipv6PeerGroups = new TreeSet<String>();
       _lineAccessClassLists = new TreeSet<String>();
       _managementAccessGroups = new TreeSet<String>();
       _msdpPeerSaLists = new TreeSet<String>();
@@ -97,6 +102,7 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _pimAcls = new TreeSet<String>();
       _pimRouteMaps = new TreeSet<String>();
       _prefixLists = new TreeMap<String, PrefixList>();
+      _referencedRouteMaps = new TreeSet<String>();
       _routeMaps = new TreeMap<String, RouteMap>();
       _routePolicies = new TreeMap<String, RoutePolicy>();
       _standardAccessLists = new TreeMap<String, StandardAccessList>();
@@ -173,6 +179,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _interfaces;
    }
 
+   public Set<String> getIpv6PeerGroups() {
+      return _ipv6PeerGroups;
+   }
+
    public IsisProcess getIsisProcess() {
       return _isisProcess;
    }
@@ -207,6 +217,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public final Map<String, PrefixList> getPrefixLists() {
       return _prefixLists;
+   }
+
+   public Set<String> getReferencedRouteMaps() {
+      return _referencedRouteMaps;
    }
 
    public final Map<String, RouteMap> getRouteMaps() {

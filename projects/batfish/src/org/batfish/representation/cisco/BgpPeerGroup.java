@@ -98,6 +98,10 @@ public abstract class BgpPeerGroup implements Serializable {
       return _inboundRouteMap;
    }
 
+   public boolean getInherited() {
+      return _inherited;
+   }
+
    public abstract String getName();
 
    public String getOutboundPrefixList() {

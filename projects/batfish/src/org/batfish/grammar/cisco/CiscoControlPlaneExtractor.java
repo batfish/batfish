@@ -2381,6 +2381,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          throw new BatfishException("Invalid peer context for inheritance");
       }
+      else if (_currentPeerGroup == Ipv6BgpPeerGroup.INSTANCE) {
+         _configuration.getIpv6PeerGroups().add(groupName);
+      }
       else {
          todo(ctx, F_BGP_INHERIT_PEER_OTHER);
       }
@@ -2532,14 +2535,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitPeer_group_assignment_rb_stanza(
          Peer_group_assignment_rb_stanzaContext ctx) {
+      String peerGroupName = ctx.name.getText();
       if (ctx.address != null) {
          Ip address = toIp(ctx.address);
-         String peerGroupName = ctx.name.getText();
          _configuration.getBgpProcesses().get(_currentVrf)
                .addPeerGroupMember(address, peerGroupName);
       }
       else if (ctx.address6 != null) {
          todo(ctx, F_IPV6);
+         _configuration.getIpv6PeerGroups().add(peerGroupName);
       }
    }
 
@@ -2904,6 +2908,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       String mapName = ctx.name.getText();
+      _configuration.getReferencedRouteMaps().add(mapName);
       if (ctx.IN() != null) {
          _currentPeerGroup.setInboundRouteMap(mapName);
       }

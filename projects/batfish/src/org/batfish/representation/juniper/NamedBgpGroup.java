@@ -11,6 +11,10 @@ public class NamedBgpGroup extends BgpGroup {
       _groupName = name;
    }
 
+   public boolean getInherited() {
+      return _inherited;
+   }
+
    public String getName() {
       return _groupName;
    }

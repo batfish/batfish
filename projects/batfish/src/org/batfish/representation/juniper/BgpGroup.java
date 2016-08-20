@@ -32,7 +32,9 @@ public class BgpGroup implements Serializable {
 
    private final List<String> _importPolicies;
 
-   private transient boolean _inherited;
+   protected transient boolean _inherited;
+
+   private boolean _ipv6;
 
    private Ip _localAddress;
 
@@ -127,6 +129,10 @@ public class BgpGroup implements Serializable {
       return _importPolicies;
    }
 
+   public boolean getIpv6() {
+      return _ipv6;
+   }
+
    public final Ip getLocalAddress() {
       return _localAddress;
    }
@@ -169,6 +175,10 @@ public class BgpGroup implements Serializable {
 
    public void setEbgpMultihop(boolean ebgpMultihop) {
       _ebgpMultihop = ebgpMultihop;
+   }
+
+   public void setIpv6(boolean ipv6) {
+      _ipv6 = ipv6;
    }
 
    public final void setLocalAddress(Ip localAddress) {

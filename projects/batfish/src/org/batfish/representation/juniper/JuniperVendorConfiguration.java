@@ -58,6 +58,8 @@ import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
 public final class JuniperVendorConfiguration extends JuniperConfiguration {
 
+   private static final String BGP_GROUP = "bgp group";
+
    private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
@@ -101,11 +103,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
 
    private transient Set<String> _unimplementedFeatures;
 
+   private transient Set<String> _unreferencedBgpGroups;
+
    private ConfigurationFormat _vendor;
 
    public JuniperVendorConfiguration(Set<String> unimplementedFeatures) {
       _roles = new RoleSet();
       _unimplementedFeatures = unimplementedFeatures;
+
    }
 
    private BgpProcess createBgpProcess() {
@@ -120,11 +125,29 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
             mg.setLocalAs(_defaultRoutingInstance.getAs());
          }
       }
+      for (IpBgpGroup ig : _defaultRoutingInstance.getIpBgpGroups().values()) {
+         ig.cascadeInheritance();
+      }
+      _unreferencedBgpGroups = new TreeSet<String>();
+      int fakeIpCounter = 0;
+      for (Entry<String, NamedBgpGroup> e : _defaultRoutingInstance
+            .getNamedBgpGroups().entrySet()) {
+         fakeIpCounter++;
+         String name = e.getKey();
+         NamedBgpGroup group = e.getValue();
+         if (!group.getIpv6() && !group.getInherited()) {
+            _unreferencedBgpGroups.add(name);
+            Ip fakeIp = new Ip(-1 * fakeIpCounter);
+            IpBgpGroup dummy = new IpBgpGroup(fakeIp);
+            dummy.setParent(group);
+            dummy.cascadeInheritance();
+            _defaultRoutingInstance.getIpBgpGroups().put(fakeIp, dummy);
+         }
+      }
       for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups()
             .entrySet()) {
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
-         ig.cascadeInheritance();
          BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
          Boolean ebgpMultihop = ig.getEbgpMultihop();
          if (ebgpMultihop == null) {
@@ -215,14 +238,17 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
                }
             }
          }
-         if (localAddress == null) {
+         if (localAddress == null && ip.valid()) {
             _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: "
                   + ip);
          }
          else {
             neighbor.setLocalIp(localAddress);
          }
-         proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
+         if (neighbor.getGroup() == null
+               || !_unreferencedBgpGroups.contains(neighbor.getGroup())) {
+            proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
+         }
       }
       return proc;
    }
@@ -1350,6 +1376,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       _c.getCommunities().addAll(_allStandardCommunities);
 
       // warn about unreferenced data structures
+      warnUnreferencedBgpGroups();
       warnUnreferencedPolicyStatements();
       warnUnreferencedFirewallFilters();
       warnUnreferencedIkeProposals();
@@ -1468,6 +1495,14 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
          PrefixList prefixList = e.getValue();
          if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
             _w.redFlag("Empty prefix-list: '" + name + "'");
+         }
+      }
+   }
+
+   private void warnUnreferencedBgpGroups() {
+      if (_unreferencedBgpGroups != null) {
+         for (String name : _unreferencedBgpGroups) {
+            unused("Unused BGP group: '" + name + "'", BGP_GROUP, name);
          }
       }
    }

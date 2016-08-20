@@ -1652,6 +1652,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentBgpGroup = ipBgpGroup;
       }
       else if (ctx.IPV6_ADDRESS() != null) {
+         _currentBgpGroup.setIpv6(true);
          _currentBgpGroup = DUMMY_BGP_GROUP;
       }
    }
@@ -2511,6 +2512,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else {
          from = new PsFromInterface(name);
       }
+      _currentPsTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFromt_policy(Fromt_policyContext ctx) {
+      String policyName = toComplexPolicyStatement(ctx.policy_expression());
+      PsFrom from = new PsFromPolicyStatement(policyName);
       _currentPsTerm.getFroms().add(from);
    }
 

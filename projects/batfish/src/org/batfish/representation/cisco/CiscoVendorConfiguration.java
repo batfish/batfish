@@ -88,6 +88,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
    protected static final String BGP_PEER_GROUP = "bgp group";
 
+   private static final String BGP_PEER_SESSION = "bgp session";
+
    private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
    protected static final String COMMUNITY_LIST = "community-list";
@@ -196,6 +198,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
+
+   private transient Set<String> _unusedPeerGroups;
+
+   private transient Set<String> _unusedPeerSessions;
 
    private ConfigurationFormat _vendor;
 
@@ -691,17 +697,59 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
       // cause ip peer groups to inherit unset fields from owning named peer
       // group if it exists, and then always from process master peer group
-      Set<NamedBgpPeerGroup> namedGroups = new LinkedHashSet<NamedBgpPeerGroup>();
-      namedGroups.addAll(proc.getNamedPeerGroups().values());
-      namedGroups.addAll(proc.getPeerSessions().values());
-      for (NamedBgpPeerGroup namedPeerGroup : namedGroups) {
-         namedPeerGroup.inheritUnsetFields(proc, this);
-      }
       Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<LeafBgpPeerGroup>();
       leafGroups.addAll(proc.getIpPeerGroups().values());
       leafGroups.addAll(proc.getDynamicPeerGroups().values());
       for (LeafBgpPeerGroup lpg : leafGroups) {
          lpg.inheritUnsetFields(proc, this);
+      }
+      _unusedPeerGroups = new TreeSet<String>();
+      int fakePeerCounter = -1;
+      // peer groups / peer templates
+      for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
+            .entrySet()) {
+         String name = e.getKey();
+         NamedBgpPeerGroup namedPeerGroup = e.getValue();
+         if (!namedPeerGroup.getInherited()) {
+            _unusedPeerGroups.add(name);
+            Ip fakeIp = new Ip(fakePeerCounter);
+            IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
+            fakePg.setGroupName(name);
+            fakePg.setActive(false);
+            fakePg.setShutdown(true);
+            leafGroups.add(fakePg);
+            fakePg.inheritUnsetFields(proc, this);
+            fakePeerCounter--;
+         }
+         namedPeerGroup.inheritUnsetFields(proc, this);
+      }
+      // separate because peer sessions can inherit from other peer sessions
+      _unusedPeerSessions = new TreeSet<String>();
+      int fakeGroupCounter = 1;
+      for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
+         namedPeerGroup.getParent(proc, this).inheritUnsetFields(proc, this);
+      }
+      for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions()
+            .entrySet()) {
+         String name = e.getKey();
+         NamedBgpPeerGroup namedPeerGroup = e.getValue();
+         if (!namedPeerGroup.getInherited()) {
+            _unusedPeerSessions.add(name);
+            String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
+            NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(
+                  fakeNamedPgName);
+            fakeNamedPg.setPeerSession(name);
+            proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
+            Ip fakeIp = new Ip(fakePeerCounter);
+            IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
+            fakePg.setGroupName(fakeNamedPgName);
+            fakePg.setActive(false);
+            fakePg.setShutdown(true);
+            leafGroups.add(fakePg);
+            fakePg.inheritUnsetFields(proc, this);
+            fakeGroupCounter++;
+            fakePeerCounter--;
+         }
       }
 
       // create origination prefilter from listed advertised networks
@@ -799,7 +847,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                }
             }
          }
-         if (updateSource == null) {
+         if (updateSource == null
+               && lpg.getNeighborPrefix().getAddress().valid()) {
             _w.redFlag("Could not determine update source for BGP neighbor: '"
                   + lpg.getName() + "'");
          }
@@ -830,7 +879,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                + lpg.getName() + "~";
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
                peerExportPolicyName);
-         c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         if (lpg.getActive() && !lpg.getShutdown()) {
+            c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         }
          If peerExportConditional = new If();
          peerExportPolicy.getStatements().add(peerExportConditional);
          Conjunction peerExportConditions = new Conjunction();
@@ -873,7 +924,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
                      + lpg.getName() + "~";
                newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
-               c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
+               if (lpg.getActive() && !lpg.getShutdown()) {
+                  c.getPolicyMaps().put(outboundPolicyName,
+                        newOutboundPolicyMap);
+               }
                PolicyMapClause denyClause = new PolicyMapClause();
                PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
                      suppressSummaryOnlyPolicyMap);
@@ -961,8 +1015,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
                defaultRouteGenerationConditional.getTrueStatements().add(
                      Statements.ReturnTrue.toStaticStatement());
-               c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
-                     defaultRouteGenerationPolicy);
+               if (lpg.getActive() && !lpg.getShutdown()) {
+                  c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
+                        defaultRouteGenerationPolicy);
+               }
                defaultRoute
                      .setGenerationPolicy(defaultRouteGenerationPolicyName);
             }
@@ -2466,6 +2522,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
       markRouteMaps(_pimRouteMaps, "pim route-map", c);
       // warn about unreferenced data structures
+      warnUnusedPeerGroups();
+      warnUnusedPeerSessions();
       warnUnusedRouteMaps();
       warnUnusedIpAccessLists();
       warnUnusedPrefixLists();
@@ -2588,6 +2646,26 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
    }
 
+   private void warnUnusedPeerGroups() {
+      if (_unusedPeerGroups != null) {
+         for (String name : _unusedPeerGroups) {
+            if (!_ipv6PeerGroups.contains(name)) {
+               unused("Unused bgp peer-group/template: '" + name + "'",
+                     BGP_PEER_GROUP, name);
+            }
+         }
+      }
+   }
+
+   private void warnUnusedPeerSessions() {
+      if (_unusedPeerSessions != null) {
+         for (String name : _unusedPeerSessions) {
+            unused("Unused bgp peer-session: '" + name + "'", BGP_PEER_SESSION,
+                  name);
+         }
+      }
+   }
+
    private void warnUnusedPrefixLists() {
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
          String name = e.getKey();
@@ -2608,7 +2686,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          RouteMap routeMap = e.getValue();
-         if (!routeMap.getIpv6() && routeMap.isUnused()) {
+         if (!routeMap.getIpv6() && routeMap.isUnused()
+               && !_referencedRouteMaps.contains(name)) {
             unused("Unused route-map: '" + name + "'", ROUTE_MAP, name);
          }
       }
