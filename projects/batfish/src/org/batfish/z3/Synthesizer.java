@@ -115,6 +115,8 @@ public class Synthesizer {
    public static final String DST_PORT_VAR = "dst_port";
    public static final int ECN_BITS = 2;
    public static final String ECN_VAR = "ecn";
+   public static final int FRAGMENT_OFFSET_BITS = 13;
+   public static final String FRAGMENT_OFFSET_VAR = "fragment_offset";
    public static final int ICMP_CODE_BITS = 8;
    public static final String ICMP_CODE_VAR = "icmp_code";
    public static final int ICMP_TYPE_BITS = 8;
@@ -166,6 +168,7 @@ public class Synthesizer {
       vars.add(IP_PROTOCOL_VAR);
       vars.add(DSCP_VAR);
       vars.add(ECN_VAR);
+      vars.add(FRAGMENT_OFFSET_VAR);
       vars.add(ICMP_TYPE_VAR);
       vars.add(ICMP_CODE_VAR);
       vars.add(STATE_VAR);
@@ -225,6 +228,7 @@ public class Synthesizer {
       varSizes.put(IP_PROTOCOL_VAR, PROTOCOL_BITS);
       varSizes.put(DSCP_VAR, DSCP_BITS);
       varSizes.put(ECN_VAR, ECN_BITS);
+      varSizes.put(FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS);
       varSizes.put(ICMP_TYPE_VAR, ICMP_TYPE_BITS);
       varSizes.put(ICMP_CODE_VAR, ICMP_CODE_BITS);
       varSizes.put(STATE_VAR, STATE_BITS);
@@ -246,26 +250,53 @@ public class Synthesizer {
 
    public static BooleanExpr matchHeaderSpace(HeaderSpace headerSpace) {
       AndExpr match = new AndExpr();
+
       Set<IpWildcard> srcIpWildcards = headerSpace.getSrcIps();
       Set<IpWildcard> srcIpWildcardsBlacklist = headerSpace.getNotSrcIps();
+
       Set<IpWildcard> srcOrDstIpWildcards = headerSpace.getSrcOrDstIps();
+
       Set<IpWildcard> dstIpWildcards = headerSpace.getDstIps();
       Set<IpWildcard> dstIpWildcardsBlacklist = headerSpace.getNotDstIps();
 
       Set<IpProtocol> protocols = headerSpace.getIpProtocols();
+      Set<IpProtocol> notProtocols = headerSpace.getNotIpProtocols();
+
       Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
       srcPortRanges.addAll(headerSpace.getSrcPorts());
+      Set<SubRange> notSrcPortRanges = new LinkedHashSet<SubRange>();
+      notSrcPortRanges.addAll(headerSpace.getNotSrcPorts());
+
       Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
       srcOrDstPortRanges.addAll(headerSpace.getSrcOrDstPorts());
+
       Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
       dstPortRanges.addAll(headerSpace.getDstPorts());
-      int icmpType = headerSpace.getIcmpType();
-      int icmpCode = headerSpace.getIcmpCode();
+      Set<SubRange> notDstPortRanges = new LinkedHashSet<SubRange>();
+      notDstPortRanges.addAll(headerSpace.getNotDstPorts());
+
+      Set<SubRange> fragmentOffsetRanges = new LinkedHashSet<SubRange>();
+      fragmentOffsetRanges.addAll(headerSpace.getFragmentOffsets());
+      Set<SubRange> notFragmentOffsetRanges = new LinkedHashSet<SubRange>();
+      notFragmentOffsetRanges.addAll(headerSpace.getNotFragmentOffsets());
+
+      Set<SubRange> icmpTypes = headerSpace.getIcmpTypes();
+      Set<SubRange> notIcmpTypes = headerSpace.getNotIcmpTypes();
+
+      Set<SubRange> icmpCodes = headerSpace.getIcmpCodes();
+      Set<SubRange> notIcmpCodes = headerSpace.getNotIcmpCodes();
+
       Set<State> states = headerSpace.getStates();
+
       List<TcpFlags> tcpFlags = headerSpace.getTcpFlags();
+
       Set<Integer> dscps = headerSpace.getDscps();
+      Set<Integer> notDscps = headerSpace.getDscps();
+
       Set<Integer> ecns = headerSpace.getEcns();
-      // match protocol
+      Set<Integer> notEcns = headerSpace.getEcns();
+
+      // match protocols
       if (protocols.size() > 0) {
          OrExpr matchesSomeProtocol = new OrExpr();
          for (IpProtocol protocol : protocols) {
@@ -277,6 +308,20 @@ public class Synthesizer {
             matchesSomeProtocol.addDisjunct(matchProtocol);
          }
          match.addConjunct(matchesSomeProtocol);
+      }
+
+      // don't match notProtocols
+      if (notProtocols.size() > 0) {
+         OrExpr matchesSomeProtocol = new OrExpr();
+         for (IpProtocol protocol : notProtocols) {
+            int protocolNumber = protocol.number();
+            VarIntExpr protocolVar = new VarIntExpr(IP_PROTOCOL_VAR);
+            LitIntExpr protocolLit = new LitIntExpr(protocolNumber,
+                  PROTOCOL_BITS);
+            EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
+            matchesSomeProtocol.addDisjunct(matchProtocol);
+         }
+         match.addConjunct(new NotExpr(matchesSomeProtocol));
       }
 
       // match srcIp
@@ -535,6 +580,13 @@ public class Synthesizer {
          match.addConjunct(matchSrcPort);
       }
 
+      // don't match notSrcPort
+      if (notSrcPortRanges != null && notSrcPortRanges.size() > 0) {
+         BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
+               notSrcPortRanges, SRC_PORT_VAR);
+         match.addConjunct(new NotExpr(matchSrcPort));
+      }
+
       // match srcOrDstPort
       if (srcOrDstPortRanges != null && srcOrDstPortRanges.size() > 0) {
          BooleanExpr matchSrcPort = getMatchAclRules_portHelper(
@@ -554,11 +606,29 @@ public class Synthesizer {
          match.addConjunct(matchDstPort);
       }
 
+      // don't match notDstPort
+      if (notDstPortRanges != null && notDstPortRanges.size() > 0) {
+         BooleanExpr matchDstPort = getMatchAclRules_portHelper(
+               notDstPortRanges, DST_PORT_VAR);
+         match.addConjunct(new NotExpr(matchDstPort));
+      }
+
       // match dscp
       if (!dscps.isEmpty()) {
          OrExpr matchSomeDscp = new OrExpr();
          match.addConjunct(matchSomeDscp);
          for (int dscp : dscps) {
+            EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(DSCP_VAR),
+                  new LitIntExpr(dscp, DSCP_BITS));
+            matchSomeDscp.addDisjunct(matchCurrentDscp);
+         }
+      }
+
+      // don't match notDscp
+      if (!notDscps.isEmpty()) {
+         OrExpr matchSomeDscp = new OrExpr();
+         match.addConjunct(new NotExpr(matchSomeDscp));
+         for (int dscp : notDscps) {
             EqExpr matchCurrentDscp = new EqExpr(new VarIntExpr(DSCP_VAR),
                   new LitIntExpr(dscp, DSCP_BITS));
             matchSomeDscp.addDisjunct(matchCurrentDscp);
@@ -576,6 +646,32 @@ public class Synthesizer {
          }
       }
 
+      // don't match notEcn
+      if (!notEcns.isEmpty()) {
+         OrExpr matchSomeEcn = new OrExpr();
+         match.addConjunct(new NotExpr(matchSomeEcn));
+         for (int ecn : notEcns) {
+            EqExpr matchCurrentEcn = new EqExpr(new VarIntExpr(ECN_VAR),
+                  new LitIntExpr(ecn, ECN_BITS));
+            matchSomeEcn.addDisjunct(matchCurrentEcn);
+         }
+      }
+
+      // match fragmentOffset
+      if (fragmentOffsetRanges != null && fragmentOffsetRanges.size() > 0) {
+         BooleanExpr matchFragmentOffset = new RangeMatchExpr(
+               FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS, fragmentOffsetRanges);
+         match.addConjunct(matchFragmentOffset);
+      }
+
+      // don't match notFragmentOffset
+      if (notFragmentOffsetRanges != null && notFragmentOffsetRanges.size() > 0) {
+         BooleanExpr matchFragmentOffset = new RangeMatchExpr(
+               FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS,
+               notFragmentOffsetRanges);
+         match.addConjunct(new NotExpr(matchFragmentOffset));
+      }
+
       // match connection-tracking state
       if (!states.isEmpty()) {
          OrExpr matchSomeState = new OrExpr();
@@ -587,18 +683,32 @@ public class Synthesizer {
          }
       }
 
-      // match icmp-type
-      if (icmpType != IcmpType.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_TYPE_VAR),
-               new LitIntExpr(icmpType, ICMP_TYPE_BITS));
-         match.addConjunct(exactMatch);
+      // match icmpTypes
+      if (icmpTypes != null && icmpTypes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_TYPE_VAR,
+               ICMP_TYPE_BITS, icmpTypes);
+         match.addConjunct(matchRange);
       }
 
-      // match icmp-code
-      if (icmpCode != IcmpCode.UNSET) {
-         EqExpr exactMatch = new EqExpr(new VarIntExpr(ICMP_CODE_VAR),
-               new LitIntExpr(icmpCode, ICMP_CODE_BITS));
-         match.addConjunct(exactMatch);
+      // don't match notIcmpTypes
+      if (notIcmpTypes != null && notIcmpTypes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_TYPE_VAR,
+               ICMP_TYPE_BITS, notIcmpTypes);
+         match.addConjunct(new NotExpr(matchRange));
+      }
+
+      // match icmpCodes
+      if (icmpCodes != null && icmpCodes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
+               ICMP_CODE_BITS, icmpCodes);
+         match.addConjunct(matchRange);
+      }
+
+      // don't match notIcmpCodes
+      if (notIcmpCodes != null && notIcmpCodes.size() > 0) {
+         BooleanExpr matchRange = new RangeMatchExpr(ICMP_CODE_VAR,
+               ICMP_CODE_BITS, notIcmpCodes);
+         match.addConjunct(new NotExpr(matchRange));
       }
 
       // match tcp-flags

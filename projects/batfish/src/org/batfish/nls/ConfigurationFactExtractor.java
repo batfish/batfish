@@ -16,8 +16,6 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.IcmpCode;
-import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -551,19 +549,18 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_dscp");
       StringBuilder wSetIpAccessListLine_ecn = _factBins
             .get("SetIpAccessListLine_ecn");
-      StringBuilder wSetIpAccessListLine_icmpCode = _factBins
-            .get("SetIpAccessListLine_icmpCode");
-      StringBuilder wSetIpAccessListLine_icmpType = _factBins
-            .get("SetIpAccessListLine_icmpType");
-
+      StringBuilder wSetIpAccessListLine_icmpCodes = _factBins
+            .get("SetIpAccessListLine_icmpCodes");
+      StringBuilder wSetIpAccessListLine_icmpTypes = _factBins
+            .get("SetIpAccessListLine_icmpTypes");
       StringBuilder wSetIpAccessListLine_notDscp = _factBins
             .get("SetIpAccessListLine_notDscp");
       StringBuilder wSetIpAccessListLine_notEcn = _factBins
             .get("SetIpAccessListLine_notEcn");
-      StringBuilder wSetIpAccessListLine_notIcmpCode = _factBins
-            .get("SetIpAccessListLine_notIcmpCode");
-      StringBuilder wSetIpAccessListLine_notIcmpType = _factBins
-            .get("SetIpAccessListLine_notIcmpType");
+      StringBuilder wSetIpAccessListLine_notIcmpCodes = _factBins
+            .get("SetIpAccessListLine_notIcmpCodes");
+      StringBuilder wSetIpAccessListLine_notIcmpTypes = _factBins
+            .get("SetIpAccessListLine_notIcmpTypes");
       StringBuilder wSetIpAccessListLine_notDstIps = _factBins
             .get("SetIpAccessListLine_notDstIps");
       StringBuilder wSetIpAccessListLine_notDstPorts = _factBins
@@ -574,7 +571,6 @@ public class ConfigurationFactExtractor {
             .get("SetIpAccessListLine_notSrcPorts");
       StringBuilder wSetIpAccessListLine_notProtocol = _factBins
             .get("SetIpAccessListLine_notProtocol");
-
       StringBuilder wSetIpAccessListLine_permit = _factBins
             .get("SetIpAccessListLine_permit");
       StringBuilder wSetIpAccessListLine_protocol = _factBins
@@ -652,21 +648,29 @@ public class ConfigurationFactExtractor {
                wSetIpAccessListLine_notDstPorts.append(name + "|" + i + "|"
                      + startPort + "|" + endPort + "\n");
             }
-            if (line.getIcmpCode() != IcmpCode.UNSET) {
-               wSetIpAccessListLine_icmpCode.append(name + "|" + i + "|"
-                     + line.getIcmpCode() + "\n");
+            for (SubRange icmpCodeRange : line.getIcmpCodes()) {
+               long start = icmpCodeRange.getStart();
+               long end = icmpCodeRange.getEnd();
+               wSetIpAccessListLine_icmpCodes.append(name + "|" + i + "|"
+                     + start + "|" + end + "\n");
             }
-            if (line.getNotIcmpCode() != IcmpCode.UNSET) {
-               wSetIpAccessListLine_notIcmpCode.append(name + "|" + i + "|"
-                     + line.getNotIcmpCode() + "\n");
+            for (SubRange icmpCodeRange : line.getNotIcmpCodes()) {
+               long start = icmpCodeRange.getStart();
+               long end = icmpCodeRange.getEnd();
+               wSetIpAccessListLine_notIcmpCodes.append(name + "|" + i + "|"
+                     + start + "|" + end + "\n");
             }
-            if (line.getIcmpType() != IcmpType.UNSET) {
-               wSetIpAccessListLine_icmpType.append(name + "|" + i + "|"
-                     + line.getIcmpType() + "\n");
+            for (SubRange icmpTypeRange : line.getIcmpTypes()) {
+               long start = icmpTypeRange.getStart();
+               long end = icmpTypeRange.getEnd();
+               wSetIpAccessListLine_icmpTypes.append(name + "|" + i + "|"
+                     + start + "|" + end + "\n");
             }
-            if (line.getNotIcmpType() != IcmpType.UNSET) {
-               wSetIpAccessListLine_notIcmpType.append(name + "|" + i + "|"
-                     + line.getNotIcmpType() + "\n");
+            for (SubRange icmpTypeRange : line.getNotIcmpTypes()) {
+               long start = icmpTypeRange.getStart();
+               long end = icmpTypeRange.getEnd();
+               wSetIpAccessListLine_notIcmpTypes.append(name + "|" + i + "|"
+                     + start + "|" + end + "\n");
             }
             for (IpProtocol protocol : line.getIpProtocols()) {
                wSetIpAccessListLine_protocol.append(name + "|" + i + "|"

@@ -3,6 +3,7 @@ package org.batfish.z3.node;
 import java.util.Collections;
 import java.util.Set;
 
+import org.batfish.common.BatfishException;
 import org.batfish.z3.NodProgram;
 
 import com.microsoft.z3.Z3Exception;
@@ -46,7 +47,12 @@ public class VarIntExpr extends IntExpr {
    @Override
    public com.microsoft.z3.BitVecExpr toBitVecExpr(NodProgram nodProgram)
          throws Z3Exception {
-      return nodProgram.getVariables().get(_var);
+      com.microsoft.z3.BitVecExpr ret = nodProgram.getVariables().get(_var);
+      if (ret == null) {
+         throw new BatfishException(
+               "nodProgram missing mapping for variable: '" + _var + "'");
+      }
+      return ret;
    }
 
 }

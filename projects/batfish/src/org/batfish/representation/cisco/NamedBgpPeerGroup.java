@@ -43,6 +43,24 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
       return _name;
    }
 
+   @Override
+   protected final BgpPeerGroup getParent(BgpProcess proc,
+         CiscoVendorConfiguration cv) {
+      BgpPeerGroup parent = null;
+      if (_peerSession != null) {
+         parent = proc.getPeerSessions().get(_peerSession);
+         if (parent == null) {
+            cv.undefined("Reference to undefined peer-session: '"
+                  + _peerSession + "'",
+                  CiscoVendorConfiguration.BGP_PEER_GROUP, _peerSession);
+         }
+      }
+      if (parent == null) {
+         parent = proc.getMasterBgpPeerGroup();
+      }
+      return parent;
+   }
+
    public String getPeerSession() {
       return _peerSession;
    }

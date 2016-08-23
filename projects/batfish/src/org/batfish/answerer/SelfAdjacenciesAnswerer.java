@@ -60,8 +60,8 @@ public class SelfAdjacenciesAnswerer extends Answerer {
                   Prefix basePrefix = prefix.getNetworkPrefix();
                   if (!ifaceBasePrefixes.contains(basePrefix)) {
                      ifaceBasePrefixes.add(basePrefix);
+                     nodePrefixes.add(basePrefix);
                   }
-                  nodePrefixes.add(basePrefix);
                }
             }
          }

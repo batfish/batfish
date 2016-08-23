@@ -45,6 +45,7 @@ s_protocols_null
       | NEIGHBOR_DISCOVERY
       | PIM
       | ROUTER_ADVERTISEMENT
+      | ROUTER_DISCOVERY
       | RSTP
       | RSVP
       | SFLOW

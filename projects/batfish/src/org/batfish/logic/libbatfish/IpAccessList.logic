@@ -67,6 +67,16 @@ IpAccessListMatchNotEcn(list, line, flow) ->
    int(line),
    Flow(flow).
 
+IpAccessListMatchFragmentOffset(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
+IpAccessListMatchNotFragmentOffset(list, line, flow) ->
+   IpAccessList(list),
+   int(line),
+   Flow(flow).
+
 IpAccessListMatchIcmpCode(list, line, flow) ->
    IpAccessList(list),
    int(line),
@@ -166,6 +176,18 @@ SetIpAccessListLine_notEcn(list, line, ecn) ->
    int(line),
    int(ecn).
 
+SetIpAccessListLine_fragmentOffsets(list, line, fragmentOffset_start, fragmentOffset_end) ->
+   IpAccessList(list),
+   int(line),
+   int(fragmentOffset_start),
+   int(fragmentOffset_end).
+
+SetIpAccessListLine_notFragmentOffsets(list, line, fragmentOffset_start, fragmentOffset_end) ->
+   IpAccessList(list),
+   int(line),
+   int(fragmentOffset_start),
+   int(fragmentOffset_end).
+
 SetIpAccessListLine_dstIps(list, line, dstIp_start, dstIp_end) ->
    IpAccessList(list),
    int(line),
@@ -190,25 +212,28 @@ SetIpAccessListLine_notDstPorts(list, line, dstPort_start, dstPort_end) ->
    int(dstPort_start),
    int(dstPort_end).
 
-SetIpAccessListLine_icmpCode(list, line, icmpCode) ->
+SetIpAccessListLine_icmpCodes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
    int(icmpCode).
 
-SetIpAccessListLine_notIcmpCode(list, line, icmpCode) ->
+SetIpAccessListLine_notIcmpCodes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpCode).
+   int(start),
+   int(end).
 
-SetIpAccessListLine_icmpType(list, line, icmpType) ->
+SetIpAccessListLine_icmpTypes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpType).
+   int(start),
+   int(end).
 
-SetIpAccessListLine_notIcmpType(list, line, icmpType) ->
+SetIpAccessListLine_notIcmpTypes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpType).
+   int(start),
+   int(end).
 
 SetIpAccessListLine_permit(list, line) ->
    IpAccessList(list),

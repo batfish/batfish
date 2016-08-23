@@ -56,6 +56,10 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             flowBuilder.setDstPort(value.intValue());
             break;
 
+         case Synthesizer.FRAGMENT_OFFSET_VAR:
+            flowBuilder.setFragmentOffset(value.intValue());
+            break;
+
          case Synthesizer.IP_PROTOCOL_VAR:
             flowBuilder.setIpProtocol(IpProtocol.fromNumber(value.intValue()));
             break;

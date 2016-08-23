@@ -1,12 +1,11 @@
 package org.batfish.datamodel.questions;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.NamedStructType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -20,13 +19,13 @@ public final class CompareSameNameQuestion extends Question {
 
    private static final String NODE_REGEX_VAR = "nodeRegex";
 
-   private Set<NamedStructType> _namedStructTypes;
+   private Set<String> _namedStructTypes;
 
    private String _nodeRegex;
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
-      _namedStructTypes = EnumSet.noneOf(NamedStructType.class);
+      _namedStructTypes = new TreeSet<String>();
       _nodeRegex = ".*";
    }
 
@@ -36,7 +35,7 @@ public final class CompareSameNameQuestion extends Question {
    }
 
    @JsonProperty(NAMED_STRUCT_TYPE_VAR)
-   public Set<NamedStructType> getNamedStructTypes() {
+   public Set<String> getNamedStructTypes() {
       return _namedStructTypes;
    }
 
@@ -65,11 +64,10 @@ public final class CompareSameNameQuestion extends Question {
          try {
             switch (paramKey) {
             case NAMED_STRUCT_TYPE_VAR:
-               setNamedStructTypes(new ObjectMapper()
-                     .<Set<NamedStructType>> readValue(
-                           parameters.getString(paramKey),
-                           new TypeReference<Set<NamedStructType>>() {
-                           }));
+               setNamedStructTypes(new ObjectMapper().<Set<String>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<String>>() {
+                     }));
                break;
             case NODE_REGEX_VAR:
                setNodeRegex(parameters.getString(paramKey));
@@ -85,8 +83,8 @@ public final class CompareSameNameQuestion extends Question {
       }
    }
 
-   public void setNamedStructTypes(Set<NamedStructType> nType) {
-      _namedStructTypes = nType;
+   public void setNamedStructTypes(Set<String> namedStructTypes) {
+      _namedStructTypes = namedStructTypes;
    }
 
    public void setNodeRegex(String regex) {

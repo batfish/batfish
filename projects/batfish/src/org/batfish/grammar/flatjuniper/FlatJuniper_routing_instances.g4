@@ -288,6 +288,7 @@ roftt_null
 :
    (
       INDIRECT_NEXT_HOP
+      | INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
    ) s_null_filler
 ;
 

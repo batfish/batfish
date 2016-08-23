@@ -95,8 +95,7 @@ icmp_code
 
 icmp_type
 :
-   DEC
-   | DESTINATION_UNREACHABLE
+   DESTINATION_UNREACHABLE
    | ECHO_REPLY
    | ECHO_REQUEST
    | NEIGHBOR_ADVERTISEMENT
@@ -285,6 +284,7 @@ routing_protocol
    | LDP
    | LOCAL
    | OSPF
+   | OSPF3
    | RSVP
    | STATIC
 ;

@@ -312,7 +312,10 @@ hostname_stanza
    (
       HOSTNAME
       | SWITCHNAME
-   ) name = ~NEWLINE* NEWLINE
+   )
+   (
+      name_parts += ~NEWLINE
+   )+ NEWLINE
 ;
 
 iimgp_stanza

@@ -21,6 +21,8 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExtendedCommunity;
+import org.batfish.datamodel.IcmpCode;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeProposal;
@@ -71,8 +73,11 @@ import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.FwFromDestinationPrefixList;
 import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
+import org.batfish.representation.juniper.FwFromFragmentOffset;
 import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
+import org.batfish.representation.juniper.FwFromIcmpCode;
+import org.batfish.representation.juniper.FwFromIcmpType;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
 import org.batfish.representation.juniper.FwFromSourceAddressExcept;
@@ -1146,6 +1151,41 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    }
 
+   private static int toIcmpCode(Icmp_codeContext ctx) {
+      if (ctx.FRAGMENTATION_NEEDED() != null) {
+         return IcmpCode.PACKET_TOO_BIG;
+      }
+      else if (ctx.HOST_UNREACHABLE() != null) {
+         return IcmpCode.DESTINATION_HOST_UNREACHABLE;
+      }
+      else {
+         throw new BatfishException("Missing mapping for icmp-code: '"
+               + ctx.getText() + "'");
+      }
+   }
+
+   private static int toIcmpType(Icmp_typeContext ctx) {
+      if (ctx.ECHO_REPLY() != null) {
+         return IcmpType.ECHO_REPLY;
+      }
+      else if (ctx.ECHO_REQUEST() != null) {
+         return IcmpType.ECHO_REQUEST;
+      }
+      else if (ctx.PARAMETER_PROBLEM() != null) {
+         return IcmpType.PARAMETER_PROBLEM;
+      }
+      else if (ctx.TIME_EXCEEDED() != null) {
+         return IcmpType.TIME_EXCEEDED;
+      }
+      else if (ctx.UNREACHABLE() != null) {
+         return IcmpType.DESTINATION_UNREACHABLE;
+      }
+      else {
+         throw new BatfishException("Missing mapping for icmp-type: '"
+               + ctx.getText() + "'");
+      }
+   }
+
    private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
          Ike_authentication_algorithmContext ctx) {
       if (ctx.MD5() != null) {
@@ -1310,6 +1350,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       else if (ctx.OSPF() != null) {
          return RoutingProtocol.OSPF;
+      }
+      else if (ctx.OSPF3() != null) {
+         return RoutingProtocol.OSPF3;
       }
       else if (ctx.RSVP() != null) {
          return RoutingProtocol.RSVP;
@@ -1609,6 +1652,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentBgpGroup = ipBgpGroup;
       }
       else if (ctx.IPV6_ADDRESS() != null) {
+         _currentBgpGroup.setIpv6(true);
          _currentBgpGroup = DUMMY_BGP_GROUP;
       }
    }
@@ -2369,6 +2413,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitCt_invert_match(Ct_invert_matchContext ctx) {
+      _currentCommunityList.setInvertMatch(true);
+   }
+
+   @Override
    public void exitCt_members(Ct_membersContext ctx) {
       if (ctx.community_regex() != null) {
          String text = ctx.community_regex().getText();
@@ -2463,6 +2512,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else {
          from = new PsFromInterface(name);
       }
+      _currentPsTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFromt_policy(Fromt_policyContext ctx) {
+      String policyName = toComplexPolicyStatement(ctx.policy_expression());
+      PsFrom from = new PsFromPolicyStatement(policyName);
       _currentPsTerm.getFroms().add(from);
    }
 
@@ -2564,6 +2620,77 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFwfromt_first_fragment(Fwfromt_first_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_fragment_offset(Fwfromt_fragment_offsetContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_fragment_offset_except(
+         Fwfromt_fragment_offset_exceptContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_icmp_code(Fwfromt_icmp_codeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         // TODO: support icmpv6
+         return;
+      }
+      SubRange icmpCodeRange;
+      if (ctx.subrange() != null) {
+         icmpCodeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_code() != null) {
+         int icmpCode = toIcmpCode(ctx.icmp_code());
+         icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-code");
+      }
+      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_icmp_type(Fwfromt_icmp_typeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         // TODO: support icmpv6
+         return;
+      }
+      SubRange icmpTypeRange;
+      if (ctx.subrange() != null) {
+         icmpTypeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_type() != null) {
+         int icmpType = toIcmpType(ctx.icmp_type());
+         icmpTypeRange = new SubRange(icmpType, icmpType);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-type");
+      }
+      FwFrom from = new FwFromIcmpType(icmpTypeRange);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFwfromt_is_fragment(Fwfromt_is_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
    public void exitFwfromt_port(Fwfromt_portContext ctx) {
       if (ctx.port() != null) {
          int port = getPortNumber(ctx.port());
@@ -2650,7 +2777,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_tcp_established(Fwfromt_tcp_establishedContext ctx) {
-      todo(ctx, "firewall from tcp established");
+      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(true);
+      tcpFlags.add(alt1);
+      TcpFlags alt2 = new TcpFlags();
+      alt2.setUseRst(true);
+      alt2.setRst(true);
+      tcpFlags.add(alt2);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
    }
 
    @Override
@@ -2662,7 +2799,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_tcp_initial(Fwfromt_tcp_initialContext ctx) {
-      todo(ctx, "firewall from tcp initial");
+      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(false);
+      alt1.setUseSyn(true);
+      alt1.setSyn(true);
+      tcpFlags.add(alt1);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
    }
 
    @Override

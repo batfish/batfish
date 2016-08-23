@@ -495,11 +495,14 @@ null_bgp_tail
          (
             REMOTE_AS
             | ROUTE_MAP
+            | UPDATE_SOURCE
          )
       )
+      | NEIGHBOR_DOWN
       | PASSWORD
       | SEND_LABEL
       | SOFT_RECONFIGURATION
+      | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
       | TIMERS
       | TRANSPORT

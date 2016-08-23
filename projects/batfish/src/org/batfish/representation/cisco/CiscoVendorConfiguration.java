@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -86,6 +87,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private static final String BGP_NETWORK_NETWORKS_FILTER_NAME = "~BGP_NETWORK_NETWORKS_FILTER~";
 
    protected static final String BGP_PEER_GROUP = "bgp group";
+
+   private static final String BGP_PEER_SESSION = "bgp session";
 
    private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -195,6 +198,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private final RoleSet _roles;
 
    private transient Set<String> _unimplementedFeatures;
+
+   private transient Set<String> _unusedPeerGroups;
+
+   private transient Set<String> _unusedPeerSessions;
 
    private ConfigurationFormat _vendor;
 
@@ -619,6 +626,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             Statements.ReturnTrue.toStaticStatement());
 
       // create redistribution origination policies
+      // redistribute static
       PolicyMap redistributeStaticPolicyMap = null;
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
@@ -652,43 +660,96 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
-      // cause ip peer groups to inherit unset fields from owning named peer
-      // group if it exists, and then always from process master peer group
-      for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
-            .entrySet()) {
-         String namedPeerGroupName = e.getKey();
-         NamedBgpPeerGroup namedPeerGroup = e.getValue();
-         String peerSessionName = namedPeerGroup.getPeerSession();
-         if (peerSessionName != null) {
-            NamedBgpPeerGroup peerSession = proc.getPeerSessions().get(
-                  peerSessionName);
-            if (peerSession == null) {
-               _w.redFlag("peer group '" + namedPeerGroupName
-                     + "' inherits from non-existent peer-session: '"
-                     + peerSessionName + "'");
+      // redistribute connected
+      PolicyMap redistributeConnectedPolicyMap = null;
+      BgpRedistributionPolicy redistributeConnectedPolicy = proc
+            .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+      if (redistributeConnectedPolicy != null) {
+         Conjunction exportConnectedConditions = new Conjunction();
+         exportConnectedConditions
+               .setComment("Redistribute connected routes into BGP");
+         exportConnectedConditions.getConjuncts().add(
+               new MatchProtocol(RoutingProtocol.CONNECTED));
+         String mapName = redistributeConnectedPolicy.getMap();
+         if (mapName != null) {
+            RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
+            if (redistributeConnectedRouteMap != null) {
+               redistributeConnectedRouteMap.getReferers().put(proc,
+                     "connected redistribution route-map");
+               exportConnectedConditions.getConjuncts().add(
+                     new CallExpr(mapName));
+               redistributeConnectedPolicyMap = c.getPolicyMaps().get(mapName);
             }
             else {
-               namedPeerGroup.inheritUnsetFields(peerSession);
+               undefined(
+                     "Reference to undefined route-map for connected-to-bgp route redistribution: '"
+                           + mapName + "'", ROUTE_MAP, mapName);
             }
          }
+         else {
+            redistributeConnectedPolicyMap = makeRouteExportPolicy(c,
+                  "~BGP_REDISTRIBUTE_CONNECTED_ORIGINATION_POLICY~", null,
+                  null, null, null, null, RoutingProtocol.CONNECTED,
+                  PolicyMapAction.PERMIT);
+         }
+         preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
+
+      // cause ip peer groups to inherit unset fields from owning named peer
+      // group if it exists, and then always from process master peer group
       Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<LeafBgpPeerGroup>();
       leafGroups.addAll(proc.getIpPeerGroups().values());
       leafGroups.addAll(proc.getDynamicPeerGroups().values());
       for (LeafBgpPeerGroup lpg : leafGroups) {
-         String groupName = lpg.getGroupName();
-         if (groupName != null) {
-            NamedBgpPeerGroup parentPeerGroup = proc.getNamedPeerGroups().get(
-                  groupName);
-            if (parentPeerGroup != null) {
-               lpg.inheritUnsetFields(parentPeerGroup);
-            }
-            else {
-               undefined("Reference to undefined parent peer group: '"
-                     + groupName + "'", BGP_PEER_GROUP, groupName);
-            }
+         lpg.inheritUnsetFields(proc, this);
+      }
+      _unusedPeerGroups = new TreeSet<String>();
+      int fakePeerCounter = -1;
+      // peer groups / peer templates
+      for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups()
+            .entrySet()) {
+         String name = e.getKey();
+         NamedBgpPeerGroup namedPeerGroup = e.getValue();
+         if (!namedPeerGroup.getInherited()) {
+            _unusedPeerGroups.add(name);
+            Ip fakeIp = new Ip(fakePeerCounter);
+            IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
+            fakePg.setGroupName(name);
+            fakePg.setActive(false);
+            fakePg.setShutdown(true);
+            leafGroups.add(fakePg);
+            fakePg.inheritUnsetFields(proc, this);
+            fakePeerCounter--;
          }
-         lpg.inheritUnsetFields(proc.getMasterBgpPeerGroup());
+         namedPeerGroup.inheritUnsetFields(proc, this);
+      }
+      // separate because peer sessions can inherit from other peer sessions
+      _unusedPeerSessions = new TreeSet<String>();
+      int fakeGroupCounter = 1;
+      for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
+         namedPeerGroup.getParent(proc, this).inheritUnsetFields(proc, this);
+      }
+      for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions()
+            .entrySet()) {
+         String name = e.getKey();
+         NamedBgpPeerGroup namedPeerGroup = e.getValue();
+         if (!namedPeerGroup.getInherited()) {
+            _unusedPeerSessions.add(name);
+            String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
+            NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(
+                  fakeNamedPgName);
+            fakeNamedPg.setPeerSession(name);
+            proc.getNamedPeerGroups().put(fakeNamedPgName, fakeNamedPg);
+            Ip fakeIp = new Ip(fakePeerCounter);
+            IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
+            fakePg.setGroupName(fakeNamedPgName);
+            fakePg.setActive(false);
+            fakePg.setShutdown(true);
+            leafGroups.add(fakePg);
+            fakePg.inheritUnsetFields(proc, this);
+            fakeGroupCounter++;
+            fakePeerCounter--;
+         }
       }
 
       // create origination prefilter from listed advertised networks
@@ -786,7 +847,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                }
             }
          }
-         if (updateSource == null) {
+         if (updateSource == null
+               && lpg.getNeighborPrefix().getAddress().valid()) {
             _w.redFlag("Could not determine update source for BGP neighbor: '"
                   + lpg.getName() + "'");
          }
@@ -817,7 +879,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                + lpg.getName() + "~";
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
                peerExportPolicyName);
-         c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         if (lpg.getActive() && !lpg.getShutdown()) {
+            c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         }
          If peerExportConditional = new If();
          peerExportPolicy.getStatements().add(peerExportConditional);
          Conjunction peerExportConditions = new Conjunction();
@@ -860,7 +924,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
                      + lpg.getName() + "~";
                newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
-               c.getPolicyMaps().put(outboundPolicyName, newOutboundPolicyMap);
+               if (lpg.getActive() && !lpg.getShutdown()) {
+                  c.getPolicyMaps().put(outboundPolicyName,
+                        newOutboundPolicyMap);
+               }
                PolicyMapClause denyClause = new PolicyMapClause();
                PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
                      suppressSummaryOnlyPolicyMap);
@@ -886,6 +953,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          if (proc.getRedistributionPolicies().containsKey(
                RoutingProtocol.STATIC)) {
             originationPolicies.add(redistributeStaticPolicyMap);
+         }
+         if (proc.getRedistributionPolicies().containsKey(
+               RoutingProtocol.CONNECTED)) {
+            originationPolicies.add(redistributeConnectedPolicyMap);
          }
 
          // set up default export policy for this peer group
@@ -944,8 +1015,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
                defaultRouteGenerationConditional.getTrueStatements().add(
                      Statements.ReturnTrue.toStaticStatement());
-               c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
-                     defaultRouteGenerationPolicy);
+               if (lpg.getActive() && !lpg.getShutdown()) {
+                  c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
+                        defaultRouteGenerationPolicy);
+               }
                defaultRoute
                      .setGenerationPolicy(defaultRouteGenerationPolicyName);
             }
@@ -1225,11 +1298,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
          Integer icmpType = fromLine.getIcmpType();
          if (icmpType != null) {
-            newLine.setIcmpType(icmpType);
+            newLine.setIcmpTypes(new TreeSet<SubRange>(Collections
+                  .singleton(new SubRange(icmpType))));
          }
          Integer icmpCode = fromLine.getIcmpCode();
          if (icmpCode != null) {
-            newLine.setIcmpCode(icmpCode);
+            newLine.setIcmpCodes(new TreeSet<SubRange>(Collections
+                  .singleton(new SubRange(icmpCode))));
          }
          Set<State> states = fromLine.getStates();
          newLine.getStates().addAll(states);
@@ -2447,6 +2522,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
       markRouteMaps(_pimRouteMaps, "pim route-map", c);
       // warn about unreferenced data structures
+      warnUnusedPeerGroups();
+      warnUnusedPeerSessions();
       warnUnusedRouteMaps();
       warnUnusedIpAccessLists();
       warnUnusedPrefixLists();
@@ -2569,6 +2646,26 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
    }
 
+   private void warnUnusedPeerGroups() {
+      if (_unusedPeerGroups != null) {
+         for (String name : _unusedPeerGroups) {
+            if (!_ipv6PeerGroups.contains(name)) {
+               unused("Unused bgp peer-group/template: '" + name + "'",
+                     BGP_PEER_GROUP, name);
+            }
+         }
+      }
+   }
+
+   private void warnUnusedPeerSessions() {
+      if (_unusedPeerSessions != null) {
+         for (String name : _unusedPeerSessions) {
+            unused("Unused bgp peer-session: '" + name + "'", BGP_PEER_SESSION,
+                  name);
+         }
+      }
+   }
+
    private void warnUnusedPrefixLists() {
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
          String name = e.getKey();
@@ -2589,7 +2686,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          RouteMap routeMap = e.getValue();
-         if (!routeMap.getIpv6() && routeMap.isUnused()) {
+         if (!routeMap.getIpv6() && routeMap.isUnused()
+               && !_referencedRouteMaps.contains(name)) {
             unused("Unused route-map: '" + name + "'", ROUTE_MAP, name);
          }
       }

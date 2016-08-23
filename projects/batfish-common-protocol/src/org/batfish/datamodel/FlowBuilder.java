@@ -44,11 +44,14 @@ public class FlowBuilder {
 
    private Integer _tcpFlagsUrg;
 
+   private Integer _fragmentOffset;
+
    public FlowBuilder() {
       _dscp = 0;
       _dstIp = Ip.ZERO;
       _dstPort = 0;
       _ecn = 0;
+      _fragmentOffset = 0;
       _ipProtocol = IpProtocol.IP;
       _srcIp = Ip.ZERO;
       _srcPort = 0;
@@ -74,8 +77,8 @@ public class FlowBuilder {
          throw new BatfishException("Cannot build flow without specifying tag");
       }
       return new Flow(_ingressNode, _srcIp, _dstIp, _srcPort, _dstPort,
-            _ipProtocol, _dscp, _ecn, _icmpType, _icmpCode, _state,
-            _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
+            _ipProtocol, _dscp, _ecn, _fragmentOffset, _icmpType, _icmpCode,
+            _state, _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
             _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin, _tag);
    }
 
@@ -177,6 +180,10 @@ public class FlowBuilder {
 
    public void setEcn(Integer ecn) {
       _ecn = ecn;
+   }
+
+   public void setFragmentOffset(int fragmentOffset) {
+      _fragmentOffset = fragmentOffset;
    }
 
    public void setIcmpCode(Integer icmpCode) {

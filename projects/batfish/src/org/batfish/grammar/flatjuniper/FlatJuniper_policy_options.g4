@@ -44,6 +44,11 @@ community_regex
    )* base_community_regex
 ;
 
+ct_invert_match
+:
+   INVERT_MATCH
+;
+
 ct_members
 :
    MEMBERS
@@ -273,7 +278,8 @@ pot_community
 
 pot_community_tail
 :
-   ct_members
+   ct_invert_match
+   | ct_members
 ;
 
 pot_condition

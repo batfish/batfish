@@ -97,6 +97,11 @@ ADDRESS_SET
    'address-set'
 ;
 
+ADVERTISE_EXTERNAL
+:
+   'advertise-external'
+;
+
 ADVERTISE_INACTIVE
 :
    'advertise-inactive'
@@ -946,6 +951,16 @@ FRAGMENTATION_NEEDED
    'fragmentation-needed'
 ;
 
+FRAGMENT_OFFSET
+:
+   'fragment-offset'
+;
+
+FRAGMENT_OFFSET_EXCEPT
+:
+   'fragment-offset-except'
+;
+
 FRAMING
 :
    'framing'
@@ -1266,6 +1281,11 @@ INDIRECT_NEXT_HOP
    'indirect-next-hop'
 ;
 
+INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
+:
+   'indirect-next-hop-change-acknowledgements'
+;
+
 INET
 :
    'inet'
@@ -1394,6 +1414,11 @@ INTERNAL
 INTERNET_OPTIONS
 :
    'internet-options'
+;
+
+INVERT_MATCH
+:
+   'invert-match'
 ;
 
 IP

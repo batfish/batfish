@@ -22,11 +22,12 @@ function_sig('Flow_dscp', 2).
 function_sig('Flow_dstIp', 2).
 function_sig('Flow_dstPort', 2).
 function_sig('Flow_ecn', 2).
+function_sig('Flow_fragmentOffset', 2).
 function_sig('Flow_icmpCode', 2).
 function_sig('Flow_icmpType', 2).
 function_sig('Flow_ipProtocol', 2).
 function_sig('Flow_node', 2).
-function_sig('FlowOriginate', 20).
+function_sig('FlowOriginate', 21).
 function_sig('Flow_srcIp', 2).
 function_sig('Flow_srcPort', 2).
 function_sig('Flow_state', 2).
@@ -1791,6 +1792,8 @@ need_PolicyMapMatchRoute(Map, Route) :-
    \+ 'IpAccessListMatchNotDstPort'(List, Line, Flow),
    'IpAccessListMatchEcn'(List, Line, Flow),
    \+ 'IpAccessListMatchNotEcn'(List, Line, Flow),
+   'IpAccessListMatchFragmentOffset'(List, Line, Flow),
+   \+ 'IpAccessListMatchNotFragmentOffset'(List, Line, Flow),
    'IpAccessListMatchIcmpCode'(List, Line, Flow),
    \+ 'IpAccessListMatchNotIcmpCode'(List, Line, Flow),
    'IpAccessListMatchIcmpType'(List, Line, Flow),
@@ -1870,31 +1873,62 @@ need_PolicyMapMatchRoute(Map, Route) :-
    'Flow_ecn'(Flow, Ecn),
    'SetIpAccessListLine_notEcn'(List, Line, Ecn).
 
+'IpAccessListMatchFragmentOffset'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_fragmentOffset'(Flow, FragmentOffset),
+   (
+      \+ 'SetIpAccessListLine_fragmentOffsets'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_fragmentOffsets'(List, Line, FragmentOffset_start, FragmentOffset_end),
+         FragmentOffset_start =< FragmentOffset,
+         FragmentOffset =< FragmentOffset_end
+      )
+   ).
+
+'IpAccessListMatchNotFragmentOffset'(List, Line, Flow) :-
+   'IpAccessListLine'(List, Line),
+   'Flow_fragmentOffset'(Flow, FragmentOffset),
+   'SetIpAccessListLine_notFragmentOffsets'(List, Line, FragmentOffset_start, FragmentOffset_end),
+   FragmentOffset_start =< FragmentOffset,
+   FragmentOffset =< FragmentOffset_end.
+
 'IpAccessListMatchIcmpCode'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpCode'(Flow, IcmpCode),
    (
-      \+ 'SetIpAccessListLine_icmpCode'(List, Line, _) ;
-      'SetIpAccessListLine_icmpCode'(List, Line, IcmpCode)
+      \+ 'SetIpAccessListLine_icmpCodes'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_icmpCodes'(List, Line, Start, End),
+         Start =< IcmpCode,
+         IcmpCode =< End
+      )
    ).
 
 'IpAccessListMatchNotIcmpCode'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpCode'(Flow, IcmpCode),
-   'SetIpAccessListLine_notIcmpCode'(List, Line, IcmpCode).
+   'SetIpAccessListLine_notIcmpCodes'(List, Line, Start, End),
+   Start =< IcmpCode,
+   IcmpCode =< End.
 
 'IpAccessListMatchIcmpType'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpType'(Flow, IcmpType),
    (
-      \+ 'SetIpAccessListLine_icmpType'(List, Line, _) ;
-      'SetIpAccessListLine_icmpType'(List, Line, IcmpType)
+      \+ 'SetIpAccessListLine_icmpTypes'(List, Line, _, _) ;
+      (
+         'SetIpAccessListLine_icmpTypes'(List, Line, Start, End),
+         Start =< IcmpType,
+         IcmpType =< End
+      )
    ).
 
 'IpAccessListMatchNotIcmpType'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
    'Flow_icmpType'(Flow, IcmpType),
-   'SetIpAccessListLine_notIcmpType'(List, Line, IcmpType).
+   'SetIpAccessListLine_notIcmpTypes'(List, Line, Start, End),
+   Start =< IcmpType,
+   IcmpType =< End.
 
 'IpAccessListMatchProtocol'(List, Line, Flow) :-
    'IpAccessListLine'(List, Line),
@@ -3480,7 +3514,7 @@ net_ips(MatchNet, Ip) :-
 'Ip'(SrcIp),
 'Ip'(DstIp)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, TcpFlagsCWR, TcpFlagsECE, TcpFlagsURG, TcpFlagsACK, TcpFlagsPSH, TcpFlagsRST, TcpFlagsSYN, TcpFlagsFIN, Tag).
 
 /*owner accept*/
 'FlowAccepted'(Flow, Node) :-
@@ -3795,12 +3829,13 @@ net_ips(MatchNet, Ip) :-
    'FibDrop'(Node, DstIp),
    \+ 'FibNeighborUnreachable'(Node, DstIp, _).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),
 'Flow_ecn'(Flow, Ecn),
+'Flow_fragmentOffset'(Flow, FragmentOffset),
 'Flow_icmpCode'(Flow, IcmpCode),
 'Flow_icmpType'(Flow, IcmpType),
 'Flow_ipProtocol'(Flow, Protocol),
@@ -3818,14 +3853,15 @@ net_ips(MatchNet, Ip) :-
 'Flow_tcpFlagsFIN'(Flow, FIN),
 'Flow_tag'(Flow, Tag)
 :-
-   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
+   'SetFlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag).
 
-'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
+'FlowOriginate'(Node, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag, Flow),
 'Flow'(Flow),
 'Flow_dscp'(Flow, Dscp),
 'Flow_dstIp'(Flow, DstIp),
 'Flow_dstPort'(Flow, DstPort),
 'Flow_ecn'(Flow, Ecn),
+'Flow_fragmentOffset'(Flow, FragmentOffset),
 'Flow_icmpCode'(Flow, IcmpCode),
 'Flow_icmpType'(Flow, IcmpType),
 'Flow_ipProtocol'(Flow, Protocol),
@@ -3844,7 +3880,7 @@ net_ips(MatchNet, Ip) :-
 'Flow_tag'(Flow, Tag)
 :-
    'DuplicateRoleFlows'(_),
-   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
+   'SetFlowOriginate'(AcceptNode, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN, Tag),
    'SetNodeRole'(AcceptNode, Role),
    'SetNodeRole'(Node, Role).
 
@@ -4146,6 +4182,6 @@ need_PolicyMapMatchFlow(Policy, Flow) :-
    'FlowSameHeader'(Flow, SimilarFlow).
 
 'FlowSameHeader'(Flow1, Flow2) :-
-   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
-   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
+   'FlowOriginate'(Node1, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow1),
+   'FlowOriginate'(Node2, SrcIp, DstIp, SrcPort, DstPort, Protocol, Dscp, Ecn, FragmentOffset, IcmpType, IcmpCode, State, CWR, ECE, URG, ACK, PSH, RST, SYN, FIN,Tag, Flow2),
    Node1 \== Node2.

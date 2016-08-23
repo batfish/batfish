@@ -67,7 +67,7 @@ public class ConvertConfigurationResult
                   answerElement.getUnusedStructures().putAll(
                         _answerElement.getUnusedStructures());
                   answerElement.getUndefinedReferences().putAll(
-                        _answerElement.getUnusedStructures());
+                        _answerElement.getUndefinedReferences());
                }
             }
          }

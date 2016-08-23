@@ -67,19 +67,42 @@ fwfromt_forwarding_class
    FORWARDING_CLASS variable
 ;
 
+fwfromt_fragment_offset
+:
+   FRAGMENT_OFFSET subrange
+;
+
+fwfromt_fragment_offset_except
+:
+   FRAGMENT_OFFSET_EXCEPT subrange
+;
+
 fwfromt_icmp_code
 :
-   ICMP_CODE icmp_code
+   ICMP_CODE
+   (
+      icmp_code
+      | subrange
+   )
 ;
 
 fwfromt_icmp_type
 :
-   ICMP_TYPE icmp_type
+   ICMP_TYPE
+   (
+      icmp_type
+      | subrange
+   )
 ;
 
 fwfromt_ip_options
 :
    IP_OPTIONS ip_option
+;
+
+fwfromt_is_fragment
+:
+   IS_FRAGMENT
 ;
 
 fwfromt_learn_vlan_1p_priority
@@ -95,8 +118,7 @@ fwfromt_next_header
 fwfromt_null
 :
    (
-      IS_FRAGMENT
-      | PAYLOAD_PROTOCOL
+      PAYLOAD_PROTOCOL
    ) s_null_filler
 ;
 
@@ -313,9 +335,11 @@ fwtt_from_tail
    | fwfromt_exp
    | fwfromt_first_fragment
    | fwfromt_forwarding_class
+   | fwfromt_fragment_offset
    | fwfromt_icmp_code
    | fwfromt_icmp_type
    | fwfromt_ip_options
+   | fwfromt_is_fragment
    | fwfromt_learn_vlan_1p_priority
    | fwfromt_next_header
    | fwfromt_null
