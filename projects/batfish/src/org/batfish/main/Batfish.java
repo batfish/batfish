@@ -3982,15 +3982,28 @@ public class Batfish implements AutoCloseable {
          String contents = e.getValue();
          LBValueTypeList valueTypes = _predicateInfo
                .getPredicateValueTypes(predicateName);
+         int numValueTypes = valueTypes.size();
          String[] lines = contents.split("\n");
          for (int i = 1; i < lines.length; i++) {
             sb.append("'" + predicateName + "'(");
             String line = lines[i];
             String[] parts = line.split(lineDelimiter);
-            for (int j = 0; j < parts.length; j++) {
+            int numParts = parts.length;
+            if (numParts != numValueTypes) {
+               throw new BatfishException("Input to predicate '"
+                     + predicateName + "' has " + numParts
+                     + " parts, but schema indicates it is " + numValueTypes
+                     + "-ary");
+            }
+            for (int j = 0; j < numParts; j++) {
                String part = parts[j];
                boolean isNum;
                LBValueType currentValueType = valueTypes.get(j);
+               if (currentValueType == null) {
+                  throw new BatfishException("In predicate '" + predicateName
+                        + "', missing type for argument in (0-based) position "
+                        + j);
+               }
                switch (currentValueType) {
                case ENTITY_INDEX_BGP_ADVERTISEMENT:
                case ENTITY_INDEX_FLOW:
