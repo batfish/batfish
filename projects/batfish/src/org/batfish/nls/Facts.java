@@ -32,8 +32,8 @@ public class Facts {
       map.put("SetIpAccessListLine_dstPorts",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
       map.put("SetIpAccessListLine_ecn", "LIST|LINE|ECN");
-      map.put("SetIpAccessListLine_icmpCode", "LIST|LINE|ICMPCODE");
-      map.put("SetIpAccessListLine_icmpType", "LIST|LINE|ICMPTYPE");
+      map.put("SetIpAccessListLine_icmpCodes", "LIST|LINE|ICMPCODE");
+      map.put("SetIpAccessListLine_icmpTypes", "LIST|LINE|ICMPTYPE");
       map.put("SetIpAccessListLine_state", "LIST|LINE|STATE");
       map.put("SetIpAccessListLine_tcpFlags", "LIST|LINE|ALTERNATIVE");
       map.put("SetIpAccessListLine_tcpFlagsCWR", "LIST|LINE|ALTERNATIVE|BIT");
@@ -59,8 +59,8 @@ public class Facts {
       map.put("SetIpAccessListLine_notDstPorts",
             "LIST|LINE|DSTPORTSTART|DSTPORTEND");
       map.put("SetIpAccessListLine_notEcn", "LIST|LINE|ECN");
-      map.put("SetIpAccessListLine_notIcmpCode", "LIST|LINE|ICMPCODE");
-      map.put("SetIpAccessListLine_notIcmpType", "LIST|LINE|ICMPTYPE");
+      map.put("SetIpAccessListLine_notIcmpCodes", "LIST|LINE|ICMPCODE");
+      map.put("SetIpAccessListLine_notIcmpTypes", "LIST|LINE|ICMPTYPE");
       map.put("SetIpAccessListLine_notState", "LIST|LINE|STATE");
       map.put("SetIpAccessListLine_notProtocol", "LIST|LINE|PROTOCOL");
       map.put("SetIpAccessListLine_notSrcIps", "LIST|LINE|SRCIPSTART|SRCIPEND");
