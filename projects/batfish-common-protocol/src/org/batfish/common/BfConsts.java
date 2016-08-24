@@ -53,6 +53,7 @@ public class BfConsts {
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
+   public static final String COMMAND_REPORT = "report";
    public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
    public static final String COMMAND_WRITE_CP_FACTS = "cpfacts";
    public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
