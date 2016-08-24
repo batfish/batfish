@@ -10,18 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ReportAnswerElement implements AnswerElement {
 
+   private List<Object> _jsonAnswers;
+
    public ReportAnswerElement() {
       _jsonAnswers = new ArrayList<Object>();
    }
 
-   private List<Object> _jsonAnswers;
-
    public List<Object> getJsonAnswers() {
       return _jsonAnswers;
-   }
-
-   public void setJsonAnswers(List<Object> jsonAnswers) {
-      _jsonAnswers = jsonAnswers;
    }
 
    @Override
@@ -29,6 +25,10 @@ public class ReportAnswerElement implements AnswerElement {
       // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
+   }
+
+   public void setJsonAnswers(List<Object> jsonAnswers) {
+      _jsonAnswers = jsonAnswers;
    }
 
 }
