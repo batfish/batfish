@@ -5,7 +5,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 
 public class MyApplication {
-   
+
    private IpProtocol _ipProtocol;
    private Integer _port;
 
@@ -24,15 +24,17 @@ public class MyApplication {
       else if (protocolStr.equals("udp")) {
          _ipProtocol = IpProtocol.UDP;
       }
-      else 
-         throw new BatfishException("unsupported protocol string: " + protocolStr);
+      else {
+         throw new BatfishException("unsupported protocol string: "
+               + protocolStr);
+      }
    }
-   
+
    IpProtocol getIpProtocol() {
       return _ipProtocol;
    }
-   
+
    Integer getPort() {
       return _port;
-   }    
+   }
 }

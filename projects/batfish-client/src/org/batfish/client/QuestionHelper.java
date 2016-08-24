@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class QuestionHelper {
 
-
    public enum MacroType {
       CHECKPROTECTION("checkprotection"),
       CHECKREACHABILITY("checkreachability"),
@@ -141,9 +140,8 @@ public class QuestionHelper {
       return question.toJsonString();
    }
 
-   public static ReachabilityQuestion getReachabilityQuestion(
-         String dstIp, String protocol, String ingressNodeRegex,
-         ForwardingAction action) {
+   public static ReachabilityQuestion getReachabilityQuestion(String dstIp,
+         String protocol, String ingressNodeRegex, ForwardingAction action) {
       ReachabilityQuestion question = new ReachabilityQuestion();
 
       question.setDstIps(Collections.singleton(new IpWildcard(new Ip(dstIp))));
@@ -167,7 +165,8 @@ public class QuestionHelper {
 
       if (application.getPort() != null) {
          int portNum = application.getPort();
-         Set<SubRange> portRanges = Collections.singleton(new SubRange(portNum));
+         Set<SubRange> portRanges = Collections
+               .singleton(new SubRange(portNum));
          if (inverted) {
             question.setNotDstPorts(portRanges);
          }
@@ -192,38 +191,40 @@ public class QuestionHelper {
       String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
 
-      switch(macroType) {
+      switch (macroType) {
       case CHECKPROTECTION: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for noreachability macro. " +
-                  "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
+            throw new BatfishException(
+                  "Incorrect usage for noreachability macro. "
+                        + "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];
-         String ingressNodeRegex = (words.length == 3)? words[2] : null;
+         String ingressNodeRegex = (words.length == 3) ? words[2] : null;
 
-         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.ACCEPT)
-               .toJsonString();
+         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex,
+               ForwardingAction.ACCEPT).toJsonString();
       }
       case CHECKREACHABILITY: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for noreachability macro. " +
-                  "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
+            throw new BatfishException(
+                  "Incorrect usage for noreachability macro. "
+                        + "Should be:\n #checkreachability <dstip> <protocol> [<ingressNodeRegex>]");
          }
          String dstIp = words[0];
          String protocol = words[1];
-         String ingressNodeRegex = (words.length == 3)? words[2] : null;
+         String ingressNodeRegex = (words.length == 3) ? words[2] : null;
 
-         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex, ForwardingAction.DROP)
-               .toJsonString();
+         return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex,
+               ForwardingAction.DROP).toJsonString();
       }
       case TRACEROUTE: {
          String[] words = paramsLine.split(" ");
          if (words.length < 2 || words.length > 3) {
-            throw new BatfishException("Incorrect usage for traceroute macro. " +
-                  "Should be:\n #traceroute <srcNode> <dstip> [<protocol>]");
+            throw new BatfishException("Incorrect usage for traceroute macro. "
+                  + "Should be:\n #traceroute <srcNode> <dstip> [<protocol>]");
          }
          TracerouteQuestion question = new TracerouteQuestion();
          String srcNode = words[0];
@@ -236,12 +237,13 @@ public class QuestionHelper {
             String protocol = words[2];
             MyApplication application = new MyApplication(protocol);
             question.setIpProtocol(application.getIpProtocol());
-            if (application.getPort() != null)
+            if (application.getPort() != null) {
                question.setDstPort(application.getPort());
+            }
          }
-//         else {
-//            question.setIpProtocol(IpProtocol.ICMP);
-//         }
+         // else {
+         // question.setIpProtocol(IpProtocol.ICMP);
+         // }
          return question.toJsonString();
       }
       default:
