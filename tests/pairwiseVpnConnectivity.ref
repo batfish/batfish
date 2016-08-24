@@ -8,10 +8,8 @@
   "question" : {
     "class" : "org.batfish.datamodel.questions.PairwiseVpnConnectivityQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
     "node1Regex" : ".*",
-    "node2Regex" : ".*",
-    "nodeBlacklist" : [ ]
+    "node2Regex" : ".*"
   },
   "status" : "SUCCESS"
 }

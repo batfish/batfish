@@ -8,7 +8,7 @@
         "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "Loopback0" ],
         "ipAccessLists" : [ "101", "102", "103" ],
         "policySortedMaps" : [ "as1_to_as2", "as1_to_as3", "as2_to_as1", "as3_to_as1", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~OSPF_EXPORT_CONNECTED_POLICY~" ],
-        "routeFilterLists" : [ "101", "102", "103", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
+        "routeFilterLists" : [ "101", "102", "103", "default_list", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
         "routingProtocols" : [ "BGP", "OSPF" ]
       },
       "as1border2" : {
@@ -31,18 +31,18 @@
         "communityLists" : [ "as1_community", "as2_community", "as3_community" ],
         "configurationFormat" : "CISCO",
         "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "FastEthernet1/0", "Loopback0" ],
-        "ipAccessLists" : [ "101", "102", "103", "BLOCK_SPOOF_IN" ],
-        "policySortedMaps" : [ "as1_to_as2", "as2_to_as1", "as2_to_as3", "as3_to_as2", "~AGGREGATE_ROUTE_GEN:2.0.0.0/8~", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~COMPOSITE_OUTBOUND_POLICY:10.12.11.1~", "~OSPF_EXPORT_CONNECTED_POLICY~", "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~", "~SUPRESS_SUMMARY_ONLY~" ],
-        "routeFilterLists" : [ "101", "102", "103", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~", "~MATCH_SUMMARIZED_OF:2.0.0.0/8~", "~MATCH_SUPPRESSED_SUMMARY_ONLY~" ],
+        "ipAccessLists" : [ "101", "103", "INSIDE_TO_OUTSIDE", "OUTSIDE_TO_INSIDE" ],
+        "policySortedMaps" : [ "as1_to_as2", "as2_to_as1", "as2_to_as3", "as3_to_as2", "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~COMPOSITE_OUTBOUND_POLICY:10.12.11.1~", "~OSPF_EXPORT_CONNECTED_POLICY~", "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~", "~SUPRESS_SUMMARY_ONLY~" ],
+        "routeFilterLists" : [ "101", "103", "inbound_route_filter", "outbound_routes", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~", "~MATCH_SUMMARIZED_OF:2.128.0.0/16~", "~MATCH_SUPPRESSED_SUMMARY_ONLY~" ],
         "routingProtocols" : [ "AGGREGATE", "BGP", "OSPF" ]
       },
       "as2border2" : {
         "communityLists" : [ "as1_community", "as2_community", "as3_community" ],
         "configurationFormat" : "CISCO",
         "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "FastEthernet1/0", "Loopback0" ],
-        "ipAccessLists" : [ "101", "102", "103", "BLOCK_SPOOF_IN" ],
-        "policySortedMaps" : [ "as1_to_as2", "as2_to_as1", "as2_to_as3", "as3_to_as2", "~AGGREGATE_ROUTE_GEN:2.0.0.0/8~", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~COMPOSITE_OUTBOUND_POLICY:10.23.21.3~", "~OSPF_EXPORT_CONNECTED_POLICY~", "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~", "~SUPRESS_SUMMARY_ONLY~" ],
-        "routeFilterLists" : [ "101", "102", "103", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~", "~MATCH_SUMMARIZED_OF:2.0.0.0/8~", "~MATCH_SUPPRESSED_SUMMARY_ONLY~" ],
+        "ipAccessLists" : [ "101", "103", "INSIDE_TO_OUTSIDE", "OUTSIDE_TO_INSIDE" ],
+        "policySortedMaps" : [ "as1_to_as2", "as2_to_as1", "as2_to_as3", "as3_to_as2", "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~COMPOSITE_OUTBOUND_POLICY:10.23.21.3~", "~OSPF_EXPORT_CONNECTED_POLICY~", "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~", "~SUPRESS_SUMMARY_ONLY~" ],
+        "routeFilterLists" : [ "101", "103", "inbound_route_filter", "outbound_routes", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~", "~MATCH_SUMMARIZED_OF:2.128.0.0/16~", "~MATCH_SUPPRESSED_SUMMARY_ONLY~" ],
         "routingProtocols" : [ "AGGREGATE", "BGP", "OSPF" ]
       },
       "as2core1" : {
@@ -63,7 +63,7 @@
       "as2dept1" : {
         "communityLists" : [ "as2_community" ],
         "configurationFormat" : "CISCO",
-        "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "FastEthernet1/0", "Loopback0" ],
+        "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "FastEthernet1/0", "FastEthernet1/1", "Loopback0" ],
         "ipAccessLists" : [ "102", "105", "RESTRICT_HOST_TRAFFIC_IN", "RESTRICT_HOST_TRAFFIC_OUT" ],
         "policySortedMaps" : [ "as2_to_dept", "dept_to_as2", "~BGP_ADVERTISED_NETWORKS_POLICY~" ],
         "routeFilterLists" : [ "102", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
@@ -87,18 +87,13 @@
         "routeFilterLists" : [ "105", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
         "routingProtocols" : [ "BGP", "OSPF" ]
       },
-      "as2host1" : {
-        "configurationFormat" : "CISCO",
-        "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "Loopback0" ],
-        "routingProtocols" : [ "STATIC" ]
-      },
       "as3border1" : {
         "communityLists" : [ "as1_community", "as2_community", "as3_community" ],
         "configurationFormat" : "CISCO",
         "interfaces" : [ "FastEthernet0/0", "FastEthernet0/1", "Loopback0" ],
         "ipAccessLists" : [ "101", "102", "103" ],
         "policySortedMaps" : [ "as1_to_as3", "as2_to_as3", "as3_to_as1", "as3_to_as2", "~BGP_ADVERTISED_NETWORKS_POLICY~", "~OSPF_EXPORT_CONNECTED_POLICY~" ],
-        "routeFilterLists" : [ "101", "102", "103", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
+        "routeFilterLists" : [ "101", "102", "103", "default_list", "inbound_route_filter", "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
         "routingProtocols" : [ "BGP", "OSPF" ]
       },
       "as3border2" : {
@@ -116,14 +111,24 @@
         "policySortedMaps" : [ "~BGP_ADVERTISED_NETWORKS_POLICY~" ],
         "routeFilterLists" : [ "~BGP_AGGREGATE_NETWORKS_FILTER:~", "~BGP_NETWORK_NETWORKS_FILTER~" ],
         "routingProtocols" : [ "BGP", "OSPF" ]
+      },
+      "host1" : {
+        "configurationFormat" : "HOST",
+        "interfaces" : [ "eth0" ],
+        "ipAccessLists" : [ "filter::FORWARD", "filter::INPUT", "filter::OUTPUT", "mangle::FORWARD", "mangle::INPUT", "mangle::OUTPUT", "mangle::POSTROUTING", "mangle::PREROUTING", "nat::OUTPUT", "nat::POSTROUTING", "nat::PREROUTING" ],
+        "routingProtocols" : [ "STATIC" ]
+      },
+      "host2" : {
+        "configurationFormat" : "HOST",
+        "interfaces" : [ "eth0" ],
+        "ipAccessLists" : [ "filter::FORWARD", "filter::INPUT", "filter::OUTPUT", "mangle::FORWARD", "mangle::INPUT", "mangle::OUTPUT", "mangle::POSTROUTING", "mangle::PREROUTING", "nat::OUTPUT", "nat::POSTROUTING", "nat::PREROUTING" ],
+        "routingProtocols" : [ "STATIC" ]
       }
     }
   } ],
   "question" : {
     "class" : "org.batfish.datamodel.questions.NodesQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*",
     "nodeType" : [ ],
     "summary" : true

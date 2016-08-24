@@ -12,7 +12,6 @@
       "as2dept1" : [ "Loopback0" ],
       "as2dist1" : [ "Loopback0" ],
       "as2dist2" : [ "Loopback0" ],
-      "as2host1" : [ "Loopback0" ],
       "as3border1" : [ "Loopback0" ],
       "as3border2" : [ "Loopback0" ],
       "as3core1" : [ "Loopback0" ]
@@ -28,8 +27,6 @@
   "question" : {
     "class" : "org.batfish.datamodel.questions.IsisLoopbacksQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"

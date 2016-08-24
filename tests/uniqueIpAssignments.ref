@@ -6,7 +6,7 @@
         "hostname" : "as2border2",
         "interface" : "Loopback0"
       }, {
-        "hostname" : "as2host1",
+        "hostname" : "as2dept1",
         "interface" : "Loopback0"
       } ]
     },
@@ -15,7 +15,7 @@
         "hostname" : "as2border2",
         "interface" : "Loopback0"
       }, {
-        "hostname" : "as2host1",
+        "hostname" : "as2dept1",
         "interface" : "Loopback0"
       } ]
     }
@@ -23,8 +23,6 @@
   "question" : {
     "class" : "org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*",
     "verbose" : false
   },

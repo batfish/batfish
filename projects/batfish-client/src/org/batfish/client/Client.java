@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -434,9 +435,10 @@ public class Client {
          String answerString = CommonUtil
                .readFile(Paths.get(downloadedAnsFile));
 
-         // check if we need to pretty things
+         // Check if we need to make things pretty
+         // Don't if we are writing to FileWriter, because we need valid JSON in that case
          String answerStringToPrint = answerString;
-         if (_settings.getPrettyPrintAnswers()) {
+         if (outWriter == null && _settings.getPrettyPrintAnswers()) {
             ObjectMapper mapper = new BatfishObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
             answerStringToPrint = answer.prettyPrint();
@@ -1210,8 +1212,7 @@ public class Client {
                }
             }
             catch (Exception e) {
-               _logger.errorf("Exception in comparing test results: ",
-                     e.getMessage());
+               _logger.errorf("Exception in comparing test results: " + ExceptionUtils.getStackTrace(e));
             }
 
             if (testPassed) {
