@@ -3926,6 +3926,18 @@ public class Batfish implements AutoCloseable {
       if (jsonPath != null) {
          CommonUtil.writeFile(jsonPath, jsonAnswer);
       }
+      Path questionPath = _settings.getQuestionPath();
+      if (questionPath != null) {
+         if (!Files.exists(questionPath)) {
+            throw new BatfishException(
+                  "Could not write JSON answer to question dir '"
+                        + questionPath.toString()
+                        + "' because it does not exist");
+         }
+         Path answerPath = questionPath.getParent().resolve(
+               BfConsts.RELPATH_ANSWER_JSON);
+         CommonUtil.writeFile(answerPath, jsonAnswer);
+      }
    }
 
    private void writeJsonTopology() {
