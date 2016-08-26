@@ -598,6 +598,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _removeBlocks;
 
+   private boolean _report;
+
    private boolean _runInServiceMode;
 
    private boolean _sequential;
@@ -944,6 +946,10 @@ public final class Settings extends BaseSettings {
       return _removeBlocks;
    }
 
+   public boolean getReport() {
+      return _report;
+   }
+
    public boolean getSequential() {
       return _sequential;
    }
@@ -1135,6 +1141,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REMOVE_BLOCKS, false);
+      setDefaultProperty(BfConsts.COMMAND_REPORT, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_CP_FACTS, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS, false);
@@ -1400,6 +1407,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.COMMAND_REMOVE_BLOCKS,
             "remove selected blocks of logic rules");
 
+      addBooleanOption(BfConsts.COMMAND_REPORT,
+            "generate report based on answered questions");
+
       addBooleanOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS,
             "write bgp advertisements from nls data plane model to disk");
 
@@ -1494,6 +1504,7 @@ public final class Settings extends BaseSettings {
       _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
       _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
       _removeBlocks = getBooleanOptionValue(BfConsts.COMMAND_REMOVE_BLOCKS);
+      _report = getBooleanOptionValue(BfConsts.COMMAND_REPORT);
       _runInServiceMode = getBooleanOptionValue(ARG_SERVICE_MODE);
       _sequential = getBooleanOptionValue(ARG_SEQUENTIAL);
       _serializeIndependent = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
@@ -1597,6 +1608,10 @@ public final class Settings extends BaseSettings {
 
    public void setQuestionPath(Path questionPath) {
       _questionPath = questionPath;
+   }
+
+   public void setReport(boolean report) {
+      _report = report;
    }
 
    public void setThrowOnLexerError(boolean throwOnLexerError) {

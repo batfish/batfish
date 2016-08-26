@@ -29,6 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -98,6 +100,7 @@ import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
@@ -804,6 +807,16 @@ public class Batfish implements AutoCloseable {
       trafficIntersect.retainAll(getNlsTrafficOutputSymbols());
       if (trafficIntersect.size() > 0) {
          checkTrafficFacts(testrigSettings);
+      }
+   }
+
+   private void checkQuestionsDirExists() {
+      checkBaseDirExists();
+      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      if (!Files.exists(questionsDir)) {
+         throw new CleanBatfishException("questions dir does not exist: \""
+               + questionsDir.getFileName().toString() + "\"");
       }
    }
 
@@ -3219,6 +3232,46 @@ public class Batfish implements AutoCloseable {
       // lbFrontend.removeBlocks(qualifiedBlockNames);
    }
 
+   private AnswerElement report() {
+      ReportAnswerElement answerElement = new ReportAnswerElement();
+      checkQuestionsDirExists();
+      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+            .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      ConcurrentMap<Path, String> answers = new ConcurrentHashMap<Path, String>();
+      try {
+         Files.newDirectoryStream(questionsDir)
+               .forEach(
+                     questionDirPath -> answers.put(
+                           questionDirPath
+                                 .resolve(BfConsts.RELPATH_ANSWER_JSON),
+                           !questionDirPath.getFileName().startsWith(".")
+                                 && Files.exists(questionDirPath
+                                       .resolve(BfConsts.RELPATH_ANSWER_JSON)) ? CommonUtil
+                                 .readFile(questionDirPath
+                                       .resolve(BfConsts.RELPATH_ANSWER_JSON))
+                                 : ""));
+      }
+      catch (IOException e1) {
+         throw new BatfishException("Could not create directory stream for '"
+               + questionsDir.toString() + "'", e1);
+      }
+      ObjectMapper mapper = new BatfishObjectMapper();
+      for (Entry<Path, String> entry : answers.entrySet()) {
+         Path answerPath = entry.getKey();
+         String answerText = entry.getValue();
+         if (!answerText.equals("")) {
+            try {
+               answerElement.getJsonAnswers().add(mapper.readTree(answerText));
+            }
+            catch (IOException e) {
+               throw new BatfishException("Error mapping JSON content of '"
+                     + answerPath.toString() + "' to object", e);
+            }
+         }
+      }
+      return answerElement;
+   }
+
    public void resetTimer() {
       _timerCount = System.currentTimeMillis();
    }
@@ -3309,6 +3362,11 @@ public class Batfish implements AutoCloseable {
 
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
+         return answer;
+      }
+
+      if (_settings.getReport()) {
+         answer.addAnswerElement(report());
          return answer;
       }
 
@@ -3925,6 +3983,18 @@ public class Batfish implements AutoCloseable {
       Path jsonPath = _settings.getAnswerJsonPath();
       if (jsonPath != null) {
          CommonUtil.writeFile(jsonPath, jsonAnswer);
+      }
+      Path questionPath = _settings.getQuestionPath();
+      if (questionPath != null) {
+         if (!Files.exists(questionPath)) {
+            throw new BatfishException(
+                  "Could not write JSON answer to question dir '"
+                        + questionPath.toString()
+                        + "' because it does not exist");
+         }
+         Path answerPath = questionPath.getParent().resolve(
+               BfConsts.RELPATH_ANSWER_JSON);
+         CommonUtil.writeFile(answerPath, jsonAnswer);
       }
    }
 

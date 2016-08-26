@@ -23,7 +23,7 @@
       "as2border2" : [ ],
       "as2core1" : [ ],
       "as2core2" : [ ],
-      "as2dept1" : [ "2.128.0.0/16" ],
+      "as2dept1" : [ "2.128.0.0/24", "2.128.1.0/24" ],
       "as2dist1" : [ ],
       "as2dist2" : [ ],
       "as3border1" : [ "3.0.2.0/24", "3.0.1.0/24" ],
@@ -34,8 +34,6 @@
   "question" : {
     "class" : "org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"

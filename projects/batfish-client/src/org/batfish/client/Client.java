@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -87,8 +88,8 @@ public class Client {
    private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
    private static final String COMMAND_SHOW_CONTAINER = "show-container";
    private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
-   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
    private static final String COMMAND_SHOW_DELTA_TESTRIG = "show-delta-testrig";
+   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
    private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
    private static final String COMMAND_TEST = "test";
    private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
@@ -106,11 +107,9 @@ public class Client {
       descs.put(COMMAND_ANSWER, COMMAND_ANSWER
             + " <question-file> [param1=value1 [param2=value2] ...]\n"
             + "\t Answer the question in the file for the default environment");
-      descs.put(
-            COMMAND_ANSWER_DELTA,
-            COMMAND_ANSWER_DELTA
-                  + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-                  + "\t Answer the question in the file for the delta environment");
+      descs.put(COMMAND_ANSWER_DELTA, COMMAND_ANSWER_DELTA
+            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
+            + "\t Answer the question in the file for the delta environment");
       descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
             + "\t Print the contents of the file");
       // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
@@ -326,9 +325,9 @@ public class Client {
       }
 
       // answer the question
-      WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(
-            questionName, _currContainerName, _currTestrig, _currEnv,
-            _currDeltaTestrig, _currDeltaEnv, isDelta); 
+      WorkItem wItemAs = _workHelper.getWorkItemAnswerQuestion(questionName,
+            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
+            _currDeltaEnv, isDelta);
 
       return execute(wItemAs, outWriter);
    }
@@ -351,8 +350,7 @@ public class Client {
          }
       }
       else {
-         questionString = QuestionHelper
-               .getQuestionString(questionType);
+         questionString = QuestionHelper.getQuestionString(questionType);
          _logger.debugf("Question Json:\n%s\n", questionString);
 
          parametersString = QuestionHelper.getParametersString(parameters);
@@ -434,9 +432,11 @@ public class Client {
          String answerString = CommonUtil
                .readFile(Paths.get(downloadedAnsFile));
 
-         // check if we need to pretty things
+         // Check if we need to make things pretty
+         // Don't if we are writing to FileWriter, because we need valid JSON in
+         // that case
          String answerStringToPrint = answerString;
-         if (_settings.getPrettyPrintAnswers()) {
+         if (outWriter == null && _settings.getPrettyPrintAnswers()) {
             ObjectMapper mapper = new BatfishObjectMapper();
             Answer answer = mapper.readValue(answerString, Answer.class);
             answerStringToPrint = answer.prettyPrint();
@@ -518,7 +518,8 @@ public class Client {
       return execute(wItemGenDp, outWriter);
    }
 
-   private boolean generateDeltaDataplane(FileWriter outWriter) throws Exception {
+   private boolean generateDeltaDataplane(FileWriter outWriter)
+         throws Exception {
       if (!isSetDeltaEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
          return false;
       }
@@ -837,8 +838,8 @@ public class Client {
          case COMMAND_GET_DELTA: {
             boolean isDelta = (command.equals(COMMAND_GET_DELTA));
 
-            if (!isSetTestrig() || !isSetContainer(true) || 
-                 (isDelta && !isSetDeltaEnvironment())) {
+            if (!isSetTestrig() || !isSetContainer(true)
+                  || (isDelta && !isSetDeltaEnvironment())) {
                return false;
             }
 
@@ -846,8 +847,8 @@ public class Client {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
-            if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX) &&
-                QuestionType.fromName(qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
+            if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX)
+                  && QuestionType.fromName(qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
 
                String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX
                      + UUID.randomUUID().toString();
@@ -871,7 +872,7 @@ public class Client {
 
                return true;
             }
-            else {              
+            else {
                return answerType(qTypeStr, paramsLine, isDelta, outWriter);
             }
          }
@@ -920,7 +921,8 @@ public class Client {
             _currDeltaEnv = deltaEnvName;
             _currDeltaTestrig = _currTestrig;
 
-            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
+            _logger.outputf(
+                  "Active delta testrig->environment is now %s->%s\n",
                   _currDeltaTestrig, _currDeltaEnv);
 
             WorkItem wItemGenDdp = _workHelper
@@ -1077,7 +1079,8 @@ public class Client {
             if (_currDeltaTestrig == null) {
                _currDeltaTestrig = _currTestrig;
             }
-            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
+            _logger.outputf(
+                  "Active delta testrig->environment is now %s->%s\n",
                   _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
@@ -1210,8 +1213,8 @@ public class Client {
                }
             }
             catch (Exception e) {
-               _logger.errorf("Exception in comparing test results: ",
-                     e.getMessage());
+               _logger.errorf("Exception in comparing test results: "
+                     + ExceptionUtils.getStackTrace(e));
             }
 
             if (testPassed) {

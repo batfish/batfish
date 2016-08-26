@@ -3,745 +3,339 @@
     "class" : "org.batfish.datamodel.answers.AclLinesAnswerElement",
     "acls" : {
       "as1border1" : {
-        "101" : {
+        "102" : {
           "@id" : 1,
-          "name" : "101",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "102" : {
-          "@id" : 2,
           "name" : "102",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "255.0.0.0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.0.0.0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "255.255.0.0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 3,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        }
-      },
-      "as1border2" : {
-        "101" : {
-          "@id" : 4,
-          "name" : "101",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "102" : {
-          "@id" : 5,
-          "name" : "102",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 6,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.128.0.0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         }
       },
       "as2border1" : {
-        "101" : {
-          "@id" : 7,
-          "name" : "101",
+        "INSIDE_TO_OUTSIDE" : {
+          "@id" : 2,
+          "name" : "INSIDE_TO_OUTSIDE",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "1.0.0.0/8" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.0.0.0/8" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
-            "action" : "ACCEPT",
+            "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "deny ip any any",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "0.0.0.0/0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         },
-        "102" : {
-          "@id" : 8,
-          "name" : "102",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 9,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "BLOCK_SPOOF_IN" : {
-          "@id" : 10,
-          "name" : "BLOCK_SPOOF_IN",
+        "OUTSIDE_TO_INSIDE" : {
+          "@id" : 3,
+          "name" : "OUTSIDE_TO_INSIDE",
           "lines" : [ {
             "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "deny ip 2.0.0.0 0.255.255.255 any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.0.0.0/8" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
+            "states" : [ ],
+            "tcpFlags" : [ ]
+          }, {
+            "action" : "REJECT",
+            "dscps" : [ ],
+            "dstIps" : [ "2.128.1.101" ],
+            "dstPorts" : [ ],
+            "ecns" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "deny ip any host 2.128.1.101",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "0.0.0.0/0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "permit ip any any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "0.0.0.0/0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         }
       },
       "as2border2" : {
-        "101" : {
-          "@id" : 11,
-          "name" : "101",
+        "INSIDE_TO_OUTSIDE" : {
+          "@id" : 4,
+          "name" : "INSIDE_TO_OUTSIDE",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "3.0.0.0/8" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.0.0.0/8" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
-            "action" : "ACCEPT",
+            "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "deny ip any any",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "0.0.0.0/0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         },
-        "102" : {
-          "@id" : 12,
-          "name" : "102",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 13,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "BLOCK_SPOOF_IN" : {
-          "@id" : 14,
-          "name" : "BLOCK_SPOOF_IN",
+        "OUTSIDE_TO_INSIDE" : {
+          "@id" : 5,
+          "name" : "OUTSIDE_TO_INSIDE",
           "lines" : [ {
             "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "deny ip 2.0.0.0 0.255.255.255 any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.0.0.0/8" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "0.0.0.0/0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "permit ip any any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        }
-      },
-      "as2core1" : {
-        "blocktelnet" : {
-          "@id" : 15,
-          "name" : "blocktelnet",
-          "lines" : [ {
-            "action" : "REJECT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ "23-23" ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "deny   tcp any any eq telnet",
-            "protocols" : [ "TCP" ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip any any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "0.0.0.0/0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
@@ -749,263 +343,62 @@
       },
       "as2dept1" : {
         "102" : {
-          "@id" : 16,
+          "@id" : 6,
           "name" : "102",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "255.255.255.0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "105" : {
-          "@id" : 17,
-          "name" : "105",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "permit ip host 2.128.0.0 host 255.255.255.0",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.128.0.0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "255.255.255.0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "RESTRICT_HOST_TRAFFIC_IN" : {
-          "@id" : 18,
-          "name" : "RESTRICT_HOST_TRAFFIC_IN",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip 2.128.0.0 0.0.255.255 any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "REJECT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "deny ip any any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit icmp any any",
-            "protocols" : [ "ICMP" ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "RESTRICT_HOST_TRAFFIC_OUT" : {
-          "@id" : 19,
-          "name" : "RESTRICT_HOST_TRAFFIC_OUT",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip any 2.128.0.0 0.0.255.255",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "REJECT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "deny ip any any",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit icmp any any",
-            "protocols" : [ "ICMP" ],
-            "srcIpWildcards" : [ {
-              "ip" : "0.0.0.0",
-              "wildcard" : "255.255.255.255"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : "permit ip host 2.128.1.0 host 255.255.255.0",
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.128.1.0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
@@ -1013,611 +406,476 @@
       },
       "as2dist1" : {
         "102" : {
-          "@id" : 20,
+          "@id" : 7,
           "name" : "102",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "255.255.0.0" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
             "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "105" : {
-          "@id" : 21,
-          "name" : "105",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ "2.128.0.0" ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         }
       },
-      "as2dist2" : {
-        "102" : {
-          "@id" : 22,
-          "name" : "102",
+      "host1" : {
+        "filter::INPUT" : {
+          "@id" : 8,
+          "name" : "filter::INPUT",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ "53-53" ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ "UDP" ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
+            "states" : [ ],
+            "tcpFlags" : [ ]
+          }, {
+            "action" : "ACCEPT",
+            "dscps" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ "22-22" ],
+            "ecns" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ "TCP" ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
+            "states" : [ ],
+            "tcpFlags" : [ ]
+          }, {
+            "action" : "REJECT",
+            "dscps" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ ],
+            "ecns" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         },
-        "105" : {
-          "@id" : 23,
-          "name" : "105",
+        "filter::OUTPUT" : {
+          "@id" : 9,
+          "name" : "filter::OUTPUT",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         }
       },
-      "as3border1" : {
-        "101" : {
-          "@id" : 24,
-          "name" : "101",
+      "host2" : {
+        "filter::INPUT" : {
+          "@id" : 10,
+          "name" : "filter::INPUT",
           "lines" : [ {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ "22-22" ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ "TCP" ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
-            "action" : "ACCEPT",
+            "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         },
-        "102" : {
-          "@id" : 25,
-          "name" : "102",
+        "filter::OUTPUT" : {
+          "@id" : 11,
+          "name" : "filter::OUTPUT",
           "lines" : [ {
-            "action" : "ACCEPT",
+            "action" : "REJECT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ "2.128.0.101" ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           }, {
             "action" : "ACCEPT",
             "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
+            "dstIps" : [ ],
+            "dstPorts" : [ ],
             "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 26,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
+            "fragmentOffsets" : [ ],
+            "icmpCodes" : [ ],
+            "icmpTypes" : [ ],
+            "ipProtocols" : [ ],
+            "name" : null,
+            "negate" : false,
+            "notDscps" : [ ],
+            "notDstIps" : [ ],
+            "notDstPorts" : [ ],
+            "notEcns" : [ ],
+            "notFragmentOffsets" : [ ],
+            "notIcmpCodes" : [ ],
+            "notIcmpTypes" : [ ],
+            "notIpProtocols" : [ ],
+            "notSrcIps" : [ ],
+            "notSrcPorts" : [ ],
+            "srcIps" : [ ],
+            "srcOrDstIps" : [ ],
+            "srcOrDstPorts" : [ ],
+            "srcPorts" : [ ],
             "states" : [ ],
             "tcpFlags" : [ ]
           } ]
         }
+      }
+    },
+    "equivalenceClasses" : {
+      "102" : {
+        "as1border1" : [ "as1border1", "as1border2", "as3border1", "as3border2" ],
+        "as2dept1" : [ "as2dept1" ],
+        "as2dist1" : [ "as2dist1", "as2dist2" ]
       },
-      "as3border2" : {
-        "101" : {
-          "@id" : 27,
-          "name" : "101",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "1.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "102" : {
-          "@id" : 28,
-          "name" : "102",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.0.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "2.128.0.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        },
-        "103" : {
-          "@id" : 29,
-          "name" : "103",
-          "lines" : [ {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.1.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          }, {
-            "action" : "ACCEPT",
-            "dscps" : [ ],
-            "dstIpWildcards" : [ {
-              "ip" : "255.255.255.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "dstPortRanges" : [ ],
-            "ecns" : [ ],
-            "icmpCode" : 255,
-            "icmpType" : 255,
-            "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-            "protocols" : [ ],
-            "srcIpWildcards" : [ {
-              "ip" : "3.0.2.0",
-              "wildcard" : "0.0.0.0"
-            } ],
-            "srcOrDstIpWildcards" : [ ],
-            "srcOrDstPortRanges" : [ ],
-            "srcPortRanges" : [ ],
-            "states" : [ ],
-            "tcpFlags" : [ ]
-          } ]
-        }
+      "INSIDE_TO_OUTSIDE" : {
+        "as2border1" : [ "as2border1" ],
+        "as2border2" : [ "as2border2" ]
+      },
+      "OUTSIDE_TO_INSIDE" : {
+        "as2border1" : [ "as2border1" ],
+        "as2border2" : [ "as2border2" ]
+      },
+      "filter::INPUT" : {
+        "host1" : [ "host1" ],
+        "host2" : [ "host2" ]
+      },
+      "filter::OUTPUT" : {
+        "host1" : [ "host1" ],
+        "host2" : [ "host2" ]
       }
     },
     "reachableLines" : {
       "as1border1" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ]
-      },
-      "as1border2" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ]
+        "102" : [ {
+          "index" : 0,
+          "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
       "as2border1" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ],
-        "BLOCK_SPOOF_IN" : [ 0, 1 ]
+        "INSIDE_TO_OUTSIDE" : [ {
+          "index" : 0,
+          "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "deny ip any any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ],
+        "OUTSIDE_TO_INSIDE" : [ {
+          "index" : 0,
+          "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "deny ip any host 2.128.1.101",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 2,
+          "name" : "permit ip any any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
       "as2border2" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ],
-        "BLOCK_SPOOF_IN" : [ 0, 1 ]
-      },
-      "as2core1" : {
-        "blocktelnet" : [ 0, 1 ]
+        "INSIDE_TO_OUTSIDE" : [ {
+          "index" : 0,
+          "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "deny ip any any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ],
+        "OUTSIDE_TO_INSIDE" : [ {
+          "index" : 0,
+          "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "permit ip any any",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
       "as2dept1" : {
-        "102" : [ 0 ],
-        "105" : [ 0, 1, 2, 3 ],
-        "RESTRICT_HOST_TRAFFIC_IN" : [ 0, 1 ],
-        "RESTRICT_HOST_TRAFFIC_OUT" : [ 0, 1 ]
+        "102" : [ {
+          "index" : 0,
+          "name" : "permit ip host 2.128.0.0 host 255.255.255.0",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : "permit ip host 2.128.1.0 host 255.255.255.0",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
       "as2dist1" : {
-        "102" : [ 0 ],
-        "105" : [ 0, 1, 2, 3 ]
+        "102" : [ {
+          "index" : 0,
+          "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
-      "as2dist2" : {
-        "102" : [ 0 ],
-        "105" : [ 0, 1, 2, 3 ]
+      "host1" : {
+        "filter::INPUT" : [ {
+          "index" : 0,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 2,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ],
+        "filter::OUTPUT" : [ {
+          "index" : 0,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       },
-      "as3border1" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ]
-      },
-      "as3border2" : {
-        "101" : [ 0, 1 ],
-        "102" : [ 0, 1 ],
-        "103" : [ 0, 1 ]
+      "host2" : {
+        "filter::INPUT" : [ {
+          "index" : 0,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ],
+        "filter::OUTPUT" : [ {
+          "index" : 0,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        }, {
+          "index" : 1,
+          "name" : null,
+          "differentAction" : false,
+          "earliestMoreGeneralLineIndex" : null,
+          "earliestMoreGeneralLineName" : null
+        } ]
       }
     },
-    "unreachableLines" : {
-      "as2dept1" : {
-        "RESTRICT_HOST_TRAFFIC_IN" : [ 2 ],
-        "RESTRICT_HOST_TRAFFIC_OUT" : [ 2 ]
-      }
-    }
+    "unreachableLines" : { }
   } ],
   "question" : {
     "class" : "org.batfish.datamodel.questions.AclReachabilityQuestion",
     "aclNameRegex" : ".*",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"

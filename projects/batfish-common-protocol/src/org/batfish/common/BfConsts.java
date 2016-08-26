@@ -53,6 +53,7 @@ public class BfConsts {
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
    public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
+   public static final String COMMAND_REPORT = "report";
    public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
    public static final String COMMAND_WRITE_CP_FACTS = "cpfacts";
    public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
@@ -60,6 +61,7 @@ public class BfConsts {
 
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
    public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
+   public static final String RELPATH_ANSWER_JSON = "answer.json";
    public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_vpc_configs";
    public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_vpc_configs";
    public static final String RELPATH_BASE = "base";

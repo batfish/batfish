@@ -56,11 +56,9 @@
   "question" : {
     "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
     "neighborType" : [ "ebgp" ],
     "node1Regex" : ".*",
-    "node2Regex" : ".*",
-    "nodeBlacklist" : [ ]
+    "node2Regex" : ".*"
   },
   "status" : "SUCCESS"
 }

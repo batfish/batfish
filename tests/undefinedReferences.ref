@@ -3,18 +3,13 @@
     "class" : "org.batfish.datamodel.answers.UndefinedReferencesAnswerElement",
     "undefinedReferences" : {
       "as2core2" : {
-        "1" : "neighbor: '2.1.1.1': group: 'as2': undefined reference to inbound policy map: 'filter-bogons'",
-        "2" : "neighbor: '2.1.3.1': group: 'as2': undefined reference to inbound policy map: 'filter-bogons'",
-        "3" : "neighbor: '2.1.1.2': group: 'as2': undefined reference to inbound policy map: 'filter-bogons'",
-        "4" : "neighbor: '2.1.3.2': group: 'as2': undefined reference to inbound policy map: 'filter-bogons'"
+        "route-map" : [ "filter-bogons" ]
       }
     }
   } ],
   "question" : {
     "class" : "org.batfish.datamodel.questions.UndefinedReferencesQuestion",
     "differential" : false,
-    "interfaceBlacklist" : [ ],
-    "nodeBlacklist" : [ ],
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"

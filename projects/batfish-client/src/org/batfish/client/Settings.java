@@ -184,8 +184,7 @@ public class Settings extends BaseSettings {
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
 
-      addBooleanOption(ARG_PRETTY_PRINT_ANSWERS,
-            "pretty print answers");
+      addBooleanOption(ARG_PRETTY_PRINT_ANSWERS, "pretty print answers");
 
       addOption(ARG_QUESTIONS_DIR, "directory to output questions in",
             "questions_dir");
@@ -246,7 +245,7 @@ public class Settings extends BaseSettings {
    public void setLogLevel(String logLevel) {
       _logLevel = logLevel;
    }
-   
+
    public void setPrettyPrintAnswers(boolean prettyPrint) {
       _prettyPrintAnswers = prettyPrint;
    }
