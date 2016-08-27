@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -281,17 +282,22 @@ public class BfCoordWorkHelper {
             }
          }
 
-         File outdir = new File("client");
-         outdir.mkdirs();
          File inFile = response.readEntity(File.class);
-         File outFile = Paths.get(outdir.getAbsolutePath().toString(),
-               outFileStr).toFile();
-         FileUtils.copyFile(inFile, outFile);
+
+//         File outdir = new File("client");
+//         outdir.mkdirs();
+//         File outFile = Paths.get(outdir.getAbsolutePath().toString(),
+//               outFileStr).toFile();
+         
+         File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
+         tmpOutFile.deleteOnExit();
+         
+         FileUtils.copyFile(inFile, tmpOutFile);
          if (!inFile.delete()) {
             throw new BatfishException("Failed to delete temporary file: "
                   + inFile.getAbsolutePath());
          }
-         return outFile.getAbsolutePath();
+         return tmpOutFile.getAbsolutePath();
       }
       catch (Exception e) {
          _logger.errorf("Exception in getObject from %s using (%s, %s)\n",

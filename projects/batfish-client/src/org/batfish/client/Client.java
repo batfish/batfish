@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +29,7 @@ import org.batfish.client.Settings.RunMode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -44,178 +44,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
 
 public class Client {
-
-   private static final String COMMAND_ANSWER = "answer";
-   private static final String COMMAND_ANSWER_DELTA = "answer-delta";
-   private static final String COMMAND_CAT = "cat";
-   private static final String COMMAND_CHECK_API_KEY = "checkapikey";
-   private static final String COMMAND_CLEAR_SCREEN = "cls";
-   private static final String COMMAND_DEL_CONTAINER = "del-container";
-   private static final String COMMAND_DEL_ENVIRONMENT = "del-environment";
-   private static final String COMMAND_DEL_QUESTION = "del-question";
-   private static final String COMMAND_DEL_TESTRIG = "del-testrig";
-   private static final String COMMAND_DIR = "dir";
-   private static final String COMMAND_ECHO = "echo";
-   private static final String COMMAND_EXIT = "exit";
-   private static final String COMMAND_GEN_DELTA_DP = "generate-delta-dataplane";
-   private static final String COMMAND_GEN_DP = "generate-dataplane";
-   private static final String COMMAND_GET = "get";
-   private static final String COMMAND_GET_DELTA = "get-delta";
-   private static final String COMMAND_HELP = "help";
-   private static final String COMMAND_INIT_CONTAINER = "init-container";
-   private static final String COMMAND_INIT_DELTA_ENV = "init-delta-environment";
-   private static final String COMMAND_INIT_DELTA_TESTRIG = "init-delta-testrig";
-   private static final String COMMAND_INIT_TESTRIG = "init-testrig";
-   private static final String COMMAND_LIST_CONTAINERS = "list-containers";
-   private static final String COMMAND_LIST_ENVIRONMENTS = "list-environments";
-   private static final String COMMAND_LIST_QUESTIONS = "list-questions";
-   private static final String COMMAND_LIST_TESTRIGS = "list-testrigs";
-   private static final String COMMAND_PROMPT = "prompt";
-   private static final String COMMAND_PWD = "pwd";
-   private static final String COMMAND_QUIT = "quit";
-   private static final String COMMAND_SET_BATFISH_LOGLEVEL = "set-batfish-loglevel";
-   private static final String COMMAND_SET_CONTAINER = "set-container";
-   private static final String COMMAND_SET_DELTA_ENV = "set-delta-environment";
-   private static final String COMMAND_SET_DELTA_TESTRIG = "set-delta-testrig";
-   private static final String COMMAND_SET_ENV = "set-environment";
-   private static final String COMMAND_SET_LOGLEVEL = "set-loglevel";
-   private static final String COMMAND_SET_PRETTY_PRINT = "set-pretty-print";
-   private static final String COMMAND_SET_TESTRIG = "set-testrig";
-   private static final String COMMAND_SHOW_API_KEY = "show-api-key";
-   private static final String COMMAND_SHOW_BATFISH_LOGLEVEL = "show-batfish-loglevel";
-   private static final String COMMAND_SHOW_CONTAINER = "show-container";
-   private static final String COMMAND_SHOW_COORDINATOR_HOST = "show-coordinator-host";
-   private static final String COMMAND_SHOW_DELTA_TESTRIG = "show-delta-testrig";
-   private static final String COMMAND_SHOW_LOGLEVEL = "show-loglevel";
-   private static final String COMMAND_SHOW_TESTRIG = "show-testrig";
-   private static final String COMMAND_TEST = "test";
-   private static final String COMMAND_UPLOAD_CUSTOM_OBJECT = "upload-custom";
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
    private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
    private static final String DEFAULT_QUESTION_PREFIX = "q";
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
-
-   private static final Map<String, String> MAP_COMMANDS = initCommands();
-
-   private static Map<String, String> initCommands() {
-      Map<String, String> descs = new TreeMap<String, String>();
-      descs.put(COMMAND_ANSWER, COMMAND_ANSWER
-            + " <question-file> [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question in the file for the default environment");
-      descs.put(COMMAND_ANSWER_DELTA, COMMAND_ANSWER_DELTA
-            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question in the file for the delta environment");
-      descs.put(COMMAND_CAT, COMMAND_CAT + " <filename>\n"
-            + "\t Print the contents of the file");
-      // descs.put(COMMAND_CHANGE_DIR, COMMAND_CHANGE_DIR
-      // + " <dirname>\n"
-      // + "\t Change the working directory");
-      descs.put(COMMAND_CLEAR_SCREEN, COMMAND_CLEAR_SCREEN + "\n"
-            + "\t Clear screen");
-      descs.put(COMMAND_DEL_CONTAINER, COMMAND_DEL_CONTAINER
-            + "<container-name>" + "\t Delete the specified container");
-      descs.put(COMMAND_DEL_ENVIRONMENT, COMMAND_DEL_ENVIRONMENT
-            + "<environment-name>" + "\t Delete the specified environment");
-      descs.put(COMMAND_DEL_QUESTION, COMMAND_DEL_QUESTION + "<question-name>"
-            + "\t Delete the specified question");
-      descs.put(COMMAND_DEL_TESTRIG, COMMAND_DEL_TESTRIG + "<testrig-name>"
-            + "\t Delete the specified testrig");
-      descs.put(COMMAND_DIR, COMMAND_DIR + "<dir>"
-            + "\t List directory contents");
-      descs.put(COMMAND_ECHO, COMMAND_ECHO + "<message>"
-            + "\t Echo the message");
-      descs.put(COMMAND_EXIT, COMMAND_EXIT + "\n"
-            + "\t Terminate interactive client session");
-      descs.put(COMMAND_GEN_DELTA_DP, COMMAND_GEN_DELTA_DP + "\n"
-            + "\t Generate dataplane for the delta environment");
-      descs.put(COMMAND_GEN_DP, COMMAND_GEN_DP + "\n"
-            + "\t Generate dataplane for the default environment");
-      descs.put(COMMAND_GET, COMMAND_GET
-            + " <question-type>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question by type for the delta environment");
-      descs.put(COMMAND_GET_DELTA, COMMAND_GET_DELTA
-            + " <question-file>  [param1=value1 [param2=value2] ...]\n"
-            + "\t Answer the question by type for the delta environment");
-      descs.put(COMMAND_HELP, COMMAND_HELP + "\n"
-            + "\t Print the list of supported commands");
-      descs.put(COMMAND_CHECK_API_KEY, COMMAND_CHECK_API_KEY
-            + "\t Check if API Key is valid");
-      descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
-            + " [<container-name-prefix>]\n" + "\t Initialize a new container");
-      descs.put(
-            COMMAND_INIT_DELTA_ENV,
-            COMMAND_INIT_DELTA_ENV
-                  + " [-nodataplane] <environment zipfile or directory> [<environment-name>]\n"
-                  + "\t Initialize the delta environment");
-      descs.put(
-            COMMAND_INIT_DELTA_TESTRIG,
-            COMMAND_INIT_DELTA_TESTRIG
-                  + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
-                  + "\t Initialize the delta testrig with default environment");
-      descs.put(
-            COMMAND_INIT_TESTRIG,
-            COMMAND_INIT_TESTRIG
-                  + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
-                  + "\t Initialize the testrig with default environment");
-      descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
-            + "\t List the containers to which you have access");
-      descs.put(COMMAND_LIST_ENVIRONMENTS, COMMAND_LIST_ENVIRONMENTS + "\n"
-            + "\t List the environments under current container and testrig");
-      descs.put(COMMAND_LIST_QUESTIONS, COMMAND_LIST_QUESTIONS + "\n"
-            + "\t List the questions under current container and testrig");
-      descs.put(COMMAND_LIST_TESTRIGS, COMMAND_LIST_TESTRIGS + "\n"
-            + "\t List the testrigs within the current container");
-      descs.put(COMMAND_PROMPT, COMMAND_PROMPT + "\n"
-            + "\t Prompts for user to press enter");
-      descs.put(COMMAND_PWD, COMMAND_PWD + "\n"
-            + "\t Prints the working directory");
-      descs.put(COMMAND_QUIT, COMMAND_QUIT + "\n"
-            + "\t Terminate interactive client session");
-      descs.put(COMMAND_SET_BATFISH_LOGLEVEL, COMMAND_SET_BATFISH_LOGLEVEL
-            + " <debug|info|output|warn|error>\n"
-            + "\t Set the batfish loglevel. Default is warn");
-      descs.put(COMMAND_SET_CONTAINER, COMMAND_SET_CONTAINER
-            + " <container-name>\n" + "\t Set the current container");
-      descs.put(COMMAND_SET_DELTA_ENV, COMMAND_SET_DELTA_ENV
-            + " <environment-name>\n" + "\t Set the delta environment");
-      descs.put(COMMAND_SET_DELTA_TESTRIG, COMMAND_SET_DELTA_TESTRIG
-            + " <testrig-name> [environment name]\n"
-            + "\t Set the delta testrig");
-      descs.put(COMMAND_SET_ENV, COMMAND_SET_ENV + " <environment-name>\n"
-            + "\t Set the current base environment");
-      descs.put(COMMAND_SET_LOGLEVEL, COMMAND_SET_LOGLEVEL
-            + " <debug|info|output|warn|error>\n"
-            + "\t Set the client loglevel. Default is output");
-      descs.put(COMMAND_SET_PRETTY_PRINT, COMMAND_SET_PRETTY_PRINT
-            + " <true|false>\n" + "\t Whether to pretty print answers");
-      descs.put(COMMAND_SET_TESTRIG, COMMAND_SET_TESTRIG
-            + " <testrig-name> [environment name]\n"
-            + "\t Set the base testrig");
-      descs.put(COMMAND_SHOW_API_KEY, COMMAND_SHOW_API_KEY + "\n"
-            + "\t Show API Key");
-      descs.put(COMMAND_SHOW_BATFISH_LOGLEVEL, COMMAND_SHOW_BATFISH_LOGLEVEL
-            + "\n" + "\t Show current batfish loglevel");
-      descs.put(COMMAND_SHOW_CONTAINER, COMMAND_SHOW_CONTAINER + "\n"
-            + "\t Show active container");
-      descs.put(COMMAND_SHOW_COORDINATOR_HOST, COMMAND_SHOW_COORDINATOR_HOST
-            + "\n" + "\t Show coordinator host");
-      descs.put(COMMAND_SHOW_LOGLEVEL, COMMAND_SHOW_LOGLEVEL + "\n"
-            + "\t Show current client loglevel");
-      descs.put(COMMAND_SHOW_DELTA_TESTRIG, COMMAND_SHOW_DELTA_TESTRIG + "\n"
-            + "\t Show delta testrig and environment");
-      descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
-            + "\t Show base testrig and environment");
-      descs.put(COMMAND_TEST, COMMAND_TEST + " <reference file> <command> \n"
-            + "\t Show base testrig and environment");
-      descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
-            + " <object-name> <object-file>\n" + "\t Uploads a custom object");
-      return descs;
-   }
 
    private String _currContainerName = null;
    private String _currDeltaEnv = null;
@@ -224,7 +60,10 @@ public class Client {
    private String _currTestrig = null;
 
    private BatfishLogger _logger;
+
+   @SuppressWarnings("unused")
    private BfCoordPoolHelper _poolHelper;
+   
    private ConsoleReader _reader;
 
    private Settings _settings;
@@ -266,8 +105,9 @@ public class Client {
             _reader.setExpandEvents(false);
 
             List<Completer> completors = new LinkedList<Completer>();
-            completors.add(new StringsCompleter(MAP_COMMANDS.keySet()));
 
+            completors.add(new CommandCompleter());
+            
             for (Completer c : completors) {
                _reader.addCompleter(c);
             }
@@ -280,6 +120,7 @@ public class Client {
          catch (Exception e) {
             System.err.printf("Could not initialize client: %s\n",
                   e.getMessage());
+            e.printStackTrace();
             System.exit(1);
          }
          break;
@@ -495,8 +336,6 @@ public class Client {
          }
       }
 
-      // TODO: remove the log file?
-
       if (status == WorkStatusCode.TERMINATEDNORMALLY) {
          return true;
       }
@@ -666,7 +505,7 @@ public class Client {
          _logger
                .errorf(
                      "Specify testrig on command line (-%s <testrigdir>) or use command (%s [-nodataplane] <testrigdir>)\n",
-                     Settings.ARG_TESTRIG_DIR, COMMAND_INIT_TESTRIG);
+                     Settings.ARG_TESTRIG_DIR, Command.INIT_TESTRIG);
          return false;
       }
       return true;
@@ -697,9 +536,16 @@ public class Client {
    }
 
    private void printUsage() {
-      for (Map.Entry<String, String> entry : MAP_COMMANDS.entrySet()) {
-         _logger.output(entry.getValue() + "\n\n");
+      for (Command cmd : Command.getUsageMap().keySet()) {
+         printUsage(cmd);
       }
+   }
+
+   private void printUsage(Command command) {
+      Pair<String, String> usage = Command.getUsageMap().get(command);
+      _logger.outputf("%s %s\n\t%s\n\n", command.commandName(),
+            usage.getFirst(),
+            usage.getSecond());
    }
 
    private boolean processCommand(String command) {
@@ -723,16 +569,17 @@ public class Client {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
 
-         String command = words[0];
+         Command command = Command.fromName(words[0]);
 
          switch (command) {
          // this is a hidden command for testing
-         case "add-worker": {
-            boolean result = _poolHelper.addBatfishWorker(words[1]);
-            _logger.output("Result: " + result + "\n");
-            return true;
-         }
-         case COMMAND_ANSWER: {
+         
+//         case "add-worker": {
+//            boolean result = _poolHelper.addBatfishWorker(words[1]);
+//            _logger.output("Result: " + result + "\n");
+//            return true;
+//         }
+         case ANSWER: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -743,7 +590,7 @@ public class Client {
 
             return answerFile(questionFile, paramsLine, false, outWriter);
          }
-         case COMMAND_ANSWER_DELTA: {
+         case ANSWER_DELTA: {
             if (!isSetDeltaEnvironment() || !isSetTestrig()
                   || !isSetContainer(true)) {
                return false;
@@ -755,7 +602,7 @@ public class Client {
 
             return answerFile(questionFile, paramsLine, true, outWriter);
          }
-         case COMMAND_CAT: {
+         case CAT: {
             String filename = words[1];
 
             try (BufferedReader br = new BufferedReader(
@@ -768,13 +615,13 @@ public class Client {
 
             return true;
          }
-         case COMMAND_DEL_CONTAINER: {
+         case DEL_CONTAINER: {
             String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
             _logger.outputf("Result of deleting container: %s\n", result);
             return true;
          }
-         case COMMAND_DEL_ENVIRONMENT: {
+         case DEL_ENVIRONMENT: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -785,7 +632,7 @@ public class Client {
             _logger.outputf("Result of deleting environment: %s\n", result);
             return true;
          }
-         case COMMAND_DEL_QUESTION: {
+         case DEL_QUESTION: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -796,7 +643,7 @@ public class Client {
             _logger.outputf("Result of deleting question: %s\n", result);
             return true;
          }
-         case COMMAND_DEL_TESTRIG: {
+         case DEL_TESTRIG: {
             if (!isSetContainer(true)) {
                return false;
             }
@@ -807,7 +654,7 @@ public class Client {
             _logger.outputf("Result of deleting testrig: %s\n", result);
             return true;
          }
-         case COMMAND_DIR: {
+         case DIR: {
             String dirname = (parameters.size() == 1) ? parameters.get(0) : ".";
 
             File currDirectory = new File(dirname);
@@ -816,27 +663,27 @@ public class Client {
             }
             return true;
          }
-         case COMMAND_ECHO: {
+         case ECHO: {
             _logger.outputf(
                   "%s\n",
                   CommonUtil.joinStrings(" ",
                         Arrays.copyOfRange(words, 1, words.length)));
             return true;
          }
-         case COMMAND_EXIT:
-         case COMMAND_QUIT: {
+         case EXIT:
+         case QUIT: {
             System.exit(0);
             return true;
          }
-         case COMMAND_GEN_DP: {
+         case GEN_DP: {
             return generateDataplane(outWriter);
          }
-         case COMMAND_GEN_DELTA_DP: {
+         case GEN_DELTA_DP: {
             return generateDeltaDataplane(outWriter);
          }
-         case COMMAND_GET:
-         case COMMAND_GET_DELTA: {
-            boolean isDelta = (command.equals(COMMAND_GET_DELTA));
+         case GET:
+         case GET_DELTA: {
+            boolean isDelta = (command == Command.GET_DELTA);
 
             if (!isSetTestrig() || !isSetContainer(true)
                   || (isDelta && !isSetDeltaEnvironment())) {
@@ -876,23 +723,102 @@ public class Client {
                return answerType(qTypeStr, paramsLine, isDelta, outWriter);
             }
          }
-         case COMMAND_HELP: {
-            printUsage();
+         case GET_ANSWER: {
+            if (!isSetTestrig() || !isSetContainer(true)) {
+               return false;
+            }
+
+            boolean formatJson = true;
+            
+            if (options.size() == 1) {
+               if (options.get(0).equals("-html")) {
+                  formatJson = false;
+               }
+               else {
+                  _logger.outputf("Unknown option: %s (note that json does not need a flag)\n", options.get(0));
+                  return false;
+               }
+            }
+
+            String questionName = parameters.get(0);
+            
+            String answerFileName = String.format("%s/%s/%s", 
+                  BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+                  (formatJson)? BfConsts.RELPATH_ANSWER_JSON : BfConsts.RELPATH_ANSWER_HTML);
+            
+            String downloadedAnsFile = _workHelper.getObject(_currContainerName, _currTestrig, answerFileName);
+            if (downloadedAnsFile == null) {
+               _logger.errorf("Failed to get answer file %s\n",
+                           answerFileName);
+               return false;
+            }
+
+            String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));               
+           _logger.output(answerString);
+           _logger.output("\n");
+
             return true;
          }
-         case COMMAND_CHECK_API_KEY: {
+         case GET_QUESTION: {
+            if (!isSetTestrig() || !isSetContainer(true)) {
+               return false;
+            }
+
+            String questionName = parameters.get(0);
+            
+            String questionFileName = String.format("%s/%s/%s", 
+                  BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+                  BfConsts.RELPATH_QUESTION_FILE);
+
+            String downloadedQuestionFile = _workHelper.getObject(_currContainerName, _currTestrig, questionFileName);
+            if (downloadedQuestionFile == null) {
+               _logger.errorf("Failed to get question file %s\n",
+                           questionFileName);
+               return false;
+            }
+
+           String questionString = CommonUtil.readFile(Paths.get(downloadedQuestionFile));             
+          _logger.outputf("Question:\n%s\n", questionString);
+
+            String paramsFileName = String.format("%s/%s/%s", 
+                  BfConsts.RELPATH_QUESTIONS_DIR, questionName,
+                  BfConsts.RELPATH_QUESTION_PARAM_FILE);
+
+            String downloadedParamsFile = _workHelper.getObject(_currContainerName, _currTestrig, paramsFileName);
+            if (downloadedParamsFile == null) {
+               _logger.errorf("Failed to get parameters file %s\n",
+                           paramsFileName);
+               return false;
+            }
+
+           String paramsString = CommonUtil.readFile(Paths.get(downloadedParamsFile));             
+          _logger.outputf("Parameters:\n%s\n", paramsString);
+
+            return true;
+         }
+         case HELP: {
+            if (parameters.size() == 1) {
+             Command cmd = Command.fromName(parameters.get(0));
+             printUsage(cmd);
+            }
+            else {
+               printUsage();
+            }
+            return true;
+         }
+         case CHECK_API_KEY: {
             String isValid = _workHelper.checkApiKey();
             _logger.outputf("Api key validitiy: %s\n", isValid);
             return true;
          }
-         case COMMAND_INIT_CONTAINER: {
+         case INIT_CONTAINER: {
             String containerPrefix = (words.length > 1) ? words[1]
                   : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
             _logger.outputf("Active container set to %s\n", _currContainerName);
             return true;
          }
-         case COMMAND_INIT_DELTA_ENV: {
+         case INIT_DELTA_ENV: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -945,8 +871,8 @@ public class Client {
 
             return true;
          }
-         case COMMAND_INIT_DELTA_TESTRIG:
-         case COMMAND_INIT_TESTRIG: {
+         case INIT_DELTA_TESTRIG:
+         case INIT_TESTRIG: {
             boolean generateDataplane = true;
 
             if (options.size() == 1) {
@@ -984,7 +910,7 @@ public class Client {
                return false;
             }
 
-            if (command.equals(COMMAND_INIT_TESTRIG)) {
+            if (command == Command.INIT_TESTRIG) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
                _logger.outputf("Base testrig is now %s\n", _currTestrig);
@@ -1007,12 +933,12 @@ public class Client {
 
             return true;
          }
-         case COMMAND_LIST_CONTAINERS: {
+         case LIST_CONTAINERS: {
             String[] containerList = _workHelper.listContainers();
             _logger.outputf("Containers: %s\n", Arrays.toString(containerList));
             return true;
          }
-         case COMMAND_LIST_ENVIRONMENTS: {
+         case LIST_ENVIRONMENTS: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -1024,7 +950,7 @@ public class Client {
 
             return true;
          }
-         case COMMAND_LIST_QUESTIONS: {
+         case LIST_QUESTIONS: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -1033,7 +959,7 @@ public class Client {
             _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
             return true;
          }
-         case COMMAND_LIST_TESTRIGS: {
+         case LIST_TESTRIGS: {
             Map<String, String> testrigs = _workHelper
                   .listTestrigs(_currContainerName);
             if (testrigs != null) {
@@ -1044,7 +970,7 @@ public class Client {
             }
             return true;
          }
-         case COMMAND_PROMPT: {
+         case PROMPT: {
             if (_settings.getRunMode() == RunMode.interactive) {
                _logger.output("\n\n[Press enter to proceed]\n\n");
                BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -1053,12 +979,12 @@ public class Client {
             }
             return true;
          }
-         case COMMAND_PWD: {
+         case PWD: {
             final String dir = System.getProperty("user.dir");
             _logger.output("working directory = " + dir + "\n");
             return true;
          }
-         case COMMAND_SET_BATFISH_LOGLEVEL: {
+         case SET_BATFISH_LOGLEVEL: {
             String logLevelStr = parameters.get(0).toLowerCase();
             if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
                _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
@@ -1068,13 +994,13 @@ public class Client {
             _logger.output("Changed batfish loglevel to " + logLevelStr + "\n");
             return true;
          }
-         case COMMAND_SET_CONTAINER: {
+         case SET_CONTAINER: {
             _currContainerName = parameters.get(0);
             _logger.outputf("Active container is now set to %s\n",
                   _currContainerName);
             return true;
          }
-         case COMMAND_SET_DELTA_ENV: {
+         case SET_DELTA_ENV: {
             _currDeltaEnv = parameters.get(0);
             if (_currDeltaTestrig == null) {
                _currDeltaTestrig = _currTestrig;
@@ -1084,7 +1010,7 @@ public class Client {
                   _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
-         case COMMAND_SET_ENV: {
+         case SET_ENV: {
             if (!isSetTestrig()) {
                return false;
             }
@@ -1093,7 +1019,7 @@ public class Client {
                   _currEnv);
             return true;
          }
-         case COMMAND_SET_DELTA_TESTRIG: {
+         case SET_DELTA_TESTRIG: {
             _currDeltaTestrig = parameters.get(0);
             _currDeltaEnv = (parameters.size() > 1) ? parameters.get(1)
                   : DEFAULT_ENV_NAME;
@@ -1101,7 +1027,7 @@ public class Client {
                   _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
-         case COMMAND_SET_LOGLEVEL: {
+         case SET_LOGLEVEL: {
             String logLevelStr = parameters.get(0).toLowerCase();
             if (!BatfishLogger.isValidLogLevel(logLevelStr)) {
                _logger.errorf("Undefined loglevel value: %s\n", logLevelStr);
@@ -1112,14 +1038,14 @@ public class Client {
             _logger.output("Changed client loglevel to " + logLevelStr + "\n");
             return true;
          }
-         case COMMAND_SET_PRETTY_PRINT: {
+         case SET_PRETTY_PRINT: {
             String ppStr = parameters.get(0).toLowerCase();
             boolean prettyPrint = Boolean.parseBoolean(ppStr);
             _settings.setPrettyPrintAnswers(prettyPrint);
             _logger.output("Set pretty printing answers to " + ppStr + "\n");
             return true;
          }
-         case COMMAND_SET_TESTRIG: {
+         case SET_TESTRIG: {
             if (!isSetContainer(true)) {
                return false;
             }
@@ -1131,30 +1057,30 @@ public class Client {
                   _currEnv);
             return true;
          }
-         case COMMAND_SHOW_API_KEY: {
+         case SHOW_API_KEY: {
             _logger.outputf("Current API Key is %s\n", _settings.getApiKey());
             return true;
          }
-         case COMMAND_SHOW_BATFISH_LOGLEVEL: {
+         case SHOW_BATFISH_LOGLEVEL: {
             _logger.outputf("Current batfish log level is %s\n",
                   _settings.getBatfishLogLevel());
             return true;
          }
-         case COMMAND_SHOW_CONTAINER: {
+         case SHOW_CONTAINER: {
             _logger.outputf("Current container is %s\n", _currContainerName);
             return true;
          }
-         case COMMAND_SHOW_COORDINATOR_HOST: {
+         case SHOW_COORDINATOR_HOST: {
             _logger.outputf("Current coordinator host is %s\n",
                   _settings.getCoordinatorHost());
             return true;
          }
-         case COMMAND_SHOW_LOGLEVEL: {
+         case SHOW_LOGLEVEL: {
             _logger.outputf("Current client log level is %s\n",
                   _logger.getLogLevelStr());
             return true;
          }
-         case COMMAND_SHOW_DELTA_TESTRIG: {
+         case SHOW_DELTA_TESTRIG: {
             if (!isSetDeltaEnvironment()) {
                return false;
             }
@@ -1162,7 +1088,7 @@ public class Client {
                   _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
-         case COMMAND_SHOW_TESTRIG: {
+         case SHOW_TESTRIG: {
             if (!isSetTestrig()) {
                return false;
             }
@@ -1170,7 +1096,7 @@ public class Client {
                   _currTestrig, _currEnv);
             return true;
          }
-         case COMMAND_TEST: {
+         case TEST: {
             String referenceFileName = parameters.get(0);
 
             String[] testCommand = parameters.subList(1, parameters.size())
@@ -1232,7 +1158,7 @@ public class Client {
 
             return true;
          }
-         case COMMAND_UPLOAD_CUSTOM_OBJECT: {
+         case UPLOAD_CUSTOM_OBJECT: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
@@ -1278,7 +1204,7 @@ public class Client {
 
       // set container if specified
       if (_settings.getContainerId() != null) {
-         if (!processCommand(COMMAND_SET_CONTAINER + "  "
+         if (!processCommand(Command.SET_CONTAINER + "  "
                + _settings.getContainerId())) {
             return;
          }
@@ -1291,13 +1217,13 @@ public class Client {
                   .println("org.batfish.client: Cannot supply both testrigDir and testrigId.");
             System.exit(1);
          }
-         if (!processCommand(COMMAND_INIT_TESTRIG + " -nodataplane "
+         if (!processCommand(Command.INIT_TESTRIG + " -nodataplane "
                + _settings.getTestrigDir())) {
             return;
          }
       }
       if (_settings.getTestrigId() != null) {
-         if (!processCommand(COMMAND_SET_TESTRIG + "  "
+         if (!processCommand(Command.SET_TESTRIG + "  "
                + _settings.getTestrigId())) {
             return;
          }
@@ -1341,7 +1267,7 @@ public class Client {
                continue;
             }
 
-            if (line.equals(COMMAND_CLEAR_SCREEN)) {
+            if (line.equals(Command.CLEAR_SCREEN)) {
                _reader.clearScreen();
                continue;
             }
