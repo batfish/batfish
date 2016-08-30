@@ -32,11 +32,11 @@ TARGET_HOST="www.batfish.org"
 rsync -rvzL ${SRC_OUTDIR} ${TARGET_HOST}:${DST_OUTDIR} 
 
 # stop and start the service
-ssh ${TARGET_HOST} sudo stop ${BINARY}
-ssh ${TARGET_HOST} sudo start ${BINARY}
+ssh ${TARGET_HOST} sudo service ${BINARY} stop
+ssh ${TARGET_HOST} sudo service ${BINARY} start
 
 # if the service is batfish, start the 10001 as well
 if [ ${BINARY} == "batfish" ]; then
-    ssh ${TARGET_HOST} sudo stop batfish-10001
-    ssh ${TARGET_HOST} sudo start batfish-10001
+    ssh ${TARGET_HOST} sudo service batfish-10001 stop
+    ssh ${TARGET_HOST} sudo service batfish-10001 start
 fi
