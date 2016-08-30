@@ -17,6 +17,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS = "dbcacheexpiry";
    private static final String ARG_DB_AUTHORIZER_CONN_STRING = "dbconnection";
    private static final String ARG_DISABLE_SSL = "disablessl";
+   private static final String ARG_DRIVER_CLASS = "driverclass";
    /**
     * (the arguments below are not wired to command line)
     */
@@ -70,6 +71,7 @@ public class Settings extends BaseSettings {
    private String _storageAccountName;
    private String _storageProtocol;
    private boolean _useSsl;
+   private String _driverClass;
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
@@ -189,6 +191,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS, 15 * 60 * 1000); // 15
                                                                              // minutes
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
+      setDefaultProperty(ARG_DRIVER_CLASS, null);
       setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
       setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
       setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");
@@ -230,6 +233,8 @@ public class Settings extends BaseSettings {
             "expiration time (ms)");
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
+
+      addBooleanOption(ARG_DRIVER_CLASS, "jdbc driver class to load explicitly");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -279,6 +284,7 @@ public class Settings extends BaseSettings {
       _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
       _dbCacheExpiryMs = getLongOptionValue(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
       _defaultKeyListings = getBooleanOptionValue(ARG_ALLOW_DEFAULT_KEY_LISTINGS);
+      _driverClass = getStringOptionValue(ARG_DRIVER_CLASS);
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
       _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
@@ -296,5 +302,9 @@ public class Settings extends BaseSettings {
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
+   }
+
+   public String getDriverClass() {
+      return _driverClass;
    }
 }

@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 
@@ -242,7 +243,10 @@ public class DbAuthorizer implements Authorizer {
             if (_dbConn != null) {
                _dbConn.close();
             }
-
+            String driverClass = Main.getSettings().getDriverClass();
+            if (driverClass != null) {
+               Class.forName(Main.getSettings().getDriverClass());
+            }
             _dbConn = DriverManager.getConnection(Main.getSettings()
                   .getDbAuthorizerConnString());
             return;
@@ -258,6 +262,9 @@ public class DbAuthorizer implements Authorizer {
                   e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
 
+         }
+         catch (ClassNotFoundException e) {
+            throw new BatfishException("Could not load class", e);
          }
       }
    }
