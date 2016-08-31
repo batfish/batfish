@@ -3992,8 +3992,8 @@ public class Batfish implements AutoCloseable {
          taskPlugin = (TaskPlugin) taskPluginObj;
       }
       catch (ClassCastException e) {
-         throw new BatfishException("Could not object of class '"
-               + taskPluginName + "' to " + TaskPlugin.class.getCanonicalName());
+         throw new BatfishException("Specified task-plugin class '"
+               + taskPluginName + "' is not actually a task plugin.", e);
       }
       Answer answer = taskPlugin.run();
       return answer;
