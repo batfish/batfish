@@ -622,6 +622,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _synthesizeTopology;
 
+   private String _taskPlugin;
+
    private String _testrig;
 
    private TestrigSettings _testrigSettings;
@@ -990,6 +992,10 @@ public final class Settings extends BaseSettings {
       return _synthesizeTopology;
    }
 
+   public String getTaskPlugin() {
+      return _taskPlugin;
+   }
+
    public String getTestrig() {
       return _testrig;
    }
@@ -1120,6 +1126,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_TOPOLOGY, false);
+      setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
       setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, false);
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
       setDefaultProperty(ARG_TIMESTAMP, false);
@@ -1344,6 +1351,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_SYNTHESIZE_TOPOLOGY,
             "synthesize topology from interface ip subnet information");
 
+      addOption(BfConsts.ARG_TASK_PLUGIN,
+            "fully-qualified name of task plugin class", ARGNAME_NAME);
+
       addOption(BfConsts.ARG_TESTRIG, "name of testrig", ARGNAME_NAME);
 
       addBooleanOption(ARG_THROW_ON_LEXER_ERROR,
@@ -1516,6 +1526,7 @@ public final class Settings extends BaseSettings {
       _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
       _synthesizeJsonTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
       _synthesizeTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_TOPOLOGY);
+      _taskPlugin = getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
       _testrig = getStringOptionValue(BfConsts.ARG_TESTRIG);
       _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
       _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);

@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
@@ -162,6 +164,7 @@ import org.batfish.nls.NlsConstants;
 import org.batfish.nls.PredicateInfo;
 import org.batfish.nls.Relation;
 import org.batfish.nls.TopologyFactExtractor;
+import org.batfish.plugin.TaskPlugin;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
@@ -3522,6 +3525,11 @@ public class Batfish implements AutoCloseable {
          action = true;
       }
 
+      if (_settings.getTaskPlugin() != null) {
+         answer.append(taskPlugin());
+         action = true;
+      }
+
       if (!action) {
          throw new CleanBatfishException(
                "No task performed! Run with -help flag to see usage\n");
@@ -3948,6 +3956,47 @@ public class Batfish implements AutoCloseable {
          }
       }
       return edges;
+   }
+
+   private Answer taskPlugin() {
+      String taskPluginName = _settings.getTaskPlugin();
+      Class<?> taskPluginClass;
+      Constructor<?> taskPluginConstructor;
+      Object taskPluginObj;
+      TaskPlugin taskPlugin;
+      try {
+         taskPluginClass = Class.forName(taskPluginName);
+      }
+      catch (ClassNotFoundException e) {
+         throw new BatfishException("Could not find task plugin '"
+               + taskPluginName + "' in classpath", e);
+      }
+      try {
+         taskPluginConstructor = taskPluginClass.getConstructor(Batfish.class);
+      }
+      catch (NoSuchMethodException | SecurityException e) {
+         throw new BatfishException(
+               "Could not find constructor taking argument of type '"
+                     + getClass().getSimpleName() + "' in task plugin: '"
+                     + taskPluginName + "'", e);
+      }
+      try {
+         taskPluginObj = taskPluginConstructor.newInstance(this);
+      }
+      catch (InstantiationException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e) {
+         throw new BatfishException("Could not instantiate task plugin '"
+               + taskPluginName + "' from constructor", e);
+      }
+      try {
+         taskPlugin = (TaskPlugin) taskPluginObj;
+      }
+      catch (ClassCastException e) {
+         throw new BatfishException("Could not object of class '"
+               + taskPluginName + "' to " + TaskPlugin.class.getCanonicalName());
+      }
+      Answer answer = taskPlugin.run();
+      return answer;
    }
 
    private void writeBgpAdvertisements(Path writeAdvertsPath,

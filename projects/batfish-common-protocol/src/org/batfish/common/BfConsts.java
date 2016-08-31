@@ -34,6 +34,7 @@ public class BfConsts {
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
    public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
    public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
+   public static final String ARG_TASK_PLUGIN = "taskplugin";
    public static final String ARG_TESTRIG = "testrig";
    public static final String ARG_UNIMPLEMENTED_AS_ERROR = "unimplementederror";
    public static final String ARG_UNIMPLEMENTED_SUPPRESS = "unimplementedsuppress";
