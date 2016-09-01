@@ -1,4 +1,4 @@
-package org.batfish.plugin;
+package org.batfish.nls;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -85,16 +85,9 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Warnings;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
-import org.batfish.nls.Column;
-import org.batfish.nls.ConfigurationFactExtractor;
-import org.batfish.nls.EntityTable;
-import org.batfish.nls.Facts;
-import org.batfish.nls.NlsConstants;
-import org.batfish.nls.PredicateInfo;
-import org.batfish.nls.Relation;
-import org.batfish.nls.TopologyFactExtractor;
+import org.batfish.plugin.DataPlanePlugin;
 
-public final class Nls extends DataPlanePlugin {
+public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    // private static final String BGP_ADVERTISEMENT_ROUTE_PREDICATE_NAME =
    // "BgpAdvertisementRoute";
@@ -175,7 +168,7 @@ public final class Nls extends DataPlanePlugin {
 
    private File _tmpLogicDir;
 
-   public Nls(Batfish batfish) {
+   public NlsDataPlanePlugin(Batfish batfish) {
       super(batfish);
       _entityTables = new HashMap<TestrigSettings, EntityTable>();
    }

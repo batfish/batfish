@@ -129,8 +129,8 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.nls.NlsDataPlanePlugin;
 import org.batfish.plugin.DataPlanePlugin;
-import org.batfish.plugin.Nls;
 import org.batfish.plugin.Plugin;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
@@ -425,7 +425,7 @@ public class Batfish implements AutoCloseable {
 
    private BatfishLogger _logger;
 
-   private Nls _nls;
+   private NlsDataPlanePlugin _nls;
 
    private Settings _settings;
 
@@ -2263,7 +2263,7 @@ public class Batfish implements AutoCloseable {
    }
 
    public Answer run() {
-      _nls = new Nls(this);
+      _nls = new NlsDataPlanePlugin(this);
       _dataPlanePlugin = _nls;
       boolean action = false;
       Answer answer = new Answer();
