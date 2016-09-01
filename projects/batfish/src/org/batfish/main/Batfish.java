@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,6 +35,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -927,8 +931,15 @@ public class Batfish implements AutoCloseable {
       _logger.info("OK\n");
    }
 
-   private void computeDataPlane() {
-      computeDataPlane(_testrigSettings);
+   private Answer computeDataPlane() {
+      Class<? extends TaskPlugin> plugin = TaskPlugin.getDataPlanePlugin();
+      if (plugin != null) {
+         return taskPlugin(plugin);
+      }
+      else {
+         computeDataPlaneFromNls(_testrigSettings);
+         return new Answer();
+      }
    }
 
    private void computeDataPlane(Path dataPlanePath,
@@ -956,7 +967,7 @@ public class Batfish implements AutoCloseable {
       printElapsedTime();
    }
 
-   private void computeDataPlane(TestrigSettings testrigSettings) {
+   private void computeDataPlaneFromNls(TestrigSettings testrigSettings) {
       checkDataPlaneFacts(testrigSettings);
       EnvironmentSettings envSettings = testrigSettings
             .getEnvironmentSettings();
@@ -1188,7 +1199,7 @@ public class Batfish implements AutoCloseable {
             computeControlPlaneFacts(cpFactBins, false, testrigSettings);
          }
          nlsDataPlane(testrigSettings);
-         computeDataPlane(testrigSettings);
+         computeDataPlaneFromNls(testrigSettings);
          _entityTables.clear();
       }
       return answerElement;
@@ -2246,7 +2257,7 @@ public class Batfish implements AutoCloseable {
                   testrigSettings);
          }
          nlsDataPlane(testrigSettings);
-         computeDataPlane(testrigSettings);
+         computeDataPlaneFromNls(testrigSettings);
          _entityTables.clear();
       }
    }
@@ -2439,6 +2450,62 @@ public class Batfish implements AutoCloseable {
       processDeltaConfigurations(configurations, testrigSettings);
       disableUnusableVpnInterfaces(configurations, testrigSettings);
       return configurations;
+   }
+
+   private void loadPlugins() {
+      /*
+       * Adapted from
+       * http://stackoverflow.com/questions/11016092/how-to-load-classes
+       * -at-runtime-from-a-folder-or-jar Retrieved: 2016-08-31 Original
+       * Authors: Kevin Crain http://stackoverflow.com/users/2688755/kevin-crain
+       * Apfelsaft http://stackoverflow.com/users/1447641/apfelsaft License:
+       * https://creativecommons.org/licenses/by-sa/3.0/
+       */
+      Path pluginDir = _settings.getPluginDir();
+      String extension = ".class";
+      if (pluginDir != null) {
+         try {
+            Files.walkFileTree(pluginDir, new SimpleFileVisitor<Path>() {
+               @Override
+               public FileVisitResult visitFile(Path path,
+                     BasicFileAttributes attrs) throws IOException {
+                  String pathString = path.toString();
+                  if (pathString.endsWith(".jar")) {
+                     URL[] urls = { new URL("jar:file:" + pathString + "!/") };
+                     URLClassLoader cl = URLClassLoader.newInstance(urls,
+                           getClass().getClassLoader());
+                     JarFile jar = new JarFile(path.toFile());
+                     Enumeration<JarEntry> entries = jar.entries();
+                     while (entries.hasMoreElements()) {
+                        JarEntry element = entries.nextElement();
+                        String name = element.getName();
+                        if (name.endsWith(extension) && !element.isDirectory()) {
+                           String className = name.substring(0,
+                                 name.length() - extension.length()).replace(
+                                 "/", ".");
+                           try {
+                              cl.loadClass(className);
+                              Class.forName(className, true, cl);
+                           }
+                           catch (ClassNotFoundException e) {
+                              jar.close();
+                              throw new BatfishException(
+                                    "Unexpected error loading classes from jar",
+                                    e);
+                           }
+                        }
+                     }
+                     jar.close();
+                  }
+                  return FileVisitResult.CONTINUE;
+               }
+            });
+         }
+         catch (IOException e) {
+            throw new BatfishException("Error walking through plugin dir: '"
+                  + pluginDir.toString() + "'", e);
+         }
+      }
    }
 
    public Topology loadTopology(TestrigSettings testrigSettings) {
@@ -3363,6 +3430,8 @@ public class Batfish implements AutoCloseable {
          }
       }
 
+      loadPlugins();
+
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
          return answer;
@@ -3500,7 +3569,7 @@ public class Batfish implements AutoCloseable {
       }
 
       if (_settings.getDataPlane()) {
-         computeDataPlane();
+         answer.append(computeDataPlane());
          action = true;
       }
 
@@ -3961,9 +4030,6 @@ public class Batfish implements AutoCloseable {
    private Answer taskPlugin() {
       String taskPluginName = _settings.getTaskPlugin();
       Class<?> taskPluginClass;
-      Constructor<?> taskPluginConstructor;
-      Object taskPluginObj;
-      TaskPlugin taskPlugin;
       try {
          taskPluginClass = Class.forName(taskPluginName);
       }
@@ -3971,6 +4037,14 @@ public class Batfish implements AutoCloseable {
          throw new BatfishException("Could not find task plugin '"
                + taskPluginName + "' in classpath", e);
       }
+      return taskPlugin(taskPluginClass);
+   }
+
+   private Answer taskPlugin(Class<?> taskPluginClass) {
+      String taskPluginName = taskPluginClass.getCanonicalName();
+      Constructor<?> taskPluginConstructor;
+      Object taskPluginObj;
+      TaskPlugin taskPlugin;
       try {
          taskPluginConstructor = taskPluginClass.getConstructor(Batfish.class);
       }

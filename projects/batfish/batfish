@@ -5,5 +5,9 @@ BATFISH_JAR=$BATFISH_PATH/out/batfish.jar
 if batfish_cygwin; then
    BATFISH_JAR="$(cygpath -w $BATFISH_JAR)"
 fi
-java ${BATFISH_JAVA_OPTS} -jar "$BATFISH_JAR" "$@"
+if [ -n "$BATFISH_PLUGIN_DIR" ]; then
+   BATFISH_PLUGIN_DIR_FLAG="-plugindir"
+   BATFISH_PLUGIN_DIR_ARG="$BATFISH_PLUGIN_DIR"
+fi
+java ${BATFISH_JAVA_OPTS} -jar "$BATFISH_JAR" $BATFISH_PLUGIN_DIR_FLAG "$BATFISH_PLUGIN_DIR_ARG" "$@"
 

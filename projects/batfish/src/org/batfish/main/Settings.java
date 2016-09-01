@@ -564,6 +564,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _pedanticRecord;
 
+   private Path _pluginDir;
+
    private Path _precomputedBgpAdvertisementsPath;
 
    private Path _precomputedFactsPath;
@@ -884,6 +886,10 @@ public final class Settings extends BaseSettings {
       return _pedanticRecord;
    }
 
+   public Path getPluginDir() {
+      return _pluginDir;
+   }
+
    public Path getPrecomputedBgpAdvertisementsPath() {
       return _precomputedBgpAdvertisementsPath;
    }
@@ -1105,6 +1111,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
+      setDefaultProperty(BfConsts.ARG_PLUGIN_DIR, null);
       setDefaultProperty(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_FACTS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
@@ -1290,6 +1297,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS,
             "suppresses pedantic warnings");
+
+      addOption(BfConsts.ARG_PLUGIN_DIR, "path to plugin directory",
+            ARGNAME_PATH);
 
       addOption(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH,
             "path to precomputed bgp advertisements", ARGNAME_PATH);
@@ -1500,6 +1510,7 @@ public final class Settings extends BaseSettings {
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
+      _pluginDir = getPathOptionValue(BfConsts.ARG_PLUGIN_DIR);
       _precomputedBgpAdvertisementsPath = getPathOptionValue(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
       _precomputedFactsPath = getPathOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
       _precomputedIbgpNeighborsPath = getPathOptionValue(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH);

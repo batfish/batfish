@@ -28,6 +28,7 @@ public class BfConsts {
    public static final String ARG_OUTPUT_ENV = "outputenv";
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
+   public static final String ARG_PLUGIN_DIR = "plugindir";
    public static final String ARG_PREDICATES = "predicates";
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
