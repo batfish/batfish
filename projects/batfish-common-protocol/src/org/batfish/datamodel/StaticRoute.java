@@ -136,4 +136,9 @@ public class StaticRoute extends AbstractRoute implements
       _administrativeCost = administrativeCost;
    }
 
+   @Override
+   public Integer getMetric() {
+      return 0;
+   }
+
 }

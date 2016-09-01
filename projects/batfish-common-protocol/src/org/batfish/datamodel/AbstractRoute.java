@@ -14,6 +14,8 @@ public abstract class AbstractRoute implements Serializable {
 
    protected static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
 
+   private static final String METRIC_VAR = "metric";
+
    protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
 
    protected static final String PREFIX_VAR = "prefix";
@@ -34,6 +36,9 @@ public abstract class AbstractRoute implements Serializable {
 
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public abstract int getAdministrativeCost();
+
+   @JsonProperty(METRIC_VAR)
+   public abstract Integer getMetric();
 
    @JsonProperty(NEXT_HOP_IP_VAR)
    public Ip getNextHopIp() {

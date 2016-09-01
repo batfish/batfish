@@ -99,6 +99,7 @@ public final class GeneratedRoute extends AbstractRoute implements
    }
 
    @JsonProperty(METRIC_VAR)
+   @Override
    public Integer getMetric() {
       return _metric;
    }
