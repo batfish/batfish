@@ -1784,7 +1784,7 @@ public class Batfish implements AutoCloseable {
                               }
                               try {
                                  pluginObj = pluginConstructor
-                                       .newInstance(this);
+                                       .newInstance(Batfish.this);
                               }
                               catch (InstantiationException
                                     | IllegalAccessException

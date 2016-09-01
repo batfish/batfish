@@ -1534,6 +1534,10 @@ public final class Settings extends BaseSettings {
       _nodeRolesPath = nodeRolesPath;
    }
 
+   public void setPluginDir(Path pluginDir) {
+      _pluginDir = pluginDir;
+   }
+
    public void setQuestionParametersPath(Path questionParametersPath) {
       _questionParametersPath = questionParametersPath;
    }

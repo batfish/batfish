@@ -339,6 +339,8 @@ public class Driver {
       final Settings settings;
       try {
          settings = new Settings(args);
+         // inherit pluginDir passed to service on startup
+         settings.setPluginDir(_mainSettings.getPluginDir());
       }
       catch (Exception e) {
          return Arrays.asList("failure",
