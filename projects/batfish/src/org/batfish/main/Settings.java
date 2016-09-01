@@ -432,8 +432,6 @@ public final class Settings extends BaseSettings {
     */
    private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts";
 
-   private static final String ARG_USE_PRECOMPUTED_FACTS = "useprecomputedfacts";
-
    private static final String ARGNAME_AS = "as";
 
    private static final String ARGNAME_HOSTNAME = "hostname";
@@ -522,13 +520,9 @@ public final class Settings extends BaseSettings {
 
    private boolean _histogram;
 
-   private boolean _history;
-
    private boolean _ignoreUnsupported;
 
    private int _jobs;
-
-   private boolean _keepBlocks;
 
    private String _logFile;
 
@@ -546,13 +540,9 @@ public final class Settings extends BaseSettings {
 
    private int _maxRuntimeMs;
 
-   private boolean _nlsDataPlane;
-
    private boolean _nlsDebugSymbols;
 
    private boolean _nlsDry;
-
-   private boolean _nlsTraffic;
 
    private Path _nodeRolesPath;
 
@@ -597,8 +587,6 @@ public final class Settings extends BaseSettings {
    private boolean _redFlagAsError;
 
    private boolean _redFlagRecord;
-
-   private boolean _removeBlocks;
 
    private boolean _report;
 
@@ -646,15 +634,11 @@ public final class Settings extends BaseSettings {
 
    private boolean _usePrecomputedAdvertisements;
 
-   private boolean _usePrecomputedFacts;
-
    private boolean _usePrecomputedIbgpNeighbors;
 
    private boolean _usePrecomputedRoutes;
 
    private boolean _writeBgpAdvertisements;
-
-   private boolean _writeControlPlaneFacts;
 
    private boolean _writeIbgpNeighbors;
 
@@ -758,10 +742,6 @@ public final class Settings extends BaseSettings {
       return _diffQuestion;
    }
 
-   public boolean getDumpControlPlaneFacts() {
-      return _writeControlPlaneFacts;
-   }
-
    public String getEnvironmentName() {
       return _environmentName;
    }
@@ -806,16 +786,8 @@ public final class Settings extends BaseSettings {
       return _histogram;
    }
 
-   public boolean getHistory() {
-      return _history;
-   }
-
    public int getJobs() {
       return _jobs;
-   }
-
-   public boolean getKeepBlocks() {
-      return _keepBlocks;
    }
 
    public String getLogFile() {
@@ -850,20 +822,12 @@ public final class Settings extends BaseSettings {
       return _maxRuntimeMs;
    }
 
-   public boolean getNlsDataPlane() {
-      return _nlsDataPlane;
-   }
-
    public boolean getNlsDebugSymbols() {
       return _nlsDebugSymbols;
    }
 
    public boolean getNlsDry() {
       return _nlsDry;
-   }
-
-   public boolean getNlsTraffic() {
-      return _nlsTraffic;
    }
 
    public Path getNodeRolesPath() {
@@ -948,10 +912,6 @@ public final class Settings extends BaseSettings {
 
    public boolean getRedFlagRecord() {
       return _redFlagRecord;
-   }
-
-   public boolean getRemoveBlocks() {
-      return _removeBlocks;
    }
 
    public boolean getReport() {
@@ -1040,10 +1000,6 @@ public final class Settings extends BaseSettings {
 
    public boolean getUsePrecomputedBgpAdvertisements() {
       return _usePrecomputedAdvertisements;
-   }
-
-   public boolean getUsePrecomputedFacts() {
-      return _usePrecomputedFacts;
    }
 
    public boolean getUsePrecomputedIbgpNeighbors() {
@@ -1140,7 +1096,6 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
       setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
-      setDefaultProperty(ARG_USE_PRECOMPUTED_FACTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
@@ -1148,15 +1103,9 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
-      setDefaultProperty(BfConsts.COMMAND_GET_HISTORY, false);
-      setDefaultProperty(BfConsts.COMMAND_KEEP_BLOCKS, false);
-      setDefaultProperty(BfConsts.COMMAND_NLS_DATA_PLANE, false);
-      setDefaultProperty(BfConsts.COMMAND_NLS_TRAFFIC, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
-      setDefaultProperty(BfConsts.COMMAND_REMOVE_BLOCKS, false);
       setDefaultProperty(BfConsts.COMMAND_REPORT, false);
-      setDefaultProperty(BfConsts.COMMAND_WRITE_CP_FACTS, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS, false);
       setDefaultProperty(BfConsts.COMMAND_WRITE_ROUTES, false);
@@ -1390,9 +1339,6 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS,
             "add precomputed bgp advertisements to data plane model");
 
-      addBooleanOption(ARG_USE_PRECOMPUTED_FACTS,
-            "add precomputed facts to data plane model");
-
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS,
             "add precomputed ibgp neighbors to data plane model");
 
@@ -1407,34 +1353,17 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.COMMAND_DUMP_DP,
             "compute and serialize data plane");
 
-      addBooleanOption(BfConsts.COMMAND_GET_HISTORY, "retrieve flow history");
-
-      addBooleanOption(BfConsts.COMMAND_KEEP_BLOCKS,
-            "activate only selected blocks of logic rules");
-
-      addBooleanOption(BfConsts.COMMAND_NLS_DATA_PLANE,
-            "compute data plane with nls");
-
-      addBooleanOption(BfConsts.COMMAND_NLS_TRAFFIC,
-            "compute traffic information from provided flows with nls");
-
       addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT,
             "serialize vendor-independent configs");
 
       addBooleanOption(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC,
             "serialize vendor configs");
 
-      addBooleanOption(BfConsts.COMMAND_REMOVE_BLOCKS,
-            "remove selected blocks of logic rules");
-
       addBooleanOption(BfConsts.COMMAND_REPORT,
             "generate report based on answered questions");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS,
             "write bgp advertisements from nls data plane model to disk");
-
-      addBooleanOption(BfConsts.COMMAND_WRITE_CP_FACTS,
-            "write control plane facts");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS,
             "write ibgp neighbors from nls data plane model to disk");
@@ -1494,18 +1423,14 @@ public final class Settings extends BaseSettings {
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
       _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
-      _history = getBooleanOptionValue(BfConsts.COMMAND_GET_HISTORY);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
       _jobs = getIntOptionValue(ARG_JOBS);
-      _keepBlocks = getBooleanOptionValue(BfConsts.COMMAND_KEEP_BLOCKS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
       _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
       _maxParserContextTokens = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
       _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
       _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
-      _nlsDataPlane = getBooleanOptionValue(BfConsts.COMMAND_NLS_DATA_PLANE);
       _nlsDry = getBooleanOptionValue(ARG_NLS_DRY);
-      _nlsTraffic = getBooleanOptionValue(BfConsts.COMMAND_NLS_TRAFFIC);
       _nlsDebugSymbols = getBooleanOptionValue(ARG_NLS_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
@@ -1524,7 +1449,6 @@ public final class Settings extends BaseSettings {
       _questionName = getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
       _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
       _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
-      _removeBlocks = getBooleanOptionValue(BfConsts.COMMAND_REMOVE_BLOCKS);
       _report = getBooleanOptionValue(BfConsts.COMMAND_REPORT);
       _runInServiceMode = getBooleanOptionValue(ARG_SERVICE_MODE);
       _sequential = getBooleanOptionValue(ARG_SEQUENTIAL);
@@ -1547,11 +1471,9 @@ public final class Settings extends BaseSettings {
       _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
       _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
       _usePrecomputedAdvertisements = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS);
-      _usePrecomputedFacts = getBooleanOptionValue(ARG_USE_PRECOMPUTED_FACTS);
       _usePrecomputedIbgpNeighbors = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedRoutes = getBooleanOptionValue(BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
       _writeBgpAdvertisements = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
-      _writeControlPlaneFacts = getBooleanOptionValue(BfConsts.COMMAND_WRITE_CP_FACTS);
       _writeIbgpNeighbors = getBooleanOptionValue(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
       _writeRoutes = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ROUTES);
    }
@@ -1584,16 +1506,8 @@ public final class Settings extends BaseSettings {
       _diffQuestion = diffQuestion;
    }
 
-   public void setDumpControlPlaneFacts(boolean dumpControlPlaneFacts) {
-      _writeControlPlaneFacts = dumpControlPlaneFacts;
-   }
-
    public void setEnvironmentName(String envName) {
       _environmentName = envName;
-   }
-
-   public void setHistory(boolean history) {
-      _history = history;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1614,10 +1528,6 @@ public final class Settings extends BaseSettings {
 
    public void setNlsDry(boolean nlsDry) {
       _nlsDry = nlsDry;
-   }
-
-   public void setNlsTraffic(boolean postFlows) {
-      _nlsTraffic = postFlows;
    }
 
    public void setNodeRolesPath(Path nodeRolesPath) {

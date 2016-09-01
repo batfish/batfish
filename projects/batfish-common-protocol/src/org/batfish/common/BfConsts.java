@@ -47,17 +47,11 @@ public class BfConsts {
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
    public static final String COMMAND_DUMP_DP = "dp";
-   public static final String COMMAND_GET_HISTORY = "history";
-   public static final String COMMAND_KEEP_BLOCKS = "keepblocks";
-   public static final String COMMAND_NLS_DATA_PLANE = "nlsdp";
-   public static final String COMMAND_NLS_TRAFFIC = "nlstraffic";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";
-   public static final String COMMAND_REMOVE_BLOCKS = "removeblocks";
    public static final String COMMAND_REPORT = "report";
    public static final String COMMAND_WRITE_ADVERTISEMENTS = "writeadvertisements";
-   public static final String COMMAND_WRITE_CP_FACTS = "cpfacts";
    public static final String COMMAND_WRITE_IBGP_NEIGHBORS = "writeibgpneighbors";
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 

@@ -328,8 +328,6 @@ public class BfCoordWorkHelper {
       if (isDelta) {
          wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       }
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
       return wItem;
    }
 
@@ -364,9 +362,7 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDataPlane(String containerName,
          String testrigName, String envName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
@@ -374,20 +370,10 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDeltaDataPlane(String containerName,
          String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemGenerateFacts(String containerName,
-         String testrigName, String envName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
@@ -406,15 +392,6 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemPostFlows(String containerName,
-         String testrigName, String envName, String questionName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
-      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 

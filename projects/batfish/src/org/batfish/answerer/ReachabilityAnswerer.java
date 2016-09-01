@@ -3,7 +3,6 @@ package org.batfish.answerer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,14 +108,8 @@ public class ReachabilityAnswerer extends Answerer {
       }
 
       flows = _batfish.computeNodOutput(jobs);
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Batfish.initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-      }
-      _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
-      _batfish.nlsTraffic(testrigSettings);
+
+      _batfish.getDataPlanePlugin().processFlows(flows, testrigSettings);
 
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
@@ -219,19 +212,10 @@ public class ReachabilityAnswerer extends Answerer {
       // TODO: maybe do something with nod answer element
       Set<Flow> flows = _batfish.computeCompositeNodOutput(jobs,
             new NodAnswerElement());
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Batfish.initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.output(flow.toString() + "\n");
-      }
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getBaseTestrigSettings());
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getDeltaTestrigSettings());
-      _batfish.nlsTraffic();
 
       AnswerElement answerElement = _batfish.getHistory();
       return answerElement;
@@ -306,19 +290,11 @@ public class ReachabilityAnswerer extends Answerer {
       // TODO: maybe do something with nod answer element
       Set<Flow> flows = _batfish.computeCompositeNodOutput(jobs,
             new NodAnswerElement());
-
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Batfish.initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-         _logger.debug("Found: " + flow.toString() + "\n");
-      }
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getBaseTestrigSettings());
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getDeltaTestrigSettings());
-      _batfish.nlsTraffic();
+
       AnswerElement answerElement = _batfish.getHistory();
       return answerElement;
    }
@@ -393,15 +369,7 @@ public class ReachabilityAnswerer extends Answerer {
       // run jobs and get resulting flows
       flows = _batfish.computeNodOutput(jobs);
 
-      // dump flows to disk
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
-      Batfish.initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
-      for (Flow flow : flows) {
-         wSetFlowOriginate.append(flow.toLBLine());
-      }
-      _batfish.dumpTrafficFacts(trafficFactBins, testrigSettings);
-      _batfish.nlsTraffic(testrigSettings);
+      _batfish.getDataPlanePlugin().processFlows(flows, testrigSettings);
 
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
