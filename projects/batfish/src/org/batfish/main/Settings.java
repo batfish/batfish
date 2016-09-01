@@ -1526,6 +1526,10 @@ public final class Settings extends BaseSettings {
       _maxRuntimeMs = runtimeMs;
    }
 
+   public void setNlsDebugSymbols(boolean nlsDebugSymbols) {
+      _nlsDebugSymbols = nlsDebugSymbols;
+   }
+
    public void setNlsDry(boolean nlsDry) {
       _nlsDry = nlsDry;
    }
