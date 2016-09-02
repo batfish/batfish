@@ -10,32 +10,32 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class Route implements Comparable<Route>, Serializable {
 
+   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+
+   private static final String COST_VAR = "cost";
+
+   private static final String NETWORK_VAR = "network";
+
+   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+
+   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+
+   private static final String NEXT_HOP_VAR = "nextHop";
+
+   private static final String NODE_VAR = "node";
+
+   private static final String PROTOCOL_VAR = "protocol";
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   public static final String UNSET_NEXT_HOP = "(unknown)";
-
-   public static final String UNSET_NEXT_HOP_INTERFACE = "dynamic";
-
-   public static final int UNSET_ROUTE_ADMIN = -1;
-
-   public static final int UNSET_ROUTE_COST = -1;
-
-   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = new Ip(-1l);
-
-   public static final int UNSET_ROUTE_TAG = -1;
-
-   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
-   private static final String COST_VAR = "cost";
-   private static final String NETWORK_VAR = "network";
-   private static final String NEXT_HOP_VAR = "nextHop";
-   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
-   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
-   private static final String NODE_VAR = "node";
-   private static final String PROTOCOL_VAR = "protocol";
    private static final String TAG_VAR = "tag";
+   public static final String UNSET_NEXT_HOP = "(unknown)";
+   public static final String UNSET_NEXT_HOP_INTERFACE = "dynamic";
+   public static final int UNSET_ROUTE_ADMIN = -1;
+   public static final int UNSET_ROUTE_COST = -1;
+   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = new Ip(-1l);
+   public static final int UNSET_ROUTE_TAG = -1;
 
    private final int _administrativeCost;
 

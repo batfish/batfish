@@ -15,6 +15,8 @@ public class OspfProcess implements Serializable {
 
    private Map<Long, OspfArea> _areas;
 
+   private String _exportPolicy;
+
    private Set<GeneratedRoute> _generatedRoutes;
 
    private Set<PolicyMap> _outboundPolicyMaps;
@@ -24,8 +26,6 @@ public class OspfProcess implements Serializable {
    private Double _referenceBandwidth;
 
    private Ip _routerId;
-
-   private String _exportPolicy;
 
    public OspfProcess() {
       _generatedRoutes = new LinkedHashSet<>();

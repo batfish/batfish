@@ -19,6 +19,7 @@ public class Settings extends BaseSettings {
    public static final String ARG_BATFISH_LOG_LEVEL = "batfishloglevel";
    public static final String ARG_COMMAND_FILE = "cmdfile";
    public static final String ARG_CONTAINER_ID = "containerid";
+   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
    private static final String ARG_DISABLE_SSL = "disablessl";
    private static final String ARG_HELP = "help";
    public static final String ARG_LOG_FILE = "logfile";
@@ -28,12 +29,11 @@ public class Settings extends BaseSettings {
    private static final String ARG_PRETTY_PRINT_ANSWERS = "prettyanswers";
    public static final String ARG_QUESTIONS_DIR = "questionsdir";
    public static final String ARG_RUN_MODE = "runmode";
+   private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
+
+   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
    public static final String ARG_TESTRIG_DIR = "testrigdir";
    public static final String ARG_TESTRIG_ID = "testrigid";
-
-   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
-   private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
-   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
    private static final String ARG_TRUST_ALL_SSL_CERTS = "trustallsslcerts";
 
    private static final String EXECUTABLE_NAME = "batfish_client";
@@ -42,19 +42,19 @@ public class Settings extends BaseSettings {
    private String _batchCommandFile;
    private String _batfishLogLevel;
    private String _containerId;
+   private String _coordinatorHost;
+   private int _coordinatorPoolPort;
+   private int _coordinatorWorkPort;
    private String _logFile;
    private String _logLevel;
    private long _periodCheckWorkMs;
    private boolean _prettyPrintAnswers;
    private String _questionsDir;
    private RunMode _runMode;
+
    private boolean _sanityCheck;
    private String _testrigDir;
    private String _testrigId;
-
-   private String _coordinatorHost;
-   private int _coordinatorPoolPort;
-   private int _coordinatorWorkPort;
    private boolean _trustAllSslCerts;
    private boolean _useSsl;
 

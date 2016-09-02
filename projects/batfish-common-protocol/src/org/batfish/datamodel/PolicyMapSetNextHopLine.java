@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
 
-   private static final long serialVersionUID = 1L;
-
    private static final String NEXT_HOPS_VAR = "nextHops";
+
+   private static final long serialVersionUID = 1L;
 
    private final List<Ip> _nextHops;
 

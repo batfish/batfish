@@ -16,7 +16,7 @@
 <setting id="cleanup.use_lambda" value="true"/>
 <setting id="cleanup.always_use_blocks" value="true"/>
 <setting id="cleanup.use_this_for_non_static_field_access_only_if_necessary" value="true"/>
-<setting id="cleanup.sort_members_all" value="false"/>
+<setting id="cleanup.sort_members_all" value="true"/>
 <setting id="cleanup.remove_trailing_whitespaces_all" value="true"/>
 <setting id="cleanup.add_missing_annotations" value="true"/>
 <setting id="cleanup.always_use_this_for_non_static_field_access" value="false"/>
@@ -55,7 +55,7 @@
 <setting id="cleanup.add_missing_override_annotations" value="true"/>
 <setting id="cleanup.use_blocks" value="true"/>
 <setting id="cleanup.make_variable_declarations_final" value="false"/>
-<setting id="cleanup.correct_indentation" value="false"/>
+<setting id="cleanup.correct_indentation" value="true"/>
 <setting id="cleanup.remove_unused_private_types" value="true"/>
 </profile>
 </profiles>

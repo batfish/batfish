@@ -18,6 +18,8 @@ public abstract class AbstractRoute implements Serializable {
 
    protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
 
+   public static final int NO_TAG = -1;
+
    protected static final String PREFIX_VAR = "prefix";
 
    private static final long serialVersionUID = 1L;
@@ -25,8 +27,6 @@ public abstract class AbstractRoute implements Serializable {
    protected final Ip _nextHopIp;
 
    protected final Prefix _prefix;
-
-   public static final int NO_TAG = -1;
 
    public AbstractRoute(Prefix prefix, Ip nextHopIp) {
       _prefix = prefix;
@@ -42,6 +42,8 @@ public abstract class AbstractRoute implements Serializable {
    @JsonProperty(METRIC_VAR)
    public abstract Integer getMetric();
 
+   public abstract String getNextHopInterface();
+
    @JsonProperty(NEXT_HOP_IP_VAR)
    public Ip getNextHopIp() {
       return _nextHopIp;
@@ -55,11 +57,9 @@ public abstract class AbstractRoute implements Serializable {
    @JsonIgnore
    public abstract RoutingProtocol getRouteType();
 
+   public abstract int getTag();
+
    @Override
    public abstract int hashCode();
-
-   public abstract String getNextHopInterface();
-
-   public abstract int getTag();
 
 }

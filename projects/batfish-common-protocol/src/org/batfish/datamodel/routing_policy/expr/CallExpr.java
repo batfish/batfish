@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CallExpr extends AbstractBooleanExpr {
 
+   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
 
    private String _calledPolicyName;
 

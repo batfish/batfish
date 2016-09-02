@@ -105,6 +105,7 @@ public class StaticRoute extends AbstractRoute
       return 0;
    }
 
+   @Override
    @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    public String getNextHopInterface() {
       return _nextHopInterface;
@@ -115,6 +116,7 @@ public class StaticRoute extends AbstractRoute
       return RoutingProtocol.STATIC;
    }
 
+   @Override
    @JsonProperty(TAG_VAR)
    public int getTag() {
       return _tag;

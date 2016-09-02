@@ -178,12 +178,12 @@ public class PrefixSpace implements Serializable {
 
    }
 
+   private static final int NUM_BITS = 32;
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final int NUM_BITS = 32;
 
    private static BitSet getAddressBits(Ip address) {
       int addressAsInt = (int) (address.asLong());

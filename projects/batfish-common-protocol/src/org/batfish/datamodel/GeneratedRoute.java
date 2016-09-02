@@ -105,6 +105,11 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
+   public String getNextHopInterface() {
+      return null;
+   }
+
+   @Override
    @JsonIgnore
    public Ip getNextHopIp() {
       return super.getNextHopIp();
@@ -113,6 +118,11 @@ public final class GeneratedRoute extends AbstractRoute
    @Override
    public RoutingProtocol getRouteType() {
       return RoutingProtocol.AGGREGATE;
+   }
+
+   @Override
+   public int getTag() {
+      return NO_TAG;
    }
 
    @Override
@@ -156,16 +166,6 @@ public final class GeneratedRoute extends AbstractRoute
    @JsonProperty(METRIC_VAR)
    public void setMetric(int metric) {
       _metric = metric;
-   }
-
-   @Override
-   public String getNextHopInterface() {
-      return null;
-   }
-
-   @Override
-   public int getTag() {
-      return NO_TAG;
    }
 
 }

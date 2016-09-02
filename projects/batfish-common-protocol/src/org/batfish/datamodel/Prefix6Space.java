@@ -181,12 +181,12 @@ public class Prefix6Space implements Serializable {
 
    }
 
+   private static final int NUM_BITS = 128;
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final int NUM_BITS = 128;
 
    // TODO: verify that this has been correctly modified for Ip6 / BigInteger
    private static BitSet getAddressBits(Ip6 address) {
