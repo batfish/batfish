@@ -26,6 +26,8 @@ public abstract class AbstractRoute implements Serializable {
 
    protected final Prefix _prefix;
 
+   public static final int NO_TAG = -1;
+
    public AbstractRoute(Prefix prefix, Ip nextHopIp) {
       _prefix = prefix;
       _nextHopIp = nextHopIp;
@@ -51,9 +53,13 @@ public abstract class AbstractRoute implements Serializable {
    }
 
    @JsonIgnore
-   public abstract RouteType getRouteType();
+   public abstract RoutingProtocol getRouteType();
 
    @Override
    public abstract int hashCode();
+
+   public abstract String getNextHopInterface();
+
+   public abstract int getTag();
 
 }

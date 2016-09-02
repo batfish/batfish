@@ -48,6 +48,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Warning;
+import org.batfish.common.util.BatfishObjectInputStream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -870,6 +871,10 @@ public class Batfish implements AutoCloseable {
    }
 
    public Object deserializeObject(Path inputFile) {
+      return deserializeObject(inputFile, null);
+   }
+
+   public Object deserializeObject(Path inputFile, ClassLoader cl) {
       FileInputStream fis;
       Object o = null;
       ObjectInputStream ois;
@@ -878,6 +883,9 @@ public class Batfish implements AutoCloseable {
          if (!isJavaSerializationData(inputFile)) {
             XStream xstream = new XStream(new DomDriver("UTF-8"));
             ois = xstream.createObjectInputStream(fis);
+         }
+         else if (cl != null) {
+            ois = new BatfishObjectInputStream(fis, cl);
          }
          else {
             ois = new ObjectInputStream(fis);
@@ -1747,9 +1755,9 @@ public class Batfish implements AutoCloseable {
    private void loadPluginJar(Path path) {
       /*
        * Adapted from
-       * http://stackoverflow.com/questions/11016092/how-to-load-classes
-       * -at-runtime-from-a-folder-or-jar Retrieved: 2016-08-31 Original
-       * Authors: Kevin Crain http://stackoverflow.com/users/2688755/kevin-crain
+       * http://stackoverflow.com/questions/11016092/how-to-load-classes-at-
+       * runtime-from-a-folder-or-jar Retrieved: 2016-08-31 Original Authors:
+       * Kevin Crain http://stackoverflow.com/users/2688755/kevin-crain
        * Apfelsaft http://stackoverflow.com/users/1447641/apfelsaft License:
        * https://creativecommons.org/licenses/by-sa/3.0/
        */

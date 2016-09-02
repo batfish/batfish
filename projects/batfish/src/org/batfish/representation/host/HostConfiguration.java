@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -215,7 +216,7 @@ public class HostConfiguration extends VendorConfiguration {
       if (_staticRoutes.isEmpty()) {
          for (String ifaceName : _c.getInterfaces().keySet()) {
             StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
-                  StaticRoute.NO_TAG);
+                  AbstractRoute.NO_TAG);
             sr.setAdministrativeCost(
                   HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
             _c.getStaticRoutes().add(sr);

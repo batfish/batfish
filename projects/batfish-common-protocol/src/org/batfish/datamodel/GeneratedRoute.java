@@ -111,8 +111,8 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
-   public RouteType getRouteType() {
-      return RouteType.AGGREGATE;
+   public RoutingProtocol getRouteType() {
+      return RoutingProtocol.AGGREGATE;
    }
 
    @Override
@@ -156,6 +156,16 @@ public final class GeneratedRoute extends AbstractRoute
    @JsonProperty(METRIC_VAR)
    public void setMetric(int metric) {
       _metric = metric;
+   }
+
+   @Override
+   public String getNextHopInterface() {
+      return null;
+   }
+
+   @Override
+   public int getTag() {
+      return NO_TAG;
    }
 
 }
