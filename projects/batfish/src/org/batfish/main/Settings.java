@@ -245,6 +245,19 @@ public final class Settings extends BaseSettings {
          _environmentSettings = new EnvironmentSettings();
       }
 
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj) {
+            return true;
+         }
+         TestrigSettings other = (TestrigSettings) obj;
+         if (!_name.equals(other._name)) {
+            return false;
+         }
+         return _environmentSettings._name
+               .equals(other._environmentSettings._name);
+      }
+
       public Path getBasePath() {
          return _basePath;
       }
@@ -283,6 +296,16 @@ public final class Settings extends BaseSettings {
 
       public Path getTestRigPath() {
          return _testRigPath;
+      }
+
+      @Override
+      public int hashCode() {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + ((_name == null) ? 0 : _name.hashCode());
+         result = prime * result + ((_environmentSettings._name == null) ? 0
+               : _environmentSettings._name.hashCode());
+         return result;
       }
 
       public void setBasePath(Path basePath) {
