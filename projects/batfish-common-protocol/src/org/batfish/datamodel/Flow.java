@@ -94,8 +94,7 @@ public final class Flow implements Comparable<Flow> {
 
    @JsonCreator
    public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
-         @JsonProperty(SRC_IP_VAR) Ip srcIp,
-         @JsonProperty(DST_IP_VAR) Ip dstIp,
+         @JsonProperty(SRC_IP_VAR) Ip srcIp, @JsonProperty(DST_IP_VAR) Ip dstIp,
          @JsonProperty(SRC_PORT_VAR) int srcPort,
          @JsonProperty(DST_PORT_VAR) int dstPort,
          @JsonProperty(IP_PROTOCOL_VAR) IpProtocol ipProtocol,
@@ -381,9 +380,9 @@ public final class Flow implements Comparable<Flow> {
          dstPortStr = " dport:" + NamedPort.nameFromNumber(_dstPort);
       }
       if (tcp) {
-         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d",
-               _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
-               _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
+         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
+               _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
+               _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
       }
       if (icmp) {
          icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
@@ -409,9 +408,9 @@ public final class Flow implements Comparable<Flow> {
       String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
             + "|" + dst_port + "|" + protocol + "|" + _dscp + "|" + _ecn + "|"
             + _fragmentOffset + "|" + icmpType + "|" + icmpCode + "|" + _state
-            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg
-            + "|" + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst
-            + "|" + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
+            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|"
+            + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|"
+            + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
       return line;
    }
 
@@ -430,18 +429,18 @@ public final class Flow implements Comparable<Flow> {
          dstPortStr = " dstPort:" + NamedPort.nameFromNumber(_dstPort);
       }
       if (tcp) {
-         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d",
-               _tcpFlagsCwr, _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck,
-               _tcpFlagsPsh, _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
+         tcpFlagsStr = String.format(" tcpFlags:%d%d%d%d%d%d%d%d", _tcpFlagsCwr,
+               _tcpFlagsEce, _tcpFlagsUrg, _tcpFlagsAck, _tcpFlagsPsh,
+               _tcpFlagsRst, _tcpFlagsSyn, _tcpFlagsFin);
       }
       if (icmp) {
          icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
          icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
       }
-      return "Flow<ingressNode:" + _ingressNode + " srcIp:" + _srcIp
-            + " dstIp:" + _dstIp + " ipProtocol:" + _ipProtocol + srcPortStr
-            + dstPortStr + " dscp: " + _dscp + " ecn:" + _ecn
-            + " fragmentOffset:" + _fragmentOffset + icmpTypeStr + icmpCodeStr
-            + " state:" + _state + tcpFlagsStr + " tag:" + _tag + ">";
+      return "Flow<ingressNode:" + _ingressNode + " srcIp:" + _srcIp + " dstIp:"
+            + _dstIp + " ipProtocol:" + _ipProtocol + srcPortStr + dstPortStr
+            + " dscp: " + _dscp + " ecn:" + _ecn + " fragmentOffset:"
+            + _fragmentOffset + icmpTypeStr + icmpCodeStr + " state:" + _state
+            + tcpFlagsStr + " tag:" + _tag + ">";
    }
 }

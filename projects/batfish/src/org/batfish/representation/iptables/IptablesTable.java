@@ -17,7 +17,7 @@ public class IptablesTable extends ComparableStructure<String> {
 
    public IptablesTable(String name) {
       super(name);
-      _chains = new HashMap<String, IptablesChain>();
+      _chains = new HashMap<>();
    }
 
    public void addChain(String chainName) {

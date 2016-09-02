@@ -25,8 +25,8 @@ public class MyApplication {
          _ipProtocol = IpProtocol.UDP;
       }
       else {
-         throw new BatfishException("unsupported protocol string: "
-               + protocolStr);
+         throw new BatfishException(
+               "unsupported protocol string: " + protocolStr);
       }
    }
 

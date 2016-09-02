@@ -40,15 +40,15 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
          }
          RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
          String longerListName = "~" + _prefixList + "~LONGER~";
-         RouteFilterList longerList = c.getRouteFilterLists().get(
-               longerListName);
+         RouteFilterList longerList = c.getRouteFilterLists()
+               .get(longerListName);
          if (longerList == null) {
             longerList = new RouteFilterList(longerListName);
             for (RouteFilterLine line : rf.getLines()) {
                Prefix prefix = line.getPrefix();
                LineAction action = line.getAction();
-               SubRange longerLineRange = new SubRange(line.getLengthRange()
-                     .getStart() + 1, 32);
+               SubRange longerLineRange = new SubRange(
+                     line.getLengthRange().getStart() + 1, 32);
                if (longerLineRange.getStart() > 32) {
                   warnings.redFlag("'prefix-list-filter " + _prefixList
                         + " longer' cannot match more specific prefix than "
@@ -66,8 +66,8 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
          clause.getMatchLines().add(pmLine);
       }
       else {
-         warnings.redFlag("Reference to undefined prefix-list: \""
-               + _prefixList + "\"");
+         warnings.redFlag(
+               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
       }
    }
 
@@ -82,15 +82,15 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
          }
          RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
          String longerListName = "~" + _prefixList + "~LONGER~";
-         RouteFilterList longerList = c.getRouteFilterLists().get(
-               longerListName);
+         RouteFilterList longerList = c.getRouteFilterLists()
+               .get(longerListName);
          if (longerList == null) {
             longerList = new RouteFilterList(longerListName);
             for (RouteFilterLine line : rf.getLines()) {
                Prefix prefix = line.getPrefix();
                LineAction action = line.getAction();
-               SubRange longerLineRange = new SubRange(line.getLengthRange()
-                     .getStart() + 1, 32);
+               SubRange longerLineRange = new SubRange(
+                     line.getLengthRange().getStart() + 1, 32);
                if (longerLineRange.getStart() > 32) {
                   warnings.redFlag("'prefix-list-filter " + _prefixList
                         + " longer' cannot match more specific prefix than "
@@ -106,8 +106,8 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
          return new MatchPrefixSet(new NamedPrefixSet(longerListName));
       }
       else {
-         warnings.redFlag("Reference to undefined prefix-list: \""
-               + _prefixList + "\"");
+         warnings.redFlag(
+               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
          return BooleanExprs.False.toStaticBooleanExpr();
       }
    }

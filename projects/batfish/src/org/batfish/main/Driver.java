@@ -50,12 +50,12 @@ public class Driver {
    private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30
                                                                      // seconds
 
-   private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1 * 1000; // 1
-                                                                                   // second
+   private static final int COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS = 1
+         * 1000; // 1
+                 // second
 
-   static Logger httpServerLogger = Logger
-         .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
-               .getName());
+   static Logger httpServerLogger = Logger.getLogger(
+         org.glassfish.grizzly.http.server.HttpServer.class.getName());
 
    static Logger networkListenerLogger = Logger
          .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
@@ -113,7 +113,7 @@ public class Driver {
    }
 
    private static void mainInit(String[] args) {
-      _taskLog = new HashMap<String, Task>();
+      _taskLog = new HashMap<>();
 
       try {
          _mainSettings = new Settings(args);
@@ -121,8 +121,8 @@ public class Driver {
          httpServerLogger.setLevel(Level.WARNING);
       }
       catch (Exception e) {
-         System.err.println("batfish: Initialization failed. Reason: "
-               + e.getMessage());
+         System.err.println(
+               "batfish: Initialization failed. Reason: " + e.getMessage());
          System.exit(1);
       }
    }
@@ -157,8 +157,8 @@ public class Driver {
                // if not, re-register the service. the coordinator might have
                // died and come back.
                if (_mainSettings.getCoordinatorRegister()
-                     && new Date().getTime()
-                           - _lastPollFromCoordinator.getTime() > COORDINATOR_POLL_TIMEOUT_MS) {
+                     && new Date().getTime() - _lastPollFromCoordinator
+                           .getTime() > COORDINATOR_POLL_TIMEOUT_MS) {
                   // this function does not return until registration succeeds
                   registerWithCoordinatorPersistent();
                }
@@ -191,11 +191,11 @@ public class Driver {
 
    private static boolean registerWithCoordinator(String poolRegUrl) {
       try {
-         Client client = CommonUtil.getClientBuilder(
-               _mainSettings.getCoordinatorUseSsl(),
-               _mainSettings.getTrustAllSslCerts()).build();
-         WebTarget webTarget = client.target(poolRegUrl).queryParam(
-               "add",
+         Client client = CommonUtil
+               .getClientBuilder(_mainSettings.getCoordinatorUseSsl(),
+                     _mainSettings.getTrustAllSslCerts())
+               .build();
+         WebTarget webTarget = client.target(poolRegUrl).queryParam("add",
                _mainSettings.getServiceHost() + ":"
                      + _mainSettings.getServicePort());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
@@ -299,8 +299,8 @@ public class Driver {
                   logger.error(stackTrace);
                   answer = new Answer();
                   answer.setStatus(AnswerStatus.FAILURE);
-                  answer.addAnswerElement(new BatfishException(
-                        "Batfish job failed", e));
+                  answer.addAnswerElement(
+                        new BatfishException("Batfish job failed", e));
                   batfish.setTerminatedWithException(true);
                }
                finally {
@@ -398,8 +398,8 @@ public class Driver {
                return Arrays.asList(BfConsts.SVC_SUCCESS_KEY, "running now");
             }
             catch (Exception e) {
-               _mainLogger.error("Exception while running task: "
-                     + e.getMessage());
+               _mainLogger
+                     .error("Exception while running task: " + e.getMessage());
                makeIdle();
                return Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage());
             }

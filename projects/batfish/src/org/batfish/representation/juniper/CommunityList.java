@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.batfish.common.util.ComparableStructure;
 
-public final class CommunityList extends ComparableStructure<String> implements
-      Serializable {
+public final class CommunityList extends ComparableStructure<String>
+      implements Serializable {
 
    /**
     *
@@ -20,7 +20,7 @@ public final class CommunityList extends ComparableStructure<String> implements
 
    public CommunityList(String name) {
       super(name);
-      _lines = new ArrayList<CommunityListLine>();
+      _lines = new ArrayList<>();
    }
 
    public boolean getInvertMatch() {

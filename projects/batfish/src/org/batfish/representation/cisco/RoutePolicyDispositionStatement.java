@@ -27,8 +27,8 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
       switch (_dispositionType) {
       case DONE: {
          If ifStatement = new If();
-         ifStatement.setGuard(BooleanExprs.CallExprContext
-               .toStaticBooleanExpr());
+         ifStatement
+               .setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
          ifStatement.setTrueStatements(Collections
                .singletonList(Statements.ReturnFalse.toStaticStatement()));
          ifStatement.setFalseStatements(Collections
@@ -43,14 +43,12 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
       case PASS: {
          If ifStatement = new If();
-         ifStatement.setGuard(BooleanExprs.CallExprContext
-               .toStaticBooleanExpr());
-         ifStatement.setTrueStatements(Collections
-               .singletonList(Statements.SetLocalDefaultActionAccept
-                     .toStaticStatement()));
-         ifStatement.setFalseStatements(Collections
-               .singletonList(Statements.SetDefaultActionAccept
-                     .toStaticStatement()));
+         ifStatement
+               .setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+         ifStatement.setTrueStatements(Collections.singletonList(
+               Statements.SetLocalDefaultActionAccept.toStaticStatement()));
+         ifStatement.setFalseStatements(Collections.singletonList(
+               Statements.SetDefaultActionAccept.toStaticStatement()));
          statements.add(ifStatement);
          break;
       }

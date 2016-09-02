@@ -15,7 +15,8 @@ public class PolicyMapClauseMatchInterfaceLine extends PolicyMapMatchLine {
    private final String _name;
 
    @JsonCreator
-   public PolicyMapClauseMatchInterfaceLine(@JsonProperty(NAME_VAR) String name) {
+   public PolicyMapClauseMatchInterfaceLine(
+         @JsonProperty(NAME_VAR) String name) {
       _name = name;
    }
 

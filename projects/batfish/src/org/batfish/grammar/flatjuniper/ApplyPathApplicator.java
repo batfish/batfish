@@ -37,7 +37,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    public void enterFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<ParseTree>();
+      _newConfigurationLines = new ArrayList<>();
       _newConfigurationLines.addAll(ctx.children);
    }
 
@@ -74,8 +74,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
                _configurationContext);
       }
       catch (BatfishException e) {
-         _w.redFlag("Could not apply path: "
-               + pathQuoted
+         _w.redFlag("Could not apply path: " + pathQuoted
                + ": make sure path is terminated by wildcard (e.g. <*>) representing ip(v6) addresses or prefixes");
       }
       // _newConfigurationLines.remove(_currentSetLine);

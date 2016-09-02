@@ -24,7 +24,8 @@ public abstract class BaseColumn<T> implements Column {
    }
 
    @Override
-   public List<BgpAdvertisement> asBgpAdvertisementList(EntityTable entityTable) {
+   public List<BgpAdvertisement> asBgpAdvertisementList(
+         EntityTable entityTable) {
       throw new BatfishException("unsupported column view");
    }
 

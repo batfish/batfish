@@ -60,7 +60,8 @@ public class Route implements Serializable {
          _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
       }
       else {
-         throw new JSONException("Target not found in route " + jObj.toString());
+         throw new JSONException(
+               "Target not found in route " + jObj.toString());
       }
    }
 
@@ -98,10 +99,8 @@ public class Route implements Serializable {
                         DEFAULT_STATIC_ROUTE_COST);
                }
                else {
-                  throw new BatfishException(
-                        "Internet gateway \""
-                              + _target
-                              + "\" specified in this route not accessible from this subnet");
+                  throw new BatfishException("Internet gateway \"" + _target
+                        + "\" specified in this route not accessible from this subnet");
                }
             }
             break;
@@ -111,9 +110,9 @@ public class Route implements Serializable {
                   .getNetworkInterfaces().get(_target);
             String networkInterfaceSubnetId = networkInterface.getSubnetId();
             if (networkInterfaceSubnetId.equals(subnet.getId())) {
-               Set<Ip> networkInterfaceIps = new TreeSet<Ip>();
-               networkInterfaceIps.addAll(networkInterface
-                     .getIpAddressAssociations().keySet());
+               Set<Ip> networkInterfaceIps = new TreeSet<>();
+               networkInterfaceIps.addAll(
+                     networkInterface.getIpAddressAssociations().keySet());
                Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
                if (!subnet.getCidrBlock().contains(lowestIp)) {
                   throw new BatfishException(
@@ -157,8 +156,8 @@ public class Route implements Serializable {
                      instanceIface);
                instanceIface.setPrefix(instanceIfacePrefix);
                instanceIface.getAllPrefixes().add(instanceIfacePrefix);
-               Instance instance = awsVpcConfiguration.getInstances().get(
-                     instanceId);
+               Instance instance = awsVpcConfiguration.getInstances()
+                     .get(instanceId);
                instanceIface.setIncomingFilter(instance.getInAcl());
                instanceIface.setOutgoingFilter(instance.getOutAcl());
                Ip nextHopIp = instanceIfacePrefix.getAddress();
@@ -176,13 +175,13 @@ public class Route implements Serializable {
             String localVpcId = subnet.getVpcId();
             String accepterVpcId = vpcPeeringConnection.getAccepterVpcId();
             String requesterVpcId = vpcPeeringConnection.getRequesterVpcId();
-            String remoteVpcId = localVpcId.equals(accepterVpcId) ? requesterVpcId
-                  : accepterVpcId;
+            String remoteVpcId = localVpcId.equals(accepterVpcId)
+                  ? requesterVpcId : accepterVpcId;
             Configuration remoteVpcCfgNode = awsVpcConfiguration
                   .getConfigurationNodes().get(remoteVpcId);
             if (remoteVpcCfgNode == null) {
-               awsVpcConfiguration.getWarnings().redFlag(
-                     "VPC \"" + localVpcId
+               awsVpcConfiguration.getWarnings()
+                     .redFlag("VPC \"" + localVpcId
                            + "\" cannot peer with non-existent VPC: \""
                            + remoteVpcId + "\"");
                return null;
@@ -227,15 +226,15 @@ public class Route implements Serializable {
 
          case Instance:
             // TODO: create route for instance
-            awsVpcConfiguration.getWarnings().redFlag(
-                  "Skipping creating route to "
-                        + _destinationCidrBlock.toString()
-                        + " for instance: \"" + _target + "\"");
+            awsVpcConfiguration.getWarnings()
+                  .redFlag("Skipping creating route to "
+                        + _destinationCidrBlock.toString() + " for instance: \""
+                        + _target + "\"");
             return null;
 
          default:
-            throw new BatfishException("Unsupported target type: "
-                  + _targetType.toString());
+            throw new BatfishException(
+                  "Unsupported target type: " + _targetType.toString());
 
          }
       }

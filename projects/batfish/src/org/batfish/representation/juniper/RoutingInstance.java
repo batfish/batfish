@@ -55,30 +55,32 @@ public class RoutingInstance implements Serializable {
 
    public RoutingInstance(String name) {
       _isisSettings = new IsisSettings();
-      _interfaces = new TreeMap<String, Interface>();
-      _ipBgpGroups = new TreeMap<Ip, IpBgpGroup>();
+      _interfaces = new TreeMap<>();
+      _ipBgpGroups = new TreeMap<>();
       _masterBgpGroup = new BgpGroup();
       _globalMasterInterface = new Interface(MASTER_INTERFACE_NAME);
       _name = name;
-      _namedBgpGroups = new TreeMap<String, NamedBgpGroup>();
-      _nodeDevices = new TreeMap<String, NodeDevice>();
-      _ospfAreas = new TreeMap<Ip, OspfArea>();
-      _ospfExportPolicies = new ArrayList<String>();
+      _namedBgpGroups = new TreeMap<>();
+      _nodeDevices = new TreeMap<>();
+      _ospfAreas = new TreeMap<>();
+      _ospfExportPolicies = new ArrayList<>();
       _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
-      _ribs = new TreeMap<String, RoutingInformationBase>();
+      _ribs = new TreeMap<>();
       _ribs.put(RoutingInformationBase.RIB_IPV4_UNICAST,
-            new RoutingInformationBase(RoutingInformationBase.RIB_IPV4_UNICAST));
+            new RoutingInformationBase(
+                  RoutingInformationBase.RIB_IPV4_UNICAST));
       _ribs.put(RoutingInformationBase.RIB_IPV4_MULTICAST,
             new RoutingInformationBase(
                   RoutingInformationBase.RIB_IPV4_MULTICAST));
       _ribs.put(RoutingInformationBase.RIB_IPV4_MPLS,
             new RoutingInformationBase(RoutingInformationBase.RIB_IPV4_MPLS));
       _ribs.put(RoutingInformationBase.RIB_IPV6_UNICAST,
-            new RoutingInformationBase(RoutingInformationBase.RIB_IPV6_UNICAST));
-      _ribs.put(RoutingInformationBase.RIB_MPLS, new RoutingInformationBase(
-            RoutingInformationBase.RIB_MPLS));
-      _ribs.put(RoutingInformationBase.RIB_ISIS, new RoutingInformationBase(
-            RoutingInformationBase.RIB_ISIS));
+            new RoutingInformationBase(
+                  RoutingInformationBase.RIB_IPV6_UNICAST));
+      _ribs.put(RoutingInformationBase.RIB_MPLS,
+            new RoutingInformationBase(RoutingInformationBase.RIB_MPLS));
+      _ribs.put(RoutingInformationBase.RIB_ISIS,
+            new RoutingInformationBase(RoutingInformationBase.RIB_ISIS));
       _system = new JuniperSystem();
    }
 
@@ -154,7 +156,8 @@ public class RoutingInstance implements Serializable {
       _as = as;
    }
 
-   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {
+   public void setForwardingTableExportPolicy(
+         String forwardingTableExportPolicy) {
       _forwardingTableExportPolicy = forwardingTableExportPolicy;
    }
 

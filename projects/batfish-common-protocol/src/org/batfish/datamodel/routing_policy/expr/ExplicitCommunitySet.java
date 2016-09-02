@@ -17,7 +17,7 @@ public class ExplicitCommunitySet implements CommunitySetExpr {
 
    @JsonCreator
    public ExplicitCommunitySet() {
-      _communities = new TreeSet<Long>();
+      _communities = new TreeSet<>();
    }
 
    public ExplicitCommunitySet(Set<Long> communities) {

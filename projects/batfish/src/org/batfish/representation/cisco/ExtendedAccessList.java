@@ -17,7 +17,7 @@ public class ExtendedAccessList extends ComparableStructure<String> {
 
    public ExtendedAccessList(String id) {
       super(id);
-      _lines = new ArrayList<ExtendedAccessListLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(ExtendedAccessListLine all) {

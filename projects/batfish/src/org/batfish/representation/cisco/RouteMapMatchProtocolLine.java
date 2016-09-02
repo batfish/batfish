@@ -34,8 +34,8 @@ public class RouteMapMatchProtocolLine extends RouteMapMatchLine {
       Disjunction d = new Disjunction();
       List<BooleanExpr> disjuncts = d.getDisjuncts();
       for (String protocol : _protocols) {
-         disjuncts.add(new MatchProtocol(RoutingProtocol
-               .fromProtocolName(protocol)));
+         disjuncts.add(
+               new MatchProtocol(RoutingProtocol.fromProtocolName(protocol)));
       }
       return d.simplify();
    }

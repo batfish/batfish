@@ -41,7 +41,7 @@ public class RuleExpr extends Statement implements ComplexExpr {
    }
 
    private void init() {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("rule"));
       _subExpressions.add(_subExpression);
       _printer = new CollapsedComplexExprPrinter(this);

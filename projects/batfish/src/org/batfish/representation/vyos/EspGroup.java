@@ -25,7 +25,7 @@ public class EspGroup extends ComparableStructure<String> {
 
    public EspGroup(String name) {
       super(name);
-      _proposals = new TreeMap<Integer, EspProposal>();
+      _proposals = new TreeMap<>();
    }
 
    public boolean getCompression() {

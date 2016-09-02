@@ -47,16 +47,15 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public BgpProcess(int procnum) {
       super(procnum);
-      _allPeerGroups = new HashSet<BgpPeerGroup>();
+      _allPeerGroups = new HashSet<>();
       _defaultIpv4Activate = true;
-      _dynamicPeerGroups = new HashMap<Prefix, DynamicBgpPeerGroup>();
-      _namedPeerGroups = new HashMap<String, NamedBgpPeerGroup>();
-      _ipPeerGroups = new HashMap<Ip, IpBgpPeerGroup>();
-      _networks = new LinkedHashSet<Prefix>();
-      _aggregateNetworks = new HashMap<Prefix, BgpAggregateNetwork>();
-      _peerSessions = new HashMap<String, NamedBgpPeerGroup>();
-      _redistributionPolicies = new EnumMap<RoutingProtocol, BgpRedistributionPolicy>(
-            RoutingProtocol.class);
+      _dynamicPeerGroups = new HashMap<>();
+      _namedPeerGroups = new HashMap<>();
+      _ipPeerGroups = new HashMap<>();
+      _networks = new LinkedHashSet<>();
+      _aggregateNetworks = new HashMap<>();
+      _peerSessions = new HashMap<>();
+      _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
       _masterBgpPeerGroup = new MasterBgpPeerGroup();
       _masterBgpPeerGroup.setDefaultMetric(DEFAULT_BGP_DEFAULT_METRIC);
    }
@@ -96,8 +95,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
          ipPeerGroup.setGroupName(namedPeerGroupName);
       }
       else {
-         throw new BatfishException("Peer group: \"" + namedPeerGroupName
-               + "\" does not exist!");
+         throw new BatfishException(
+               "Peer group: \"" + namedPeerGroupName + "\" does not exist!");
       }
    }
 

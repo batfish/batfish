@@ -19,9 +19,9 @@ public class PairwiseVpnConnectivityAnswerElement implements AnswerElement {
    private SortedMap<String, SortedSet<String>> _missingNeighbors;
 
    public PairwiseVpnConnectivityAnswerElement() {
-      _connectedNeighbors = new TreeMap<String, SortedSet<String>>();
-      _ipsecVpnNodes = new TreeSet<String>();
-      _missingNeighbors = new TreeMap<String, SortedSet<String>>();
+      _connectedNeighbors = new TreeMap<>();
+      _ipsecVpnNodes = new TreeSet<>();
+      _missingNeighbors = new TreeMap<>();
    }
 
    public SortedMap<String, SortedSet<String>> getConnectedNeighbors() {

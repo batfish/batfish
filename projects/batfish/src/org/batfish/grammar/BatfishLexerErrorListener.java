@@ -41,11 +41,11 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       String text = _combinedParser.getInput();
       String[] lines = text.split("\n", -1);
       int errorLineIndex = line - 1;
-      int errorContextStartLine = Math.max(
-            errorLineIndex - _settings.getMaxParserContextLines(), 0);
-      int errorContextEndLine = Math
-            .min(errorLineIndex + _settings.getMaxParserContextLines(),
-                  lines.length);
+      int errorContextStartLine = Math
+            .max(errorLineIndex - _settings.getMaxParserContextLines(), 0);
+      int errorContextEndLine = Math.min(
+            errorLineIndex + _settings.getMaxParserContextLines(),
+            lines.length);
       sb.append("Error context lines:\n");
       for (int i = errorContextStartLine; i < errorLineIndex; i++) {
          sb.append(String.format("%-11s%s\n", "   " + (i + 1) + ":", lines[i]));

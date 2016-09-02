@@ -23,7 +23,7 @@ public class DependentRoute implements Comparable<DependentRoute> {
       _node = node;
       _prefix = prefix;
       _protocol = protocol;
-      _dependencies = new HashSet<DependentRoute>();
+      _dependencies = new HashSet<>();
    }
 
    @Override
@@ -52,7 +52,7 @@ public class DependentRoute implements Comparable<DependentRoute> {
    }
 
    public Set<DependentRoute> getDependentClosure() {
-      Set<DependentRoute> closure = new LinkedHashSet<DependentRoute>();
+      Set<DependentRoute> closure = new LinkedHashSet<>();
       for (DependentRoute dependency : _dependencies) {
          Set<DependentRoute> reflexiveClosure = dependency
                .getReflexiveClosure();
@@ -78,15 +78,16 @@ public class DependentRoute implements Comparable<DependentRoute> {
    }
 
    public Set<ProtocolDependency> getProtocolDependencies() {
-      Set<ProtocolDependency> protocolDependencies = new LinkedHashSet<ProtocolDependency>();
+      Set<ProtocolDependency> protocolDependencies = new LinkedHashSet<>();
       for (DependentRoute dependency : _dependencies) {
          Set<ProtocolDependency> recursiveDependencies = dependency
                .getProtocolDependencies();
          for (ProtocolDependency recursiveDependency : recursiveDependencies) {
             RoutingProtocol protocol = recursiveDependency.getProtocol();
-            int indirectionLevel = recursiveDependency.getIndirectionLevel() + 1;
-            protocolDependencies.add(new ProtocolDependency(protocol,
-                  indirectionLevel));
+            int indirectionLevel = recursiveDependency.getIndirectionLevel()
+                  + 1;
+            protocolDependencies
+                  .add(new ProtocolDependency(protocol, indirectionLevel));
          }
       }
       protocolDependencies.add(new ProtocolDependency(_protocol, 0));
@@ -94,7 +95,7 @@ public class DependentRoute implements Comparable<DependentRoute> {
    }
 
    private Set<DependentRoute> getReflexiveClosure() {
-      Set<DependentRoute> closure = new LinkedHashSet<DependentRoute>();
+      Set<DependentRoute> closure = new LinkedHashSet<>();
       for (DependentRoute dependency : _dependencies) {
          Set<DependentRoute> reflexiveClosure = dependency
                .getReflexiveClosure();

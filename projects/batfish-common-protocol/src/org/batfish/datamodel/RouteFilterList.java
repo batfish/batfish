@@ -19,7 +19,7 @@ public class RouteFilterList extends ComparableStructure<String> {
    @JsonCreator
    public RouteFilterList(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _lines = new ArrayList<RouteFilterLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(RouteFilterLine r) {

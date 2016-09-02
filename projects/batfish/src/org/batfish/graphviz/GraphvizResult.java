@@ -9,8 +9,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.GraphvizAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public final class GraphvizResult extends
-      BatfishJobResult<Map<Path, byte[]>, GraphvizAnswerElement> {
+public final class GraphvizResult
+      extends BatfishJobResult<Map<Path, byte[]>, GraphvizAnswerElement> {
 
    private final byte[] _graphBytes;
 

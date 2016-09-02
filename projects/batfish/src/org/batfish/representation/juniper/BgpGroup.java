@@ -51,8 +51,8 @@ public class BgpGroup implements Serializable {
    private BgpGroupType _type;
 
    public BgpGroup() {
-      _exportPolicies = new ArrayList<String>();
-      _importPolicies = new ArrayList<String>();
+      _exportPolicies = new ArrayList<>();
+      _importPolicies = new ArrayList<>();
    }
 
    public final void cascadeInheritance() {

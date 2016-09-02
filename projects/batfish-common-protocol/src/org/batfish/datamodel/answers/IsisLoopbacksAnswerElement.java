@@ -29,21 +29,21 @@ public class IsisLoopbacksAnswerElement implements AnswerElement {
    private SortedMap<String, SortedSet<String>> _running;
 
    public IsisLoopbacksAnswerElement() {
-      _inactive = new TreeMap<String, SortedSet<String>>();
-      _l1 = new TreeMap<String, SortedSet<String>>();
-      _l1Active = new TreeMap<String, SortedSet<String>>();
-      _l1Passive = new TreeMap<String, SortedSet<String>>();
-      _l2 = new TreeMap<String, SortedSet<String>>();
-      _l2Active = new TreeMap<String, SortedSet<String>>();
-      _l2Passive = new TreeMap<String, SortedSet<String>>();
-      _running = new TreeMap<String, SortedSet<String>>();
+      _inactive = new TreeMap<>();
+      _l1 = new TreeMap<>();
+      _l1Active = new TreeMap<>();
+      _l1Passive = new TreeMap<>();
+      _l2 = new TreeMap<>();
+      _l2Active = new TreeMap<>();
+      _l2Passive = new TreeMap<>();
+      _running = new TreeMap<>();
    }
 
    public void add(SortedMap<String, SortedSet<String>> map, String hostname,
          String interfaceName) {
       SortedSet<String> interfacesByHostname = map.get(hostname);
       if (interfacesByHostname == null) {
-         interfacesByHostname = new TreeSet<String>();
+         interfacesByHostname = new TreeSet<>();
          map.put(hostname, interfacesByHostname);
       }
       interfacesByHostname.add(interfaceName);

@@ -13,9 +13,9 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonInclude(Include.NON_NULL)
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
-public abstract class ComparableStructure<Key extends Comparable<Key>> extends
-      ReferenceCountedStructure implements
-      Comparable<ComparableStructure<Key>>, Serializable {
+public abstract class ComparableStructure<Key extends Comparable<Key>>
+      extends ReferenceCountedStructure
+      implements Comparable<ComparableStructure<Key>>, Serializable {
 
    private static final long serialVersionUID = 1L;
    protected static final String NAME_VAR = "name";

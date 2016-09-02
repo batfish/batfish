@@ -17,7 +17,7 @@ public enum OriginType {
    private final static Map<String, OriginType> _map = buildMap();
 
    private static Map<String, OriginType> buildMap() {
-      Map<String, OriginType> map = new HashMap<String, OriginType>();
+      Map<String, OriginType> map = new HashMap<>();
       for (OriginType value : OriginType.values()) {
          String name = value._name;
          map.put(name, value);

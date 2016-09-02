@@ -57,15 +57,11 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
          Map<String, Configuration> configurations, Pattern nodeRegex,
          boolean ebgp, boolean ibgp, PrefixSpace prefixSpace, boolean received,
          boolean sent) {
-      _allRequestedAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
-            : null;
-      _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
-            : null;
-      _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
-            : null;
-      _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<String, SortedSet<BgpAdvertisement>>()
-            : null;
+      _allRequestedAdvertisements = new TreeSet<>();
+      _receivedEbgpAdvertisements = (received && ebgp) ? new TreeMap<>() : null;
+      _sentEbgpAdvertisements = (sent && ebgp) ? new TreeMap<>() : null;
+      _receivedIbgpAdvertisements = (received && ibgp) ? new TreeMap<>() : null;
+      _sentIbgpAdvertisements = (sent && ibgp) ? new TreeMap<>() : null;
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          Matcher nodeMatcher = nodeRegex.matcher(hostname);
@@ -107,7 +103,7 @@ public class BgpAdvertisementsAnswerElement implements AnswerElement {
    private void fill(Map<String, SortedSet<BgpAdvertisement>> map,
          String hostname, Set<BgpAdvertisement> advertisements,
          PrefixSpace prefixSpace) {
-      SortedSet<BgpAdvertisement> placedAdvertisements = new TreeSet<BgpAdvertisement>();
+      SortedSet<BgpAdvertisement> placedAdvertisements = new TreeSet<>();
       map.put(hostname, placedAdvertisements);
       for (BgpAdvertisement advertisement : advertisements) {
          if (prefixSpace.isEmpty()

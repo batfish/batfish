@@ -48,7 +48,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
       NodProgram program = new NodProgram(baseProgram.getContext());
 
       // create rules for injecting symbolic packets into ingress node(s)
-      List<RuleExpr> originateRules = new ArrayList<RuleExpr>();
+      List<RuleExpr> originateRules = new ArrayList<>();
       for (String ingressNode : _ingressNodes) {
          OriginateExpr originate = new OriginateExpr(ingressNode);
          RuleExpr originateRule = new RuleExpr(originate);

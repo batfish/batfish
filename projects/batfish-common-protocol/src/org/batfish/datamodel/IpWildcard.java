@@ -19,8 +19,8 @@ public class IpWildcard extends Pair<Ip, Ip> {
       if (str.contains(":")) {
          String[] parts = str.split(":");
          if (parts.length != 2) {
-            throw new BatfishException("Invalid IpWildcard string: '" + str
-                  + "'");
+            throw new BatfishException(
+                  "Invalid IpWildcard string: '" + str + "'");
          }
          else {
             return new Ip(parts[0]);
@@ -29,8 +29,8 @@ public class IpWildcard extends Pair<Ip, Ip> {
       else if (str.contains("/")) {
          String[] parts = str.split("/");
          if (parts.length != 2) {
-            throw new BatfishException("Invalid IpWildcard string: '" + str
-                  + "'");
+            throw new BatfishException(
+                  "Invalid IpWildcard string: '" + str + "'");
          }
          else {
             return new Ip(parts[0]);
@@ -45,8 +45,8 @@ public class IpWildcard extends Pair<Ip, Ip> {
       if (str.contains(":")) {
          String[] parts = str.split(":");
          if (parts.length != 2) {
-            throw new BatfishException("Invalid IpWildcard string: '" + str
-                  + "'");
+            throw new BatfishException(
+                  "Invalid IpWildcard string: '" + str + "'");
          }
          else {
             return new Ip(parts[1]);
@@ -55,8 +55,8 @@ public class IpWildcard extends Pair<Ip, Ip> {
       else if (str.contains("/")) {
          String[] parts = str.split("/");
          if (parts.length != 2) {
-            throw new BatfishException("Invalid IpWildcard string: '" + str
-                  + "'");
+            throw new BatfishException(
+                  "Invalid IpWildcard string: '" + str + "'");
          }
          else {
             int prefixLength = Integer.parseInt(parts[1]);
@@ -75,8 +75,8 @@ public class IpWildcard extends Pair<Ip, Ip> {
    public IpWildcard(Ip address, Ip wildcardMask) {
       super(address, wildcardMask);
       if (!wildcardMask.valid()) {
-         throw new BatfishException("Invalid wildcard: "
-               + wildcardMask.toString());
+         throw new BatfishException(
+               "Invalid wildcard: " + wildcardMask.toString());
       }
    }
 

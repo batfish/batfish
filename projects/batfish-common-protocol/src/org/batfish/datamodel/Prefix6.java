@@ -45,8 +45,8 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
          _prefixLength = Integer.parseInt(parts[1]);
       }
       catch (NumberFormatException e) {
-         throw new BatfishException("Invalid Prefix6 length: \"" + parts[1]
-               + "\"", e);
+         throw new BatfishException(
+               "Invalid Prefix6 length: \"" + parts[1] + "\"", e);
       }
    }
 

@@ -42,7 +42,7 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
          Configuration c, Warnings w) {
       // TODO: change to set in PolicyMapSetNextHopLine if possible
-      List<Ip> nextHopList = new ArrayList<Ip>();
+      List<Ip> nextHopList = new ArrayList<>();
       nextHopList.addAll(_nextHops);
       return new PolicyMapSetNextHopLine(nextHopList);
    }

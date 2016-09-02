@@ -17,7 +17,7 @@ public enum NodeType {
    private final static Map<String, NodeType> _map = buildMap();
 
    private static Map<String, NodeType> buildMap() {
-      Map<String, NodeType> map = new HashMap<String, NodeType>();
+      Map<String, NodeType> map = new HashMap<>();
       for (NodeType value : NodeType.values()) {
          String name = value._name;
          map.put(name, value);

@@ -56,7 +56,8 @@ public abstract class DataPlanePlugin extends Plugin {
    public abstract List<FlowTrace> getHistoryFlowTraces(
          TestrigSettings testrigSettings);
 
-   public abstract IbgpTopology getIbgpNeighbors(TestrigSettings testrigSettings);
+   public abstract IbgpTopology getIbgpNeighbors(
+         TestrigSettings testrigSettings);
 
    public abstract PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
          TestrigSettings testrigSettings);

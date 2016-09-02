@@ -20,8 +20,8 @@ public class Topology implements Serializable {
 
    public Topology(EdgeSet edges) {
       _edges = edges;
-      _nodeEdges = new HashMap<String, EdgeSet>();
-      _interfaceEdges = new HashMap<NodeInterfacePair, EdgeSet>();
+      _nodeEdges = new HashMap<>();
+      _interfaceEdges = new HashMap<>();
       for (Edge edge : edges) {
          String node1 = edge.getNode1();
          String node2 = edge.getNode2();

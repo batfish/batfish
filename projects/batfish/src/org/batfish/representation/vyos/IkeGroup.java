@@ -18,7 +18,7 @@ public class IkeGroup extends ComparableStructure<String> {
 
    public IkeGroup(String name) {
       super(name);
-      _proposals = new TreeMap<Integer, IkeProposal>();
+      _proposals = new TreeMap<>();
    }
 
    public int getLifetimeSeconds() {

@@ -66,25 +66,28 @@ public class IpsecTunnel implements Serializable {
    public IpsecTunnel(Element ipsecTunnel, Element vpnConnection) {
 
       // this is an optional field
-      if (vpnConnection.getElementsByTagName(
-            AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES).getLength() > 0) {
+      if (vpnConnection
+            .getElementsByTagName(
+                  AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
+            .getLength() > 0) {
          _vpnConnectionAttributes = getText(vpnConnection,
                AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES);
       }
-      Element cgwElement = (Element) ipsecTunnel.getElementsByTagName(
-            AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
+      Element cgwElement = (Element) ipsecTunnel
+            .getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY)
+            .item(0);
 
-      _cgwOutsideAddress = new Ip(getText(cgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_IP_ADDRESS));
+      _cgwOutsideAddress = new Ip(
+            getText(cgwElement, AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
-      _cgwInsideAddress = new Ip(getText(cgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_IP_ADDRESS));
+      _cgwInsideAddress = new Ip(
+            getText(cgwElement, AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
-      _cgwInsidePrefixLength = Integer.parseInt(getText(cgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_NETWORK_CIDR));
+      _cgwInsidePrefixLength = Integer.parseInt(
+            getText(cgwElement, AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_NETWORK_CIDR));
 
       // when vpnconnection attribute is 'NoBGPVPNConnection' we see no asn
       // configured
@@ -93,20 +96,20 @@ public class IpsecTunnel implements Serializable {
          _cgwBgpAsn = Integer.parseInt(getText(cgwElement,
                AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN));
       }
-      Element vgwElement = (Element) ipsecTunnel.getElementsByTagName(
-            AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
+      Element vgwElement = (Element) ipsecTunnel
+            .getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
 
-      _vgwOutsideAddress = new Ip(getText(vgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_IP_ADDRESS));
+      _vgwOutsideAddress = new Ip(
+            getText(vgwElement, AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
-      _vgwInsideAddress = new Ip(getText(vgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_IP_ADDRESS));
+      _vgwInsideAddress = new Ip(
+            getText(vgwElement, AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
-      _vgwInsidePrefixLength = Integer.parseInt(getText(vgwElement,
-            AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
-            AwsVpcEntity.XML_KEY_NETWORK_CIDR));
+      _vgwInsidePrefixLength = Integer.parseInt(
+            getText(vgwElement, AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                  AwsVpcEntity.XML_KEY_NETWORK_CIDR));
 
       // when vpnconnection attribute is 'NoBGPVPNConnection' we see no asn
       // configured
@@ -115,31 +118,32 @@ public class IpsecTunnel implements Serializable {
          _vgwBgpAsn = Integer.parseInt(getText(vgwElement,
                AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN));
       }
-      Element ikeElement = (Element) ipsecTunnel.getElementsByTagName(
-            AwsVpcEntity.XML_KEY_IKE).item(0);
+      Element ikeElement = (Element) ipsecTunnel
+            .getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
 
       _ikeAuthProtocol = getText(ikeElement,
             AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL);
       _ikeEncryptionProtocol = getText(ikeElement,
             AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL);
-      _ikeLifetime = Integer.parseInt(getText(ikeElement,
-            AwsVpcEntity.XML_KEY_LIFETIME));
+      _ikeLifetime = Integer
+            .parseInt(getText(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME));
       _ikePerfectForwardSecrecy = getText(ikeElement,
             AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
       _ikeMode = getText(ikeElement, AwsVpcEntity.XML_KEY_MODE);
-      _ikePreSharedKeyHash = CommonUtil.md5Digest(getText(ikeElement,
-            AwsVpcEntity.XML_KEY_PRE_SHARED_KEY) + JuniperUtils.SALT);
+      _ikePreSharedKeyHash = CommonUtil
+            .md5Digest(getText(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY)
+                  + JuniperUtils.SALT);
 
-      Element ipsecElement = (Element) ipsecTunnel.getElementsByTagName(
-            AwsVpcEntity.XML_KEY_IPSEC).item(0);
+      Element ipsecElement = (Element) ipsecTunnel
+            .getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
 
       _ipsecProtocol = getText(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL);
       _ipsecAuthProtocol = getText(ipsecElement,
             AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL);
       _ipsecEncryptionProtocol = getText(ipsecElement,
             AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL);
-      _ipsecLifetime = Integer.parseInt(getText(ipsecElement,
-            AwsVpcEntity.XML_KEY_LIFETIME));
+      _ipsecLifetime = Integer
+            .parseInt(getText(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME));
       _ipsecPerfectForwardSecrecy = getText(ipsecElement,
             AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
       _ipsecMode = getText(ipsecElement, AwsVpcEntity.XML_KEY_MODE);

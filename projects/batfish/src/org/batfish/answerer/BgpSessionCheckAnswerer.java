@@ -39,10 +39,9 @@ public class BgpSessionCheckAnswerer extends Answerer {
          node2Regex = Pattern.compile(question.getNode2Regex());
       }
       catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               String.format(
-                     "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                     question.getNode1Regex(), question.getNode2Regex()), e);
+         throw new BatfishException(String.format(
+               "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
+               question.getNode1Regex(), question.getNode2Regex()), e);
       }
       _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish
@@ -50,9 +49,9 @@ public class BgpSessionCheckAnswerer extends Answerer {
       _batfish.initRemoteBgpNeighbors(configurations);
 
       BgpSessionCheckAnswerElement answerElement = new BgpSessionCheckAnswerElement();
-      Set<Ip> allInterfaceIps = new HashSet<Ip>();
-      Set<Ip> loopbackIps = new HashSet<Ip>();
-      Map<Ip, Set<String>> ipOwners = new HashMap<Ip, Set<String>>();
+      Set<Ip> allInterfaceIps = new HashSet<>();
+      Set<Ip> loopbackIps = new HashSet<>();
+      Map<Ip, Set<String>> ipOwners = new HashMap<>();
       for (Configuration c : configurations.values()) {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getPrefix() != null) {
@@ -64,7 +63,7 @@ public class BgpSessionCheckAnswerer extends Answerer {
                   allInterfaceIps.add(address);
                   Set<String> currentIpOwners = ipOwners.get(address);
                   if (currentIpOwners == null) {
-                     currentIpOwners = new HashSet<String>();
+                     currentIpOwners = new HashSet<>();
                      ipOwners.put(address, currentIpOwners);
                   }
                   currentIpOwners.add(c.getHostname());
@@ -83,9 +82,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                      bgpNeighbor);
                answerElement.add(answerElement.getAllBgpNeighbors(), c,
                      bgpNeighborSummary);
-               boolean foreign = bgpNeighbor.getGroup() != null
-                     && question.getForeignBgpGroups().contains(
-                           bgpNeighbor.getGroup());
+               boolean foreign = bgpNeighbor.getGroup() != null && question
+                     .getForeignBgpGroups().contains(bgpNeighbor.getGroup());
                boolean ebgp = bgpNeighbor.getRemoteAs() != bgpNeighbor
                      .getLocalAs();
                boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
@@ -96,9 +94,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                }
                if (ebgp) {
                   if (!ebgpMultihop && loopbackIps.contains(localIp)) {
-                     answerElement.add(
-                           answerElement.getEbgpLocalIpOnLoopback(), c,
-                           bgpNeighborSummary);
+                     answerElement.add(answerElement.getEbgpLocalIpOnLoopback(),
+                           c, bgpNeighborSummary);
                   }
                   if (localIp == null) {
                      answerElement.add(answerElement.getBroken(), c,
@@ -107,8 +104,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                            bgpNeighborSummary);
                      answerElement.add(answerElement.getEbgpBroken(), c,
                            bgpNeighborSummary);
-                     answerElement.add(answerElement.getEbgpMissingLocalIp(),
-                           c, bgpNeighborSummary);
+                     answerElement.add(answerElement.getEbgpMissingLocalIp(), c,
+                           bgpNeighborSummary);
                   }
                }
                else {
@@ -125,8 +122,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                            bgpNeighborSummary);
                      answerElement.add(answerElement.getIbgpBroken(), c,
                            bgpNeighborSummary);
-                     answerElement.add(answerElement.getIbgpMissingLocalIp(),
-                           c, bgpNeighborSummary);
+                     answerElement.add(answerElement.getIbgpMissingLocalIp(), c,
+                           bgpNeighborSummary);
                   }
                }
                if (foreign) {
@@ -136,22 +133,22 @@ public class BgpSessionCheckAnswerer extends Answerer {
                else {
                   // not foreign
                   if (ebgp) {
-                     if (localIp != null && !allInterfaceIps.contains(localIp)) {
+                     if (localIp != null
+                           && !allInterfaceIps.contains(localIp)) {
                         answerElement.add(answerElement.getBroken(), c,
                               bgpNeighborSummary);
                         answerElement.add(answerElement.getLocalIpUnknown(), c,
                               bgpNeighborSummary);
                         answerElement.add(answerElement.getEbgpBroken(), c,
                               bgpNeighborSummary);
-                        answerElement.add(
-                              answerElement.getEbgpLocalIpUnknown(), c,
-                              bgpNeighborSummary);
+                        answerElement.add(answerElement.getEbgpLocalIpUnknown(),
+                              c, bgpNeighborSummary);
                      }
                      if (!allInterfaceIps.contains(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
                               bgpNeighborSummary);
-                        answerElement.add(answerElement.getRemoteIpUnknown(),
-                              c, bgpNeighborSummary);
+                        answerElement.add(answerElement.getRemoteIpUnknown(), c,
+                              bgpNeighborSummary);
                         answerElement.add(answerElement.getEbgpBroken(), c,
                               bgpNeighborSummary);
                         answerElement.add(
@@ -159,8 +156,7 @@ public class BgpSessionCheckAnswerer extends Answerer {
                               bgpNeighborSummary);
                      }
                      else {
-                        if (!ebgpMultihop
-                              && loopbackIps.contains(remoteIp)
+                        if (!ebgpMultihop && loopbackIps.contains(remoteIp)
                               && node2RegexMatchesIp(remoteIp, ipOwners,
                                     node2Regex)) {
                            answerElement.add(
@@ -169,8 +165,7 @@ public class BgpSessionCheckAnswerer extends Answerer {
                         }
                      }
                      // check half open
-                     if (localIp != null
-                           && allInterfaceIps.contains(remoteIp)
+                     if (localIp != null && allInterfaceIps.contains(remoteIp)
                            && node2RegexMatchesIp(remoteIp, ipOwners,
                                  node2Regex)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
@@ -180,8 +175,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                                  bgpNeighborSummary);
                            answerElement.add(answerElement.getEbgpBroken(), c,
                                  bgpNeighborSummary);
-                           answerElement.add(answerElement.getEbgpHalfOpen(),
-                                 c, bgpNeighborSummary);
+                           answerElement.add(answerElement.getEbgpHalfOpen(), c,
+                                 bgpNeighborSummary);
                         }
                         else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
                               .size() != 1) {
@@ -196,14 +191,14 @@ public class BgpSessionCheckAnswerer extends Answerer {
                   }
                   else {
                      // ibgp
-                     if (localIp != null && !allInterfaceIps.contains(localIp)) {
+                     if (localIp != null
+                           && !allInterfaceIps.contains(localIp)) {
                         answerElement.add(answerElement.getBroken(), c,
                               bgpNeighborSummary);
                         answerElement.add(answerElement.getIbgpBroken(), c,
                               bgpNeighborSummary);
-                        answerElement.add(
-                              answerElement.getIbgpLocalIpUnknown(), c,
-                              bgpNeighborSummary);
+                        answerElement.add(answerElement.getIbgpLocalIpUnknown(),
+                              c, bgpNeighborSummary);
                      }
                      if (!allInterfaceIps.contains(remoteIp)) {
                         answerElement.add(answerElement.getBroken(), c,
@@ -223,8 +218,7 @@ public class BgpSessionCheckAnswerer extends Answerer {
                                  c, bgpNeighborSummary);
                         }
                      }
-                     if (localIp != null
-                           && allInterfaceIps.contains(remoteIp)
+                     if (localIp != null && allInterfaceIps.contains(remoteIp)
                            && node2RegexMatchesIp(remoteIp, ipOwners,
                                  node2Regex)) {
                         if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
@@ -234,8 +228,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
                                  bgpNeighborSummary);
                            answerElement.add(answerElement.getIbgpBroken(), c,
                                  bgpNeighborSummary);
-                           answerElement.add(answerElement.getIbgpHalfOpen(),
-                                 c, bgpNeighborSummary);
+                           answerElement.add(answerElement.getIbgpHalfOpen(), c,
+                                 bgpNeighborSummary);
                         }
                         else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
                               .size() != 1) {
@@ -259,8 +253,8 @@ public class BgpSessionCheckAnswerer extends Answerer {
          Pattern node2Regex) {
       Set<String> owners = ipOwners.get(ip);
       if (owners == null) {
-         throw new BatfishException("Expected at least one owner of ip: "
-               + ip.toString());
+         throw new BatfishException(
+               "Expected at least one owner of ip: " + ip.toString());
       }
       for (String owner : owners) {
          if (node2Regex.matcher(owner).matches()) {

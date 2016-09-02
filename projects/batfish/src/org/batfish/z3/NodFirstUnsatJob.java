@@ -12,8 +12,8 @@ import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 
-public class NodFirstUnsatJob<Key, Result> extends
-      BatfishJob<NodFirstUnsatResult<Key, Result>> {
+public class NodFirstUnsatJob<Key, Result>
+      extends BatfishJob<NodFirstUnsatResult<Key, Result>> {
 
    private final FirstUnsatQuerySynthesizer<Key, Result> _query;
 
@@ -48,7 +48,8 @@ public class NodFirstUnsatJob<Key, Result> extends
             fix.addRule(rule, null);
          }
          Key key = _query.getKey();
-         for (int queryNum = 0; queryNum < program.getQueries().size(); queryNum++) {
+         for (int queryNum = 0; queryNum < program.getQueries()
+               .size(); queryNum++) {
             BoolExpr query = program.getQueries().get(queryNum);
             Status status = fix.query(query);
             elapsedTime = System.currentTimeMillis() - startTime;
@@ -56,27 +57,27 @@ public class NodFirstUnsatJob<Key, Result> extends
             case SATISFIABLE:
                break;
             case UNKNOWN:
-               return new NodFirstUnsatResult<Key, Result>(elapsedTime,
-                     _logger.getHistory(), new BatfishException(
-                           "Query satisfiability unknown"));
+               return new NodFirstUnsatResult<>(elapsedTime,
+                     _logger.getHistory(),
+                     new BatfishException("Query satisfiability unknown"));
             case UNSATISFIABLE:
-               return new NodFirstUnsatResult<Key, Result>(key, queryNum,
+               return new NodFirstUnsatResult<>(key, queryNum,
                      _query.getResultsByQueryIndex().get(queryNum),
                      _logger.getHistory(), elapsedTime);
             default:
-               return new NodFirstUnsatResult<Key, Result>(elapsedTime,
-                     _logger.getHistory(), new BatfishException(
-                           "invalid status"));
+               return new NodFirstUnsatResult<>(elapsedTime,
+                     _logger.getHistory(),
+                     new BatfishException("invalid status"));
             }
          }
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodFirstUnsatResult<Key, Result>(key, null, null,
-               _logger.getHistory(), elapsedTime);
+         return new NodFirstUnsatResult<>(key, null, null, _logger.getHistory(),
+               elapsedTime);
       }
       catch (Z3Exception e) {
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodFirstUnsatResult<Key, Result>(elapsedTime,
-               _logger.getHistory(), new BatfishException(
+         return new NodFirstUnsatResult<>(elapsedTime, _logger.getHistory(),
+               new BatfishException(
                      "Error running NoD on concatenated data plane", e));
       }
    }

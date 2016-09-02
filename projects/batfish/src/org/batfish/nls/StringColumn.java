@@ -19,7 +19,8 @@ public final class StringColumn extends BaseColumn<String> {
    }
 
    @Override
-   public Object getItem(int i, EntityTable entityTable, LBValueType valueType) {
+   public Object getItem(int i, EntityTable entityTable,
+         LBValueType valueType) {
       String s = _items.get(i);
       switch (valueType) {
 

@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
-   public static final class BgpNeighborSummary extends
-         ComparableStructure<String> {
+   public static final class BgpNeighborSummary
+         extends ComparableStructure<String> {
 
       private static final String DESCRIPTION_VAR = "description";
 
@@ -53,8 +53,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       private final Prefix _remotePrefix;
 
       public BgpNeighborSummary(BgpNeighbor bgpNeighbor) {
-         super(bgpNeighbor.getOwner().getName()
-               + ":"
+         super(bgpNeighbor.getOwner().getName() + ":"
                + (bgpNeighbor.getDynamic() ? bgpNeighbor.getPrefix().toString()
                      : bgpNeighbor.getAddress().toString()));
          _description = bgpNeighbor._description;
@@ -289,10 +288,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     */
    public BgpNeighbor(Prefix prefix, Configuration owner) {
       this(prefix);
-      _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
-      _inboundPolicyMaps = new LinkedHashSet<PolicyMap>();
-      _originationPolicies = new LinkedHashSet<PolicyMap>();
-      _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
+      _outboundPolicyMaps = new LinkedHashSet<>();
+      _inboundPolicyMaps = new LinkedHashSet<>();
+      _originationPolicies = new LinkedHashSet<>();
+      _generatedRoutes = new LinkedHashSet<>();
       _owner = owner;
    }
 
@@ -463,7 +462,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    }
 
    public void initCandidateRemoteBgpNeighbors() {
-      _candidateRemoteBgpNeighbors = new LinkedHashSet<BgpNeighbor>();
+      _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
    }
 
    @JsonProperty(ADDRESS_VAR)

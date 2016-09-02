@@ -16,7 +16,7 @@ public class RouteMap extends ComparableStructure<String> {
 
    public RouteMap(String name) {
       super(name);
-      _rules = new TreeMap<Integer, RouteMapRule>();
+      _rules = new TreeMap<>();
    }
 
    public Map<Integer, RouteMapRule> getRules() {

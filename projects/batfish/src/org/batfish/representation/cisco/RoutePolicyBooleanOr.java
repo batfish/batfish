@@ -13,7 +13,8 @@ public class RoutePolicyBooleanOr extends RoutePolicyBoolean {
    private RoutePolicyBoolean _left;
    private RoutePolicyBoolean _right;
 
-   public RoutePolicyBooleanOr(RoutePolicyBoolean left, RoutePolicyBoolean right) {
+   public RoutePolicyBooleanOr(RoutePolicyBoolean left,
+         RoutePolicyBoolean right) {
       _left = left;
       _right = right;
    }

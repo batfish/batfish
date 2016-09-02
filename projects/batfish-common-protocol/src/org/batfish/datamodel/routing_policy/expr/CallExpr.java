@@ -29,8 +29,8 @@ public class CallExpr extends AbstractBooleanExpr {
 
    @Override
    public Result evaluate(Environment environment, Route route) {
-      RoutingPolicy policy = environment.getConfiguration()
-            .getRoutingPolicies().get(_calledPolicyName);
+      RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
+            .get(_calledPolicyName);
       Result result;
       if (policy == null) {
          result = new Result();

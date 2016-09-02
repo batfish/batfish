@@ -10,7 +10,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OspfArea extends ComparableStructure<Long> implements Serializable {
+public class OspfArea extends ComparableStructure<Long>
+      implements Serializable {
 
    private static final String INTERFACES_VAR = "interfaces";
 
@@ -21,7 +22,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
    @JsonCreator
    public OspfArea(@JsonProperty(NAME_VAR) Long number) {
       super(number);
-      _interfaces = new TreeSet<Interface>();
+      _interfaces = new TreeSet<>();
    }
 
    @JsonIdentityReference(alwaysAsId = true)

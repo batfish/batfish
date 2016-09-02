@@ -17,7 +17,7 @@ public class LetExpr extends BooleanExpr implements ComplexExpr {
    public LetExpr(List<MacroDefExpr> macroDefs, BooleanExpr b) {
       _macroDefs = macroDefs;
       _expression = b;
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _printer = new ExpandedComplexExprPrinter(this);
       refreshSubexpressions();
    }

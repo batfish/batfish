@@ -37,8 +37,8 @@ public class Instance implements AwsVpcEntity, Serializable {
    private final String _vpcId;
 
    public Instance(JSONObject jObj, BatfishLogger logger) throws JSONException {
-      _securityGroups = new LinkedList<String>();
-      _networkInterfaces = new LinkedList<String>();
+      _securityGroups = new LinkedList<>();
+      _networkInterfaces = new LinkedList<>();
       _instanceId = jObj.getString(JSON_KEY_INSTANCE_ID);
 
       boolean hasVpcId = jObj.has(JSON_KEY_VPC_ID);
@@ -94,8 +94,8 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       for (int index = 0; index < routes.length(); index++) {
          JSONObject childObject = routes.getJSONObject(index);
-         _networkInterfaces.add(childObject
-               .getString(JSON_KEY_NETWORK_INTERFACE_ID));
+         _networkInterfaces
+               .add(childObject.getString(JSON_KEY_NETWORK_INTERFACE_ID));
       }
    }
 
@@ -113,8 +113,8 @@ public class Instance implements AwsVpcEntity, Serializable {
       String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
       Configuration cfgNode = new Configuration(_instanceId);
 
-      List<IpAccessListLine> inboundRules = new LinkedList<IpAccessListLine>();
-      List<IpAccessListLine> outboundRules = new LinkedList<IpAccessListLine>();
+      List<IpAccessListLine> inboundRules = new LinkedList<>();
+      List<IpAccessListLine> outboundRules = new LinkedList<>();
       // create ACLs from inboundRules and outboundRules
       IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
       IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
@@ -146,17 +146,17 @@ public class Instance implements AwsVpcEntity, Serializable {
 
          Interface iface = new Interface(interfaceId, cfgNode);
 
-         Set<Ip> privateIpAddresses = new TreeSet<Ip>();
-         privateIpAddresses.addAll(netInterface.getIpAddressAssociations()
-               .keySet());
-         Subnet subnet = awsVpcConfig.getSubnets().get(
-               netInterface.getSubnetId());
+         Set<Ip> privateIpAddresses = new TreeSet<>();
+         privateIpAddresses
+               .addAll(netInterface.getIpAddressAssociations().keySet());
+         Subnet subnet = awsVpcConfig.getSubnets()
+               .get(netInterface.getSubnetId());
          Prefix ifaceSubnet = subnet.getCidrBlock();
          for (Ip ip : privateIpAddresses) {
             if (!ifaceSubnet.contains(ip)) {
-               throw new BatfishException("Instance subnet: "
-                     + ifaceSubnet.toString()
-                     + " does not contain private ip: " + ip.toString());
+               throw new BatfishException(
+                     "Instance subnet: " + ifaceSubnet.toString()
+                           + " does not contain private ip: " + ip.toString());
             }
             if (ip.equals(ifaceSubnet.getEndAddress())) {
                throw new BatfishException("Expected end address: "

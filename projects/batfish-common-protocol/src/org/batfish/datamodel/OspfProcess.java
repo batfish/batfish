@@ -28,12 +28,12 @@ public class OspfProcess implements Serializable {
    private String _exportPolicy;
 
    public OspfProcess() {
-      _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
-      _outboundPolicyMaps = new LinkedHashSet<PolicyMap>();
-      _policyMetricTypes = new LinkedHashMap<String, OspfMetricType>();
+      _generatedRoutes = new LinkedHashSet<>();
+      _outboundPolicyMaps = new LinkedHashSet<>();
+      _policyMetricTypes = new LinkedHashMap<>();
       _referenceBandwidth = null;
       _routerId = null;
-      _areas = new HashMap<Long, OspfArea>();
+      _areas = new HashMap<>();
    }
 
    public Map<Long, OspfArea> getAreas() {

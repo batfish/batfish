@@ -30,23 +30,25 @@ public class WorkQueueMgr {
    public WorkQueueMgr() {
       if (Main.getSettings().getQueueType() == WorkQueue.Type.azure) {
          String storageConnectionString = String.format(
-               "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s", Main
-                     .getSettings().getStorageProtocol(), Main.getSettings()
-                     .getStorageAccountName(), Main.getSettings()
-                     .getStorageAccountKey());
+               "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
+               Main.getSettings().getStorageProtocol(),
+               Main.getSettings().getStorageAccountName(),
+               Main.getSettings().getStorageAccountKey());
 
-         _queueCompletedWork = new AzureQueue(Main.getSettings()
-               .getQueueCompletedWork(), storageConnectionString);
-         _queueIncompleteWork = new AzureQueue(Main.getSettings()
-               .getQueueIncompleteWork(), storageConnectionString);
+         _queueCompletedWork = new AzureQueue(
+               Main.getSettings().getQueueCompletedWork(),
+               storageConnectionString);
+         _queueIncompleteWork = new AzureQueue(
+               Main.getSettings().getQueueIncompleteWork(),
+               storageConnectionString);
       }
       else if (Main.getSettings().getQueueType() == WorkQueue.Type.memory) {
          _queueCompletedWork = new MemoryQueue();
          _queueIncompleteWork = new MemoryQueue();
       }
       else {
-         _logger.fatal("unsupported queue type: "
-               + Main.getSettings().getQueueType());
+         _logger.fatal(
+               "unsupported queue type: " + Main.getSettings().getQueueType());
          System.exit(1);
       }
    }
@@ -172,7 +174,8 @@ public class WorkQueueMgr {
             _logger.error("Could not put work on completed queue. Work = "
                   + work + "\nException = " + stackTrace);
          }
-         work.setStatus((status == TaskStatus.TerminatedNormally) ? WorkStatusCode.TERMINATEDNORMALLY
+         work.setStatus((status == TaskStatus.TerminatedNormally)
+               ? WorkStatusCode.TERMINATEDNORMALLY
                : WorkStatusCode.TERMINATEDABNORMALLY);
          work.recordTaskStatusCheckResult(status);
          break;
@@ -182,7 +185,8 @@ public class WorkQueueMgr {
          work.clearAssignment();
          break;
       case UnreachableOrBadResponse:
-         if (work.getLastTaskCheckedStatus() == TaskStatus.UnreachableOrBadResponse) {
+         if (work
+               .getLastTaskCheckedStatus() == TaskStatus.UnreachableOrBadResponse) {
             // if we saw the same thing last time around, free the task to be
             // scheduled elsewhere
             work.setStatus(WorkStatusCode.UNASSIGNED);

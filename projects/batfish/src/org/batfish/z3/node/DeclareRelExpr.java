@@ -17,7 +17,7 @@ public class DeclareRelExpr extends Statement implements ComplexExpr {
    public DeclareRelExpr(String name, List<Integer> sizes) {
       _name = name;
       _sizes = sizes;
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("declare-rel"));
       _subExpressions.add(new IdExpr(name));
       ListExpr listExpression = new CollapsedListExpr();
@@ -34,7 +34,7 @@ public class DeclareRelExpr extends Statement implements ComplexExpr {
    }
 
    public FuncDecl toFuncDecl(Context ctx) throws Z3Exception {
-      List<BitVecSort> argTypes = new ArrayList<BitVecSort>();
+      List<BitVecSort> argTypes = new ArrayList<>();
       for (int size : _sizes) {
          argTypes.add(ctx.mkBitVecSort(size));
       }

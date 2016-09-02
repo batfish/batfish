@@ -61,7 +61,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       _text = fileText;
       _parser = iptablesParser;
       _w = warnings;
-      _unimplementedFeatures = new TreeSet<String>();
+      _unimplementedFeatures = new TreeSet<>();
       _fileName = fileName;
    }
 
@@ -125,8 +125,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       }
       else if (tailCtx.command_policy() != null) {
          String chain = tailCtx.command_policy().chain().getText();
-         ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy()
-               .built_in_target());
+         ChainPolicy policy = getBuiltInTarget(
+               tailCtx.command_policy().built_in_target());
          _configuration.setChainPolicy(table, chain, policy);
       }
       else if (tailCtx.command_rename_chain() != null) {
@@ -144,7 +144,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
    }
 
    @Override
-   public void exitDeclaration_chain_policy(Declaration_chain_policyContext ctx) {
+   public void exitDeclaration_chain_policy(
+         Declaration_chain_policyContext ctx) {
       String chain = ctx.chain().getText();
       ChainPolicy policy = getBuiltInTarget(ctx.built_in_target());
       _configuration.setChainPolicy(_tableCurrent, chain, policy);
@@ -195,7 +196,8 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
                   getEndpoint(mCtx.endpoint()));
          }
          else if (mCtx.OPTION_SOURCE_PORT() != null) {
-            rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
+            rule.addMatch(inverted, MatchType.SOURCE_PORT,
+                  toInteger(mCtx.port));
          }
          else {
             todo(mCtx, "Unknown match option");
@@ -204,17 +206,18 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
       if (ctx.action().OPTION_JUMP() != null) {
          if (ctx.action().built_in_target() != null) {
-            ChainPolicy policy = getBuiltInTarget(ctx.action()
-                  .built_in_target());
+            ChainPolicy policy = getBuiltInTarget(
+                  ctx.action().built_in_target());
             rule.setAction(policy);
          }
          else if (ctx.action().chain() != null) {
-            rule.setAction(IptablesActionType.CHAIN, ctx.action().chain()
-                  .getText());
+            rule.setAction(IptablesActionType.CHAIN,
+                  ctx.action().chain().getText());
          }
       }
       else if (ctx.action().OPTION_GOTO() != null) {
-         rule.setAction(IptablesActionType.GOTO, ctx.action().chain().getText());
+         rule.setAction(IptablesActionType.GOTO,
+               ctx.action().chain().getText());
       }
       else {
          todo(ctx, "Unknown rule action");

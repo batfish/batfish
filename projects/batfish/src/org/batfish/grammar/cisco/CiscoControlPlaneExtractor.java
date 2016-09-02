@@ -210,12 +210,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             return canonicalPrefix;
          }
       }
-      throw new BatfishException("Invalid interface name prefix: '" + prefix
-            + "'");
+      throw new BatfishException(
+            "Invalid interface name prefix: '" + prefix + "'");
    }
 
    private static Map<String, String> getCiscoInterfacePrefixes() {
-      Map<String, String> prefixes = new LinkedHashMap<String, String>();
+      Map<String, String> prefixes = new LinkedHashMap<>();
       prefixes.put("Async", "Async");
       prefixes.put("ATM", "ATM");
       prefixes.put("Bundle-Ether", "Bundle-Ether");
@@ -486,8 +486,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return NamedPort.XDMCP;
       }
       else {
-         throw new BatfishException("missing port-number mapping for port: '"
-               + ctx.getText() + "'");
+         throw new BatfishException(
+               "missing port-number mapping for port: '" + ctx.getText() + "'");
       }
    }
 
@@ -502,7 +502,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private static List<SubRange> getPortRanges(Port_specifierContext ps) {
-      List<SubRange> ranges = new ArrayList<SubRange>();
+      List<SubRange> ranges = new ArrayList<>();
       if (ps.EQ() != null) {
          for (PortContext pc : ps.args) {
             int port = getPortNumber(pc);
@@ -655,8 +655,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          val = DscpType.EF.number();
       }
       else {
-         throw new BatfishException("Unhandled dscp type: '" + ctx.getText()
-               + "'");
+         throw new BatfishException(
+               "Unhandled dscp type: '" + ctx.getText() + "'");
       }
       return val;
    }
@@ -670,8 +670,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private static String toInterfaceName(Interface_nameContext ctx) {
-      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha
-            .getText());
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(
+            ctx.name_prefix_alpha.getText());
       String name = canonicalNamePrefix;
       for (Token part : ctx.name_middle_parts) {
          name += part.getText();
@@ -799,7 +799,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    public static List<SubRange> toRange(RangeContext ctx) {
-      List<SubRange> range = new ArrayList<SubRange>();
+      List<SubRange> range = new ArrayList<>();
       for (SubrangeContext sc : ctx.range_list) {
          SubRange sr = toSubRange(sc);
          range.add(sr);
@@ -902,11 +902,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          boolean unrecognizedAsRedFlag) {
       _text = text;
       _parser = parser;
-      _unimplementedFeatures = new TreeSet<String>();
+      _unimplementedFeatures = new TreeSet<>();
       _w = warnings;
-      _peerGroupStack = new ArrayList<BgpPeerGroup>();
+      _peerGroupStack = new ArrayList<>();
       _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
-      _currentNexusNeighborAddressFamilies = new HashSet<String>();
+      _currentNexusNeighborAddressFamilies = new HashSet<>();
    }
 
    private void addInterface(String vrf, double bandwidth, String name) {
@@ -972,8 +972,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterDescription_if_stanza(Description_if_stanzaContext ctx) {
       Token descriptionToken = ctx.description_line().text;
-      String description = descriptionToken != null ? descriptionToken
-            .getText().trim() : "";
+      String description = descriptionToken != null
+            ? descriptionToken.getText().trim() : "";
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setDescription(description);
       }
@@ -1022,14 +1022,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterInterface_stanza(Interface_stanzaContext ctx) {
       String nameAlpha = ctx.iname.name_prefix_alpha.getText();
       String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
-      String vrf = canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX) ? CiscoConfiguration.MANAGEMENT_VRF_NAME
+      String vrf = canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX)
+            ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : CiscoConfiguration.MASTER_VRF_NAME;
       double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
       String namePrefix = canonicalNamePrefix;
       for (Token part : ctx.iname.name_middle_parts) {
          namePrefix += part.getText();
       }
-      _currentInterfaces = new ArrayList<Interface>();
+      _currentInterfaces = new ArrayList<>();
       if (ctx.iname.range() != null) {
          List<SubRange> ranges = toRange(ctx.iname.range());
          for (SubRange range : ranges) {
@@ -1088,8 +1089,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Invalid community-list name");
       }
-      _currentExpandedCommunityList = _configuration
-            .getExpandedCommunityLists().get(name);
+      _currentExpandedCommunityList = _configuration.getExpandedCommunityLists()
+            .get(name);
       if (_currentExpandedCommunityList == null) {
          _currentExpandedCommunityList = new ExpandedCommunityList(name);
          _configuration.getExpandedCommunityLists().put(name,
@@ -1110,8 +1111,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Invalid standard community-list name");
       }
-      _currentStandardCommunityList = _configuration
-            .getStandardCommunityLists().get(name);
+      _currentStandardCommunityList = _configuration.getStandardCommunityLists()
+            .get(name);
       if (_currentStandardCommunityList == null) {
          _currentStandardCommunityList = new StandardCommunityList(name);
          _configuration.getStandardCommunityLists().put(name,
@@ -1162,7 +1163,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
+   public void enterNeighbor_group_rb_stanza(
+         Neighbor_group_rb_stanzaContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       String name = ctx.name.getText();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
@@ -1238,7 +1240,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
+   public void enterNexus_neighbor_rb_stanza(
+         Nexus_neighbor_rb_stanzaContext ctx) {
       _currentNexusNeighborAddressFamilies.clear();
       _inNexusNeighbor = true;
       // do no further processing for unsupported address families / containers
@@ -1386,7 +1389,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterTemplate_peer_rb_stanza(Template_peer_rb_stanzaContext ctx) {
+   public void enterTemplate_peer_rb_stanza(
+         Template_peer_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
@@ -1431,7 +1435,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
+   public void exitAddress_family_rb_stanza(
+         Address_family_rb_stanzaContext ctx) {
       popPeer();
    }
 
@@ -1493,8 +1498,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
       OspfProcess proc = _currentOspfProcess;
-      int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(
-            ctx.area_ip).asLong();
+      int area = (ctx.area_int != null) ? toInteger(ctx.area_int)
+            : (int) toIp(ctx.area_ip).asLong();
       boolean noSummary = ctx.NO_SUMMARY() != null;
       boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
       if (defaultOriginate) {
@@ -1642,7 +1647,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
+   public void exitDistribute_list_bgp_tail(
+         Distribute_list_bgp_tailContext ctx) {
       todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
    }
 
@@ -1690,15 +1696,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip dstWildcard = getWildcard(ctx.dstipr);
       String srcAddressGroup = getAddressGroup(ctx.srcipr);
       String dstAddressGroup = getAddressGroup(ctx.dstipr);
-      List<SubRange> srcPortRanges = ctx.alps_src != null ? getPortRanges(ctx.alps_src)
-            : Collections.<SubRange> emptyList();
-      List<SubRange> dstPortRanges = ctx.alps_dst != null ? getPortRanges(ctx.alps_dst)
-            : Collections.<SubRange> emptyList();
+      List<SubRange> srcPortRanges = ctx.alps_src != null
+            ? getPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
+      List<SubRange> dstPortRanges = ctx.alps_dst != null
+            ? getPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
-      List<TcpFlags> tcpFlags = new ArrayList<TcpFlags>();
-      Set<Integer> dscps = new TreeSet<Integer>();
-      Set<Integer> ecns = new TreeSet<Integer>();
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
       Set<State> states = EnumSet.noneOf(State.class);
       for (Extended_access_list_additional_featureContext feature : ctx.features) {
          if (feature.ACK() != null) {
@@ -1843,8 +1849,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else if (ctx.SECONDARY() != null) {
          _configuration.setFailoverSecondary(true);
-         _configuration.setHostname(_configuration.getHostname()
-               + "-FAILOVER-SECONDARY");
+         _configuration.setHostname(
+               _configuration.getHostname() + "-FAILOVER-SECONDARY");
       }
       _configuration.setFailover(true);
    }
@@ -1997,7 +2003,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          break;
 
       default:
-         _w.redFlag("Do not currently support more than two AS'es in Cisco as-path regexes");
+         _w.redFlag(
+               "Do not currently support more than two AS'es in Cisco as-path regexes");
       }
       _currentAsPathAcl.addLine(line);
    }
@@ -2031,7 +2038,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_community_list_standard_tail(
          Ip_community_list_standard_tailContext ctx) {
       LineAction action = getAccessListAction(ctx.ala);
-      List<Long> communities = new ArrayList<Long>();
+      List<Long> communities = new ArrayList<>();
       for (CommunityContext communityCtx : ctx.communities) {
          long community = toLong(communityCtx);
          communities.add(community);
@@ -2184,7 +2191,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitIp_router_isis_if_stanza(Ip_router_isis_if_stanzaContext ctx) {
+   public void exitIp_router_isis_if_stanza(
+         Ip_router_isis_if_stanzaContext ctx) {
       for (Interface iface : _currentInterfaces) {
          iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
       }
@@ -2207,7 +2215,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitMatch_as_path_access_list_rm_stanza(
          Match_as_path_access_list_rm_stanzaContext ctx) {
-      Set<String> names = new TreeSet<String>();
+      Set<String> names = new TreeSet<>();
       for (VariableContext name : ctx.name_list) {
          names.add(name.getText());
       }
@@ -2219,7 +2227,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitMatch_community_list_rm_stanza(
          Match_community_list_rm_stanzaContext ctx) {
-      Set<String> names = new TreeSet<String>();
+      Set<String> names = new TreeSet<>();
       for (VariableContext name : ctx.name_list) {
          names.add(name.getText());
       }
@@ -2231,7 +2239,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitMatch_ip_access_list_rm_stanza(
          Match_ip_access_list_rm_stanzaContext ctx) {
-      Set<String> names = new TreeSet<String>();
+      Set<String> names = new TreeSet<>();
       for (Token t : ctx.name_list) {
          names.add(t.getText());
       }
@@ -2243,7 +2251,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitMatch_ip_prefix_list_rm_stanza(
          Match_ip_prefix_list_rm_stanzaContext ctx) {
-      Set<String> names = new TreeSet<String>();
+      Set<String> names = new TreeSet<>();
       for (Token t : ctx.name_list) {
          names.add(t.getText());
       }
@@ -2259,7 +2267,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
-      Set<Integer> tags = new TreeSet<Integer>();
+      Set<Integer> tags = new TreeSet<>();
       for (Token t : ctx.tag_list) {
          tags.add(toInteger(t));
       }
@@ -2288,7 +2296,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNeighbor_group_rb_stanza(Neighbor_group_rb_stanzaContext ctx) {
+   public void exitNeighbor_group_rb_stanza(
+         Neighbor_group_rb_stanzaContext ctx) {
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
@@ -2317,8 +2326,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
          else {
             Ip address = toIp(ctx.ip);
-            Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address
-                  .getClassMask();
+            Ip mask = (ctx.mask != null) ? toIp(ctx.mask)
+                  : address.getClassMask();
             int prefixLength = mask.numSubnetBits();
             prefix = new Prefix(address, prefixLength);
          }
@@ -2394,7 +2403,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNexus_neighbor_rb_stanza(Nexus_neighbor_rb_stanzaContext ctx) {
+   public void exitNexus_neighbor_rb_stanza(
+         Nexus_neighbor_rb_stanzaContext ctx) {
       _currentDynamicPeerGroup = null;
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
@@ -2698,7 +2708,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+               sourceProtocol);
          proc.getRedistributionPolicies().put(sourceProtocol, r);
          if (ctx.metric != null) {
             int metric = toInteger(ctx.metric);
@@ -2780,7 +2791,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
-         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+               sourceProtocol);
          proc.getRedistributionPolicies().put(sourceProtocol, r);
          if (ctx.metric != null) {
             int metric = toInteger(ctx.metric);
@@ -2791,8 +2803,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             r.setMap(map);
          }
          int procNum = toInteger(ctx.procnum);
-         r.getSpecialAttributes().put(
-               BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+         r.getSpecialAttributes()
+               .put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
       }
       else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
          throw new BatfishException(
@@ -2812,7 +2824,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
          RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
-         BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+         BgpRedistributionPolicy r = new BgpRedistributionPolicy(
+               sourceProtocol);
          proc.getRedistributionPolicies().put(sourceProtocol, r);
          if (ctx.metric != null) {
             int metric = toInteger(ctx.metric);
@@ -2965,8 +2978,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
-      _currentOspfProcess.computeNetworks(_configuration.getInterfaces()
-            .values());
+      _currentOspfProcess
+            .computeNetworks(_configuration.getInterfaces().values());
       _currentOspfProcess = null;
    }
 
@@ -2978,7 +2991,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_as_path_prepend_rm_stanza(
          Set_as_path_prepend_rm_stanzaContext ctx) {
-      List<Integer> asList = new ArrayList<Integer>();
+      List<Integer> asList = new ArrayList<>();
       for (Token t : ctx.as_list) {
          int as = toInteger(t);
          asList.add(as);
@@ -3000,7 +3013,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_community_additive_rm_stanza(
          Set_community_additive_rm_stanzaContext ctx) {
-      List<Long> commList = new ArrayList<Long>();
+      List<Long> commList = new ArrayList<>();
       for (CommunityContext c : ctx.communities) {
          long community = toLong(c);
          commList.add(community);
@@ -3013,7 +3026,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_community_list_additive_rm_stanza(
          Set_community_list_additive_rm_stanzaContext ctx) {
-      Set<String> communityLists = new LinkedHashSet<String>();
+      Set<String> communityLists = new LinkedHashSet<>();
       for (VariableContext comm_list : ctx.comm_lists) {
          String communityList = comm_list.getText();
          communityLists.add(communityList);
@@ -3026,7 +3039,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_community_list_rm_stanza(
          Set_community_list_rm_stanzaContext ctx) {
-      Set<String> communityLists = new LinkedHashSet<String>();
+      Set<String> communityLists = new LinkedHashSet<>();
       for (VariableContext comm_list : ctx.comm_lists) {
          String communityList = comm_list.getText();
          communityLists.add(communityList);
@@ -3045,7 +3058,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
-      List<Long> commList = new ArrayList<Long>();
+      List<Long> commList = new ArrayList<>();
       for (CommunityContext c : ctx.communities) {
          long community = toLong(c);
          commList.add(community);
@@ -3083,7 +3096,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_next_hop_rm_stanza(Set_next_hop_rm_stanzaContext ctx) {
-      List<Ip> nextHops = new ArrayList<Ip>();
+      List<Ip> nextHops = new ArrayList<>();
       for (Token t : ctx.nexthop_list) {
          Ip nextHop = toIp(t);
          nextHops.add(nextHop);
@@ -3147,8 +3160,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       LineAction action = getAccessListAction(ctx.ala);
       Ip srcIp = getIp(ctx.ipr);
       Ip srcWildcard = getWildcard(ctx.ipr);
-      Set<Integer> dscps = new TreeSet<Integer>();
-      Set<Integer> ecns = new TreeSet<Integer>();
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
       for (Standard_access_list_additional_featureContext feature : ctx.features) {
          if (feature.DSCP() != null) {
             int dscpType = toDscpType(feature.dscp_type());
@@ -3336,8 +3349,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          _parser.getParserErrorListener().syntaxError(ctx, ctx.getStart(),
-               ctx.getStart().getLine(),
-               ctx.getStart().getCharPositionInLine(), msg);
+               ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
+               msg);
          // throw new BatfishException(msg);
       }
    }
@@ -3367,7 +3380,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          todo(ctx, F_IPV6);
       }
       else {
-         throw new BatfishException("Unexpected context for use neighbor group");
+         throw new BatfishException(
+               "Unexpected context for use neighbor group");
       }
    }
 
@@ -3377,7 +3391,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitVrf_forwarding_if_stanza(Vrf_forwarding_if_stanzaContext ctx) {
+   public void exitVrf_forwarding_if_stanza(
+         Vrf_forwarding_if_stanzaContext ctx) {
       String name = ctx.name.getText();
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setVrf(name);
@@ -3488,7 +3503,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rp_stanzaContext ctxt) {
+   public RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_rp_stanzaContext ctxt) {
       if (ctxt.OR() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza());
       }
@@ -3551,9 +3567,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyElseBlock toRoutePolicyElseBlock(Else_rp_stanzaContext ctxt) {
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
-            .rp_stanza());
+   public RoutePolicyElseBlock toRoutePolicyElseBlock(
+         Else_rp_stanzaContext ctxt) {
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
+            ctxt.rp_stanza());
       return new RoutePolicyElseBlock(stmts);
 
    }
@@ -3561,13 +3578,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(
          Elseif_rp_stanzaContext ctxt) {
       RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
-            .rp_stanza());
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
+            ctxt.rp_stanza());
       return new RoutePolicyElseIfBlock(b, stmts);
 
    }
 
-   public RoutePolicyPrefixSet toRoutePolicyPrefixSet(Rp_prefix_setContext ctxt) {
+   public RoutePolicyPrefixSet toRoutePolicyPrefixSet(
+         Rp_prefix_setContext ctxt) {
       if (ctxt.name != null) {
          // named
          return new RoutePolicyPrefixSetName(ctxt.name.getText());
@@ -3617,12 +3635,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                upper = lower;
             }
             if (prefix != null) {
-               prefixSpace.addPrefixRange(new PrefixRange(prefix, new SubRange(
-                     lower, upper)));
+               prefixSpace.addPrefixRange(
+                     new PrefixRange(prefix, new SubRange(lower, upper)));
             }
             else {
-               prefix6Space.addPrefix6Range(new Prefix6Range(prefix6,
-                     new SubRange(lower, upper)));
+               prefix6Space.addPrefix6Range(
+                     new Prefix6Range(prefix6, new SubRange(lower, upper)));
                ipv6 = true;
             }
          }
@@ -3668,11 +3686,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new RoutePolicyDispositionStatement(t);
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(If_rp_stanzaContext ctxt) {
+   public RoutePolicyStatement toRoutePolicyStatement(
+         If_rp_stanzaContext ctxt) {
       RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
-      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctxt
-            .rp_stanza());
-      List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<RoutePolicyElseIfBlock>();
+      List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
+            ctxt.rp_stanza());
+      List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<>();
       for (Elseif_rp_stanzaContext ectxt : ctxt.elseif_rp_stanza()) {
          elseIfs.add(toRoutePolicyElseIfBlock(ectxt));
       }
@@ -3717,8 +3736,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public RoutePolicyStatement toRoutePolicyStatement(
          Set_community_rp_stanzaContext ctxt) {
-      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(ctxt
-            .rp_community_set());
+      RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(
+            ctxt.rp_community_set());
       boolean additive = (ctxt.ADDITIVE() != null);
       return new RoutePolicySetCommunity(cset, additive);
    }
@@ -3754,7 +3773,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Set_rp_stanzaContext ctxt) {
+   public RoutePolicyStatement toRoutePolicyStatement(
+         Set_rp_stanzaContext ctxt) {
       Set_community_rp_stanzaContext cctxt = ctxt.set_community_rp_stanza();
       if (cctxt != null) {
          return toRoutePolicyStatement(cctxt);
@@ -3781,7 +3801,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public List<RoutePolicyStatement> toRoutePolicyStatementList(
          List<Rp_stanzaContext> ctxts) {
-      List<RoutePolicyStatement> stmts = new ArrayList<RoutePolicyStatement>();
+      List<RoutePolicyStatement> stmts = new ArrayList<>();
       for (Rp_stanzaContext ctxt : ctxts) {
          RoutePolicyStatement stmt = toRoutePolicyStatement(ctxt);
          if (stmt != null) {

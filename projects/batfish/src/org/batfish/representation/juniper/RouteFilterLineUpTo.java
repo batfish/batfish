@@ -23,8 +23,8 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
       org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix, new SubRange(prefixLength,
-                  _maxPrefixLength));
+            LineAction.ACCEPT, _prefix,
+            new SubRange(prefixLength, _maxPrefixLength));
       rfl.addLine(line);
    }
 

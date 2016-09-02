@@ -9,7 +9,8 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.NodAnswerElement;
 
-public class NodJobResult extends BatfishJobResult<Set<Flow>, NodAnswerElement> {
+public class NodJobResult
+      extends BatfishJobResult<Set<Flow>, NodAnswerElement> {
 
    /**
     * Elapsed time in milliseconds

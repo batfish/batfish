@@ -17,7 +17,7 @@ public class Conjunction extends AbstractBooleanExpr {
    private List<BooleanExpr> _conjuncts;
 
    public Conjunction() {
-      _conjuncts = new ArrayList<BooleanExpr>();
+      _conjuncts = new ArrayList<>();
    }
 
    @Override
@@ -47,7 +47,7 @@ public class Conjunction extends AbstractBooleanExpr {
 
    @Override
    public BooleanExpr simplify() {
-      List<BooleanExpr> simpleConjuncts = new ArrayList<BooleanExpr>();
+      List<BooleanExpr> simpleConjuncts = new ArrayList<>();
       boolean atLeastOneFalse = false;
       boolean atLeastOneComplex = false;
       for (BooleanExpr conjunct : _conjuncts) {
@@ -61,8 +61,8 @@ public class Conjunction extends AbstractBooleanExpr {
                simpleConjuncts.add(simpleConjunct);
             }
          }
-         else if (!simpleConjunct.equals(BooleanExprs.True
-               .toStaticBooleanExpr())) {
+         else if (!simpleConjunct
+               .equals(BooleanExprs.True.toStaticBooleanExpr())) {
             atLeastOneComplex = true;
             simpleConjuncts.add(simpleConjunct);
          }

@@ -81,8 +81,8 @@ public class ZipUtility {
                   false);
          }
          else {
-            addFileToZip(path + "/" + folder.getName(), srcFolder + "/"
-                  + fileName, zip, false);
+            addFileToZip(path + "/" + folder.getName(),
+                  srcFolder + "/" + fileName, zip, false);
          }
       }
       // }

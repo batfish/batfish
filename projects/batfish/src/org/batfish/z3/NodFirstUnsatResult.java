@@ -7,8 +7,8 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public class NodFirstUnsatResult<Key, Result> extends
-      BatfishJobResult<Map<Key, Result>, NodFirstUnsatAnswerElement> {
+public class NodFirstUnsatResult<Key, Result>
+      extends BatfishJobResult<Map<Key, Result>, NodFirstUnsatAnswerElement> {
 
    private final Integer _firstUnsatQueryIndex;
 

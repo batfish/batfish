@@ -71,7 +71,7 @@ public class Settings extends BaseSettings {
    }
 
    public String getRunMode() {
-	      return _runMode;
+      return _runMode;
    }
 
    public String getTestrigDir() {
@@ -79,10 +79,10 @@ public class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
-//      setDefaultProperty(ARG_COMMAND_FILE,
-//            Paths.get(org.batfish.common.Util.getJarOrClassDir(
-//                  ConfigurationLocator.class).getAbsolutePath(), "default_commands")
-//                  .toAbsolutePath().toString());
+      // setDefaultProperty(ARG_COMMAND_FILE,
+      // Paths.get(org.batfish.common.Util.getJarOrClassDir(
+      // ConfigurationLocator.class).getAbsolutePath(), "default_commands")
+      // .toAbsolutePath().toString());
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
@@ -108,20 +108,20 @@ public class Settings extends BaseSettings {
             "batfish_args");
 
       addOption(ARG_CLIENT_ARGS, "arguments for the client process",
-              "client_args");
+            "client_args");
 
-      addOption(ARG_COMMAND_FILE, "which command file to use",
-            "command_file");
+      addOption(ARG_COMMAND_FILE, "which command file to use", "command_file");
 
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");
 
       addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
-              "run_mode");
+            "run_mode");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
-      addOption(BfConsts.ARG_PLUGIN_DIR, "plugin directory to be passed to batfish process", "path");
+      addOption(BfConsts.ARG_PLUGIN_DIR,
+            "plugin directory to be passed to batfish process", "path");
    }
 
    private void parseCommandLine(String[] args) {

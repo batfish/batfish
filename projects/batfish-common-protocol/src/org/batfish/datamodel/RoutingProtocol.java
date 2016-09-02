@@ -32,7 +32,7 @@ public enum RoutingProtocol {
    private final static Map<String, RoutingProtocol> _map = buildMap();
 
    private static Map<String, RoutingProtocol> buildMap() {
-      Map<String, RoutingProtocol> map = new HashMap<String, RoutingProtocol>();
+      Map<String, RoutingProtocol> map = new HashMap<>();
       for (RoutingProtocol protocol : RoutingProtocol.values()) {
          String protocolName = protocol._protocolName;
          map.put(protocolName, protocol);
@@ -43,8 +43,8 @@ public enum RoutingProtocol {
    public static RoutingProtocol fromProtocolName(String name) {
       RoutingProtocol protocol = _map.get(name);
       if (protocol == null) {
-         throw new BatfishException("No routing protocol with name: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "No routing protocol with name: \"" + name + "\"");
       }
       return protocol;
    }

@@ -24,7 +24,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
    @JsonCreator
    public RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _statements = new ArrayList<Statement>();
+      _statements = new ArrayList<>();
    }
 
    public Result call(Environment environment, Route route) {
@@ -59,7 +59,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
    }
 
    public RoutingPolicy simplify() {
-      List<Statement> simpleStatements = new ArrayList<Statement>();
+      List<Statement> simpleStatements = new ArrayList<>();
       for (Statement statement : _statements) {
          simpleStatements.addAll(statement.simplify());
       }

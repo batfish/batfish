@@ -14,7 +14,8 @@ public class PolicyMapSetNextHopLine extends PolicyMapSetLine {
    private final List<Ip> _nextHops;
 
    @JsonCreator
-   public PolicyMapSetNextHopLine(@JsonProperty(NEXT_HOPS_VAR) List<Ip> nextHops) {
+   public PolicyMapSetNextHopLine(
+         @JsonProperty(NEXT_HOPS_VAR) List<Ip> nextHops) {
       _nextHops = nextHops;
    }
 

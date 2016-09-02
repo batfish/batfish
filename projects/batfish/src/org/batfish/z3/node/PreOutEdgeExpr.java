@@ -12,7 +12,8 @@ public class PreOutEdgeExpr extends PacketRelExpr {
 
    public PreOutEdgeExpr(String node, String outInt, String nextHop,
          String inInt) {
-      super(BASE_NAME + "_" + node + "_" + outInt + "_" + nextHop + "_" + inInt);
+      super(BASE_NAME + "_" + node + "_" + outInt + "_" + nextHop + "_"
+            + inInt);
    }
 
 }

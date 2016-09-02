@@ -10,8 +10,8 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.main.Warnings;
 
-public class BaseApplication extends ComparableStructure<String> implements
-      Application {
+public class BaseApplication extends ComparableStructure<String>
+      implements Application {
 
    public static class Term extends ComparableStructure<String> {
 
@@ -53,7 +53,7 @@ public class BaseApplication extends ComparableStructure<String> implements
    public BaseApplication(String name) {
       super(name);
       _mainTerm = new Term(getMainTermName());
-      _terms = new LinkedHashMap<String, Term>();
+      _terms = new LinkedHashMap<>();
    }
 
    @Override

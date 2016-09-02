@@ -29,12 +29,12 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
    @Override
    public void applyTo(PolicyMapClause clause, PolicyStatement ps,
          JuniperConfiguration jc, Configuration c, Warnings warnings) {
-      Set<PolicyMap> policies = new LinkedHashSet<PolicyMap>();
+      Set<PolicyMap> policies = new LinkedHashSet<>();
       for (String conjunctName : _conjuncts) {
          PolicyMap conjunct = c.getPolicyMaps().get(conjunctName);
          if (conjunct != null) {
-            PolicyStatement conjunctPs = jc.getPolicyStatements().get(
-                  conjunctName);
+            PolicyStatement conjunctPs = jc.getPolicyStatements()
+                  .get(conjunctName);
             if (conjunctPs.getIpv6()) {
                ps.setIpv6(true);
             }
@@ -58,8 +58,8 @@ public final class PsFromPolicyStatementConjunction extends PsFrom {
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
       Conjunction conj = new Conjunction();
-      conj.getConjuncts().addAll(
-            _conjuncts.stream().map(conjunct -> new CallExpr(conjunct))
+      conj.getConjuncts()
+            .addAll(_conjuncts.stream().map(conjunct -> new CallExpr(conjunct))
                   .collect(Collectors.toList()));
       return conj;
    }

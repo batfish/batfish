@@ -23,13 +23,13 @@ public class VyosFlattener extends VyosParserBaseListener {
 
    public VyosFlattener(String header) {
       _header = header;
-      _stack = new ArrayList<List<String>>();
-      _setStatements = new ArrayList<String>();
+      _stack = new ArrayList<>();
+      _setStatements = new ArrayList<>();
    }
 
    @Override
    public void enterStatement(StatementContext ctx) {
-      _currentStatement = new ArrayList<String>();
+      _currentStatement = new ArrayList<>();
       _stack.add(_currentStatement);
    }
 

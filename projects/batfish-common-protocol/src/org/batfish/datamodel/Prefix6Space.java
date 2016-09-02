@@ -55,7 +55,7 @@ public class Prefix6Space implements Serializable {
       }
 
       public Set<Prefix6Range> getPrefix6Ranges() {
-         Set<Prefix6Range> prefix6Ranges = new HashSet<Prefix6Range>();
+         Set<Prefix6Range> prefix6Ranges = new HashSet<>();
          _root.collectPrefix6Ranges(prefix6Ranges);
          return prefix6Ranges;
       }
@@ -76,7 +76,7 @@ public class Prefix6Space implements Serializable {
       private BitTrieNode _right;
 
       public BitTrieNode() {
-         _prefix6Ranges = new HashSet<Prefix6Range>();
+         _prefix6Ranges = new HashSet<>();
       }
 
       public void addPrefix6Range(Prefix6Range prefix6Range, BitSet bits,
@@ -169,7 +169,7 @@ public class Prefix6Space implements Serializable {
                _right = null;
             }
          }
-         Set<Prefix6Range> oldPrefix6Ranges = new HashSet<Prefix6Range>();
+         Set<Prefix6Range> oldPrefix6Ranges = new HashSet<>();
          oldPrefix6Ranges.addAll(_prefix6Ranges);
          for (Prefix6Range oldPrefix6Range : oldPrefix6Ranges) {
             if (!prefix6Range.equals(oldPrefix6Range)

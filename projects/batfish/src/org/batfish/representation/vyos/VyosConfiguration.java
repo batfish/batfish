@@ -41,14 +41,14 @@ public abstract class VyosConfiguration extends VendorConfiguration {
 
    public VyosConfiguration() {
       _roles = new RoleSet();
-      _espGroups = new TreeMap<String, EspGroup>();
-      _ikeGroups = new TreeMap<String, IkeGroup>();
-      _interfaces = new TreeMap<String, Interface>();
-      _ipsecInterfaces = new TreeSet<String>();
-      _ipsecPeers = new TreeMap<Ip, IpsecPeer>();
-      _prefixLists = new TreeMap<String, PrefixList>();
-      _routeMaps = new TreeMap<String, RouteMap>();
-      _staticNextHopRoutes = new HashSet<StaticNextHopRoute>();
+      _espGroups = new TreeMap<>();
+      _ikeGroups = new TreeMap<>();
+      _interfaces = new TreeMap<>();
+      _ipsecInterfaces = new TreeSet<>();
+      _ipsecPeers = new TreeMap<>();
+      _prefixLists = new TreeMap<>();
+      _routeMaps = new TreeMap<>();
+      _staticNextHopRoutes = new HashSet<>();
    }
 
    public BgpProcess getBgpProcess() {

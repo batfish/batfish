@@ -21,8 +21,8 @@ public class BfCoordPoolHelper {
    public boolean addBatfishWorker(String worker) {
       try {
          Client client = ClientBuilder.newClient();
-         WebTarget webTarget = client.target(
-               String.format("http://%s%s/%s", _coordPoolMgr,
+         WebTarget webTarget = client
+               .target(String.format("http://%s%s/%s", _coordPoolMgr,
                      CoordConsts.SVC_BASE_POOL_MGR,
                      CoordConsts.SVC_POOL_UPDATE_RSC))
                .queryParam("add", worker);
@@ -51,8 +51,8 @@ public class BfCoordPoolHelper {
          return true;
       }
       catch (ProcessingException e) {
-         System.err.printf("unable to connect to %s: %s\n", _coordPoolMgr, e
-               .getStackTrace().toString());
+         System.err.printf("unable to connect to %s: %s\n", _coordPoolMgr,
+               e.getStackTrace().toString());
          return false;
       }
       catch (Exception e) {

@@ -273,7 +273,7 @@ public enum IpProtocol {
    private static final Map<Integer, IpProtocol> NUMBER_TO_PROTOCOL_MAP = buildNumberToProtocolMap();
 
    private synchronized static Map<Integer, IpProtocol> buildNumberToProtocolMap() {
-      Map<Integer, IpProtocol> map = new HashMap<Integer, IpProtocol>();
+      Map<Integer, IpProtocol> map = new HashMap<>();
       for (IpProtocol protocol : values()) {
          map.put(protocol._number, protocol);
       }
@@ -283,8 +283,8 @@ public enum IpProtocol {
    public static IpProtocol fromNumber(int number) {
       IpProtocol ret = NUMBER_TO_PROTOCOL_MAP.get(number);
       if (ret == null) {
-         throw new BatfishException("missing enumeration for protocol number: "
-               + number);
+         throw new BatfishException(
+               "missing enumeration for protocol number: " + number);
       }
       return ret;
    }

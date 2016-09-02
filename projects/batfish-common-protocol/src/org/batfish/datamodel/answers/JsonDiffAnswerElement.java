@@ -15,7 +15,8 @@ public class JsonDiffAnswerElement implements AnswerElement {
    private final JsonDiff _jsonDiff;
 
    @JsonCreator
-   public JsonDiffAnswerElement(@JsonProperty(JSON_DIFF_VAR) JsonDiff jsonDiff) {
+   public JsonDiffAnswerElement(
+         @JsonProperty(JSON_DIFF_VAR) JsonDiff jsonDiff) {
       _jsonDiff = jsonDiff;
    }
 

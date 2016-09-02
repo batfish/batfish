@@ -41,7 +41,7 @@ public class RoutingTable {
       private ByteTrieNode _right;
 
       public ByteTrieNode() {
-         _dependentRoutes = new HashSet<DependentRoute>();
+         _dependentRoutes = new HashSet<>();
       }
 
       public void addDependentRoute(DependentRoute dependentRoute, BitSet bits,
@@ -68,8 +68,9 @@ public class RoutingTable {
          }
       }
 
-      private Set<DependentRoute> getLongestPrefixMatch(Ip address, BitSet bits) {
-         Set<DependentRoute> longestPrefixMatches = new HashSet<DependentRoute>();
+      private Set<DependentRoute> getLongestPrefixMatch(Ip address,
+            BitSet bits) {
+         Set<DependentRoute> longestPrefixMatches = new HashSet<>();
          for (DependentRoute dependentRoute : _dependentRoutes) {
             Prefix prefix = dependentRoute.getPrefix();
             if (prefix.contains(address)) {

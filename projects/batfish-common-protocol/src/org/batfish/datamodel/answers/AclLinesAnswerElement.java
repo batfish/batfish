@@ -15,8 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
-   public static class AclReachabilityEntry implements
-         Comparable<AclReachabilityEntry> {
+   public static class AclReachabilityEntry
+         implements Comparable<AclReachabilityEntry> {
 
       private static final String INDEX_VAR = "index";
 
@@ -99,10 +99,10 @@ public class AclLinesAnswerElement implements AnswerElement {
    private SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> _unreachableLines;
 
    public AclLinesAnswerElement() {
-      _acls = new TreeMap<String, SortedMap<String, IpAccessList>>();
-      _equivalenceClasses = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
-      _reachableLines = new TreeMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>>();
-      _unreachableLines = new TreeMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>>();
+      _acls = new TreeMap<>();
+      _equivalenceClasses = new TreeMap<>();
+      _reachableLines = new TreeMap<>();
+      _unreachableLines = new TreeMap<>();
    }
 
    public void addEquivalenceClass(String aclName, String hostname,
@@ -110,7 +110,7 @@ public class AclLinesAnswerElement implements AnswerElement {
       SortedMap<String, SortedSet<String>> byRep = _equivalenceClasses
             .get(aclName);
       if (byRep == null) {
-         byRep = new TreeMap<String, SortedSet<String>>();
+         byRep = new TreeMap<>();
          _equivalenceClasses.put(aclName, byRep);
       }
       byRep.put(hostname, eqClassNodes);
@@ -118,11 +118,12 @@ public class AclLinesAnswerElement implements AnswerElement {
 
    private void addLine(
          SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> lines,
-         String hostname, IpAccessList ipAccessList, AclReachabilityEntry entry) {
+         String hostname, IpAccessList ipAccessList,
+         AclReachabilityEntry entry) {
       String aclName = ipAccessList.getName();
       SortedMap<String, IpAccessList> aclsByHostname = _acls.get(hostname);
       if (aclsByHostname == null) {
-         aclsByHostname = new TreeMap<String, IpAccessList>();
+         aclsByHostname = new TreeMap<>();
          _acls.put(hostname, aclsByHostname);
       }
       if (!aclsByHostname.containsKey(aclName)) {
@@ -131,12 +132,12 @@ public class AclLinesAnswerElement implements AnswerElement {
       SortedMap<String, SortedSet<AclReachabilityEntry>> linesByHostname = lines
             .get(hostname);
       if (linesByHostname == null) {
-         linesByHostname = new TreeMap<String, SortedSet<AclReachabilityEntry>>();
+         linesByHostname = new TreeMap<>();
          lines.put(hostname, linesByHostname);
       }
       SortedSet<AclReachabilityEntry> linesByAcl = linesByHostname.get(aclName);
       if (linesByAcl == null) {
-         linesByAcl = new TreeSet<AclReachabilityEntry>();
+         linesByAcl = new TreeSet<>();
          linesByHostname.put(aclName, linesByAcl);
       }
       linesByAcl.add(entry);
@@ -175,7 +176,8 @@ public class AclLinesAnswerElement implements AnswerElement {
       return mapper.writeValueAsString(this);
    }
 
-   public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
+   public void setAcls(
+         SortedMap<String, SortedMap<String, IpAccessList>> acls) {
       _acls = acls;
    }
 

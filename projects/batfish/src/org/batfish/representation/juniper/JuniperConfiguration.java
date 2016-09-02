@@ -64,26 +64,26 @@ public abstract class JuniperConfiguration extends VendorConfiguration {
    protected final Map<String, Zone> _zones;
 
    public JuniperConfiguration() {
-      _allStandardCommunities = new HashSet<Long>();
-      _applications = new TreeMap<String, BaseApplication>();
-      _communityLists = new TreeMap<String, CommunityList>();
+      _allStandardCommunities = new HashSet<>();
+      _applications = new TreeMap<>();
+      _communityLists = new TreeMap<>();
       _defaultCrossZoneAction = LineAction.ACCEPT;
       _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
-      _filters = new TreeMap<String, FirewallFilter>();
-      _globalAddressBooks = new TreeMap<String, AddressBook>();
-      _ignoredPrefixLists = new HashSet<String>();
-      _ikeGateways = new TreeMap<String, IkeGateway>();
-      _ikePolicies = new TreeMap<String, IkePolicy>();
-      _ikeProposals = new TreeMap<String, IkeProposal>();
-      _interfaceZones = new TreeMap<Interface, Zone>();
-      _ipsecPolicies = new TreeMap<String, IpsecPolicy>();
-      _ipsecProposals = new TreeMap<String, IpsecProposal>();
-      _ipsecVpns = new TreeMap<String, IpsecVpn>();
-      _prefixLists = new TreeMap<String, PrefixList>();
-      _policyStatements = new TreeMap<String, PolicyStatement>();
-      _routeFilters = new TreeMap<String, RouteFilter>();
-      _routingInstances = new TreeMap<String, RoutingInstance>();
-      _zones = new TreeMap<String, Zone>();
+      _filters = new TreeMap<>();
+      _globalAddressBooks = new TreeMap<>();
+      _ignoredPrefixLists = new HashSet<>();
+      _ikeGateways = new TreeMap<>();
+      _ikePolicies = new TreeMap<>();
+      _ikeProposals = new TreeMap<>();
+      _interfaceZones = new TreeMap<>();
+      _ipsecPolicies = new TreeMap<>();
+      _ipsecProposals = new TreeMap<>();
+      _ipsecVpns = new TreeMap<>();
+      _prefixLists = new TreeMap<>();
+      _policyStatements = new TreeMap<>();
+      _routeFilters = new TreeMap<>();
+      _routingInstances = new TreeMap<>();
+      _zones = new TreeMap<>();
    }
 
    public Set<Long> getAllStandardCommunities() {

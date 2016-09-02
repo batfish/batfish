@@ -17,7 +17,7 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
    public AddressSetAddressBookEntry(String name) {
       super(name);
-      _entries = new HashSet<AddressSetEntry>();
+      _entries = new HashSet<>();
    }
 
    public Set<AddressSetEntry> getEntries() {
@@ -26,7 +26,7 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
    @Override
    public Set<Prefix> getPrefixes(Warnings w) {
-      Set<Prefix> prefixes = new HashSet<Prefix>();
+      Set<Prefix> prefixes = new HashSet<>();
       for (AddressSetEntry entry : _entries) {
          Set<Prefix> subPrefixes = entry.getPrefixes(w);
          prefixes.addAll(subPrefixes);

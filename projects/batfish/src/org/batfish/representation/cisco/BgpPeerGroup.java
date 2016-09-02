@@ -139,7 +139,8 @@ public abstract class BgpPeerGroup implements Serializable {
       return _updateSource;
    }
 
-   public void inheritUnsetFields(BgpProcess proc, CiscoVendorConfiguration cv) {
+   public void inheritUnsetFields(BgpProcess proc,
+         CiscoVendorConfiguration cv) {
       if (_inherited) {
          return;
       }

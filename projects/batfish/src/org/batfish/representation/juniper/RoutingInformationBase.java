@@ -35,9 +35,9 @@ public class RoutingInformationBase implements Serializable {
 
    public RoutingInformationBase(String name) {
       _name = name;
-      _aggregateRoutes = new TreeMap<Prefix, AggregateRoute>();
-      _generatedRoutes = new TreeMap<Prefix, GeneratedRoute>();
-      _staticRoutes = new TreeMap<Prefix, StaticRoute>();
+      _aggregateRoutes = new TreeMap<>();
+      _generatedRoutes = new TreeMap<>();
+      _staticRoutes = new TreeMap<>();
    }
 
    public Map<Prefix, AggregateRoute> getAggregateRoutes() {

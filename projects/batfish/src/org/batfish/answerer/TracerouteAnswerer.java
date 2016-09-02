@@ -46,12 +46,10 @@ public class TracerouteAnswerer extends Answerer {
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getFlowsByText().keySet()) {
-         String baseEnvId = _batfish.getBaseTestrigSettings().getName()
-               + ":"
+         String baseEnvId = _batfish.getBaseTestrigSettings().getName() + ":"
                + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
                      .getName();
-         String deltaEnvId = _batfish.getDeltaTestrigSettings().getName()
-               + ":"
+         String deltaEnvId = _batfish.getDeltaTestrigSettings().getName() + ":"
                + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
                      .getName();
          Set<FlowTrace> baseFlowTraces = history.getTraces().get(flowText)
@@ -72,7 +70,7 @@ public class TracerouteAnswerer extends Answerer {
    }
 
    private Set<Flow> getFlows(String tag) {
-      Set<Flow> flows = new TreeSet<Flow>();
+      Set<Flow> flows = new TreeSet<>();
       TracerouteQuestion question = (TracerouteQuestion) _question;
       Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
       Map<String, Configuration> configurations = null;
@@ -80,14 +78,14 @@ public class TracerouteAnswerer extends Answerer {
          if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
             if (configurations == null) {
                _batfish.checkConfigurations();
-               configurations = _batfish.loadConfigurations(_batfish
-                     .getBaseTestrigSettings());
+               configurations = _batfish
+                     .loadConfigurations(_batfish.getBaseTestrigSettings());
             }
             String hostname = flowBuilder.getIngressNode();
-            Configuration node = (hostname == null) ? null : configurations
-                  .get(hostname);
+            Configuration node = (hostname == null) ? null
+                  : configurations.get(hostname);
             if (node != null) {
-               Set<Ip> ips = new TreeSet<Ip>();
+               Set<Ip> ips = new TreeSet<>();
                for (Interface i : node.getInterfaces().values()) {
                   ips.addAll(i.getAllPrefixes().stream()
                         .map(prefix -> prefix.getAddress())

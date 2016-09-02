@@ -23,7 +23,7 @@ public enum ForwardingAction {
    private final static Map<String, ForwardingAction> _map = buildMap();
 
    private static Map<String, ForwardingAction> buildMap() {
-      Map<String, ForwardingAction> map = new HashMap<String, ForwardingAction>();
+      Map<String, ForwardingAction> map = new HashMap<>();
       for (ForwardingAction value : ForwardingAction.values()) {
          String name = value._name;
          map.put(name, value);
@@ -35,8 +35,8 @@ public enum ForwardingAction {
    public static ForwardingAction fromName(String name) {
       ForwardingAction instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("No ForwardingAction with name: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "No ForwardingAction with name: \"" + name + "\"");
       }
       return instance;
    }

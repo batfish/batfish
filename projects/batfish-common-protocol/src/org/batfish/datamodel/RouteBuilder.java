@@ -30,8 +30,8 @@ public class RouteBuilder {
    }
 
    public Route build() {
-      return new Route(_node, _network, _nextHopIp, _nextHop,
-            _nextHopInterface, _administrativeCost, _cost, _protocol, _tag);
+      return new Route(_node, _network, _nextHopIp, _nextHop, _nextHopInterface,
+            _administrativeCost, _cost, _protocol, _tag);
    }
 
    public void setAdministrativeCost(int administrativeCost) {

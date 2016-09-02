@@ -23,7 +23,8 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       String[] mainParts = str.split(":");
       int numMainParts = mainParts.length;
       if (numMainParts < 1 || numMainParts > 2) {
-         throw new BatfishException("Invalid PrefixRange string: '" + str + "'");
+         throw new BatfishException(
+               "Invalid PrefixRange string: '" + str + "'");
       }
       else {
          prefix = new Prefix(mainParts[0]);
@@ -42,7 +43,8 @@ public class PrefixRange extends Pair<Prefix, SubRange> {
       String[] mainParts = str.split(":");
       int numMainParts = mainParts.length;
       if (numMainParts < 1 || numMainParts > 2) {
-         throw new BatfishException("Invalid PrefixRange string: '" + str + "'");
+         throw new BatfishException(
+               "Invalid PrefixRange string: '" + str + "'");
       }
       else {
          prefix = new Prefix(mainParts[0]);

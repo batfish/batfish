@@ -21,8 +21,8 @@ public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
    public Statement toSetStatement(CiscoConfiguration cc, Configuration c,
          Warnings w) {
       // TODO: this should actually just retain all well-known communities
-      return new SetCommunity(new ExplicitCommunitySet(
-            Collections.<Long> emptySet()));
+      return new SetCommunity(
+            new ExplicitCommunitySet(Collections.<Long> emptySet()));
    }
 
 }

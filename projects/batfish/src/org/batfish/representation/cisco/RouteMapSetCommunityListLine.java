@@ -31,28 +31,30 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
    @Override
    public void applyTo(List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
-      List<Long> communities = new ArrayList<Long>();
+      List<Long> communities = new ArrayList<>();
       for (String communityListName : _communityLists) {
-         CommunityList communityList = c.getCommunityLists().get(
-               communityListName);
+         CommunityList communityList = c.getCommunityLists()
+               .get(communityListName);
          if (communityList != null) {
-            StandardCommunityList scl = cc.getStandardCommunityLists().get(
-                  communityListName);
+            StandardCommunityList scl = cc.getStandardCommunityLists()
+                  .get(communityListName);
             if (scl != null) {
                for (StandardCommunityListLine line : scl.getLines()) {
                   if (line.getAction() == LineAction.ACCEPT) {
                      communities.addAll(line.getCommunities());
                   }
                   else {
-                     w.redFlag("Expected only permit lines in standard community-list referred to by route-map set community community-list line: \""
-                           + communityListName + "\"");
+                     w.redFlag(
+                           "Expected only permit lines in standard community-list referred to by route-map set community community-list line: \""
+                                 + communityListName + "\"");
 
                   }
                }
             }
             else {
-               w.redFlag("Expected standard community list in route-map set community community-list line but got expanded instead: \""
-                     + communityListName + "\"");
+               w.redFlag(
+                     "Expected standard community list in route-map set community community-list line but got expanded instead: \""
+                           + communityListName + "\"");
             }
          }
          else {
@@ -60,8 +62,8 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
                   + communityListName + "\"");
          }
       }
-      statements.add(new SetCommunity(new ExplicitCommunitySet(
-            new TreeSet<Long>(communities))));
+      statements.add(new SetCommunity(
+            new ExplicitCommunitySet(new TreeSet<>(communities))));
    }
 
    @Override
@@ -72,28 +74,30 @@ public final class RouteMapSetCommunityListLine extends RouteMapSetLine {
    @Override
    public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
          Configuration c, Warnings w) {
-      List<Long> communities = new ArrayList<Long>();
+      List<Long> communities = new ArrayList<>();
       for (String communityListName : _communityLists) {
-         CommunityList communityList = c.getCommunityLists().get(
-               communityListName);
+         CommunityList communityList = c.getCommunityLists()
+               .get(communityListName);
          if (communityList != null) {
-            StandardCommunityList scl = v.getStandardCommunityLists().get(
-                  communityListName);
+            StandardCommunityList scl = v.getStandardCommunityLists()
+                  .get(communityListName);
             if (scl != null) {
                for (StandardCommunityListLine line : scl.getLines()) {
                   if (line.getAction() == LineAction.ACCEPT) {
                      communities.addAll(line.getCommunities());
                   }
                   else {
-                     w.redFlag("Expected only permit lines in standard community-list referred to by route-map set community community-list line: \""
-                           + communityListName + "\"");
+                     w.redFlag(
+                           "Expected only permit lines in standard community-list referred to by route-map set community community-list line: \""
+                                 + communityListName + "\"");
 
                   }
                }
             }
             else {
-               w.redFlag("Expected standard community list in route-map set community community-list line but got expanded instead: \""
-                     + communityListName + "\"");
+               w.redFlag(
+                     "Expected standard community list in route-map set community community-list line but got expanded instead: \""
+                           + communityListName + "\"");
             }
          }
          else {

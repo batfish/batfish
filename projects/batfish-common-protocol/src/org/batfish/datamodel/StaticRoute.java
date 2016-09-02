@@ -3,8 +3,8 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StaticRoute extends AbstractRoute implements
-      Comparable<StaticRoute> {
+public class StaticRoute extends AbstractRoute
+      implements Comparable<StaticRoute> {
 
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
 
@@ -102,6 +102,11 @@ public class StaticRoute extends AbstractRoute implements
       return _administrativeCost;
    }
 
+   @Override
+   public Integer getMetric() {
+      return 0;
+   }
+
    @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    public String getNextHopInterface() {
       return _nextHopInterface;
@@ -134,11 +139,6 @@ public class StaticRoute extends AbstractRoute implements
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
    public void setAdministrativeCost(int administrativeCost) {
       _administrativeCost = administrativeCost;
-   }
-
-   @Override
-   public Integer getMetric() {
-      return 0;
    }
 
 }

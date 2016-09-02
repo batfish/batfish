@@ -30,7 +30,7 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
 
    @Override
    public NodSatResult<Key> call() throws Exception {
-      Map<Key, Boolean> results = new LinkedHashMap<Key, Boolean>();
+      Map<Key, Boolean> results = new LinkedHashMap<>();
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       try (Context ctx = new Context()) {
@@ -51,7 +51,8 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
          for (BoolExpr rule : program.getRules()) {
             fix.addRule(rule, null);
          }
-         for (int queryNum = 0; queryNum < program.getQueries().size(); queryNum++) {
+         for (int queryNum = 0; queryNum < program.getQueries()
+               .size(); queryNum++) {
             BoolExpr query = program.getQueries().get(queryNum);
             Key key = _query.getKeys().get(queryNum);
             Status status = fix.query(query);
@@ -61,23 +62,22 @@ public class NodSatJob<Key> extends BatfishJob<NodSatResult<Key>> {
                results.put(key, true);
                break;
             case UNKNOWN:
-               return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+               return new NodSatResult<>(elapsedTime, _logger.getHistory(),
                      new BatfishException("Query satisfiability unknown"));
             case UNSATISFIABLE:
                results.put(key, false);
                break;
             default:
-               return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+               return new NodSatResult<>(elapsedTime, _logger.getHistory(),
                      new BatfishException("invalid status"));
             }
          }
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodSatResult<Key>(results, _logger.getHistory(),
-               elapsedTime);
+         return new NodSatResult<>(results, _logger.getHistory(), elapsedTime);
       }
       catch (Z3Exception e) {
          elapsedTime = System.currentTimeMillis() - startTime;
-         return new NodSatResult<Key>(elapsedTime, _logger.getHistory(),
+         return new NodSatResult<>(elapsedTime, _logger.getHistory(),
                new BatfishException(
                      "Error running NoD on concatenated data plane", e));
       }

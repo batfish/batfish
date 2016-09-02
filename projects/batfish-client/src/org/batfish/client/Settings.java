@@ -190,7 +190,8 @@ public class Settings extends BaseSettings {
             "questions_dir");
 
       addOption(ARG_RUN_MODE,
-            "which mode to run in (batch|interactive|genquestions)", "run_mode");
+            "which mode to run in (batch|interactive|genquestions)",
+            "run_mode");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 

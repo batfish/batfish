@@ -16,7 +16,7 @@ public class NodeDevice extends ComparableStructure<String> {
 
    public NodeDevice(String name) {
       super(name);
-      _interfaces = new TreeMap<String, Interface>();
+      _interfaces = new TreeMap<>();
    }
 
    public Map<String, Interface> getInterfaces() {

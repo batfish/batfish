@@ -27,8 +27,8 @@ public class If extends AbstractStatement {
 
    @JsonCreator
    public If() {
-      _falseStatements = new ArrayList<Statement>();
-      _trueStatements = new ArrayList<Statement>();
+      _falseStatements = new ArrayList<>();
+      _trueStatements = new ArrayList<>();
    }
 
    @Override
@@ -78,8 +78,8 @@ public class If extends AbstractStatement {
 
    @Override
    public List<Statement> simplify() {
-      List<Statement> simpleTrueStatements = new ArrayList<Statement>();
-      List<Statement> simpleFalseStatements = new ArrayList<Statement>();
+      List<Statement> simpleTrueStatements = new ArrayList<>();
+      List<Statement> simpleFalseStatements = new ArrayList<>();
       BooleanExpr simpleGuard = _guard.simplify();
       for (Statement trueStatement : _trueStatements) {
          simpleTrueStatements.addAll(trueStatement.simplify());

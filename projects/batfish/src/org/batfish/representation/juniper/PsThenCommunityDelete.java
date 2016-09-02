@@ -22,7 +22,8 @@ public final class PsThenCommunityDelete extends PsThen {
 
    private final String _name;
 
-   public PsThenCommunityDelete(String name, JuniperConfiguration configuration) {
+   public PsThenCommunityDelete(String name,
+         JuniperConfiguration configuration) {
       _name = name;
       _configuration = configuration;
    }
@@ -37,11 +38,11 @@ public final class PsThenCommunityDelete extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(
-               _name);
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
+               .get(_name);
          if (list == null) {
-            throw new VendorConversionException("missing community list: \""
-                  + _name + "\"");
+            throw new VendorConversionException(
+                  "missing community list: \"" + _name + "\"");
          }
          statements.add(new DeleteCommunity(new NamedCommunitySet(_name)));
       }
@@ -56,11 +57,11 @@ public final class PsThenCommunityDelete extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(
-               _name);
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
+               .get(_name);
          if (list == null) {
-            throw new VendorConversionException("missing community list: \""
-                  + _name + "\"");
+            throw new VendorConversionException(
+                  "missing community list: \"" + _name + "\"");
          }
          PolicyMapSetDeleteCommunityLine line = new PolicyMapSetDeleteCommunityLine(
                list);

@@ -130,14 +130,14 @@ public class ConfigurationFactExtractor {
                int as2Low = as2Range.getStart();
                int as2High = as2Range.getEnd();
                if (atBeginning) {
-                  wSetAsPathLineMatchAsPairAtBeginning.append(asPathName + "|"
-                        + i + "|" + as1Low + "|" + as1High + "|" + as2Low + "|"
-                        + as2High + "\n");
+                  wSetAsPathLineMatchAsPairAtBeginning
+                        .append(asPathName + "|" + i + "|" + as1Low + "|"
+                              + as1High + "|" + as2Low + "|" + as2High + "\n");
                }
                else {
-                  wSetAsPathLineMatchAsPair.append(asPathName + "|" + i + "|"
-                        + as1Low + "|" + as1High + "|" + as2Low + "|" + as2High
-                        + "\n");
+                  wSetAsPathLineMatchAsPair
+                        .append(asPathName + "|" + i + "|" + as1Low + "|"
+                              + as1High + "|" + as2Low + "|" + as2High + "\n");
                }
             }
             else if (as1Range != null) {
@@ -180,17 +180,18 @@ public class ConfigurationFactExtractor {
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "\n");
-            for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
+            for (PolicyMap attributePolicy : gr.getAttributePolicies()
+                  .values()) {
                String apName = hostname + ":" + attributePolicy.getName();
-               wSetBgpGeneratedRouteAttributePolicy_flat.append(hostname + "|"
-                     + network_start + "|" + network_end + "|" + prefix_length
-                     + "|" + apName + "\n");
+               wSetBgpGeneratedRouteAttributePolicy_flat
+                     .append(hostname + "|" + network_start + "|" + network_end
+                           + "|" + prefix_length + "|" + apName + "\n");
             }
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getName();
-               wSetBgpGeneratedRoutePolicy_flat.append(hostname + "|"
-                     + network_start + "|" + network_end + "|" + prefix_length
-                     + "|" + gpName + "\n");
+               wSetBgpGeneratedRoutePolicy_flat
+                     .append(hostname + "|" + network_start + "|" + network_end
+                           + "|" + prefix_length + "|" + gpName + "\n");
             }
          }
       }
@@ -230,11 +231,11 @@ public class ConfigurationFactExtractor {
                }
                for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                   String gpName = hostname + ":" + generationPolicy.getName();
-                  wSetBgpNeighborGeneratedRoutePolicy_flat.append(hostname
-                        + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
-                        + "|" + neighborPrefixLength + "|" + network_start
-                        + "|" + network_end + "|" + prefix_length + "|"
-                        + gpName + "\n");
+                  wSetBgpNeighborGeneratedRoutePolicy_flat
+                        .append(hostname + "|" + neighborPrefixStart + "|"
+                              + neighborPrefixEnd + "|" + neighborPrefixLength
+                              + "|" + network_start + "|" + network_end + "|"
+                              + prefix_length + "|" + gpName + "\n");
                }
             }
          }
@@ -300,9 +301,9 @@ public class ConfigurationFactExtractor {
             long neighborPrefixStart = neighborPrefix.getAddress().asLong();
             long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
-            wSetBgpNeighborNetwork_flat.append(hostname + "|"
-                  + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
-                  + neighborPrefixLength + "\n");
+            wSetBgpNeighborNetwork_flat.append(
+                  hostname + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
+                        + "|" + neighborPrefixLength + "\n");
             Ip localIp = neighbor.getLocalIp();
             if (localIp != null) {
                long localIpAsLong = localIp.asLong();
@@ -330,12 +331,12 @@ public class ConfigurationFactExtractor {
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "\n");
             }
-            wSetLocalAs_flat.append(hostname + "|" + neighborPrefixStart + "|"
-                  + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
-                  + localAs + "\n");
-            wSetRemoteAs_flat.append(hostname + "|" + neighborPrefixStart + "|"
-                  + neighborPrefixEnd + "|" + neighborPrefixLength + "|"
-                  + remoteAs + "\n");
+            wSetLocalAs_flat.append(
+                  hostname + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
+                        + "|" + neighborPrefixLength + "|" + localAs + "\n");
+            wSetRemoteAs_flat.append(
+                  hostname + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
+                        + "|" + neighborPrefixLength + "|" + remoteAs + "\n");
             wSetBgpNeighborDefaultMetric_flat.append(hostname + "|"
                   + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                   + neighborPrefixLength + "|" + defaultMetric + "\n");
@@ -381,9 +382,10 @@ public class ConfigurationFactExtractor {
          List<CommunityListLine> lineList = list.getLines();
          for (int i = 0; i < lineList.size(); i++) {
             CommunityListLine line = lineList.get(i);
-            for (Long community : line.getMatchingCommunities(_allCommunities)) {
-               wSetCommunityListLine.append(listName + "|" + i + "|"
-                     + community + "\n");
+            for (Long community : line
+                  .getMatchingCommunities(_allCommunities)) {
+               wSetCommunityListLine
+                     .append(listName + "|" + i + "|" + community + "\n");
             }
             switch (line.getAction()) {
             case ACCEPT:
@@ -449,33 +451,32 @@ public class ConfigurationFactExtractor {
          long network_start = gr.getPrefix().getAddress().asLong();
          int prefix_length = gr.getPrefix().getPrefixLength();
          long network_end = gr.getPrefix().getEndAddress().asLong();
-         wSetGeneratedRoute_flat.append(hostname + "|" + network_start + "|"
-               + network_end + "|" + prefix_length + "|"
-               + gr.getAdministrativeCost() + "\n");
+         wSetGeneratedRoute_flat
+               .append(hostname + "|" + network_start + "|" + network_end + "|"
+                     + prefix_length + "|" + gr.getAdministrativeCost() + "\n");
          wSetNetwork.append(network_start + "|" + network_start + "|"
                + network_end + "|" + prefix_length + "\n");
          Integer metric = gr.getMetric();
          if (gr.getDiscard()) {
-            wSetGeneratedRouteDiscard_flat.append(hostname + "|"
-                  + network_start + "|" + network_end + "|" + prefix_length
-                  + "\n");
+            wSetGeneratedRouteDiscard_flat.append(hostname + "|" + network_start
+                  + "|" + network_end + "|" + prefix_length + "\n");
          }
          if (metric != null) {
-            wSetGeneratedRouteMetric_flat.append(hostname + "|" + network_start
-                  + "|" + network_end + "|" + prefix_length + "|" + metric
-                  + "\n");
+            wSetGeneratedRouteMetric_flat
+                  .append(hostname + "|" + network_start + "|" + network_end
+                        + "|" + prefix_length + "|" + metric + "\n");
          }
          for (PolicyMap attributePolicy : gr.getAttributePolicies().values()) {
             String policyName = hostname + ":" + attributePolicy.getName();
-            wSetGeneratedRouteAttributePolicy_flat.append(hostname + "|"
-                  + network_start + "|" + network_end + "|" + prefix_length
-                  + "|" + policyName + "\n");
+            wSetGeneratedRouteAttributePolicy_flat
+                  .append(hostname + "|" + network_start + "|" + network_end
+                        + "|" + prefix_length + "|" + policyName + "\n");
          }
          for (PolicyMap grPolicy : gr.getGenerationPolicies()) {
             String policyName = hostname + ":" + grPolicy.getName();
-            wSetGeneratedRoutePolicy_flat.append(hostname + "|" + network_start
-                  + "|" + network_end + "|" + prefix_length + "|" + policyName
-                  + "\n");
+            wSetGeneratedRoutePolicy_flat
+                  .append(hostname + "|" + network_start + "|" + network_end
+                        + "|" + prefix_length + "|" + policyName + "\n");
          }
       }
    }
@@ -504,8 +505,10 @@ public class ConfigurationFactExtractor {
                }
                else {
                   if (i.getBandwidth() != null) {
-                     ospfCost = Math.max((int) (_configuration.getOspfProcess()
-                           .getReferenceBandwidth() / i.getBandwidth()), 1);
+                     ospfCost = Math.max(
+                           (int) (_configuration.getOspfProcess()
+                                 .getReferenceBandwidth() / i.getBandwidth()),
+                           1);
                   }
                   else {
                      throw new BatfishException(
@@ -520,20 +523,20 @@ public class ConfigurationFactExtractor {
          IpAccessList incomingFilter = i.getIncomingFilter();
          if (incomingFilter != null) {
             String filterName = hostname + ":" + incomingFilter.getName();
-            wSetInterfaceFilterIn.append(hostname + "|" + interfaceName + "|"
-                  + filterName + "\n");
+            wSetInterfaceFilterIn.append(
+                  hostname + "|" + interfaceName + "|" + filterName + "\n");
          }
          IpAccessList outgoingFilter = i.getOutgoingFilter();
          if (outgoingFilter != null) {
             String filterName = hostname + ":" + outgoingFilter.getName();
-            wSetInterfaceFilterOut.append(hostname + "|" + interfaceName + "|"
-                  + filterName + "\n");
+            wSetInterfaceFilterOut.append(
+                  hostname + "|" + interfaceName + "|" + filterName + "\n");
          }
          PolicyMap routingPolicy = i.getRoutingPolicy();
          if (routingPolicy != null) {
             String policyName = hostname + ":" + routingPolicy.getName();
-            wSetInterfaceRoutingPolicy.append(hostname + "|" + interfaceName
-                  + "|" + policyName + "\n");
+            wSetInterfaceRoutingPolicy.append(
+                  hostname + "|" + interfaceName + "|" + policyName + "\n");
          }
       }
    }
@@ -626,73 +629,73 @@ public class ConfigurationFactExtractor {
                Prefix dstIps = dstIpWildcard.toPrefix();
                long dstIpStart = dstIps.getAddress().asLong();
                long dstIpEnd = dstIps.getEndAddress().asLong();
-               wSetIpAccessListLine_dstIps.append(name + "|" + i + "|"
-                     + dstIpStart + "|" + dstIpEnd + "\n");
+               wSetIpAccessListLine_dstIps.append(
+                     name + "|" + i + "|" + dstIpStart + "|" + dstIpEnd + "\n");
             }
             for (IpWildcard dstIpWildcard : line.getNotDstIps()) {
                Prefix dstIps = dstIpWildcard.toPrefix();
                long dstIpStart = dstIps.getAddress().asLong();
                long dstIpEnd = dstIps.getEndAddress().asLong();
-               wSetIpAccessListLine_notDstIps.append(name + "|" + i + "|"
-                     + dstIpStart + "|" + dstIpEnd + "\n");
+               wSetIpAccessListLine_notDstIps.append(
+                     name + "|" + i + "|" + dstIpStart + "|" + dstIpEnd + "\n");
             }
             for (SubRange dstPorts : line.getDstPorts()) {
                long startPort = dstPorts.getStart();
                long endPort = dstPorts.getEnd();
-               wSetIpAccessListLine_dstPorts.append(name + "|" + i + "|"
-                     + startPort + "|" + endPort + "\n");
+               wSetIpAccessListLine_dstPorts.append(
+                     name + "|" + i + "|" + startPort + "|" + endPort + "\n");
             }
             for (SubRange dstPorts : line.getNotDstPorts()) {
                long startPort = dstPorts.getStart();
                long endPort = dstPorts.getEnd();
-               wSetIpAccessListLine_notDstPorts.append(name + "|" + i + "|"
-                     + startPort + "|" + endPort + "\n");
+               wSetIpAccessListLine_notDstPorts.append(
+                     name + "|" + i + "|" + startPort + "|" + endPort + "\n");
             }
             for (SubRange icmpCodeRange : line.getIcmpCodes()) {
                long start = icmpCodeRange.getStart();
                long end = icmpCodeRange.getEnd();
-               wSetIpAccessListLine_icmpCodes.append(name + "|" + i + "|"
-                     + start + "|" + end + "\n");
+               wSetIpAccessListLine_icmpCodes
+                     .append(name + "|" + i + "|" + start + "|" + end + "\n");
             }
             for (SubRange icmpCodeRange : line.getNotIcmpCodes()) {
                long start = icmpCodeRange.getStart();
                long end = icmpCodeRange.getEnd();
-               wSetIpAccessListLine_notIcmpCodes.append(name + "|" + i + "|"
-                     + start + "|" + end + "\n");
+               wSetIpAccessListLine_notIcmpCodes
+                     .append(name + "|" + i + "|" + start + "|" + end + "\n");
             }
             for (SubRange icmpTypeRange : line.getIcmpTypes()) {
                long start = icmpTypeRange.getStart();
                long end = icmpTypeRange.getEnd();
-               wSetIpAccessListLine_icmpTypes.append(name + "|" + i + "|"
-                     + start + "|" + end + "\n");
+               wSetIpAccessListLine_icmpTypes
+                     .append(name + "|" + i + "|" + start + "|" + end + "\n");
             }
             for (SubRange icmpTypeRange : line.getNotIcmpTypes()) {
                long start = icmpTypeRange.getStart();
                long end = icmpTypeRange.getEnd();
-               wSetIpAccessListLine_notIcmpTypes.append(name + "|" + i + "|"
-                     + start + "|" + end + "\n");
+               wSetIpAccessListLine_notIcmpTypes
+                     .append(name + "|" + i + "|" + start + "|" + end + "\n");
             }
             for (IpProtocol protocol : line.getIpProtocols()) {
-               wSetIpAccessListLine_protocol.append(name + "|" + i + "|"
-                     + protocol.number() + "\n");
+               wSetIpAccessListLine_protocol
+                     .append(name + "|" + i + "|" + protocol.number() + "\n");
             }
             for (IpProtocol protocol : line.getNotIpProtocols()) {
-               wSetIpAccessListLine_notProtocol.append(name + "|" + i + "|"
-                     + protocol.number() + "\n");
+               wSetIpAccessListLine_notProtocol
+                     .append(name + "|" + i + "|" + protocol.number() + "\n");
             }
             for (IpWildcard srcIpWildcard : line.getSrcIps()) {
                Prefix srcIps = srcIpWildcard.toPrefix();
                long srcIpStart = srcIps.getAddress().asLong();
                long srcIpEnd = srcIps.getEndAddress().asLong();
-               wSetIpAccessListLine_srcIps.append(name + "|" + i + "|"
-                     + srcIpStart + "|" + srcIpEnd + "\n");
+               wSetIpAccessListLine_srcIps.append(
+                     name + "|" + i + "|" + srcIpStart + "|" + srcIpEnd + "\n");
             }
             for (IpWildcard srcIpWildcard : line.getNotSrcIps()) {
                Prefix srcIps = srcIpWildcard.toPrefix();
                long srcIpStart = srcIps.getAddress().asLong();
                long srcIpEnd = srcIps.getEndAddress().asLong();
-               wSetIpAccessListLine_notSrcIps.append(name + "|" + i + "|"
-                     + srcIpStart + "|" + srcIpEnd + "\n");
+               wSetIpAccessListLine_notSrcIps.append(
+                     name + "|" + i + "|" + srcIpStart + "|" + srcIpEnd + "\n");
             }
             for (IpWildcard srcOrDstIpWildcard : line.getSrcOrDstIps()) {
                Prefix srcOrDstIps = srcOrDstIpWildcard.toPrefix();
@@ -704,86 +707,86 @@ public class ConfigurationFactExtractor {
             for (SubRange srcOrDstPorts : line.getSrcOrDstPorts()) {
                long startPort = srcOrDstPorts.getStart();
                long endPort = srcOrDstPorts.getEnd();
-               wSetIpAccessListLine_srcOrDstPorts.append(name + "|" + i + "|"
-                     + startPort + "|" + endPort + "\n");
+               wSetIpAccessListLine_srcOrDstPorts.append(
+                     name + "|" + i + "|" + startPort + "|" + endPort + "\n");
             }
             for (SubRange srcPorts : line.getSrcPorts()) {
                long startPort = srcPorts.getStart();
                long endPort = srcPorts.getEnd();
-               wSetIpAccessListLine_srcPorts.append(name + "|" + i + "|"
-                     + startPort + "|" + endPort + "\n");
+               wSetIpAccessListLine_srcPorts.append(
+                     name + "|" + i + "|" + startPort + "|" + endPort + "\n");
             }
             for (SubRange srcPorts : line.getNotSrcPorts()) {
                long startPort = srcPorts.getStart();
                long endPort = srcPorts.getEnd();
-               wSetIpAccessListLine_notSrcPorts.append(name + "|" + i + "|"
-                     + startPort + "|" + endPort + "\n");
+               wSetIpAccessListLine_notSrcPorts.append(
+                     name + "|" + i + "|" + startPort + "|" + endPort + "\n");
             }
             for (State state : line.getStates()) {
                long stateNum = state.number();
-               wSetIpAccessListLine_state.append(name + "|" + i + "|"
-                     + stateNum + "\n");
+               wSetIpAccessListLine_state
+                     .append(name + "|" + i + "|" + stateNum + "\n");
             }
             for (int alt = 0; alt < line.getTcpFlags().size(); alt++) {
                TcpFlags tcpFlags = line.getTcpFlags().get(alt);
-               wSetIpAccessListLine_tcpFlags.append(name + "|" + i + "|" + alt
-                     + "\n");
+               wSetIpAccessListLine_tcpFlags
+                     .append(name + "|" + i + "|" + alt + "\n");
                if (tcpFlags.getUseCwr()) {
                   int bit = tcpFlags.getCwr() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsCWR.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsCWR
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseEce()) {
                   int bit = tcpFlags.getEce() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsECE.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsECE
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseUrg()) {
                   int bit = tcpFlags.getUrg() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsURG.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsURG
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseAck()) {
                   int bit = tcpFlags.getAck() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsACK.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsACK
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUsePsh()) {
                   int bit = tcpFlags.getPsh() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsPSH.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsPSH
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseRst()) {
                   int bit = tcpFlags.getRst() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsRST.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsRST
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseSyn()) {
                   int bit = tcpFlags.getSyn() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsSYN.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsSYN
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
                if (tcpFlags.getUseFin()) {
                   int bit = tcpFlags.getFin() ? 1 : 0;
-                  wSetIpAccessListLine_tcpFlagsFIN.append(name + "|" + i + "|"
-                        + alt + "|" + bit + "\n");
+                  wSetIpAccessListLine_tcpFlagsFIN
+                        .append(name + "|" + i + "|" + alt + "|" + bit + "\n");
                }
             }
             for (int dscp : line.getDscps()) {
-               wSetIpAccessListLine_dscp.append(name + "|" + i + "|" + dscp
-                     + "\n");
+               wSetIpAccessListLine_dscp
+                     .append(name + "|" + i + "|" + dscp + "\n");
             }
             for (int dscp : line.getNotDscps()) {
-               wSetIpAccessListLine_notDscp.append(name + "|" + i + "|" + dscp
-                     + "\n");
+               wSetIpAccessListLine_notDscp
+                     .append(name + "|" + i + "|" + dscp + "\n");
             }
             for (int ecn : line.getEcns()) {
-               wSetIpAccessListLine_ecn.append(name + "|" + i + "|" + ecn
-                     + "\n");
+               wSetIpAccessListLine_ecn
+                     .append(name + "|" + i + "|" + ecn + "\n");
             }
             for (int ecn : line.getNotEcns()) {
-               wSetIpAccessListLine_notEcn.append(name + "|" + i + "|" + ecn
-                     + "\n");
+               wSetIpAccessListLine_notEcn
+                     .append(name + "|" + i + "|" + ecn + "\n");
             }
          }
       }
@@ -812,17 +815,17 @@ public class ConfigurationFactExtractor {
             String ifaceName = iface.getName();
             switch (l1Mode) {
             case PASSIVE:
-               wSetIsisL1PassiveInterface.append(hostname + "|" + ifaceName
-                     + "\n");
+               wSetIsisL1PassiveInterface
+                     .append(hostname + "|" + ifaceName + "\n");
             case ACTIVE:
-               wSetIsisL1ActiveInterface.append(hostname + "|" + ifaceName
-                     + "\n");
+               wSetIsisL1ActiveInterface
+                     .append(hostname + "|" + ifaceName + "\n");
                Integer isisCost = iface.getIsisCost();
                if (isisCost == null) {
                   isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
                }
-               wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
-                     + isisCost + "\n");
+               wSetIsisInterfaceCost.append(
+                     hostname + "|" + ifaceName + "|" + isisCost + "\n");
                break;
             case UNSET:
                break;
@@ -831,17 +834,17 @@ public class ConfigurationFactExtractor {
             }
             switch (l2Mode) {
             case PASSIVE:
-               wSetIsisL2PassiveInterface.append(hostname + "|" + ifaceName
-                     + "\n");
+               wSetIsisL2PassiveInterface
+                     .append(hostname + "|" + ifaceName + "\n");
             case ACTIVE:
-               wSetIsisL2ActiveInterface.append(hostname + "|" + ifaceName
-                     + "\n");
+               wSetIsisL2ActiveInterface
+                     .append(hostname + "|" + ifaceName + "\n");
                Integer isisCost = iface.getIsisCost();
                if (isisCost == null) {
                   isisCost = IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
                }
-               wSetIsisInterfaceCost.append(hostname + "|" + ifaceName + "|"
-                     + isisCost + "\n");
+               wSetIsisInterfaceCost.append(
+                     hostname + "|" + ifaceName + "|" + isisCost + "\n");
                break;
             case UNSET:
                break;
@@ -895,9 +898,9 @@ public class ConfigurationFactExtractor {
                   + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getName();
-               wSetIsisGeneratedRoutePolicy_flat.append(hostname + "|"
-                     + network_start + "|" + network_end + "|" + prefix_length
-                     + "|" + gpName + "\n");
+               wSetIsisGeneratedRoutePolicy_flat
+                     .append(hostname + "|" + network_start + "|" + network_end
+                           + "|" + prefix_length + "|" + gpName + "\n");
             }
          }
       }
@@ -914,12 +917,12 @@ public class ConfigurationFactExtractor {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getName();
             wSetIsisOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
-            IsisLevel exportLevel = proc.getPolicyExportLevels().get(
-                  map.getName());
+            IsisLevel exportLevel = proc.getPolicyExportLevels()
+                  .get(map.getName());
             if (exportLevel == null) {
                continue;
             }
-            Set<String> levels = new HashSet<String>();
+            Set<String> levels = new HashSet<>();
             switch (exportLevel) {
             case LEVEL_1:
                levels.add(RoutingProtocol.ISIS_L1.protocolName());
@@ -935,8 +938,8 @@ public class ConfigurationFactExtractor {
                throw new BatfishException("invalid IS-IS level");
             }
             for (String level : levels) {
-               wSetPolicyMapIsisExternalRouteType.append(mapName + "|" + level
-                     + "\n");
+               wSetPolicyMapIsisExternalRouteType
+                     .append(mapName + "|" + level + "\n");
             }
          }
       }
@@ -952,10 +955,10 @@ public class ConfigurationFactExtractor {
          }
          double limit = iface.getBandwidth();
          String interfaceName = iface.getName();
-         wSetLinkLoadLimitIn.append(hostname + "|" + interfaceName + "|"
-               + limit + "\n");
-         wSetLinkLoadLimitOut.append(hostname + "|" + interfaceName + "|"
-               + limit + "\n");
+         wSetLinkLoadLimitIn
+               .append(hostname + "|" + interfaceName + "|" + limit + "\n");
+         wSetLinkLoadLimitOut
+               .append(hostname + "|" + interfaceName + "|" + limit + "\n");
       }
    }
 
@@ -978,9 +981,9 @@ public class ConfigurationFactExtractor {
                   + network_end + "|" + prefix_length + "\n");
             for (PolicyMap generationPolicy : gr.getGenerationPolicies()) {
                String gpName = hostname + ":" + generationPolicy.getName();
-               wSetOspfGeneratedRoutePolicy_flat.append(hostname + "|"
-                     + network_start + "|" + network_end + "|" + prefix_length
-                     + "|" + gpName + "\n");
+               wSetOspfGeneratedRoutePolicy_flat
+                     .append(hostname + "|" + network_start + "|" + network_end
+                           + "|" + prefix_length + "|" + gpName + "\n");
             }
          }
       }
@@ -1011,8 +1014,8 @@ public class ConfigurationFactExtractor {
       if (proc != null) {
          for (PolicyMap map : proc.getOutboundPolicyMaps()) {
             String mapName = hostname + ":" + map.getName();
-            OspfMetricType metricType = proc.getPolicyMetricTypes().get(
-                  map.getName());
+            OspfMetricType metricType = proc.getPolicyMetricTypes()
+                  .get(map.getName());
             String protocol = null;
             switch (metricType) {
             case E1:
@@ -1025,8 +1028,8 @@ public class ConfigurationFactExtractor {
                throw new BatfishException("invalid ospf metric type");
             }
             wSetOspfOutboundPolicyMap.append(hostname + "|" + mapName + "\n");
-            wSetPolicyMapOspfExternalRouteType.append(mapName + "|" + protocol
-                  + "\n");
+            wSetPolicyMapOspfExternalRouteType
+                  .append(mapName + "|" + protocol + "\n");
          }
       }
    }
@@ -1120,8 +1123,8 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchAsPathAccessListLine matchAsPathLine = (PolicyMapMatchAsPathAccessListLine) matchLine;
                   for (AsPathAccessList asPath : matchAsPathLine.getLists()) {
                      String asPathName = hostname + ":" + asPath.getName();
-                     wSetPolicyMapClauseMatchAsPath.append(mapName + "|" + i
-                           + "|" + asPathName + "\n");
+                     wSetPolicyMapClauseMatchAsPath
+                           .append(mapName + "|" + i + "|" + asPathName + "\n");
                   }
                   break;
                }
@@ -1130,8 +1133,8 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchCommunityListLine mclLine = (PolicyMapMatchCommunityListLine) matchLine;
                   for (CommunityList cList : mclLine.getLists()) {
                      String cListName = hostname + ":" + cList.getName();
-                     wSetPolicyMapClauseMatchCommunityList.append(mapName + "|"
-                           + i + "|" + cListName + "\n");
+                     wSetPolicyMapClauseMatchCommunityList
+                           .append(mapName + "|" + i + "|" + cListName + "\n");
                   }
                   break;
                }
@@ -1140,8 +1143,8 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchIpAccessListLine mialLine = (PolicyMapMatchIpAccessListLine) matchLine;
                   for (IpAccessList list : mialLine.getLists()) {
                      String listName = hostname + ":" + list.getName();
-                     wSetPolicyMapClauseMatchAcl.append(mapName + "|" + i + "|"
-                           + listName + "\n");
+                     wSetPolicyMapClauseMatchAcl
+                           .append(mapName + "|" + i + "|" + listName + "\n");
                   }
                   break;
                }
@@ -1149,8 +1152,8 @@ public class ConfigurationFactExtractor {
                case NEIGHBOR: {
                   PolicyMapMatchNeighborLine pmmnl = (PolicyMapMatchNeighborLine) matchLine;
                   long neighborIp = pmmnl.getNeighborIp().asLong();
-                  wSetPolicyMapClauseMatchNeighbor.append(mapName + "|" + i
-                        + "|" + neighborIp + "\n");
+                  wSetPolicyMapClauseMatchNeighbor
+                        .append(mapName + "|" + i + "|" + neighborIp + "\n");
                   break;
                }
 
@@ -1158,8 +1161,8 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchPolicyLine matchPolicyLine = (PolicyMapMatchPolicyLine) matchLine;
                   PolicyMap policy = matchPolicyLine.getPolicy();
                   String policyName = hostname + ":" + policy.getName();
-                  wSetPolicyMapClauseMatchPolicy.append(mapName + "|" + i + "|"
-                        + policyName + "\n");
+                  wSetPolicyMapClauseMatchPolicy
+                        .append(mapName + "|" + i + "|" + policyName + "\n");
                   break;
                }
 
@@ -1169,8 +1172,8 @@ public class ConfigurationFactExtractor {
                         .getConjuncts();
                   for (PolicyMap policy : policies) {
                      String policyName = hostname + ":" + policy.getName();
-                     wSetPolicyMapClauseMatchPolicyConjunction.append(mapName
-                           + "|" + i + "|" + policyName + "\n");
+                     wSetPolicyMapClauseMatchPolicyConjunction
+                           .append(mapName + "|" + i + "|" + policyName + "\n");
                   }
                   break;
                }
@@ -1178,8 +1181,8 @@ public class ConfigurationFactExtractor {
                case PROTOCOL: {
                   PolicyMapMatchProtocolLine pmmpl = (PolicyMapMatchProtocolLine) matchLine;
                   RoutingProtocol prot = pmmpl.getProtocol();
-                  wSetPolicyMapClauseMatchProtocol.append(mapName + "|" + i
-                        + "|" + prot.protocolName() + "\n");
+                  wSetPolicyMapClauseMatchProtocol.append(
+                        mapName + "|" + i + "|" + prot.protocolName() + "\n");
                   break;
                }
 
@@ -1187,8 +1190,8 @@ public class ConfigurationFactExtractor {
                   PolicyMapMatchRouteFilterListLine mrfLine = (PolicyMapMatchRouteFilterListLine) matchLine;
                   for (RouteFilterList rfList : mrfLine.getLists()) {
                      String rflName = hostname + ":" + rfList.getName();
-                     wSetPolicyMapClauseMatchRouteFilter.append(mapName + "|"
-                           + i + "|" + rflName + "\n");
+                     wSetPolicyMapClauseMatchRouteFilter
+                           .append(mapName + "|" + i + "|" + rflName + "\n");
                   }
                   break;
                }
@@ -1196,8 +1199,8 @@ public class ConfigurationFactExtractor {
                case TAG: {
                   PolicyMapMatchTagLine pmmtl = (PolicyMapMatchTagLine) matchLine;
                   for (Integer tag : pmmtl.getTags()) {
-                     wSetPolicyMapClauseMatchTag.append(mapName + "|" + i + "|"
-                           + tag + "\n");
+                     wSetPolicyMapClauseMatchTag
+                           .append(mapName + "|" + i + "|" + tag + "\n");
                   }
                   break;
                }
@@ -1205,8 +1208,8 @@ public class ConfigurationFactExtractor {
                case COLOR: {
                   PolicyMapMatchColorLine pmmcl = (PolicyMapMatchColorLine) matchLine;
                   int color = pmmcl.getColor();
-                  wSetPolicyMapClauseMatchColor.append(mapName + "|" + i + "|"
-                        + color + "\n");
+                  wSetPolicyMapClauseMatchColor
+                        .append(mapName + "|" + i + "|" + color + "\n");
                   break;
                }
 
@@ -1229,8 +1232,8 @@ public class ConfigurationFactExtractor {
                case ADDITIVE_COMMUNITY:
                   PolicyMapSetAddCommunityLine sacLine = (PolicyMapSetAddCommunityLine) setLine;
                   for (Long community : sacLine.getCommunities()) {
-                     wSetPolicyMapClauseAddCommunity.append(mapName + "|" + i
-                           + "|" + community + "\n");
+                     wSetPolicyMapClauseAddCommunity
+                           .append(mapName + "|" + i + "|" + community + "\n");
                   }
                   break;
 
@@ -1244,51 +1247,51 @@ public class ConfigurationFactExtractor {
                case COMMUNITY:
                   PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
                   for (Long community : scLine.getCommunities()) {
-                     wSetPolicyMapClauseSetCommunity.append(mapName + "|" + i
-                           + "|" + community + "\n");
+                     wSetPolicyMapClauseSetCommunity
+                           .append(mapName + "|" + i + "|" + community + "\n");
                   }
                   break;
 
                case COMMUNITY_NONE:
-                  wSetPolicyMapClauseSetCommunityNone.append(mapName + "|" + i
-                        + "\n");
+                  wSetPolicyMapClauseSetCommunityNone
+                        .append(mapName + "|" + i + "\n");
                   break;
 
                case DELETE_COMMUNITY:
                   PolicyMapSetDeleteCommunityLine sdcLine = (PolicyMapSetDeleteCommunityLine) setLine;
                   String cListName = hostname + ":"
                         + sdcLine.getList().getName();
-                  wSetPolicyMapClauseDeleteCommunity.append(mapName + "|" + i
-                        + "|" + cListName + "\n");
+                  wSetPolicyMapClauseDeleteCommunity
+                        .append(mapName + "|" + i + "|" + cListName + "\n");
                   break;
 
                case LOCAL_PREFERENCE:
                   PolicyMapSetLocalPreferenceLine pmslp = (PolicyMapSetLocalPreferenceLine) setLine;
                   int localPref = pmslp.getLocalPreference();
-                  wSetPolicyMapClauseSetLocalPreference.append(mapName + "|"
-                        + i + "|" + localPref + "\n");
+                  wSetPolicyMapClauseSetLocalPreference
+                        .append(mapName + "|" + i + "|" + localPref + "\n");
                   break;
 
                case METRIC:
                   PolicyMapSetMetricLine pmsml = (PolicyMapSetMetricLine) setLine;
                   int metric = pmsml.getMetric();
-                  wSetPolicyMapClauseSetMetric.append(mapName + "|" + i + "|"
-                        + metric + "\n");
+                  wSetPolicyMapClauseSetMetric
+                        .append(mapName + "|" + i + "|" + metric + "\n");
                   break;
 
                case NEXT_HOP:
                   PolicyMapSetNextHopLine pmsnhl = (PolicyMapSetNextHopLine) setLine;
                   for (Ip nextHopIp : pmsnhl.getNextHops()) {
-                     wSetPolicyMapClauseSetNextHopIp.append(mapName + "|" + i
-                           + "|" + nextHopIp.asLong() + "\n");
+                     wSetPolicyMapClauseSetNextHopIp.append(
+                           mapName + "|" + i + "|" + nextHopIp.asLong() + "\n");
                   }
                   break;
 
                case ORIGIN_TYPE:
                   PolicyMapSetOriginTypeLine pmsotl = (PolicyMapSetOriginTypeLine) setLine;
                   OriginType originType = pmsotl.getOriginType();
-                  wSetPolicyMapClauseSetOriginType.append(mapName + "|" + i
-                        + "|" + originType.toString() + "\n");
+                  wSetPolicyMapClauseSetOriginType.append(
+                        mapName + "|" + i + "|" + originType.toString() + "\n");
                   break;
 
                case LEVEL:
@@ -1358,9 +1361,9 @@ public class ConfigurationFactExtractor {
             SubRange prefixRange = line.getLengthRange();
             long min_prefix = prefixRange.getStart();
             long max_prefix = prefixRange.getEnd();
-            wSetRouteFilterLine.append(filterName + "|" + i + "|"
-                  + network_start + "|" + network_end + "|" + min_prefix + "|"
-                  + max_prefix + "\n");
+            wSetRouteFilterLine.append(
+                  filterName + "|" + i + "|" + network_start + "|" + network_end
+                        + "|" + min_prefix + "|" + max_prefix + "\n");
             switch (line.getAction()) {
             case ACCEPT:
                wSetRouteFilterPermitLine.append(filterName + "|" + i + "\n");
@@ -1391,9 +1394,9 @@ public class ConfigurationFactExtractor {
             if (clusterId == null) {
                continue;
             }
-            wSetRouteReflectorClient.append(hostname + "|"
-                  + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
-                  + neighborPrefixLength + "|" + clusterId + "\n");
+            wSetRouteReflectorClient.append(
+                  hostname + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
+                        + "|" + neighborPrefixLength + "|" + clusterId + "\n");
          }
       }
    }
@@ -1454,14 +1457,13 @@ public class ConfigurationFactExtractor {
                nextHopInt = CommonUtil.NULL_INTERFACE_NAME;
             }
             wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
-                  + network_end + "|" + prefix_length + "|"
-                  + nextHopIp.asLong() + "|" + nextHopInt + "|" + distance
-                  + "|" + tag + "\n");
+                  + network_end + "|" + prefix_length + "|" + nextHopIp.asLong()
+                  + "|" + nextHopInt + "|" + distance + "|" + tag + "\n");
          }
          else {
             wSetStaticRoute_flat.append(hostName + "|" + network_start + "|"
-                  + network_end + "|" + prefix_length + "|"
-                  + nextHopIp.asLong() + "|" + distance + "|" + tag + "\n");
+                  + network_end + "|" + prefix_length + "|" + nextHopIp.asLong()
+                  + "|" + distance + "|" + tag + "\n");
          }
       }
    }
@@ -1480,8 +1482,8 @@ public class ConfigurationFactExtractor {
          switch (i.getSwitchportMode()) {
          case ACCESS:
             int vlan = i.getAccessVlan();
-            wSetSwitchportAccess.append(hostname + "|" + interfaceName + "|"
-                  + vlan + "\n");
+            wSetSwitchportAccess
+                  .append(hostname + "|" + interfaceName + "|" + vlan + "\n");
             break;
 
          // TODO: create derived switchport facts in logic and here
@@ -1497,12 +1499,12 @@ public class ConfigurationFactExtractor {
          case TRUNK:
             SwitchportEncapsulationType encapsulation = i
                   .getSwitchportTrunkEncapsulation();
-            wSetSwitchportTrunkEncapsulation.append(hostname + "|"
-                  + interfaceName + "|"
-                  + encapsulation.toString().toLowerCase() + "\n");
+            wSetSwitchportTrunkEncapsulation
+                  .append(hostname + "|" + interfaceName + "|"
+                        + encapsulation.toString().toLowerCase() + "\n");
             int nativeVlan = i.getNativeVlan();
-            wSetSwitchportTrunkNative.append(hostname + "|" + interfaceName
-                  + "|" + nativeVlan + "\n");
+            wSetSwitchportTrunkNative.append(
+                  hostname + "|" + interfaceName + "|" + nativeVlan + "\n");
             for (SubRange range : i.getAllowedVlans()) {
                wSetSwitchportTrunkAllows.append(hostname + "|" + interfaceName
                      + "|" + range.getStart() + "|" + range.getEnd() + "\n");
@@ -1528,8 +1530,8 @@ public class ConfigurationFactExtractor {
       for (String ifaceName : _configuration.getInterfaces().keySet()) {
          Integer vlan = CommonUtil.getInterfaceVlanNumber(ifaceName);
          if (vlan != null) {
-            wSetVlanInterface.append(hostname + "|" + ifaceName + "|" + vlan
-                  + "\n");
+            wSetVlanInterface
+                  .append(hostname + "|" + ifaceName + "|" + vlan + "\n");
          }
       }
    }
@@ -1554,8 +1556,8 @@ public class ConfigurationFactExtractor {
             String ifaceName = e.getKey();
             IpAccessList inboundFilter = e.getValue();
             String inboundFilterName = hostname + ":" + inboundFilter.getName();
-            wSetInboundInterfaceFilter.append(hostname + "|" + ifaceName + "|"
-                  + inboundFilterName + "\n");
+            wSetInboundInterfaceFilter.append(
+                  hostname + "|" + ifaceName + "|" + inboundFilterName + "\n");
          }
          for (Entry<String, IpAccessList> e : srcZone.getToZonePolicies()
                .entrySet()) {
@@ -1576,8 +1578,8 @@ public class ConfigurationFactExtractor {
          IpAccessList toHostFilter = srcZone.getToHostFilter();
          if (toHostFilter != null) {
             String toHostFilterName = hostname + ":" + toHostFilter.getName();
-            wSetZoneToHostFilter.append(hostname + "|" + srcZoneName + "|"
-                  + toHostFilterName + "\n");
+            wSetZoneToHostFilter.append(
+                  hostname + "|" + srcZoneName + "|" + toHostFilterName + "\n");
          }
       }
       if (_configuration.getDefaultCrossZoneAction() == LineAction.ACCEPT) {
@@ -1591,8 +1593,8 @@ public class ConfigurationFactExtractor {
          Zone zone = iface.getZone();
          if (zone != null) {
             String zoneName = hostname + ":" + zone.getName();
-            wSetInterfaceZone.append(hostname + "|" + ifaceName + "|"
-                  + zoneName + "\n");
+            wSetInterfaceZone
+                  .append(hostname + "|" + ifaceName + "|" + zoneName + "\n");
          }
       }
    }

@@ -35,8 +35,7 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
 
    private QualifiedNameMap _qualifiedNameMap;
 
-   public LogiQLPredicateInfoResolver(
-         PredicateValueTypeMap predicateValueTypes,
+   public LogiQLPredicateInfoResolver(PredicateValueTypeMap predicateValueTypes,
          QualifiedNameMap qualifiedNameMap, FunctionSet functions,
          PredicateSemantics predicateSemantics) {
       _predicateValueTypes = predicateValueTypes;
@@ -48,8 +47,8 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
    private void addPredicate(String predicateName, LBValueTypeList list) {
       String qualifiedPredicateName = getQualifiedPredicateName(predicateName);
       if (_predicateValueTypes.get(predicateName) != null) {
-         throw new BatfishException("Predicate already declared: "
-               + predicateName);
+         throw new BatfishException(
+               "Predicate already declared: " + predicateName);
       }
       _predicateValueTypes.put(predicateName, list);
       _qualifiedNameMap.put(predicateName, qualifiedPredicateName);
@@ -95,7 +94,7 @@ public class LogiQLPredicateInfoResolver extends LogiQLParserBaseListener {
 
    @Override
    public void enterParameter_list(Parameter_listContext ctx) {
-      _currentArgTypes = new LinkedHashMap<String, LBValueType>();
+      _currentArgTypes = new LinkedHashMap<>();
       for (Token varToken : ctx.vars) {
          String var = varToken.getText();
          _currentArgTypes.put(var, null);

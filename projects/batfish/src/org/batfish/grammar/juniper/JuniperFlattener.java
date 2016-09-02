@@ -25,14 +25,14 @@ public class JuniperFlattener extends JuniperParserBaseListener {
 
    public JuniperFlattener(String header) {
       _header = header;
-      _stack = new ArrayList<List<String>>();
-      _setStatements = new ArrayList<String>();
+      _stack = new ArrayList<>();
+      _setStatements = new ArrayList<>();
    }
 
    @Override
    public void enterBracketed_clause(Bracketed_clauseContext ctx) {
       if (_inactiveStatement == null) {
-         _currentBracketedWords = new ArrayList<String>();
+         _currentBracketedWords = new ArrayList<>();
          _inBrackets = true;
       }
    }
@@ -44,7 +44,7 @@ public class JuniperFlattener extends JuniperParserBaseListener {
             _inactiveStatement = ctx;
          }
          else {
-            _currentStatement = new ArrayList<String>();
+            _currentStatement = new ArrayList<>();
             _stack.add(_currentStatement);
          }
       }

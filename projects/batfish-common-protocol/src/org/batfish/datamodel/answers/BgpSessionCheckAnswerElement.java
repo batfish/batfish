@@ -63,30 +63,30 @@ public class BgpSessionCheckAnswerElement implements AnswerElement {
    private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _remoteIpUnknown;
 
    public BgpSessionCheckAnswerElement() {
-      _allBgpNeighborSummarys = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _broken = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpBroken = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpBroken = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpHalfOpen = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpLocalIpOnLoopback = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpLocalIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpMissingLocalIp = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpNonUniqueEndpoint = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpRemoteIpOnLoopback = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ebgpRemoteIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _halfOpen = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpHalfOpen = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpLocalIpOnNonLoopback = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpLocalIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpMissingLocalIp = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpNonUniqueEndpoint = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpRemoteIpOnNonLoopback = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ibgpRemoteIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _ignoredForeignEndpoints = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _localIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _missingLocalIp = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _nonUniqueEndpoint = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
-      _remoteIpUnknown = new TreeMap<String, SortedMap<Prefix, BgpNeighborSummary>>();
+      _allBgpNeighborSummarys = new TreeMap<>();
+      _broken = new TreeMap<>();
+      _ebgpBroken = new TreeMap<>();
+      _ibgpBroken = new TreeMap<>();
+      _ebgpHalfOpen = new TreeMap<>();
+      _ebgpLocalIpOnLoopback = new TreeMap<>();
+      _ebgpLocalIpUnknown = new TreeMap<>();
+      _ebgpMissingLocalIp = new TreeMap<>();
+      _ebgpNonUniqueEndpoint = new TreeMap<>();
+      _ebgpRemoteIpOnLoopback = new TreeMap<>();
+      _ebgpRemoteIpUnknown = new TreeMap<>();
+      _halfOpen = new TreeMap<>();
+      _ibgpHalfOpen = new TreeMap<>();
+      _ibgpLocalIpOnNonLoopback = new TreeMap<>();
+      _ibgpLocalIpUnknown = new TreeMap<>();
+      _ibgpMissingLocalIp = new TreeMap<>();
+      _ibgpNonUniqueEndpoint = new TreeMap<>();
+      _ibgpRemoteIpOnNonLoopback = new TreeMap<>();
+      _ibgpRemoteIpUnknown = new TreeMap<>();
+      _ignoredForeignEndpoints = new TreeMap<>();
+      _localIpUnknown = new TreeMap<>();
+      _missingLocalIp = new TreeMap<>();
+      _nonUniqueEndpoint = new TreeMap<>();
+      _remoteIpUnknown = new TreeMap<>();
    }
 
    public void add(
@@ -96,7 +96,7 @@ public class BgpSessionCheckAnswerElement implements AnswerElement {
       SortedMap<Prefix, BgpNeighborSummary> neighborsByPrefix = neighborsByHostname
             .get(hostname);
       if (neighborsByPrefix == null) {
-         neighborsByPrefix = new TreeMap<Prefix, BgpNeighborSummary>();
+         neighborsByPrefix = new TreeMap<>();
          neighborsByHostname.put(hostname, neighborsByPrefix);
       }
       Prefix prefix = bgpNeighbor.getPrefix();

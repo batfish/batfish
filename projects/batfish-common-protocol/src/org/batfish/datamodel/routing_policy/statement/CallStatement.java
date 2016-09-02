@@ -29,8 +29,8 @@ public class CallStatement extends AbstractStatement {
 
    @Override
    public Result execute(Environment environment, Route route) {
-      RoutingPolicy policy = environment.getConfiguration()
-            .getRoutingPolicies().get(_calledPolicyName);
+      RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
+            .get(_calledPolicyName);
       Result result;
       if (policy == null) {
          result = new Result();

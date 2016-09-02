@@ -40,15 +40,15 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
          }
          RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
          String orLongerListName = "~" + _prefixList + "~ORLONGER~";
-         RouteFilterList orLongerList = c.getRouteFilterLists().get(
-               orLongerListName);
+         RouteFilterList orLongerList = c.getRouteFilterLists()
+               .get(orLongerListName);
          if (orLongerList == null) {
             orLongerList = new RouteFilterList(orLongerListName);
             for (RouteFilterLine line : rf.getLines()) {
                Prefix prefix = line.getPrefix();
                LineAction action = line.getAction();
-               SubRange orLongerLineRange = new SubRange(line.getLengthRange()
-                     .getStart(), 32);
+               SubRange orLongerLineRange = new SubRange(
+                     line.getLengthRange().getStart(), 32);
                RouteFilterLine orLongerLine = new RouteFilterLine(action,
                      prefix, orLongerLineRange);
                orLongerList.addLine(orLongerLine);
@@ -60,8 +60,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
          clause.getMatchLines().add(pmLine);
       }
       else {
-         warnings.redFlag("Reference to undefined prefix-list: \""
-               + _prefixList + "\"");
+         warnings.redFlag(
+               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
       }
    }
 
@@ -76,15 +76,15 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
          }
          RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
          String orLongerListName = "~" + _prefixList + "~ORLONGER~";
-         RouteFilterList orLongerList = c.getRouteFilterLists().get(
-               orLongerListName);
+         RouteFilterList orLongerList = c.getRouteFilterLists()
+               .get(orLongerListName);
          if (orLongerList == null) {
             orLongerList = new RouteFilterList(orLongerListName);
             for (RouteFilterLine line : rf.getLines()) {
                Prefix prefix = line.getPrefix();
                LineAction action = line.getAction();
-               SubRange orLongerLineRange = new SubRange(line.getLengthRange()
-                     .getStart(), 32);
+               SubRange orLongerLineRange = new SubRange(
+                     line.getLengthRange().getStart(), 32);
                RouteFilterLine orLongerLine = new RouteFilterLine(action,
                      prefix, orLongerLineRange);
                orLongerList.addLine(orLongerLine);
@@ -94,8 +94,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
          return new MatchPrefixSet(new NamedPrefixSet(orLongerListName));
       }
       else {
-         warnings.redFlag("Reference to undefined prefix-list: \""
-               + _prefixList + "\"");
+         warnings.redFlag(
+               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
          return BooleanExprs.False.toStaticBooleanExpr();
       }
    }

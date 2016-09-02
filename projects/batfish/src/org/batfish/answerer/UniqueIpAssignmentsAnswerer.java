@@ -77,13 +77,14 @@ public class UniqueIpAssignmentsAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      MultiSet<Ip> allIps = new TreeMultiSet<Ip>();
-      MultiSet<Ip> enabledIps = new TreeMultiSet<Ip>();
+      MultiSet<Ip> allIps = new TreeMultiSet<>();
+      MultiSet<Ip> enabledIps = new TreeMultiSet<>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {

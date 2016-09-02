@@ -10,8 +10,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ParseVendorConfigurationAnswerElement implements AnswerElement,
-      Serializable {
+public class ParseVendorConfigurationAnswerElement
+      implements AnswerElement, Serializable {
 
    /**
     *
@@ -21,7 +21,7 @@ public class ParseVendorConfigurationAnswerElement implements AnswerElement,
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
-      _warnings = new TreeMap<String, Warnings>();
+      _warnings = new TreeMap<>();
    }
 
    public SortedMap<String, Warnings> getWarnings() {

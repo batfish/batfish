@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.microsoft.z3.Context;
 
-public abstract class FirstUnsatQuerySynthesizer<Key, Result> extends
-      BaseQuerySynthesizer {
+public abstract class FirstUnsatQuerySynthesizer<Key, Result>
+      extends BaseQuerySynthesizer {
 
    protected final Key _key;
 
@@ -14,7 +14,7 @@ public abstract class FirstUnsatQuerySynthesizer<Key, Result> extends
 
    public FirstUnsatQuerySynthesizer(Key key) {
       _key = key;
-      _resultsByQueryIndex = new ArrayList<Result>();
+      _resultsByQueryIndex = new ArrayList<>();
    }
 
    public Key getKey() {

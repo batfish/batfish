@@ -41,21 +41,21 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input,
          Settings settings) {
       _settings = settings;
-      _tokenModes = new ArrayList<Integer>();
+      _tokenModes = new ArrayList<>();
       _currentModeStart = 0;
-      _warnings = new ArrayList<String>();
-      _errors = new ArrayList<String>();
+      _warnings = new ArrayList<>();
+      _errors = new ArrayList<>();
       _input = input;
       ANTLRInputStream inputStream = new ANTLRInputStream(input);
       try {
-         _lexer = lClass.getConstructor(CharStream.class).newInstance(
-               inputStream);
+         _lexer = lClass.getConstructor(CharStream.class)
+               .newInstance(inputStream);
       }
       catch (InstantiationException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException
             | NoSuchMethodException | SecurityException e) {
-         throw new BatfishException(
-               "Error constructing lexer using reflection", e);
+         throw new BatfishException("Error constructing lexer using reflection",
+               e);
       }
       _lexer.initErrorListener(this);
       _tokens = new CommonTokenStream(_lexer);

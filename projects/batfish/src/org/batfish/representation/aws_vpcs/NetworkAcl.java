@@ -23,9 +23,9 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private List<NetworkAclEntry> _entries = new LinkedList<NetworkAclEntry>();
+   private List<NetworkAclEntry> _entries = new LinkedList<>();
 
-   private List<NetworkAclAssociation> _networkAclAssociations = new LinkedList<NetworkAclAssociation>();
+   private List<NetworkAclAssociation> _networkAclAssociations = new LinkedList<>();
 
    private String _networkAclId;
 
@@ -45,7 +45,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
    private IpAccessList getAcl(boolean isEgress) {
       String listName = _networkAclId + (isEgress ? "_egress" : "_ingress");
-      Map<Integer, IpAccessListLine> lineMap = new TreeMap<Integer, IpAccessListLine>();
+      Map<Integer, IpAccessListLine> lineMap = new TreeMap<>();
       for (NetworkAclEntry entry : _entries) {
          if ((isEgress && entry.getIsEgress())
                || (!isEgress && !entry.getIsEgress())) {
@@ -66,8 +66,8 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
                   line.getSrcIps().add(new IpWildcard(prefix));
                }
             }
-            IpProtocol protocol = IpPermissions.toIpProtocol(entry
-                  .getProtocol());
+            IpProtocol protocol = IpPermissions
+                  .toIpProtocol(entry.getProtocol());
             if (protocol != null) {
                line.getIpProtocols().add(protocol);
             }
@@ -86,7 +86,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             lineMap.put(key, line);
          }
       }
-      List<IpAccessListLine> lines = new ArrayList<IpAccessListLine>();
+      List<IpAccessListLine> lines = new ArrayList<>();
       lines.addAll(lineMap.values());
       IpAccessList list = new IpAccessList(listName, lines);
       return list;
@@ -118,8 +118,8 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
 
       for (int index = 0; index < associations.length(); index++) {
          JSONObject childObject = associations.getJSONObject(index);
-         _networkAclAssociations.add(new NetworkAclAssociation(childObject,
-               logger));
+         _networkAclAssociations
+               .add(new NetworkAclAssociation(childObject, logger));
       }
    }
 

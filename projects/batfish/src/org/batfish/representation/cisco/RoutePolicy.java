@@ -13,7 +13,7 @@ public class RoutePolicy extends ComparableStructure<String> {
 
    public RoutePolicy(String name) {
       super(name);
-      _stmtList = new ArrayList<RoutePolicyStatement>();
+      _stmtList = new ArrayList<>();
    }
 
    public List<RoutePolicyStatement> getStatements() {

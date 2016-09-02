@@ -18,7 +18,8 @@ import org.batfish.main.Settings.TestrigSettings;
 
 public class UniqueBgpPrefixOriginationAnswerer extends Answerer {
 
-   public UniqueBgpPrefixOriginationAnswerer(Question question, Batfish batfish) {
+   public UniqueBgpPrefixOriginationAnswerer(Question question,
+         Batfish batfish) {
       super(question, batfish);
    }
 
@@ -33,7 +34,8 @@ public class UniqueBgpPrefixOriginationAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
 
       UniqueBgpPrefixOriginationAnswerElement answerElement = new UniqueBgpPrefixOriginationAnswerElement();
