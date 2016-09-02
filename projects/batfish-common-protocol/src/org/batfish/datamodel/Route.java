@@ -12,6 +12,8 @@ public class Route implements Comparable<Route>, Serializable {
 
    private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
 
+   public static final String AMBIGUOUS_NEXT_HOP = "(ambiguous)";
+
    private static final String COST_VAR = "cost";
 
    private static final String NETWORK_VAR = "network";
@@ -23,7 +25,6 @@ public class Route implements Comparable<Route>, Serializable {
    private static final String NEXT_HOP_VAR = "nextHop";
 
    private static final String NODE_VAR = "node";
-
    private static final String PROTOCOL_VAR = "protocol";
    /**
     *
