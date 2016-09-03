@@ -14,9 +14,9 @@ public class Topology implements Serializable {
 
    private final EdgeSet _edges;
 
-   private final transient Map<NodeInterfacePair, EdgeSet> _interfaceEdges;
+   private final Map<NodeInterfacePair, EdgeSet> _interfaceEdges;
 
-   private final transient Map<String, EdgeSet> _nodeEdges;
+   private final Map<String, EdgeSet> _nodeEdges;
 
    public Topology(EdgeSet edges) {
       _edges = edges;
@@ -60,6 +60,14 @@ public class Topology implements Serializable {
 
    public EdgeSet getEdges() {
       return _edges;
+   }
+
+   public Map<NodeInterfacePair, EdgeSet> getInterfaceEdges() {
+      return _interfaceEdges;
+   }
+
+   public Map<String, EdgeSet> getNodeEdges() {
+      return _nodeEdges;
    }
 
    public void removeEdge(Edge edge) {

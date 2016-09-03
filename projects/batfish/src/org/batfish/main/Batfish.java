@@ -740,8 +740,7 @@ public class Batfish implements AutoCloseable {
          // guess adjacencies based on interface subnetworks
          _logger.info(
                "*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-         EdgeSet edges = synthesizeTopology(configurations);
-         topology = new Topology(edges);
+         topology = synthesizeTopology(configurations);
       }
       return topology;
    }
@@ -2101,7 +2100,7 @@ public class Batfish implements AutoCloseable {
 
    private void printSymmetricEdgePairs() {
       Map<String, Configuration> configs = loadConfigurations();
-      EdgeSet edges = synthesizeTopology(configs);
+      EdgeSet edges = synthesizeTopology(configs).getEdges();
       Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
       List<Edge> edgeList = new ArrayList<>();
       edgeList.addAll(symmetricEdgePairs);
@@ -2737,37 +2736,35 @@ public class Batfish implements AutoCloseable {
       return s;
    }
 
-   private EdgeSet synthesizeTopology(
+   private Topology synthesizeTopology(
          Map<String, Configuration> configurations) {
       _logger.info(
             "\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
       resetTimer();
       EdgeSet edges = new EdgeSet();
       Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
-      for (Entry<String, Configuration> e1 : configurations.entrySet()) {
-         String nodeName = e1.getKey();
-         Configuration node = e1.getValue();
-         for (Entry<String, Interface> e2 : node.getInterfaces().entrySet()) {
-            Interface iface = e2.getValue();
-            String ifaceName = e2.getKey();
-            Prefix prefix = e2.getValue().getPrefix();
+      configurations.forEach((nodeName, node) -> {
+         node.getInterfaces().forEach((ifaceName, iface) -> {
             if (!iface.isLoopback(node.getConfigurationFormat())
-                  && iface.getActive() && prefix != null
-                  && prefix.getPrefixLength() < 32) {
-               Prefix network = new Prefix(prefix.getNetworkAddress(),
-                     prefix.getPrefixLength());
-               NodeInterfacePair pair = new NodeInterfacePair(nodeName,
-                     ifaceName);
-               Set<NodeInterfacePair> interfaceBucket = prefixInterfaces
-                     .get(network);
-               if (interfaceBucket == null) {
-                  interfaceBucket = new HashSet<>();
-                  prefixInterfaces.put(network, interfaceBucket);
+                  && iface.getActive()) {
+               for (Prefix prefix : iface.getAllPrefixes()) {
+                  if (prefix.getPrefixLength() < 32) {
+                     Prefix network = new Prefix(prefix.getNetworkAddress(),
+                           prefix.getPrefixLength());
+                     NodeInterfacePair pair = new NodeInterfacePair(nodeName,
+                           ifaceName);
+                     Set<NodeInterfacePair> interfaceBucket = prefixInterfaces
+                           .get(network);
+                     if (interfaceBucket == null) {
+                        interfaceBucket = new HashSet<>();
+                        prefixInterfaces.put(network, interfaceBucket);
+                     }
+                     interfaceBucket.add(pair);
+                  }
                }
-               interfaceBucket.add(pair);
             }
-         }
-      }
+         });
+      });
       for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
          for (NodeInterfacePair p1 : bucket) {
             for (NodeInterfacePair p2 : bucket) {
@@ -2778,7 +2775,7 @@ public class Batfish implements AutoCloseable {
             }
          }
       }
-      return edges;
+      return new Topology(edges);
    }
 
    private void writeBgpAdvertisements(Path writeAdvertsPath,
@@ -2849,7 +2846,7 @@ public class Batfish implements AutoCloseable {
    private void writeJsonTopology() {
       try {
          Map<String, Configuration> configs = loadConfigurations();
-         EdgeSet textEdges = synthesizeTopology(configs);
+         EdgeSet textEdges = synthesizeTopology(configs).getEdges();
          JSONArray jEdges = new JSONArray();
          for (Edge textEdge : textEdges) {
             Configuration node1 = configs.get(textEdge.getNode1());
@@ -2886,7 +2883,7 @@ public class Batfish implements AutoCloseable {
 
    private void writeSynthesizedTopology() {
       Map<String, Configuration> configs = loadConfigurations();
-      EdgeSet edges = synthesizeTopology(configs);
+      EdgeSet edges = synthesizeTopology(configs).getEdges();
       _logger.output(BatfishTopologyCombinedParser.HEADER + "\n");
       for (Edge edge : edges) {
          _logger.output(edge.getNode1() + ":" + edge.getInt1() + ","
