@@ -384,6 +384,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
          long ospfAreaLong = ospfArea.asLong();
          org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
          newArea.getInterfaces().add(newIface);
+         newIface.setOspfArea(newArea);
          newIface.setOspfEnabled(true);
       }
       for (Ip passiveArea : iface.getOspfPassiveAreas()) {
