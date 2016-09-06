@@ -19,18 +19,18 @@ public class StaticRoute extends AbstractRoute
    private final int _tag;
 
    @JsonCreator
-   public StaticRoute(@JsonProperty(PREFIX_VAR) Prefix prefix,
+   public StaticRoute(@JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
          @JsonProperty(TAG_VAR) int tag) {
-      super(prefix, nextHopIp);
+      super(network, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _tag = tag;
    }
 
-   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+   public StaticRoute(Prefix network, Ip nextHopIp, String nextHopInterface,
          int administrativeCost, int tag) {
-      super(prefix, nextHopIp);
+      super(network, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _tag = tag;
@@ -39,7 +39,7 @@ public class StaticRoute extends AbstractRoute
    @Override
    public int compareTo(StaticRoute rhs) {
       int ret;
-      ret = _prefix.compareTo(rhs._prefix);
+      ret = _network.compareTo(rhs._network);
       if (ret != 0) {
          return ret;
       }
@@ -77,7 +77,7 @@ public class StaticRoute extends AbstractRoute
    @Override
    public boolean equals(Object o) {
       StaticRoute rhs = (StaticRoute) o;
-      boolean res = _prefix.equals(rhs._prefix);
+      boolean res = _network.equals(rhs._network);
       res = res && _administrativeCost == rhs._administrativeCost;
       if (_nextHopIp != null) {
          res = res && _nextHopIp.equals(rhs._nextHopIp);
@@ -112,7 +112,7 @@ public class StaticRoute extends AbstractRoute
    }
 
    @Override
-   public RoutingProtocol getRouteType() {
+   public RoutingProtocol getProtocol() {
       return RoutingProtocol.STATIC;
    }
 
@@ -126,7 +126,7 @@ public class StaticRoute extends AbstractRoute
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + _prefix.hashCode();
+      result = prime * result + _network.hashCode();
       result = prime * result + _administrativeCost;
       result = prime * result
             + ((_nextHopInterface == null) ? 0 : _nextHopInterface.hashCode());

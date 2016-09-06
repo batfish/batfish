@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -45,7 +45,8 @@ public enum Statements {
       }
 
       @Override
-      public Result execute(Environment environment, Route route) {
+      public Result execute(Environment environment,
+            AbstractRouteBuilder<?> route) {
          Result result = new Result();
          switch (this._type) {
          case DefaultAction:

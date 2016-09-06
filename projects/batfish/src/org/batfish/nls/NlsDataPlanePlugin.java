@@ -984,14 +984,14 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
                .deserializeObject(precomputedRoutesPath);
          for (Route route : routes) {
             String node = route.getNode();
-            Prefix prefix = route.getPrefix();
+            Prefix prefix = route.getNetwork();
             networks.add(prefix);
             long networkStart = prefix.getNetworkAddress().asLong();
             long networkEnd = prefix.getEndAddress().asLong();
             int prefixLength = prefix.getPrefixLength();
             long nextHopIp = route.getNextHopIp().asLong();
             int admin = route.getAdministrativeCost();
-            int cost = route.getCost();
+            int cost = route.getMetric();
             String protocol = route.getProtocol().protocolName();
             int tag = route.getTag();
             sb.append(node + "|" + networkStart + "|" + networkEnd + "|"

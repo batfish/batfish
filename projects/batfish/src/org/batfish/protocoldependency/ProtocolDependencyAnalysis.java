@@ -339,7 +339,7 @@ public final class ProtocolDependencyAnalysis {
                         .getLongestPrefixMatch(node, nextHopIp);
                   if (!longestPrefixMatches.isEmpty()) {
                      workDone = true;
-                     Prefix prefix = staticRoute.getPrefix();
+                     Prefix prefix = staticRoute.getNetwork();
                      DependentRoute dependentRoute = new DependentRoute(node,
                            prefix, protocol);
                      dependentRoute.getDependencies()
@@ -357,7 +357,7 @@ public final class ProtocolDependencyAnalysis {
             Set<GeneratedRoute> failedGeneratedRoutes = new LinkedHashSet<>();
             for (GeneratedRoute gr : generatedRoutesToCheck) {
                RoutingProtocol protocol = RoutingProtocol.AGGREGATE;
-               Prefix prefix = gr.getPrefix();
+               Prefix prefix = gr.getNetwork();
                Set<DependentRoute> contributingRoutes = new LinkedHashSet<>();
                for (PolicyMap grPolicy : gr.getGenerationPolicies()) {
                   Set<DependentRoute> policyContributingRoutes = getPermittedRoutes(
@@ -922,7 +922,7 @@ public final class ProtocolDependencyAnalysis {
          Configuration c = e.getValue();
          for (StaticRoute staticRoute : c.getStaticRoutes()) {
             if (staticRoute.getNextHopInterface() != null) {
-               Prefix prefix = staticRoute.getPrefix();
+               Prefix prefix = staticRoute.getNetwork();
                RoutingProtocol protocol = RoutingProtocol.STATIC;
                DependentRoute dependentRoute = new DependentRoute(node, prefix,
                      protocol);

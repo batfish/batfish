@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.Result;
@@ -28,7 +28,8 @@ public class CallExpr extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment, Route route) {
+   public Result evaluate(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
       RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
             .get(_calledPolicyName);
       Result result;
@@ -40,7 +41,7 @@ public class CallExpr extends AbstractBooleanExpr {
       else {
          boolean oldCallExprContext = environment.getCallExprContext();
          environment.setCallExprContext(true);
-         result = policy.call(environment, route);
+         result = policy.call(environment, outputRoute);
          environment.setCallExprContext(oldCallExprContext);
       }
       return result;

@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -25,9 +25,11 @@ public class MatchProtocol extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment, Route route) {
+   public Result evaluate(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
       Result result = new Result();
-      boolean value = route.getProtocol().equals(_protocol);
+      boolean value = environment.getOriginalRoute().getProtocol()
+            .equals(_protocol);
       result.setBooleanValue(value);
       return result;
    }

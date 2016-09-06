@@ -42,7 +42,7 @@ public final class GeneratedRoute extends AbstractRoute
    private Integer _metric;
 
    @JsonCreator
-   public GeneratedRoute(@JsonProperty(PREFIX_VAR) Prefix prefix) {
+   public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix prefix) {
       super(prefix, null);
    }
 
@@ -56,13 +56,13 @@ public final class GeneratedRoute extends AbstractRoute
 
    @Override
    public int compareTo(GeneratedRoute o) {
-      return _prefix.compareTo(o._prefix);
+      return _network.compareTo(o._network);
    }
 
    @Override
    public boolean equals(Object o) {
       GeneratedRoute rhs = (GeneratedRoute) o;
-      return _prefix.equals(rhs._prefix);
+      return _network.equals(rhs._network);
    }
 
    @Override
@@ -116,7 +116,7 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
-   public RoutingProtocol getRouteType() {
+   public RoutingProtocol getProtocol() {
       return RoutingProtocol.AGGREGATE;
    }
 
@@ -127,7 +127,7 @@ public final class GeneratedRoute extends AbstractRoute
 
    @Override
    public int hashCode() {
-      return _prefix.hashCode();
+      return _network.hashCode();
    }
 
    @JsonProperty(ADMINISTRATIVE_COST_VAR)

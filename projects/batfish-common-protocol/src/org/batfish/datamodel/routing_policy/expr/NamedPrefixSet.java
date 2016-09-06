@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -29,8 +29,9 @@ public class NamedPrefixSet implements PrefixSetExpr {
    }
 
    @Override
-   public boolean matches(Environment environment, Route route) {
-      Prefix prefix = route.getPrefix();
+   public boolean matches(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
+      Prefix prefix = outputRoute.getNetwork();
       RouteFilterList list = environment.getConfiguration()
             .getRouteFilterLists().get(_name);
       if (list != null) {

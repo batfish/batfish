@@ -282,7 +282,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    /**
     * Constructs a BgpNeighbor with the given peer dynamic ip range for
-    * {@link #_prefix}
+    * {@link #_network}
     *
     * @param prefix
     */
@@ -433,7 +433,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    }
 
    /**
-    * @return {@link #_prefix}
+    * @return {@link #_network}
     */
    @JsonProperty(REMOTE_PREFIX_VAR)
    public Prefix getPrefix() {

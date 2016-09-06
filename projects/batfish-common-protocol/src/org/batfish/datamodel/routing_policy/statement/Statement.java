@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import java.io.Serializable;
 import java.util.List;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public interface Statement extends Serializable {
 
-   Result execute(Environment environment, Route route);
+   Result execute(Environment environment, AbstractRouteBuilder<?> route);
 
    List<Statement> simplify();
 

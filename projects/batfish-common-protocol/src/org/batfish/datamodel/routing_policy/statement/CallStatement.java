@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.Result;
@@ -28,7 +28,8 @@ public class CallStatement extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment, Route route) {
+   public Result execute(Environment environment,
+         AbstractRouteBuilder<?> route) {
       RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
             .get(_calledPolicyName);
       Result result;

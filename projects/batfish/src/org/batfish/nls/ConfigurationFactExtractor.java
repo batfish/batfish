@@ -173,9 +173,9 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       if (proc != null) {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
-            long network_start = gr.getPrefix().getAddress().asLong();
-            int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = gr.getPrefix().getEndAddress().asLong();
+            long network_start = gr.getNetwork().getAddress().asLong();
+            int prefix_length = gr.getNetwork().getPrefixLength();
+            long network_end = gr.getNetwork().getEndAddress().asLong();
             wSetBgpGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
@@ -213,9 +213,9 @@ public class ConfigurationFactExtractor {
             long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
             for (GeneratedRoute gr : neighbor.getGeneratedRoutes()) {
-               long network_start = gr.getPrefix().getAddress().asLong();
-               int prefix_length = gr.getPrefix().getPrefixLength();
-               long network_end = gr.getPrefix().getEndAddress().asLong();
+               long network_start = gr.getNetwork().getAddress().asLong();
+               int prefix_length = gr.getNetwork().getPrefixLength();
+               long network_end = gr.getNetwork().getEndAddress().asLong();
                wSetBgpNeighborGeneratedRoute_flat.append(hostname + "|"
                      + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
                      + neighborPrefixLength + "|" + network_start + "|"
@@ -448,9 +448,9 @@ public class ConfigurationFactExtractor {
       StringBuilder wSetNetwork = _factBins.get("SetNetwork");
       String hostname = _configuration.getHostname();
       for (GeneratedRoute gr : _configuration.getGeneratedRoutes()) {
-         long network_start = gr.getPrefix().getAddress().asLong();
-         int prefix_length = gr.getPrefix().getPrefixLength();
-         long network_end = gr.getPrefix().getEndAddress().asLong();
+         long network_start = gr.getNetwork().getAddress().asLong();
+         int prefix_length = gr.getNetwork().getPrefixLength();
+         long network_end = gr.getNetwork().getEndAddress().asLong();
          wSetGeneratedRoute_flat
                .append(hostname + "|" + network_start + "|" + network_end + "|"
                      + prefix_length + "|" + gr.getAdministrativeCost() + "\n");
@@ -889,9 +889,9 @@ public class ConfigurationFactExtractor {
       IsisProcess proc = _configuration.getIsisProcess();
       if (proc != null) {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
-            long network_start = gr.getPrefix().getAddress().asLong();
-            int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = gr.getPrefix().getEndAddress().asLong();
+            long network_start = gr.getNetwork().getAddress().asLong();
+            int prefix_length = gr.getNetwork().getPrefixLength();
+            long network_end = gr.getNetwork().getEndAddress().asLong();
             wSetIsisGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
@@ -972,9 +972,9 @@ public class ConfigurationFactExtractor {
       OspfProcess proc = _configuration.getOspfProcess();
       if (proc != null) {
          for (GeneratedRoute gr : proc.getGeneratedRoutes()) {
-            long network_start = gr.getPrefix().getAddress().asLong();
-            int prefix_length = gr.getPrefix().getPrefixLength();
-            long network_end = gr.getPrefix().getEndAddress().asLong();
+            long network_start = gr.getNetwork().getAddress().asLong();
+            int prefix_length = gr.getNetwork().getPrefixLength();
+            long network_end = gr.getNetwork().getEndAddress().asLong();
             wSetOspfGeneratedRoute_flat.append(hostname + "|" + network_start
                   + "|" + network_end + "|" + prefix_length + "\n");
             wSetNetwork.append(network_start + "|" + network_start + "|"
@@ -1439,7 +1439,7 @@ public class ConfigurationFactExtractor {
             .get("SetStaticIntRoute_flat");
       String hostName = _configuration.getHostname();
       for (StaticRoute route : _configuration.getStaticRoutes()) {
-         Prefix prefix = route.getPrefix();
+         Prefix prefix = route.getNetwork();
          Ip nextHopIp = route.getNextHopIp();
          if (nextHopIp == null) {
             nextHopIp = new Ip(0);

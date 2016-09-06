@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum RoutingProtocol {
    AGGREGATE("aggregate"),
    BGP("bgp"),
@@ -31,17 +34,18 @@ public enum RoutingProtocol {
 
    private final static Map<String, RoutingProtocol> _map = buildMap();
 
-   private static Map<String, RoutingProtocol> buildMap() {
+   private synchronized static Map<String, RoutingProtocol> buildMap() {
       Map<String, RoutingProtocol> map = new HashMap<>();
       for (RoutingProtocol protocol : RoutingProtocol.values()) {
-         String protocolName = protocol._protocolName;
+         String protocolName = protocol._protocolName.toLowerCase();
          map.put(protocolName, protocol);
       }
       return Collections.unmodifiableMap(map);
    }
 
+   @JsonCreator
    public static RoutingProtocol fromProtocolName(String name) {
-      RoutingProtocol protocol = _map.get(name);
+      RoutingProtocol protocol = _map.get(name.toLowerCase());
       if (protocol == null) {
          throw new BatfishException(
                "No routing protocol with name: \"" + name + "\"");
@@ -400,6 +404,7 @@ public enum RoutingProtocol {
                   + _protocolName + "' for vendor '" + vendor.toString() + "'");
    }
 
+   @JsonValue
    public String protocolName() {
       return _protocolName;
    }

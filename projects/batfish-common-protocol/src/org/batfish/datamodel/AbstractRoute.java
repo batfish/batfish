@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
+import org.batfish.common.BatfishException;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -16,20 +18,24 @@ public abstract class AbstractRoute implements Serializable {
 
    private static final String METRIC_VAR = "metric";
 
+   protected static final String NETWORK_VAR = "network";
+
    protected static final String NEXT_HOP_IP_VAR = "nextHopIp";
 
    public static final int NO_TAG = -1;
 
-   protected static final String PREFIX_VAR = "prefix";
-
    private static final long serialVersionUID = 1L;
+
+   protected final Prefix _network;
 
    protected final Ip _nextHopIp;
 
-   protected final Prefix _prefix;
-
-   public AbstractRoute(Prefix prefix, Ip nextHopIp) {
-      _prefix = prefix;
+   public AbstractRoute(Prefix network, Ip nextHopIp) {
+      if (network == null) {
+         throw new BatfishException(
+               "Cannot construct AbstractRoute with null network");
+      }
+      _network = network;
       _nextHopIp = nextHopIp;
    }
 
@@ -42,6 +48,11 @@ public abstract class AbstractRoute implements Serializable {
    @JsonProperty(METRIC_VAR)
    public abstract Integer getMetric();
 
+   @JsonProperty(NETWORK_VAR)
+   public final Prefix getNetwork() {
+      return _network;
+   }
+
    public abstract String getNextHopInterface();
 
    @JsonProperty(NEXT_HOP_IP_VAR)
@@ -49,13 +60,8 @@ public abstract class AbstractRoute implements Serializable {
       return _nextHopIp;
    }
 
-   @JsonProperty(PREFIX_VAR)
-   public Prefix getPrefix() {
-      return _prefix;
-   }
-
    @JsonIgnore
-   public abstract RoutingProtocol getRouteType();
+   public abstract RoutingProtocol getProtocol();
 
    public abstract int getTag();
 

@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -21,9 +21,10 @@ public class Disjunction extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment, Route route) {
+   public Result evaluate(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
       for (BooleanExpr disjunct : _disjuncts) {
-         Result result = disjunct.evaluate(environment, route);
+         Result result = disjunct.evaluate(environment, outputRoute);
          if (result.getExit()) {
             return result;
          }

@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.io.Serializable;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public interface PrefixSetExpr extends Serializable {
 
-   boolean matches(Environment environment, Route route);
+   boolean matches(Environment environment,
+         AbstractRouteBuilder<?> outputRoute);
 
 }
