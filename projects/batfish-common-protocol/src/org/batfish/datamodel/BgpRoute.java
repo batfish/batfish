@@ -18,6 +18,8 @@ public class BgpRoute extends AbstractRoute {
 
       private RoutingProtocol _protocol;
 
+      private RoutingProtocol _srcProtocol;
+
       public Builder() {
          _asPath = new AsPath();
          _communities = new CommunitySet();
@@ -27,7 +29,7 @@ public class BgpRoute extends AbstractRoute {
       public BgpRoute build() {
          return new BgpRoute(_network, _nextHopIp, _admin, _asPath,
                _communities, _localPreference, _metric, _originatorIp,
-               _originType, _protocol);
+               _originType, _protocol, _srcProtocol);
       }
 
       public AsPath getAsPath() {
@@ -78,6 +80,10 @@ public class BgpRoute extends AbstractRoute {
          _protocol = protocol;
       }
 
+      public void setSrcProtocol(RoutingProtocol srcProtocol) {
+         _srcProtocol = srcProtocol;
+      }
+
    }
 
    public static final int DEFAULT_LOCAL_PREFERENCE = 100;
@@ -103,9 +109,12 @@ public class BgpRoute extends AbstractRoute {
 
    private final RoutingProtocol _protocol;
 
+   private final RoutingProtocol _srcProtocol;
+
    public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
          CommunitySet communities, int localPreference, int med,
-         Ip originatorIp, OriginType originType, RoutingProtocol protocol) {
+         Ip originatorIp, OriginType originType, RoutingProtocol protocol,
+         RoutingProtocol srcProtocol) {
       super(network, nextHopIp);
       _admin = admin;
       _asPath = asPath;
@@ -115,6 +124,7 @@ public class BgpRoute extends AbstractRoute {
       _originatorIp = originatorIp;
       _originType = originType;
       _protocol = protocol;
+      _srcProtocol = srcProtocol;
    }
 
    @Override
@@ -193,6 +203,10 @@ public class BgpRoute extends AbstractRoute {
    @Override
    public RoutingProtocol getProtocol() {
       return _protocol;
+   }
+
+   public RoutingProtocol getSrcProtocol() {
+      return _srcProtocol;
    }
 
    @Override
