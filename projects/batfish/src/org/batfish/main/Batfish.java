@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1597,7 +1598,7 @@ public class Batfish implements AutoCloseable {
 
    public void initRemoteBgpNeighbors(
          Map<String, Configuration> configurations) {
-      Map<BgpNeighbor, Ip> remoteAddresses = new HashMap<>();
+      Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
       Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
       for (Configuration node : configurations.values()) {
          String hostname = node.getHostname();
@@ -1624,7 +1625,8 @@ public class Batfish implements AutoCloseable {
                Set<BgpNeighbor> localAddressOwners = localAddresses
                      .get(localAddress);
                if (localAddressOwners == null) {
-                  localAddressOwners = new HashSet<>();
+                  localAddressOwners = Collections.newSetFromMap(
+                        new IdentityHashMap<BgpNeighbor, Boolean>());
                   localAddresses.put(localAddress, localAddressOwners);
                }
                localAddressOwners.add(bgpNeighbor);
