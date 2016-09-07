@@ -42,6 +42,7 @@ public class CallExpr extends AbstractBooleanExpr {
          boolean oldCallExprContext = environment.getCallExprContext();
          environment.setCallExprContext(true);
          result = policy.call(environment, outputRoute);
+         result.setReturn(false);
          environment.setCallExprContext(oldCallExprContext);
       }
       return result;

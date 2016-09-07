@@ -1,7 +1,9 @@
 package org.batfish.datamodel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.batfish.common.util.ComparableStructure;
 
@@ -14,7 +16,11 @@ public class RouteFilterList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private transient Set<Prefix> _deniedCache;
+
    private List<RouteFilterLine> _lines;
+
+   private transient Set<Prefix> _permittedCache;
 
    @JsonCreator
    public RouteFilterList(@JsonProperty(NAME_VAR) String name) {
@@ -40,10 +46,48 @@ public class RouteFilterList extends ComparableStructure<String> {
       return _lines;
    }
 
+   private boolean newPermits(Prefix prefix) {
+      boolean accept = false;
+      for (RouteFilterLine line : _lines) {
+         Prefix linePrefix = line.getPrefix();
+         int lineBits = linePrefix.getPrefixLength();
+         Prefix truncatedLinePrefix = new Prefix(linePrefix.getAddress(),
+               lineBits);
+         Prefix relevantPortion = new Prefix(prefix.getAddress(), lineBits)
+               .getNetworkPrefix();
+         if (relevantPortion.equals(truncatedLinePrefix)) {
+            int prefixLength = prefix.getPrefixLength();
+            SubRange range = line.getLengthRange();
+            int min = range.getStart();
+            int max = range.getEnd();
+            if (prefixLength >= min && prefixLength <= max) {
+               accept = line.getAction() == LineAction.ACCEPT;
+               break;
+            }
+         }
+
+      }
+      if (accept) {
+         _permittedCache.add(prefix);
+      }
+      else {
+         _deniedCache.add(prefix);
+      }
+      return accept;
+   }
+
    public boolean permits(Prefix prefix) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      if (_permittedCache == null) {
+         _deniedCache = new HashSet<>();
+         _permittedCache = new HashSet<>();
+      }
+      else if (_deniedCache.contains(prefix)) {
+         return false;
+      }
+      else if (_permittedCache.contains(prefix)) {
+         return true;
+      }
+      return newPermits(prefix);
    }
 
    @JsonProperty(LINES_VAR)

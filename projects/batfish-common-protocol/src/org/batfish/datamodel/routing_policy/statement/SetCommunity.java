@@ -28,7 +28,6 @@ public class SetCommunity extends AbstractStatement {
    public Result execute(Environment environment,
          AbstractRouteBuilder<?> route) {
       Result result = new Result();
-      result.setReturn(false);
       return result;
    }
 

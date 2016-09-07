@@ -42,11 +42,7 @@ public class If extends AbstractStatement {
             : _falseStatements;
       for (Statement statement : toExecute) {
          Result result = statement.execute(environment, route);
-         if (result.getExit()) {
-            return result;
-         }
-         if (result.getReturn()) {
-            result.setReturn(false);
+         if (result.getExit() || result.getReturn()) {
             return result;
          }
       }

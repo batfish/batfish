@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -26,9 +27,12 @@ public class MatchCommunitySet extends AbstractBooleanExpr {
    @Override
    public Result evaluate(Environment environment,
          AbstractRouteBuilder<?> outputRoute) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      Result result = new Result();
+      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+      boolean match = _expr.matchSingleCommunity(environment,
+            bgpRoute.getCommunities());
+      result.setBooleanValue(match);
+      return result;
    }
 
    public CommunitySetExpr getExpr() {

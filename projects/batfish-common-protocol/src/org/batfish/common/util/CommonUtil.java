@@ -215,7 +215,6 @@ public class CommonUtil {
             throw new BatfishException("Failed to resolve locator directory",
                   e);
          }
-         assert Boolean.TRUE;
          return locatorDirFile;
       }
    }

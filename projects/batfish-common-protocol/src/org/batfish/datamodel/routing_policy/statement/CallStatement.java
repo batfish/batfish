@@ -43,6 +43,7 @@ public class CallStatement extends AbstractStatement {
                .getCallStatementContext();
          environment.setCallStatementContext(true);
          result = policy.call(environment, route);
+         result.setReturn(false);
          environment.setCallStatementContext(oldCallStatementContext);
       }
       return result;

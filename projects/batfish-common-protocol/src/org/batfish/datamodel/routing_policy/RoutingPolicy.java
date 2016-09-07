@@ -6,9 +6,11 @@ import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RoutingPolicy extends ComparableStructure<String> {
@@ -19,6 +21,8 @@ public class RoutingPolicy extends ComparableStructure<String> {
    private static final long serialVersionUID = 1L;
 
    private static final String STATEMENTS_VAR = "statements";
+
+   private transient Configuration _owner;
 
    private List<Statement> _statements;
 
@@ -40,8 +44,13 @@ public class RoutingPolicy extends ComparableStructure<String> {
          }
       }
       Result result = new Result();
-      result.setAction(environment.getDefaultAction());
+      result.setBooleanValue(environment.getDefaultAction());
       return result;
+   }
+
+   @JsonIgnore
+   public Configuration getOwner() {
+      return _owner;
    }
 
    @JsonProperty(STATEMENTS_VAR)
@@ -51,8 +60,12 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
    public boolean process(AbstractRoute inputRoute,
          AbstractRouteBuilder<?> outputRoute) {
-      Result result = call(new Environment(inputRoute), outputRoute);
-      return result.getAction();
+      Result result = call(new Environment(_owner, inputRoute), outputRoute);
+      return result.getBooleanValue();
+   }
+
+   public void setOwner(Configuration owner) {
+      _owner = owner;
    }
 
    @JsonProperty(STATEMENTS_VAR)

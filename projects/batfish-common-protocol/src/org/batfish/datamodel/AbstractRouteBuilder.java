@@ -2,9 +2,9 @@ package org.batfish.datamodel;
 
 public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
 
-   protected Integer _admin;
+   protected int _admin;
 
-   protected Integer _metric;
+   protected int _metric;
 
    protected Prefix _network;
 
@@ -12,35 +12,35 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
 
    public abstract T build();
 
-   public Integer getAdmin() {
+   public final Integer getAdmin() {
       return _admin;
    }
 
-   public Integer getMetric() {
+   public final Integer getMetric() {
       return _metric;
    }
 
-   public Prefix getNetwork() {
+   public final Prefix getNetwork() {
       return _network;
    }
 
-   public Ip getNextHopIp() {
+   public final Ip getNextHopIp() {
       return _nextHopIp;
    }
 
-   public void setAdmin(Integer admin) {
+   public final void setAdmin(int admin) {
       _admin = admin;
    }
 
-   public void setMetric(Integer metric) {
+   public final void setMetric(int metric) {
       _metric = metric;
    }
 
-   public void setNetwork(Prefix network) {
+   public final void setNetwork(Prefix network) {
       _network = network;
    }
 
-   public void setNextHopIp(Ip nextHopIp) {
+   public final void setNextHopIp(Ip nextHopIp) {
       _nextHopIp = nextHopIp;
    }
 

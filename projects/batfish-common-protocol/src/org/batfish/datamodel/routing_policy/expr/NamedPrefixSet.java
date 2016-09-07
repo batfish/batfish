@@ -31,7 +31,7 @@ public class NamedPrefixSet implements PrefixSetExpr {
    @Override
    public boolean matches(Environment environment,
          AbstractRouteBuilder<?> outputRoute) {
-      Prefix prefix = outputRoute.getNetwork();
+      Prefix prefix = environment.getOriginalRoute().getNetwork();
       RouteFilterList list = environment.getConfiguration()
             .getRouteFilterLists().get(_name);
       if (list != null) {

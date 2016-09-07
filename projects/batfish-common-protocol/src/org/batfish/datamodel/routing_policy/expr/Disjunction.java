@@ -24,13 +24,13 @@ public class Disjunction extends AbstractBooleanExpr {
    public Result evaluate(Environment environment,
          AbstractRouteBuilder<?> outputRoute) {
       for (BooleanExpr disjunct : _disjuncts) {
-         Result result = disjunct.evaluate(environment, outputRoute);
-         if (result.getExit()) {
-            return result;
+         Result disjunctResult = disjunct.evaluate(environment, outputRoute);
+         if (disjunctResult.getExit()) {
+            return disjunctResult;
          }
-         else if (result.getBooleanValue()) {
-            result.setBooleanValue(true);
-            return result;
+         else if (disjunctResult.getBooleanValue()) {
+            disjunctResult.setReturn(false);
+            return disjunctResult;
          }
       }
       Result result = new Result();

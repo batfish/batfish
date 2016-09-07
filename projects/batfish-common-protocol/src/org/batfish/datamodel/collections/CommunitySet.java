@@ -1,13 +1,12 @@
 package org.batfish.datamodel.collections;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.util.CommonUtil;
 
-public class CommunitySet extends HashSet<Long> {
+public class CommunitySet extends LinkedHashSet<Long> {
 
    /**
     *

@@ -890,11 +890,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                .add(Statements.ExitAccept.toStaticStatement());
          peerExportConditional.getFalseStatements()
                .add(Statements.ExitReject.toStaticStatement());
-         Disjunction localOrCommonOrigination = new Disjunction();
-         peerExportConditions.getConjuncts().add(localOrCommonOrigination);
-         localOrCommonOrigination.getDisjuncts()
+         Disjunction localOrCommonOriginationOrBgp = new Disjunction();
+         peerExportConditions.getConjuncts().add(localOrCommonOriginationOrBgp);
+         localOrCommonOriginationOrBgp.getDisjuncts()
                .add(new CallExpr(BGP_COMMON_EXPORT_POLICY_NAME));
          String outboundRouteMapName = lpg.getOutboundRouteMap();
+         boolean noOutboundRouteMap = true;
          if (outboundRouteMapName != null) {
             PolicyMap outboundPolicyMap = c.getPolicyMaps()
                   .get(outboundRouteMapName);
@@ -909,6 +910,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                undefined(msg, ROUTE_MAP, outboundRouteMapName);
             }
             else {
+               noOutboundRouteMap = false;
                RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
                outboundRouteMap.getReferers().put(lpg,
                      "outbound route-map for leaf peer-group: "
@@ -944,6 +946,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          else {
             newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatchPolicyMap;
          }
+         // routing policy in case of no outbound route-map
+         if (noOutboundRouteMap) {
+            MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
+            MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
+            localOrCommonOriginationOrBgp.getDisjuncts().add(isEbgp);
+            localOrCommonOriginationOrBgp.getDisjuncts().add(isIbgp);
+         }
 
          Set<PolicyMap> originationPolicies = new LinkedHashSet<>();
          originationPolicies.add(explicitOriginationPolicyMap);
@@ -965,7 +974,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
                   new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                         new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
-            localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
+            localOrCommonOriginationOrBgp.getDisjuncts().add(matchDefaultRoute);
             matchDefaultRoute.setComment("match default route");
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());

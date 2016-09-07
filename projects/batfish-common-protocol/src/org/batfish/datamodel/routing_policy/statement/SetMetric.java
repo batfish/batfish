@@ -27,7 +27,6 @@ public class SetMetric extends AbstractStatement {
          AbstractRouteBuilder<?> route) {
       Result result = new Result();
       route.setMetric(_metric);
-      result.setReturn(false);
       return result;
    }
 

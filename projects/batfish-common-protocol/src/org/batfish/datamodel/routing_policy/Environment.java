@@ -21,7 +21,9 @@ public class Environment {
 
    private final AbstractRoute _originalRoute;
 
-   public Environment(AbstractRoute originalRoute) {
+   public Environment(Configuration configuration,
+         AbstractRoute originalRoute) {
+      _configuration = configuration;
       _originalRoute = originalRoute;
    }
 
@@ -67,10 +69,6 @@ public class Environment {
 
    public void setCallStatementContext(boolean callStatementContext) {
       _callStatementContext = callStatementContext;
-   }
-
-   public void setConfiguration(Configuration configuration) {
-      _configuration = configuration;
    }
 
    public void setDefaultAction(boolean defaultAction) {

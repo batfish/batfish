@@ -24,13 +24,13 @@ public class Conjunction extends AbstractBooleanExpr {
    public Result evaluate(Environment environment,
          AbstractRouteBuilder<?> outputRoute) {
       for (BooleanExpr conjunct : _conjuncts) {
-         Result result = conjunct.evaluate(environment, outputRoute);
-         if (result.getExit()) {
-            return result;
+         Result conjunctResult = conjunct.evaluate(environment, outputRoute);
+         if (conjunctResult.getExit()) {
+            return conjunctResult;
          }
-         else if (!result.getBooleanValue()) {
-            result.setBooleanValue(false);
-            return result;
+         else if (!conjunctResult.getBooleanValue()) {
+            conjunctResult.setReturn(false);
+            return conjunctResult;
          }
       }
       Result result = new Result();
