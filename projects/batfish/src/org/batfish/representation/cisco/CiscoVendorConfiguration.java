@@ -536,10 +536,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                      "attribute-map of aggregate route: " + prefix.toString());
                PolicyMap attributePolicy = c.getPolicyMaps()
                      .get(attributeMapName);
-               RoutingPolicy attributeRoutingPolicy = c.getRoutingPolicies()
-                     .get(attributeMapName);
                gr.getAttributePolicies().put(attributeMapName, attributePolicy);
-               gr.setAttributePolicy(attributeRoutingPolicy);
+               gr.setAttributePolicy(attributeMapName);
             }
             else {
                undefined(

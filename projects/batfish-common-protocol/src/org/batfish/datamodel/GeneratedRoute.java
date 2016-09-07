@@ -4,14 +4,59 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class GeneratedRoute extends AbstractRoute
       implements Comparable<GeneratedRoute> {
+
+   public static class Builder extends AbstractRouteBuilder<GeneratedRoute> {
+
+      private AsPath _asPath;
+
+      private String _attributePolicy;
+
+      private boolean _discard;
+
+      private String _generationPolicy;
+
+      private String _nextHopInterface;
+
+      @Override
+      public GeneratedRoute build() {
+         GeneratedRoute gr = new GeneratedRoute(_network, _nextHopIp);
+         gr.setAdministrativePreference(_admin);
+         gr.setMetric(_metric);
+         gr.setGenerationPolicy(_generationPolicy);
+         gr.setAttributePolicy(_attributePolicy);
+         gr.setDiscard(_discard);
+         gr.setAsPath(_asPath);
+         gr.setNextHopInterface(_nextHopInterface);
+         return gr;
+      }
+
+      public void setAsPath(AsPath asPath) {
+         _asPath = asPath;
+      }
+
+      public void setAttributePolicy(String attributePolicy) {
+         _attributePolicy = attributePolicy;
+      }
+
+      public void setDiscard(boolean discard) {
+         _discard = discard;
+      }
+
+      public void setGenerationPolicy(String generationPolicy) {
+         _generationPolicy = generationPolicy;
+      }
+
+      public void setNextHopInterface(String nextHopInterface) {
+         _nextHopInterface = nextHopInterface;
+      }
+
+   }
 
    private static final String AS_PATH_VAR = "asPath";
 
@@ -31,7 +76,7 @@ public final class GeneratedRoute extends AbstractRoute
 
    private Map<String, PolicyMap> _attributePolicies;
 
-   private RoutingPolicy _attributePolicy;
+   private String _attributePolicy;
 
    private boolean _discard;
 
@@ -40,6 +85,8 @@ public final class GeneratedRoute extends AbstractRoute
    private String _generationPolicy;
 
    private Integer _metric;
+
+   private String _nextHopInterface;
 
    @JsonCreator
    public GeneratedRoute(@JsonProperty(NETWORK_VAR) Prefix prefix) {
@@ -52,6 +99,10 @@ public final class GeneratedRoute extends AbstractRoute
       _administrativeCost = administrativeCost;
       _generationPolicies = generationPolicyMaps;
       _attributePolicies = new TreeMap<>();
+   }
+
+   public GeneratedRoute(Prefix prefix, Ip nextHopIp) {
+      super(prefix, nextHopIp);
    }
 
    @Override
@@ -80,7 +131,7 @@ public final class GeneratedRoute extends AbstractRoute
       return _attributePolicies;
    }
 
-   public RoutingPolicy getAttributePolicy() {
+   public String getAttributePolicy() {
       return _attributePolicy;
    }
 
@@ -106,7 +157,7 @@ public final class GeneratedRoute extends AbstractRoute
 
    @Override
    public String getNextHopInterface() {
-      return null;
+      return _nextHopInterface;
    }
 
    @Override
@@ -145,7 +196,7 @@ public final class GeneratedRoute extends AbstractRoute
       _attributePolicies = attributePolicies;
    }
 
-   public void setAttributePolicy(RoutingPolicy attributePolicy) {
+   public void setAttributePolicy(String attributePolicy) {
       _attributePolicy = attributePolicy;
    }
 
@@ -166,6 +217,10 @@ public final class GeneratedRoute extends AbstractRoute
    @JsonProperty(METRIC_VAR)
    public void setMetric(int metric) {
       _metric = metric;
+   }
+
+   public void setNextHopInterface(String nextHopInterface) {
+      _nextHopInterface = nextHopInterface;
    }
 
 }
