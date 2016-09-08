@@ -1832,6 +1832,11 @@ EGRESS
    'egress'
 ;
 
+EGRESS_INTERFACE_SELECTION
+:
+   'egress-interface-selection'  
+;
+
 EIGRP
 :
    'eigrp'
