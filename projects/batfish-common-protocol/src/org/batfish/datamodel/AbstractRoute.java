@@ -30,6 +30,8 @@ public abstract class AbstractRoute implements Serializable {
 
    protected final Ip _nextHopIp;
 
+   private boolean _nonRouting;
+
    public AbstractRoute(Prefix network, Ip nextHopIp) {
       if (network == null) {
          throw new BatfishException(
@@ -61,11 +63,21 @@ public abstract class AbstractRoute implements Serializable {
    }
 
    @JsonIgnore
+   public final boolean getNonRouting() {
+      return _nonRouting;
+   }
+
+   @JsonIgnore
    public abstract RoutingProtocol getProtocol();
 
    public abstract int getTag();
 
    @Override
    public abstract int hashCode();
+
+   @JsonIgnore
+   public final void setNonRouting(boolean nonRouting) {
+      _nonRouting = nonRouting;
+   }
 
 }
