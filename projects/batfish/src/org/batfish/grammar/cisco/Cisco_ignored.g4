@@ -153,7 +153,14 @@ null_block_stanza
       (
          NO
          (
-            IP AS_PATH
+            CLASS_MAP
+            |
+            (
+               IP 
+               (
+                  AS_PATH
+               )
+            )
          )
       )
       | NLS
@@ -294,7 +301,6 @@ null_block_substanza
          | CHANNEL_GROUP
          | CHANNELIZED
          | CLASS
-         | CLASS_MAP 
          | CLIENT_GROUP
          | CLOCK
          | CODEC
