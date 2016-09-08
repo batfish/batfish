@@ -153,7 +153,14 @@ null_block_stanza
       (
          NO
          (
-            IP AS_PATH
+            CLASS_MAP
+            |
+            (
+               IP 
+               (
+                  AS_PATH
+               )
+            )
          )
       )
       | NLS

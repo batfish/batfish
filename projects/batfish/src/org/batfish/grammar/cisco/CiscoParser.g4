@@ -140,12 +140,16 @@ cm_match_tail
 
 cmm_access_group
 :
-   ACCESS_GROUP
+   IP? ACCESS_GROUP
    (
       num = DEC
       |
       (
          NAME name = variable
+      )
+      |
+      (
+         name = variable color_setter?
       )
    ) NEWLINE
 ;
@@ -264,6 +268,16 @@ cp_service_policy
       INPUT
       | OUTPUT
    ) name = variable NEWLINE
+;
+
+color_setter
+:
+   SET_COLOR
+   (
+    RED 
+    | YELLOW
+    | GREEN  
+   ) 
 ;
 
 del_stanza
