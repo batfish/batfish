@@ -476,6 +476,22 @@ l2vpn_stanza
    L2VPN NEWLINE xconnect_stanza*
 ;
 
+mgmt_egress_iface_stanza
+:
+   MANAGEMENT EGRESS_INTERFACE_SELECTION NEWLINE
+   (
+      (
+         APPLICATION HTTP
+         | APPLICATION SNMP
+         | APPLICATION RADIUS
+         | APPLICATION TACACS
+         | APPLICATION SYSLOG
+         | APPLICATION SSH
+      ) NEWLINE
+   )+ 
+;
+
+
 mgmt_ip_access_group
 :
    IP ACCESS_GROUP name = variable
@@ -1266,6 +1282,7 @@ stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
+   | mgmt_egress_iface_stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
