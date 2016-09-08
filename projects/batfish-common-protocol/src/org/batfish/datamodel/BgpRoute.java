@@ -148,6 +148,17 @@ public class BgpRoute extends AbstractRoute {
       if (_med != other._med) {
          return false;
       }
+      if (!_network.equals(other._network)) {
+         return false;
+      }
+      if (_nextHopIp == null) {
+         if (other._nextHopIp != null) {
+            return false;
+         }
+      }
+      else if (!_nextHopIp.equals(other._nextHopIp)) {
+         return false;
+      }
       if (_originType != other._originType) {
          return false;
       }
@@ -224,6 +235,9 @@ public class BgpRoute extends AbstractRoute {
             + ((_communities == null) ? 0 : _communities.hashCode());
       result = prime * result + _localPreference;
       result = prime * result + _med;
+      result = prime * result + _network.hashCode();
+      result = prime * result
+            + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
       result = prime * result
             + ((_originType == null) ? 0 : _originType.hashCode());
       result = prime * result
