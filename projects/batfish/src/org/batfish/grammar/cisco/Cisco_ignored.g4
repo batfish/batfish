@@ -294,6 +294,7 @@ null_block_substanza
          | CHANNEL_GROUP
          | CHANNELIZED
          | CLASS
+         | CLASS_MAP 
          | CLIENT_GROUP
          | CLOCK
          | CODEC

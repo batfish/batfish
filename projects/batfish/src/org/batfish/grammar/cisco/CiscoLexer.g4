@@ -2346,6 +2346,11 @@ GRE
    'gre'
 ;
 
+GREEN
+:
+   'green'
+;
+
 GROUP
 :
    'group'
@@ -4704,6 +4709,11 @@ RECORD_ENTRY
    'record-entry'
 ;
 
+RED
+:
+   'red'
+;
+
 REDIRECT
 :
    'redirect'
@@ -5272,6 +5282,11 @@ SESSION_TIMEOUT
 SET
 :
    'set'
+;
+
+SET_COLOR
+:
+   'set-color'
 ;
 
 SET_OVERLOAD_BIT
@@ -6511,6 +6526,11 @@ XML
 XML_CONFIG
 :
    'xml-config'
+;
+
+YELLOW
+:
+   'yellow'
 ;
 
 // Other Tokens
