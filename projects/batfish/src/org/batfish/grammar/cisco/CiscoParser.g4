@@ -488,9 +488,8 @@ mgmt_egress_iface_stanza
          | APPLICATION SYSLOG
          | APPLICATION SSH
       ) NEWLINE
-   )+ 
+   )+ EXIT NEWLINE
 ;
-
 
 mgmt_ip_access_group
 :
