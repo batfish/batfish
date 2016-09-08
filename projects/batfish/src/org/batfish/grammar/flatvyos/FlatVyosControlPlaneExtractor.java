@@ -134,8 +134,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
          return InterfaceType.WIRELESSMODEM;
       }
       else {
-         throw new BatfishException("Unsupported interface type: "
-               + ctx.getText());
+         throw new BatfishException(
+               "Unsupported interface type: " + ctx.getText());
       }
    }
 
@@ -181,7 +181,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
          FlatVyosCombinedParser parser, Warnings warnings) {
       _text = text;
       _parser = parser;
-      _unimplementedFeatures = new TreeSet<String>();
+      _unimplementedFeatures = new TreeSet<>();
       _w = warnings;
    }
 
@@ -206,7 +206,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    }
 
    @Override
-   public void enterFlat_vyos_configuration(Flat_vyos_configurationContext ctx) {
+   public void enterFlat_vyos_configuration(
+         Flat_vyos_configurationContext ctx) {
       _vendorConfiguration = new VyosVendorConfiguration();
       _configuration = _vendorConfiguration;
    }

@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.main.Settings;
 
-public class RoleCombinedParser extends
-      BatfishCombinedParser<RoleParser, RoleLexer> {
+public class RoleCombinedParser
+      extends BatfishCombinedParser<RoleParser, RoleLexer> {
 
    public RoleCombinedParser(String input, Settings settings) {
       super(RoleParser.class, RoleLexer.class, input, settings);

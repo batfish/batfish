@@ -20,11 +20,11 @@ public class Address implements AwsVpcEntity, Serializable {
    public Address(JSONObject jObj, BatfishLogger logger) throws JSONException {
       _publicIp = new Ip(jObj.getString(JSON_KEY_PUBLIC_IP));
 
-      _instanceId = jObj.has(JSON_KEY_INSTANCE_ID) ? jObj
-            .getString(JSON_KEY_INSTANCE_ID) : null;
+      _instanceId = jObj.has(JSON_KEY_INSTANCE_ID)
+            ? jObj.getString(JSON_KEY_INSTANCE_ID) : null;
 
-      _privateIp = jObj.has(JSON_KEY_PRIVATE_IP_ADDRESS) ? new Ip(
-            jObj.getString(JSON_KEY_PRIVATE_IP_ADDRESS)) : null;
+      _privateIp = jObj.has(JSON_KEY_PRIVATE_IP_ADDRESS)
+            ? new Ip(jObj.getString(JSON_KEY_PRIVATE_IP_ADDRESS)) : null;
 
       // TODO: not sure what other information we need to pull
    }

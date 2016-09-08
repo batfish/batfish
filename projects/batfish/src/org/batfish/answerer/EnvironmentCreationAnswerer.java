@@ -18,8 +18,8 @@ public class EnvironmentCreationAnswerer extends Answerer {
       // TODO: add flag to question determining whether or not to compute data
       // plane
       boolean dp = false;
-      return _batfish.createEnvironment(_batfish.getTestrigSettings(),
-            question, dp);
+      return _batfish.createEnvironment(_batfish.getTestrigSettings(), question,
+            dp);
    }
 
 }

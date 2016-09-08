@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IpsecVpnCheckAnswerElement implements AnswerElement {
 
-   public static class IpsecVpnPair extends
-         Pair<Pair<String, String>, Pair<String, String>> {
+   public static class IpsecVpnPair
+         extends Pair<Pair<String, String>, Pair<String, String>> {
 
       private static final String HOSTNAME1_VAR = "hostname1";
 
@@ -38,8 +38,8 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
             @JsonProperty(IPSEC_VPN1_VAR) String ipsecVpn1,
             @JsonProperty(HOSTNAME2_VAR) String hostname2,
             @JsonProperty(IPSEC_VPN2_VAR) String ipsecVpn2) {
-         super(new Pair<String, String>(hostname1, ipsecVpn1),
-               new Pair<String, String>(hostname2, ipsecVpn2));
+         super(new Pair<>(hostname1, ipsecVpn1),
+               new Pair<>(hostname2, ipsecVpn2));
       }
 
       @JsonProperty(HOSTNAME1_VAR)
@@ -75,11 +75,11 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
    private SortedMap<String, SortedSet<IpsecVpnPair>> _preSharedKeyMismatch;
 
    public IpsecVpnCheckAnswerElement() {
-      _incompatibleIkeProposals = new TreeMap<String, SortedSet<IpsecVpnPair>>();
-      _incompatibleIpsecProposals = new TreeMap<String, SortedSet<IpsecVpnPair>>();
-      _missingEndpoint = new TreeMap<String, SortedSet<String>>();
-      _nonUniqueEndpoint = new TreeMap<String, SortedSet<IpsecVpnPair>>();
-      _preSharedKeyMismatch = new TreeMap<String, SortedSet<IpsecVpnPair>>();
+      _incompatibleIkeProposals = new TreeMap<>();
+      _incompatibleIpsecProposals = new TreeMap<>();
+      _missingEndpoint = new TreeMap<>();
+      _nonUniqueEndpoint = new TreeMap<>();
+      _preSharedKeyMismatch = new TreeMap<>();
    }
 
    public void addIpsecVpn(SortedMap<String, SortedSet<String>> ipsecVpnMap,
@@ -87,7 +87,7 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
       String hostname = c.getHostname();
       SortedSet<String> ipsecVpnsByHostname = ipsecVpnMap.get(hostname);
       if (ipsecVpnsByHostname == null) {
-         ipsecVpnsByHostname = new TreeSet<String>();
+         ipsecVpnsByHostname = new TreeSet<>();
          ipsecVpnMap.put(hostname, ipsecVpnsByHostname);
       }
       String ipsecVpnName = ipsecVpn.getName();
@@ -101,7 +101,7 @@ public class IpsecVpnCheckAnswerElement implements AnswerElement {
       SortedSet<IpsecVpnPair> ipsecVpnPairsByHostname = ipsecVpnPairMap
             .get(hostname);
       if (ipsecVpnPairsByHostname == null) {
-         ipsecVpnPairsByHostname = new TreeSet<IpsecVpnPair>();
+         ipsecVpnPairsByHostname = new TreeSet<>();
          ipsecVpnPairMap.put(hostname, ipsecVpnPairsByHostname);
       }
       String ipsecVpnName = ipsecVpn.getName();

@@ -38,14 +38,14 @@ public final class PsThenCommunitySet extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(
-               _name);
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
+               .get(_name);
          String regex = list.getLines().get(0).getRegex();
          // assuming this is a valid community list for setting, the regex value
          // just retrieved should just be an explicit community
          long community = CommonUtil.communityStringToLong(regex);
-         statements.add(new SetCommunity(new ExplicitCommunitySet(Collections
-               .singleton(community))));
+         statements.add(new SetCommunity(
+               new ExplicitCommunitySet(Collections.singleton(community))));
       }
    }
 
@@ -58,8 +58,8 @@ public final class PsThenCommunitySet extends PsThen {
                .redFlag("Reference to undefined community: \"" + _name + "\"");
       }
       else {
-         org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(
-               _name);
+         org.batfish.datamodel.CommunityList list = c.getCommunityLists()
+               .get(_name);
          String regex = list.getLines().get(0).getRegex();
          // assuming this is a valid community list for setting, the regex value
          // just retrieved should just be an explicit community

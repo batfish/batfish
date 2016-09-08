@@ -29,7 +29,7 @@ public class EnvironmentCreationQuestion extends Question {
    public EnvironmentCreationQuestion() {
       super(QuestionType.ENVIRONMENT_CREATION);
       _nodeBlacklist = new NodeSet();
-      _interfaceBlacklist = new TreeSet<NodeInterfacePair>();
+      _interfaceBlacklist = new TreeSet<>();
    }
 
    @Override
@@ -89,15 +89,15 @@ public class EnvironmentCreationQuestion extends Question {
                setEnvironmentName(parameters.getString(paramKey));
                break;
             case INTERFACE_BLACKLIST_VAR:
-               setInterfaceBlacklist(new ObjectMapper()
-                     .<Set<NodeInterfacePair>> readValue(
+               setInterfaceBlacklist(
+                     new ObjectMapper().<Set<NodeInterfacePair>> readValue(
                            parameters.getString(paramKey),
                            new TypeReference<Set<NodeInterfacePair>>() {
                            }));
                break;
             case NODE_BLACKLIST_VAR:
-               setNodeBlacklist(new ObjectMapper().readValue(
-                     parameters.getString(paramKey), NodeSet.class));
+               setNodeBlacklist(new ObjectMapper()
+                     .readValue(parameters.getString(paramKey), NodeSet.class));
                break;
 
             default:

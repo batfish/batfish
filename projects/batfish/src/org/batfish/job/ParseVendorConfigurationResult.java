@@ -10,8 +10,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 
-public class ParseVendorConfigurationResult
-      extends
+public class ParseVendorConfigurationResult extends
       BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
    private final Path _file;

@@ -10,7 +10,7 @@ public class Facts {
    public static final Map<String, String> TRAFFIC_FACT_COLUMN_HEADERS = getTrafficFactColumnHeaders();
 
    private static Map<String, String> getControlPlaneFactColumnHeaders() {
-      Map<String, String> map = new TreeMap<String, String>();
+      Map<String, String> map = new TreeMap<>();
       map.put("SetFakeInterface", "NODE|INTERFACE");
       map.put("SetFlowSinkInterface", "NODE|INTERFACE");
       map.put("SamePhysicalSegment", "NODE1|INTERFACE1|NODE2|INTERFACE2");
@@ -122,8 +122,7 @@ public class Facts {
       map.put("SetPolicyMapClauseSetProtocol", "MAP|CLAUSE|PROTOCOL");
       map.put("SetPolicyMapIsisExternalRouteType", "MAP|PROTOCOL");
       map.put("SetPolicyMapOspfExternalRouteType", "MAP|PROTOCOL");
-      map.put(
-            "SetBgpDefaultLocalPref_flat",
+      map.put("SetBgpDefaultLocalPref_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALPREF");
       map.put("SetBgpExportPolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
@@ -141,17 +140,13 @@ public class Facts {
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
       map.put("SetBgpNeighborAllowRemoteAsOut_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
-      map.put(
-            "SetBgpNeighborDefaultMetric_flat",
+      map.put("SetBgpNeighborDefaultMetric_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|METRIC");
-      map.put(
-            "SetBgpNeighborGeneratedRoute_flat",
+      map.put("SetBgpNeighborGeneratedRoute_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH");
-      map.put(
-            "SetBgpNeighborGeneratedRouteAttributePolicy_flat",
+      map.put("SetBgpNeighborGeneratedRouteAttributePolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
-      map.put(
-            "SetBgpNeighborGeneratedRoutePolicy_flat",
+      map.put("SetBgpNeighborGeneratedRoutePolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|NETWORKSTART|NETWORKEND|PREFIXLENGTH|MAP");
       map.put("SetBgpMultihopNeighborNetwork_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
@@ -161,14 +156,11 @@ public class Facts {
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH");
       map.put("SetBgpOriginationPolicy_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|MAP");
-      map.put(
-            "SetLocalAs_flat",
+      map.put("SetLocalAs_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALAS");
-      map.put(
-            "SetRemoteAs_flat",
+      map.put("SetRemoteAs_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|REMOTEAS");
-      map.put(
-            "SetRouteReflectorClient_flat",
+      map.put("SetRouteReflectorClient_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|CLUSTERID");
       map.put("SetNodeVendor", "NODE|VENDOR");
       map.put("SetNodeRole", "NODE|ROLE");
@@ -194,8 +186,7 @@ public class Facts {
       map.put("SetIsisL1PassiveInterface", "NODE|INTERFACE");
       map.put("SetIsisL2ActiveInterface", "NODE|INTERFACE");
       map.put("SetIsisL2PassiveInterface", "NODE|INTERFACE");
-      map.put(
-            "SetBgpAdvertisement_flat",
+      map.put("SetBgpAdvertisement_flat",
             "PCINDEX|TYPE|NETWORKSTART|NETWORKEND|PREFIXLENGTH|NEXTHOPIP|SRCNODE|SRCIP|DSTNODE|DSTIP|SRCPROTOCOL|ORIGINTYPE|LOCALPREF|MED|ORIGINATORIP");
       map.put("SetBgpAdvertisementCommunity", "PCINDEX|COMMUNITY");
       map.put("SetBgpAdvertisementPath", "PCINDEX|INDEX|AS");
@@ -211,17 +202,15 @@ public class Facts {
       map.put("SetZoneFromHostFilter", "NODE|ZONE|FILTER");
       map.put("SetZoneToHostFilter", "NODE|ZONE|FILTER");
       map.put("SetExternalBgpRemoteIp", "NODE|REMOTEIP");
-      map.put(
-            "SetBgpNeighborLocalIp_flat",
+      map.put("SetBgpNeighborLocalIp_flat",
             "NODE|NEIGHBORNETWORKSTART|NEIGHBORNETWORKEND|NEIGHBORNETWORKPREFIXLENGTH|LOCALIP");
       return Collections.unmodifiableMap(map);
    }
 
    private static Map<String, String> getTrafficFactColumnHeaders() {
-      Map<String, String> map = new TreeMap<String, String>();
+      Map<String, String> map = new TreeMap<>();
       map.put("DuplicateRoleFlows", "DUMMY");
-      map.put(
-            "SetFlowOriginate",
+      map.put("SetFlowOriginate",
             "NODE|SRCIP|DSTIP|SRCPORT|DSTPORT|IPPROTOCOL|DSCP|ECN|ICMPTYPE|ICMPCODE|CWR|ECE|URG|ACK|PSH|RST|SYN|FIN|TAG");
       return Collections.unmodifiableMap(map);
    }

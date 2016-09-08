@@ -193,7 +193,8 @@ public class NodesAnswerElement implements AnswerElement {
          _communityLists = communityLists;
       }
 
-      public void setConfigurationFormat(ConfigurationFormat configurationFormat) {
+      public void setConfigurationFormat(
+            ConfigurationFormat configurationFormat) {
          _configurationFormat = configurationFormat;
       }
 
@@ -241,7 +242,8 @@ public class NodesAnswerElement implements AnswerElement {
          _routeFilterLists = routeFilterLists;
       }
 
-      public void setRoutingProtocols(EnumSet<RoutingProtocol> routingProtocols) {
+      public void setRoutingProtocols(
+            EnumSet<RoutingProtocol> routingProtocols) {
          _routingProtocols = routingProtocols;
       }
 
@@ -262,7 +264,7 @@ public class NodesAnswerElement implements AnswerElement {
    public NodesAnswerElement(SortedMap<String, Configuration> nodes,
          boolean summary) {
       if (summary) {
-         _summary = new TreeMap<String, NodeSummary>();
+         _summary = new TreeMap<>();
          for (Entry<String, Configuration> e : nodes.entrySet()) {
             String hostname = e.getKey();
             Configuration node = e.getValue();

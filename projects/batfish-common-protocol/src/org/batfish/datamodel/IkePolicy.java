@@ -23,7 +23,7 @@ public final class IkePolicy extends ComparableStructure<String> {
    @JsonCreator
    public IkePolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _proposals = new TreeMap<String, IkeProposal>();
+      _proposals = new TreeMap<>();
    }
 
    public String getPreSharedKeyHash() {

@@ -21,7 +21,7 @@ public class PrefixList extends ReferenceCountedStructure {
 
    public PrefixList(String name) {
       _name = name;
-      _prefixes = new TreeSet<Prefix>();
+      _prefixes = new TreeSet<>();
    }
 
    public boolean getIpv6() {

@@ -10,8 +10,8 @@ public class Main {
          _settings = new Settings(args);
       }
       catch (Exception e) {
-         System.err.println("org.batfish.client: Initialization failed: "
-               + e.getMessage());
+         System.err.println(
+               "org.batfish.client: Initialization failed: " + e.getMessage());
          System.exit(1);
       }
 

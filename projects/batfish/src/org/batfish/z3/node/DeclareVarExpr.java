@@ -8,7 +8,7 @@ public class DeclareVarExpr extends Statement implements ComplexExpr {
    private List<Expr> _subExpressions;
 
    public DeclareVarExpr(String name, int size) {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("declare-var"));
       _subExpressions.add(new IdExpr(name));
       _subExpressions.add(new BitVecExpr(size));

@@ -62,10 +62,11 @@ public final class ProtocolDependencyAnalysis {
 
    private final DependencyDatabase _dependencyDatabase;
 
-   public ProtocolDependencyAnalysis(Map<String, Configuration> configurations) {
+   public ProtocolDependencyAnalysis(
+         Map<String, Configuration> configurations) {
       _configurations = configurations;
       _dependencyDatabase = new DependencyDatabase(_configurations);
-      _clausePrefixSpaceMap = new HashMap<PolicyMapClause, Set<PrefixSpaceList>>();
+      _clausePrefixSpaceMap = new HashMap<>();
       initialize();
    }
 
@@ -100,12 +101,12 @@ public final class ProtocolDependencyAnalysis {
          GraphvizEdge edge = new GraphvizEdge(node, dependencyNode);
          Set<GraphvizEdge> fromEdges = prefixEdges.get(fromPrefix);
          if (fromEdges == null) {
-            fromEdges = new LinkedHashSet<GraphvizEdge>();
+            fromEdges = new LinkedHashSet<>();
             prefixEdges.put(fromPrefix, fromEdges);
          }
          Set<GraphvizEdge> toEdges = prefixEdges.get(toPrefix);
          if (toEdges == null) {
-            toEdges = new LinkedHashSet<GraphvizEdge>();
+            toEdges = new LinkedHashSet<>();
             prefixEdges.put(toPrefix, toEdges);
          }
          fromEdges.add(edge);
@@ -183,7 +184,7 @@ public final class ProtocolDependencyAnalysis {
 
    private Set<RoutingProtocol> getClausePermittedProtocols(
          Set<RoutingProtocol> permittedProtocols, PolicyMapClause clause) {
-      Set<RoutingProtocol> protocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> protocols = new HashSet<>();
       boolean foundMatchProtocol = false;
       for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
          if (matchLine.getType() == PolicyMapMatchType.PROTOCOL) {
@@ -211,11 +212,11 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private Map<Prefix, GraphvizInput> getGraphs() {
-      Map<Prefix, GraphvizInput> graphs = new HashMap<Prefix, GraphvizInput>();
-      Map<Prefix, Set<GraphvizEdge>> prefixEdges = new HashMap<Prefix, Set<GraphvizEdge>>();
-      Map<String, GraphvizNode> allNodes = new HashMap<String, GraphvizNode>();
+      Map<Prefix, GraphvizInput> graphs = new HashMap<>();
+      Map<Prefix, Set<GraphvizEdge>> prefixEdges = new HashMap<>();
+      Map<String, GraphvizNode> allNodes = new HashMap<>();
       Set<DependentRoute> routes = _dependencyDatabase.getDependentRoutes();
-      Set<Prefix> prefixes = new LinkedHashSet<Prefix>();
+      Set<Prefix> prefixes = new LinkedHashSet<>();
       int i = 0;
       for (DependentRoute route : routes) {
          route.setDotNodeId("node" + i);
@@ -247,7 +248,7 @@ public final class ProtocolDependencyAnalysis {
          RoutingProtocol exportProtocol,
          Set<RoutingProtocol> permittedProtocols, String node,
          Set<PolicyMap> policies) {
-      Set<PotentialExport> permittedExports = new HashSet<PotentialExport>();
+      Set<PotentialExport> permittedExports = new HashSet<>();
       for (PolicyMap policy : policies) {
          Set<DependentRoute> contributingRoutes = getPermittedRoutes(node,
                policy, permittedProtocols);
@@ -262,9 +263,9 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private Set<PotentialExport> getPermittedExports(
-         Set<PotentialExport> originationExports,
-         Set<PolicyMap> exportPolicies, Set<RoutingProtocol> permittedProtocols) {
-      Set<PotentialExport> permittedExports = new LinkedHashSet<PotentialExport>();
+         Set<PotentialExport> originationExports, Set<PolicyMap> exportPolicies,
+         Set<RoutingProtocol> permittedProtocols) {
+      Set<PotentialExport> permittedExports = new LinkedHashSet<>();
       for (PotentialExport originationExport : originationExports) {
          Prefix prefix = originationExport.getPrefix();
          RoutingProtocol protocol = originationExport.getDependency()
@@ -279,9 +280,9 @@ public final class ProtocolDependencyAnalysis {
       return permittedExports;
    }
 
-   private Set<DependentRoute> getPermittedRoutes(String node,
-         PolicyMap policy, Set<RoutingProtocol> permittedProtocols) {
-      Set<DependentRoute> contributingRoutes = new LinkedHashSet<DependentRoute>();
+   private Set<DependentRoute> getPermittedRoutes(String node, PolicyMap policy,
+         Set<RoutingProtocol> permittedProtocols) {
+      Set<DependentRoute> contributingRoutes = new LinkedHashSet<>();
       Set<DependentRoute> dependentRoutes = _dependencyDatabase
             .getDependentRoutes(node);
       for (DependentRoute dependentRoute : dependentRoutes) {
@@ -318,8 +319,8 @@ public final class ProtocolDependencyAnalysis {
 
    private void initFixedPointRoutes() {
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
-         Set<StaticRoute> staticRoutesToCheck = new LinkedHashSet<StaticRoute>();
-         Set<GeneratedRoute> generatedRoutesToCheck = new LinkedHashSet<GeneratedRoute>();
+         Set<StaticRoute> staticRoutesToCheck = new LinkedHashSet<>();
+         Set<GeneratedRoute> generatedRoutesToCheck = new LinkedHashSet<>();
          String node = e.getKey();
          Configuration c = e.getValue();
          staticRoutesToCheck.addAll(c.getStaticRoutes());
@@ -329,7 +330,7 @@ public final class ProtocolDependencyAnalysis {
             workDone = false;
 
             // static routes
-            Set<StaticRoute> failedStaticRoutes = new LinkedHashSet<StaticRoute>();
+            Set<StaticRoute> failedStaticRoutes = new LinkedHashSet<>();
             for (StaticRoute staticRoute : staticRoutesToCheck) {
                RoutingProtocol protocol = RoutingProtocol.STATIC;
                if (staticRoute.getNextHopInterface() == null) {
@@ -338,11 +339,11 @@ public final class ProtocolDependencyAnalysis {
                         .getLongestPrefixMatch(node, nextHopIp);
                   if (!longestPrefixMatches.isEmpty()) {
                      workDone = true;
-                     Prefix prefix = staticRoute.getPrefix();
+                     Prefix prefix = staticRoute.getNetwork();
                      DependentRoute dependentRoute = new DependentRoute(node,
                            prefix, protocol);
-                     dependentRoute.getDependencies().addAll(
-                           longestPrefixMatches);
+                     dependentRoute.getDependencies()
+                           .addAll(longestPrefixMatches);
                      _dependencyDatabase.addDependentRoute(dependentRoute);
                   }
                   else {
@@ -353,11 +354,11 @@ public final class ProtocolDependencyAnalysis {
             staticRoutesToCheck = failedStaticRoutes;
 
             // generated routes
-            Set<GeneratedRoute> failedGeneratedRoutes = new LinkedHashSet<GeneratedRoute>();
+            Set<GeneratedRoute> failedGeneratedRoutes = new LinkedHashSet<>();
             for (GeneratedRoute gr : generatedRoutesToCheck) {
                RoutingProtocol protocol = RoutingProtocol.AGGREGATE;
-               Prefix prefix = gr.getPrefix();
-               Set<DependentRoute> contributingRoutes = new LinkedHashSet<DependentRoute>();
+               Prefix prefix = gr.getNetwork();
+               Set<DependentRoute> contributingRoutes = new LinkedHashSet<>();
                for (PolicyMap grPolicy : gr.getGenerationPolicies()) {
                   Set<DependentRoute> policyContributingRoutes = getPermittedRoutes(
                         node, grPolicy, null);
@@ -451,10 +452,11 @@ public final class ProtocolDependencyAnalysis {
          for (PolicyMap p : c.getPolicyMaps().values()) {
             for (PolicyMapClause clause : p.getClauses()) {
                boolean matchRouteFilter = false;
-               Set<PrefixSpaceList> prefixSpaceLists = new LinkedHashSet<PrefixSpaceList>();
+               Set<PrefixSpaceList> prefixSpaceLists = new LinkedHashSet<>();
                _clausePrefixSpaceMap.put(clause, prefixSpaceLists);
                for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                  if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                  if (matchLine
+                        .getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
                      if (matchRouteFilter) {
                         throw new BatfishException(
                               "Do not support multiple match route filters at this time");
@@ -505,7 +507,7 @@ public final class ProtocolDependencyAnalysis {
 
    private void initPotentialEbgpOriginationExports() {
       RoutingProtocol exportProtocol = RoutingProtocol.BGP;
-      Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> permittedProtocols = new HashSet<>();
       permittedProtocols.addAll(Arrays.asList(RoutingProtocol.values()));
       permittedProtocols.remove(RoutingProtocol.BGP);
       permittedProtocols.remove(RoutingProtocol.IBGP);
@@ -514,8 +516,8 @@ public final class ProtocolDependencyAnalysis {
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
-               boolean ebgp = !neighbor.getLocalAs().equals(
-                     neighbor.getRemoteAs());
+               boolean ebgp = !neighbor.getLocalAs()
+                     .equals(neighbor.getRemoteAs());
                if (!ebgp) {
                   continue;
                }
@@ -566,7 +568,7 @@ public final class ProtocolDependencyAnalysis {
 
    private void initPotentialEbgpRecursiveExports() {
       RoutingProtocol exportProtocol = RoutingProtocol.BGP;
-      Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> permittedProtocols = new HashSet<>();
       permittedProtocols.add(RoutingProtocol.BGP);
       permittedProtocols.add(RoutingProtocol.IBGP);
       for (Configuration c : _configurations.values()) {
@@ -574,13 +576,13 @@ public final class ProtocolDependencyAnalysis {
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
-               boolean ebgp = !neighbor.getLocalAs().equals(
-                     neighbor.getRemoteAs());
+               boolean ebgp = !neighbor.getLocalAs()
+                     .equals(neighbor.getRemoteAs());
                if (!ebgp) {
                   continue;
                }
                Set<PolicyMap> exportPolicies = neighbor.getOutboundPolicyMaps();
-               Set<DependentRoute> dependentRoutes = new LinkedHashSet<DependentRoute>();
+               Set<DependentRoute> dependentRoutes = new LinkedHashSet<>();
                for (PolicyMap exportPolicy : exportPolicies) {
                   dependentRoutes.addAll(getPermittedRoutes(node, exportPolicy,
                         permittedProtocols));
@@ -634,7 +636,7 @@ public final class ProtocolDependencyAnalysis {
 
    private void initPotentialIbgpOriginationExports() {
       RoutingProtocol exportProtocol = RoutingProtocol.IBGP;
-      Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> permittedProtocols = new HashSet<>();
       permittedProtocols.addAll(Arrays.asList(RoutingProtocol.values()));
       permittedProtocols.remove(RoutingProtocol.BGP);
       permittedProtocols.remove(RoutingProtocol.IBGP);
@@ -643,8 +645,8 @@ public final class ProtocolDependencyAnalysis {
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
-               boolean ibgp = neighbor.getLocalAs().equals(
-                     neighbor.getRemoteAs());
+               boolean ibgp = neighbor.getLocalAs()
+                     .equals(neighbor.getRemoteAs());
                if (!ibgp) {
                   continue;
                }
@@ -695,7 +697,7 @@ public final class ProtocolDependencyAnalysis {
 
    private void initPotentialIbgpRecursiveExports() {
       RoutingProtocol exportProtocol = RoutingProtocol.IBGP;
-      Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> permittedProtocols = new HashSet<>();
       permittedProtocols.add(RoutingProtocol.BGP);
       permittedProtocols.add(RoutingProtocol.IBGP);
       for (Configuration c : _configurations.values()) {
@@ -703,13 +705,13 @@ public final class ProtocolDependencyAnalysis {
          if (c.getBgpProcess() != null) {
             for (BgpNeighbor neighbor : c.getBgpProcess().getNeighbors()
                   .values()) {
-               boolean ibgp = neighbor.getLocalAs().equals(
-                     neighbor.getRemoteAs());
+               boolean ibgp = neighbor.getLocalAs()
+                     .equals(neighbor.getRemoteAs());
                if (!ibgp) {
                   continue;
                }
                Set<PolicyMap> exportPolicies = neighbor.getOutboundPolicyMaps();
-               Set<DependentRoute> dependentRoutes = new LinkedHashSet<DependentRoute>();
+               Set<DependentRoute> dependentRoutes = new LinkedHashSet<>();
                for (PolicyMap exportPolicy : exportPolicies) {
                   dependentRoutes.addAll(getPermittedRoutes(node, exportPolicy,
                         permittedProtocols));
@@ -741,7 +743,7 @@ public final class ProtocolDependencyAnalysis {
    }
 
    private void initPotentialOspfExternalExports() {
-      Set<RoutingProtocol> permittedProtocols = new HashSet<RoutingProtocol>();
+      Set<RoutingProtocol> permittedProtocols = new HashSet<>();
       permittedProtocols.addAll(Arrays.asList(RoutingProtocol.values()));
       permittedProtocols.remove(RoutingProtocol.OSPF);
       permittedProtocols.remove(RoutingProtocol.OSPF_E1);
@@ -752,8 +754,8 @@ public final class ProtocolDependencyAnalysis {
          OspfProcess proc = c.getOspfProcess();
          if (c.getOspfProcess() != null) {
             for (PolicyMap outboundPolicy : proc.getOutboundPolicyMaps()) {
-               OspfMetricType metricType = proc.getPolicyMetricTypes().get(
-                     outboundPolicy.getName());
+               OspfMetricType metricType = proc.getPolicyMetricTypes()
+                     .get(outboundPolicy.getName());
                RoutingProtocol protocol = metricType.toRoutingProtocol();
                Set<DependentRoute> dependentRoutes = getPermittedRoutes(node,
                      outboundPolicy, permittedProtocols);
@@ -826,7 +828,7 @@ public final class ProtocolDependencyAnalysis {
             for (PotentialExport potentialExport : _dependencyDatabase
                   .getPotentialExports(protocol)) {
                OspfInterAreaPotentialExport ospfInterAreaPotentialExport = (OspfInterAreaPotentialExport) potentialExport;
-               Set<Long> commonAreas = new HashSet<Long>();
+               Set<Long> commonAreas = new HashSet<>();
                commonAreas
                      .addAll(ospfInterAreaPotentialExport.getAreaNumbers());
                commonAreas.retainAll(areas);
@@ -888,9 +890,8 @@ public final class ProtocolDependencyAnalysis {
             for (PotentialExport potentialExport : _dependencyDatabase
                   .getPotentialExports(protocol)) {
                OspfIntraAreaPotentialExport ospfIntraAreaPotentialExport = (OspfIntraAreaPotentialExport) potentialExport;
-               if (!node.equals(potentialExport.getNode())
-                     && areas.contains(ospfIntraAreaPotentialExport
-                           .getAreaNum())) {
+               if (!node.equals(potentialExport.getNode()) && areas
+                     .contains(ospfIntraAreaPotentialExport.getAreaNum())) {
                   Prefix prefix = potentialExport.getPrefix();
                   PotentialImport potentialImport = new PotentialImport(node,
                         prefix, protocol, potentialExport);
@@ -909,8 +910,8 @@ public final class ProtocolDependencyAnalysis {
          Prefix prefix = potentialImport.getPrefix();
          DependentRoute dependentRoute = new DependentRoute(node, prefix,
                protocol);
-         dependentRoute.getDependencies().add(
-               potentialImport.getPotentialExport().getDependency());
+         dependentRoute.getDependencies()
+               .add(potentialImport.getPotentialExport().getDependency());
          _dependencyDatabase.addDependentRoute(dependentRoute);
       }
    }
@@ -921,7 +922,7 @@ public final class ProtocolDependencyAnalysis {
          Configuration c = e.getValue();
          for (StaticRoute staticRoute : c.getStaticRoutes()) {
             if (staticRoute.getNextHopInterface() != null) {
-               Prefix prefix = staticRoute.getPrefix();
+               Prefix prefix = staticRoute.getNetwork();
                RoutingProtocol protocol = RoutingProtocol.STATIC;
                DependentRoute dependentRoute = new DependentRoute(node, prefix,
                      protocol);
@@ -996,20 +997,20 @@ public final class ProtocolDependencyAnalysis {
             .getProtocolDependencyGraphPath();
       CommonUtil.createDirectories(protocolDependencyGraphPath);
       Map<Prefix, GraphvizInput> graphs = getGraphs();
-      BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<Path, byte[]>> executor = new BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<Path, byte[]>>(
+      BatfishJobExecutor<GraphvizJob, GraphvizAnswerElement, GraphvizResult, Map<Path, byte[]>> executor = new BatfishJobExecutor<>(
             batfish.getSettings(), logger);
-      Map<Path, byte[]> output = new TreeMap<Path, byte[]>();
-      List<GraphvizJob> jobs = new ArrayList<GraphvizJob>();
+      Map<Path, byte[]> output = new TreeMap<>();
+      List<GraphvizJob> jobs = new ArrayList<>();
       for (Entry<Prefix, GraphvizInput> e : graphs.entrySet()) {
          Prefix prefix = e.getKey();
          GraphvizInput input = e.getValue();
          String graphName = GraphvizDigraph.getGraphName(prefix);
-         Path graphFile = protocolDependencyGraphPath.resolve("dot").resolve(
-               graphName + ".dot");
-         Path svgFile = protocolDependencyGraphPath.resolve("svg").resolve(
-               graphName + ".svg");
-         Path htmlFile = protocolDependencyGraphPath.resolve("html").resolve(
-               graphName + ".html");
+         Path graphFile = protocolDependencyGraphPath.resolve("dot")
+               .resolve(graphName + ".dot");
+         Path svgFile = protocolDependencyGraphPath.resolve("svg")
+               .resolve(graphName + ".svg");
+         Path htmlFile = protocolDependencyGraphPath.resolve("html")
+               .resolve(graphName + ".html");
          GraphvizJob job = new GraphvizJob(batfish.getSettings(), input,
                graphFile, svgFile, htmlFile, prefix);
          jobs.add(job);
@@ -1026,13 +1027,14 @@ public final class ProtocolDependencyAnalysis {
          catch (IOException ex) {
             throw new BatfishException(
                   "Failed to write graphviz output file: \"" + outputPath
-                        + "\"", ex);
+                        + "\"",
+                  ex);
          }
          logger.debug("OK\n");
       }
       Path masterHtmlFile = protocolDependencyGraphPath.resolve("html")
             .resolve("index.html");
-      Set<Prefix> prefixes = new TreeSet<Prefix>();
+      Set<Prefix> prefixes = new TreeSet<>();
       prefixes.addAll(graphs.keySet());
       String masterHtmlText = computeMasterHtmlText(prefixes);
       logger.debug("Writing: \"" + masterHtmlFile + "\" ..");

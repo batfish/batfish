@@ -16,7 +16,8 @@ public class PrefixListLine implements Serializable {
 
    private Prefix _prefix;
 
-   public PrefixListLine(LineAction action, Prefix prefix, SubRange lengthRange) {
+   public PrefixListLine(LineAction action, Prefix prefix,
+         SubRange lengthRange) {
       _action = action;
       _prefix = prefix;
       _lengthRange = lengthRange;

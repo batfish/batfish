@@ -46,7 +46,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       if (shuffle) {
          Collections.shuffle(jobs);
       }
-      List<Future<JobResult>> futures = new ArrayList<Future<JobResult>>();
+      List<Future<JobResult>> futures = new ArrayList<>();
       for (Job job : jobs) {
          Future<JobResult> future = pool.submit(job);
          futures.add(future);
@@ -55,9 +55,9 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       int finishedJobs = 0;
       int totalJobs = jobs.size();
       double finishedPercent;
-      List<BatfishException> failureCauses = new ArrayList<BatfishException>();
+      List<BatfishException> failureCauses = new ArrayList<>();
       while (!futures.isEmpty()) {
-         List<Future<JobResult>> currentFutures = new ArrayList<Future<JobResult>>();
+         List<Future<JobResult>> currentFutures = new ArrayList<>();
          currentFutures.addAll(futures);
          for (Future<JobResult> future : currentFutures) {
             if (future.isDone()) {
@@ -75,20 +75,17 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                Throwable failureCause = result.getFailureCause();
                if (failureCause == null) {
                   result.applyTo(output, _logger, answerElement);
-                  _logger
-                        .infof(
-                              "Job terminated successfully with result: %s after elapsed time: %s - %d/%d (%.1f%%) complete\n",
-                              result.toString(), time, finishedJobs, totalJobs,
-                              finishedPercent);
+                  _logger.infof(
+                        "Job terminated successfully with result: %s after elapsed time: %s - %d/%d (%.1f%%) complete\n",
+                        result.toString(), time, finishedJobs, totalJobs,
+                        finishedPercent);
                }
                else {
                   String failureMessage = "Failure running job after elapsed time: "
-                        + time
-                        + "\n-----BEGIN JOB LOG-----\n"
+                        + time + "\n-----BEGIN JOB LOG-----\n"
                         + result.getHistory()
-                              .toString(
-                                    BatfishLogger.getLogLevel(_settings
-                                          .getLogLevel()))
+                              .toString(BatfishLogger
+                                    .getLogLevel(_settings.getLogLevel()))
                         + "\n-----END JOB LOG-----";
                   BatfishException bfc = new BatfishException(failureMessage,
                         failureCause);
@@ -120,8 +117,9 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       }
       pool.shutdown();
       if (processingError) {
-         throw new CompositeBatfishException(new BatfishException(
-               "Fatal exception due to failure of at least one nod job"),
+         throw new CompositeBatfishException(
+               new BatfishException(
+                     "Fatal exception due to failure of at least one nod job"),
                failureCauses);
       }
       else {

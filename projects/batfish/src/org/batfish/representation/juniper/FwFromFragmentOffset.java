@@ -28,7 +28,7 @@ public class FwFromFragmentOffset extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      SortedSet<SubRange> offsets = new TreeSet<SubRange>(
+      SortedSet<SubRange> offsets = new TreeSet<>(
             Collections.singleton(_offsetRange));
       if (_except) {
          line.setNotFragmentOffsets(offsets);

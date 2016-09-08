@@ -21,8 +21,8 @@ public class RouteMapClause implements Serializable {
       _action = action;
       _mapName = name;
       _seqNum = num;
-      _matchList = new ArrayList<RouteMapMatchLine>();
-      _setList = new ArrayList<RouteMapSetLine>();
+      _matchList = new ArrayList<>();
+      _setList = new ArrayList<>();
    }
 
    public void addMatchLine(RouteMapMatchLine line) {

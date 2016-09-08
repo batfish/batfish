@@ -23,7 +23,7 @@ public abstract class ReferenceCountedStructure implements Serializable {
 
    private void initReferers() {
       if (_referers == null) {
-         _referers = new HashMap<Object, String>();
+         _referers = new HashMap<>();
       }
    }
 

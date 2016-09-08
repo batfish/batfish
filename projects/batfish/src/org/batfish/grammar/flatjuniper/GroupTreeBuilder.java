@@ -40,7 +40,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
    public void enterFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<ParseTree>();
+      _newConfigurationLines = new ArrayList<>();
       _newConfigurationLines.addAll(ctx.children);
    }
 
@@ -91,8 +91,8 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
          return;
       }
       Interval interval = ctx.s_groups_tail().getSourceInterval();
-      List<Token> unfilteredTokens = _combinedParser.getTokens().getTokens(
-            interval.a, interval.b);
+      List<Token> unfilteredTokens = _combinedParser.getTokens()
+            .getTokens(interval.a, interval.b);
       HierarchyPath path = new HierarchyPath();
       for (Token currentToken : unfilteredTokens) {
          if (currentToken.getChannel() != Lexer.HIDDEN) {

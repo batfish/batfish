@@ -20,7 +20,7 @@ public enum ReachabilityType {
    private final static Map<String, ReachabilityType> _map = buildMap();
 
    private static Map<String, ReachabilityType> buildMap() {
-      Map<String, ReachabilityType> map = new HashMap<String, ReachabilityType>();
+      Map<String, ReachabilityType> map = new HashMap<>();
       for (ReachabilityType value : ReachabilityType.values()) {
          String name = value._name.toLowerCase();
          map.put(name, value);
@@ -32,9 +32,9 @@ public enum ReachabilityType {
    public static ReachabilityType fromName(String name) {
       ReachabilityType instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("No "
-               + ReachabilityType.class.getSimpleName() + " with name: \""
-               + name + "\"");
+         throw new BatfishException(
+               "No " + ReachabilityType.class.getSimpleName() + " with name: \""
+                     + name + "\"");
       }
       return instance;
    }

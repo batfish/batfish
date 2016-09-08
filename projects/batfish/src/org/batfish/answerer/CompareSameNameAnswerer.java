@@ -43,13 +43,10 @@ public class CompareSameNameAnswerer extends Answerer {
 
    private <T> void add(Class<T> structureClass,
          Function<Configuration, Map<String, T>> structureMapRetriever) {
-      if (_namedStructTypes.isEmpty()
-            || _namedStructTypes.contains(structureClass.getSimpleName()
-                  .toLowerCase())) {
-         _answerElement.add(
-               structureClass.getSimpleName(),
-               processStructures(structureClass, _nodes, _configurations,
-                     structureMapRetriever));
+      if (_namedStructTypes.isEmpty() || _namedStructTypes
+            .contains(structureClass.getSimpleName().toLowerCase())) {
+         _answerElement.add(structureClass.getSimpleName(), processStructures(
+               structureClass, _nodes, _configurations, structureMapRetriever));
       }
    }
 
@@ -85,7 +82,7 @@ public class CompareSameNameAnswerer extends Answerer {
          Class<T> structureClass, List<String> hostnames,
          Map<String, Configuration> configurations,
          Function<Configuration, Map<String, T>> structureMapRetriever) {
-      NamedStructureEquivalenceSets<T> ae = new NamedStructureEquivalenceSets<T>(
+      NamedStructureEquivalenceSets<T> ae = new NamedStructureEquivalenceSets<>(
             structureClass.getSimpleName());
       for (String hostname : hostnames) {
          // Process route filters

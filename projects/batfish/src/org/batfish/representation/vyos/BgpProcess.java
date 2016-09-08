@@ -17,7 +17,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public BgpProcess(int localAs) {
       super(localAs);
-      _neighbors = new TreeMap<Ip, BgpNeighbor>();
+      _neighbors = new TreeMap<>();
    }
 
    public int getLocalAs() {

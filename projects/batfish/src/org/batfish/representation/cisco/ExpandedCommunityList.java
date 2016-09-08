@@ -13,7 +13,7 @@ public class ExpandedCommunityList extends ComparableStructure<String> {
 
    public ExpandedCommunityList(String name) {
       super(name);
-      _lines = new ArrayList<ExpandedCommunityListLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(ExpandedCommunityListLine line) {

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -27,12 +27,13 @@ public class If extends AbstractStatement {
 
    @JsonCreator
    public If() {
-      _falseStatements = new ArrayList<Statement>();
-      _trueStatements = new ArrayList<Statement>();
+      _falseStatements = new ArrayList<>();
+      _trueStatements = new ArrayList<>();
    }
 
    @Override
-   public Result execute(Environment environment, Route route) {
+   public Result execute(Environment environment,
+         AbstractRouteBuilder<?> route) {
       Result exprResult = _guard.evaluate(environment, route);
       if (exprResult.getExit()) {
          return exprResult;
@@ -41,11 +42,7 @@ public class If extends AbstractStatement {
             : _falseStatements;
       for (Statement statement : toExecute) {
          Result result = statement.execute(environment, route);
-         if (result.getExit()) {
-            return result;
-         }
-         if (result.getReturn()) {
-            result.setReturn(false);
+         if (result.getExit() || result.getReturn()) {
             return result;
          }
       }
@@ -78,8 +75,8 @@ public class If extends AbstractStatement {
 
    @Override
    public List<Statement> simplify() {
-      List<Statement> simpleTrueStatements = new ArrayList<Statement>();
-      List<Statement> simpleFalseStatements = new ArrayList<Statement>();
+      List<Statement> simpleTrueStatements = new ArrayList<>();
+      List<Statement> simpleFalseStatements = new ArrayList<>();
       BooleanExpr simpleGuard = _guard.simplify();
       for (Statement trueStatement : _trueStatements) {
          simpleTrueStatements.addAll(trueStatement.simplify());

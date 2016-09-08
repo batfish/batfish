@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class PolicyMapMatchPolicyConjunctionLine extends
-      PolicyMapMatchLine {
+public final class PolicyMapMatchPolicyConjunctionLine
+      extends PolicyMapMatchLine {
 
    private static final String CONJUNCTS_VAR = "conjuncts";
 

@@ -20,8 +20,8 @@ public class WorkItem {
       String containerName = array.get(1).toString();
       String testrigName = array.get(2).toString();
 
-      HashMap<String, String> requestParams = new HashMap<String, String>();
-      HashMap<String, String> responseParams = new HashMap<String, String>();
+      HashMap<String, String> requestParams = new HashMap<>();
+      HashMap<String, String> responseParams = new HashMap<>();
 
       JSONObject requestObject = new JSONObject(array.get(3).toString());
       JSONObject responseObject = new JSONObject(array.get(4).toString());
@@ -54,8 +54,8 @@ public class WorkItem {
       _id = UUID.randomUUID();
       _containerName = containerName;
       _testrigName = testrigName;
-      _requestParams = new HashMap<String, String>();
-      _responseParams = new HashMap<String, String>();
+      _requestParams = new HashMap<>();
+      _responseParams = new HashMap<>();
    }
 
    public WorkItem(UUID id, String containerName, String testrigName,

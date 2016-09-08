@@ -60,8 +60,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
          _prefixLength = Integer.parseInt(parts[1]);
       }
       catch (NumberFormatException e) {
-         throw new BatfishException("Invalid prefix length: \"" + parts[1]
-               + "\"", e);
+         throw new BatfishException(
+               "Invalid prefix length: \"" + parts[1] + "\"", e);
       }
    }
 

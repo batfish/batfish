@@ -66,30 +66,30 @@ public class HeaderSpace implements Serializable {
    private List<TcpFlags> _tcpFlags;
 
    public HeaderSpace() {
-      _dscps = new TreeSet<Integer>();
-      _dstIps = new TreeSet<IpWildcard>();
-      _dstPorts = new TreeSet<SubRange>();
-      _ecns = new TreeSet<Integer>();
-      _fragmentOffsets = new TreeSet<SubRange>();
+      _dscps = new TreeSet<>();
+      _dstIps = new TreeSet<>();
+      _dstPorts = new TreeSet<>();
+      _ecns = new TreeSet<>();
+      _fragmentOffsets = new TreeSet<>();
       _ipProtocols = EnumSet.noneOf(IpProtocol.class);
-      _srcIps = new TreeSet<IpWildcard>();
-      _srcOrDstIps = new TreeSet<IpWildcard>();
-      _srcOrDstPorts = new TreeSet<SubRange>();
-      _srcPorts = new TreeSet<SubRange>();
-      _icmpTypes = new TreeSet<SubRange>();
-      _icmpCodes = new TreeSet<SubRange>();
+      _srcIps = new TreeSet<>();
+      _srcOrDstIps = new TreeSet<>();
+      _srcOrDstPorts = new TreeSet<>();
+      _srcPorts = new TreeSet<>();
+      _icmpTypes = new TreeSet<>();
+      _icmpCodes = new TreeSet<>();
       _states = EnumSet.noneOf(State.class);
-      _tcpFlags = new ArrayList<TcpFlags>();
-      _notDscps = new TreeSet<Integer>();
-      _notDstIps = new TreeSet<IpWildcard>();
-      _notDstPorts = new TreeSet<SubRange>();
-      _notEcns = new TreeSet<Integer>();
-      _notFragmentOffsets = new TreeSet<SubRange>();
-      _notIcmpCodes = new TreeSet<SubRange>();
-      _notIcmpTypes = new TreeSet<SubRange>();
+      _tcpFlags = new ArrayList<>();
+      _notDscps = new TreeSet<>();
+      _notDstIps = new TreeSet<>();
+      _notDstPorts = new TreeSet<>();
+      _notEcns = new TreeSet<>();
+      _notFragmentOffsets = new TreeSet<>();
+      _notIcmpCodes = new TreeSet<>();
+      _notIcmpTypes = new TreeSet<>();
       _notIpProtocols = EnumSet.noneOf(IpProtocol.class);
-      _notSrcIps = new TreeSet<IpWildcard>();
-      _notSrcPorts = new TreeSet<SubRange>();
+      _notSrcIps = new TreeSet<>();
+      _notSrcPorts = new TreeSet<>();
    }
 
    public SortedSet<Integer> getDscps() {
@@ -313,8 +313,8 @@ public class HeaderSpace implements Serializable {
    }
 
    public final boolean unrestricted() {
-      boolean ret = _dscps.isEmpty() && _notDscps.isEmpty()
-            && _dstIps.isEmpty() && _notDstIps.isEmpty() && _dstPorts.isEmpty()
+      boolean ret = _dscps.isEmpty() && _notDscps.isEmpty() && _dstIps.isEmpty()
+            && _notDstIps.isEmpty() && _dstPorts.isEmpty()
             && _notDstPorts.isEmpty() && _ecns.isEmpty() && _notEcns.isEmpty()
             && _fragmentOffsets.isEmpty() && _notFragmentOffsets.isEmpty()
             && _icmpCodes.isEmpty() && _notIcmpCodes.isEmpty()

@@ -146,24 +146,24 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonCreator
    public Configuration(@JsonProperty(NAME_VAR) String hostname) {
       super(hostname);
-      _asPathAccessLists = new TreeMap<String, AsPathAccessList>();
-      _communities = new TreeSet<Long>();
-      _communityLists = new TreeMap<String, CommunityList>();
-      _generatedRoutes = new TreeSet<GeneratedRoute>();
-      _ikeGateways = new TreeMap<String, IkeGateway>();
-      _ikePolicies = new TreeMap<String, IkePolicy>();
-      _ikeProposals = new TreeMap<String, IkeProposal>();
-      _interfaces = new TreeMap<String, Interface>();
-      _ipAccessLists = new TreeMap<String, IpAccessList>();
-      _ipsecPolicies = new TreeMap<String, IpsecPolicy>();
-      _ipsecProposals = new TreeMap<String, IpsecProposal>();
-      _ipsecVpns = new TreeMap<String, IpsecVpn>();
-      _policyMaps = new TreeMap<String, PolicyMap>();
+      _asPathAccessLists = new TreeMap<>();
+      _communities = new TreeSet<>();
+      _communityLists = new TreeMap<>();
+      _generatedRoutes = new TreeSet<>();
+      _ikeGateways = new TreeMap<>();
+      _ikePolicies = new TreeMap<>();
+      _ikeProposals = new TreeMap<>();
+      _interfaces = new TreeMap<>();
+      _ipAccessLists = new TreeMap<>();
+      _ipsecPolicies = new TreeMap<>();
+      _ipsecProposals = new TreeMap<>();
+      _ipsecVpns = new TreeMap<>();
+      _policyMaps = new TreeMap<>();
       _roles = new RoleSet();
-      _routeFilterLists = new TreeMap<String, RouteFilterList>();
-      _routingPolicies = new TreeMap<String, RoutingPolicy>();
-      _staticRoutes = new TreeSet<StaticRoute>();
-      _zones = new TreeMap<String, Zone>();
+      _routeFilterLists = new TreeMap<>();
+      _routingPolicies = new TreeMap<>();
+      _staticRoutes = new TreeSet<>();
+      _zones = new TreeMap<>();
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
@@ -347,20 +347,20 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    public void initBgpAdvertisements() {
-      _bgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _originatedAdvertisements = new TreeSet<BgpAdvertisement>();
-      _originatedEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _originatedIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _receivedIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _sentAdvertisements = new TreeSet<BgpAdvertisement>();
-      _sentEbgpAdvertisements = new TreeSet<BgpAdvertisement>();
-      _sentIbgpAdvertisements = new TreeSet<BgpAdvertisement>();
+      _bgpAdvertisements = new TreeSet<>();
+      _originatedAdvertisements = new TreeSet<>();
+      _originatedEbgpAdvertisements = new TreeSet<>();
+      _originatedIbgpAdvertisements = new TreeSet<>();
+      _receivedAdvertisements = new TreeSet<>();
+      _receivedEbgpAdvertisements = new TreeSet<>();
+      _receivedIbgpAdvertisements = new TreeSet<>();
+      _sentAdvertisements = new TreeSet<>();
+      _sentEbgpAdvertisements = new TreeSet<>();
+      _sentIbgpAdvertisements = new TreeSet<>();
    }
 
    public void initRoutes() {
-      _routes = new TreeSet<Route>();
+      _routes = new TreeSet<>();
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
@@ -398,7 +398,8 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
-   public void setGeneratedRoutes(NavigableSet<GeneratedRoute> generatedRoutes) {
+   public void setGeneratedRoutes(
+         NavigableSet<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
    }
 
@@ -423,12 +424,14 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(IP_ACCESS_LISTS_VAR)
-   public void setIpAccessLists(NavigableMap<String, IpAccessList> ipAccessLists) {
+   public void setIpAccessLists(
+         NavigableMap<String, IpAccessList> ipAccessLists) {
       _ipAccessLists = ipAccessLists;
    }
 
    @JsonProperty(IPSEC_POLICIES_VAR)
-   public void setIpsecPolicies(NavigableMap<String, IpsecPolicy> ipsecPolicies) {
+   public void setIpsecPolicies(
+         NavigableMap<String, IpsecPolicy> ipsecPolicies) {
       _ipsecPolicies = ipsecPolicies;
    }
 
@@ -485,16 +488,11 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    public void simplifyRoutingPolicies() {
-      NavigableMap<String, RoutingPolicy> simpleRoutingPolicies = new TreeMap<String, RoutingPolicy>();
-      simpleRoutingPolicies
-            .putAll(_routingPolicies
-                  .entrySet()
-                  .stream()
-                  .collect(
-                        Collectors
-                              .<Entry<String, RoutingPolicy>, String, RoutingPolicy> toMap(
-                                    e -> e.getKey(), e -> e.getValue()
-                                          .simplify())));
+      NavigableMap<String, RoutingPolicy> simpleRoutingPolicies = new TreeMap<>();
+      simpleRoutingPolicies.putAll(_routingPolicies.entrySet().stream()
+            .collect(Collectors
+                  .<Entry<String, RoutingPolicy>, String, RoutingPolicy> toMap(
+                        e -> e.getKey(), e -> e.getValue().simplify())));
       _routingPolicies = simpleRoutingPolicies;
    }
 

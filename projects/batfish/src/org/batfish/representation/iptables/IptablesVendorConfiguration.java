@@ -99,7 +99,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
                break;
             // case IN_INTERFACE:
             // case OUT_INTERFACE:
-            // _warnings.unimplemented("Matching on incoming and outgoing interface not supported");
+            // _warnings.unimplemented("Matching on incoming and outgoing
+            // interface not supported");
             // break;
             case PROTOCOL:
                aclLine.getIpProtocols().add(match.toIpProtocol());
@@ -115,8 +116,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             case IN_INTERFACE:
             case OUT_INTERFACE:
             default:
-               throw new BatfishException("Unknown match type: "
-                     + match.getMatchType().toString());
+               throw new BatfishException(
+                     "Unknown match type: " + match.getMatchType().toString());
             }
          }
 

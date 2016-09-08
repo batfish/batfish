@@ -65,9 +65,8 @@ public class NeighborsQuestion extends Question {
    public String prettyPrint() {
       try {
          String retString = String.format("neighbors %s%s=%s | %s=%s | %s=%s",
-               prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex,
-               NODE2_REGEX_VAR, _node2Regex, NEIGHBOR_TYPE_VAR,
-               _neighborTypes.toString());
+               prettyPrintBase(), NODE1_REGEX_VAR, _node1Regex, NODE2_REGEX_VAR,
+               _node2Regex, NEIGHBOR_TYPE_VAR, _neighborTypes.toString());
          return retString;
       }
       catch (Exception e) {
@@ -75,7 +74,8 @@ public class NeighborsQuestion extends Question {
             return "Pretty printing failed. Printing Json\n" + toJsonString();
          }
          catch (JsonProcessingException e1) {
-            throw new BatfishException("Both pretty and json printing failed\n");
+            throw new BatfishException(
+                  "Both pretty and json printing failed\n");
          }
       }
 
@@ -99,8 +99,8 @@ public class NeighborsQuestion extends Question {
                setNode1Regex(parameters.getString(paramKey));
                break;
             case NEIGHBOR_TYPE_VAR:
-               setNeighborTypes(new ObjectMapper()
-                     .<Set<NeighborType>> readValue(
+               setNeighborTypes(
+                     new ObjectMapper().<Set<NeighborType>> readValue(
                            parameters.getString(paramKey),
                            new TypeReference<Set<NeighborType>>() {
                            }));

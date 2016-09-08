@@ -21,7 +21,7 @@ public class NamedStructureEquivalenceSets<T> {
 
    public NamedStructureEquivalenceSets(String structureClassName) {
       _structureClassName = structureClassName;
-      _sameNamedStructures = new TreeMap<String, SortedSet<NamedStructureEquivalenceSet<T>>>();
+      _sameNamedStructures = new TreeMap<>();
    }
 
    public void add(String node, String name, T namedStructure) {
@@ -38,8 +38,7 @@ public class NamedStructureEquivalenceSets<T> {
             return;
          }
       }
-      equiClasses
-            .add(new NamedStructureEquivalenceSet<T>(node, namedStructure));
+      equiClasses.add(new NamedStructureEquivalenceSet<>(node, namedStructure));
    }
 
    /**
@@ -47,8 +46,7 @@ public class NamedStructureEquivalenceSets<T> {
     * nothing of note
     */
    public void clean() {
-      Set<String> structureNames = new TreeSet<String>(
-            _sameNamedStructures.keySet());
+      Set<String> structureNames = new TreeSet<>(_sameNamedStructures.keySet());
       for (String structureName : structureNames) {
          if (_sameNamedStructures.get(structureName).size() == 1) {
             _sameNamedStructures.remove(structureName);

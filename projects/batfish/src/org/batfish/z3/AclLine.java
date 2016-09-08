@@ -12,7 +12,7 @@ public class AclLine extends Pair<String, Pair<String, Integer>> {
    private Integer _earliestMoreGeneralReachableLine;
 
    public AclLine(String hostname, String aclName, int line) {
-      super(hostname, new Pair<String, Integer>(aclName, line));
+      super(hostname, new Pair<>(aclName, line));
    }
 
    public String getAclName() {

@@ -30,8 +30,8 @@ public final class PsFromRouteFilter extends PsFrom {
          JuniperConfiguration jc, Configuration c, Warnings warnings) {
       RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
       if (rfl == null) {
-         throw new VendorConversionException("missing route filter list: \""
-               + _routeFilterName + "\"");
+         throw new VendorConversionException(
+               "missing route filter list: \"" + _routeFilterName + "\"");
       }
       clause.getMatchLines().add(
             new PolicyMapMatchRouteFilterListLine(Collections.singleton(rfl)));

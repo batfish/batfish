@@ -29,7 +29,7 @@ public class BgpSessionCheckQuestion extends Question {
 
    public BgpSessionCheckQuestion() {
       super(QuestionType.BGP_SESSION_CHECK);
-      _foreignBgpGroups = new TreeSet<String>();
+      _foreignBgpGroups = new TreeSet<>();
       _node1Regex = ".*";
       _node2Regex = ".*";
    }

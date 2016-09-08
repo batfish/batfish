@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Route;
 
 public class Environment {
 
@@ -19,9 +19,11 @@ public class Environment {
 
    private boolean _localDefaultAction;
 
-   private final Route _originalRoute;
+   private final AbstractRoute _originalRoute;
 
-   public Environment(Route originalRoute) {
+   public Environment(Configuration configuration,
+         AbstractRoute originalRoute) {
+      _configuration = configuration;
       _originalRoute = originalRoute;
    }
 
@@ -53,7 +55,7 @@ public class Environment {
       return _localDefaultAction;
    }
 
-   public Route getOriginalRoute() {
+   public AbstractRoute getOriginalRoute() {
       return _originalRoute;
    }
 
@@ -67,10 +69,6 @@ public class Environment {
 
    public void setCallStatementContext(boolean callStatementContext) {
       _callStatementContext = callStatementContext;
-   }
-
-   public void setConfiguration(Configuration configuration) {
-      _configuration = configuration;
    }
 
    public void setDefaultAction(boolean defaultAction) {

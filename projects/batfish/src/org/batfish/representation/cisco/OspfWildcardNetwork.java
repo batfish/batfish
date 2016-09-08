@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import org.batfish.datamodel.Ip;
 
-public class OspfWildcardNetwork implements Comparable<OspfWildcardNetwork>,
-      Serializable {
+public class OspfWildcardNetwork
+      implements Comparable<OspfWildcardNetwork>, Serializable {
 
    private static final long serialVersionUID = 1L;
 

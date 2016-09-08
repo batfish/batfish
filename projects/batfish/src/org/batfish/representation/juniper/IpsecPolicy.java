@@ -19,7 +19,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
    public IpsecPolicy(String name) {
       super(name);
-      _proposals = new TreeSet<String>();
+      _proposals = new TreeSet<>();
    }
 
    public DiffieHellmanGroup getPfsKeyGroup() {

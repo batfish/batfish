@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RoutingPolicy extends ComparableStructure<String> {
@@ -19,15 +22,17 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
    private static final String STATEMENTS_VAR = "statements";
 
+   private transient Configuration _owner;
+
    private List<Statement> _statements;
 
    @JsonCreator
    public RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _statements = new ArrayList<Statement>();
+      _statements = new ArrayList<>();
    }
 
-   public Result call(Environment environment, Route route) {
+   public Result call(Environment environment, AbstractRouteBuilder<?> route) {
       for (Statement statement : _statements) {
          Result result = statement.execute(environment, route);
          if (result.getExit()) {
@@ -39,8 +44,13 @@ public class RoutingPolicy extends ComparableStructure<String> {
          }
       }
       Result result = new Result();
-      result.setAction(environment.getDefaultAction());
+      result.setBooleanValue(environment.getDefaultAction());
       return result;
+   }
+
+   @JsonIgnore
+   public Configuration getOwner() {
+      return _owner;
    }
 
    @JsonProperty(STATEMENTS_VAR)
@@ -48,9 +58,14 @@ public class RoutingPolicy extends ComparableStructure<String> {
       return _statements;
    }
 
-   public boolean permits(Route route) {
-      Result result = call(new Environment(route), route);
-      return result.getAction();
+   public boolean process(AbstractRoute inputRoute,
+         AbstractRouteBuilder<?> outputRoute) {
+      Result result = call(new Environment(_owner, inputRoute), outputRoute);
+      return result.getBooleanValue();
+   }
+
+   public void setOwner(Configuration owner) {
+      _owner = owner;
    }
 
    @JsonProperty(STATEMENTS_VAR)
@@ -59,7 +74,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
    }
 
    public RoutingPolicy simplify() {
-      List<Statement> simpleStatements = new ArrayList<Statement>();
+      List<Statement> simpleStatements = new ArrayList<>();
       for (Statement statement : _statements) {
          simpleStatements.addAll(statement.simplify());
       }

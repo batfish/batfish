@@ -8,7 +8,7 @@ public class BitVecExpr extends TypeExpr implements ComplexExpr {
    private List<Expr> _subExpressions;
 
    public BitVecExpr(int size) {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("_"));
       _subExpressions.add(new IdExpr("BitVec"));
       _subExpressions.add(new IdExpr(Integer.toString(size)));

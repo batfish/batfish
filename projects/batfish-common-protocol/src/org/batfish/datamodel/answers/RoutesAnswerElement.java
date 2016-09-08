@@ -29,8 +29,8 @@ public class RoutesAnswerElement implements AnswerElement {
 
    public RoutesAnswerElement(Map<String, Configuration> configurations,
          Pattern nodeRegex) {
-      _routes = new TreeSet<Route>();
-      _routesByHostname = new TreeMap<String, SortedSet<Route>>();
+      _routes = new TreeSet<>();
+      _routesByHostname = new TreeMap<>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
          String hostname = e.getKey();
          if (!nodeRegex.matcher(hostname).matches()) {

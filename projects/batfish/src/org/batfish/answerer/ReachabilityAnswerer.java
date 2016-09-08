@@ -94,9 +94,9 @@ public class ReachabilityAnswerer extends Answerer {
       Path dataPlanePath = testrigSettings.getEnvironmentSettings()
             .getDataPlanePath();
       Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            configurations, dataPlanePath);
-      List<NodJob> jobs = new ArrayList<NodJob>();
+      Synthesizer dataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(configurations, dataPlanePath);
+      List<NodJob> jobs = new ArrayList<>();
       for (String node : configurations.keySet()) {
          MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
                node, question.getHeaderSpace());
@@ -125,43 +125,43 @@ public class ReachabilityAnswerer extends Answerer {
             .loadConfigurations(_batfish.getBaseTestrigSettings());
       Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer baseDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
+      Synthesizer baseDataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(baseConfigurations, baseDataPlanePath);
 
       // load diff configurations and generate diff data plane
       Map<String, Configuration> diffConfigurations = _batfish
             .loadConfigurations(_batfish.getDeltaTestrigSettings());
       Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer diffDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
+      Synthesizer diffDataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(diffConfigurations, diffDataPlanePath);
 
-      Set<String> commonNodes = new TreeSet<String>();
+      Set<String> commonNodes = new TreeSet<>();
       commonNodes.addAll(baseConfigurations.keySet());
       commonNodes.retainAll(diffConfigurations.keySet());
 
-      NodeSet blacklistNodes = _batfish.getNodeBlacklist(_batfish
-            .getDeltaTestrigSettings());
+      NodeSet blacklistNodes = _batfish
+            .getNodeBlacklist(_batfish.getDeltaTestrigSettings());
       Set<NodeInterfacePair> blacklistInterfaces = _batfish
             .getInterfaceBlacklist(_batfish.getDeltaTestrigSettings());
-      EdgeSet blacklistEdges = _batfish.getEdgeBlacklist(_batfish
-            .getDeltaTestrigSettings());
+      EdgeSet blacklistEdges = _batfish
+            .getEdgeBlacklist(_batfish.getDeltaTestrigSettings());
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
             null, blacklistNodes, blacklistInterfaces, blacklistEdges,
             baseConfigurations);
 
       // compute composite program and flows
-      List<Synthesizer> commonEdgeSynthesizers = new ArrayList<Synthesizer>();
+      List<Synthesizer> commonEdgeSynthesizers = new ArrayList<>();
       commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
       commonEdgeSynthesizers.add(diffDataPlaneSynthesizer);
       commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
 
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+      List<CompositeNodJob> jobs = new ArrayList<>();
 
       // generate local edge reachability and black hole queries
-      Topology diffTopology = _batfish.loadTopology(_batfish
-            .getDeltaTestrigSettings());
+      Topology diffTopology = _batfish
+            .loadTopology(_batfish.getDeltaTestrigSettings());
       EdgeSet diffEdges = diffTopology.getEdges();
       for (Edge edge : diffEdges) {
          String ingressNode = edge.getNode1();
@@ -170,7 +170,7 @@ public class ReachabilityAnswerer extends Answerer {
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
                ingressNode, edge, true, new HeaderSpace());
          noReachQuery.setNegate(true);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+         List<QuerySynthesizer> queries = new ArrayList<>();
          queries.add(reachQuery);
          queries.add(noReachQuery);
          queries.add(blacklistQuery);
@@ -183,11 +183,11 @@ public class ReachabilityAnswerer extends Answerer {
 
       // we also need queries for nodes next to edges that are now missing,
       // in the case that those nodes still exist
-      List<Synthesizer> missingEdgeSynthesizers = new ArrayList<Synthesizer>();
+      List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
       missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-      Topology baseTopology = _batfish.loadTopology(_batfish
-            .getBaseTestrigSettings());
+      Topology baseTopology = _batfish
+            .loadTopology(_batfish.getBaseTestrigSettings());
       EdgeSet baseEdges = baseTopology.getEdges();
       EdgeSet missingEdges = new EdgeSet();
       missingEdges.addAll(baseEdges);
@@ -197,7 +197,7 @@ public class ReachabilityAnswerer extends Answerer {
          if (diffConfigurations.containsKey(ingressNode)) {
             ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                   ingressNode, missingEdge, true, question.getHeaderSpace());
-            List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+            List<QuerySynthesizer> queries = new ArrayList<>();
             queries.add(reachQuery);
             queries.add(blacklistQuery);
             NodeSet nodes = new NodeSet();
@@ -231,39 +231,39 @@ public class ReachabilityAnswerer extends Answerer {
             .loadConfigurations(_batfish.getBaseTestrigSettings());
       Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer baseDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            baseConfigurations, baseDataPlanePath);
+      Synthesizer baseDataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(baseConfigurations, baseDataPlanePath);
 
       // load diff configurations and generate diff data plane
       Map<String, Configuration> diffConfigurations = _batfish
             .loadConfigurations(_batfish.getDeltaTestrigSettings());
       Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
             .getEnvironmentSettings().getDataPlanePath();
-      Synthesizer diffDataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            diffConfigurations, diffDataPlanePath);
+      Synthesizer diffDataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(diffConfigurations, diffDataPlanePath);
 
-      Set<String> commonNodes = new TreeSet<String>();
+      Set<String> commonNodes = new TreeSet<>();
       commonNodes.addAll(baseConfigurations.keySet());
       commonNodes.retainAll(diffConfigurations.keySet());
 
-      NodeSet blacklistNodes = _batfish.getNodeBlacklist(_batfish
-            .getDeltaTestrigSettings());
+      NodeSet blacklistNodes = _batfish
+            .getNodeBlacklist(_batfish.getDeltaTestrigSettings());
       Set<NodeInterfacePair> blacklistInterfaces = _batfish
             .getInterfaceBlacklist(_batfish.getDeltaTestrigSettings());
-      EdgeSet blacklistEdges = _batfish.getEdgeBlacklist(_batfish
-            .getDeltaTestrigSettings());
+      EdgeSet blacklistEdges = _batfish
+            .getEdgeBlacklist(_batfish.getDeltaTestrigSettings());
 
       BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
             null, blacklistNodes, blacklistInterfaces, blacklistEdges,
             baseConfigurations);
 
       // compute composite program and flows
-      List<Synthesizer> synthesizers = new ArrayList<Synthesizer>();
+      List<Synthesizer> synthesizers = new ArrayList<>();
       synthesizers.add(baseDataPlaneSynthesizer);
       synthesizers.add(diffDataPlaneSynthesizer);
       synthesizers.add(baseDataPlaneSynthesizer);
 
-      List<CompositeNodJob> jobs = new ArrayList<CompositeNodJob>();
+      List<CompositeNodJob> jobs = new ArrayList<>();
 
       // generate base reachability and diff blackhole and blacklist queries
       for (String node : commonNodes) {
@@ -278,7 +278,7 @@ public class ReachabilityAnswerer extends Answerer {
          notAcceptQuery.setNegate(true);
          NodeSet nodes = new NodeSet();
          nodes.add(node);
-         List<QuerySynthesizer> queries = new ArrayList<QuerySynthesizer>();
+         List<QuerySynthesizer> queries = new ArrayList<>();
          queries.add(acceptQuery);
          queries.add(notAcceptQuery);
          queries.add(blacklistQuery);
@@ -309,15 +309,15 @@ public class ReachabilityAnswerer extends Answerer {
       Path dataPlanePath = testrigSettings.getEnvironmentSettings()
             .getDataPlanePath();
       Set<Flow> flows = null;
-      Synthesizer dataPlaneSynthesizer = _batfish.synthesizeDataPlane(
-            configurations, dataPlanePath);
+      Synthesizer dataPlaneSynthesizer = _batfish
+            .synthesizeDataPlane(configurations, dataPlanePath);
 
       // collect ingress nodes
       Pattern ingressNodeRegex = Pattern
             .compile(question.getIngressNodeRegex());
-      Pattern notIngressNodeRegex = Pattern.compile(question
-            .getNotIngressNodeRegex());
-      Set<String> activeIngressNodes = new TreeSet<String>();
+      Pattern notIngressNodeRegex = Pattern
+            .compile(question.getNotIngressNodeRegex());
+      Set<String> activeIngressNodes = new TreeSet<>();
       for (String node : configurations.keySet()) {
          Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
          Matcher notIngressNodeMatcher = notIngressNodeRegex.matcher(node);
@@ -335,9 +335,9 @@ public class ReachabilityAnswerer extends Answerer {
 
       // collect final nodes
       Pattern finalNodeRegex = Pattern.compile(question.getFinalNodeRegex());
-      Pattern notFinalNodeRegex = Pattern.compile(question
-            .getNotFinalNodeRegex());
-      Set<String> activeFinalNodes = new TreeSet<String>();
+      Pattern notFinalNodeRegex = Pattern
+            .compile(question.getNotFinalNodeRegex());
+      Set<String> activeFinalNodes = new TreeSet<>();
       for (String node : configurations.keySet()) {
          Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
          Matcher notFinalNodeMatcher = notFinalNodeRegex.matcher(node);
@@ -354,7 +354,7 @@ public class ReachabilityAnswerer extends Answerer {
       }
 
       // build query jobs
-      List<NodJob> jobs = new ArrayList<NodJob>();
+      List<NodJob> jobs = new ArrayList<>();
       for (String ingressNode : activeIngressNodes) {
          ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
                question.getActions(), question.getHeaderSpace(),

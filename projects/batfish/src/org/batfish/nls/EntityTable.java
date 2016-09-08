@@ -39,12 +39,12 @@ public class EntityTable {
          PredicateInfo predicateInfo) {
       _predicateInfo = predicateInfo;
       _relations = buildRelations(nlsPredicateContents);
-      _asPaths = new HashMap<Long, AsPath>();
-      _bgpAdvertisements = new HashMap<Long, BgpAdvertisement>();
-      _communities = new HashMap<Long, CommunitySet>();
-      _flows = new HashMap<Long, Flow>();
-      _networks = new HashMap<Long, Prefix>();
-      _routes = new HashMap<Long, Route>();
+      _asPaths = new HashMap<>();
+      _bgpAdvertisements = new HashMap<>();
+      _communities = new HashMap<>();
+      _flows = new HashMap<>();
+      _networks = new HashMap<>();
+      _routes = new HashMap<>();
       populateNetworks();
       populateFlows();
       populateRoutes();
@@ -55,12 +55,12 @@ public class EntityTable {
 
    private Map<String, Relation> buildRelations(
          Map<String, String> nlsPredicateContents) {
-      Map<String, Relation> relations = new HashMap<String, Relation>();
+      Map<String, Relation> relations = new HashMap<>();
       for (Entry<String, String> e : nlsPredicateContents.entrySet()) {
          String relationName = e.getKey();
          String text = e.getValue();
-         Relation relation = new Relation.Builder(relationName).build(
-               _predicateInfo, text);
+         Relation relation = new Relation.Builder(relationName)
+               .build(_predicateInfo, text);
          relations.put(relationName, relation);
       }
       return relations;
@@ -115,7 +115,8 @@ public class EntityTable {
          _asPaths.put(advertIndex, asPath);
       }
       Relation advertisementPathRelation = _relations.get("AdvertisementPath");
-      List<Long> pathAdvertIndices = getLongColumn(advertisementPathRelation, 0);
+      List<Long> pathAdvertIndices = getLongColumn(advertisementPathRelation,
+            0);
       List<Long> pathListIndices = getLongColumn(advertisementPathRelation, 1);
       List<Long> asPathAses = getLongColumn(advertisementPathRelation, 2);
       int numPathListEntries = asPathAses.size();
@@ -154,7 +155,8 @@ public class EntityTable {
       currentAdvertProperty = _relations.get("BgpAdvertisement_originatorIp");
       List<Long> advertOriginatorIps = getLongColumn(currentAdvertProperty, 1);
       currentAdvertProperty = _relations.get("BgpAdvertisement_originType");
-      List<String> advertOriginTypes = getStringColumn(currentAdvertProperty, 1);
+      List<String> advertOriginTypes = getStringColumn(currentAdvertProperty,
+            1);
       List<Long> advertIndices = getLongColumn(currentAdvertProperty, 0);
       int numAdverts = advertIndices.size();
       for (int i = 0; i < numAdverts; i++) {
@@ -278,8 +280,8 @@ public class EntityTable {
          flowBuilder.setDstPort(flowDstPorts.get(i).intValue());
          flowBuilder.setEcn(flowEcns.get(i).intValue());
          flowBuilder.setIngressNode(flowNodes.get(i));
-         flowBuilder.setIpProtocol(IpProtocol.fromNumber(flowProtocols.get(i)
-               .intValue()));
+         flowBuilder.setIpProtocol(
+               IpProtocol.fromNumber(flowProtocols.get(i).intValue()));
          flowBuilder.setSrcIp(new Ip(flowSrcIps.get(i)));
          flowBuilder.setSrcPort(flowSrcPorts.get(i).intValue());
          flowBuilder.setIcmpType(flowIcmpTypes.get(i).intValue());

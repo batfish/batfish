@@ -24,8 +24,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
    public SecurityGroup(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
-      _ipPermsEgress = new LinkedList<IpPermissions>();
-      _ipPermsIngress = new LinkedList<IpPermissions>();
+      _ipPermsEgress = new LinkedList<>();
+      _ipPermsIngress = new LinkedList<>();
       _groupId = jObj.getString(JSON_KEY_GROUP_ID);
       _groupName = jObj.getString(JSON_KEY_GROUP_NAME);
 

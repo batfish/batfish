@@ -7,8 +7,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 
-public class FlattenVendorConfigurationResult
-      extends
+public class FlattenVendorConfigurationResult extends
       BatfishJobResult<Map<Path, String>, FlattenVendorConfigurationAnswerElement> {
 
    private final String _flattenedText;
@@ -23,7 +22,8 @@ public class FlattenVendorConfigurationResult
    }
 
    public FlattenVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, Path outputFile, Throwable failureCause) {
+         BatfishLoggerHistory history, Path outputFile,
+         Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _outputFile = outputFile;
       _flattenedText = null;

@@ -11,8 +11,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ConvertConfigurationAnswerElement implements AnswerElement,
-      Serializable {
+public class ConvertConfigurationAnswerElement
+      implements AnswerElement, Serializable {
 
    /**
     *
@@ -26,9 +26,9 @@ public class ConvertConfigurationAnswerElement implements AnswerElement,
    private SortedMap<String, Warnings> _warnings;
 
    public ConvertConfigurationAnswerElement() {
-      _warnings = new TreeMap<String, Warnings>();
-      _undefinedReferences = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
-      _unusedStructures = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
+      _warnings = new TreeMap<>();
+      _undefinedReferences = new TreeMap<>();
+      _unusedStructures = new TreeMap<>();
    }
 
    public SortedMap<String, SortedMap<String, SortedSet<String>>> getUndefinedReferences() {

@@ -41,7 +41,7 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getRelations() {
-      Set<String> relations = new HashSet<String>();
+      Set<String> relations = new HashSet<>();
       for (BooleanExpr conjunct : _conjuncts) {
          relations.addAll(conjunct.getRelations());
       }
@@ -55,7 +55,7 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
+      Set<String> variables = new HashSet<>();
       for (BooleanExpr conjunct : _conjuncts) {
          variables.addAll(conjunct.getVariables());
       }
@@ -63,8 +63,8 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
    }
 
    private void init() {
-      _conjuncts = new ArrayList<BooleanExpr>();
-      _subExpressions = new ArrayList<Expr>();
+      _conjuncts = new ArrayList<>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("and"));
       _printer = new ExpandedComplexExprPrinter(this);
    }
@@ -72,7 +72,7 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public BooleanExpr simplify() {
       boolean changed = false;
-      List<BooleanExpr> newConjuncts = new ArrayList<BooleanExpr>();
+      List<BooleanExpr> newConjuncts = new ArrayList<>();
 
       // first check for nested ANDs
       boolean containsAndExpr = false;
@@ -127,7 +127,7 @@ public class AndExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
       Context ctx = nodProgram.getContext();
-      List<BoolExpr> args = new ArrayList<BoolExpr>();
+      List<BoolExpr> args = new ArrayList<>();
       for (BooleanExpr conjunct : _conjuncts) {
          BoolExpr be = conjunct.toBoolExpr(nodProgram);
          args.add(be);

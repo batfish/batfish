@@ -112,7 +112,7 @@ public enum NamedPort {
    private static final Map<Integer, NamedPort> NUMBER_TO_PORT_MAP = buildNumberToPortMap();
 
    private static Map<Integer, NamedPort> buildNumberToPortMap() {
-      Map<Integer, NamedPort> map = new HashMap<Integer, NamedPort>();
+      Map<Integer, NamedPort> map = new HashMap<>();
       for (NamedPort protocol : values()) {
          map.put(protocol._number, protocol);
       }
@@ -122,8 +122,8 @@ public enum NamedPort {
    public static NamedPort fromNumber(int number) {
       NamedPort ret = NUMBER_TO_PORT_MAP.get(number);
       if (ret == null) {
-         throw new BatfishException("missing enumeration for protocol number: "
-               + number);
+         throw new BatfishException(
+               "missing enumeration for protocol number: " + number);
       }
       return ret;
    }

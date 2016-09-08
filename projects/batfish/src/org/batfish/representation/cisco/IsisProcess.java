@@ -22,7 +22,7 @@ public class IsisProcess implements Serializable {
    private Map<RoutingProtocol, IsisRedistributionPolicy> _redistributionPolicies;
 
    public IsisProcess() {
-      _redistributionPolicies = new TreeMap<RoutingProtocol, IsisRedistributionPolicy>();
+      _redistributionPolicies = new TreeMap<>();
    }
 
    public IsisLevel getLevel() {

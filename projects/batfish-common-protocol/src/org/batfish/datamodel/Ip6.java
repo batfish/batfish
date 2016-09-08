@@ -9,14 +9,15 @@ import com.google.common.net.InetAddresses;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
-   public static final Ip6 MAX = new Ip6(new BigInteger(
-         "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
+   public static final Ip6 MAX = new Ip6(
+         new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
 
    private static final long serialVersionUID = 1L;
 
    public static final Ip6 ZERO = new Ip6(BigInteger.ZERO);
 
-   private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {
+   private static String asIpv6AddressString(
+         BigInteger ipv6AddressAsBigInteger) {
       BigInteger remainder = ipv6AddressAsBigInteger;
       String out = "";
       BigInteger segmentMask = new BigInteger("FFFF", 16);
@@ -60,8 +61,8 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
          }
       }
       if (invalid) {
-         throw new BatfishException("Invalid ipv6 address literal: \""
-               + ipAsString + "\"");
+         throw new BatfishException(
+               "Invalid ipv6 address literal: \"" + ipAsString + "\"");
       }
       _ip6 = new BigInteger(ip6AsByteArray);
       _hashCode = _ip6.hashCode();

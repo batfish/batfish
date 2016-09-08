@@ -17,8 +17,8 @@ import org.batfish.main.Warnings;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class VendorConfiguration implements Serializable,
-      GenericConfigObject {
+public abstract class VendorConfiguration
+      implements Serializable, GenericConfigObject {
 
    /**
     *
@@ -73,12 +73,12 @@ public abstract class VendorConfiguration implements Serializable,
       SortedMap<String, SortedSet<String>> byHostname = _answerElement
             .getUndefinedReferences().get(hostname);
       if (byHostname == null) {
-         byHostname = new TreeMap<String, SortedSet<String>>();
+         byHostname = new TreeMap<>();
          _answerElement.getUndefinedReferences().put(hostname, byHostname);
       }
       SortedSet<String> byType = byHostname.get(type);
       if (byType == null) {
-         byType = new TreeSet<String>();
+         byType = new TreeSet<>();
          byHostname.put(type, byType);
       }
       byType.add(name);
@@ -90,12 +90,12 @@ public abstract class VendorConfiguration implements Serializable,
       SortedMap<String, SortedSet<String>> byHostname = _answerElement
             .getUnusedStructures().get(hostname);
       if (byHostname == null) {
-         byHostname = new TreeMap<String, SortedSet<String>>();
+         byHostname = new TreeMap<>();
          _answerElement.getUnusedStructures().put(hostname, byHostname);
       }
       SortedSet<String> byType = byHostname.get(type);
       if (byType == null) {
-         byType = new TreeSet<String>();
+         byType = new TreeSet<>();
          byHostname.put(type, byType);
       }
       byType.add(name);

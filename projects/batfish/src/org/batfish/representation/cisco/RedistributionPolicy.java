@@ -18,7 +18,7 @@ public abstract class RedistributionPolicy implements Serializable {
          RoutingProtocol destinationProtocol) {
       _sourceProtocol = sourceProtocol;
       _destinationProtocol = destinationProtocol;
-      _specialAttributes = new TreeMap<String, Object>();
+      _specialAttributes = new TreeMap<>();
    }
 
    public RoutingProtocol getDestinationProtocol() {

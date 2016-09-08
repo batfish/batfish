@@ -24,8 +24,8 @@ public class Relation {
          LBValueTypeList columnValueTypes = predicateInfo
                .getPredicateValueTypes(_name);
          if (columnValueTypes == null) {
-            throw new BatfishException("Missing schema for predicate: \""
-                  + _name + "\"");
+            throw new BatfishException(
+                  "Missing schema for predicate: \"" + _name + "\"");
          }
          int numColumns = columnValueTypes.size();
          String[] lines = nlsText.split("\n|\r\n");

@@ -48,7 +48,7 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
    private SortedMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>> _selfAdjacencies;
 
    public SelfAdjacenciesAnswerElement() {
-      _selfAdjacencies = new TreeMap<String, SortedMap<Prefix, SortedSet<InterfaceIpPair>>>();
+      _selfAdjacencies = new TreeMap<>();
    }
 
    public void add(String hostname, Prefix prefix, String interfaceName,
@@ -56,12 +56,12 @@ public class SelfAdjacenciesAnswerElement implements AnswerElement {
       SortedMap<Prefix, SortedSet<InterfaceIpPair>> prefixMap = _selfAdjacencies
             .get(hostname);
       if (prefixMap == null) {
-         prefixMap = new TreeMap<Prefix, SortedSet<InterfaceIpPair>>();
+         prefixMap = new TreeMap<>();
          _selfAdjacencies.put(hostname, prefixMap);
       }
       SortedSet<InterfaceIpPair> interfaces = prefixMap.get(prefix);
       if (interfaces == null) {
-         interfaces = new TreeSet<InterfaceIpPair>();
+         interfaces = new TreeSet<>();
          prefixMap.put(prefix, interfaces);
       }
       interfaces.add(new InterfaceIpPair(interfaceName, address));

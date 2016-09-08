@@ -34,7 +34,8 @@ public class IptablesMatch implements Serializable {
 
    private MatchType _matchType;
 
-   public IptablesMatch(boolean inverted, MatchType matchType, Object matchData) {
+   public IptablesMatch(boolean inverted, MatchType matchType,
+         Object matchData) {
       _inverted = inverted;
       _matchType = matchType;
       _matchData = matchData;
@@ -54,7 +55,8 @@ public class IptablesMatch implements Serializable {
 
    public IpProtocol toIpProtocol() {
       if (_inverted) {
-         // _warnings.redFlag("Inversion of protocol matching is not supported. Current analysis will match everything.");
+         // _warnings.redFlag("Inversion of protocol matching is not supported.
+         // Current analysis will match everything.");
          // return IpWildcard.ANY;
          throw new BatfishException("Unknown matchdata type");
       }
@@ -65,7 +67,8 @@ public class IptablesMatch implements Serializable {
    public IpWildcard toIpWildcard() {
 
       if (_inverted) {
-         // _warnings.redFlag("Inversion of src/dst matching is not supported. Current analysis will match everything.");
+         // _warnings.redFlag("Inversion of src/dst matching is not supported.
+         // Current analysis will match everything.");
          // return IpWildcard.ANY;
          throw new BatfishException("Unknown matchdata type");
       }
@@ -84,7 +87,7 @@ public class IptablesMatch implements Serializable {
 
    public List<SubRange> toPortRanges() {
 
-      List<SubRange> subRanges = new LinkedList<SubRange>();
+      List<SubRange> subRanges = new LinkedList<>();
 
       int port = (int) _matchData;
 

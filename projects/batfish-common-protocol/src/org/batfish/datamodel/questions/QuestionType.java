@@ -34,7 +34,7 @@ public enum QuestionType {
    private final static Map<String, QuestionType> _map = buildMap();
 
    private static Map<String, QuestionType> buildMap() {
-      Map<String, QuestionType> map = new HashMap<String, QuestionType>();
+      Map<String, QuestionType> map = new HashMap<>();
       for (QuestionType value : QuestionType.values()) {
          String name = value._name;
          map.put(name, value);
@@ -46,8 +46,8 @@ public enum QuestionType {
    public static QuestionType fromName(String name) {
       QuestionType instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("Not a valid QuestionType: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "Not a valid QuestionType: \"" + name + "\"");
       }
       return instance;
    }

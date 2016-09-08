@@ -89,7 +89,8 @@ public class CommonUtil {
       catch (IOException e) {
          throw new BatfishException(
                "Could not create directories leading up to and including '"
-                     + path.toString() + "'", e);
+                     + path.toString() + "'",
+               e);
       }
    }
 
@@ -108,8 +109,8 @@ public class CommonUtil {
       return s;
    }
 
-   public static ClientBuilder getClientBuilder(boolean secure, boolean trustAll)
-         throws Exception {
+   public static ClientBuilder getClientBuilder(boolean secure,
+         boolean trustAll) throws Exception {
       if (secure) {
          if (trustAll) {
             SSLContext sslcontext = SSLContext.getInstance("TLS");
@@ -197,36 +198,38 @@ public class CommonUtil {
          catch (ClassNotFoundException e) {
             throw new BatfishException("could not find onejar class");
          }
-         File jarDir = new File(onejarSourceURL.toString().replaceAll(
-               "^file:\\\\*", "")).getParentFile();
+         File jarDir = new File(
+               onejarSourceURL.toString().replaceAll("^file:\\\\*", ""))
+                     .getParentFile();
          return jarDir;
       }
       else {
          char separator = System.getProperty("file.separator").charAt(0);
-         String locatorPackageResourceName = locatorClass.getPackage()
-               .getName().replace('.', separator);
+         String locatorPackageResourceName = locatorClass.getPackage().getName()
+               .replace('.', separator);
          try {
             locatorDirFile = new File(locatorClass.getClassLoader()
                   .getResource(locatorPackageResourceName).toURI());
          }
          catch (URISyntaxException e) {
-            throw new BatfishException("Failed to resolve locator directory", e);
+            throw new BatfishException("Failed to resolve locator directory",
+                  e);
          }
-         assert Boolean.TRUE;
          return locatorDirFile;
       }
    }
 
    public static List<String> getMatchingStrings(String regex,
          Set<String> allStrings) {
-      List<String> matchingStrings = new ArrayList<String>();
+      List<String> matchingStrings = new ArrayList<>();
       Pattern pattern;
       try {
          pattern = Pattern.compile(regex);
       }
       catch (PatternSyntaxException e) {
          throw new BatfishException(
-               "Supplied regex is not a valid java regex: \"" + regex + "\"", e);
+               "Supplied regex is not a valid java regex: \"" + regex + "\"",
+               e);
       }
       if (pattern != null) {
          for (String s : allStrings) {
@@ -261,8 +264,8 @@ public class CommonUtil {
    }
 
    public static boolean isLoopback(String interfaceName) {
-      return (interfaceName.startsWith("Loopback") || interfaceName
-            .startsWith("lo"));
+      return (interfaceName.startsWith("Loopback")
+            || interfaceName.startsWith("lo"));
    }
 
    public static boolean isNullInterface(String ifaceName) {
@@ -292,8 +295,8 @@ public class CommonUtil {
          return Files.list(configsPath);
       }
       catch (IOException e) {
-         throw new BatfishException("Could not list files in '"
-               + configsPath.toString() + "'", e);
+         throw new BatfishException(
+               "Could not list files in '" + configsPath.toString() + "'", e);
       }
    }
 
@@ -345,7 +348,7 @@ public class CommonUtil {
    }
 
    public static SortedMap<Integer, String> toLineMap(String str) {
-      SortedMap<Integer, String> map = new TreeMap<Integer, String>();
+      SortedMap<Integer, String> map = new TreeMap<>();
       String[] lines = str.split("\n");
       for (int i = 0; i < lines.length; i++) {
          String line = lines[i];
@@ -361,7 +364,8 @@ public class CommonUtil {
     * BS, FF, NL, CR, TAB, double and single quote.</li>
     * <li><strong>&#92;X &#92;XX &#92;XXX</strong> : Octal character
     * specification (0 - 377, 0x00 - 0xFF).</li>
-    * <li><strong>&#92;uXXXX</strong> : Hexadecimal based Unicode character.</li>
+    * <li><strong>&#92;uXXXX</strong> : Hexadecimal based Unicode
+    * character.</li>
     * </ul>
     *
     * @param st
@@ -425,9 +429,9 @@ public class CommonUtil {
                   ch = 'u';
                   break;
                }
-               int code = Integer.parseInt(
-                     "" + st.charAt(i + 2) + st.charAt(i + 3)
-                           + st.charAt(i + 4) + st.charAt(i + 5), 16);
+               int code = Integer.parseInt("" + st.charAt(i + 2)
+                     + st.charAt(i + 3) + st.charAt(i + 4) + st.charAt(i + 5),
+                     16);
                sb.append(Character.toChars(code));
                i += 5;
                continue;

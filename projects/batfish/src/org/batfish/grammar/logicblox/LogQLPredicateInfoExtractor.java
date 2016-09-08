@@ -17,8 +17,8 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
 
    private void addPredicate(String predicateName) {
       if (_unqualifiedPredicateValueTypes.get(predicateName) != null) {
-         throw new BatfishException("Predicate already declared: "
-               + predicateName);
+         throw new BatfishException(
+               "Predicate already declared: " + predicateName);
       }
       LBValueTypeList list = new LBValueTypeList();
       _unqualifiedPredicateValueTypes.put(predicateName, list);
@@ -127,10 +127,10 @@ public class LogQLPredicateInfoExtractor extends LogiQLParserBaseListener {
       case STRING:
          return LBValueType.ENTITY_REF_STRING;
 
-         // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
-         throw new BatfishException("no refmode type for given value type: "
-               + valueType.toString());
+         throw new BatfishException(
+               "no refmode type for given value type: " + valueType.toString());
       }
    }
 

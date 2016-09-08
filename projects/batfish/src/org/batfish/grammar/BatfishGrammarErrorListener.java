@@ -8,7 +8,8 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.batfish.main.Settings;
 
-public abstract class BatfishGrammarErrorListener implements ANTLRErrorListener {
+public abstract class BatfishGrammarErrorListener
+      implements ANTLRErrorListener {
 
    protected final BatfishCombinedParser<?, ?> _combinedParser;
 

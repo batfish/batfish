@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -98,8 +99,8 @@ public class HostConfiguration extends VendorConfiguration {
    private transient Set<String> _unimplementedFeatures;
 
    public HostConfiguration() {
-      _hostInterfaces = new TreeMap<String, HostInterface>();
-      _staticRoutes = new TreeSet<HostStaticRoute>();
+      _hostInterfaces = new TreeMap<>();
+      _staticRoutes = new TreeSet<>();
    }
 
    @JsonProperty(HOST_INTERFACES_VAR)
@@ -161,17 +162,9 @@ public class HostConfiguration extends VendorConfiguration {
    }
 
    private boolean simple() {
-      String[] aclsToCheck = new String[] {
-            RAW_PREROUTING,
-            MANGLE_PREROUTING,
-            NAT_PREROUTING,
-            MANGLE_INPUT,
-            RAW_OUTPUT,
-            MANGLE_OUTPUT,
-            NAT_OUTPUT,
-            MANGLE_FORWARD,
-            FILTER_FORWARD,
-            MANGLE_POSTROUTING };
+      String[] aclsToCheck = new String[] { RAW_PREROUTING, MANGLE_PREROUTING,
+            NAT_PREROUTING, MANGLE_INPUT, RAW_OUTPUT, MANGLE_OUTPUT, NAT_OUTPUT,
+            MANGLE_FORWARD, FILTER_FORWARD, MANGLE_POSTROUTING };
       for (String aclName : aclsToCheck) {
          IpAccessList acl = _c.getIpAccessLists().get(aclName);
          if (acl != null) {
@@ -223,15 +216,15 @@ public class HostConfiguration extends VendorConfiguration {
       if (_staticRoutes.isEmpty()) {
          for (String ifaceName : _c.getInterfaces().keySet()) {
             StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
-                  StaticRoute.NO_TAG);
-            sr.setAdministrativeCost(HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
+                  AbstractRoute.NO_TAG);
+            sr.setAdministrativeCost(
+                  HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
             _c.getStaticRoutes().add(sr);
          }
       }
       else {
-         _c.getStaticRoutes().addAll(
-               _staticRoutes.stream().map(hsr -> hsr.toStaticRoute())
-                     .collect(Collectors.toSet()));
+         _c.getStaticRoutes().addAll(_staticRoutes.stream()
+               .map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
       }
       return _c;
    }

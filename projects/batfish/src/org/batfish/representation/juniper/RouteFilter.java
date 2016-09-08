@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.batfish.common.util.ComparableStructure;
 
-public final class RouteFilter extends ComparableStructure<String> implements
-      Serializable {
+public final class RouteFilter extends ComparableStructure<String>
+      implements Serializable {
 
    /**
     *
@@ -19,7 +19,7 @@ public final class RouteFilter extends ComparableStructure<String> implements
 
    public RouteFilter(String name) {
       super(name);
-      _lines = new LinkedHashMap<RouteFilterLine, RouteFilterLine>();
+      _lines = new LinkedHashMap<>();
    }
 
    public Set<RouteFilterLine> getLines() {

@@ -25,12 +25,10 @@ public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
       Statement bufferedStatement = new BufferedStatement(setStatement);
       If ifStatement = new If();
       ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-      ifStatement.setTrueStatements(Collections
-            .singletonList(Statements.SetLocalDefaultActionAccept
-                  .toStaticStatement()));
-      ifStatement.setFalseStatements(Collections
-            .singletonList(Statements.SetDefaultActionAccept
-                  .toStaticStatement()));
+      ifStatement.setTrueStatements(Collections.singletonList(
+            Statements.SetLocalDefaultActionAccept.toStaticStatement()));
+      ifStatement.setFalseStatements(Collections.singletonList(
+            Statements.SetDefaultActionAccept.toStaticStatement()));
       statements.add(bufferedStatement);
       statements.add(ifStatement);
    }

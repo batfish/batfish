@@ -23,18 +23,18 @@ public class OspfLoopbacksAnswerElement implements AnswerElement {
    private SortedMap<String, SortedSet<String>> _running;
 
    public OspfLoopbacksAnswerElement() {
-      _active = new TreeMap<String, SortedSet<String>>();
-      _exported = new TreeMap<String, SortedSet<String>>();
-      _inactive = new TreeMap<String, SortedSet<String>>();
-      _passive = new TreeMap<String, SortedSet<String>>();
-      _running = new TreeMap<String, SortedSet<String>>();
+      _active = new TreeMap<>();
+      _exported = new TreeMap<>();
+      _inactive = new TreeMap<>();
+      _passive = new TreeMap<>();
+      _running = new TreeMap<>();
    }
 
    public void add(SortedMap<String, SortedSet<String>> map, String hostname,
          String interfaceName) {
       SortedSet<String> interfacesByHostname = map.get(hostname);
       if (interfacesByHostname == null) {
-         interfacesByHostname = new TreeSet<String>();
+         interfacesByHostname = new TreeSet<>();
          map.put(hostname, interfacesByHostname);
       }
       interfacesByHostname.add(interfaceName);

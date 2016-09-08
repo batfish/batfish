@@ -24,7 +24,7 @@ public final class PolicyStatement extends ReferenceCountedStructure {
       _name = name;
       String singletonTermName = "__" + _name + "__SINGLETON__";
       _singletonTerm = new PsTerm(singletonTermName);
-      _terms = new LinkedHashMap<String, PsTerm>();
+      _terms = new LinkedHashMap<>();
    }
 
    public boolean getIpv6() {

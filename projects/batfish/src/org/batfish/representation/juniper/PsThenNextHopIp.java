@@ -30,8 +30,8 @@ public final class PsThenNextHopIp extends PsThen {
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
       // todo: something with destination-vrf
-      statements.add(new SetNextHop(new NextHopIp(Collections
-            .singletonList(_nextHopIp)), false));
+      statements.add(new SetNextHop(
+            new NextHopIp(Collections.singletonList(_nextHopIp)), false));
    }
 
    @Override

@@ -45,7 +45,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    public void enterFlat_juniper_configuration(
          Flat_juniper_configurationContext ctx) {
       _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<ParseTree>();
+      _newConfigurationLines = new ArrayList<>();
       _newConfigurationLines.addAll(ctx.children);
    }
 
@@ -73,12 +73,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       }
       catch (PartialGroupMatchBatfishException e) {
          String message = "Exception processing apply-groups statement at path: \""
-               + _currentPath.pathString()
-               + "\" with group \""
-               + groupName
-               + "\": "
-               + e.getMessage()
-               + ": caused by: "
+               + _currentPath.pathString() + "\" with group \"" + groupName
+               + "\": " + e.getMessage() + ": caused by: "
                + ExceptionUtils.getFullStackTrace(e);
          _w.pedantic(message);
       }
@@ -90,12 +86,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       }
       catch (BatfishException e) {
          String message = "Exception processing apply-groups statement at path: \""
-               + _currentPath.pathString()
-               + "\" with group \""
-               + groupName
-               + "\": "
-               + e.getMessage()
-               + ": caused by: "
+               + _currentPath.pathString() + "\" with group \"" + groupName
+               + "\": " + e.getMessage() + ": caused by: "
                + ExceptionUtils.getFullStackTrace(e);
          _w.redFlag(message);
       }
@@ -106,7 +98,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    @Override
    public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
       if (_inGroup) {
-         _w.redFlag("Do not know how to handle apply-groups-except occcurring within group statement");
+         _w.redFlag(
+               "Do not know how to handle apply-groups-except occcurring within group statement");
       }
       _newConfigurationLines.remove(_currentSetLine);
    }

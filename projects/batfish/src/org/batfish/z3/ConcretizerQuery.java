@@ -26,8 +26,9 @@ public class ConcretizerQuery {
    public static ConcretizerQuery blacklistDstIpQuery(Set<Ip> blacklistDstIps) {
       AndExpr conditions = new AndExpr();
       for (Ip blacklistDstIp : blacklistDstIps) {
-         EqExpr hasBlacklistedDstIp = new EqExpr(new VarIntExpr(
-               Synthesizer.DST_IP_VAR), new LitIntExpr(blacklistDstIp));
+         EqExpr hasBlacklistedDstIp = new EqExpr(
+               new VarIntExpr(Synthesizer.DST_IP_VAR),
+               new LitIntExpr(blacklistDstIp));
          NotExpr not = new NotExpr(hasBlacklistedDstIp);
          conditions.addConjunct(not);
       }
@@ -36,7 +37,7 @@ public class ConcretizerQuery {
 
    public static List<ConcretizerQuery> crossProduct(
          List<ConcretizerQuery> left, List<ConcretizerQuery> right) {
-      List<ConcretizerQuery> queries = new ArrayList<ConcretizerQuery>();
+      List<ConcretizerQuery> queries = new ArrayList<>();
       for (ConcretizerQuery leftQuery : left) {
          if (leftQuery == UNSAT) {
             continue;
@@ -61,15 +62,15 @@ public class ConcretizerQuery {
    private List<Statement> _statements;
 
    public ConcretizerQuery(BooleanExpr constraint) {
-      _statements = new ArrayList<Statement>();
-      _constraints = new ArrayList<BooleanExpr>();
+      _statements = new ArrayList<>();
+      _constraints = new ArrayList<>();
       _constraints.add(constraint);
       refreshStatements();
    }
 
    private ConcretizerQuery(ConcretizerQuery query) {
-      _statements = new ArrayList<Statement>();
-      _constraints = new ArrayList<BooleanExpr>();
+      _statements = new ArrayList<>();
+      _constraints = new ArrayList<>();
       _statements.addAll(query._statements);
       _constraints.addAll(query._constraints);
       refreshStatements();

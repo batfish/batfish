@@ -35,7 +35,7 @@ public class QueryExpr extends Statement implements ComplexExpr {
    }
 
    private void init() {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("query"));
       _subExpressions.add(_subExpression);
       _printer = new CollapsedComplexExprPrinter(this);

@@ -9,8 +9,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NamedStructureEquivalenceSet<T> implements
-      Comparable<NamedStructureEquivalenceSet<T>> {
+public class NamedStructureEquivalenceSet<T>
+      implements Comparable<NamedStructureEquivalenceSet<T>> {
 
    private static final String REPRESENTATIVE_ELEMENT_VAR = "representativeElement";
 
@@ -29,7 +29,7 @@ public class NamedStructureEquivalenceSet<T> implements
    public NamedStructureEquivalenceSet(String node, T namedStructure) {
       this(node);
       _namedStructure = namedStructure;
-      _nodes = new TreeSet<String>();
+      _nodes = new TreeSet<>();
       _nodes.add(node);
    }
 

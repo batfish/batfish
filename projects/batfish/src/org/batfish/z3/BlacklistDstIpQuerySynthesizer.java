@@ -31,10 +31,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
    private Set<Ip> _blacklistIps;
 
    public BlacklistDstIpQuerySynthesizer(Set<Ip> explicitBlacklistIps,
-         Set<String> blacklistNodes,
-         Set<NodeInterfacePair> blacklistInterfaces, EdgeSet blacklistEdges,
-         Map<String, Configuration> configurations) {
-      _blacklistIps = new TreeSet<Ip>();
+         Set<String> blacklistNodes, Set<NodeInterfacePair> blacklistInterfaces,
+         EdgeSet blacklistEdges, Map<String, Configuration> configurations) {
+      _blacklistIps = new TreeSet<>();
       if (explicitBlacklistIps != null) {
          _blacklistIps.addAll(explicitBlacklistIps);
       }
@@ -83,9 +82,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(SaneExpr.INSTANCE);
       for (Ip blacklistIp : _blacklistIps) {
-         BooleanExpr blacklistIpCondition = new NotExpr(new EqExpr(
-               new VarIntExpr(Synthesizer.DST_IP_VAR), new LitIntExpr(
-                     blacklistIp)));
+         BooleanExpr blacklistIpCondition = new NotExpr(
+               new EqExpr(new VarIntExpr(Synthesizer.DST_IP_VAR),
+                     new LitIntExpr(blacklistIp)));
          queryConditions.addConjunct(blacklistIpCondition);
       }
       RuleExpr queryRule = new RuleExpr(queryConditions,

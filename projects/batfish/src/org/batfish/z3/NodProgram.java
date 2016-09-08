@@ -28,12 +28,12 @@ public class NodProgram {
 
    public NodProgram(Context context) {
       _context = context;
-      _queries = new ArrayList<BoolExpr>();
-      _relationDeclarations = new LinkedHashMap<String, FuncDecl>();
-      _rules = new ArrayList<BoolExpr>();
-      _variables = new LinkedHashMap<String, BitVecExpr>();
-      _variableSizes = new LinkedHashMap<String, Integer>();
-      _variablesAsConsts = new LinkedHashMap<String, BitVecExpr>();
+      _queries = new ArrayList<>();
+      _relationDeclarations = new LinkedHashMap<>();
+      _rules = new ArrayList<>();
+      _variables = new LinkedHashMap<>();
+      _variableSizes = new LinkedHashMap<>();
+      _variablesAsConsts = new LinkedHashMap<>();
    }
 
    public NodProgram append(NodProgram queryProgram) {

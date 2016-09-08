@@ -149,7 +149,8 @@ public class Synthesizer {
    public static final String TCP_FLAGS_URG_VAR = "tcp_flags_urg";
 
    @SuppressWarnings("unused")
-   private static void debug(BooleanExpr condition, List<Statement> statements) {
+   private static void debug(BooleanExpr condition,
+         List<Statement> statements) {
       RuleExpr rule = new RuleExpr(condition, DebugExpr.INSTANCE);
       statements.add(rule);
    }
@@ -160,7 +161,7 @@ public class Synthesizer {
    }
 
    private static List<String> getPacketVars() {
-      List<String> vars = new ArrayList<String>();
+      List<String> vars = new ArrayList<>();
       vars.add(SRC_IP_VAR);
       vars.add(DST_IP_VAR);
       vars.add(SRC_PORT_VAR);
@@ -185,14 +186,14 @@ public class Synthesizer {
 
    public static Map<String, FuncDecl> getRelDeclFuncDecls(
          List<Statement> existingStatements, Context ctx) throws Z3Exception {
-      Map<String, FuncDecl> funcDecls = new LinkedHashMap<String, FuncDecl>();
-      Set<String> relations = new TreeSet<String>();
+      Map<String, FuncDecl> funcDecls = new LinkedHashMap<>();
+      Set<String> relations = new TreeSet<>();
       for (Statement existingStatement : existingStatements) {
          relations.addAll(existingStatement.getRelations());
       }
       relations.add(QueryRelationExpr.NAME);
       for (String packetRel : relations) {
-         List<Integer> sizes = new ArrayList<Integer>();
+         List<Integer> sizes = new ArrayList<>();
          sizes.addAll(PACKET_VAR_SIZES.values());
          DeclareRelExpr declaration = new DeclareRelExpr(packetRel, sizes);
          funcDecls.put(packetRel, declaration.toFuncDecl(ctx));
@@ -201,7 +202,7 @@ public class Synthesizer {
    }
 
    public static List<Statement> getVarDeclExprs() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Variable Declarations"));
       for (Entry<String, Integer> e : PACKET_VAR_SIZES.entrySet()) {
          String var = e.getKey();
@@ -220,7 +221,7 @@ public class Synthesizer {
    }
 
    private static Map<String, Integer> initPacketVarSizes() {
-      Map<String, Integer> varSizes = new LinkedHashMap<String, Integer>();
+      Map<String, Integer> varSizes = new LinkedHashMap<>();
       varSizes.put(SRC_IP_VAR, IP_BITS);
       varSizes.put(DST_IP_VAR, IP_BITS);
       varSizes.put(SRC_PORT_VAR, PORT_BITS);
@@ -262,22 +263,22 @@ public class Synthesizer {
       Set<IpProtocol> protocols = headerSpace.getIpProtocols();
       Set<IpProtocol> notProtocols = headerSpace.getNotIpProtocols();
 
-      Set<SubRange> srcPortRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> srcPortRanges = new LinkedHashSet<>();
       srcPortRanges.addAll(headerSpace.getSrcPorts());
-      Set<SubRange> notSrcPortRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> notSrcPortRanges = new LinkedHashSet<>();
       notSrcPortRanges.addAll(headerSpace.getNotSrcPorts());
 
-      Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> srcOrDstPortRanges = new LinkedHashSet<>();
       srcOrDstPortRanges.addAll(headerSpace.getSrcOrDstPorts());
 
-      Set<SubRange> dstPortRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> dstPortRanges = new LinkedHashSet<>();
       dstPortRanges.addAll(headerSpace.getDstPorts());
-      Set<SubRange> notDstPortRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> notDstPortRanges = new LinkedHashSet<>();
       notDstPortRanges.addAll(headerSpace.getNotDstPorts());
 
-      Set<SubRange> fragmentOffsetRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> fragmentOffsetRanges = new LinkedHashSet<>();
       fragmentOffsetRanges.addAll(headerSpace.getFragmentOffsets());
-      Set<SubRange> notFragmentOffsetRanges = new LinkedHashSet<SubRange>();
+      Set<SubRange> notFragmentOffsetRanges = new LinkedHashSet<>();
       notFragmentOffsetRanges.addAll(headerSpace.getNotFragmentOffsets());
 
       Set<SubRange> icmpTypes = headerSpace.getIcmpTypes();
@@ -665,7 +666,8 @@ public class Synthesizer {
       }
 
       // don't match notFragmentOffset
-      if (notFragmentOffsetRanges != null && notFragmentOffsetRanges.size() > 0) {
+      if (notFragmentOffsetRanges != null
+            && notFragmentOffsetRanges.size() > 0) {
          BooleanExpr matchFragmentOffset = new RangeMatchExpr(
                FRAGMENT_OFFSET_VAR, FRAGMENT_OFFSET_BITS,
                notFragmentOffsetRanges);
@@ -818,7 +820,7 @@ public class Synthesizer {
       _flowSinks = null;
       _simplify = simplify;
       _topologyInterfaces = null;
-      _warnings = new ArrayList<String>();
+      _warnings = new ArrayList<>();
    }
 
    public Synthesizer(Map<String, Configuration> configurations,
@@ -829,8 +831,8 @@ public class Synthesizer {
       _topologyEdges = dataPlane.getTopologyEdges();
       _flowSinks = dataPlane.getFlowSinks();
       _simplify = simplify;
-      _topologyInterfaces = new TreeMap<String, Set<Interface>>();
-      _warnings = new ArrayList<String>();
+      _topologyInterfaces = new TreeMap<>();
+      _warnings = new ArrayList<>();
       computeTopologyInterfaces();
       pruneInterfaces();
    }
@@ -866,23 +868,23 @@ public class Synthesizer {
    }
 
    private List<Statement> getAcceptRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Node accept lead to universal accept"));
       for (String nodeName : _configurations.keySet()) {
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(nodeName);
-         RuleExpr connectAccepts = new RuleExpr(nodeAccept, AcceptExpr.INSTANCE);
+         RuleExpr connectAccepts = new RuleExpr(nodeAccept,
+               AcceptExpr.INSTANCE);
          statements.add(connectAccepts);
       }
       return statements;
    }
 
    private List<Statement> getDestRouteToPreOutEdgeRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Rules for sending destination routed packets to preoutIface stage"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Rules for sending destination routed packets to preoutIface stage"));
       for (String hostname : _fibs.keySet()) {
-         TreeSet<FibRow> fibSet = new TreeSet<FibRow>(_fibs.get(hostname));
+         TreeSet<FibRow> fibSet = new TreeSet<>(_fibs.get(hostname));
          FibRow firstRow = fibSet.first();
          if (!firstRow.getPrefix().equals(Prefix.ZERO)) {
             // no default route, so add one that drops traffic
@@ -893,7 +895,7 @@ public class Synthesizer {
          FibRow[] fib = fibSet.toArray(new FibRow[] {});
          for (int i = 0; i < fib.length; i++) {
             FibRow currentRow = fib[i];
-            Set<FibRow> notRows = new TreeSet<FibRow>();
+            Set<FibRow> notRows = new TreeSet<>();
             for (int j = i + 1; j < fib.length; j++) {
                FibRow specificRow = fib[j];
                long currentStart = currentRow.getPrefix().getAddress().asLong();
@@ -910,12 +912,12 @@ public class Synthesizer {
                      // load balancing
                      continue;
                   }
-                  if (currentRow.getInterface().equals(
-                        specificRow.getInterface())
-                        && currentRow.getNextHop().equals(
-                              specificRow.getNextHop())
-                        && currentRow.getNextHopInterface().equals(
-                              specificRow.getNextHopInterface())) {
+                  if (currentRow.getInterface()
+                        .equals(specificRow.getInterface())
+                        && currentRow.getNextHop()
+                              .equals(specificRow.getNextHop())
+                        && currentRow.getNextHopInterface()
+                              .equals(specificRow.getNextHopInterface())) {
                      // no need to exclude packets matching the more specific
                      // prefix,
                      // since they would go out same edge
@@ -990,7 +992,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getDropRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Node drop lead to universal drop"));
       for (String nodeName : _configurations.keySet()) {
          NodeDropExpr nodeDrop = new NodeDropExpr(nodeName);
@@ -1001,11 +1003,10 @@ public class Synthesizer {
    }
 
    private List<Statement> getExternalDstIpRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
-      Set<Ip> interfaceIps = new TreeSet<Ip>();
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
+      Set<Ip> interfaceIps = new TreeSet<>();
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          Configuration c = e.getValue();
          for (Interface i : c.getInterfaces().values()) {
@@ -1020,8 +1021,8 @@ public class Synthesizer {
       }
       OrExpr dstIpMatchesSomeInterfaceIp = new OrExpr();
       for (Ip ip : interfaceIps) {
-         EqExpr dstIpMatchesSpecificInterfaceIp = new EqExpr(new VarIntExpr(
-               DST_IP_VAR), new LitIntExpr(ip));
+         EqExpr dstIpMatchesSpecificInterfaceIp = new EqExpr(
+               new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
          dstIpMatchesSomeInterfaceIp
                .addDisjunct(dstIpMatchesSpecificInterfaceIp);
       }
@@ -1033,11 +1034,10 @@ public class Synthesizer {
    }
 
    private List<Statement> getExternalSrcIpRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
-      Set<Ip> interfaceIps = new TreeSet<Ip>();
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
+      Set<Ip> interfaceIps = new TreeSet<>();
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          Configuration c = e.getValue();
          for (Interface i : c.getInterfaces().values()) {
@@ -1052,8 +1052,8 @@ public class Synthesizer {
       }
       OrExpr srcIpMatchesSomeInterfaceIp = new OrExpr();
       for (Ip ip : interfaceIps) {
-         EqExpr srcIpMatchesSpecificInterfaceIp = new EqExpr(new VarIntExpr(
-               SRC_IP_VAR), new LitIntExpr(ip));
+         EqExpr srcIpMatchesSpecificInterfaceIp = new EqExpr(
+               new VarIntExpr(SRC_IP_VAR), new LitIntExpr(ip));
          srcIpMatchesSomeInterfaceIp
                .addDisjunct(srcIpMatchesSpecificInterfaceIp);
       }
@@ -1065,9 +1065,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getFlowSinkAcceptRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Post out flow sink interface leads to node accept"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(
+            new Comment("Post out flow sink interface leads to node accept"));
       for (NodeInterfacePair f : _flowSinks) {
          String hostname = f.getHostname();
          String ifaceName = f.getInterface();
@@ -1083,7 +1083,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getInboundInterfaceToNodeAccept() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment(
             "Rules for connecting inbound_interface to node_accept"));
       for (Configuration c : _configurations.values()) {
@@ -1155,8 +1155,8 @@ public class Synthesizer {
                   crossZoneConditions.addConjunct(nonInboundSrcZone);
 
                   if (crossZoneFilter != null) {
-                     AclPermitExpr crossZonePermit = new AclPermitExpr(
-                           hostname, crossZoneFilter.getName());
+                     AclPermitExpr crossZonePermit = new AclPermitExpr(hostname,
+                           crossZoneFilter.getName());
                      crossZoneConditions.addConjunct(crossZonePermit);
                      crossFilterSatisfied.addDisjunct(crossZoneConditions);
                   }
@@ -1182,9 +1182,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getInboundInterfaceToNodeDrop() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Rules for connecting inbound_interface to node_deny"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(
+            new Comment("Rules for connecting inbound_interface to node_deny"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
          NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
@@ -1266,17 +1266,18 @@ public class Synthesizer {
    }
 
    private List<Statement> getMatchAclRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      Comment comment = new Comment("Rules for how packets can match acl lines");
+      List<Statement> statements = new ArrayList<>();
+      Comment comment = new Comment(
+            "Rules for how packets can match acl lines");
       statements.add(comment);
-      Map<String, Map<String, IpAccessList>> matchAcls = new TreeMap<String, Map<String, IpAccessList>>();
+      Map<String, Map<String, IpAccessList>> matchAcls = new TreeMap<>();
       // first we find out which acls we need to process
       // if data plane was provided as input, only check acls for topology
       // nodes/interfaces
       if (_topologyInterfaces != null) {
          for (String hostname : _topologyInterfaces.keySet()) {
             Configuration node = _configurations.get(hostname);
-            Map<String, IpAccessList> aclMap = new TreeMap<String, IpAccessList>();
+            Map<String, IpAccessList> aclMap = new TreeMap<>();
             Set<Interface> interfaces = _topologyInterfaces.get(hostname);
             for (Interface iface : interfaces) {
                if (iface.getPrefix() != null) {
@@ -1295,7 +1296,8 @@ public class Synthesizer {
                      for (PolicyMapClause clause : routePolicy.getClauses()) {
                         for (PolicyMapMatchLine matchLine : clause
                               .getMatchLines()) {
-                           if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
+                           if (matchLine
+                                 .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
                               PolicyMapMatchIpAccessListLine matchAclLine = (PolicyMapMatchIpAccessListLine) matchLine;
                               for (IpAccessList acl : matchAclLine.getLists()) {
                                  String name = acl.getName();
@@ -1354,7 +1356,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getMatchAclRules(String hostname, String aclName) {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       Configuration c = _configurations.get(hostname);
       IpAccessList acl = c.getIpAccessLists().get(aclName);
       List<IpAccessListLine> lines = acl.getLines();
@@ -1364,8 +1366,9 @@ public class Synthesizer {
          AndExpr matchConditions = new AndExpr();
 
          // ** must not match previous rule **
-         BooleanExpr prevNoMatch = (i > 0) ? new AclNoMatchExpr(hostname,
-               aclName, i - 1) : TrueExpr.INSTANCE;
+         BooleanExpr prevNoMatch = (i > 0)
+               ? new AclNoMatchExpr(hostname, aclName, i - 1)
+               : TrueExpr.INSTANCE;
 
          BooleanExpr matchLineCriteria = matchHeaderSpace(line);
          matchConditions.addConjunct(prevNoMatch);
@@ -1415,7 +1418,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getNodeAcceptToRoleAcceptRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Connect node_accept to role_accept"));
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          String hostname = e.getKey();
@@ -1440,7 +1443,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getOriginateToPostInRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Connect originate to post_in"));
       for (String hostname : _configurations.keySet()) {
          OriginateExpr originate = new OriginateExpr(hostname);
@@ -1452,7 +1455,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getPolicyRouteRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Policy-based routing rules"));
 
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
@@ -1479,8 +1482,9 @@ public class Synthesizer {
                         policyName, i);
                   PolicyNoMatchExpr noMatch = new PolicyNoMatchExpr(hostname,
                         policyName, i);
-                  BooleanExpr prevNoMatch = (i > 0) ? new PolicyNoMatchExpr(
-                        hostname, policyName, i - 1) : TrueExpr.INSTANCE;
+                  BooleanExpr prevNoMatch = (i > 0)
+                        ? new PolicyNoMatchExpr(hostname, policyName, i - 1)
+                        : TrueExpr.INSTANCE;
                   /**
                    * If clause matches, and clause number (matched) is that of a
                    * permit clause, and out interface is among next hops, then
@@ -1560,7 +1564,8 @@ public class Synthesizer {
                   AndExpr allAclsDeny = new AndExpr();
                   OrExpr someAclPermits = new OrExpr();
                   for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                     if (matchLine.getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
+                     if (matchLine
+                           .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
                         hasMatchIp = true;
                         PolicyMapMatchIpAccessListLine matchIpLine = (PolicyMapMatchIpAccessListLine) matchLine;
                         for (IpAccessList acl : matchIpLine.getLists()) {
@@ -1611,10 +1616,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPostInInterfaceToNonInboundSrcInterface() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Rules for connecting postin_interface to non_inbound_src_interface"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Rules for connecting postin_interface to non_inbound_src_interface"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
          for (Interface i : c.getInterfaces().values()) {
@@ -1660,9 +1664,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPostInInterfaceToPostInRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Rules for connecting postInInterface to postIn"));
+      List<Statement> statements = new ArrayList<>();
+      statements
+            .add(new Comment("Rules for connecting postInInterface to postIn"));
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
          String hostname = e.getKey();
          Set<Interface> interfaces = e.getValue();
@@ -1672,7 +1676,8 @@ public class Synthesizer {
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
                   ifaceName);
             PostInExpr postIn = new PostInExpr(hostname);
-            RuleExpr postInInterfaceToPostIn = new RuleExpr(postInIface, postIn);
+            RuleExpr postInInterfaceToPostIn = new RuleExpr(postInIface,
+                  postIn);
             statements.add(postInInterfaceToPostIn);
             RuleExpr postInInterfaceToUnoriginal = new RuleExpr(postInIface,
                   unoriginal);
@@ -1683,9 +1688,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPostInToInboundInterface() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Rules for connecting post_in to inbound_interface"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(
+            new Comment("Rules for connecting post_in to inbound_interface"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
          PostInExpr postIn = new PostInExpr(hostname);
@@ -1743,11 +1748,9 @@ public class Synthesizer {
     * statements.add(rule); } return statements; }
     */
    private List<Statement> getPostInToPreOutRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "postin ==> preout:",
-                  "forward to preout if for each ip address on an interface, destination ip does not match"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment("postin ==> preout:",
+            "forward to preout if for each ip address on an interface, destination ip does not match"));
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
          OrExpr someDstIpMatch = new OrExpr();
@@ -1773,9 +1776,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPostOutIfaceToNodeTransitRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Rules connecting postout_iface to node_transit"));
+      List<Statement> statements = new ArrayList<>();
+      statements
+            .add(new Comment("Rules connecting postout_iface to node_transit"));
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
          String hostname = e.getKey();
          Set<Interface> interfaces = e.getValue();
@@ -1792,10 +1795,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPreInInterfaceToPostInInterfaceRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Connect prein_interface to postin_interface, possibly through acl"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Connect prein_interface to postin_interface, possibly through acl"));
       for (String hostname : _topologyInterfaces.keySet()) {
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
          for (Interface iface : interfaces) {
@@ -1830,7 +1832,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getPreOutEdgeToPreOutInterfaceRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("PreOutEdge => PreOutInterface"));
       for (NodeInterfacePair f : _flowSinks) {
          String hostnameOut = f.getHostname();
@@ -1860,10 +1862,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getPreOutInterfaceToPostOutInterfaceRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements
-            .add(new Comment(
-                  "Connect preout_interface to postout_interface, possibly through acl"));
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment(
+            "Connect preout_interface to postout_interface, possibly through acl"));
       for (String hostname : _topologyInterfaces.keySet()) {
          Configuration c = _configurations.get(hostname);
          Set<Interface> interfaces = _topologyInterfaces.get(hostname);
@@ -1961,8 +1962,8 @@ public class Synthesizer {
                      String crossZoneFilterName = crossZoneFilter.getName();
                      AclPermitExpr crossZoneFilterPermit = new AclPermitExpr(
                            hostname, crossZoneFilterName);
-                     AclDenyExpr crossZoneFilterDeny = new AclDenyExpr(
-                           hostname, crossZoneFilterName);
+                     AclDenyExpr crossZoneFilterDeny = new AclDenyExpr(hostname,
+                           crossZoneFilterName);
                      AndExpr deniedByCrossZoneFilter = new AndExpr();
                      deniedByCrossZoneFilter.addConjunct(nonInboundSrcZone);
                      deniedByCrossZoneFilter.addConjunct(crossZoneFilterDeny);
@@ -1979,7 +1980,8 @@ public class Synthesizer {
             outConditions.addConjunct(crossZonePermit);
             RuleExpr drop = new RuleExpr(dropConditions, nodeDrop);
             statements.add(drop);
-            RuleExpr preOutToPostOut = new RuleExpr(outConditions, postOutIface);
+            RuleExpr preOutToPostOut = new RuleExpr(outConditions,
+                  postOutIface);
             statements.add(preOutToPostOut);
          }
       }
@@ -1987,7 +1989,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getPreOutToDestRouteRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment(
             "Rules for sending packets from preout to destroute stage"));
       for (String hostname : _configurations.keySet()) {
@@ -2043,9 +2045,9 @@ public class Synthesizer {
    }
 
    private List<Statement> getRoleOriginateToNodeOriginateRules() {
-      List<Statement> statements = new ArrayList<Statement>();
-      statements.add(new Comment(
-            "Rules connecting role_originate to R_originate"));
+      List<Statement> statements = new ArrayList<>();
+      statements
+            .add(new Comment("Rules connecting role_originate to R_originate"));
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          String hostname = e.getKey();
          Configuration c = e.getValue();
@@ -2063,7 +2065,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getSane() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Make sure packet fields make sense"));
       AndExpr noPortNumbers = new AndExpr();
       EqExpr noDstPort = new EqExpr(new VarIntExpr(DST_PORT_VAR),
@@ -2129,7 +2131,7 @@ public class Synthesizer {
    }
 
    private List<Statement> getToNeighborsRules() {
-      List<Statement> statements = new ArrayList<Statement>();
+      List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Topology edge rules"));
       for (Edge edge : _topologyEdges) {
          String hostnameOut = edge.getNode1();
@@ -2167,7 +2169,7 @@ public class Synthesizer {
    private void pruneInterfaces() {
       for (Configuration c : _configurations.values()) {
          String hostname = c.getHostname();
-         Set<String> prunedInterfaces = new HashSet<String>();
+         Set<String> prunedInterfaces = new HashSet<>();
          Map<String, Interface> interfaces = c.getInterfaces();
          Set<Interface> topologyInterfaces = _topologyInterfaces.get(hostname);
          for (Interface i : interfaces.values()) {
@@ -2190,7 +2192,7 @@ public class Synthesizer {
    public NodProgram synthesizeNodAclProgram(String hostname, String aclName,
          Context ctx) throws Z3Exception {
 
-      List<Statement> ruleStatements = new ArrayList<Statement>();
+      List<Statement> ruleStatements = new ArrayList<>();
       List<Statement> sane = getSane();
       List<Statement> matchAclRules = getMatchAclRules(hostname, aclName);
 
@@ -2201,7 +2203,7 @@ public class Synthesizer {
 
    public NodProgram synthesizeNodDataPlaneProgram(Context ctx)
          throws Z3Exception {
-      List<Statement> ruleStatements = new ArrayList<Statement>();
+      List<Statement> ruleStatements = new ArrayList<>();
       List<Statement> dropRules = getDropRules();
       List<Statement> acceptRules = getAcceptRules();
       List<Statement> sane = getSane();

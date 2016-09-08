@@ -38,7 +38,8 @@ public class PredicateInfo implements Serializable {
       return _predicateSemantics.get(unqualifiedPredicateName);
    }
 
-   public LBValueTypeList getPredicateValueTypes(String unqualifiedPredicateName) {
+   public LBValueTypeList getPredicateValueTypes(
+         String unqualifiedPredicateName) {
       return _predicateValueTypes.get(unqualifiedPredicateName);
    }
 

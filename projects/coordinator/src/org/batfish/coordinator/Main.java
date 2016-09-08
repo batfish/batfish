@@ -29,9 +29,8 @@ public class Main {
    private static Settings _settings;
    private static WorkMgr _workManager;
 
-   static Logger httpServerLogger = Logger
-         .getLogger(org.glassfish.grizzly.http.server.HttpServer.class
-               .getName());
+   static Logger httpServerLogger = Logger.getLogger(
+         org.glassfish.grizzly.http.server.HttpServer.class.getName());
    static Logger networkListenerLogger = Logger
          .getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
@@ -67,8 +66,8 @@ public class Main {
          _authorizer = new DbAuthorizer();
          break;
       default:
-         System.err
-               .print("org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
+         System.err.print(
+               "org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
                      + _settings.getAuthorizationType());
          System.exit(1);
       }
@@ -100,18 +99,17 @@ public class Main {
          // if that does not work, find it relative to the binary
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
-            keystoreFile = Paths.get(
-                  CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
+            keystoreFile = Paths
+                  .get(CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
                         .getAbsolutePath(), _settings.getSslKeystoreFilename())
                   .toFile();
          }
 
          if (!keystoreFile.exists()) {
-            System.err
-                  .printf(
-                        "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                        _settings.getSslKeystoreFilename(),
-                        keystoreFile.getAbsolutePath());
+            System.err.printf(
+                  "org.batfish.coordinator: keystore file not found at %s or %s\n",
+                  _settings.getSslKeystoreFilename(),
+                  keystoreFile.getAbsolutePath());
             System.exit(1);
          }
 
@@ -152,18 +150,17 @@ public class Main {
          // if that does not work, find it relative to the binary
          File keystoreFile = new File(_settings.getSslKeystoreFilename());
          if (!keystoreFile.exists()) {
-            keystoreFile = Paths.get(
-                  CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
+            keystoreFile = Paths
+                  .get(CommonUtil.getJarOrClassDir(ConfigurationLocator.class)
                         .getAbsolutePath(), _settings.getSslKeystoreFilename())
                   .toFile();
          }
 
          if (!keystoreFile.exists()) {
-            System.err
-                  .printf(
-                        "org.batfish.coordinator: keystore file not found at %s or %s\n",
-                        _settings.getSslKeystoreFilename(),
-                        keystoreFile.getAbsolutePath());
+            System.err.printf(
+                  "org.batfish.coordinator: keystore file not found at %s or %s\n",
+                  _settings.getSslKeystoreFilename(),
+                  keystoreFile.getAbsolutePath());
             System.exit(1);
          }
 
@@ -212,8 +209,8 @@ public class Main {
          initWorkManager();
       }
       catch (Exception e) {
-         System.err
-               .print("org.batfish.coordinator: Initialization of a helper failed: "
+         System.err.print(
+               "org.batfish.coordinator: Initialization of a helper failed: "
                      + e.getMessage());
          System.exit(1);
       }

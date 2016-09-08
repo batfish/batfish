@@ -39,7 +39,8 @@ public class SelfAdjacenciesAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
 
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
@@ -52,9 +53,9 @@ public class SelfAdjacenciesAnswerer extends Answerer {
             continue;
          }
          Configuration c = e.getValue();
-         MultiSet<Prefix> nodePrefixes = new TreeMultiSet<Prefix>();
+         MultiSet<Prefix> nodePrefixes = new TreeMultiSet<>();
          for (Interface iface : c.getInterfaces().values()) {
-            Set<Prefix> ifaceBasePrefixes = new HashSet<Prefix>();
+            Set<Prefix> ifaceBasePrefixes = new HashSet<>();
             if (iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
                   Prefix basePrefix = prefix.getNetworkPrefix();

@@ -15,7 +15,7 @@ public class RouteMap extends ComparableStructure<String> {
 
    public RouteMap(String name) {
       super(name);
-      _clauses = new TreeMap<Integer, RouteMapClause>();
+      _clauses = new TreeMap<>();
    }
 
    public Map<Integer, RouteMapClause> getClauses() {

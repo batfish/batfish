@@ -15,7 +15,7 @@ public class StandardAccessList extends ComparableStructure<String> {
 
    public StandardAccessList(String id) {
       super(id);
-      _lines = new ArrayList<StandardAccessListLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(StandardAccessListLine all) {

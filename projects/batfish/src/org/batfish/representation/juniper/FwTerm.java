@@ -26,12 +26,12 @@ public final class FwTerm implements Serializable {
    private final Set<FwThen> _thens;
 
    public FwTerm(String name) {
-      _froms = new HashSet<FwFrom>();
-      _fromApplications = new HashSet<FwFromApplication>();
-      _fromHostProtocols = new HashSet<FwFromHostProtocol>();
-      _fromHostServices = new HashSet<FwFromHostService>();
+      _froms = new HashSet<>();
+      _fromApplications = new HashSet<>();
+      _fromHostProtocols = new HashSet<>();
+      _fromHostServices = new HashSet<>();
       _name = name;
-      _thens = new HashSet<FwThen>();
+      _thens = new HashSet<>();
    }
 
    public Set<FwFromApplication> getFromApplications() {

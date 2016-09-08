@@ -17,7 +17,7 @@ public enum IsisInterfaceMode {
    private final static Map<String, IsisInterfaceMode> _map = buildMap();
 
    private static Map<String, IsisInterfaceMode> buildMap() {
-      Map<String, IsisInterfaceMode> map = new HashMap<String, IsisInterfaceMode>();
+      Map<String, IsisInterfaceMode> map = new HashMap<>();
       for (IsisInterfaceMode value : IsisInterfaceMode.values()) {
          String name = value._name;
          map.put(name, value);
@@ -29,8 +29,8 @@ public enum IsisInterfaceMode {
    public static IsisInterfaceMode fromName(String name) {
       IsisInterfaceMode instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("No IsisInterfaceMode with name: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "No IsisInterfaceMode with name: \"" + name + "\"");
       }
       return instance;
    }

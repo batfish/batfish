@@ -10,7 +10,8 @@ public final class DoubleColumn extends BaseColumn<Double> {
    }
 
    @Override
-   public Object getItem(int i, EntityTable entityTable, LBValueType valueType) {
+   public Object getItem(int i, EntityTable entityTable,
+         LBValueType valueType) {
       Double d = _items.get(i);
       switch (valueType) {
       case FLOAT:

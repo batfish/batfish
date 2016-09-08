@@ -170,7 +170,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    public NlsDataPlanePlugin(Batfish batfish) {
       super(batfish);
-      _entityTables = new HashMap<TestrigSettings, EntityTable>();
+      _entityTables = new HashMap<>();
    }
 
    /**
@@ -190,15 +190,15 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       String logicPackageResourceName = LogicResourceLocator.class.getPackage()
             .getName().replace('.', SEPARATOR.charAt(0));
       try {
-         logicBinDirPath = Paths.get(LogicResourceLocator.class
-               .getClassLoader().getResource(logicPackageResourceName).toURI());
+         logicBinDirPath = Paths.get(LogicResourceLocator.class.getClassLoader()
+               .getResource(logicPackageResourceName).toURI());
       }
       catch (URISyntaxException e) {
          throw new BatfishException("Failed to resolve logic output directory",
                e);
       }
       Path logicSrcDirPath = Paths.get(_settings.getLogicSrcDir());
-      final Set<Path> logicFiles = new TreeSet<Path>();
+      final Set<Path> logicFiles = new TreeSet<>();
       try {
          Files.walkFileTree(logicSrcDirPath,
                new java.nio.file.SimpleFileVisitor<Path>() {
@@ -224,7 +224,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       QualifiedNameMap qualifiedNameMap = new QualifiedNameMap();
       FunctionSet functions = new FunctionSet();
       PredicateSemantics predicateSemantics = new PredicateSemantics();
-      List<ParserRuleContext> trees = new ArrayList<ParserRuleContext>();
+      List<ParserRuleContext> trees = new ArrayList<>();
       for (Path logicFilePath : logicFiles) {
          String input = CommonUtil.readFile(logicFilePath);
          LogiQLCombinedParser parser = new LogiQLCombinedParser(input,
@@ -288,13 +288,13 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    private void checkQuery(TestrigSettings testrigSettings,
          Set<String> predicateNames) {
-      Set<String> dpIntersect = new HashSet<String>();
+      Set<String> dpIntersect = new HashSet<>();
       dpIntersect.addAll(predicateNames);
       dpIntersect.retainAll(getNlsDataPlaneOutputSymbols());
       if (dpIntersect.size() > 0) {
          checkDataPlaneFacts(testrigSettings);
       }
-      Set<String> trafficIntersect = new HashSet<String>();
+      Set<String> trafficIntersect = new HashSet<>();
       trafficIntersect.addAll(predicateNames);
       trafficIntersect.retainAll(getNlsTrafficOutputSymbols());
       if (trafficIntersect.size() > 0) {
@@ -375,9 +375,10 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    @Override
    public Answer computeDataPlane(TestrigSettings testrigSettings,
          boolean differentialContext) {
-      Map<String, StringBuilder> cpFactBins = new LinkedHashMap<String, StringBuilder>();
+      Map<String, StringBuilder> cpFactBins = new LinkedHashMap<>();
       initControlPlaneFactBins(cpFactBins);
-      computeControlPlaneFacts(cpFactBins, differentialContext, testrigSettings);
+      computeControlPlaneFacts(cpFactBins, differentialContext,
+            testrigSettings);
       nlsDataPlane(testrigSettings);
       checkDataPlaneFacts(testrigSettings);
       EnvironmentSettings envSettings = testrigSettings
@@ -394,8 +395,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    private void dumpControlPlaneFacts(TestrigSettings testrigSettings,
          Map<String, StringBuilder> factBins) {
       _logger.info("\n*** DUMPING CONTROL PLANE FACTS ***\n");
-      dumpFacts(factBins, testrigSettings.getEnvironmentSettings()
-            .getControlPlaneFactsDir());
+      dumpFacts(factBins,
+            testrigSettings.getEnvironmentSettings().getControlPlaneFactsDir());
    }
 
    private void dumpFacts(Map<String, StringBuilder> factBins, Path factsDir) {
@@ -405,7 +406,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          for (String factsFilename : factBins.keySet()) {
             String[] factsLines = factBins.get(factsFilename).toString()
                   .split("\n");
-            Set<String> uniqueFacts = new TreeSet<String>();
+            Set<String> uniqueFacts = new TreeSet<>();
             for (int i = 1; i < factsLines.length; i++) {
                uniqueFacts.add(factsLines[i]);
             }
@@ -434,8 +435,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    public void dumpTrafficFacts(Map<String, StringBuilder> factBins,
          TestrigSettings testrigSettings) {
       _logger.info("\n*** DUMPING TRAFFIC FACTS ***\n");
-      dumpFacts(factBins, testrigSettings.getEnvironmentSettings()
-            .getTrafficFactsDir());
+      dumpFacts(factBins,
+            testrigSettings.getEnvironmentSettings().getTrafficFactsDir());
    }
 
    @Override
@@ -454,7 +455,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    @Override
    public InterfaceSet getFlowSinkSet(TestrigSettings testrigSettings) {
       InterfaceSet flowSinks = new InterfaceSet();
-      Relation relation = getRelation(testrigSettings, FLOW_SINK_PREDICATE_NAME);
+      Relation relation = getRelation(testrigSettings,
+            FLOW_SINK_PREDICATE_NAME);
       List<String> nodes = relation.getColumns().get(0).asStringList();
       List<String> interfaces = relation.getColumns().get(1).asStringList();
       for (int i = 0; i < nodes.size(); i++) {
@@ -466,8 +468,9 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       return flowSinks;
    }
 
-   private List<String> getHelpPredicates(Map<String, String> predicateSemantics) {
-      Set<String> helpPredicateSet = new LinkedHashSet<String>();
+   private List<String> getHelpPredicates(
+         Map<String, String> predicateSemantics) {
+      Set<String> helpPredicateSet = new LinkedHashSet<>();
       _settings.getHelpPredicates();
       if (_settings.getHelpPredicates() == null) {
          helpPredicateSet.addAll(predicateSemantics.keySet());
@@ -475,7 +478,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       else {
          helpPredicateSet.addAll(_settings.getHelpPredicates());
       }
-      List<String> helpPredicates = new ArrayList<String>();
+      List<String> helpPredicates = new ArrayList<>();
       helpPredicates.addAll(helpPredicateSet);
       Collections.sort(helpPredicates);
       return helpPredicates;
@@ -492,7 +495,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    @Override
-   public List<FlowTrace> getHistoryFlowTraces(TestrigSettings testrigSettings) {
+   public List<FlowTrace> getHistoryFlowTraces(
+         TestrigSettings testrigSettings) {
       Relation relation = getRelation(testrigSettings,
             FLOW_HISTORY_PREDICATE_NAME);
       List<String> historyLines = relation.getColumns().get(1).asStringList();
@@ -527,7 +531,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    private Set<String> getNlsDataPlaneOutputSymbols() {
-      Set<String> symbols = new HashSet<String>();
+      Set<String> symbols = new HashSet<>();
       symbols.addAll(NlsConstants.NLS_DATA_PLANE_OUTPUT_SYMBOLS);
       if (_settings.getNlsDebugSymbols()) {
          symbols.addAll(NlsConstants.NLS_DATA_PLANE_OUTPUT_DEBUG_SYMBOLS);
@@ -536,7 +540,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    private String[] getNlsLogicFilenames(File logicDir) {
-      final Set<String> filenames = new TreeSet<String>();
+      final Set<String> filenames = new TreeSet<>();
       Path logicDirPath = Paths.get(logicDir.toString());
       FileVisitor<Path> nlsLogicFileCollector = new SimpleFileVisitor<Path>() {
          @Override
@@ -583,14 +587,14 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          nlsOutputDir = envSettings.getNlsTrafficOutputDir();
       }
       else {
-         throw new BatfishException("Predicate: \"" + relationName
-               + "\" not an output symbol");
+         throw new BatfishException(
+               "Predicate: \"" + relationName + "\" not an output symbol");
       }
       return getNlsText(nlsOutputDir, relationName);
    }
 
    private Set<String> getNlsTrafficOutputSymbols() {
-      Set<String> symbols = new HashSet<String>();
+      Set<String> symbols = new HashSet<>();
       symbols.addAll(NlsConstants.NLS_TRAFFIC_OUTPUT_SYMBOLS);
       if (_settings.getNlsDebugSymbols()) {
          symbols.addAll(NlsConstants.NLS_TRAFFIC_OUTPUT_DEBUG_SYMBOLS);
@@ -644,8 +648,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    private Relation getRelation(TestrigSettings testrigSettings,
          String predicateName) {
       String nlsText = getNlsText(testrigSettings, predicateName);
-      Relation relation = new Relation.Builder(predicateName).build(
-            _predicateInfo, nlsText);
+      Relation relation = new Relation.Builder(predicateName)
+            .build(_predicateInfo, nlsText);
       return relation;
    }
 
@@ -662,8 +666,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       List<String> nextHopIntList = relation.getColumns().get(4).asStringList();
 
       String currentHostname = "";
-      Map<String, Integer> startIndices = new HashMap<String, Integer>();
-      Map<String, Integer> endIndices = new HashMap<String, Integer>();
+      Map<String, Integer> startIndices = new HashMap<>();
+      Map<String, Integer> endIndices = new HashMap<>();
       for (int i = 0; i < nameList.size(); i++) {
          String currentRowHostname = nameList.get(i);
          if (!currentHostname.equals(currentRowHostname)) {
@@ -709,7 +713,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       if (entityTable == null) {
          EnvironmentSettings envSettings = testrigSettings
                .getEnvironmentSettings();
-         Map<String, String> nlsPredicateContents = new HashMap<String, String>();
+         Map<String, String> nlsPredicateContents = new HashMap<>();
          Path nlsDataPlaneOutputDir = envSettings.getNlsDataPlaneOutputDir();
          Path nlsTrafficOutputDir = envSettings.getNlsTrafficOutputDir();
          if (nlsDataPlaneOutputDir != null
@@ -785,7 +789,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       Map<String, String> inputFlowFacts = readFacts(
             envSettings.getTrafficFactsDir(),
             NlsConstants.NLS_TRAFFIC_COMPUTATION_FLOW_FACTS);
-      Map<String, String> inputFacts = new TreeMap<String, String>();
+      Map<String, String> inputFacts = new TreeMap<>();
       inputFacts.putAll(inputControlPlaneFacts);
       inputFacts.putAll(inputFlowFacts);
       writeNlsInput(getNlsTrafficOutputSymbols(), inputFacts,
@@ -803,8 +807,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       for (Configuration c : configurations) {
          allCommunities.addAll(c.getCommunities());
       }
-      Set<Ip> interfaceIps = new HashSet<Ip>();
-      Set<Ip> externalBgpRemoteIps = new TreeSet<Ip>();
+      Set<Ip> interfaceIps = new HashSet<>();
+      Set<Ip> externalBgpRemoteIps = new TreeSet<>();
       for (Configuration c : configurations) {
          for (Interface i : c.getInterfaces().values()) {
             for (Prefix p : i.getAllPrefixes()) {
@@ -815,7 +819,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          BgpProcess proc = c.getBgpProcess();
          if (proc != null) {
             for (Prefix neighborPrefix : proc.getNeighbors().keySet()) {
-               if (neighborPrefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+               if (neighborPrefix
+                     .getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
                   Ip neighborAddress = neighborPrefix.getAddress();
                   externalBgpRemoteIps.add(neighborAddress);
                }
@@ -874,8 +879,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       _batfish.printElapsedTime();
    }
 
-   private void populatePrecomputedBgpAdvertisements(
-         AdvertisementSet advertSet, Map<String, StringBuilder> cpFactBins) {
+   private void populatePrecomputedBgpAdvertisements(AdvertisementSet advertSet,
+         Map<String, StringBuilder> cpFactBins) {
       StringBuilder adverts = cpFactBins
             .get(PRECOMPUTED_BGP_ADVERTISEMENTS_PREDICATE_NAME);
       StringBuilder advertCommunities = cpFactBins
@@ -885,7 +890,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       StringBuilder advertPathLengths = cpFactBins
             .get(PRECOMPUTED_BGP_ADVERTISEMENT_AS_PATH_LENGTH_PREDICATE_NAME);
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
-      Set<Prefix> networks = new HashSet<Prefix>();
+      Set<Prefix> networks = new HashSet<>();
       int pcIndex = 0;
       for (BgpAdvertisement advert : advertSet) {
          String type = advert.getType();
@@ -973,20 +978,20 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          Map<String, StringBuilder> cpFactBins) {
       StringBuilder sb = cpFactBins.get(PRECOMPUTED_ROUTES_PREDICATE_NAME);
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
-      Set<Prefix> networks = new HashSet<Prefix>();
+      Set<Prefix> networks = new HashSet<>();
       for (Path precomputedRoutesPath : precomputedRoutesPaths) {
          RouteSet routes = (RouteSet) _batfish
                .deserializeObject(precomputedRoutesPath);
          for (Route route : routes) {
             String node = route.getNode();
-            Prefix prefix = route.getPrefix();
+            Prefix prefix = route.getNetwork();
             networks.add(prefix);
             long networkStart = prefix.getNetworkAddress().asLong();
             long networkEnd = prefix.getEndAddress().asLong();
             int prefixLength = prefix.getPrefixLength();
             long nextHopIp = route.getNextHopIp().asLong();
             int admin = route.getAdministrativeCost();
-            int cost = route.getCost();
+            int cost = route.getMetric();
             String protocol = route.getProtocol().protocolName();
             int tag = route.getTag();
             sb.append(node + "|" + networkStart + "|" + networkEnd + "|"
@@ -1003,7 +1008,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
    }
 
-   public void printAllPredicateSemantics(Map<String, String> predicateSemantics) {
+   public void printAllPredicateSemantics(
+         Map<String, String> predicateSemantics) {
       // Get predicate semantics from rules file
       _logger.info("\n*** PRINTING PREDICATE SEMANTICS ***\n");
       List<String> helpPredicates = getHelpPredicates(predicateSemantics);
@@ -1078,7 +1084,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    @Override
    public void processFlows(Set<Flow> flows, TestrigSettings testrigSettings) {
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
+      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<>();
       initTrafficFactBins(trafficFactBins);
       StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       for (Flow flow : flows) {
@@ -1091,7 +1097,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    public void query() {
       Map<String, String> allPredicateNames = _predicateInfo
             .getPredicateNames();
-      Set<String> predicateNames = new TreeSet<String>();
+      Set<String> predicateNames = new TreeSet<>();
       if (_settings.getQueryAll()) {
          predicateNames.addAll(allPredicateNames.keySet());
       }
@@ -1103,7 +1109,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    private Map<String, String> readFacts(Path factsDir, Set<String> factNames) {
-      Map<String, String> inputFacts = new TreeMap<String, String>();
+      Map<String, String> inputFacts = new TreeMap<>();
       for (String factName : factNames) {
          Path factFile = factsDir.resolve(factName);
          String contents = CommonUtil.readFile(factFile);
@@ -1273,7 +1279,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       checkComputeNlsRelations(testrigSettings);
       StringBuilder sb = new StringBuilder();
       sb.append("output_symbols([");
-      List<String> outputSymbolsList = new ArrayList<String>();
+      List<String> outputSymbolsList = new ArrayList<>();
       outputSymbolsList.addAll(outputSymbols);
       int numOutputSymbols = outputSymbols.size();
       for (int i = 0; i < numOutputSymbols; i++) {
@@ -1300,10 +1306,10 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
             String[] parts = line.split(lineDelimiter);
             int numParts = parts.length;
             if (numParts != numValueTypes) {
-               throw new BatfishException("Input to predicate '"
-                     + predicateName + "' has " + numParts
-                     + " parts, but schema indicates it is " + numValueTypes
-                     + "-ary");
+               throw new BatfishException(
+                     "Input to predicate '" + predicateName + "' has "
+                           + numParts + " parts, but schema indicates it is "
+                           + numValueTypes + "-ary");
             }
             for (int j = 0; j < numParts; j++) {
                String part = parts[j];
@@ -1367,9 +1373,9 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       EnvironmentSettings envSettings = testrigSettings
             .getEnvironmentSettings();
       Path precomputedRoutesPath = envSettings.getPrecomputedRoutesPath();
-      Map<String, StringBuilder> prFactBins = new HashMap<String, StringBuilder>();
+      Map<String, StringBuilder> prFactBins = new HashMap<>();
       initControlPlaneFactBins(prFactBins);
-      Set<String> prPredicates = new HashSet<String>();
+      Set<String> prPredicates = new HashSet<>();
       prPredicates.add(PRECOMPUTED_ROUTES_PREDICATE_NAME);
       prPredicates.add(NETWORKS_PREDICATE_NAME);
       prFactBins.keySet().retainAll(prPredicates);

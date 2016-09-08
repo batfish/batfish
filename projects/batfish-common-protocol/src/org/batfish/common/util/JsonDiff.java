@@ -21,8 +21,9 @@ public class JsonDiff {
 
    private final SortedMap<String, Object> _data;
 
-   public JsonDiff(JSONArray lhsArray, JSONArray rhsArray) throws JSONException {
-      _data = new TreeMap<String, Object>();
+   public JsonDiff(JSONArray lhsArray, JSONArray rhsArray)
+         throws JSONException {
+      _data = new TreeMap<>();
       int lhsLength = lhsArray.length();
       int rhsLength = rhsArray.length();
       int minLength = Math.min(lhsLength, rhsLength);
@@ -74,10 +75,10 @@ public class JsonDiff {
             Class<?> lhsClass = lhsCurrentElem.getClass();
             Class<?> rhsClass = rhsCurrentElem.getClass();
             if (!lhsClass.equals(rhsClass)) {
-               throw new BatfishException("lhs class: '"
-                     + lhsClass.getCanonicalName()
-                     + "' differs from rhs class: '"
-                     + rhsClass.getCanonicalName() + "'");
+               throw new BatfishException(
+                     "lhs class: '" + lhsClass.getCanonicalName()
+                           + "' differs from rhs class: '"
+                           + rhsClass.getCanonicalName() + "'");
             }
             if (!lhsCurrentElem.equals(rhsCurrentElem)) {
                String removedIndex = "~" + i + "-";
@@ -102,13 +103,13 @@ public class JsonDiff {
    }
 
    public JsonDiff(JSONObject lhs, JSONObject rhs) {
-      _data = new TreeMap<String, Object>();
+      _data = new TreeMap<>();
       try {
-         Set<String> lhsKeys = new TreeSet<String>();
-         Set<String> rhsKeys = new TreeSet<String>();
-         Set<String> commonKeys = new TreeSet<String>();
-         Set<String> lhsOnlyKeys = new TreeSet<String>();
-         Set<String> rhsOnlyKeys = new TreeSet<String>();
+         Set<String> lhsKeys = new TreeSet<>();
+         Set<String> rhsKeys = new TreeSet<>();
+         Set<String> commonKeys = new TreeSet<>();
+         Set<String> lhsOnlyKeys = new TreeSet<>();
+         Set<String> rhsOnlyKeys = new TreeSet<>();
          for (Iterator<?> i = lhs.keys(); i.hasNext();) {
             String key = (String) i.next();
             lhsKeys.add(key);
@@ -177,10 +178,10 @@ public class JsonDiff {
                Class<?> lhsClass = lhsValue.getClass();
                Class<?> rhsClass = rhsValue.getClass();
                if (!lhsClass.equals(rhsClass)) {
-                  throw new BatfishException("lhs class: '"
-                        + lhsClass.getCanonicalName()
-                        + "' differs from rhs class: '"
-                        + rhsClass.getCanonicalName() + "'");
+                  throw new BatfishException(
+                        "lhs class: '" + lhsClass.getCanonicalName()
+                              + "' differs from rhs class: '"
+                              + rhsClass.getCanonicalName() + "'");
                }
                if (!lhsValue.equals(rhsValue)) {
                   String removedKey = "~" + commonKey + "~-";
@@ -209,7 +210,7 @@ public class JsonDiff {
    private Object getValue(Object object) throws JSONException {
       if (object instanceof JSONObject) {
          JSONObject j = (JSONObject) object;
-         Map<String, Object> map = new TreeMap<String, Object>();
+         Map<String, Object> map = new TreeMap<>();
          for (Iterator<?> i = j.keys(); i.hasNext();) {
             String key = (String) i.next();
             Object value = j.get(key);
@@ -219,7 +220,7 @@ public class JsonDiff {
          return map;
       }
       else if (object instanceof JSONArray) {
-         List<Object> list = new LinkedList<Object>();
+         List<Object> list = new LinkedList<>();
          JSONArray array = (JSONArray) object;
          for (int i = 0; i < array.length(); i++) {
             Object value = array.get(i);

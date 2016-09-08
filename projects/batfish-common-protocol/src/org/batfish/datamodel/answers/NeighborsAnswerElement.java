@@ -45,15 +45,15 @@ public class NeighborsAnswerElement implements AnswerElement {
    }
 
    public void initEbgpNeighbors() {
-      _ebgpNeighbors = new TreeSet<IpEdge>();
+      _ebgpNeighbors = new TreeSet<>();
    }
 
    public void initIbgpNeighbors() {
-      _ibgpNeighbors = new TreeSet<IpEdge>();
+      _ibgpNeighbors = new TreeSet<>();
    }
 
    public void initLanNeighbors() {
-      _lanNeighbors = new TreeSet<Edge>();
+      _lanNeighbors = new TreeSet<>();
    }
 
    @Override

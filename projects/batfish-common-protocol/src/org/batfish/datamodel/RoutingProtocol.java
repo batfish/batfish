@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum RoutingProtocol {
    AGGREGATE("aggregate"),
    BGP("bgp"),
@@ -31,20 +34,21 @@ public enum RoutingProtocol {
 
    private final static Map<String, RoutingProtocol> _map = buildMap();
 
-   private static Map<String, RoutingProtocol> buildMap() {
-      Map<String, RoutingProtocol> map = new HashMap<String, RoutingProtocol>();
+   private synchronized static Map<String, RoutingProtocol> buildMap() {
+      Map<String, RoutingProtocol> map = new HashMap<>();
       for (RoutingProtocol protocol : RoutingProtocol.values()) {
-         String protocolName = protocol._protocolName;
+         String protocolName = protocol._protocolName.toLowerCase();
          map.put(protocolName, protocol);
       }
       return Collections.unmodifiableMap(map);
    }
 
+   @JsonCreator
    public static RoutingProtocol fromProtocolName(String name) {
-      RoutingProtocol protocol = _map.get(name);
+      RoutingProtocol protocol = _map.get(name.toLowerCase());
       if (protocol == null) {
-         throw new BatfishException("No routing protocol with name: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "No routing protocol with name: \"" + name + "\"");
       }
       return protocol;
    }
@@ -55,6 +59,352 @@ public enum RoutingProtocol {
       _protocolName = protocolName;
    }
 
+   public int getDefaultAdministrativeCost(ConfigurationFormat vendor) {
+      switch (this) {
+      case AGGREGATE:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            break;
+         case AWS_VPC:
+            break;
+         case CISCO:
+         case CISCO_IOS_XR:
+            break;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            break;
+         case FLAT_VYOS:
+         case VYOS:
+            break;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+
+         }
+         break;
+
+      case BGP:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 200;
+         case AWS_VPC:
+            return 20;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 20;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 170;
+         case FLAT_VYOS:
+         case VYOS:
+            return 20;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case CONNECTED:
+         return 0;
+
+      case IBGP:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 200;
+         case AWS_VPC:
+            return 200;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 200;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 170;
+         case FLAT_VYOS:
+         case VYOS:
+            return 200;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case ISIS_EL1:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            break;
+         case AWS_VPC:
+            return 115;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 115;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 160;
+         case FLAT_VYOS:
+         case VYOS:
+            return 115;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case ISIS_EL2:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            break;
+         case AWS_VPC:
+            return 115;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 115;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 165;
+         case FLAT_VYOS:
+         case VYOS:
+            return 115;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case ISIS_L1:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            break;
+         case AWS_VPC:
+            return 115;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 115;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 15;
+         case FLAT_VYOS:
+         case VYOS:
+            return 115;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case ISIS_L2:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            break;
+         case AWS_VPC:
+            return 115;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 115;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 18;
+         case FLAT_VYOS:
+         case VYOS:
+            return 115;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case OSPF:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 110;
+         case AWS_VPC:
+            return 110;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 110;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 10;
+         case FLAT_VYOS:
+         case VYOS:
+            return 110;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case OSPF_E1:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 110;
+         case AWS_VPC:
+            return 110;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 110;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 150;
+         case FLAT_VYOS:
+         case VYOS:
+            return 110;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case OSPF_E2:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 110;
+         case AWS_VPC:
+            return 110;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 110;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 150;
+         case FLAT_VYOS:
+         case VYOS:
+            return 110;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case OSPF_IA:
+         switch (vendor) {
+         case ALCATEL_AOS:
+            break;
+         case ARISTA:
+            return 110;
+         case AWS_VPC:
+            return 110;
+         case CISCO:
+         case CISCO_IOS_XR:
+            return 110;
+         case FLAT_JUNIPER:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+            return 10;
+         case FLAT_VYOS:
+         case VYOS:
+            return 110;
+         case EMPTY:
+         case HOST:
+         case IPTABLES:
+         case MRV:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+            break;
+         }
+         break;
+
+      case STATIC:
+         return 1;
+
+      case EGP:
+      case IGP:
+      case ISIS:
+      case LDP:
+      case LOCAL:
+      case MSDP:
+      case OSPF3:
+      case RSVP:
+      default:
+         break;
+
+      }
+      throw new BatfishException(
+            "Missing default administrative cost for protocol: '"
+                  + _protocolName + "' for vendor '" + vendor.toString() + "'");
+   }
+
+   @JsonValue
    public String protocolName() {
       return _protocolName;
    }

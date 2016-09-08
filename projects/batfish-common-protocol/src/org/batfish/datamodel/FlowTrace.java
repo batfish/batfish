@@ -31,7 +31,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
    public FlowTrace(String historyLine) {
       FlowDisposition disposition = null;
       String notes = "";
-      _hops = new ArrayList<Edge>();
+      _hops = new ArrayList<>();
       String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
       for (String hop : hops) {
          if (hop.length() == 0) {
@@ -83,7 +83,8 @@ public class FlowTrace implements Comparable<FlowTrace> {
       }
       if (disposition == null) {
          throw new BatfishException(
-               "Could not determine flow disposition for trace: " + historyLine);
+               "Could not determine flow disposition for trace: "
+                     + historyLine);
       }
       _disposition = disposition;
       _notes = "Disposition: " + _disposition + notes;

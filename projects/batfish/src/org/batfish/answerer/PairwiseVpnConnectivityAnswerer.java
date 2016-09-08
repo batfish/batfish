@@ -35,10 +35,9 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
          node2Regex = Pattern.compile(question.getNode2Regex());
       }
       catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               String.format(
-                     "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                     question.getNode1Regex(), question.getNode2Regex()), e);
+         throw new BatfishException(String.format(
+               "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
+               question.getNode1Regex(), question.getNode2Regex()), e);
       }
 
       PairwiseVpnConnectivityAnswerElement answerElement = new PairwiseVpnConnectivityAnswerElement();
@@ -49,7 +48,7 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
 
       _batfish.initRemoteIpsecVpns(configurations);
       Set<String> ipsecVpnNodes = answerElement.getIpsecVpnNodes();
-      Set<String> node2RegexNodes = new HashSet<String>();
+      Set<String> node2RegexNodes = new HashSet<>();
 
       for (Configuration c : configurations.values()) {
          String hostname = c.getHostname();
@@ -67,7 +66,7 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
          if (!ipsecVpnNodes.contains(hostname)) {
             continue;
          }
-         SortedSet<String> currentNeighbors = new TreeSet<String>();
+         SortedSet<String> currentNeighbors = new TreeSet<>();
          if (!c.getIpsecVpns().isEmpty()) {
             for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
                if (ipsecVpn.getRemoteIpsecVpn() != null) {
@@ -81,7 +80,7 @@ public class PairwiseVpnConnectivityAnswerer extends Answerer {
                   }
                }
             }
-            SortedSet<String> missingNeighbors = new TreeSet<String>();
+            SortedSet<String> missingNeighbors = new TreeSet<>();
             missingNeighbors.addAll(node2RegexNodes);
             missingNeighbors.removeAll(currentNeighbors);
             missingNeighbors.remove(hostname);

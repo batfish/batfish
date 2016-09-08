@@ -24,7 +24,7 @@ public class AssertExpr extends Statement implements ComplexExpr {
    }
 
    private void init() {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _printer = new ExpandedComplexExprPrinter(this);
    }
 

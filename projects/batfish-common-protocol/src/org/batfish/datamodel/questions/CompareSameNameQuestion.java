@@ -25,7 +25,7 @@ public final class CompareSameNameQuestion extends Question {
 
    public CompareSameNameQuestion() {
       super(QuestionType.COMPARE_SAME_NAME);
-      _namedStructTypes = new TreeSet<String>();
+      _namedStructTypes = new TreeSet<>();
       _nodeRegex = ".*";
    }
 

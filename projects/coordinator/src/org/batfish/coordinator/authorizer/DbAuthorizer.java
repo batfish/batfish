@@ -29,8 +29,8 @@ public class DbAuthorizer implements Authorizer {
    private static final String TABLE_PERMISSIONS = "containerpermissions";
    private static final String TABLE_USERS = "members";
 
-   private Map<String, Date> _cacheApiKeys = new HashMap<String, Date>();
-   private Map<String, Date> _cachePermissions = new HashMap<String, Date>();
+   private Map<String, Date> _cacheApiKeys = new HashMap<>();
+   private Map<String, Date> _cachePermissions = new HashMap<>();
 
    private Connection _dbConn;
    private BatfishLogger _logger;
@@ -54,11 +54,11 @@ public class DbAuthorizer implements Authorizer {
       Date now = new Date();
       String insertQuery = String.format(
             "INSERT INTO %s (%s, %s, %s) VALUES ('%s', '%s', '%s') "
-                  + " ON DUPLICATE KEY UPDATE %s = '%s'", TABLE_CONTAINERS,
-            COLUMN_CONTAINER_NAME, COLUMN_DATE_CREATED,
-            COLUMN_DATE_LAST_ACCESSED, containerName,
-            DateFormatter.format(now), DateFormatter.format(now),
-            COLUMN_DATE_LAST_ACCESSED, DateFormatter.format(now));
+                  + " ON DUPLICATE KEY UPDATE %s = '%s'",
+            TABLE_CONTAINERS, COLUMN_CONTAINER_NAME, COLUMN_DATE_CREATED,
+            COLUMN_DATE_LAST_ACCESSED, containerName, DateFormatter.format(now),
+            DateFormatter.format(now), COLUMN_DATE_LAST_ACCESSED,
+            DateFormatter.format(now));
 
       int numInsertRows = executeUpdate(insertQuery);
 
@@ -97,8 +97,8 @@ public class DbAuthorizer implements Authorizer {
             return stmt.executeQuery(query);
          }
          catch (SQLException e) {
-            _logger.errorf("SQLException while executing query '%s': %s",
-                  query, e.getMessage());
+            _logger.errorf("SQLException while executing query '%s': %s", query,
+                  e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
 
             if (triesLeft > 0) {
@@ -127,8 +127,8 @@ public class DbAuthorizer implements Authorizer {
             return stmt.executeUpdate(query);
          }
          catch (SQLException e) {
-            _logger.errorf("SQLException while executing query '%s': %s",
-                  query, e.getMessage());
+            _logger.errorf("SQLException while executing query '%s': %s", query,
+                  e.getMessage());
             _logger.errorf("Tries left = %d\n", triesLeft);
 
             if (triesLeft > 0) {
@@ -150,7 +150,8 @@ public class DbAuthorizer implements Authorizer {
       return apiKey + "::" + containerName;
    }
 
-   private synchronized void insertInCache(Map<String, Date> cache, String key) {
+   private synchronized void insertInCache(Map<String, Date> cache,
+         String key) {
       cache.put(key, new Date());
    }
 
@@ -167,9 +168,8 @@ public class DbAuthorizer implements Authorizer {
       }
 
       String query = String.format(
-            "SELECT * FROM %s WHERE %s = '%s' AND %s = '%s'",
-            TABLE_PERMISSIONS, COLUMN_APIKEY, apiKey, COLUMN_CONTAINER_NAME,
-            containerName);
+            "SELECT * FROM %s WHERE %s = '%s' AND %s = '%s'", TABLE_PERMISSIONS,
+            COLUMN_APIKEY, apiKey, COLUMN_CONTAINER_NAME, containerName);
 
       ResultSet rs = executeQuery(query);
 
@@ -247,8 +247,8 @@ public class DbAuthorizer implements Authorizer {
             if (driverClass != null) {
                Class.forName(Main.getSettings().getDriverClass());
             }
-            _dbConn = DriverManager.getConnection(Main.getSettings()
-                  .getDbAuthorizerConnString());
+            _dbConn = DriverManager.getConnection(
+                  Main.getSettings().getDbAuthorizerConnString());
             return;
          }
          catch (SQLException e) {

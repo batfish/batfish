@@ -10,10 +10,30 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class Route implements Comparable<Route>, Serializable {
 
+   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
+
+   public static final String AMBIGUOUS_NEXT_HOP = "(ambiguous)";
+
+   private static final String METRIC_VAR = "metric";
+
+   private static final String NETWORK_VAR = "network";
+
+   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
+
+   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+
+   private static final String NEXT_HOP_VAR = "nextHop";
+
+   private static final String NODE_VAR = "node";
+
+   private static final String PROTOCOL_VAR = "protocol";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private static final String TAG_VAR = "tag";
 
    public static final String UNSET_NEXT_HOP = "(unknown)";
 
@@ -27,19 +47,9 @@ public class Route implements Comparable<Route>, Serializable {
 
    public static final int UNSET_ROUTE_TAG = -1;
 
-   private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
-   private static final String COST_VAR = "cost";
-   private static final String NETWORK_VAR = "network";
-   private static final String NEXT_HOP_VAR = "nextHop";
-   private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
-   private static final String NEXT_HOP_IP_VAR = "nextHopIp";
-   private static final String NODE_VAR = "node";
-   private static final String PROTOCOL_VAR = "protocol";
-   private static final String TAG_VAR = "tag";
-
    private final int _administrativeCost;
 
-   private final int _cost;
+   private final int _metric;
 
    private final Prefix _network;
 
@@ -62,16 +72,16 @@ public class Route implements Comparable<Route>, Serializable {
          @JsonProperty(NEXT_HOP_VAR) String nextHop,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
          @JsonProperty(ADMINISTRATIVE_COST_VAR) int administrativeCost,
-         @JsonProperty(COST_VAR) int cost,
+         @JsonProperty(METRIC_VAR) int metric,
          @JsonProperty(PROTOCOL_VAR) RoutingProtocol protocol,
          @JsonProperty(TAG_VAR) int tag) {
-      _node = node;
       _network = network;
       _nextHopIp = nextHopIp;
+      _node = node;
       _nextHop = nextHop;
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
-      _cost = cost;
+      _metric = metric;
       _protocol = protocol;
       _tag = tag;
    }
@@ -94,7 +104,7 @@ public class Route implements Comparable<Route>, Serializable {
       if (result != 0) {
          return result;
       }
-      result = Integer.compare(_cost, rhs._cost);
+      result = Integer.compare(_metric, rhs._metric);
       if (result != 0) {
          return result;
       }
@@ -115,7 +125,7 @@ public class Route implements Comparable<Route>, Serializable {
       if (_administrativeCost != other._administrativeCost) {
          return false;
       }
-      if (_cost != other._cost) {
+      if (_metric != other._metric) {
          return false;
       }
       if (!_nextHopIp.equals(other._nextHopIp)) {
@@ -141,9 +151,14 @@ public class Route implements Comparable<Route>, Serializable {
       return _administrativeCost;
    }
 
-   @JsonProperty(COST_VAR)
-   public int getCost() {
-      return _cost;
+   @JsonProperty(METRIC_VAR)
+   public int getMetric() {
+      return _metric;
+   }
+
+   @JsonProperty(NETWORK_VAR)
+   public Prefix getNetwork() {
+      return _network;
    }
 
    @JsonProperty(NEXT_HOP_VAR)
@@ -166,11 +181,6 @@ public class Route implements Comparable<Route>, Serializable {
       return _node;
    }
 
-   @JsonProperty(NETWORK_VAR)
-   public Prefix getPrefix() {
-      return _network;
-   }
-
    @JsonProperty(PROTOCOL_VAR)
    public RoutingProtocol getProtocol() {
       return _protocol;
@@ -186,7 +196,7 @@ public class Route implements Comparable<Route>, Serializable {
       final int prime = 31;
       int result = 1;
       result = prime * result + _administrativeCost;
-      result = prime * result + _cost;
+      result = prime * result + _metric;
       result = prime * result + _nextHopIp.hashCode();
       result = prime * result + _node.hashCode();
       result = prime * result + _network.hashCode();
@@ -214,7 +224,7 @@ public class Route implements Comparable<Route>, Serializable {
       return "Route<" + _node.toString() + ", " + _network.toString() + ", "
             + nextHopIp.toString() + ", " + nextHop.toString() + ", "
             + _nextHopInterface.toString() + ", " + _administrativeCost + ", "
-            + _cost + ", " + tag + ", " + _protocol.toString() + ">";
+            + _metric + ", " + tag + ", " + _protocol.toString() + ">";
    }
 
 }

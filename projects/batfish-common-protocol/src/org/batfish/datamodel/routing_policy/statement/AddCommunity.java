@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -25,9 +27,12 @@ public class AddCommunity extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment, Route route) {
+   public Result execute(Environment environment,
+         AbstractRouteBuilder<?> route) {
+      BgpRoute.Builder bgpRoute = (BgpRoute.Builder) route;
+      CommunitySet communities = _expr.communities(environment);
+      bgpRoute.getCommunities().addAll(communities);
       Result result = new Result();
-      result.setReturn(false);
       return result;
    }
 

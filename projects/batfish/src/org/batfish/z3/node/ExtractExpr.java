@@ -20,7 +20,7 @@ public class ExtractExpr extends IntExpr implements ComplexExpr {
    public ExtractExpr(String var, int low, int high) {
       _low = low;
       _high = high;
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       ListExpr listExpr = new CollapsedListExpr();
       listExpr.addSubExpression(new IdExpr("_"));
       listExpr.addSubExpression(new IdExpr("extract"));

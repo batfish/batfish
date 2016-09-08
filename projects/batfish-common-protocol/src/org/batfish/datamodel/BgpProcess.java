@@ -49,8 +49,8 @@ public class BgpProcess implements Serializable {
     * Constructs a BgpProcess
     */
    public BgpProcess() {
-      _neighbors = new HashMap<Prefix, BgpNeighbor>();
-      _generatedRoutes = new HashSet<GeneratedRoute>();
+      _neighbors = new HashMap<>();
+      _generatedRoutes = new HashSet<>();
    }
 
    /**

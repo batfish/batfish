@@ -24,7 +24,7 @@ public class IsisSettings implements Serializable {
    private boolean _trafficEngineeringShortcuts;
 
    public IsisSettings() {
-      _exportPolicies = new LinkedHashSet<String>();
+      _exportPolicies = new LinkedHashSet<>();
       _level1Settings = new IsisLevelSettings();
       _level2Settings = new IsisLevelSettings();
    }

@@ -41,7 +41,7 @@ public final class PsThenCommunityAdd extends PsThen {
          return;
       }
       else {
-         SortedSet<Long> communities = new TreeSet<Long>();
+         SortedSet<Long> communities = new TreeSet<>();
          for (CommunityListLine clLine : namedList.getLines()) {
             // assuming that regex here is actually a literal community
             String communityStr = clLine.getRegex();

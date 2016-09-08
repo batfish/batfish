@@ -23,7 +23,7 @@ public final class FirewallFilter extends ReferenceCountedStructure {
    public FirewallFilter(String name, Family family) {
       _family = family;
       _name = name;
-      _terms = new LinkedHashMap<String, FwTerm>();
+      _terms = new LinkedHashMap<>();
    }
 
    public Family getFamily() {

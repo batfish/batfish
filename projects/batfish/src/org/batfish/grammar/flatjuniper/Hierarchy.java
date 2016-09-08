@@ -59,8 +59,8 @@ public class Hierarchy {
 
       }
 
-      private static final class HierarchyLiteralNode extends
-            HierarchyChildNode {
+      private static final class HierarchyLiteralNode
+            extends HierarchyChildNode {
 
          private HierarchyLiteralNode(String text) {
             super(text);
@@ -109,8 +109,8 @@ public class Hierarchy {
          private Map<String, HierarchyChildNode> _children;
 
          public HierarchyNode() {
-            _children = new LinkedHashMap<String, HierarchyChildNode>();
-            _blacklistedGroups = new HashSet<String>();
+            _children = new LinkedHashMap<>();
+            _blacklistedGroups = new HashSet<>();
          }
 
          public void addBlacklistedGroup(String groupName) {
@@ -152,7 +152,7 @@ public class Hierarchy {
          private StatementContext _statement;
 
          public HierarchyPath() {
-            _nodes = new ArrayList<HierarchyChildNode>();
+            _nodes = new ArrayList<>();
          }
 
          public void addNode(String text) {
@@ -193,16 +193,17 @@ public class Hierarchy {
       private static final class HierarchyRootNode extends HierarchyNode {
       }
 
-      private static final class HierarchyWildcardNode extends
-            HierarchyChildNode {
+      private static final class HierarchyWildcardNode
+            extends HierarchyChildNode {
 
          private String _wildcard;
 
          private HierarchyWildcardNode(String text) {
             super(text);
-            if (text.charAt(0) != '<' || text.charAt(text.length() - 1) != '>') {
-               throw new BatfishException("Improperly-formatted wildcard: "
-                     + text);
+            if (text.charAt(0) != '<'
+                  || text.charAt(text.length() - 1) != '>') {
+               throw new BatfishException(
+                     "Improperly-formatted wildcard: " + text);
             }
             _wildcard = text.substring(1, text.length() - 1);
          }
@@ -258,13 +259,13 @@ public class Hierarchy {
 
       private void addGroupPaths(Set_lineContext groupLine,
             Collection<HierarchyChildNode> currentGroupChildren,
-            HierarchyTree masterTree, HierarchyPath path,
-            List<ParseTree> lines,
+            HierarchyTree masterTree, HierarchyPath path, List<ParseTree> lines,
             Flat_juniper_configurationContext configurationContext) {
          if (groupLine != null) {
             Set_lineContext setLine = new Set_lineContext(configurationContext,
                   -1);
-            if (masterTree.addPath(path, setLine, _groupName) == AddPathResult.BLACKLISTED) {
+            if (masterTree.addPath(path, setLine,
+                  _groupName) == AddPathResult.BLACKLISTED) {
                return;
             }
             StringBuilder sb = new StringBuilder();
@@ -275,14 +276,14 @@ public class Hierarchy {
             // get rid of last " ", which matters for tokens where whitespace is
             // not ignored
             newStatementText = "set "
-                  + newStatementText
-                        .substring(0, newStatementText.length() - 1) + "\n";
-            TerminalNode set = new TerminalNodeImpl(new CommonToken(
-                  FlatJuniperLexer.SET, "set"));
-            Set_line_tailContext setLineTail = new Set_line_tailContext(
-                  setLine, -1);
-            TerminalNode newline = new TerminalNodeImpl(new CommonToken(
-                  FlatJuniperLexer.NEWLINE, "\n"));
+                  + newStatementText.substring(0, newStatementText.length() - 1)
+                  + "\n";
+            TerminalNode set = new TerminalNodeImpl(
+                  new CommonToken(FlatJuniperLexer.SET, "set"));
+            Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
+                  -1);
+            TerminalNode newline = new TerminalNodeImpl(
+                  new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
             setLine.children = new ArrayList<ParseTree>();
             setLine.children.add(set);
             setLine.children.add(setLineTail);
@@ -342,9 +343,9 @@ public class Hierarchy {
                remainingWildcards++;
             }
          }
-         List<String> appliedWildcards = new ArrayList<String>();
+         List<String> appliedWildcards = new ArrayList<>();
          HierarchyPath newPath = new HierarchyPath();
-         List<ParseTree> lines = new ArrayList<ParseTree>();
+         List<ParseTree> lines = new ArrayList<>();
          applyWildcardPath(path, configurationContext, sourceGroup, _root, 0,
                remainingWildcards, appliedWildcards, newPath, lines);
          return lines;
@@ -377,7 +378,7 @@ public class Hierarchy {
             }
             newPath._nodes.add(newDestinationTreeRoot);
             if (startingIndex == path._nodes.size() - 1) {
-               newDestinationTreeRoot._sourceWildcards = new ArrayList<String>();
+               newDestinationTreeRoot._sourceWildcards = new ArrayList<>();
                newDestinationTreeRoot._sourceWildcards.addAll(appliedWildcards);
                newDestinationTreeRoot._line = generateSetLine(newPath,
                      configurationContext);
@@ -445,7 +446,8 @@ public class Hierarchy {
 
       private Set_lineContext generateSetLine(HierarchyPath path,
             Flat_juniper_configurationContext configurationContext) {
-         Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
+         Set_lineContext setLine = new Set_lineContext(configurationContext,
+               -1);
          StringBuilder sb = new StringBuilder();
          for (HierarchyChildNode pathNode : path._nodes) {
             sb.append(pathNode._text + " ");
@@ -454,12 +456,12 @@ public class Hierarchy {
          newStatementText = "set "
                + newStatementText.substring(0, newStatementText.length() - 1)
                + "\n";
-         TerminalNode set = new TerminalNodeImpl(new CommonToken(
-               FlatJuniperLexer.SET, "set"));
+         TerminalNode set = new TerminalNodeImpl(
+               new CommonToken(FlatJuniperLexer.SET, "set"));
          Set_line_tailContext setLineTail = new Set_line_tailContext(setLine,
                -1);
-         TerminalNode newline = new TerminalNodeImpl(new CommonToken(
-               FlatJuniperLexer.NEWLINE, "\n"));
+         TerminalNode newline = new TerminalNodeImpl(
+               new CommonToken(FlatJuniperLexer.NEWLINE, "\n"));
          setLine.children = new ArrayList<ParseTree>();
          setLine.children.add(set);
          setLine.children.add(setLineTail);
@@ -467,8 +469,8 @@ public class Hierarchy {
          Settings settings = parserSettings();
          FlatJuniperCombinedParser parser = new FlatJuniperCombinedParser(
                newStatementText, settings);
-         Flat_juniper_configurationContext newConfiguration = parser
-               .getParser().flat_juniper_configuration();
+         Flat_juniper_configurationContext newConfiguration = parser.getParser()
+               .flat_juniper_configuration();
          StatementContext newStatement = newConfiguration.set_line(0)
                .set_line_tail().statement();
          newStatement.parent = setLineTail;
@@ -482,7 +484,7 @@ public class Hierarchy {
       public List<ParseTree> getApplyGroupsLines(HierarchyPath path,
             Flat_juniper_configurationContext configurationContext,
             HierarchyTree masterTree) {
-         List<ParseTree> lines = new ArrayList<ParseTree>();
+         List<ParseTree> lines = new ArrayList<>();
          HierarchyNode currentGroupNode = _root;
          HierarchyChildNode matchNode = null;
          HierarchyPath partialMatch = new HierarchyPath();
@@ -519,7 +521,7 @@ public class Hierarchy {
       public List<ParseTree> getApplyPathLines(HierarchyPath basePath,
             HierarchyPath applyPathPath,
             Flat_juniper_configurationContext configurationContext) {
-         List<ParseTree> lines = new ArrayList<ParseTree>();
+         List<ParseTree> lines = new ArrayList<>();
          List<String> candidatePrefixes = getApplyPathPrefixes(applyPathPath);
          for (String candidatePrefix : candidatePrefixes) {
             String finalPrefixStr;
@@ -548,9 +550,8 @@ public class Hierarchy {
                }
             }
             catch (BatfishException e) {
-               throw new BatfishException(
-                     "Invalid ip(v6) address or prefix: \"" + candidatePrefix
-                           + "\"", e);
+               throw new BatfishException("Invalid ip(v6) address or prefix: \""
+                     + candidatePrefix + "\"", e);
             }
             basePath.addNode(finalPrefixStr);
             Set_lineContext setLine = generateSetLine(basePath,
@@ -562,13 +563,14 @@ public class Hierarchy {
       }
 
       private List<String> getApplyPathPrefixes(HierarchyPath path) {
-         List<String> prefixes = new ArrayList<String>();
+         List<String> prefixes = new ArrayList<>();
          getApplyPathPrefixes(path, _root, 0, prefixes);
          return prefixes;
       }
 
       private void getApplyPathPrefixes(HierarchyPath path,
-            HierarchyNode currentNode, int currentDepth, List<String> prefixes) {
+            HierarchyNode currentNode, int currentDepth,
+            List<String> prefixes) {
          if (currentDepth == path._nodes.size() - 1) {
             for (HierarchyChildNode currentChild : currentNode.getChildren()
                   .values()) {
@@ -612,12 +614,13 @@ public class Hierarchy {
    private Map<String, HierarchyTree> _trees;
 
    public Hierarchy() {
-      _trees = new HashMap<String, HierarchyTree>();
+      _trees = new HashMap<>();
       _masterTree = new HierarchyTree(null);
       _deactivateTree = new HierarchyTree(null);
    }
 
-   public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
+   public void addDeactivatePath(HierarchyPath path,
+         Deactivate_lineContext ctx) {
       if (isDeactivated(path)) {
          return;
       }
@@ -634,8 +637,8 @@ public class Hierarchy {
          Flat_juniper_configurationContext configurationContext) {
       HierarchyTree tree = _trees.get(groupName);
       if (tree == null) {
-         throw new UndefinedGroupBatfishException("No such group: \""
-               + groupName + "\"");
+         throw new UndefinedGroupBatfishException(
+               "No such group: \"" + groupName + "\"");
       }
       return tree.getApplyGroupsLines(path, configurationContext, _masterTree);
    }

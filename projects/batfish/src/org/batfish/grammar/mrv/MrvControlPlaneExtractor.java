@@ -12,8 +12,8 @@ import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.representation.mrv.MrvVendorConfiguration;
 
-public class MrvControlPlaneExtractor extends MrvParserBaseListener implements
-      ControlPlaneExtractor {
+public class MrvControlPlaneExtractor extends MrvParserBaseListener
+      implements ControlPlaneExtractor {
 
    @SuppressWarnings("unused")
    private MrvConfiguration _configuration;
@@ -28,12 +28,12 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener implements
 
    private Warnings _w;
 
-   public MrvControlPlaneExtractor(String fileText,
-         MrvCombinedParser mrvParser, Warnings warnings) {
+   public MrvControlPlaneExtractor(String fileText, MrvCombinedParser mrvParser,
+         Warnings warnings) {
       _text = fileText;
       _parser = mrvParser;
       _w = warnings;
-      _unimplementedFeatures = new TreeSet<String>();
+      _unimplementedFeatures = new TreeSet<>();
    }
 
    @Override

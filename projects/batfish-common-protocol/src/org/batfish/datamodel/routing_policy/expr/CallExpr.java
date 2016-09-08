@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.Result;
@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CallExpr extends AbstractBooleanExpr {
 
+   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
 
    private String _calledPolicyName;
 
@@ -28,9 +28,10 @@ public class CallExpr extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment, Route route) {
-      RoutingPolicy policy = environment.getConfiguration()
-            .getRoutingPolicies().get(_calledPolicyName);
+   public Result evaluate(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
+      RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
+            .get(_calledPolicyName);
       Result result;
       if (policy == null) {
          result = new Result();
@@ -40,7 +41,8 @@ public class CallExpr extends AbstractBooleanExpr {
       else {
          boolean oldCallExprContext = environment.getCallExprContext();
          environment.setCallExprContext(true);
-         result = policy.call(environment, route);
+         result = policy.call(environment, outputRoute);
+         result.setReturn(false);
          environment.setCallExprContext(oldCallExprContext);
       }
       return result;

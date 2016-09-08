@@ -2,8 +2,8 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 
-public final class AsPathAccessListLine implements Serializable,
-      Comparable<AsPathAccessListLine> {
+public final class AsPathAccessListLine
+      implements Serializable, Comparable<AsPathAccessListLine> {
 
    private static final long serialVersionUID = 1L;
 

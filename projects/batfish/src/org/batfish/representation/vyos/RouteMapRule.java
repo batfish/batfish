@@ -21,7 +21,7 @@ public class RouteMapRule extends ComparableStructure<Integer> {
 
    public RouteMapRule(int num) {
       super(num);
-      _matches = new HashSet<RouteMapMatch>();
+      _matches = new HashSet<>();
    }
 
    public LineAction getAction() {

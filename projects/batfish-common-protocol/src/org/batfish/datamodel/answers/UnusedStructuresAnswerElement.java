@@ -14,7 +14,7 @@ public class UnusedStructuresAnswerElement implements AnswerElement {
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
 
    public UnusedStructuresAnswerElement() {
-      _unusedStructures = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
+      _unusedStructures = new TreeMap<>();
    }
 
    public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {

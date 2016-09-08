@@ -53,7 +53,7 @@ public class PrefixSpace implements Serializable {
       }
 
       public Set<PrefixRange> getPrefixRanges() {
-         Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+         Set<PrefixRange> prefixRanges = new HashSet<>();
          _root.collectPrefixRanges(prefixRanges);
          return prefixRanges;
       }
@@ -74,7 +74,7 @@ public class PrefixSpace implements Serializable {
       private BitTrieNode _right;
 
       public BitTrieNode() {
-         _prefixRanges = new HashSet<PrefixRange>();
+         _prefixRanges = new HashSet<>();
       }
 
       public void addPrefixRange(PrefixRange prefixRange, BitSet bits,
@@ -94,7 +94,8 @@ public class PrefixSpace implements Serializable {
                if (_right == null) {
                   _right = new BitTrieNode();
                }
-               _right.addPrefixRange(prefixRange, bits, prefixLength, depth + 1);
+               _right.addPrefixRange(prefixRange, bits, prefixLength,
+                     depth + 1);
             }
             else {
                if (_left == null) {
@@ -165,7 +166,7 @@ public class PrefixSpace implements Serializable {
                _right = null;
             }
          }
-         Set<PrefixRange> oldPrefixRanges = new HashSet<PrefixRange>();
+         Set<PrefixRange> oldPrefixRanges = new HashSet<>();
          oldPrefixRanges.addAll(_prefixRanges);
          for (PrefixRange oldPrefixRange : oldPrefixRanges) {
             if (!prefixRange.equals(oldPrefixRange)
@@ -177,12 +178,12 @@ public class PrefixSpace implements Serializable {
 
    }
 
+   private static final int NUM_BITS = 32;
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final int NUM_BITS = 32;
 
    private static BitSet getAddressBits(Ip address) {
       int addressAsInt = (int) (address.asLong());
