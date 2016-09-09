@@ -298,6 +298,16 @@ public final class Flow implements Comparable<Flow> {
       return _dstPort;
    }
 
+   @JsonProperty(ECN_VAR)
+   public int getEcn() {
+      return _ecn;
+   }
+
+   @JsonProperty(FRAGMENT_OFFSET_VAR)
+   public int getFragmentOffset() {
+      return _fragmentOffset;
+   }
+
    @JsonProperty(ICMP_CODE_VAR)
    public Integer getIcmpCode() {
       return _icmpCode;
@@ -336,6 +346,46 @@ public final class Flow implements Comparable<Flow> {
    @JsonProperty(TAG_VAR)
    public String getTag() {
       return _tag;
+   }
+
+   @JsonProperty(TCP_FLAGS_ACK_VAR)
+   public int getTcpFlagsAck() {
+      return _tcpFlagsAck;
+   }
+
+   @JsonProperty(TCP_FLAGS_CWR_VAR)
+   public int getTcpFlagsCwr() {
+      return _tcpFlagsCwr;
+   }
+
+   @JsonProperty(TCP_FLAGS_ECE_VAR)
+   public int getTcpFlagsEce() {
+      return _tcpFlagsEce;
+   }
+
+   @JsonProperty(TCP_FLAGS_FIN_VAR)
+   public int getTcpFlagsFin() {
+      return _tcpFlagsFin;
+   }
+
+   @JsonProperty(TCP_FLAGS_PSH_VAR)
+   public int getTcpFlagsPsh() {
+      return _tcpFlagsPsh;
+   }
+
+   @JsonProperty(TCP_FLAGS_RST_VAR)
+   public int getTcpFlagsRst() {
+      return _tcpFlagsRst;
+   }
+
+   @JsonProperty(TCP_FLAGS_SYN_VAR)
+   public int getTcpFlagsSyn() {
+      return _tcpFlagsSyn;
+   }
+
+   @JsonProperty(TCP_FLAGS_URG_VAR)
+   public int getTcpFlagsUrg() {
+      return _tcpFlagsUrg;
    }
 
    @Override

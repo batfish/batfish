@@ -89,6 +89,15 @@ public class IpWildcard extends Pair<Ip, Ip> {
       super(parseAddress(str), parseMask(str));
    }
 
+   public boolean contains(Ip ip) {
+      long wildcardIpAsLong = getIp().asLong();
+      long wildcardMask = getWildcard().asLong();
+      long ipAsLong = ip.asLong();
+      long maskedIpAsLong = ipAsLong | wildcardMask;
+      long maskedWildcard = wildcardIpAsLong | wildcardMask;
+      return maskedIpAsLong == maskedWildcard;
+   }
+
    public Ip getIp() {
       return _first;
    }
