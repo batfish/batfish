@@ -50,6 +50,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -392,6 +393,68 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       return new Answer();
    }
 
+   private FlowTrace createFlowTrace(String historyLine) {
+      List<Edge> flowTraceHops = new ArrayList<Edge>();
+      FlowDisposition disposition = null;
+      String notes = "";
+      String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
+      for (String hop : hops) {
+         if (hop.length() == 0) {
+            continue;
+         }
+         if (hop.contains("->")) {
+            // ordinary hop
+            String[] interfaceStrs = hop.split("->");
+            String[] int1parts = interfaceStrs[0].split(":");
+            String[] int2parts = interfaceStrs[1].split(":");
+            String node1 = int1parts[0].replace("'", "").trim();
+            String node2 = int2parts[0].replace("'", "").trim();
+            String int1 = int1parts[1].replace("'", "").trim();
+            String int2 = int2parts[1].replace("'", "").trim();
+            NodeInterfacePair outgoingInterface = new NodeInterfacePair(node1,
+                  int1);
+            NodeInterfacePair incomingInterface = new NodeInterfacePair(node2,
+                  int2);
+            if (int1parts.length > 2) {
+               if (int1parts[2].contains("deniedOut")) {
+                  disposition = FlowDisposition.DENIED_OUT;
+                  for (int i = 3; i < int1parts.length; i++) {
+                     notes += "{" + int1parts[i].replace("'", "") + "}";
+                  }
+               }
+            }
+            if (int2parts.length > 2) {
+               if (int2parts[2].contains("deniedIn")) {
+                  disposition = FlowDisposition.DENIED_IN;
+                  for (int i = 3; i < int2parts.length; i++) {
+                     notes += "{" + int2parts[i].replace("'", "") + "}";
+                  }
+               }
+            }
+            flowTraceHops.add(new Edge(outgoingInterface, incomingInterface));
+         }
+         else if (hop.contains("accepted")) {
+            disposition = FlowDisposition.ACCEPTED;
+         }
+         else if (hop.contains("nullRouted")) {
+            disposition = FlowDisposition.NULL_ROUTED;
+         }
+         else if (hop.contains("noRoute")) {
+            disposition = FlowDisposition.NO_ROUTE;
+         }
+         else if (hop.contains("neighborUnreachable")) {
+            disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
+         }
+      }
+      if (disposition == null) {
+         throw new BatfishException(
+               "Could not determine flow disposition for trace: "
+                     + historyLine);
+      }
+      notes = "Disposition: " + disposition + notes;
+      return new FlowTrace(disposition, flowTraceHops, notes);
+   }
+
    private void dumpControlPlaneFacts(TestrigSettings testrigSettings,
          Map<String, StringBuilder> factBins) {
       _logger.info("\n*** DUMPING CONTROL PLANE FACTS ***\n");
@@ -501,7 +564,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
             FLOW_HISTORY_PREDICATE_NAME);
       List<String> historyLines = relation.getColumns().get(1).asStringList();
       List<FlowTrace> flowTraces = historyLines.stream()
-            .map(historyLine -> new FlowTrace(historyLine))
+            .map(historyLine -> createFlowTrace(historyLine))
             .collect(Collectors.toList());
       return flowTraces;
    }
