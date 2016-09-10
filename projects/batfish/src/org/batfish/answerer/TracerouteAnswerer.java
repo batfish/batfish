@@ -46,12 +46,17 @@ public class TracerouteAnswerer extends Answerer {
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getFlowsByText().keySet()) {
-         String baseEnvId = _batfish.getBaseTestrigSettings().getName() + ":"
-               + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
-                     .getName();
-         String deltaEnvId = _batfish.getDeltaTestrigSettings().getName() + ":"
-               + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
-                     .getName();
+         // String baseEnvId = _batfish.getBaseTestrigSettings().getName() + ":"
+         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
+         // .getName();
+         String baseEnvId = _batfish
+               .getFlowTag(_batfish.getBaseTestrigSettings());
+         // String deltaEnvId = _batfish.getDeltaTestrigSettings().getName() +
+         // ":"
+         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
+         // .getName();
+         String deltaEnvId = _batfish
+               .getFlowTag(_batfish.getDeltaTestrigSettings());
          Set<FlowTrace> baseFlowTraces = history.getTraces().get(flowText)
                .get(baseEnvId);
          Set<FlowTrace> deltaFlowTraces = history.getTraces().get(flowText)

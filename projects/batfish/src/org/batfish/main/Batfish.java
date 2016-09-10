@@ -163,7 +163,13 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
  */
 public class Batfish implements AutoCloseable {
 
+   private static final String BASE_TESTRIG_TAG = "BASE";
+
    private static final String CLASS_EXTENSION = ".class";
+
+   private static final String DELTA_TESTRIG_TAG = "DELTA";
+
+   private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
    private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
 
@@ -1293,10 +1299,12 @@ public class Batfish implements AutoCloseable {
    }
 
    public String getDifferentialFlowTag() {
-      return _settings.getQuestionName() + ":" + _baseTestrigSettings.getName()
-            + ":" + _baseTestrigSettings.getEnvironmentSettings().getName()
-            + ":" + _deltaTestrigSettings.getName() + ":"
-            + _deltaTestrigSettings.getEnvironmentSettings().getName();
+      // return _settings.getQuestionName() + ":" +
+      // _baseTestrigSettings.getName()
+      // + ":" + _baseTestrigSettings.getEnvironmentSettings().getName()
+      // + ":" + _deltaTestrigSettings.getName() + ":"
+      // + _deltaTestrigSettings.getEnvironmentSettings().getName();
+      return DIFFERENTIAL_FLOW_TAG;
    }
 
    public EdgeSet getEdgeBlacklist(TestrigSettings testrigSettings) {
@@ -1330,8 +1338,18 @@ public class Batfish implements AutoCloseable {
    }
 
    public String getFlowTag(TestrigSettings testrigSettings) {
-      return _settings.getQuestionName() + ":" + testrigSettings.getName() + ":"
-            + testrigSettings.getEnvironmentSettings().getName();
+      // return _settings.getQuestionName() + ":" + testrigSettings.getName() +
+      // ":"
+      // + testrigSettings.getEnvironmentSettings().getName();
+      if (testrigSettings == _deltaTestrigSettings) {
+         return DELTA_TESTRIG_TAG;
+      }
+      else if (testrigSettings == _baseTestrigSettings) {
+         return BASE_TESTRIG_TAG;
+      }
+      else {
+         throw new BatfishException("Could not determine flow tag");
+      }
    }
 
    public FlowHistory getHistory() {
@@ -1342,19 +1360,22 @@ public class Batfish implements AutoCloseable {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
          String tag = getDifferentialFlowTag();
-         String baseName = _baseTestrigSettings.getName() + ":"
-               + _baseTestrigSettings.getEnvironmentSettings().getName();
-         String deltaName = _deltaTestrigSettings.getName() + ":"
-               + _deltaTestrigSettings.getEnvironmentSettings().getName();
+         // String baseName = _baseTestrigSettings.getName() + ":"
+         // + _baseTestrigSettings.getEnvironmentSettings().getName();
+         String baseName = getFlowTag(_baseTestrigSettings);
+         // String deltaName = _deltaTestrigSettings.getName() + ":"
+         // + _deltaTestrigSettings.getEnvironmentSettings().getName();
+         String deltaName = getFlowTag(_deltaTestrigSettings);
          populateFlowHistory(flowHistory, _baseTestrigSettings, baseName, tag);
          populateFlowHistory(flowHistory, _deltaTestrigSettings, deltaName,
                tag);
       }
       else {
          String tag = getFlowTag();
-         String name = testrigSettings.getName() + ":"
-               + testrigSettings.getEnvironmentSettings().getName();
-         populateFlowHistory(flowHistory, testrigSettings, name, tag);
+         // String name = testrigSettings.getName() + ":"
+         // + testrigSettings.getEnvironmentSettings().getName();
+         String envName = tag;
+         populateFlowHistory(flowHistory, testrigSettings, envName, tag);
       }
       _logger.debug(flowHistory.toString());
       return flowHistory;
