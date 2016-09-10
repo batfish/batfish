@@ -45,7 +45,7 @@ Sourcing batfish_functions.sh will give your shell access to batfish functions. 
 
 6. compile batfish
    batfish_build_all
-Note that 'batfish_build' runs 'ant' in each batfish project directory with corresponding args.
+Note that 'batfish_build_all' runs 'ant' in each batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build_all distclean
 
