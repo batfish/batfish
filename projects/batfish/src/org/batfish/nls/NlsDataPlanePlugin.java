@@ -405,8 +405,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          if (hop.contains("->")) {
             // ordinary hop
             String[] interfaceStrs = hop.split("->");
-            String[] int1parts = interfaceStrs[0].split(":");
-            String[] int2parts = interfaceStrs[1].split(":");
+            String[] int1parts = interfaceStrs[0].split("@");
+            String[] int2parts = interfaceStrs[1].split("@");
             String node1 = int1parts[0].replace("'", "").trim();
             String node2 = int2parts[0].replace("'", "").trim();
             String int1 = int1parts[1].replace("'", "").trim();
@@ -419,7 +419,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
                if (int1parts[2].contains("deniedOut")) {
                   disposition = FlowDisposition.DENIED_OUT;
                   for (int i = 3; i < int1parts.length; i++) {
-                     notes += "{" + int1parts[i].replace("'", "") + "}";
+                     notes += "{" + int1parts[i].replace("'", "")
+                           .replaceFirst(node1 + ":", "") + "}";
                   }
                }
             }
@@ -427,7 +428,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
                if (int2parts[2].contains("deniedIn")) {
                   disposition = FlowDisposition.DENIED_IN;
                   for (int i = 3; i < int2parts.length; i++) {
-                     notes += "{" + int2parts[i].replace("'", "") + "}";
+                     notes += "{" + int2parts[i].replace("'", "")
+                           .replaceFirst(node2 + ":", "") + "}";
                   }
                }
             }
@@ -451,7 +453,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
                "Could not determine flow disposition for trace: "
                      + historyLine);
       }
-      notes = "Disposition: " + disposition + notes;
+      notes = disposition + notes;
       return new FlowTrace(disposition, flowTraceHops, notes);
    }
 

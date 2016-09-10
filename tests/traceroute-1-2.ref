@@ -63,7 +63,7 @@
             "node2" : "host1",
             "node2interface" : "eth0"
           } ],
-          "notes" : "Disposition: DENIED_IN{host1}{filter}{}{INPUT}{2}"
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
         }, {
           "disposition" : "DENIED_IN",
           "hops" : [ {
@@ -97,7 +97,7 @@
             "node2" : "host1",
             "node2interface" : "eth0"
           } ],
-          "notes" : "Disposition: DENIED_IN{host1}{filter}{}{INPUT}{2}"
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
         }, {
           "disposition" : "DENIED_IN",
           "hops" : [ {
@@ -131,7 +131,7 @@
             "node2" : "host1",
             "node2interface" : "eth0"
           } ],
-          "notes" : "Disposition: DENIED_IN{host1}{filter}{}{INPUT}{2}"
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
         }, {
           "disposition" : "DENIED_IN",
           "hops" : [ {
@@ -165,7 +165,7 @@
             "node2" : "host1",
             "node2interface" : "eth0"
           } ],
-          "notes" : "Disposition: DENIED_IN{host1}{filter}{}{INPUT}{2}"
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
         } ]
       }
     }
