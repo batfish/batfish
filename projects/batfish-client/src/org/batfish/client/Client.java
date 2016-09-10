@@ -1231,7 +1231,7 @@ public class Client {
             String message = "Test: " + Arrays.asList(testCommand).toString()
                   + (failingTest ? " results in error as expected: "
                         : " matches " + referenceFileName)
-                  + (testPassed ? ": Pass\n" : "Fail\n");
+                  + (testPassed ? ": Pass\n" : ": Fail\n");
 
             _logger.output(message);
             if (!failingTest) {
