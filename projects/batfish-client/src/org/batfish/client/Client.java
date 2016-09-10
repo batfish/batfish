@@ -100,6 +100,9 @@ public class Client {
    private static final String DEFAULT_QUESTION_PREFIX = "q";
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 
+   private static final String FLAG_FAILING_TEST = "-error";
+   private static final String FLAG_NO_DATAPLANE = "-nodataplane";
+
    private static final Map<String, String> MAP_COMMANDS = initCommands();
 
    private static Map<String, String> initCommands() {
@@ -150,16 +153,16 @@ public class Client {
       descs.put(COMMAND_INIT_CONTAINER, COMMAND_INIT_CONTAINER
             + " [<container-name-prefix>]\n" + "\t Initialize a new container");
       descs.put(COMMAND_INIT_DELTA_ENV,
-            COMMAND_INIT_DELTA_ENV
-                  + " [-nodataplane] <environment zipfile or directory> [<environment-name>]\n"
+            COMMAND_INIT_DELTA_ENV + " [" + FLAG_NO_DATAPLANE
+                  + "] <environment zipfile or directory> [<environment-name>]\n"
                   + "\t Initialize the delta environment");
       descs.put(COMMAND_INIT_DELTA_TESTRIG,
-            COMMAND_INIT_DELTA_TESTRIG
-                  + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
+            COMMAND_INIT_DELTA_TESTRIG + " [" + FLAG_NO_DATAPLANE
+                  + "] <testrig zipfile or directory> [<environment name>]\n"
                   + "\t Initialize the delta testrig with default environment");
       descs.put(COMMAND_INIT_TESTRIG,
-            COMMAND_INIT_TESTRIG
-                  + " [-nodataplane] <testrig zipfile or directory> [<environment name>]\n"
+            COMMAND_INIT_TESTRIG + " [" + FLAG_NO_DATAPLANE
+                  + "] <testrig zipfile or directory> [<environment name>]\n"
                   + "\t Initialize the testrig with default environment");
       descs.put(COMMAND_LIST_CONTAINERS, COMMAND_LIST_CONTAINERS + "\n"
             + "\t List the containers to which you have access");
@@ -209,8 +212,9 @@ public class Client {
             + "\t Show delta testrig and environment");
       descs.put(COMMAND_SHOW_TESTRIG, COMMAND_SHOW_TESTRIG + "\n"
             + "\t Show base testrig and environment");
-      descs.put(COMMAND_TEST, COMMAND_TEST + " <reference file> <command> \n"
-            + "\t Show base testrig and environment");
+      descs.put(COMMAND_TEST,
+            COMMAND_TEST + " [-fail] <reference file> <command> \n"
+                  + "\t Show base testrig and environment");
       descs.put(COMMAND_UPLOAD_CUSTOM_OBJECT, COMMAND_UPLOAD_CUSTOM_OBJECT
             + " <object-name> <object-file>\n" + "\t Uploads a custom object");
       return descs;
@@ -661,8 +665,9 @@ public class Client {
       if (_currTestrig == null) {
          _logger.errorf("Active testrig is not set.\n");
          _logger.errorf(
-               "Specify testrig on command line (-%s <testrigdir>) or use command (%s [-nodataplane] <testrigdir>)\n",
-               Settings.ARG_TESTRIG_DIR, COMMAND_INIT_TESTRIG);
+               "Specify testrig on command line (-%s <testrigdir>) or use command (%s [%s] <testrigdir>)\n",
+               Settings.ARG_TESTRIG_DIR, COMMAND_INIT_TESTRIG,
+               FLAG_NO_DATAPLANE);
          return false;
       }
       return true;
@@ -896,7 +901,7 @@ public class Client {
             boolean generateDeltaDataplane = true;
 
             if (options.size() == 1) {
-               if (options.get(0).equals("-nodataplane")) {
+               if (options.get(0).equals(FLAG_NO_DATAPLANE)) {
                   generateDeltaDataplane = false;
                }
                else {
@@ -944,7 +949,7 @@ public class Client {
             boolean generateDataplane = true;
 
             if (options.size() == 1) {
-               if (options.get(0).equals("-nodataplane")) {
+               if (options.get(0).equals(FLAG_NO_DATAPLANE)) {
                   generateDataplane = false;
                }
                else {
@@ -1164,9 +1169,16 @@ public class Client {
             return true;
          }
          case COMMAND_TEST: {
+            boolean failingTest = false;
+            int testCommandIndex = 1;
+            if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
+               testCommandIndex++;
+               failingTest = true;
+            }
             String referenceFileName = parameters.get(0);
 
-            String[] testCommand = parameters.subList(1, parameters.size())
+            String[] testCommand = parameters
+                  .subList(testCommandIndex, parameters.size())
                   .toArray(new String[0]);
 
             _logger.debugf("Ref file is %s. \n", referenceFileName,
@@ -1187,42 +1199,50 @@ public class Client {
 
             FileWriter testoutWriter = new FileWriter(testoutFile);
 
-            processCommand(testCommand, testoutWriter);
+            boolean testCommandSucceeded = processCommand(testCommand,
+                  testoutWriter);
             testoutWriter.close();
 
             boolean testPassed = false;
 
-            try {
-               String referenceOutput = CommonUtil
-                     .readFile(Paths.get(referenceFileName));
-               String testOutput = CommonUtil
-                     .readFile(Paths.get(testoutFile.getAbsolutePath()));
+            if (!failingTest && testCommandSucceeded) {
+               try {
+                  String referenceOutput = CommonUtil
+                        .readFile(Paths.get(referenceFileName));
+                  String testOutput = CommonUtil
+                        .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-               ObjectMapper mapper = new BatfishObjectMapper();
-               JsonNode referenceJson = mapper.readTree(referenceOutput);
-               JsonNode testJson = mapper.readTree(testOutput);
-               if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
-                  testPassed = true;
+                  ObjectMapper mapper = new BatfishObjectMapper();
+                  JsonNode referenceJson = mapper.readTree(referenceOutput);
+                  JsonNode testJson = mapper.readTree(testOutput);
+                  if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
+                     testPassed = true;
+                  }
+               }
+               catch (Exception e) {
+                  _logger.errorf("Exception in comparing test results: "
+                        + ExceptionUtils.getStackTrace(e));
                }
             }
-            catch (Exception e) {
-               _logger.errorf("Exception in comparing test results: "
-                     + ExceptionUtils.getStackTrace(e));
+            else if (failingTest) {
+               testPassed = !testCommandSucceeded;
             }
 
-            if (testPassed) {
-               _logger.outputf("Test result for %s: Pass\n", referenceFileName);
-            }
-            else {
-               String outFileName = referenceFile + ".testout";
-               Files.move(Paths.get(testoutFile.getAbsolutePath()),
-                     Paths.get(referenceFile + ".testout"),
-                     StandardCopyOption.REPLACE_EXISTING);
+            String message = "Test: " + Arrays.asList(testCommand).toString()
+                  + (failingTest ? " results in error as expected: "
+                        : " matches " + referenceFileName)
+                  + (testPassed ? ": Pass\n" : "Fail\n");
 
-               _logger.outputf("Test result for %s: Fail\n", referenceFileName);
-               _logger.outputf("Copied output to %s\n", outFileName);
+            _logger.output(message);
+            if (!failingTest) {
+               if (!testPassed) {
+                  String outFileName = referenceFile + ".testout";
+                  Files.move(Paths.get(testoutFile.getAbsolutePath()),
+                        Paths.get(referenceFile + ".testout"),
+                        StandardCopyOption.REPLACE_EXISTING);
+                  _logger.outputf("Copied output to %s\n", outFileName);
+               }
             }
-
             return true;
          }
          case COMMAND_UPLOAD_CUSTOM_OBJECT: {
@@ -1284,8 +1304,8 @@ public class Client {
                   "org.batfish.client: Cannot supply both testrigDir and testrigId.");
             System.exit(1);
          }
-         if (!processCommand(COMMAND_INIT_TESTRIG + " -nodataplane "
-               + _settings.getTestrigDir())) {
+         if (!processCommand(COMMAND_INIT_TESTRIG + " " + FLAG_NO_DATAPLANE
+               + " " + _settings.getTestrigDir())) {
             return;
          }
       }

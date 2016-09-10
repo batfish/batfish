@@ -6,7 +6,7 @@ test tests/aclReachability.ref get aclReachability
 test tests/bgpAdvertisements.ref get bgpAdvertisements
 test tests/bgpSessionCheck.ref get bgpSessionCheck
 test tests/compareSameName.ref get compareSameName
-test tests/error.ref get error
+test tests/error.ref -error get error
 test tests/ipsecVpnCheck.ref get ipsecVpnCheck
 test tests/isisLoopbacks.ref get isisLoopbacks
 test tests/neighbors.ref get neighbors
@@ -17,6 +17,8 @@ test tests/ospfLoopbacks.ref get ospfLoopbacks
 test tests/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/routes.ref get routes
 test tests/selfAdjacencies.ref get selfAdjacencies
+test tests/traceroute-1-2.ref get traceroute ingressNode="as1core1" | dstIp="2.128.0.101"
+test tests/traceroute-2-1.ref get traceroute ingressNode="host2" | dstIp="1.0.1.1"
 test tests/undefinedReferences.ref get undefinedReferences
 test tests/uniqueBgpPrefixOrigination.ref get uniqueBgpPrefixOrigination
 test tests/uniqueIpAssignments.ref get uniqueIpAssignments
