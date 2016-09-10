@@ -394,7 +394,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    private FlowTrace createFlowTrace(String historyLine) {
-      List<Edge> flowTraceHops = new ArrayList<Edge>();
+      List<Edge> flowTraceHops = new ArrayList<>();
       FlowDisposition disposition = null;
       String notes = "";
       String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
