@@ -881,6 +881,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
          }
          If peerExportConditional = new If();
+         peerExportConditional.setComment(
+               "peer-export policy main conditional: exitAccept if true / exitReject if false");
          peerExportPolicy.getStatements().add(peerExportConditional);
          Conjunction peerExportConditions = new Conjunction();
          peerExportConditional.setGuard(peerExportConditions);
@@ -888,12 +890,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                .add(Statements.ExitAccept.toStaticStatement());
          peerExportConditional.getFalseStatements()
                .add(Statements.ExitReject.toStaticStatement());
-         Disjunction localOrCommonOriginationOrBgp = new Disjunction();
-         peerExportConditions.getConjuncts().add(localOrCommonOriginationOrBgp);
-         localOrCommonOriginationOrBgp.getDisjuncts()
+         Disjunction localOrCommonOrigination = new Disjunction();
+         MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
+         MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
+         preFilterConditions.getDisjuncts().add(isEbgp);
+         preFilterConditions.getDisjuncts().add(isIbgp);
+         peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+         localOrCommonOrigination.getDisjuncts()
                .add(new CallExpr(BGP_COMMON_EXPORT_POLICY_NAME));
          String outboundRouteMapName = lpg.getOutboundRouteMap();
-         boolean noOutboundRouteMap = true;
          if (outboundRouteMapName != null) {
             PolicyMap outboundPolicyMap = c.getPolicyMaps()
                   .get(outboundRouteMapName);
@@ -908,7 +913,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                undefined(msg, ROUTE_MAP, outboundRouteMapName);
             }
             else {
-               noOutboundRouteMap = false;
                RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
                outboundRouteMap.getReferers().put(lpg,
                      "outbound route-map for leaf peer-group: "
@@ -944,13 +948,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          else {
             newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatchPolicyMap;
          }
-         // routing policy in case of no outbound route-map
-         if (noOutboundRouteMap) {
-            MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
-            MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
-            localOrCommonOriginationOrBgp.getDisjuncts().add(isEbgp);
-            localOrCommonOriginationOrBgp.getDisjuncts().add(isIbgp);
-         }
 
          Set<PolicyMap> originationPolicies = new LinkedHashSet<>();
          originationPolicies.add(explicitOriginationPolicyMap);
@@ -972,7 +969,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
                   new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                         new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
-            localOrCommonOriginationOrBgp.getDisjuncts().add(matchDefaultRoute);
+            localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
             matchDefaultRoute.setComment("match default route");
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
                   MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
