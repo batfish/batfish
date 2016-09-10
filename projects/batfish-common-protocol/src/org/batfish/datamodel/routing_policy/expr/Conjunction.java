@@ -77,6 +77,7 @@ public class Conjunction extends AbstractBooleanExpr {
       else {
          Conjunction simple = new Conjunction();
          simple.setConjuncts(simpleConjuncts);
+         simple.setComment(getComment());
          return simple;
       }
    }

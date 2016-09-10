@@ -99,6 +99,7 @@ public class If extends AbstractStatement {
          simple.setGuard(simpleGuard);
          simple.setTrueStatements(simpleTrueStatements);
          simple.setFalseStatements(simpleFalseStatements);
+         simple.setComment(getComment());
          return Collections.singletonList(simple);
       }
    }

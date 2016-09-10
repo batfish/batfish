@@ -78,6 +78,7 @@ public class Disjunction extends AbstractBooleanExpr {
       else {
          Disjunction simple = new Disjunction();
          simple.setDisjuncts(simpleDisjuncts);
+         simple.setComment(getComment());
          return simple;
       }
    }
