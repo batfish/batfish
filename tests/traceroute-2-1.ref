@@ -58,7 +58,7 @@
             "node2" : "as1border1",
             "node2interface" : "FastEthernet0/1"
           } ],
-          "notes" : "Disposition: ACCEPTED"
+          "notes" : "ACCEPTED"
         }, {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -87,7 +87,7 @@
             "node2" : "as1border1",
             "node2interface" : "FastEthernet0/1"
           } ],
-          "notes" : "Disposition: ACCEPTED"
+          "notes" : "ACCEPTED"
         }, {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -116,7 +116,7 @@
             "node2" : "as1border1",
             "node2interface" : "FastEthernet0/1"
           } ],
-          "notes" : "Disposition: ACCEPTED"
+          "notes" : "ACCEPTED"
         }, {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -145,7 +145,7 @@
             "node2" : "as1border1",
             "node2interface" : "FastEthernet0/1"
           } ],
-          "notes" : "Disposition: ACCEPTED"
+          "notes" : "ACCEPTED"
         } ]
       }
     }
