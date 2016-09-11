@@ -1,7 +1,7 @@
 package org.batfish.client;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -12,7 +12,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
@@ -276,28 +275,28 @@ public class BfCoordWorkHelper {
          }
 
          // see if we have a filename header
-         String outFileStr = objectName;
+//         String outFileStr = objectName;
+//
+//         MultivaluedMap<String, String> headers = response.getStringHeaders();
+//
+//         if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
+//            String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
+//            if (value != null && !value.equals("")) {
+//               outFileStr = value;
+//            }
+//         }
 
-         MultivaluedMap<String, String> headers = response.getStringHeaders();
-
-         if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
-            String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
-            if (value != null && !value.equals("")) {
-               outFileStr = value;
-            }
-         }
-
-         File outdir = new File("client");
-         outdir.mkdirs();
          File inFile = response.readEntity(File.class);
-         File outFile = Paths
-               .get(outdir.getAbsolutePath().toString(), outFileStr).toFile();
-         FileUtils.copyFile(inFile, outFile);
+
+         File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
+         tmpOutFile.deleteOnExit();
+         
+         FileUtils.copyFile(inFile, tmpOutFile);
          if (!inFile.delete()) {
             throw new BatfishException("Failed to delete temporary file: "
                   + inFile.getAbsolutePath());
          }
-         return outFile.getAbsolutePath();
+         return tmpOutFile.getAbsolutePath();
       }
       catch (Exception e) {
          _logger.errorf("Exception in getObject from %s using (%s, %s)\n",
