@@ -12,6 +12,8 @@ public class FlowBuilder {
 
    private Integer _ecn;
 
+   private Integer _fragmentOffset;
+
    private Integer _icmpCode;
 
    private Integer _icmpType;
@@ -43,8 +45,6 @@ public class FlowBuilder {
    private Integer _tcpFlagsSyn;
 
    private Integer _tcpFlagsUrg;
-
-   private Integer _fragmentOffset;
 
    public FlowBuilder() {
       _dscp = 0;

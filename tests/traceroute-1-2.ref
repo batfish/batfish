@@ -1,0 +1,196 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.FlowHistory",
+    "flows" : [ {
+      "@id" : 1,
+      "dscp" : 0,
+      "dstIp" : "2.128.0.101",
+      "dstPort" : 0,
+      "ecn" : 0,
+      "fragmentOffset" : 0,
+      "icmpCode" : 255,
+      "icmpVar" : 255,
+      "ingressNode" : "as1core1",
+      "ipProtocol" : "IP",
+      "srcIp" : "1.0.1.2",
+      "srcPort" : 0,
+      "state" : 0,
+      "tag" : "BASE",
+      "tcpFlagsAck" : 0,
+      "tcpFlagsCwr" : 0,
+      "tcpFlagsEce" : 0,
+      "tcpFlagsFin" : 0,
+      "tcpFlagsPsh" : 0,
+      "tcpFlagsRst" : 0,
+      "tcpFlagsSyn" : 0,
+      "tcpFlagsUrg" : 0
+    } ],
+    "flowsByText" : {
+      "Flow<ingressNode:as1core1 srcIp:1.0.1.2 dstIp:2.128.0.101 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 state:0 tag:BASE>" : 1
+    },
+    "traces" : {
+      "Flow<ingressNode:as1core1 srcIp:1.0.1.2 dstIp:2.128.0.101 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 state:0 tag:BASE>" : {
+        "BASE" : [ {
+          "disposition" : "DENIED_IN",
+          "hops" : [ {
+            "node1" : "as1core1",
+            "node1interface" : "FastEthernet0/0",
+            "node2" : "as1border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as1border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2core1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2core1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dist2",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2dist2",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dept1",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2dept1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "host1",
+            "node2interface" : "eth0"
+          } ],
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+        }, {
+          "disposition" : "DENIED_IN",
+          "hops" : [ {
+            "node1" : "as1core1",
+            "node1interface" : "FastEthernet0/0",
+            "node2" : "as1border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as1border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2core1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2core1",
+            "node1interface" : "FastEthernet2/0",
+            "node2" : "as2dist1",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2dist1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dept1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2dept1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "host1",
+            "node2interface" : "eth0"
+          } ],
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+        }, {
+          "disposition" : "DENIED_IN",
+          "hops" : [ {
+            "node1" : "as1core1",
+            "node1interface" : "FastEthernet0/0",
+            "node2" : "as1border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as1border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2border1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2core2",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2core2",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dist1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2dist1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dept1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2dept1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "host1",
+            "node2interface" : "eth0"
+          } ],
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+        }, {
+          "disposition" : "DENIED_IN",
+          "hops" : [ {
+            "node1" : "as1core1",
+            "node1interface" : "FastEthernet0/0",
+            "node2" : "as1border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as1border1",
+            "node1interface" : "FastEthernet0/1",
+            "node2" : "as2border1",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2border1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2core2",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2core2",
+            "node1interface" : "FastEthernet2/0",
+            "node2" : "as2dist2",
+            "node2interface" : "FastEthernet0/0"
+          }, {
+            "node1" : "as2dist2",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "as2dept1",
+            "node2interface" : "FastEthernet0/1"
+          }, {
+            "node1" : "as2dept1",
+            "node1interface" : "FastEthernet1/0",
+            "node2" : "host1",
+            "node2interface" : "eth0"
+          } ],
+          "notes" : "DENIED_IN{filter::INPUT}{line:2}"
+        } ]
+      }
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.TracerouteQuestion",
+    "differential" : false,
+    "dscp" : null,
+    "dstIp" : "2.128.0.101",
+    "dstPort" : null,
+    "ecn" : null,
+    "icmpCode" : null,
+    "icmpType" : null,
+    "ingressNode" : "as1core1",
+    "ipProtocol" : null,
+    "srcIp" : null,
+    "srcPort" : null,
+    "tcpAck" : null,
+    "tcpCwr" : null,
+    "tcpEce" : null,
+    "tcpFin" : null,
+    "tcpPsh" : null,
+    "tcpRst" : null,
+    "tcpSyn" : null,
+    "tcpUrg" : null
+  },
+  "status" : "SUCCESS"
+}

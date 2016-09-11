@@ -5,8 +5,8 @@ import java.util.concurrent.Callable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.main.Settings;
 
-public abstract class BatfishJob<R extends BatfishJobResult<?, ?>> implements
-      Callable<R> {
+public abstract class BatfishJob<R extends BatfishJobResult<?, ?>>
+      implements Callable<R> {
 
    protected final BatfishLogger _logger;
 

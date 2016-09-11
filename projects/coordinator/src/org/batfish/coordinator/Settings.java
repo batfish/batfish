@@ -55,6 +55,7 @@ public class Settings extends BaseSettings {
    private String _dbAuthorizerConnString;
    private long _dbCacheExpiryMs;
    private boolean _defaultKeyListings;
+   private String _driverClass;
    private String _logFile;
    private String _logLevel;
    private long _periodAssignWorkMs;
@@ -71,7 +72,6 @@ public class Settings extends BaseSettings {
    private String _storageAccountName;
    private String _storageProtocol;
    private boolean _useSsl;
-   private String _driverClass;
 
    public Settings(String[] args) throws Exception {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
@@ -101,6 +101,10 @@ public class Settings extends BaseSettings {
 
    public boolean getDefaultKeyListings() {
       return _defaultKeyListings;
+   }
+
+   public String getDriverClass() {
+      return _driverClass;
    }
 
    public String getFileAuthorizerPermsFile() {
@@ -210,8 +214,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
       setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
-      setDefaultProperty(
-            ARG_STORAGE_ACCOUNT_KEY,
+      setDefaultProperty(ARG_STORAGE_ACCOUNT_KEY,
             "zRTT++dVryOWXJyAM7NM0TuQcu0Y23BgCQfkt7xh2f/Mm+r6c8/XtPTY0xxaF6tPSACJiuACsjotDeNIVyXM8Q==");
       setDefaultProperty(ARG_STORAGE_ACCOUNT_NAME, "testdrive");
       setDefaultProperty(ARG_STORAGE_PROTOCOL, "http");
@@ -234,7 +237,8 @@ public class Settings extends BaseSettings {
 
       addBooleanOption(ARG_DISABLE_SSL, "disable coordinator ssl");
 
-      addBooleanOption(ARG_DRIVER_CLASS, "jdbc driver class to load explicitly");
+      addBooleanOption(ARG_DRIVER_CLASS,
+            "jdbc driver class to load explicitly");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -281,9 +285,11 @@ public class Settings extends BaseSettings {
 
       _authorizerType = Authorizer.Type
             .valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
-      _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
+      _dbAuthorizerConnString = getStringOptionValue(
+            ARG_DB_AUTHORIZER_CONN_STRING);
       _dbCacheExpiryMs = getLongOptionValue(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
-      _defaultKeyListings = getBooleanOptionValue(ARG_ALLOW_DEFAULT_KEY_LISTINGS);
+      _defaultKeyListings = getBooleanOptionValue(
+            ARG_ALLOW_DEFAULT_KEY_LISTINGS);
       _driverClass = getStringOptionValue(ARG_DRIVER_CLASS);
       _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
       _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
@@ -296,15 +302,12 @@ public class Settings extends BaseSettings {
       _storageAccountName = getStringOptionValue(ARG_STORAGE_ACCOUNT_NAME);
       _storageProtocol = getStringOptionValue(ARG_STORAGE_PROTOCOL);
       _containersLocation = getStringOptionValue(ARG_CONTAINERS_LOCATION);
-      _periodWorkerStatusRefreshMs = getLongOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
+      _periodWorkerStatusRefreshMs = getLongOptionValue(
+            ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
       _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
-   }
-
-   public String getDriverClass() {
-      return _driverClass;
    }
 }

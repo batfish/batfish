@@ -63,8 +63,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       }
       else {
          return new GraphvizResult(elapsedTime, _logger.getHistory(),
-               _graphFile, graphBytes, _svgFile, svgBytes, _htmlFile,
-               htmlBytes, _prefix);
+               _graphFile, graphBytes, _svgFile, svgBytes, _htmlFile, htmlBytes,
+               _prefix);
       }
    }
 
@@ -74,8 +74,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
          graphBytes = _input.toString().getBytes("UTF-8");
       }
       catch (UnsupportedEncodingException e) {
-         throw new BatfishException(
-               "Failed to convert graphviz input to bytes", e);
+         throw new BatfishException("Failed to convert graphviz input to bytes",
+               e);
       }
       return graphBytes;
    }
@@ -94,7 +94,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       sb.append("<html>\n");
       sb.append("<head>\n");
       sb.append("<script>\n");
-      sb.append("window.onload = function() { window.scrollTo( (window.scrollMaxX)/2, (window.scrollMaxY)/2 ); }\n");
+      sb.append(
+            "window.onload = function() { window.scrollTo( (window.scrollMaxX)/2, (window.scrollMaxY)/2 ); }\n");
       sb.append("</script>\n");
       sb.append("</head>\n");
       sb.append("<body>\n");
@@ -118,8 +119,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       ByteArrayOutputStream outStream = new ByteArrayOutputStream();
       ByteArrayOutputStream errStream = new ByteArrayOutputStream();
       ByteArrayInputStream inStream = new ByteArrayInputStream(graphBytes);
-      executor.setStreamHandler(new PumpStreamHandler(outStream, errStream,
-            inStream));
+      executor.setStreamHandler(
+            new PumpStreamHandler(outStream, errStream, inStream));
       executor.setExitValue(0);
       CommandLine cmdLine = new CommandLine(GRAPHVIZ_COMMAND);
       cmdLine.addArgument("-Tcmapx");
@@ -164,8 +165,8 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
       ByteArrayOutputStream outStream = new ByteArrayOutputStream();
       ByteArrayOutputStream errStream = new ByteArrayOutputStream();
       ByteArrayInputStream inStream = new ByteArrayInputStream(graphBytes);
-      executor.setStreamHandler(new PumpStreamHandler(outStream, errStream,
-            inStream));
+      executor.setStreamHandler(
+            new PumpStreamHandler(outStream, errStream, inStream));
       executor.setExitValue(0);
       CommandLine cmdLine = new CommandLine(GRAPHVIZ_COMMAND);
       cmdLine.addArgument("-Tsvg");

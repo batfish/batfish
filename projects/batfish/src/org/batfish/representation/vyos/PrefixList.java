@@ -18,7 +18,7 @@ public class PrefixList extends ComparableStructure<String> {
 
    public PrefixList(String name) {
       super(name);
-      _rules = new TreeMap<Integer, PrefixListRule>();
+      _rules = new TreeMap<>();
    }
 
    public String getDescription() {

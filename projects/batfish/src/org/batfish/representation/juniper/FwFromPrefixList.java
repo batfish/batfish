@@ -43,8 +43,8 @@ public final class FwFromPrefixList extends FwFrom {
          }
       }
       else {
-         w.redFlag("Reference to undefined source prefix-list: \"" + _name
-               + "\"");
+         w.redFlag(
+               "Reference to undefined source prefix-list: \"" + _name + "\"");
       }
    }
 

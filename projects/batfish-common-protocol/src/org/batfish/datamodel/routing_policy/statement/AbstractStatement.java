@@ -3,7 +3,11 @@ package org.batfish.datamodel.routing_policy.statement;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public abstract class AbstractStatement implements Statement {
+
+   private static final String COMMENT_VAR = "comment";
 
    /**
     *
@@ -12,11 +16,12 @@ public abstract class AbstractStatement implements Statement {
 
    private String _comment;
 
-   public String getComment() {
+   @JsonProperty(COMMENT_VAR)
+   public final String getComment() {
       return _comment;
    }
 
-   public void setComment(String comment) {
+   public final void setComment(String comment) {
       _comment = comment;
    }
 

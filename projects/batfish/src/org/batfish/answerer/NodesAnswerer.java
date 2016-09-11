@@ -40,10 +40,11 @@ public class NodesAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
 
-      Set<String> nodes = new TreeSet<String>();
+      Set<String> nodes = new TreeSet<>();
       if (nodeRegex != null) {
          for (String node : configurations.keySet()) {
             if (!nodeRegex.matcher(node).matches()) {
@@ -52,7 +53,7 @@ public class NodesAnswerer extends Answerer {
             nodes.addAll(configurations.keySet());
          }
       }
-      SortedMap<String, Configuration> answerNodes = new TreeMap<String, Configuration>();
+      SortedMap<String, Configuration> answerNodes = new TreeMap<>();
       answerNodes.putAll(configurations);
       answerNodes.keySet().retainAll(nodes);
 

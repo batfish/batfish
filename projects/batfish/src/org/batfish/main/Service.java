@@ -25,10 +25,8 @@ public class Service {
    @GET
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
-      return new JSONArray(
-            Arrays.asList(
-                  BfConsts.SVC_SUCCESS_KEY,
-                  "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
+      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
+            "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
@@ -40,8 +38,8 @@ public class Service {
                (new JSONObject().put("idle", Driver.getIdle())).toString()));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
+         return new JSONArray(
+               Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 
@@ -61,21 +59,19 @@ public class Service {
          Task task = Driver.getTaskkFromLog(taskId);
 
          if (task == null) {
-            return new JSONArray(
-                  Arrays.asList(
-                        BfConsts.SVC_SUCCESS_KEY,
-                        (new JSONObject().put("status",
-                              TaskStatus.Unknown.toString()).toString())));
+            return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
+                  (new JSONObject().put("status", TaskStatus.Unknown.toString())
+                        .toString())));
          }
 
-         return new JSONArray(Arrays.asList(
-               BfConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put("status", Driver.getTaskkFromLog(taskId)
-                     .getStatus().toString()).toString())));
+         return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY,
+               (new JSONObject().put("status",
+                     Driver.getTaskkFromLog(taskId).getStatus().toString())
+                     .toString())));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
+         return new JSONArray(
+               Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 
@@ -93,11 +89,11 @@ public class Service {
          }
 
          if (task == null || task.equals("")) {
-            return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
-                  "task not supplied"));
+            return new JSONArray(
+                  Arrays.asList(BfConsts.SVC_FAILURE_KEY, "task not supplied"));
          }
 
-         List<String> argsList = new ArrayList<String>();
+         List<String> argsList = new ArrayList<>();
 
          JSONObject taskObj = new JSONObject(task);
          Iterator<?> keys = taskObj.keys();
@@ -121,8 +117,8 @@ public class Service {
          return new JSONArray(Driver.RunBatfishThroughService(taskId, args));
       }
       catch (Exception e) {
-         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
+         return new JSONArray(
+               Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 }
@@ -156,7 +152,8 @@ public class Service {
 // return new JSONArray(
 // Arrays.asList(
 // "",
-// "Batfish service: enter ../application.wadl (relative to your URL) to see supported methods"));
+// "Batfish service: enter ../application.wadl (relative to your URL) to see
+// supported methods"));
 // }
 //
 // @GET

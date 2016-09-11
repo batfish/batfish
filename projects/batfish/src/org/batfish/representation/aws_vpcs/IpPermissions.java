@@ -48,7 +48,7 @@ public class IpPermissions implements Serializable {
 
    private String _ipProtocol;
 
-   private List<Prefix> _ipRanges = new LinkedList<Prefix>();
+   private List<Prefix> _ipRanges = new LinkedList<>();
 
    private int _toPort = -1;
 
@@ -64,8 +64,8 @@ public class IpPermissions implements Serializable {
 
       for (int index = 0; index < ranges.length(); index++) {
          JSONObject childObject = ranges.getJSONObject(index);
-         _ipRanges.add(new Prefix(childObject
-               .getString(AwsVpcEntity.JSON_KEY_CIDR_IP)));
+         _ipRanges.add(new Prefix(
+               childObject.getString(AwsVpcEntity.JSON_KEY_CIDR_IP)));
       }
    }
 

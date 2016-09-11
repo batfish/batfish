@@ -13,7 +13,7 @@ public class IpAsPathAccessList extends ComparableStructure<String> {
 
    public IpAsPathAccessList(String name) {
       super(name);
-      _lines = new ArrayList<IpAsPathAccessListLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(IpAsPathAccessListLine line) {

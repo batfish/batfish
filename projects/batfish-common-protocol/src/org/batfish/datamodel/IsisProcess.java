@@ -30,9 +30,9 @@ public class IsisProcess implements Serializable {
    private SortedMap<String, IsisLevel> _policyExportLevels;
 
    public IsisProcess() {
-      _generatedRoutes = new LinkedHashSet<GeneratedRoute>();
-      _policyExportLevels = new TreeMap<String, IsisLevel>();
-      _outboundPolicyMaps = new ArrayList<PolicyMap>();
+      _generatedRoutes = new LinkedHashSet<>();
+      _policyExportLevels = new TreeMap<>();
+      _outboundPolicyMaps = new ArrayList<>();
    }
 
    public Set<GeneratedRoute> getGeneratedRoutes() {

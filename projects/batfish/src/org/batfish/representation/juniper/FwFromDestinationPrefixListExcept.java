@@ -31,8 +31,8 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
          if (pl.getIpv6()) {
             return;
          }
-         RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(
-               _name);
+         RouteFilterList destinationPrefixList = c.getRouteFilterLists()
+               .get(_name);
          for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
             if (rfLine.getAction() != LineAction.ACCEPT) {
                throw new BatfishException(
@@ -44,8 +44,8 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
          }
       }
       else {
-         w.redFlag("Reference to undefined source prefix-list: \"" + _name
-               + "\"");
+         w.redFlag(
+               "Reference to undefined source prefix-list: \"" + _name + "\"");
       }
    }
 

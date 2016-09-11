@@ -10,7 +10,7 @@ public abstract class ListExpr extends Expr implements ComplexExpr {
    protected final List<Expr> _subExpressions;
 
    public ListExpr() {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
    }
 
    public void addSubExpression(Expr expr) {
@@ -24,7 +24,7 @@ public abstract class ListExpr extends Expr implements ComplexExpr {
 
    @Override
    public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
+      Set<String> variables = new HashSet<>();
       for (Expr subExpression : _subExpressions) {
          variables.addAll(subExpression.getVariables());
       }

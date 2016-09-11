@@ -50,7 +50,7 @@ public class Interface extends ComparableStructure<String> {
 
    public Interface(String name) {
       super(name);
-      _allPrefixes = new TreeSet<Prefix>();
+      _allPrefixes = new TreeSet<>();
    }
 
    public Set<Prefix> getAllPrefixes() {

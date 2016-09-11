@@ -18,7 +18,7 @@ public final class IkePolicy extends ComparableStructure<String> {
 
    public IkePolicy(String name) {
       super(name);
-      _proposals = new TreeSet<String>();
+      _proposals = new TreeSet<>();
    }
 
    public String getPreSharedKeyHash() {

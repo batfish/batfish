@@ -179,7 +179,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
          Expr answer = fix.getAnswer();
          BoolExpr solverInput;
          if (answer.getArgs().length > 0) {
-            List<Expr> reversedVarList = new ArrayList<Expr>();
+            List<Expr> reversedVarList = new ArrayList<>();
             reversedVarList.addAll(program.getVariablesAsConsts().values());
             Collections.reverse(reversedVarList);
             Expr[] reversedVars = reversedVarList.toArray(new Expr[] {});
@@ -210,7 +210,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             throw new BatfishException("invalid status");
          }
          Model model = solver.getModel();
-         Map<String, Long> constraints = new LinkedHashMap<String, Long>();
+         Map<String, Long> constraints = new LinkedHashMap<>();
          for (FuncDecl constDecl : model.getConstDecls()) {
             String name = constDecl.getName().toString();
             BitVecExpr varConstExpr = program.getVariablesAsConsts().get(name);
@@ -218,7 +218,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
                   .getLong();
             constraints.put(name, val);
          }
-         Set<Flow> flows = new HashSet<Flow>();
+         Set<Flow> flows = new HashSet<>();
          for (String node : _nodeSet) {
             Flow flow = createFlow(node, constraints);
             flows.add(flow);

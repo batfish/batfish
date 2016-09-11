@@ -20,7 +20,7 @@ public class CompareSameNameAnswerElement implements AnswerElement {
    private final String EQUIVALENCE_SETS_MAP_VAR = "equivalenceSetsMap";
 
    public CompareSameNameAnswerElement() {
-      _equivalenceSets = new TreeMap<String, NamedStructureEquivalenceSets<?>>();
+      _equivalenceSets = new TreeMap<>();
    }
 
    public void add(String className, NamedStructureEquivalenceSets<?> sets) {

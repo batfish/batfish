@@ -46,7 +46,7 @@ public enum HostProtocol {
          return;
       }
       _initialized = true;
-      _lines = new ArrayList<IpAccessListLine>();
+      _lines = new ArrayList<>();
       switch (this) {
 
       case ALL: {
@@ -63,9 +63,8 @@ public enum HostProtocol {
          _lines.add(line);
          line.getIpProtocols().add(IpProtocol.TCP);
          line.getIpProtocols().add(IpProtocol.UDP);
-         line.getDstPorts().add(
-               new SubRange(NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO
-                     .number()));
+         line.getDstPorts().add(new SubRange(NamedPort.BFD_CONTROL.number(),
+               NamedPort.BFD_ECHO.number()));
          break;
       }
 

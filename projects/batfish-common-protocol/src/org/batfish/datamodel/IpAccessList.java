@@ -25,6 +25,16 @@ public class IpAccessList extends ComparableStructure<String> {
       _lines = lines;
    }
 
+   public FilterResult filter(Flow flow) {
+      for (int i = 0; i < _lines.size(); i++) {
+         IpAccessListLine line = _lines.get(i);
+         if (line.matches(flow)) {
+            return new FilterResult(i, line.getAction());
+         }
+      }
+      return new FilterResult(null, LineAction.REJECT);
+   }
+
    @JsonProperty(LINES_VAR)
    public List<IpAccessListLine> getLines() {
       return _lines;

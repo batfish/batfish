@@ -7,8 +7,8 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.job.BatfishJobResult;
 
-public class NodSatResult<Key> extends
-      BatfishJobResult<Map<Key, Boolean>, NodSatAnswerElement> {
+public class NodSatResult<Key>
+      extends BatfishJobResult<Map<Key, Boolean>, NodSatAnswerElement> {
 
    private final Map<Key, Boolean> _results;
 

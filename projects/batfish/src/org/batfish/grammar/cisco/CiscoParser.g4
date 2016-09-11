@@ -140,12 +140,16 @@ cm_match_tail
 
 cmm_access_group
 :
-   ACCESS_GROUP
+   IP? ACCESS_GROUP
    (
       num = DEC
       |
       (
          NAME name = variable
+      )
+      |
+      (
+         name = variable color_setter?
       )
    ) NEWLINE
 ;
@@ -264,6 +268,16 @@ cp_service_policy
       INPUT
       | OUTPUT
    ) name = variable NEWLINE
+;
+
+color_setter
+:
+   SET_COLOR
+   (
+    RED 
+    | YELLOW
+    | GREEN  
+   ) 
 ;
 
 del_stanza
@@ -460,6 +474,21 @@ l_access_class
 l2vpn_stanza
 :
    L2VPN NEWLINE xconnect_stanza*
+;
+
+mgmt_egress_iface_stanza
+:
+   MANAGEMENT EGRESS_INTERFACE_SELECTION NEWLINE
+   (
+      (
+         APPLICATION HTTP
+         | APPLICATION SNMP
+         | APPLICATION RADIUS
+         | APPLICATION TACACS
+         | APPLICATION SYSLOG
+         | APPLICATION SSH
+      ) NEWLINE
+   )+ EXIT NEWLINE
 ;
 
 mgmt_ip_access_group
@@ -1252,6 +1281,7 @@ stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
+   | mgmt_egress_iface_stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza

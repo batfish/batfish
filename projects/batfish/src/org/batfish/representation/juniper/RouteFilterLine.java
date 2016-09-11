@@ -20,7 +20,7 @@ public abstract class RouteFilterLine implements Serializable {
 
    public RouteFilterLine(Prefix prefix) {
       _prefix = prefix;
-      _thens = new HashSet<PsThen>();
+      _thens = new HashSet<>();
    }
 
    public abstract void applyTo(RouteFilterList rfl);

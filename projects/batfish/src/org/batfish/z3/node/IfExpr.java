@@ -30,7 +30,7 @@ public class IfExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getRelations() {
-      Set<String> relations = new HashSet<String>();
+      Set<String> relations = new HashSet<>();
       relations.addAll(_antecedent.getRelations());
       relations.addAll(_consequent.getRelations());
       return relations;
@@ -43,14 +43,14 @@ public class IfExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
+      Set<String> variables = new HashSet<>();
       variables.addAll(_antecedent.getVariables());
       variables.addAll(_consequent.getVariables());
       return variables;
    }
 
    private void init() {
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _printer = new ExpandedComplexExprPrinter(this);
    }
 

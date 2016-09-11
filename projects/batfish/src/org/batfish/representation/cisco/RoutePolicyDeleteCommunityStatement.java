@@ -6,8 +6,8 @@ import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
-public class RoutePolicyDeleteCommunityStatement extends
-      RoutePolicyDeleteStatement {
+public class RoutePolicyDeleteCommunityStatement
+      extends RoutePolicyDeleteStatement {
 
    private static final long serialVersionUID = 1L;
 

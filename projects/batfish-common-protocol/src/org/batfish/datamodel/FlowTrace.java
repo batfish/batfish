@@ -1,10 +1,6 @@
 package org.batfish.datamodel;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,67 +22,6 @@ public class FlowTrace implements Comparable<FlowTrace> {
       _disposition = disposition;
       _hops = hops;
       _notes = notes;
-   }
-
-   public FlowTrace(String historyLine) {
-      FlowDisposition disposition = null;
-      String notes = "";
-      _hops = new ArrayList<Edge>();
-      String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
-      for (String hop : hops) {
-         if (hop.length() == 0) {
-            continue;
-         }
-         if (hop.contains("->")) {
-            // ordinary hop
-            String[] interfaceStrs = hop.split("->");
-            String[] int1parts = interfaceStrs[0].split(":");
-            String[] int2parts = interfaceStrs[1].split(":");
-            String node1 = int1parts[0].replace("'", "").trim();
-            String node2 = int2parts[0].replace("'", "").trim();
-            String int1 = int1parts[1].replace("'", "").trim();
-            String int2 = int2parts[1].replace("'", "").trim();
-            NodeInterfacePair outgoingInterface = new NodeInterfacePair(node1,
-                  int1);
-            NodeInterfacePair incomingInterface = new NodeInterfacePair(node2,
-                  int2);
-            if (int1parts.length > 2) {
-               if (int1parts[2].contains("deniedOut")) {
-                  disposition = FlowDisposition.DENIED_OUT;
-                  for (int i = 3; i < int1parts.length; i++) {
-                     notes += "{" + int1parts[i].replace("'", "") + "}";
-                  }
-               }
-            }
-            if (int2parts.length > 2) {
-               if (int2parts[2].contains("deniedIn")) {
-                  disposition = FlowDisposition.DENIED_IN;
-                  for (int i = 3; i < int2parts.length; i++) {
-                     notes += "{" + int2parts[i].replace("'", "") + "}";
-                  }
-               }
-            }
-            _hops.add(new Edge(outgoingInterface, incomingInterface));
-         }
-         else if (hop.contains("accepted")) {
-            disposition = FlowDisposition.ACCEPTED;
-         }
-         else if (hop.contains("nullRouted")) {
-            disposition = FlowDisposition.NULL_ROUTED;
-         }
-         else if (hop.contains("noRoute")) {
-            disposition = FlowDisposition.NO_ROUTE;
-         }
-         else if (hop.contains("neighborUnreachable")) {
-            disposition = FlowDisposition.NEIGHBOR_UNREACHABLE;
-         }
-      }
-      if (disposition == null) {
-         throw new BatfishException(
-               "Could not determine flow disposition for trace: " + historyLine);
-      }
-      _disposition = disposition;
-      _notes = "Disposition: " + _disposition + notes;
    }
 
    @Override

@@ -30,7 +30,8 @@ public class RoutesAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
 
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);

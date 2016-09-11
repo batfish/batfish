@@ -52,7 +52,7 @@ public class CommunityListLine implements Serializable {
 
    public Set<Long> getExactMatchingCommunities(Set<Long> allCommunities) {
       Pattern p = Pattern.compile(_regex);
-      Set<Long> matchingCommunitites = new LinkedHashSet<Long>();
+      Set<Long> matchingCommunitites = new LinkedHashSet<>();
       for (long candidateCommunity : allCommunities) {
          String candidateCommunityStr = CommonUtil
                .longToCommunity(candidateCommunity);
@@ -66,7 +66,7 @@ public class CommunityListLine implements Serializable {
 
    public Set<Long> getMatchingCommunities(Set<Long> allCommunities) {
       Pattern p = Pattern.compile(_regex);
-      Set<Long> matchingCommunitites = new LinkedHashSet<Long>();
+      Set<Long> matchingCommunitites = new LinkedHashSet<>();
       for (long candidateCommunity : allCommunities) {
          String candidateCommunityStr = CommonUtil
                .longToCommunity(candidateCommunity);
@@ -90,6 +90,12 @@ public class CommunityListLine implements Serializable {
       result = prime * result + _action.hashCode();
       result = prime * result + _regex.hashCode();
       return result;
+   }
+
+   public Long toLiteralCommunity() {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
 }

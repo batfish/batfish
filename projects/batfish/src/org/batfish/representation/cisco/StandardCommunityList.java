@@ -14,7 +14,7 @@ public final class StandardCommunityList extends ComparableStructure<String> {
 
    public StandardCommunityList(String name) {
       super(name);
-      _lines = new ArrayList<StandardCommunityListLine>();
+      _lines = new ArrayList<>();
    }
 
    public List<StandardCommunityListLine> getLines() {

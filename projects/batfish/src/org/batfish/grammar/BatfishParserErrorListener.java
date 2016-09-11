@@ -36,8 +36,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
                .getSymbolicName(tokenType);
          tokenText = "'" + tokenText + "'";
       }
-      return " line " + line + ":" + col + " " + channel + " " + tokenName
-            + ":" + tokenText + "  <== mode:" + mode;
+      return " line " + line + ":" + col + " " + channel + " " + tokenName + ":"
+            + tokenText + "  <== mode:" + mode;
    }
 
    public void syntaxError(ParserRuleContext ctx, Object offendingSymbol,
@@ -84,8 +84,8 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
       String text = _combinedParser.getInput();
       String[] lines = text.split("\n", -1);
       int errorLineIndex = offendingToken.getLine() - 1;
-      int errorContextStartLine = Math.max(
-            errorLineIndex - _settings.getMaxParserContextLines(), 0);
+      int errorContextStartLine = Math
+            .max(errorLineIndex - _settings.getMaxParserContextLines(), 0);
       int errorContextEndLine = Math.min(
             errorLineIndex + _settings.getMaxParserContextLines(),
             lines.length - 1);

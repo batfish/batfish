@@ -21,7 +21,7 @@ public class UrlZipExplorer {
 
    public UrlZipExplorer(URL url) throws IOException {
       _url = url;
-      _entries = new LinkedHashSet<String>();
+      _entries = new LinkedHashSet<>();
       initListing();
    }
 
@@ -56,7 +56,7 @@ public class UrlZipExplorer {
    }
 
    public Set<String> listFiles(StringFilter filter) {
-      Set<String> matches = new LinkedHashSet<String>();
+      Set<String> matches = new LinkedHashSet<>();
       for (String entry : _entries) {
          if (filter.accept(entry)) {
             matches.add(entry);

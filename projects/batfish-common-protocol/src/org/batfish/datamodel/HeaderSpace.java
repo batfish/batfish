@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,25 @@ public class HeaderSpace implements Serializable {
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private static boolean rangesContain(Collection<SubRange> ranges, int num) {
+      for (SubRange range : ranges) {
+         if (range.getStart() <= num && num <= range.getEnd()) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   private static boolean wildcardsContain(Collection<IpWildcard> wildcards,
+         Ip ip) {
+      for (IpWildcard wildcard : wildcards) {
+         if (wildcard.contains(ip)) {
+            return true;
+         }
+      }
+      return false;
+   }
 
    private SortedSet<Integer> _dscps;
 
@@ -66,30 +86,30 @@ public class HeaderSpace implements Serializable {
    private List<TcpFlags> _tcpFlags;
 
    public HeaderSpace() {
-      _dscps = new TreeSet<Integer>();
-      _dstIps = new TreeSet<IpWildcard>();
-      _dstPorts = new TreeSet<SubRange>();
-      _ecns = new TreeSet<Integer>();
-      _fragmentOffsets = new TreeSet<SubRange>();
+      _dscps = new TreeSet<>();
+      _dstIps = new TreeSet<>();
+      _dstPorts = new TreeSet<>();
+      _ecns = new TreeSet<>();
+      _fragmentOffsets = new TreeSet<>();
       _ipProtocols = EnumSet.noneOf(IpProtocol.class);
-      _srcIps = new TreeSet<IpWildcard>();
-      _srcOrDstIps = new TreeSet<IpWildcard>();
-      _srcOrDstPorts = new TreeSet<SubRange>();
-      _srcPorts = new TreeSet<SubRange>();
-      _icmpTypes = new TreeSet<SubRange>();
-      _icmpCodes = new TreeSet<SubRange>();
+      _srcIps = new TreeSet<>();
+      _srcOrDstIps = new TreeSet<>();
+      _srcOrDstPorts = new TreeSet<>();
+      _srcPorts = new TreeSet<>();
+      _icmpTypes = new TreeSet<>();
+      _icmpCodes = new TreeSet<>();
       _states = EnumSet.noneOf(State.class);
-      _tcpFlags = new ArrayList<TcpFlags>();
-      _notDscps = new TreeSet<Integer>();
-      _notDstIps = new TreeSet<IpWildcard>();
-      _notDstPorts = new TreeSet<SubRange>();
-      _notEcns = new TreeSet<Integer>();
-      _notFragmentOffsets = new TreeSet<SubRange>();
-      _notIcmpCodes = new TreeSet<SubRange>();
-      _notIcmpTypes = new TreeSet<SubRange>();
+      _tcpFlags = new ArrayList<>();
+      _notDscps = new TreeSet<>();
+      _notDstIps = new TreeSet<>();
+      _notDstPorts = new TreeSet<>();
+      _notEcns = new TreeSet<>();
+      _notFragmentOffsets = new TreeSet<>();
+      _notIcmpCodes = new TreeSet<>();
+      _notIcmpTypes = new TreeSet<>();
       _notIpProtocols = EnumSet.noneOf(IpProtocol.class);
-      _notSrcIps = new TreeSet<IpWildcard>();
-      _notSrcPorts = new TreeSet<SubRange>();
+      _notSrcIps = new TreeSet<>();
+      _notSrcPorts = new TreeSet<>();
    }
 
    public SortedSet<Integer> getDscps() {
@@ -190,6 +210,134 @@ public class HeaderSpace implements Serializable {
 
    public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
+   }
+
+   public boolean matches(Flow flow) {
+      if (!_dscps.isEmpty() && !_dscps.contains(flow.getDscp())) {
+         return false;
+      }
+      if (!_notDscps.isEmpty() && _notDscps.contains(flow.getDscp())) {
+         return false;
+      }
+      if (!_dstIps.isEmpty() && !wildcardsContain(_dstIps, flow.getDstIp())) {
+         return false;
+      }
+      if (!_notDstIps.isEmpty()
+            && wildcardsContain(_notDstIps, flow.getDstIp())) {
+         return false;
+      }
+      if (!_dstPorts.isEmpty()
+            && !rangesContain(_dstPorts, flow.getDstPort())) {
+         return false;
+      }
+      if (!_notDstPorts.isEmpty()
+            && rangesContain(_notDstPorts, flow.getDstPort())) {
+         return false;
+      }
+      if (!_fragmentOffsets.isEmpty()
+            && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
+         return false;
+      }
+      if (!_notFragmentOffsets.isEmpty()
+            && rangesContain(_notFragmentOffsets, flow.getFragmentOffset())) {
+         return false;
+      }
+      if (!_icmpCodes.isEmpty()
+            && !rangesContain(_icmpCodes, flow.getIcmpCode())) {
+         return false;
+      }
+      if (!_notIcmpCodes.isEmpty()
+            && rangesContain(_notIcmpCodes, flow.getFragmentOffset())) {
+         return false;
+      }
+      if (!_icmpTypes.isEmpty()
+            && !rangesContain(_icmpTypes, flow.getIcmpType())) {
+         return false;
+      }
+      if (!_notIcmpTypes.isEmpty()
+            && rangesContain(_notIcmpTypes, flow.getFragmentOffset())) {
+         return false;
+      }
+      if (!_ipProtocols.isEmpty()
+            && !_ipProtocols.contains(flow.getIpProtocol())) {
+         return false;
+      }
+      if (!_notIpProtocols.isEmpty()
+            && _notIpProtocols.contains(flow.getIpProtocol())) {
+         return false;
+      }
+      if (!_srcOrDstIps.isEmpty()
+            && !(wildcardsContain(_srcOrDstIps, flow.getSrcIp())
+                  || wildcardsContain(_srcOrDstIps, flow.getDstIp()))) {
+         return false;
+      }
+      if (!_srcOrDstPorts.isEmpty()
+            && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
+                  || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
+         return false;
+      }
+      if (!_srcIps.isEmpty() && !wildcardsContain(_srcIps, flow.getSrcIp())) {
+         return false;
+      }
+      if (!_notSrcIps.isEmpty()
+            && wildcardsContain(_notSrcIps, flow.getSrcIp())) {
+         return false;
+      }
+      if (!_srcPorts.isEmpty()
+            && !rangesContain(_srcPorts, flow.getSrcPort())) {
+         return false;
+      }
+      if (!_notSrcPorts.isEmpty()
+            && rangesContain(_notSrcPorts, flow.getSrcPort())) {
+         return false;
+      }
+      if (!_states.isEmpty() && !_states.contains(flow.getState())) {
+         return false;
+      }
+      if (!_tcpFlags.isEmpty()) {
+         boolean matchTcpFlags = false;
+         for (TcpFlags tcpFlags : _tcpFlags) {
+            if (tcpFlags.getUseAck()
+                  && tcpFlags.getAck() ^ (flow.getTcpFlagsAck() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseCwr()
+                  && tcpFlags.getCwr() ^ (flow.getTcpFlagsCwr() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseEce()
+                  && tcpFlags.getEce() ^ (flow.getTcpFlagsEce() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseFin()
+                  && tcpFlags.getFin() ^ (flow.getTcpFlagsFin() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUsePsh()
+                  && tcpFlags.getPsh() ^ (flow.getTcpFlagsPsh() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseRst()
+                  && tcpFlags.getRst() ^ (flow.getTcpFlagsRst() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseSyn()
+                  && tcpFlags.getSyn() ^ (flow.getTcpFlagsSyn() == 0)) {
+               continue;
+            }
+            if (tcpFlags.getUseUrg()
+                  && tcpFlags.getUrg() ^ (flow.getTcpFlagsUrg() == 0)) {
+               continue;
+            }
+            matchTcpFlags = true;
+            break;
+         }
+         if (!matchTcpFlags) {
+            return false;
+         }
+      }
+
+      return true;
    }
 
    public void setDscps(SortedSet<Integer> dscps) {
@@ -313,8 +461,8 @@ public class HeaderSpace implements Serializable {
    }
 
    public final boolean unrestricted() {
-      boolean ret = _dscps.isEmpty() && _notDscps.isEmpty()
-            && _dstIps.isEmpty() && _notDstIps.isEmpty() && _dstPorts.isEmpty()
+      boolean ret = _dscps.isEmpty() && _notDscps.isEmpty() && _dstIps.isEmpty()
+            && _notDstIps.isEmpty() && _dstPorts.isEmpty()
             && _notDstPorts.isEmpty() && _ecns.isEmpty() && _notEcns.isEmpty()
             && _fragmentOffsets.isEmpty() && _notFragmentOffsets.isEmpty()
             && _icmpCodes.isEmpty() && _notIcmpCodes.isEmpty()

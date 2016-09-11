@@ -27,10 +27,8 @@ public class PoolMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getInfo() {
       _logger.info("PMS:getInfo\n");
-      return new JSONArray(
-            Arrays.asList(
-                  CoordConsts.SVC_SUCCESS_KEY,
-                  "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
+      return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
+            "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
@@ -41,14 +39,14 @@ public class PoolMgrService {
          _logger.info("PMS:getStatus\n");
          HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
          JSONObject obj = new JSONObject(poolStatus);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               obj.toString()));
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, obj.toString()));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:getStatus exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
    }
 
@@ -94,8 +92,8 @@ public class PoolMgrService {
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error("PMS:updatePool exception: " + stackTrace);
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-               e.getMessage()));
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_FAILURE_KEY, e.getMessage()));
       }
 
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, "done"));

@@ -324,7 +324,8 @@ public class TracerouteQuestion extends Question {
             return "Pretty printing failed. Printing Json\n" + toJsonString();
          }
          catch (JsonProcessingException e1) {
-            throw new BatfishException("Both pretty and json printing failed\n");
+            throw new BatfishException(
+                  "Both pretty and json printing failed\n");
          }
       }
    }
@@ -395,8 +396,8 @@ public class TracerouteQuestion extends Question {
                setIngressNode(parameters.getString(paramKey));
                break;
             case IP_PROTOCOL_VAR:
-               setIpProtocol(IpProtocol.fromString(parameters
-                     .getString(paramKey)));
+               setIpProtocol(
+                     IpProtocol.fromString(parameters.getString(paramKey)));
                break;
             case SRC_IP_VAR:
                setSrcIp(new Ip(parameters.getString(paramKey)));

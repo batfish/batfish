@@ -80,16 +80,16 @@ public class Interface extends ComparableStructure<String> {
    public Interface(String name) {
       super(name);
       _active = true;
-      _allPrefixes = new LinkedHashSet<Prefix>();
-      _allPrefixIps = new LinkedHashSet<Ip>();
+      _allPrefixes = new LinkedHashSet<>();
+      _allPrefixIps = new LinkedHashSet<>();
       _bandwidth = getDefaultBandwidthByName(name);
       _isisSettings = new IsisInterfaceSettings();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
-      _allowedVlans = new ArrayList<SubRange>();
+      _allowedVlans = new ArrayList<>();
       _ospfCost = null;
-      _ospfPassiveAreas = new HashSet<Ip>();
-      _units = new TreeMap<String, Interface>();
+      _ospfPassiveAreas = new HashSet<>();
+      _units = new TreeMap<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {

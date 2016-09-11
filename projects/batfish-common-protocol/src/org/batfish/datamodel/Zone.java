@@ -34,10 +34,10 @@ public final class Zone extends ComparableStructure<String> {
          IpAccessList fromHostFilter, IpAccessList toHostFilter) {
       super(name);
       _inboundFilter = inboundFilter;
-      _inboundInterfaceFilters = new TreeMap<String, IpAccessList>();
+      _inboundInterfaceFilters = new TreeMap<>();
       _fromHostFilter = fromHostFilter;
       _toHostFilter = toHostFilter;
-      _toZonePolicies = new TreeMap<String, IpAccessList>();
+      _toZonePolicies = new TreeMap<>();
    }
 
    public IpAccessList getFromHostFilter() {
@@ -77,7 +77,8 @@ public final class Zone extends ComparableStructure<String> {
       _toHostFilter = toHostFilter;
    }
 
-   public void setToZonePolicies(SortedMap<String, IpAccessList> toZonePolicies) {
+   public void setToZonePolicies(
+         SortedMap<String, IpAccessList> toZonePolicies) {
       _toZonePolicies = toZonePolicies;
    }
 

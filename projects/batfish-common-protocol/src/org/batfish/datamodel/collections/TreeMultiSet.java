@@ -7,7 +7,7 @@ public class TreeMultiSet<E> extends AbstractMultiSet<E> {
 
    @Override
    protected Map<E, Integer> initializeMap() {
-      return new TreeMap<E, Integer>();
+      return new TreeMap<>();
    }
 
 }

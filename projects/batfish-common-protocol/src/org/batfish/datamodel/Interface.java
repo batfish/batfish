@@ -302,11 +302,11 @@ public final class Interface extends ComparableStructure<String> {
    public Interface(String name, Configuration owner) {
       super(name);
       _active = true;
-      _allPrefixes = new TreeSet<Prefix>();
+      _allPrefixes = new TreeSet<>();
       _nativeVlan = 1;
       _owner = owner;
       _switchportMode = SwitchportMode.NONE;
-      _allowedVlans = new ArrayList<SubRange>();
+      _allowedVlans = new ArrayList<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {

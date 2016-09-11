@@ -47,15 +47,14 @@ public class OspfProcess implements Serializable {
    public OspfProcess(int procnum) {
       _pid = procnum;
       _referenceBandwidth = DEFAULT_REFERENCE_BANDWIDTH;
-      _networks = new TreeSet<OspfNetwork>();
+      _networks = new TreeSet<>();
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
       _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
-      _nssas = new HashMap<Integer, Boolean>();
-      _interfaceBlacklist = new HashSet<String>();
-      _interfaceWhitelist = new HashSet<String>();
-      _wildcardNetworks = new TreeSet<OspfWildcardNetwork>();
-      _redistributionPolicies = new EnumMap<RoutingProtocol, OspfRedistributionPolicy>(
-            RoutingProtocol.class);
+      _nssas = new HashMap<>();
+      _interfaceBlacklist = new HashSet<>();
+      _interfaceWhitelist = new HashSet<>();
+      _wildcardNetworks = new TreeSet<>();
+      _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
    }
 
    public void computeNetworks(Collection<Interface> interfaces) {
@@ -75,8 +74,8 @@ public class OspfProcess implements Serializable {
             if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
                // since we have a match, we add the INTERFACE network, ignoring
                // the wildcard stuff from before
-               Prefix newOspfNetwork = new Prefix(
-                     intPrefix.getNetworkAddress(), intPrefix.getPrefixLength());
+               Prefix newOspfNetwork = new Prefix(intPrefix.getNetworkAddress(),
+                     intPrefix.getPrefixLength());
                _networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
                break;
             }

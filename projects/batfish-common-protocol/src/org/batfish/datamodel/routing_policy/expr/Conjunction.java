@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -17,19 +17,20 @@ public class Conjunction extends AbstractBooleanExpr {
    private List<BooleanExpr> _conjuncts;
 
    public Conjunction() {
-      _conjuncts = new ArrayList<BooleanExpr>();
+      _conjuncts = new ArrayList<>();
    }
 
    @Override
-   public Result evaluate(Environment environment, Route route) {
+   public Result evaluate(Environment environment,
+         AbstractRouteBuilder<?> outputRoute) {
       for (BooleanExpr conjunct : _conjuncts) {
-         Result result = conjunct.evaluate(environment, route);
-         if (result.getExit()) {
-            return result;
+         Result conjunctResult = conjunct.evaluate(environment, outputRoute);
+         if (conjunctResult.getExit()) {
+            return conjunctResult;
          }
-         else if (!result.getBooleanValue()) {
-            result.setBooleanValue(false);
-            return result;
+         else if (!conjunctResult.getBooleanValue()) {
+            conjunctResult.setReturn(false);
+            return conjunctResult;
          }
       }
       Result result = new Result();
@@ -47,7 +48,7 @@ public class Conjunction extends AbstractBooleanExpr {
 
    @Override
    public BooleanExpr simplify() {
-      List<BooleanExpr> simpleConjuncts = new ArrayList<BooleanExpr>();
+      List<BooleanExpr> simpleConjuncts = new ArrayList<>();
       boolean atLeastOneFalse = false;
       boolean atLeastOneComplex = false;
       for (BooleanExpr conjunct : _conjuncts) {
@@ -61,8 +62,8 @@ public class Conjunction extends AbstractBooleanExpr {
                simpleConjuncts.add(simpleConjunct);
             }
          }
-         else if (!simpleConjunct.equals(BooleanExprs.True
-               .toStaticBooleanExpr())) {
+         else if (!simpleConjunct
+               .equals(BooleanExprs.True.toStaticBooleanExpr())) {
             atLeastOneComplex = true;
             simpleConjuncts.add(simpleConjunct);
          }
@@ -76,6 +77,7 @@ public class Conjunction extends AbstractBooleanExpr {
       else {
          Conjunction simple = new Conjunction();
          simple.setConjuncts(simpleConjuncts);
+         simple.setComment(getComment());
          return simple;
       }
    }

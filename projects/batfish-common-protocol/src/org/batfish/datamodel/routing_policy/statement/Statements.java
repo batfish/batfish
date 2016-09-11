@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -45,12 +45,13 @@ public enum Statements {
       }
 
       @Override
-      public Result execute(Environment environment, Route route) {
+      public Result execute(Environment environment,
+            AbstractRouteBuilder<?> route) {
          Result result = new Result();
          switch (this._type) {
          case DefaultAction:
             result.setExit(true);
-            result.setAction(environment.getDefaultAction());
+            result.setBooleanValue(environment.getDefaultAction());
             break;
 
          case DeleteAllCommunities:
@@ -58,12 +59,12 @@ public enum Statements {
 
          case ExitAccept:
             result.setExit(true);
-            result.setAction(true);
+            result.setBooleanValue(true);
             break;
 
          case ExitReject:
             result.setExit(true);
-            result.setAction(false);
+            result.setBooleanValue(false);
             break;
 
          case Return:
@@ -72,17 +73,17 @@ public enum Statements {
 
          case ReturnFalse:
             result.setReturn(true);
-            result.setAction(false);
+            result.setBooleanValue(false);
             break;
 
          case ReturnLocalDefaultAction:
             result.setReturn(true);
-            result.setAction(environment.getLocalDefaultAction());
+            result.setBooleanValue(environment.getLocalDefaultAction());
             break;
 
          case ReturnTrue:
             result.setReturn(true);
-            result.setAction(true);
+            result.setBooleanValue(true);
             break;
 
          case SetDefaultActionAccept:

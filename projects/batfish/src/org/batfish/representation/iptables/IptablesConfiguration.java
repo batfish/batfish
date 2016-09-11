@@ -16,7 +16,7 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
 
    protected final RoleSet _roles;
 
-   Map<String, IptablesTable> _tables = new HashMap<String, IptablesTable>();
+   Map<String, IptablesTable> _tables = new HashMap<>();
 
    public IptablesConfiguration() {
       _roles = new RoleSet();

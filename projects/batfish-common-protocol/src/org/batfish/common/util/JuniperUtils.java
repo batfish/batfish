@@ -48,11 +48,8 @@ public final class JuniperUtils {
 
    private JuniperUtils() {
       _codeMatrix = initCodeMatrix();
-      _characterFamilies = new String[] {
-            "QzF3n6/9CAtpu0O",
-            "B1IREhcSyrleKvMW8LXx",
-            "7N-dVbwsY2g4oaJZGUDj",
-            "iHkq.mPf5T" };
+      _characterFamilies = new String[] { "QzF3n6/9CAtpu0O",
+            "B1IREhcSyrleKvMW8LXx", "7N-dVbwsY2g4oaJZGUDj", "iHkq.mPf5T" };
       _characterFamilyReverseIndexMap = initCharacterFamilyReverseIndexMap();
       _allCharacters = initAllCharacters();
       _allCharactersIndexMap = initAllCharactersIndexMap();
@@ -62,8 +59,8 @@ public final class JuniperUtils {
    private String decrypt(String key) {
       boolean valid = _validationRegex.matcher(key).matches();
       if (!valid) {
-         throw new BatfishException("Invalid Juniper $9$ ciphertext: \"" + key
-               + "\"");
+         throw new BatfishException(
+               "Invalid Juniper $9$ ciphertext: \"" + key + "\"");
       }
       String[] chars = new String[] { key.substring("$9$".length()) };
       char first = nibble(chars, 1).charAt(0);
@@ -72,12 +69,12 @@ public final class JuniperUtils {
       String decrypted = "";
 
       while (chars[0].length() > 0) {
-         List<Integer> decode = _codeMatrix.get(decrypted.length()
-               % _codeMatrix.size());
+         List<Integer> decode = _codeMatrix
+               .get(decrypted.length() % _codeMatrix.size());
          int len = decode.size();
          char[] nibbleChars = new char[len];
          nibble(chars, len).getChars(0, len, nibbleChars, 0);
-         List<Integer> gaps = new ArrayList<Integer>();
+         List<Integer> gaps = new ArrayList<>();
          for (int i = 0; i < len; i++) {
             char nibbleChar = nibbleChars[i];
             int g = gap(prev, nibbleChar);
@@ -119,7 +116,7 @@ public final class JuniperUtils {
    }
 
    private Map<Character, Integer> initAllCharactersIndexMap() {
-      Map<Character, Integer> alphaNum = new HashMap<Character, Integer>();
+      Map<Character, Integer> alphaNum = new HashMap<>();
       for (int i = 0; i < _allCharacters.length; i++) {
          alphaNum.put(_allCharacters[i], i);
       }
@@ -127,7 +124,7 @@ public final class JuniperUtils {
    }
 
    private Map<Character, Integer> initCharacterFamilyReverseIndexMap() {
-      Map<Character, Integer> extra = new HashMap<Character, Integer>();
+      Map<Character, Integer> extra = new HashMap<>();
       for (int characterFamilyIndex = 0; characterFamilyIndex < _characterFamilies.length; characterFamilyIndex++) {
          String characterFamily = _characterFamilies[characterFamilyIndex];
          for (int i = 0; i < characterFamily.length(); i++) {
@@ -139,7 +136,7 @@ public final class JuniperUtils {
    }
 
    private List<List<Integer>> initCodeMatrix() {
-      List<List<Integer>> codeMatrix = new ArrayList<List<Integer>>();
+      List<List<Integer>> codeMatrix = new ArrayList<>();
       codeMatrix.add(Arrays.asList(new Integer[] { 1, 4, 32 }));
       codeMatrix.add(Arrays.asList(new Integer[] { 1, 16, 32 }));
       codeMatrix.add(Arrays.asList(new Integer[] { 1, 8, 32 }));

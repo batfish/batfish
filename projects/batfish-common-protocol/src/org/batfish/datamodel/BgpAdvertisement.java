@@ -22,8 +22,8 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
  */
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
-public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
-      Serializable {
+public class BgpAdvertisement
+      implements Comparable<BgpAdvertisement>, Serializable {
 
    public enum BgpAdvertisementType {
       EBGP_ORIGINATED("bgp"),
@@ -36,7 +36,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       private final static Map<String, BgpAdvertisementType> _map = buildMap();
 
       private static Map<String, BgpAdvertisementType> buildMap() {
-         Map<String, BgpAdvertisementType> map = new HashMap<String, BgpAdvertisementType>();
+         Map<String, BgpAdvertisementType> map = new HashMap<>();
          for (BgpAdvertisementType bgpAdvertisementType : BgpAdvertisementType
                .values()) {
             String nlsTypeName = bgpAdvertisementType._nlsTypeName;
@@ -48,8 +48,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>,
       public static BgpAdvertisementType fromNlsTypeName(String nlsTypeName) {
          BgpAdvertisementType bgpAdvertisementType = _map.get(nlsTypeName);
          if (bgpAdvertisementType == null) {
-            throw new BatfishException("Invalid nlsTypeName: \"" + nlsTypeName
-                  + "\"");
+            throw new BatfishException(
+                  "Invalid nlsTypeName: \"" + nlsTypeName + "\"");
          }
          return bgpAdvertisementType;
       }

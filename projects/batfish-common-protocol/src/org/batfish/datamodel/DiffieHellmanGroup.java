@@ -28,8 +28,8 @@ public enum DiffieHellmanGroup {
    public static DiffieHellmanGroup fromGroupNumber(int num) {
       DiffieHellmanGroup dhGroup = FROM_GROUP_NUMBER_MAP.get(num);
       if (dhGroup == null) {
-         throw new BatfishException("Invalid Diffie-Hellman group number: "
-               + num);
+         throw new BatfishException(
+               "Invalid Diffie-Hellman group number: " + num);
       }
       else {
          return dhGroup;
@@ -37,7 +37,7 @@ public enum DiffieHellmanGroup {
    }
 
    private static Map<Integer, DiffieHellmanGroup> initFromGroupNumberMap() {
-      Map<Integer, DiffieHellmanGroup> ret = new HashMap<Integer, DiffieHellmanGroup>();
+      Map<Integer, DiffieHellmanGroup> ret = new HashMap<>();
       for (DiffieHellmanGroup dhGroup : values()) {
          ret.put(dhGroup._groupNumber, dhGroup);
       }

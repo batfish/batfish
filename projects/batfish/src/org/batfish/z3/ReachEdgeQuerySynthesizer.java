@@ -42,8 +42,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(new PreOutEdgeExpr(_edge));
-      queryConditions.addConjunct(new PreInInterfaceExpr(_edge.getNode2(),
-            _edge.getInt2()));
+      queryConditions.addConjunct(
+            new PreInInterfaceExpr(_edge.getNode2(), _edge.getInt2()));
       queryConditions.addConjunct(Synthesizer.matchHeaderSpace(_headerSpace));
       if (_requireAcceptance) {
          queryConditions.addConjunct(AcceptExpr.INSTANCE);

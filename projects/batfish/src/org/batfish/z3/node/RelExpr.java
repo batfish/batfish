@@ -21,8 +21,8 @@ public class RelExpr extends BooleanExpr implements ComplexExpr {
 
    public RelExpr(String name) {
       _name = name;
-      _subExpressions = new ArrayList<Expr>();
-      _args = new ArrayList<IntExpr>();
+      _subExpressions = new ArrayList<>();
+      _args = new ArrayList<>();
       _subExpressions.add(new IdExpr(name));
       _printer = new CollapsedComplexExprPrinter(this);
    }
@@ -44,7 +44,7 @@ public class RelExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
+      Set<String> variables = new HashSet<>();
       for (Expr subExpression : _subExpressions) {
          variables.addAll(subExpression.getVariables());
       }
@@ -55,7 +55,7 @@ public class RelExpr extends BooleanExpr implements ComplexExpr {
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
       Context ctx = nodProgram.getContext();
       FuncDecl funcDecl = nodProgram.getRelationDeclarations().get(_name);
-      List<com.microsoft.z3.Expr> args = new ArrayList<com.microsoft.z3.Expr>();
+      List<com.microsoft.z3.Expr> args = new ArrayList<>();
       for (IntExpr arg : _args) {
          args.add(arg.toBitVecExpr(nodProgram));
       }

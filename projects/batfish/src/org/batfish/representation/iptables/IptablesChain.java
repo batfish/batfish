@@ -28,7 +28,7 @@ public class IptablesChain implements Serializable {
 
    public IptablesChain(String name) {
       _name = name;
-      _rules = new LinkedList<IptablesRule>();
+      _rules = new LinkedList<>();
    }
 
    public void addRule(IptablesRule rule, int ruleIndex) {

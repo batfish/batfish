@@ -18,8 +18,8 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 
-public class EarliestMoreGeneralReachableLineQuerySynthesizer extends
-      FirstUnsatQuerySynthesizer<AclLine, Integer> {
+public class EarliestMoreGeneralReachableLineQuerySynthesizer
+      extends FirstUnsatQuerySynthesizer<AclLine, Integer> {
 
    private String _aclName;
 
@@ -47,8 +47,8 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer extends
       Context ctx = baseProgram.getContext();
       NodProgram program = new NodProgram(ctx);
       int unreachableLineIndex = _unreachableLine.getLine();
-      IpAccessListLine unreachableLine = _list.getLines().get(
-            unreachableLineIndex);
+      IpAccessListLine unreachableLine = _list.getLines()
+            .get(unreachableLineIndex);
       BooleanExpr matchUnreachableLineHeaderSpace = Synthesizer
             .matchHeaderSpace(unreachableLine);
       for (AclLine earlierReachableLine : _earlierReachableLines) {
@@ -61,8 +61,9 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer extends
          queryConditions.addConjunct(matchUnreachableLineHeaderSpace);
          queryConditions.addConjunct(SaneExpr.INSTANCE);
          NumberedQueryExpr queryRel = new NumberedQueryExpr(earlierLineIndex);
-         String queryRelName = queryRel.getRelations().toArray(new String[] {})[0];
-         List<Integer> sizes = new ArrayList<Integer>();
+         String queryRelName = queryRel.getRelations()
+               .toArray(new String[] {})[0];
+         List<Integer> sizes = new ArrayList<>();
          sizes.addAll(Synthesizer.PACKET_VAR_SIZES.values());
          DeclareRelExpr declaration = new DeclareRelExpr(queryRelName, sizes);
          baseProgram.getRelationDeclarations().put(queryRelName,
@@ -79,7 +80,8 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer extends
    }
 
    @Override
-   public NodProgram synthesizeBaseProgram(Synthesizer synthesizer, Context ctx) {
+   public NodProgram synthesizeBaseProgram(Synthesizer synthesizer,
+         Context ctx) {
       return synthesizer.synthesizeNodAclProgram(_hostname, _aclName, ctx);
    }
 

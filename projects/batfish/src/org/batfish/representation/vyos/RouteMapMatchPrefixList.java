@@ -32,8 +32,8 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
       RouteFilterList routeFilterList = c.getRouteFilterLists()
             .get(_prefixList);
       if (routeFilterList == null) {
-         w.redFlag("Reference to undefined prefix-list: \"" + _prefixList
-               + "\"");
+         w.redFlag(
+               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
       }
       else {
          PolicyMapMatchRouteFilterListLine line = new PolicyMapMatchRouteFilterListLine(
@@ -55,8 +55,9 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
          return new MatchPrefixSet(new NamedPrefixSet(_prefixList));
       }
       else {
-         vc.undefined("Reference to undefined prefix-list: '" + _prefixList
-               + "'", VyosVendorConfiguration.PREFIX_LIST, _prefixList);
+         vc.undefined(
+               "Reference to undefined prefix-list: '" + _prefixList + "'",
+               VyosVendorConfiguration.PREFIX_LIST, _prefixList);
          // TODO: see if vyos treats as true, false, or disallows
          return BooleanExprs.True.toStaticBooleanExpr();
       }

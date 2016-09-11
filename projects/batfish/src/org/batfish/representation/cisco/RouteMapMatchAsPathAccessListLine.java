@@ -41,9 +41,9 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
             disjuncts.add(new MatchAsPath(listName));
          }
          else {
-            cc.undefined("Reference to undefined ip as-path access-list: "
-                  + listName, CiscoVendorConfiguration.AS_PATH_ACCESS_LIST,
-                  listName);
+            cc.undefined(
+                  "Reference to undefined ip as-path access-list: " + listName,
+                  CiscoVendorConfiguration.AS_PATH_ACCESS_LIST, listName);
          }
       }
       return d.simplify();

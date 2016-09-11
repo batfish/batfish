@@ -31,10 +31,9 @@ public class IpsecVpnCheckAnswerer extends Answerer {
          node2Regex = Pattern.compile(question.getNode2Regex());
       }
       catch (PatternSyntaxException e) {
-         throw new BatfishException(
-               String.format(
-                     "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                     question.getNode1Regex(), question.getNode2Regex()), e);
+         throw new BatfishException(String.format(
+               "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
+               question.getNode1Regex(), question.getNode2Regex()), e);
       }
 
       _batfish.checkConfigurations();
@@ -76,13 +75,9 @@ public class IpsecVpnCheckAnswerer extends Answerer {
                         answerElement.getIncompatibleIpsecProposals(), c,
                         ipsecVpn, remoteIpsecVpn);
                }
-               if (!ipsecVpn
-                     .getGateway()
-                     .getIkePolicy()
-                     .getPreSharedKeyHash()
-                     .equals(
-                           remoteIpsecVpn.getGateway().getIkePolicy()
-                                 .getPreSharedKeyHash())) {
+               if (!ipsecVpn.getGateway().getIkePolicy().getPreSharedKeyHash()
+                     .equals(remoteIpsecVpn.getGateway().getIkePolicy()
+                           .getPreSharedKeyHash())) {
                   answerElement.addIpsecVpnPair(
                         answerElement.getPreSharedKeyMismatch(), c, ipsecVpn,
                         remoteIpsecVpn);

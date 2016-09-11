@@ -64,8 +64,8 @@ public class Warnings implements Serializable {
 
       @Override
       public void serialize(Warnings value, JsonGenerator jgen,
-            SerializerProvider provider) throws IOException,
-            JsonProcessingException {
+            SerializerProvider provider)
+            throws IOException, JsonProcessingException {
          jgen.writeStartObject();
          if (!value._pedanticWarnings.isEmpty()) {
             jgen.writeFieldName(PEDANTIC_VAR);
@@ -129,9 +129,9 @@ public class Warnings implements Serializable {
    protected final List<Warning> _unimplementedWarnings;
 
    public Warnings() {
-      _pedanticWarnings = new ArrayList<Warning>();
-      _redFlagWarnings = new ArrayList<Warning>();
-      _unimplementedWarnings = new ArrayList<Warning>();
+      _pedanticWarnings = new ArrayList<>();
+      _redFlagWarnings = new ArrayList<>();
+      _unimplementedWarnings = new ArrayList<>();
 
    }
 

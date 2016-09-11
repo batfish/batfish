@@ -22,7 +22,7 @@ public final class AddressBook extends ComparableStructure<String> {
 
    public AddressBook(String name, Map<String, AddressBook> globalBooks) {
       super(name);
-      _entries = new TreeMap<String, AddressBookEntry>();
+      _entries = new TreeMap<>();
       _globalBooks = globalBooks;
    }
 
@@ -41,9 +41,9 @@ public final class AddressBook extends ComparableStructure<String> {
          }
       }
       if (entry == null) {
-         w.redFlag("Could not find entry: \"" + entryName
-               + "\" in address book: \"" + _key
-               + "\" or any global address book");
+         w.redFlag(
+               "Could not find entry: \"" + entryName + "\" in address book: \""
+                     + _key + "\" or any global address book");
          return Collections.emptySet();
       }
       else {

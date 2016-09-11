@@ -87,9 +87,9 @@ public class Warnings extends org.batfish.common.Warnings {
       StringBuilder sb = new StringBuilder();
       List<String> ruleNames = Arrays.asList(CiscoParser.ruleNames);
       String ruleStack = ctx.toString(ruleNames);
-      sb.append(prefix
-            + "Missing implementation for top (leftmost) parser rule in stack: '"
-            + ruleStack + "'.\n");
+      sb.append(
+            prefix + "Missing implementation for top (leftmost) parser rule in stack: '"
+                  + ruleStack + "'.\n");
       sb.append(prefix + "Unimplemented feature: " + feature + "\n");
       sb.append(prefix + "Rule context follows:\n");
       int start = ctx.start.getStartIndex();

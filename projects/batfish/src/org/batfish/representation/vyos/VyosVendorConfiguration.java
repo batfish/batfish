@@ -110,8 +110,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
                .get(bindInterfaceName);
          if (newBindInterface != null) {
             Interface bindInterface = _interfaces.get(bindInterfaceName);
-            bindInterface.getReferers().put(
-                  ipsecPeer,
+            bindInterface.getReferers().put(ipsecPeer,
                   "bind interface for site-to-site peer \"" + newIpsecVpnName
                         + "\"");
             newIpsecVpn.setBindInterface(newBindInterface);
@@ -125,19 +124,18 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          String ikeGroupName = ipsecPeer.getIkeGroup();
          IkeGroup ikeGroup = _ikeGroups.get(ikeGroupName);
          if (ikeGroup == null) {
-            _w.redFlag("Reference to undefined ike-group: \"" + ikeGroupName
-                  + "\"");
+            _w.redFlag(
+                  "Reference to undefined ike-group: \"" + ikeGroupName + "\"");
          }
          else {
-            ikeGroup.getReferers().put(
-                  ipsecPeer,
+            ikeGroup.getReferers().put(ipsecPeer,
                   "ike group for site-to-site peer: \"" + newIpsecVpnName
                         + "\"");
             IkePolicy newIkePolicy = new IkePolicy(ikeGroupName);
             _c.getIkePolicies().put(ikeGroupName, newIkePolicy);
             newIkeGateway.setIkePolicy(newIkePolicy);
-            newIkePolicy.setPreSharedKeyHash(ipsecPeer
-                  .getAuthenticationPreSharedSecretHash());
+            newIkePolicy.setPreSharedKeyHash(
+                  ipsecPeer.getAuthenticationPreSharedSecretHash());
 
             // convert contained ike proposals
             for (Entry<Integer, IkeProposal> ikeProposalEntry : ikeGroup
@@ -151,13 +149,13 @@ public class VyosVendorConfiguration extends VyosConfiguration {
                newIkePolicy.getProposals().put(newIkeProposalName,
                      newIkeProposal);
                newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
-               newIkeProposal.setEncryptionAlgorithm(ikeProposal
-                     .getEncryptionAlgorithm());
+               newIkeProposal.setEncryptionAlgorithm(
+                     ikeProposal.getEncryptionAlgorithm());
                newIkeProposal.setLifetimeSeconds(ikeGroup.getLifetimeSeconds());
                newIkeProposal.setAuthenticationAlgorithm(ikeProposal
                      .getHashAlgorithm().toIkeAuthenticationAlgorithm());
-               newIkeProposal.setAuthenticationMethod(ipsecPeer
-                     .getAuthenticationMode());
+               newIkeProposal.setAuthenticationMethod(
+                     ipsecPeer.getAuthenticationMode());
             }
          }
 
@@ -165,12 +163,11 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          String espGroupName = ipsecPeer.getEspGroup();
          EspGroup espGroup = _espGroups.get(espGroupName);
          if (espGroup == null) {
-            _w.redFlag("Reference to undefined esp-group: \"" + espGroupName
-                  + "\"");
+            _w.redFlag(
+                  "Reference to undefined esp-group: \"" + espGroupName + "\"");
          }
          else {
-            espGroup.getReferers().put(
-                  ipsecPeer,
+            espGroup.getReferers().put(ipsecPeer,
                   "esp-group for ipsec site-to-site peer: \"" + newIpsecVpnName
                         + "\"");
             IpsecPolicy newIpsecPolicy = new IpsecPolicy(espGroupName);
@@ -209,10 +206,10 @@ public class VyosVendorConfiguration extends VyosConfiguration {
                      newIpsecProposal);
                newIpsecProposal.setAuthenticationAlgorithm(espProposal
                      .getHashAlgorithm().toIpsecAuthenticationAlgorithm());
-               newIpsecProposal.setEncryptionAlgorithm(espProposal
-                     .getEncryptionAlgorithm());
-               newIpsecProposal.setLifetimeSeconds(espGroup
-                     .getLifetimeSeconds());
+               newIpsecProposal.setEncryptionAlgorithm(
+                     espProposal.getEncryptionAlgorithm());
+               newIpsecProposal
+                     .setLifetimeSeconds(espGroup.getLifetimeSeconds());
                newIpsecProposal.setProtocol(IpsecProtocol.ESP);
             }
          }
@@ -310,7 +307,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
    @Override
    public Configuration toVendorIndependentConfiguration()
          throws VendorConversionException {
-      _ipToInterfaceMap = new HashMap<Ip, org.batfish.datamodel.Interface>();
+      _ipToInterfaceMap = new HashMap<>();
       _c = new Configuration(_hostname);
       _c.setConfigurationFormat(_format);
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);

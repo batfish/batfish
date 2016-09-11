@@ -26,7 +26,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
    @JsonCreator
    public IpsecPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _proposals = new TreeMap<String, IpsecProposal>();
+      _proposals = new TreeMap<>();
    }
 
    public DiffieHellmanGroup getPfsKeyGroup() {

@@ -41,7 +41,7 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getRelations() {
-      Set<String> relations = new HashSet<String>();
+      Set<String> relations = new HashSet<>();
       for (BooleanExpr disjunct : _disjuncts) {
          relations.addAll(disjunct.getRelations());
       }
@@ -55,7 +55,7 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
 
    @Override
    public Set<String> getVariables() {
-      Set<String> variables = new HashSet<String>();
+      Set<String> variables = new HashSet<>();
       for (BooleanExpr disjunct : _disjuncts) {
          variables.addAll(disjunct.getVariables());
       }
@@ -65,15 +65,15 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
 
    public void init() {
       _printer = new ExpandedComplexExprPrinter(this);
-      _disjuncts = new ArrayList<BooleanExpr>();
-      _subExpressions = new ArrayList<Expr>();
+      _disjuncts = new ArrayList<>();
+      _subExpressions = new ArrayList<>();
       _subExpressions.add(new IdExpr("or"));
    }
 
    @Override
    public BooleanExpr simplify() {
       boolean changed = false;
-      List<BooleanExpr> newDisjuncts = new ArrayList<BooleanExpr>();
+      List<BooleanExpr> newDisjuncts = new ArrayList<>();
 
       // first check for nested ORs
       boolean containsOrExpr = false;
@@ -128,7 +128,7 @@ public class OrExpr extends BooleanExpr implements ComplexExpr {
    @Override
    public BoolExpr toBoolExpr(NodProgram nodProgram) throws Z3Exception {
       Context ctx = nodProgram.getContext();
-      List<BoolExpr> args = new ArrayList<BoolExpr>();
+      List<BoolExpr> args = new ArrayList<>();
       for (BooleanExpr disjunct : _disjuncts) {
          BoolExpr be = disjunct.toBoolExpr(nodProgram);
          args.add(be);

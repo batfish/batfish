@@ -13,7 +13,7 @@ public class ReportAnswerElement implements AnswerElement {
    private List<Object> _jsonAnswers;
 
    public ReportAnswerElement() {
-      _jsonAnswers = new ArrayList<Object>();
+      _jsonAnswers = new ArrayList<>();
    }
 
    public List<Object> getJsonAnswers() {

@@ -1,6 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.Route;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.Result;
@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CallStatement extends AbstractStatement {
 
+   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
 
    private String _calledPolicyName;
 
@@ -28,9 +28,10 @@ public class CallStatement extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment, Route route) {
-      RoutingPolicy policy = environment.getConfiguration()
-            .getRoutingPolicies().get(_calledPolicyName);
+   public Result execute(Environment environment,
+         AbstractRouteBuilder<?> route) {
+      RoutingPolicy policy = environment.getConfiguration().getRoutingPolicies()
+            .get(_calledPolicyName);
       Result result;
       if (policy == null) {
          result = new Result();
@@ -42,6 +43,7 @@ public class CallStatement extends AbstractStatement {
                .getCallStatementContext();
          environment.setCallStatementContext(true);
          result = policy.call(environment, route);
+         result.setReturn(false);
          environment.setCallStatementContext(oldCallStatementContext);
       }
       return result;

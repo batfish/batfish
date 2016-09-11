@@ -84,30 +84,30 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
    protected final HashSet<StaticRoute> _staticRoutes;
 
    public CiscoConfiguration() {
-      _asPathAccessLists = new TreeMap<String, IpAsPathAccessList>();
-      _bgpProcesses = new TreeMap<String, BgpProcess>();
-      _classMapAccessGroups = new TreeSet<String>();
-      _controlPlaneAccessGroups = new TreeSet<String>();
-      _expandedCommunityLists = new TreeMap<String, ExpandedCommunityList>();
-      _extendedAccessLists = new TreeMap<String, ExtendedAccessList>();
-      _failoverInterfaces = new TreeMap<String, String>();
-      _failoverPrimaryPrefixes = new TreeMap<String, Prefix>();
-      _failoverStandbyPrefixes = new TreeMap<String, Prefix>();
-      _interfaces = new TreeMap<String, Interface>();
-      _ipv6PeerGroups = new TreeSet<String>();
-      _lineAccessClassLists = new TreeSet<String>();
-      _managementAccessGroups = new TreeSet<String>();
-      _msdpPeerSaLists = new TreeSet<String>();
-      _ntpAccessGroups = new TreeSet<String>();
-      _pimAcls = new TreeSet<String>();
-      _pimRouteMaps = new TreeSet<String>();
-      _prefixLists = new TreeMap<String, PrefixList>();
-      _referencedRouteMaps = new TreeSet<String>();
-      _routeMaps = new TreeMap<String, RouteMap>();
-      _routePolicies = new TreeMap<String, RoutePolicy>();
-      _standardAccessLists = new TreeMap<String, StandardAccessList>();
-      _standardCommunityLists = new TreeMap<String, StandardCommunityList>();
-      _staticRoutes = new HashSet<StaticRoute>();
+      _asPathAccessLists = new TreeMap<>();
+      _bgpProcesses = new TreeMap<>();
+      _classMapAccessGroups = new TreeSet<>();
+      _controlPlaneAccessGroups = new TreeSet<>();
+      _expandedCommunityLists = new TreeMap<>();
+      _extendedAccessLists = new TreeMap<>();
+      _failoverInterfaces = new TreeMap<>();
+      _failoverPrimaryPrefixes = new TreeMap<>();
+      _failoverStandbyPrefixes = new TreeMap<>();
+      _interfaces = new TreeMap<>();
+      _ipv6PeerGroups = new TreeSet<>();
+      _lineAccessClassLists = new TreeSet<>();
+      _managementAccessGroups = new TreeSet<>();
+      _msdpPeerSaLists = new TreeSet<>();
+      _ntpAccessGroups = new TreeSet<>();
+      _pimAcls = new TreeSet<>();
+      _pimRouteMaps = new TreeSet<>();
+      _prefixLists = new TreeMap<>();
+      _referencedRouteMaps = new TreeSet<>();
+      _routeMaps = new TreeMap<>();
+      _routePolicies = new TreeMap<>();
+      _standardAccessLists = new TreeMap<>();
+      _standardCommunityLists = new TreeMap<>();
+      _staticRoutes = new HashSet<>();
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {

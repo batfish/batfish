@@ -20,7 +20,7 @@ public final class AsPathAccessList extends ComparableStructure<String>
 
    public AsPathAccessList(String name) {
       super(name);
-      _lines = new ArrayList<AsPathAccessListLine>();
+      _lines = new ArrayList<>();
    }
 
    @JsonCreator

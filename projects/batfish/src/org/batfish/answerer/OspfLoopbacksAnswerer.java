@@ -7,11 +7,11 @@ import java.util.regex.PatternSyntaxException;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.OspfLoopbacksAnswerElement;
 import org.batfish.datamodel.questions.OspfLoopbacksQuestion;
@@ -38,7 +38,8 @@ public class OspfLoopbacksAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getNodeRegex() + "\"", e);
+                     + question.getNodeRegex() + "\"",
+               e);
       }
 
       OspfLoopbacksAnswerElement answerElement = new OspfLoopbacksAnswerElement();
@@ -81,10 +82,10 @@ public class OspfLoopbacksAnswerer extends Answerer {
                               .get(exportPolicyName);
                         if (exportPolicy != null) {
                            for (Prefix prefix : iface.getAllPrefixes()) {
-                              Route route = new Route(hostname, prefix, null,
-                                    null, interfaceName, 0, 0,
-                                    RoutingProtocol.CONNECTED, -1);
-                              if (exportPolicy.permits(route)) {
+                              ConnectedRoute route = new ConnectedRoute(prefix,
+                                    interfaceName);
+                              if (exportPolicy.process(route,
+                                    new OspfExternalRoute.Builder())) {
                                  exported = true;
                               }
                            }

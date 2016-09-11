@@ -79,7 +79,8 @@ public class IpsecPeer extends ComparableStructure<Ip> {
       _authenticationId = authenticationId;
    }
 
-   public void setAuthenticationMode(IkeAuthenticationMethod authenticationMode) {
+   public void setAuthenticationMode(
+         IkeAuthenticationMethod authenticationMode) {
       _authenticationMode = authenticationMode;
    }
 

@@ -11,7 +11,8 @@ public class RoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
 
    private RoutePolicyCommunitySet _commSet;
 
-   public RoutePolicyBooleanCommunityMatchesAny(RoutePolicyCommunitySet commSet) {
+   public RoutePolicyBooleanCommunityMatchesAny(
+         RoutePolicyCommunitySet commSet) {
       _commSet = commSet;
    }
 

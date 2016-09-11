@@ -18,8 +18,9 @@ public final class LongColumn extends BaseColumn<Long> {
    }
 
    @Override
-   public List<BgpAdvertisement> asBgpAdvertisementList(EntityTable entityTable) {
-      List<BgpAdvertisement> advertisementList = new ArrayList<BgpAdvertisement>();
+   public List<BgpAdvertisement> asBgpAdvertisementList(
+         EntityTable entityTable) {
+      List<BgpAdvertisement> advertisementList = new ArrayList<>();
       for (Long index : _items) {
          BgpAdvertisement advert = entityTable.getBgpAdvertisement(index);
          advertisementList.add(advert);
@@ -29,7 +30,7 @@ public final class LongColumn extends BaseColumn<Long> {
 
    @Override
    public List<Flow> asFlowList(EntityTable entityTable) {
-      List<Flow> flowList = new ArrayList<Flow>();
+      List<Flow> flowList = new ArrayList<>();
       for (Long index : _items) {
          Flow advert = entityTable.getFlow(index);
          flowList.add(advert);
@@ -39,7 +40,7 @@ public final class LongColumn extends BaseColumn<Long> {
 
    @Override
    public List<Ip> asIpList() {
-      List<Ip> ips = new ArrayList<Ip>();
+      List<Ip> ips = new ArrayList<>();
       for (Long l : _items) {
          ips.add(new Ip(l));
       }
@@ -48,7 +49,7 @@ public final class LongColumn extends BaseColumn<Long> {
 
    @Override
    public List<Prefix> asPrefixList(EntityTable entityTable) {
-      List<Prefix> prefixList = new ArrayList<Prefix>();
+      List<Prefix> prefixList = new ArrayList<>();
       for (Long index : _items) {
          Prefix advert = entityTable.getNetwork(index);
          prefixList.add(advert);
@@ -58,7 +59,7 @@ public final class LongColumn extends BaseColumn<Long> {
 
    @Override
    public List<Route> asRouteList(EntityTable entityTable) {
-      List<Route> routeList = new ArrayList<Route>();
+      List<Route> routeList = new ArrayList<>();
       for (Long index : _items) {
          Route advert = entityTable.getRoute(index);
          routeList.add(advert);
@@ -67,7 +68,8 @@ public final class LongColumn extends BaseColumn<Long> {
    }
 
    @Override
-   public Object getItem(int i, EntityTable entityTable, LBValueType valueType) {
+   public Object getItem(int i, EntityTable entityTable,
+         LBValueType valueType) {
       Long l = _items.get(i);
       switch (valueType) {
       case ENTITY_INDEX_BGP_ADVERTISEMENT:

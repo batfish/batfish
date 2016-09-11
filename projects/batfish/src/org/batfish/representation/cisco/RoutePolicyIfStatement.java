@@ -41,7 +41,7 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
       If mainIf = new If();
       mainIf.setGuard(_guard.toBooleanExpr(cc, c, w));
       If currentIf = mainIf;
-      List<Statement> mainIfStatements = new ArrayList<Statement>();
+      List<Statement> mainIfStatements = new ArrayList<>();
       mainIf.setTrueStatements(mainIfStatements);
       for (RoutePolicyStatement stmt : _stmtList) {
          stmt.applyTo(mainIfStatements, cc, c, w);
@@ -49,7 +49,7 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
       for (RoutePolicyElseIfBlock elseIfBlock : _elseIfBlocks) {
          If elseIf = new If();
          elseIf.setGuard(elseIfBlock.getGuard().toBooleanExpr(cc, c, w));
-         List<Statement> elseIfStatements = new ArrayList<Statement>();
+         List<Statement> elseIfStatements = new ArrayList<>();
          elseIf.setTrueStatements(elseIfStatements);
          for (RoutePolicyStatement stmt : elseIfBlock.getStatements()) {
             stmt.applyTo(elseIfStatements, cc, c, w);
@@ -57,7 +57,7 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
          currentIf.setFalseStatements(Collections.singletonList(elseIf));
          currentIf = elseIf;
       }
-      List<Statement> elseStatements = new ArrayList<Statement>();
+      List<Statement> elseStatements = new ArrayList<>();
       currentIf.setFalseStatements(elseStatements);
       if (_elseBlock != null) {
          for (RoutePolicyStatement stmt : _elseBlock.getStatements()) {

@@ -12,8 +12,8 @@ import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 
-public class ConvertConfigurationJob extends
-      BatfishJob<ConvertConfigurationResult> {
+public class ConvertConfigurationJob
+      extends BatfishJob<ConvertConfigurationResult> {
 
    private Object _configObject;
 
@@ -34,7 +34,7 @@ public class ConvertConfigurationJob extends
       long startTime = System.currentTimeMillis();
       long elapsedTime;
       _logger.info("Processing: \"" + _name + "\"");
-      Map<String, Configuration> configurations = new HashMap<String, Configuration>();
+      Map<String, Configuration> configurations = new HashMap<>();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
       try {
          if (VendorConfiguration.class.isInstance(_configObject)) {

@@ -7,14 +7,14 @@ import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
+   public static final int MAX_PREFIX_LENGTH = 128;
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
    public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
-
-   public static final int MAX_PREFIX_LENGTH = 128;
 
    private static BigInteger getNetworkEnd(BigInteger networkStart,
          int prefix_length) {
@@ -45,8 +45,8 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
          _prefixLength = Integer.parseInt(parts[1]);
       }
       catch (NumberFormatException e) {
-         throw new BatfishException("Invalid Prefix6 length: \"" + parts[1]
-               + "\"", e);
+         throw new BatfishException(
+               "Invalid Prefix6 length: \"" + parts[1] + "\"", e);
       }
    }
 

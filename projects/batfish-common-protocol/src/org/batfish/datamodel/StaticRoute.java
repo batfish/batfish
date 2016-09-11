@@ -3,12 +3,10 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class StaticRoute extends AbstractRoute implements
-      Comparable<StaticRoute> {
+public class StaticRoute extends AbstractRoute
+      implements Comparable<StaticRoute> {
 
    private static final String NEXT_HOP_INTERFACE_VAR = "nextHopInterface";
-
-   public static final int NO_TAG = -1;
 
    private static final long serialVersionUID = 1L;
 
@@ -21,18 +19,18 @@ public class StaticRoute extends AbstractRoute implements
    private final int _tag;
 
    @JsonCreator
-   public StaticRoute(@JsonProperty(PREFIX_VAR) Prefix prefix,
+   public StaticRoute(@JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_INTERFACE_VAR) String nextHopInterface,
          @JsonProperty(TAG_VAR) int tag) {
-      super(prefix, nextHopIp);
+      super(network, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _tag = tag;
    }
 
-   public StaticRoute(Prefix prefix, Ip nextHopIp, String nextHopInterface,
+   public StaticRoute(Prefix network, Ip nextHopIp, String nextHopInterface,
          int administrativeCost, int tag) {
-      super(prefix, nextHopIp);
+      super(network, nextHopIp);
       _nextHopInterface = nextHopInterface;
       _administrativeCost = administrativeCost;
       _tag = tag;
@@ -41,7 +39,7 @@ public class StaticRoute extends AbstractRoute implements
    @Override
    public int compareTo(StaticRoute rhs) {
       int ret;
-      ret = _prefix.compareTo(rhs._prefix);
+      ret = _network.compareTo(rhs._network);
       if (ret != 0) {
          return ret;
       }
@@ -79,7 +77,7 @@ public class StaticRoute extends AbstractRoute implements
    @Override
    public boolean equals(Object o) {
       StaticRoute rhs = (StaticRoute) o;
-      boolean res = _prefix.equals(rhs._prefix);
+      boolean res = _network.equals(rhs._network);
       res = res && _administrativeCost == rhs._administrativeCost;
       if (_nextHopIp != null) {
          res = res && _nextHopIp.equals(rhs._nextHopIp);
@@ -102,16 +100,23 @@ public class StaticRoute extends AbstractRoute implements
       return _administrativeCost;
    }
 
+   @Override
+   public Integer getMetric() {
+      return 0;
+   }
+
+   @Override
    @JsonProperty(NEXT_HOP_INTERFACE_VAR)
    public String getNextHopInterface() {
       return _nextHopInterface;
    }
 
    @Override
-   public RouteType getRouteType() {
-      return RouteType.STATIC;
+   public RoutingProtocol getProtocol() {
+      return RoutingProtocol.STATIC;
    }
 
+   @Override
    @JsonProperty(TAG_VAR)
    public int getTag() {
       return _tag;
@@ -121,7 +126,7 @@ public class StaticRoute extends AbstractRoute implements
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + _prefix.hashCode();
+      result = prime * result + _network.hashCode();
       result = prime * result + _administrativeCost;
       result = prime * result
             + ((_nextHopInterface == null) ? 0 : _nextHopInterface.hashCode());

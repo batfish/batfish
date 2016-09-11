@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.main.Settings;
 
-public class JuniperCombinedParser extends
-      BatfishCombinedParser<JuniperParser, JuniperLexer> {
+public class JuniperCombinedParser
+      extends BatfishCombinedParser<JuniperParser, JuniperLexer> {
 
    public JuniperCombinedParser(String input, Settings settings) {
       super(JuniperParser.class, JuniperLexer.class, input, settings);

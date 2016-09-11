@@ -32,8 +32,8 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
 
    public NetworkInterface(JSONObject jObj, BatfishLogger logger)
          throws JSONException {
-      _groups = new LinkedList<String>();
-      _ipAddressAssociations = new HashMap<Ip, Ip>();
+      _groups = new LinkedList<>();
+      _ipAddressAssociations = new HashMap<>();
 
       _networkInterfaceId = jObj.getString(JSON_KEY_NETWORK_INTERFACE_ID);
 

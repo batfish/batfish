@@ -16,7 +16,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 3,
@@ -32,12 +32,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 4,
       "asPath" : [ [ 3 ], [ 1 ] ],
-      "communities" : [ 196609, 65538 ],
+      "communities" : [ 65538, 196609 ],
       "dstIp" : "10.12.11.2",
       "dstNode" : "as2border1",
       "localPreference" : 350,
@@ -48,12 +48,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 5,
       "asPath" : [ [ 3 ], [ 1 ] ],
-      "communities" : [ 196609, 65538 ],
+      "communities" : [ 65538, 196609 ],
       "dstIp" : "10.12.11.2",
       "dstNode" : "as2border1",
       "localPreference" : 350,
@@ -64,7 +64,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 6,
@@ -80,7 +80,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 7,
@@ -96,12 +96,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 8,
       "asPath" : [ [ 2 ], [ 1 ] ],
-      "communities" : [ 131074, 65539 ],
+      "communities" : [ 65539, 131074 ],
       "dstIp" : "10.13.22.3",
       "dstNode" : "as3border2",
       "localPreference" : 350,
@@ -112,7 +112,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_ti"
     }, {
       "@id" : 9,
@@ -128,7 +128,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_ti"
     }, {
       "@id" : 10,
@@ -144,7 +144,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 11,
@@ -160,12 +160,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 12,
       "asPath" : [ [ 1 ], [ 2 ] ],
-      "communities" : [ 131075, 65538 ],
+      "communities" : [ 65538, 131075 ],
       "dstIp" : "10.23.21.3",
       "dstNode" : "as3border1",
       "localPreference" : 350,
@@ -176,12 +176,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 13,
       "asPath" : [ [ 1 ], [ 2 ] ],
-      "communities" : [ 131075, 65538 ],
+      "communities" : [ 65538, 131075 ],
       "dstIp" : "10.23.21.3",
       "dstNode" : "as3border1",
       "localPreference" : 350,
@@ -192,7 +192,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 14,
@@ -208,7 +208,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_ti"
     }, {
       "@id" : 15,
@@ -224,7 +224,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 16,
@@ -240,7 +240,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 17,
@@ -256,7 +256,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 18,
@@ -272,7 +272,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 19,
@@ -288,7 +288,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 20,
@@ -304,12 +304,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 21,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.101.4",
       "dstNode" : "as2dept1",
       "localPreference" : 350,
@@ -320,12 +320,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 22,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.101.4",
       "dstNode" : "as2dept1",
       "localPreference" : 350,
@@ -336,7 +336,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 23,
@@ -352,7 +352,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 24,
@@ -368,12 +368,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 25,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.201.4",
       "dstNode" : "as2dept1",
       "localPreference" : 350,
@@ -384,12 +384,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 26,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.201.4",
       "dstNode" : "as2dept1",
       "localPreference" : 350,
@@ -400,12 +400,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 27,
       "asPath" : [ [ 1 ], [ 3 ] ],
-      "communities" : [ 196610, 65539 ],
+      "communities" : [ 65539, 196610 ],
       "dstIp" : "10.23.21.2",
       "dstNode" : "as2border2",
       "localPreference" : 350,
@@ -416,12 +416,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 28,
       "asPath" : [ [ 1 ], [ 3 ] ],
-      "communities" : [ 196610, 65539 ],
+      "communities" : [ 65539, 196610 ],
       "dstIp" : "10.23.21.2",
       "dstNode" : "as2border2",
       "localPreference" : 350,
@@ -432,7 +432,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 29,
@@ -448,7 +448,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 30,
@@ -464,7 +464,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 31,
@@ -480,7 +480,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_ti"
     }, {
       "@id" : 32,
@@ -496,7 +496,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_ti"
     }, {
       "@id" : 33,
@@ -512,7 +512,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_ti"
     }, {
       "@id" : 34,
@@ -528,7 +528,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 35,
@@ -544,12 +544,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 36,
       "asPath" : [ [ 3 ], [ 1 ] ],
-      "communities" : [ 196609, 65538 ],
+      "communities" : [ 65538, 196609 ],
       "dstIp" : "10.12.11.2",
       "dstNode" : "as2border1",
       "localPreference" : 100,
@@ -560,12 +560,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 37,
       "asPath" : [ [ 3 ], [ 1 ] ],
-      "communities" : [ 196609, 65538 ],
+      "communities" : [ 65538, 196609 ],
       "dstIp" : "10.12.11.2",
       "dstNode" : "as2border1",
       "localPreference" : 100,
@@ -576,7 +576,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 38,
@@ -592,7 +592,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.14.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 39,
@@ -608,7 +608,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.14.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 40,
@@ -624,7 +624,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.14.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_to"
     }, {
       "@id" : 41,
@@ -640,7 +640,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.14.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 42,
@@ -656,7 +656,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.14.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 43,
@@ -672,7 +672,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 44,
@@ -688,12 +688,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 45,
       "asPath" : [ [ 2 ], [ 1 ] ],
-      "communities" : [ 131074, 65539 ],
+      "communities" : [ 65539, 131074 ],
       "dstIp" : "10.13.22.3",
       "dstNode" : "as3border2",
       "localPreference" : 100,
@@ -704,7 +704,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.1",
       "srcNode" : "as1border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_to"
     }, {
       "@id" : 46,
@@ -720,7 +720,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_to"
     }, {
       "@id" : 47,
@@ -736,7 +736,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 48,
@@ -752,12 +752,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.12.11.2",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 49,
       "asPath" : [ [ 1 ], [ 2 ] ],
-      "communities" : [ 131075, 65538 ],
+      "communities" : [ 65538, 131075 ],
       "dstIp" : "10.23.21.3",
       "dstNode" : "as3border1",
       "localPreference" : 100,
@@ -768,12 +768,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 50,
       "asPath" : [ [ 1 ], [ 2 ] ],
-      "communities" : [ 131075, 65538 ],
+      "communities" : [ 65538, 131075 ],
       "dstIp" : "10.23.21.3",
       "dstNode" : "as3border1",
       "localPreference" : 100,
@@ -784,7 +784,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 51,
@@ -800,7 +800,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_to"
     }, {
       "@id" : 52,
@@ -816,7 +816,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 53,
@@ -832,7 +832,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 54,
@@ -848,7 +848,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 55,
@@ -864,7 +864,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.4",
       "srcNode" : "as2dept1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 56,
@@ -880,7 +880,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 57,
@@ -896,12 +896,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 58,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.101.4",
       "dstNode" : "as2dept1",
       "localPreference" : 100,
@@ -912,12 +912,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 59,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.101.4",
       "dstNode" : "as2dept1",
       "localPreference" : 100,
@@ -928,7 +928,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.101.3",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 60,
@@ -944,7 +944,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 61,
@@ -960,12 +960,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 62,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.201.4",
       "dstNode" : "as2dept1",
       "localPreference" : 100,
@@ -976,12 +976,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 63,
       "asPath" : [ [ 3 ], [ 2 ] ],
-      "communities" : [ 196610, 196073 ],
+      "communities" : [ 196073, 196610 ],
       "dstIp" : "2.34.201.4",
       "dstNode" : "as2dept1",
       "localPreference" : 100,
@@ -992,12 +992,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.34.201.3",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 64,
       "asPath" : [ [ 1 ], [ 3 ] ],
-      "communities" : [ 196610, 65539 ],
+      "communities" : [ 65539, 196610 ],
       "dstIp" : "10.23.21.2",
       "dstNode" : "as2border2",
       "localPreference" : 100,
@@ -1008,12 +1008,12 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 65,
       "asPath" : [ [ 1 ], [ 3 ] ],
-      "communities" : [ 196610, 65539 ],
+      "communities" : [ 65539, 196610 ],
       "dstIp" : "10.23.21.2",
       "dstNode" : "as2border2",
       "localPreference" : 100,
@@ -1024,7 +1024,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 66,
@@ -1040,7 +1040,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 67,
@@ -1056,7 +1056,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.23.21.3",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 68,
@@ -1072,7 +1072,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "bgp_to"
     }, {
       "@id" : 69,
@@ -1088,7 +1088,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "bgp_to"
     }, {
       "@id" : 70,
@@ -1104,7 +1104,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "10.13.22.3",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "bgp_to"
     }, {
       "@id" : 71,
@@ -1120,7 +1120,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 72,
@@ -1136,7 +1136,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 73,
@@ -1152,7 +1152,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 74,
@@ -1168,7 +1168,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 75,
@@ -1184,7 +1184,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 76,
@@ -1200,7 +1200,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 77,
@@ -1216,7 +1216,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 78,
@@ -1232,7 +1232,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 79,
@@ -1248,7 +1248,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 80,
@@ -1264,7 +1264,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 81,
@@ -1280,7 +1280,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 82,
@@ -1296,7 +1296,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 83,
@@ -1312,7 +1312,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 84,
@@ -1328,7 +1328,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 85,
@@ -1344,7 +1344,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 86,
@@ -1360,7 +1360,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 87,
@@ -1376,7 +1376,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 88,
@@ -1392,7 +1392,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 89,
@@ -1408,7 +1408,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 90,
@@ -1424,7 +1424,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 91,
@@ -1440,7 +1440,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 92,
@@ -1456,7 +1456,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 93,
@@ -1472,7 +1472,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 94,
@@ -1488,7 +1488,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 95,
@@ -1504,7 +1504,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 96,
@@ -1520,7 +1520,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 97,
@@ -1536,7 +1536,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 98,
@@ -1552,7 +1552,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 99,
@@ -1568,7 +1568,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 100,
@@ -1584,7 +1584,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 101,
@@ -1600,7 +1600,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 102,
@@ -1616,7 +1616,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 103,
@@ -1632,7 +1632,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 104,
@@ -1648,7 +1648,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 105,
@@ -1664,7 +1664,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 106,
@@ -1680,7 +1680,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 107,
@@ -1696,7 +1696,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 108,
@@ -1712,7 +1712,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 109,
@@ -1728,7 +1728,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 110,
@@ -1744,7 +1744,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 111,
@@ -1760,7 +1760,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 112,
@@ -1776,7 +1776,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 113,
@@ -1792,7 +1792,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 114,
@@ -1808,7 +1808,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 115,
@@ -1824,7 +1824,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 116,
@@ -1840,7 +1840,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 117,
@@ -1856,7 +1856,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 118,
@@ -1872,7 +1872,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 119,
@@ -1888,7 +1888,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 120,
@@ -1904,7 +1904,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 121,
@@ -1920,7 +1920,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 122,
@@ -1936,7 +1936,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 123,
@@ -1952,7 +1952,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 124,
@@ -1968,7 +1968,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 125,
@@ -1984,7 +1984,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 126,
@@ -2000,7 +2000,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 127,
@@ -2016,7 +2016,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 128,
@@ -2032,7 +2032,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 129,
@@ -2048,7 +2048,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 130,
@@ -2064,7 +2064,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 131,
@@ -2080,7 +2080,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 132,
@@ -2096,7 +2096,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 133,
@@ -2112,7 +2112,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 134,
@@ -2128,7 +2128,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 135,
@@ -2144,7 +2144,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 136,
@@ -2160,7 +2160,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 137,
@@ -2176,7 +2176,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 138,
@@ -2192,7 +2192,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 139,
@@ -2208,7 +2208,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 140,
@@ -2224,7 +2224,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 141,
@@ -2240,7 +2240,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 142,
@@ -2256,7 +2256,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 143,
@@ -2272,7 +2272,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 144,
@@ -2288,7 +2288,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 145,
@@ -2304,7 +2304,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 146,
@@ -2320,7 +2320,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 147,
@@ -2336,7 +2336,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 148,
@@ -2352,7 +2352,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 149,
@@ -2368,7 +2368,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 150,
@@ -2384,7 +2384,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 151,
@@ -2400,7 +2400,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 152,
@@ -2416,7 +2416,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 153,
@@ -2432,7 +2432,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 154,
@@ -2448,7 +2448,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 155,
@@ -2464,7 +2464,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 156,
@@ -2480,7 +2480,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 157,
@@ -2496,7 +2496,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 158,
@@ -2512,7 +2512,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 159,
@@ -2528,7 +2528,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 160,
@@ -2544,7 +2544,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 161,
@@ -2560,7 +2560,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 162,
@@ -2576,7 +2576,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 163,
@@ -2592,7 +2592,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 164,
@@ -2608,7 +2608,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 165,
@@ -2624,7 +2624,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 166,
@@ -2640,7 +2640,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 167,
@@ -2656,7 +2656,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 168,
@@ -2672,7 +2672,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_ti"
     }, {
       "@id" : 169,
@@ -2688,7 +2688,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 170,
@@ -2704,7 +2704,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 171,
@@ -2720,7 +2720,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 172,
@@ -2736,7 +2736,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_ti"
     }, {
       "@id" : 173,
@@ -2752,7 +2752,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 174,
@@ -2768,7 +2768,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_ti"
     }, {
       "@id" : 175,
@@ -2784,7 +2784,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 176,
@@ -2800,7 +2800,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 177,
@@ -2816,7 +2816,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.1.1.1",
       "srcNode" : "as1border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 178,
@@ -2832,7 +2832,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 179,
@@ -2848,7 +2848,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 180,
@@ -2864,7 +2864,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 181,
@@ -2880,7 +2880,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "1.2.2.2",
       "srcNode" : "as1border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 182,
@@ -2896,7 +2896,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 183,
@@ -2912,7 +2912,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 184,
@@ -2928,7 +2928,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 185,
@@ -2944,7 +2944,7 @@
       "originatorIp" : "1.1.1.1",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 186,
@@ -2960,7 +2960,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 187,
@@ -2976,7 +2976,7 @@
       "originatorIp" : "1.2.2.2",
       "srcIp" : "1.10.1.1",
       "srcNode" : "as1core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 188,
@@ -2992,7 +2992,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 189,
@@ -3008,7 +3008,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 190,
@@ -3024,7 +3024,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 191,
@@ -3040,7 +3040,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 192,
@@ -3056,7 +3056,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 193,
@@ -3072,7 +3072,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.1.1",
       "srcNode" : "as2border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 194,
@@ -3088,7 +3088,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 195,
@@ -3104,7 +3104,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 196,
@@ -3120,7 +3120,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 197,
@@ -3136,7 +3136,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 198,
@@ -3152,7 +3152,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 199,
@@ -3168,7 +3168,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.1.2",
       "srcNode" : "as2border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 200,
@@ -3184,7 +3184,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 201,
@@ -3200,7 +3200,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 202,
@@ -3216,7 +3216,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 203,
@@ -3232,7 +3232,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 204,
@@ -3248,7 +3248,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 205,
@@ -3264,7 +3264,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 206,
@@ -3280,7 +3280,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 207,
@@ -3296,7 +3296,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 208,
@@ -3312,7 +3312,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 209,
@@ -3328,7 +3328,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 210,
@@ -3344,7 +3344,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 211,
@@ -3360,7 +3360,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 212,
@@ -3376,7 +3376,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 213,
@@ -3392,7 +3392,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 214,
@@ -3408,7 +3408,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 215,
@@ -3424,7 +3424,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 216,
@@ -3440,7 +3440,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 217,
@@ -3456,7 +3456,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 218,
@@ -3472,7 +3472,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 219,
@@ -3488,7 +3488,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 220,
@@ -3504,7 +3504,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 221,
@@ -3520,7 +3520,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 222,
@@ -3536,7 +3536,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 223,
@@ -3552,7 +3552,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 224,
@@ -3568,7 +3568,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 225,
@@ -3584,7 +3584,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 226,
@@ -3600,7 +3600,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 227,
@@ -3616,7 +3616,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 228,
@@ -3632,7 +3632,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 229,
@@ -3648,7 +3648,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 230,
@@ -3664,7 +3664,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 231,
@@ -3680,7 +3680,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 232,
@@ -3696,7 +3696,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 233,
@@ -3712,7 +3712,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 234,
@@ -3728,7 +3728,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 235,
@@ -3744,7 +3744,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 236,
@@ -3760,7 +3760,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 237,
@@ -3776,7 +3776,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 238,
@@ -3792,7 +3792,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 239,
@@ -3808,7 +3808,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.1",
       "srcNode" : "as2core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 240,
@@ -3824,7 +3824,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 241,
@@ -3840,7 +3840,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 242,
@@ -3856,7 +3856,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 243,
@@ -3872,7 +3872,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 244,
@@ -3888,7 +3888,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 245,
@@ -3904,7 +3904,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 246,
@@ -3920,7 +3920,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 247,
@@ -3936,7 +3936,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 248,
@@ -3952,7 +3952,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 249,
@@ -3968,7 +3968,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 250,
@@ -3984,7 +3984,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 251,
@@ -4000,7 +4000,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 252,
@@ -4016,7 +4016,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 253,
@@ -4032,7 +4032,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 254,
@@ -4048,7 +4048,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 255,
@@ -4064,7 +4064,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 256,
@@ -4080,7 +4080,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 257,
@@ -4096,7 +4096,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 258,
@@ -4112,7 +4112,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 259,
@@ -4128,7 +4128,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 260,
@@ -4144,7 +4144,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 261,
@@ -4160,7 +4160,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 262,
@@ -4176,7 +4176,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 263,
@@ -4192,7 +4192,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 264,
@@ -4208,7 +4208,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 265,
@@ -4224,7 +4224,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 266,
@@ -4240,7 +4240,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 267,
@@ -4256,7 +4256,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 268,
@@ -4272,7 +4272,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 269,
@@ -4288,7 +4288,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 270,
@@ -4304,7 +4304,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 271,
@@ -4320,7 +4320,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 272,
@@ -4336,7 +4336,7 @@
       "originatorIp" : "2.1.1.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 273,
@@ -4352,7 +4352,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 274,
@@ -4368,7 +4368,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 275,
@@ -4384,7 +4384,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 276,
@@ -4400,7 +4400,7 @@
       "originatorIp" : "2.1.3.1",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 277,
@@ -4416,7 +4416,7 @@
       "originatorIp" : "2.1.3.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 278,
@@ -4432,7 +4432,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 279,
@@ -4448,7 +4448,7 @@
       "originatorIp" : "2.1.1.2",
       "srcIp" : "2.1.2.2",
       "srcNode" : "as2core2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 280,
@@ -4464,7 +4464,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 281,
@@ -4480,7 +4480,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 282,
@@ -4496,7 +4496,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 283,
@@ -4512,7 +4512,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.1",
       "srcNode" : "as2dist1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 284,
@@ -4528,7 +4528,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 285,
@@ -4544,7 +4544,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 286,
@@ -4560,7 +4560,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 287,
@@ -4576,7 +4576,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "2.1.3.2",
       "srcNode" : "as2dist2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 288,
@@ -4592,7 +4592,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 289,
@@ -4608,7 +4608,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 290,
@@ -4624,7 +4624,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.1.1.1",
       "srcNode" : "as3border1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 291,
@@ -4640,7 +4640,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 292,
@@ -4656,7 +4656,7 @@
       "originatorIp" : "AUTO/NONE(-1l)",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 293,
@@ -4672,7 +4672,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 294,
@@ -4688,7 +4688,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.2.2.2",
       "srcNode" : "as3border2",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 295,
@@ -4704,7 +4704,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 296,
@@ -4720,7 +4720,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 297,
@@ -4736,7 +4736,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 298,
@@ -4752,7 +4752,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 299,
@@ -4768,7 +4768,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 300,
@@ -4784,7 +4784,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "OSPF",
+      "srcProtocol" : "ospf",
       "type" : "ibgp_to"
     }, {
       "@id" : 301,
@@ -4800,7 +4800,7 @@
       "originatorIp" : "3.2.2.2",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 302,
@@ -4816,7 +4816,7 @@
       "originatorIp" : "3.1.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "AGGREGATE",
+      "srcProtocol" : "aggregate",
       "type" : "ibgp_to"
     }, {
       "@id" : 303,
@@ -4832,7 +4832,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     }, {
       "@id" : 304,
@@ -4848,7 +4848,7 @@
       "originatorIp" : "3.10.1.1",
       "srcIp" : "3.10.1.1",
       "srcNode" : "as3core1",
-      "srcProtocol" : "CONNECTED",
+      "srcProtocol" : "connected",
       "type" : "ibgp_to"
     } ],
     "receivedEbgpAdvertisements" : {

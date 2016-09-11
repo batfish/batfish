@@ -16,7 +16,8 @@ public class PrefixSpaceList {
          if (currentAction != rflAction) {
             currentAction = rflAction;
             currentPrefixSpace = new PrefixSpace();
-            currentLine = new PrefixSpaceLine(currentPrefixSpace, currentAction);
+            currentLine = new PrefixSpaceLine(currentPrefixSpace,
+                  currentAction);
             lines.add(currentLine);
          }
          PrefixRange rflRange = new PrefixRange(rfLine.getPrefix(),
@@ -29,7 +30,7 @@ public class PrefixSpaceList {
    private final List<PrefixSpaceLine> _lines;
 
    public PrefixSpaceList() {
-      _lines = new ArrayList<PrefixSpaceLine>();
+      _lines = new ArrayList<>();
    }
 
    public LineAction getAction(Prefix prefix) {

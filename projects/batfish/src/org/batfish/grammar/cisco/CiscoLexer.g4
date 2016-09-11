@@ -1832,6 +1832,11 @@ EGRESS
    'egress'
 ;
 
+EGRESS_INTERFACE_SELECTION
+:
+   'egress-interface-selection'  
+;
+
 EIGRP
 :
    'eigrp'
@@ -2344,6 +2349,11 @@ GRATUITOUS_ARPS
 GRE
 :
    'gre'
+;
+
+GREEN
+:
+   'green'
 ;
 
 GROUP
@@ -4704,6 +4714,11 @@ RECORD_ENTRY
    'record-entry'
 ;
 
+RED
+:
+   'red'
+;
+
 REDIRECT
 :
    'redirect'
@@ -5272,6 +5287,11 @@ SESSION_TIMEOUT
 SET
 :
    'set'
+;
+
+SET_COLOR
+:
+   'set-color'
 ;
 
 SET_OVERLOAD_BIT
@@ -6511,6 +6531,11 @@ XML
 XML_CONFIG
 :
    'xml-config'
+;
+
+YELLOW
+:
+   'yellow'
 ;
 
 // Other Tokens

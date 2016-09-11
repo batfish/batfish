@@ -1,5 +1,7 @@
 package org.batfish.allinone;
 
+import java.nio.file.Path;
+
 import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -8,13 +10,13 @@ import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
 
+   private static final String ARG_BATFISH_ARGS = "batfishargs";
+   private static final String ARG_CLIENT_ARGS = "clientargs";
    private static final String ARG_COMMAND_FILE = org.batfish.client.Settings.ARG_COMMAND_FILE;
+   private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
-   private static final String ARG_BATFISH_ARGS = "batfishargs";
-   private static final String ARG_CLIENT_ARGS = "clientargs";
-   private static final String ARG_COORDINATOR_ARGS = "coordinatorargs";
    private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
    private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
 
@@ -22,10 +24,11 @@ public class Settings extends BaseSettings {
 
    private String _batfishArgs;
    private String _clientArgs;
-   private String _coordinatorArgs;
    private String _commandFile;
+   private String _coordinatorArgs;
    private String _logFile;
    private String _logLevel;
+   private Path _pluginDir;
    private String _runMode;
    private String _testrigDir;
 
@@ -43,12 +46,12 @@ public class Settings extends BaseSettings {
       return _batfishArgs;
    }
 
-   public String getCommandFile() {
-      return _commandFile;
-   }
-
    public String getClientArgs() {
       return _clientArgs;
+   }
+
+   public String getCommandFile() {
+      return _commandFile;
    }
 
    public String getCoordinatorArgs() {
@@ -63,8 +66,12 @@ public class Settings extends BaseSettings {
       return _logLevel;
    }
 
+   public Path getPluginDir() {
+      return _pluginDir;
+   }
+
    public String getRunMode() {
-	      return _runMode;
+      return _runMode;
    }
 
    public String getTestrigDir() {
@@ -72,10 +79,10 @@ public class Settings extends BaseSettings {
    }
 
    private void initConfigDefaults() {
-//      setDefaultProperty(ARG_COMMAND_FILE, 
-//            Paths.get(org.batfish.common.Util.getJarOrClassDir(
-//                  ConfigurationLocator.class).getAbsolutePath(), "default_commands")
-//                  .toAbsolutePath().toString());
+      // setDefaultProperty(ARG_COMMAND_FILE,
+      // Paths.get(org.batfish.common.Util.getJarOrClassDir(
+      // ConfigurationLocator.class).getAbsolutePath(), "default_commands")
+      // .toAbsolutePath().toString());
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_LEVEL,
@@ -84,6 +91,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
       setDefaultProperty(ARG_RUN_MODE, "batch");
+      setDefaultProperty(BfConsts.ARG_PLUGIN_DIR, null);
    }
 
    private void initOptions() {
@@ -100,18 +108,20 @@ public class Settings extends BaseSettings {
             "batfish_args");
 
       addOption(ARG_CLIENT_ARGS, "arguments for the client process",
-              "client_args");
+            "client_args");
 
-      addOption(ARG_COMMAND_FILE, "which command file to use",
-            "command_file");
+      addOption(ARG_COMMAND_FILE, "which command file to use", "command_file");
 
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");
 
       addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
-              "run_mode");
+            "run_mode");
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+
+      addOption(BfConsts.ARG_PLUGIN_DIR,
+            "plugin directory to be passed to batfish process", "path");
    }
 
    private void parseCommandLine(String[] args) {
@@ -121,7 +131,7 @@ public class Settings extends BaseSettings {
          printHelp(EXECUTABLE_NAME);
          System.exit(0);
       }
-      
+
       _commandFile = getStringOptionValue(ARG_COMMAND_FILE);
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
@@ -130,5 +140,6 @@ public class Settings extends BaseSettings {
       _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
       _runMode = getStringOptionValue(ARG_RUN_MODE);
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
+      _pluginDir = getPathOptionValue(BfConsts.ARG_PLUGIN_DIR);
    }
 }

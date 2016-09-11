@@ -53,8 +53,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
          }
          if (!remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroupDynamicIke()) {
             // remote vpn uses static pfs key group.
-            if (!activeProposal.getDiffieHellmanGroup().equals(
-                  remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup())) {
+            if (!activeProposal.getDiffieHellmanGroup()
+                  .equals(remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup())) {
                return false;
             }
          }
@@ -67,8 +67,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
          return false;
       }
       for (IpsecProposal lhs : _ipsecPolicy.getProposals().values()) {
-         for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy()
-               .getProposals().values()) {
+         for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy().getProposals()
+               .values()) {
             if (lhs.compatibleWith(rhs)) {
                return true;
             }
@@ -121,7 +121,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
    }
 
    public void initCandidateRemoteVpns() {
-      _candidateRemoteIpsecVpns = new TreeSet<IpsecVpn>();
+      _candidateRemoteIpsecVpns = new TreeSet<>();
    }
 
    public void setBindInterface(Interface iface) {

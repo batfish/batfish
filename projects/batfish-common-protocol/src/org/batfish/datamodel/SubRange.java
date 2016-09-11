@@ -14,7 +14,7 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
    private static final long serialVersionUID = 1L;
 
    public static List<SubRange> invertedRange(int value, int min, int max) {
-      List<SubRange> returnRange = new LinkedList<SubRange>();
+      List<SubRange> returnRange = new LinkedList<>();
       if (value > min) {
          returnRange.add(new SubRange(min, value - 1));
       }
@@ -45,15 +45,15 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
             _start = Integer.parseInt(parts[0]);
          }
          catch (NumberFormatException e) {
-            throw new BatfishException("Invalid subrange start: \"" + parts[0]
-                  + "\"", e);
+            throw new BatfishException(
+                  "Invalid subrange start: \"" + parts[0] + "\"", e);
          }
          try {
             _end = Integer.parseInt(parts[1]);
          }
          catch (NumberFormatException e) {
-            throw new BatfishException("Invalid subrange end: \"" + parts[1]
-                  + "\"", e);
+            throw new BatfishException(
+                  "Invalid subrange end: \"" + parts[1] + "\"", e);
          }
       }
       else if (o instanceof Integer) {

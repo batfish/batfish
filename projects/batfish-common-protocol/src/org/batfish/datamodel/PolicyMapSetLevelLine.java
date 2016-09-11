@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PolicyMapSetLevelLine extends PolicyMapSetLine {
 
+   private static final String LEVEL_VAR = "level";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String LEVEL_VAR = "level";
 
    private final IsisLevel _level;
 

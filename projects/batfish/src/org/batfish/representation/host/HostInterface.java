@@ -34,7 +34,7 @@ public class HostInterface implements Serializable {
    @JsonCreator
    public HostInterface(@JsonProperty(NAME_VAR) String name) {
       _name = name;
-      _otherPrefixes = new TreeSet<Prefix>();
+      _otherPrefixes = new TreeSet<>();
    }
 
    @JsonProperty(BANDWIDTH_VAR)
@@ -69,7 +69,8 @@ public class HostInterface implements Serializable {
       _prefix = prefix;
    }
 
-   public Interface toInterface(Configuration configuration, Warnings warnings) {
+   public Interface toInterface(Configuration configuration,
+         Warnings warnings) {
       Interface iFace = new Interface(_name, configuration);
       iFace.setBandwidth(_bandwidth);
       iFace.setPrefix(_prefix);

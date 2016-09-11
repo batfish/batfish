@@ -116,7 +116,7 @@ public class BatfishLogger {
    }
 
    private static Map<String, Integer> initializeLogLevels() {
-      Map<String, Integer> levels = new HashMap<String, Integer>();
+      Map<String, Integer> levels = new HashMap<>();
       levels.put(LEVELSTR_DEBUG, LEVEL_DEBUG);
       levels.put(LEVELSTR_ERROR, LEVEL_ERROR);
       levels.put(LEVELSTR_FATAL, LEVEL_FATAL);
@@ -130,7 +130,7 @@ public class BatfishLogger {
    }
 
    private static Map<Integer, String> initializeLogLevelStrs() {
-      Map<Integer, String> levels = new HashMap<Integer, String>();
+      Map<Integer, String> levels = new HashMap<>();
       levels.put(LEVEL_DEBUG, LEVELSTR_DEBUG);
       levels.put(LEVEL_ERROR, LEVELSTR_ERROR);
       levels.put(LEVEL_FATAL, LEVELSTR_FATAL);
@@ -167,7 +167,8 @@ public class BatfishLogger {
       _history = new BatfishLoggerHistory();
    }
 
-   public BatfishLogger(String logLevel, boolean timestamp, PrintStream stream) {
+   public BatfishLogger(String logLevel, boolean timestamp,
+         PrintStream stream) {
       _history = null;
       _timestamp = timestamp;
       String levelStr = logLevel;

@@ -12,7 +12,7 @@ public class MacroDefExpr extends Expr implements ComplexExpr {
    public MacroDefExpr(String macro, BooleanExpr b) {
       _macro = macro;
       _expression = b;
-      _subExpressions = new ArrayList<Expr>();
+      _subExpressions = new ArrayList<>();
       _printer = new ExpandedComplexExprPrinter(this);
       refreshSubexpressions();
    }

@@ -30,7 +30,7 @@ public class StaticRoute implements Serializable {
 
    public StaticRoute(Prefix prefix) {
       _prefix = prefix;
-      _policies = new ArrayList<String>();
+      _policies = new ArrayList<>();
    }
 
    public boolean getDrop() {

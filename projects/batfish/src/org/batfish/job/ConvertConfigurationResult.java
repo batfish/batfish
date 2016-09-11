@@ -9,8 +9,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
-public class ConvertConfigurationResult
-      extends
+public class ConvertConfigurationResult extends
       BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
 
    private ConvertConfigurationAnswerElement _answerElement;
@@ -52,7 +51,8 @@ public class ConvertConfigurationResult
 
    @Override
    public void applyTo(Map<String, Configuration> configurations,
-         BatfishLogger logger, ConvertConfigurationAnswerElement answerElement) {
+         BatfishLogger logger,
+         ConvertConfigurationAnswerElement answerElement) {
       appendHistory(logger);
       if (_configurations != null) {
          for (String hostname : _configurations.keySet()) {
@@ -64,10 +64,10 @@ public class ConvertConfigurationResult
                configurations.put(hostname, config);
                if (!_warnings.isEmpty()) {
                   answerElement.getWarnings().put(hostname, _warnings);
-                  answerElement.getUnusedStructures().putAll(
-                        _answerElement.getUnusedStructures());
-                  answerElement.getUndefinedReferences().putAll(
-                        _answerElement.getUndefinedReferences());
+                  answerElement.getUnusedStructures()
+                        .putAll(_answerElement.getUnusedStructures());
+                  answerElement.getUndefinedReferences()
+                        .putAll(_answerElement.getUndefinedReferences());
                }
             }
          }

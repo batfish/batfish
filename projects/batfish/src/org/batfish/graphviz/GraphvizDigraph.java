@@ -17,8 +17,8 @@ public class GraphvizDigraph extends GraphvizInput {
 
    public GraphvizDigraph(String name) {
       super(name);
-      _edges = new TreeSet<GraphvizEdge>();
-      _nodes = new TreeSet<GraphvizNode>();
+      _edges = new TreeSet<>();
+      _nodes = new TreeSet<>();
    }
 
    public Set<GraphvizEdge> getEdges() {

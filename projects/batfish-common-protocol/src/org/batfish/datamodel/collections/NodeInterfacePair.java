@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NodeInterfacePair extends Pair<String, String> {
 
+   private static final String HOSTNAME_VAR = "hostname";
+
+   private static final String INTERFACE_VAR = "interface";
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String HOSTNAME_VAR = "hostname";
-   private static final String INTERFACE_VAR = "interface";
 
    @JsonCreator
    public NodeInterfacePair(@JsonProperty(HOSTNAME_VAR) String node,

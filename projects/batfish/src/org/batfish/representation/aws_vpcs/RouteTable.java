@@ -13,9 +13,9 @@ public class RouteTable implements AwsVpcEntity, Serializable {
 
    private static final long serialVersionUID = 1L;
 
-   private List<Route> _routes = new LinkedList<Route>();
+   private List<Route> _routes = new LinkedList<>();
 
-   private List<RouteTableAssociation> _routeTableAssociations = new LinkedList<RouteTableAssociation>();
+   private List<RouteTableAssociation> _routeTableAssociations = new LinkedList<>();
 
    private String _routeTableId;
 
@@ -55,8 +55,8 @@ public class RouteTable implements AwsVpcEntity, Serializable {
 
       for (int index = 0; index < associations.length(); index++) {
          JSONObject childObject = associations.getJSONObject(index);
-         _routeTableAssociations.add(new RouteTableAssociation(childObject,
-               logger));
+         _routeTableAssociations
+               .add(new RouteTableAssociation(childObject, logger));
       }
    }
 

@@ -12,11 +12,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class CompositeBatfishException extends RuntimeException implements
-      AnswerElement {
+public class CompositeBatfishException extends RuntimeException
+      implements AnswerElement {
 
-   public static class CompositeBatfishExceptionAnswerElement implements
-         AnswerElement {
+   public static class CompositeBatfishExceptionAnswerElement
+         implements AnswerElement {
 
       private BatfishStackTrace _cause;
 
@@ -29,10 +29,9 @@ public class CompositeBatfishException extends RuntimeException implements
       public CompositeBatfishExceptionAnswerElement(BatfishException cause,
             List<BatfishException> contributingCauses) {
          _cause = cause.getBatfishStackTrace();
-         _contributingCauses = contributingCauses
-               .stream()
-               .map(contributingCause -> contributingCause
-                     .getBatfishStackTrace()).collect(Collectors.toList());
+         _contributingCauses = contributingCauses.stream().map(
+               contributingCause -> contributingCause.getBatfishStackTrace())
+               .collect(Collectors.toList());
       }
 
       public BatfishStackTrace getCause() {

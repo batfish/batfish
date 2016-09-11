@@ -27,7 +27,7 @@ public class QuestionHelper {
       private final static Map<String, MacroType> _map = buildMap();
 
       private static Map<String, MacroType> buildMap() {
-         Map<String, MacroType> map = new HashMap<String, MacroType>();
+         Map<String, MacroType> map = new HashMap<>();
          for (MacroType value : MacroType.values()) {
             String name = value._name;
             map.put(name, value);
@@ -39,8 +39,8 @@ public class QuestionHelper {
       public static MacroType fromName(String name) {
          MacroType instance = _map.get(name.toLowerCase());
          if (instance == null) {
-            throw new BatfishException("Not a valid MacroType: \"" + name
-                  + "\"");
+            throw new BatfishException(
+                  "Not a valid MacroType: \"" + name + "\"");
          }
          return instance;
       }
@@ -179,7 +179,7 @@ public class QuestionHelper {
          question.setIngressNodeRegex(ingressNodeRegex);
       }
 
-      Set<ForwardingAction> actionSet = new HashSet<ForwardingAction>();
+      Set<ForwardingAction> actionSet = new HashSet<>();
       actionSet.add(action);
       question.setActions(actionSet);
 

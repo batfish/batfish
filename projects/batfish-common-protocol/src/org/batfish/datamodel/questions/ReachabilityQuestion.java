@@ -284,8 +284,8 @@ public class ReachabilityQuestion extends Question {
                   _finalNodeRegex);
          }
          if (getIpProtocols() != null && getIpProtocols().size() != 0) {
-            retString += String.format(" | ipProtocols=%s", getIpProtocols()
-                  .toString());
+            retString += String.format(" | ipProtocols=%s",
+                  getIpProtocols().toString());
          }
          if (getSrcOrDstPorts() != null && getSrcOrDstPorts().size() != 0) {
             retString += String.format(" | srcOrDstPorts=%s",
@@ -342,7 +342,8 @@ public class ReachabilityQuestion extends Question {
             return "Pretty printing failed. Printing Json\n" + toJsonString();
          }
          catch (JsonProcessingException e1) {
-            throw new BatfishException("Both pretty and json printing failed\n");
+            throw new BatfishException(
+                  "Both pretty and json printing failed\n");
          }
       }
    }
@@ -354,12 +355,12 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(DST_IPS_VAR)
    public void setDstIps(Set<IpWildcard> dstIps) {
-      _headerSpace.setDstIps(new TreeSet<IpWildcard>(dstIps));
+      _headerSpace.setDstIps(new TreeSet<>(dstIps));
    }
 
    @JsonProperty(DST_PORTS_VAR)
    public void setDstPorts(Set<SubRange> dstPorts) {
-      _headerSpace.setDstPorts(new TreeSet<SubRange>(dstPorts));
+      _headerSpace.setDstPorts(new TreeSet<>(dstPorts));
    }
 
    @JsonProperty(FINAL_NODE_REGEX_VAR)
@@ -369,12 +370,12 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(ICMP_CODES_VAR)
    public void setIcmpCodes(Set<SubRange> icmpCodes) {
-      _headerSpace.setIcmpCodes(new TreeSet<SubRange>(icmpCodes));
+      _headerSpace.setIcmpCodes(new TreeSet<>(icmpCodes));
    }
 
    @JsonProperty(ICMP_TYPES_VAR)
    public void setIcmpTypes(Set<SubRange> icmpTypes) {
-      _headerSpace.setIcmpTypes(new TreeSet<SubRange>(icmpTypes));
+      _headerSpace.setIcmpTypes(new TreeSet<>(icmpTypes));
    }
 
    @JsonProperty(INGRESS_NODE_REGEX_VAR)
@@ -447,8 +448,8 @@ public class ReachabilityQuestion extends Question {
                setNegateHeader(parameters.getBoolean(paramKey));
                break;
             case REACHABILITY_TYPE_VAR:
-               setReachabilityType(ReachabilityType.fromName(parameters
-                     .getString(paramKey)));
+               setReachabilityType(
+                     ReachabilityType.fromName(parameters.getString(paramKey)));
                break;
             case SRC_OR_DST_IPS_VAR:
                setSrcOrDstIps(new ObjectMapper().<Set<IpWildcard>> readValue(
@@ -506,11 +507,10 @@ public class ReachabilityQuestion extends Question {
                setNotIngressNodeRegex(parameters.getString(paramKey));
                break;
             case NOT_IP_PROTOCOLS_VAR:
-               setNotIpProtocols(new ObjectMapper()
-                     .<Set<IpProtocol>> readValue(
-                           parameters.getString(paramKey),
-                           new TypeReference<Set<IpProtocol>>() {
-                           }));
+               setNotIpProtocols(new ObjectMapper().<Set<IpProtocol>> readValue(
+                     parameters.getString(paramKey),
+                     new TypeReference<Set<IpProtocol>>() {
+                     }));
                break;
             case NOT_SRC_PORTS_VAR:
                setNotSrcPortRange(new ObjectMapper().<Set<SubRange>> readValue(
@@ -542,12 +542,12 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(NOT_DST_IPS_VAR)
    public void setNotDstIps(Set<IpWildcard> notDstIps) {
-      _headerSpace.setNotDstIps(new TreeSet<IpWildcard>(notDstIps));
+      _headerSpace.setNotDstIps(new TreeSet<>(notDstIps));
    }
 
    @JsonProperty(NOT_DST_PORTS_VAR)
    public void setNotDstPorts(Set<SubRange> notDstPorts) {
-      _headerSpace.setNotDstPorts(new TreeSet<SubRange>(notDstPorts));
+      _headerSpace.setNotDstPorts(new TreeSet<>(notDstPorts));
    }
 
    @JsonProperty(NOT_FINAL_NODE_REGEX_VAR)
@@ -557,12 +557,12 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(NOT_ICMP_CODE_VAR)
    public void setNotIcmpCodes(Set<SubRange> notIcmpCodes) {
-      _headerSpace.setNotIcmpCodes(new TreeSet<SubRange>(notIcmpCodes));
+      _headerSpace.setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
    }
 
    @JsonProperty(NOT_ICMP_TYPE_VAR)
    public void setNotIcmpTypes(Set<SubRange> notIcmpType) {
-      _headerSpace.setNotIcmpTypes(new TreeSet<SubRange>(notIcmpType));
+      _headerSpace.setNotIcmpTypes(new TreeSet<>(notIcmpType));
    }
 
    @JsonProperty(NOT_INGRESS_NODE_REGEX_VAR)
@@ -577,12 +577,12 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(NOT_SRC_IPS_VAR)
    public void setNotSrcIps(Set<IpWildcard> notSrcIps) {
-      _headerSpace.setNotSrcIps(new TreeSet<IpWildcard>(notSrcIps));
+      _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
    }
 
    @JsonProperty(NOT_SRC_PORTS_VAR)
    public void setNotSrcPortRange(Set<SubRange> notSrcPorts) {
-      _headerSpace.setNotSrcPorts(new TreeSet<SubRange>(notSrcPorts));
+      _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
    }
 
    @JsonProperty(REACHABILITY_TYPE_VAR)
@@ -607,22 +607,22 @@ public class ReachabilityQuestion extends Question {
 
    @JsonProperty(SRC_IPS_VAR)
    public void setSrcIps(Set<IpWildcard> srcIps) {
-      _headerSpace.setSrcIps(new TreeSet<IpWildcard>(srcIps));
+      _headerSpace.setSrcIps(new TreeSet<>(srcIps));
    }
 
    @JsonProperty(SRC_OR_DST_IPS_VAR)
    public void setSrcOrDstIps(Set<IpWildcard> srcOrDstIps) {
-      _headerSpace.setSrcOrDstIps(new TreeSet<IpWildcard>(srcOrDstIps));
+      _headerSpace.setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
    }
 
    @JsonProperty(SRC_OR_DST_PORTS_VAR)
    public void setSrcOrDstPorts(Set<SubRange> srcOrDstPorts) {
-      _headerSpace.setSrcOrDstPorts(new TreeSet<SubRange>(srcOrDstPorts));
+      _headerSpace.setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
    }
 
    @JsonProperty(SRC_PORTS_VAR)
    public void setSrcPorts(Set<SubRange> srcPorts) {
-      _headerSpace.setSrcPorts(new TreeSet<SubRange>(srcPorts));
+      _headerSpace.setSrcPorts(new TreeSet<>(srcPorts));
    }
 
 }

@@ -25,7 +25,7 @@ public final class AggregateRoute implements Serializable {
    private Integer _tag;
 
    public AggregateRoute(Prefix prefix) {
-      _communities = new HashSet<Long>();
+      _communities = new HashSet<>();
       _prefix = prefix;
    }
 

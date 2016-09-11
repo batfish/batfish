@@ -55,19 +55,20 @@ public class AclReachabilityAnswerer extends Answerer {
       catch (PatternSyntaxException e) {
          throw new BatfishException(
                "Supplied regex for nodes is not a valid java regex: \""
-                     + question.getAclNameRegex() + "\"", e);
+                     + question.getAclNameRegex() + "\"",
+               e);
       }
 
       _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      List<NodSatJob<AclLine>> jobs = new ArrayList<NodSatJob<AclLine>>();
+      List<NodSatJob<AclLine>> jobs = new ArrayList<>();
 
       // get comparesamename results for acls
       CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
       csnQuestion.setNodeRegex(question.getNodeRegex());
-      csnQuestion.setNamedStructTypes(Collections.singleton(IpAccessList.class
-            .getSimpleName()));
+      csnQuestion.setNamedStructTypes(
+            Collections.singleton(IpAccessList.class.getSimpleName()));
       CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(
             csnQuestion, _batfish);
       CompareSameNameAnswerElement csnAnswer = (CompareSameNameAnswerElement) csnAnswerer
@@ -101,44 +102,44 @@ public class AclReachabilityAnswerer extends Answerer {
             }
             AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
                   hostname, aclName, numLines);
-            Synthesizer aclSynthesizer = synthesizeAcls(Collections
-                  .singletonMap(hostname, c));
-            NodSatJob<AclLine> job = new NodSatJob<AclLine>(settings,
-                  aclSynthesizer, query);
+            Synthesizer aclSynthesizer = synthesizeAcls(
+                  Collections.singletonMap(hostname, c));
+            NodSatJob<AclLine> job = new NodSatJob<>(settings, aclSynthesizer,
+                  query);
             jobs.add(job);
          }
       }
 
-      Map<AclLine, Boolean> output = new TreeMap<AclLine, Boolean>();
+      Map<AclLine, Boolean> output = new TreeMap<>();
       _batfish.computeNodSatOutput(jobs, output);
 
       // rearrange output for next step
-      Map<String, Map<String, List<AclLine>>> arrangedAclLines = new TreeMap<String, Map<String, List<AclLine>>>();
+      Map<String, Map<String, List<AclLine>>> arrangedAclLines = new TreeMap<>();
       for (Entry<AclLine, Boolean> e : output.entrySet()) {
          AclLine line = e.getKey();
          String hostname = line.getHostname();
          Map<String, List<AclLine>> byAclName = arrangedAclLines.get(hostname);
          if (byAclName == null) {
-            byAclName = new TreeMap<String, List<AclLine>>();
+            byAclName = new TreeMap<>();
             arrangedAclLines.put(hostname, byAclName);
          }
          String aclName = line.getAclName();
          List<AclLine> aclLines = byAclName.get(aclName);
          if (aclLines == null) {
-            aclLines = new ArrayList<AclLine>();
+            aclLines = new ArrayList<>();
             byAclName.put(aclName, aclLines);
          }
          aclLines.add(line);
       }
 
       // now get earliest more general lines
-      List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs = new ArrayList<NodFirstUnsatJob<AclLine, Integer>>();
+      List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs = new ArrayList<>();
       for (Entry<String, Map<String, List<AclLine>>> e : arrangedAclLines
             .entrySet()) {
          String hostname = e.getKey();
          Configuration c = configurations.get(hostname);
-         Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(
-               hostname, c));
+         Synthesizer aclSynthesizer = synthesizeAcls(
+               Collections.singletonMap(hostname, c));
          Map<String, List<AclLine>> byAclName = e.getValue();
          for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
             String aclName = e2.getKey();
@@ -148,7 +149,7 @@ public class AclReachabilityAnswerer extends Answerer {
                AclLine line = lines.get(i);
                boolean reachable = output.get(line);
                if (!reachable) {
-                  List<AclLine> toCheck = new ArrayList<AclLine>();
+                  List<AclLine> toCheck = new ArrayList<>();
                   for (int j = 0; j < i; j++) {
                      AclLine earlierLine = lines.get(j);
                      boolean earlierIsReachable = output.get(earlierLine);
@@ -158,22 +159,23 @@ public class AclReachabilityAnswerer extends Answerer {
                   }
                   EarliestMoreGeneralReachableLineQuerySynthesizer query = new EarliestMoreGeneralReachableLineQuerySynthesizer(
                         line, toCheck, ipAccessList);
-                  NodFirstUnsatJob<AclLine, Integer> job = new NodFirstUnsatJob<AclLine, Integer>(
+                  NodFirstUnsatJob<AclLine, Integer> job = new NodFirstUnsatJob<>(
                         settings, aclSynthesizer, query);
                   step2Jobs.add(job);
                }
             }
          }
       }
-      Map<AclLine, Integer> step2Output = new TreeMap<AclLine, Integer>();
+      Map<AclLine, Integer> step2Output = new TreeMap<>();
       _batfish.computeNodFirstUnsatOutput(step2Jobs, step2Output);
       for (AclLine line : output.keySet()) {
          Integer earliestMoreGeneralReachableLine = step2Output.get(line);
-         line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLine);
+         line.setEarliestMoreGeneralReachableLine(
+               earliestMoreGeneralReachableLine);
       }
 
-      Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<Pair<String, String>>();
-      Set<Pair<String, String>> allAcls = new TreeSet<Pair<String, String>>();
+      Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<>();
+      Set<Pair<String, String>> allAcls = new TreeSet<>();
       int numUnreachableLines = 0;
       int numLines = output.entrySet().size();
       for (Entry<AclLine, Boolean> e : output.entrySet()) {
@@ -181,8 +183,7 @@ public class AclReachabilityAnswerer extends Answerer {
          boolean sat = e.getValue();
          String hostname = aclLine.getHostname();
          String aclName = aclLine.getAclName();
-         Pair<String, String> qualifiedAclName = new Pair<String, String>(
-               hostname, aclName);
+         Pair<String, String> qualifiedAclName = new Pair<>(hostname, aclName);
          allAcls.add(qualifiedAclName);
          if (!sat) {
             numUnreachableLines++;
@@ -195,8 +196,7 @@ public class AclReachabilityAnswerer extends Answerer {
          boolean sat = e.getValue();
          String hostname = aclLine.getHostname();
          String aclName = aclLine.getAclName();
-         Pair<String, String> qualifiedAclName = new Pair<String, String>(
-               hostname, aclName);
+         Pair<String, String> qualifiedAclName = new Pair<>(hostname, aclName);
          IpAccessList ipAccessList = configurations.get(hostname)
                .getIpAccessLists().get(aclName);
          IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(index);
@@ -204,8 +204,8 @@ public class AclReachabilityAnswerer extends Answerer {
                ipAccessListLine.getName());
          if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
             if (sat) {
-               _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname,
-                     aclName, line.getIndex(), line.getName());
+               _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName,
+                     line.getIndex(), line.getName());
                answerElement.addReachableLine(hostname, ipAccessList, line);
             }
             else {
@@ -217,11 +217,12 @@ public class AclReachabilityAnswerer extends Answerer {
                if (earliestMoreGeneralLineIndex != null) {
                   IpAccessListLine earliestMoreGeneralLine = ipAccessList
                         .getLines().get(earliestMoreGeneralLineIndex);
-                  line.setEarliestMoreGeneralLineIndex(earliestMoreGeneralLineIndex);
-                  line.setEarliestMoreGeneralLineName(earliestMoreGeneralLine
-                        .getName());
-                  if (!earliestMoreGeneralLine.getAction().equals(
-                        ipAccessListLine.getAction())) {
+                  line.setEarliestMoreGeneralLineIndex(
+                        earliestMoreGeneralLineIndex);
+                  line.setEarliestMoreGeneralLineName(
+                        earliestMoreGeneralLine.getName());
+                  if (!earliestMoreGeneralLine.getAction()
+                        .equals(ipAccessListLine.getAction())) {
                      line.setDifferentAction(true);
                   }
                }
@@ -253,13 +254,14 @@ public class AclReachabilityAnswerer extends Answerer {
       return answerElement;
    }
 
-   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
+   private Synthesizer synthesizeAcls(
+         Map<String, Configuration> configurations) {
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       _batfish.resetTimer();
 
       _logger.info("Synthesizing Z3 ACL logic...");
-      Synthesizer s = new Synthesizer(configurations, _batfish.getSettings()
-            .getSimplify());
+      Synthesizer s = new Synthesizer(configurations,
+            _batfish.getSettings().getSimplify());
 
       List<String> warnings = s.getWarnings();
       int numWarnings = warnings.size();

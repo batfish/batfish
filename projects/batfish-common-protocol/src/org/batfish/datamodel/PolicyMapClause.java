@@ -17,8 +17,8 @@ public final class PolicyMapClause implements Serializable {
    private Set<PolicyMapSetLine> _setList;
 
    public PolicyMapClause() {
-      _matchList = new LinkedHashSet<PolicyMapMatchLine>();
-      _setList = new LinkedHashSet<PolicyMapSetLine>();
+      _matchList = new LinkedHashSet<>();
+      _setList = new LinkedHashSet<>();
    }
 
    public PolicyMapAction getAction() {

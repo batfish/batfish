@@ -18,7 +18,8 @@ public class Ipv6BgpPeerGroup extends BgpPeerGroup {
    }
 
    @Override
-   protected BgpPeerGroup getParent(BgpProcess proc, CiscoVendorConfiguration cv) {
+   protected BgpPeerGroup getParent(BgpProcess proc,
+         CiscoVendorConfiguration cv) {
       return null;
    }
 

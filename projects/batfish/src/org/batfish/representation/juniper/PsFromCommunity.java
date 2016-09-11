@@ -26,8 +26,8 @@ public final class PsFromCommunity extends PsFrom {
    @Override
    public void applyTo(PolicyMapClause clause, PolicyStatement ps,
          JuniperConfiguration jc, Configuration c, Warnings warnings) {
-      org.batfish.datamodel.CommunityList list = c.getCommunityLists().get(
-            _name);
+      org.batfish.datamodel.CommunityList list = c.getCommunityLists()
+            .get(_name);
       if (list == null) {
          warnings.redFlag("missing community list: \"" + _name + "\"");
       }

@@ -23,7 +23,7 @@ public class GeneratedRoute implements Serializable {
 
    public GeneratedRoute(Prefix prefix) {
       _prefix = prefix;
-      _policies = new ArrayList<String>();
+      _policies = new ArrayList<>();
    }
 
    public Integer getMetric() {

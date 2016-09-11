@@ -18,9 +18,9 @@ public final class PsTerm implements Serializable {
    private final Set<PsThen> _thens;
 
    public PsTerm(String name) {
-      _froms = new LinkedHashSet<PsFrom>();
+      _froms = new LinkedHashSet<>();
       _name = name;
-      _thens = new LinkedHashSet<PsThen>();
+      _thens = new LinkedHashSet<>();
    }
 
    public Set<PsFrom> getFroms() {

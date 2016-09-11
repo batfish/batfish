@@ -19,15 +19,15 @@ public class UniqueIpAssignmentsAnswerElement implements AnswerElement {
    private SortedMap<Ip, SortedSet<NodeInterfacePair>> _enabledIps;
 
    public UniqueIpAssignmentsAnswerElement() {
-      _allIps = new TreeMap<Ip, SortedSet<NodeInterfacePair>>();
-      _enabledIps = new TreeMap<Ip, SortedSet<NodeInterfacePair>>();
+      _allIps = new TreeMap<>();
+      _enabledIps = new TreeMap<>();
    }
 
    public void add(SortedMap<Ip, SortedSet<NodeInterfacePair>> map, Ip ip,
          String hostname, String interfaceName) {
       SortedSet<NodeInterfacePair> interfaces = map.get(ip);
       if (interfaces == null) {
-         interfaces = new TreeSet<NodeInterfacePair>();
+         interfaces = new TreeSet<>();
          map.put(ip, interfaces);
       }
       interfaces.add(new NodeInterfacePair(hostname, interfaceName));

@@ -105,8 +105,8 @@ public class Interface extends ComparableStructure<String> {
       _active = true;
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
-      _allowedVlans = new ArrayList<SubRange>();
-      _secondaryPrefixes = new LinkedHashSet<Prefix>();
+      _allowedVlans = new ArrayList<>();
+      _secondaryPrefixes = new LinkedHashSet<>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
    }
 
@@ -127,7 +127,7 @@ public class Interface extends ComparableStructure<String> {
    }
 
    public Set<Prefix> getAllPrefixes() {
-      Set<Prefix> allPrefixes = new TreeSet<Prefix>();
+      Set<Prefix> allPrefixes = new TreeSet<>();
       if (_prefix != null) {
          allPrefixes.add(_prefix);
       }

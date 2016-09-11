@@ -29,8 +29,8 @@ public final class PsFromPrefixList extends PsFrom {
          JuniperConfiguration jc, Configuration c, Warnings warnings) {
       RouteFilterList list = c.getRouteFilterLists().get(_name);
       if (list == null) {
-         warnings.redFlag("Reference to undefined route filter list: \""
-               + _name + "\"");
+         warnings.redFlag(
+               "Reference to undefined route filter list: \"" + _name + "\"");
       }
       else {
          PrefixList prefixList = jc.getPrefixLists().get(_name);

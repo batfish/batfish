@@ -18,7 +18,7 @@ public class Answer {
       return answer;
    }
 
-   protected List<AnswerElement> _answerElements = new LinkedList<AnswerElement>();
+   protected List<AnswerElement> _answerElements = new LinkedList<>();
 
    private Question _question;
 
@@ -37,7 +37,8 @@ public class Answer {
       for (AnswerElement answerElement : answer._answerElements) {
          if (answerElement instanceof BatfishException) {
             BatfishException e = (BatfishException) answerElement;
-            throw new QuestionException("Exception answering question", e, this);
+            throw new QuestionException("Exception answering question", e,
+                  this);
          }
       }
    }

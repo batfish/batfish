@@ -1,122 +1,144 @@
 package org.batfish.allinone;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.batfish.allinone.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 
 public class Main {
 
-	static Client _client;
-	static BatfishLogger _logger;
-	static Settings _settings = null;			      
+   static Client _client;
+   static BatfishLogger _logger;
+   static Settings _settings = null;
 
-	public static void main(String[] args) {
-	   try {
-	      _settings = new Settings(args);
-	   }
-	   catch (Exception e) {
-	      System.err.println("org.batfish.allinone: Initialization failed: "
-	            + e.getMessage());
-	      System.exit(1);
-	   }
+   private static String[] getArgArrayFromString(String argString) {
+      if (argString == null || argString == "") {
+         return new String[0];
+      }
+      return argString.trim().split("\\s+");
+   }
 
-	   String argString = String.format("%s -%s %s -%s %s -%s %s", 
-			  _settings.getClientArgs(),			      
-	         org.batfish.client.Settings.ARG_COORDINATOR_HOST, "localhost",
-	         org.batfish.client.Settings.ARG_LOG_LEVEL, _settings.getLogLevel(),
-	         org.batfish.client.Settings.ARG_RUN_MODE, _settings.getRunMode());
+   public static void main(String[] args) {
+      try {
+         _settings = new Settings(args);
+      }
+      catch (Exception e) {
+         System.err.println("org.batfish.allinone: Initialization failed: "
+               + e.getMessage());
+         System.exit(1);
+      }
 
-	   if (_settings.getLogFile() != null)
-	      argString += String.format(" -%s %s",
-	            org.batfish.client.Settings.ARG_LOG_FILE, _settings.getLogFile());
+      String argString = String.format("%s -%s %s -%s %s -%s %s",
+            _settings.getClientArgs(),
+            org.batfish.client.Settings.ARG_COORDINATOR_HOST, "localhost",
+            org.batfish.client.Settings.ARG_LOG_LEVEL, _settings.getLogLevel(),
+            org.batfish.client.Settings.ARG_RUN_MODE, _settings.getRunMode());
 
-	   if (_settings.getCommandFile() != null)
-	      argString += String.format(" -%s %s",
-	            org.batfish.client.Settings.ARG_COMMAND_FILE, _settings.getCommandFile());
+      if (_settings.getLogFile() != null) {
+         argString += String.format(" -%s %s",
+               org.batfish.client.Settings.ARG_LOG_FILE,
+               _settings.getLogFile());
+      }
 
-	   if (_settings.getTestrigDir() != null)
-		      argString += String.format(" -%s %s",
-		            org.batfish.client.Settings.ARG_TESTRIG_DIR, _settings.getTestrigDir());
-	   
-	   String[] argArray = getArgArrayFromString(argString);
-			
-	   try {
-	      _client = new Client(argArray);
-	      _logger = _client.getLogger();
-	      _logger.debugf("Started client with args: %s\n",
-	            Arrays.toString(argArray));      
-	   }
-	   catch (Exception e) {
-	      System.err.printf("Client initialization failed with args: %s\nExceptionMessage: %s\n",
-	            argString, e.getMessage());
-	      System.exit(1);
-	   }
+      if (_settings.getCommandFile() != null) {
+         argString += String.format(" -%s %s",
+               org.batfish.client.Settings.ARG_COMMAND_FILE,
+               _settings.getCommandFile());
+      }
 
-	   runCoordinator();
-	   runBatfish();
+      if (_settings.getTestrigDir() != null) {
+         argString += String.format(" -%s %s",
+               org.batfish.client.Settings.ARG_TESTRIG_DIR,
+               _settings.getTestrigDir());
+      }
 
-		_client.run(new LinkedList<String>());
-		
-		//The program does not terminate without it in case the user misses the quit command
-		System.exit(0);
-	}
+      String[] argArray = getArgArrayFromString(argString);
 
-	private static String[] getArgArrayFromString(String argString) {
-		 if (argString == null || argString == "")
-			return new String[0];		
-		 return argString.trim().split("\\s+");	
-	}
-	
-	private static void runBatfish() {
+      try {
+         _client = new Client(argArray);
+         _logger = _client.getLogger();
+         _logger.debugf("Started client with args: %s\n",
+               Arrays.toString(argArray));
+      }
+      catch (Exception e) {
+         System.err.printf(
+               "Client initialization failed with args: %s\nExceptionMessage: %s\n",
+               argString, e.getMessage());
+         System.exit(1);
+      }
 
-	   String batfishArgs = String.format("%s -%s -%s %s -%s %s", _settings.getBatfishArgs(), 
-	         org.batfish.main.Settings.ARG_SERVICE_MODE, 
-	         org.batfish.main.Settings.ARG_COORDINATOR_REGISTER, "true",
-	         org.batfish.main.Settings.ARG_COORDINATOR_HOST, "localhost");
-	         
-		final String[] argArray = getArgArrayFromString(batfishArgs);
-		_logger.debugf("Starting batfish worker with args: %s\n",
-				Arrays.toString(argArray));
-		
-		Thread thread = new Thread("batfishThread") {
-			@Override
+      runCoordinator();
+      runBatfish();
+
+      _client.run(new LinkedList<String>());
+
+      // The program does not terminate without it in case the user misses the
+      // quit command
+      System.exit(0);
+   }
+
+   private static void runBatfish() {
+
+      String batfishArgs = String.format("%s -%s -%s %s -%s %s",
+            _settings.getBatfishArgs(),
+            org.batfish.main.Settings.ARG_SERVICE_MODE,
+            org.batfish.main.Settings.ARG_COORDINATOR_REGISTER, "true",
+            org.batfish.main.Settings.ARG_COORDINATOR_HOST, "localhost");
+
+      String[] initialArgArray = getArgArrayFromString(batfishArgs);
+      List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
+      if (_settings.getPluginDir() != null) {
+         args.add("-" + BfConsts.ARG_PLUGIN_DIR);
+         args.add(_settings.getPluginDir().toString());
+      }
+      final String[] argArray = args.toArray(new String[] {});
+      _logger.debugf("Starting batfish worker with args: %s\n",
+            Arrays.toString(argArray));
+
+      Thread thread = new Thread("batfishThread") {
+         @Override
          public void run() {
-			   try {
-			      org.batfish.main.Driver.main(argArray, _logger);
+            try {
+               org.batfish.main.Driver.main(argArray, _logger);
             }
             catch (Exception e) {
-               _logger.errorf("Initialization of batfish failed with args: %s\nExceptionMessage: %s\n",
+               _logger.errorf(
+                     "Initialization of batfish failed with args: %s\nExceptionMessage: %s\n",
                      Arrays.toString(argArray), e.getMessage());
             }
-			}
-		};
+         }
+      };
 
-		thread.start();
-	}
+      thread.start();
+   }
 
-	private static void runCoordinator() {
+   private static void runCoordinator() {
 
-		final String[] argArray = getArgArrayFromString(_settings.getCoordinatorArgs());
-		_logger.debugf("Starting coordinator with args: %s\n" , 
-				Arrays.toString(argArray));		
+      final String[] argArray = getArgArrayFromString(
+            _settings.getCoordinatorArgs());
+      _logger.debugf("Starting coordinator with args: %s\n",
+            Arrays.toString(argArray));
 
-		Thread thread = new Thread("coordinatorThread") {
-			@Override
+      Thread thread = new Thread("coordinatorThread") {
+         @Override
          public void run() {
-			   try {
-			      org.batfish.coordinator.Main.main(argArray, _logger);
-			   }
-			   catch (Exception e) {
-			      _logger.errorf("Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",
-			            Arrays.toString(argArray), e.getMessage());
-			   }
-			}
-		};
+            try {
+               org.batfish.coordinator.Main.main(argArray, _logger);
+            }
+            catch (Exception e) {
+               _logger.errorf(
+                     "Initialization of coordinator failed with args: %s\nExceptionMessage: %s\n",
+                     Arrays.toString(argArray), e.getMessage());
+            }
+         }
+      };
 
-		thread.start();
-	}
+      thread.start();
+   }
 
 }

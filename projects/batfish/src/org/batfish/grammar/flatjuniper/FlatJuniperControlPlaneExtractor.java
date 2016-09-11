@@ -25,7 +25,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
    public FlatJuniperControlPlaneExtractor(String fileText,
          FlatJuniperCombinedParser combinedParser, Warnings warnings) {
       _text = fileText;
-      _unimplementedFeatures = new TreeSet<String>();
+      _unimplementedFeatures = new TreeSet<>();
       _parser = combinedParser;
       _w = warnings;
    }

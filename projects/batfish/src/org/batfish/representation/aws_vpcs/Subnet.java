@@ -56,9 +56,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
                if (myNetworkAcl != null) {
                   throw new BatfishException(
                         "Found two associated network acls ("
-                              + networkAcl.getId() + ", "
-                              + myNetworkAcl.getId() + " for subnet "
-                              + _subnetId);
+                              + networkAcl.getId() + ", " + myNetworkAcl.getId()
+                              + " for subnet " + _subnetId);
                }
 
                myNetworkAcl = networkAcl;
@@ -90,9 +89,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
                if (myRouteTable != null) {
                   throw new BatfishException(
                         "Found two associated route tables ("
-                              + routeTable.getId() + ", "
-                              + myRouteTable.getId() + " for subnet "
-                              + _subnetId);
+                              + routeTable.getId() + ", " + myRouteTable.getId()
+                              + " for subnet " + _subnetId);
                }
 
                myRouteTable = routeTable;
@@ -236,12 +234,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
       }
 
       // lets find the right route table for this subnet
-      RouteTable myRouteTable = findMyRouteTable(awsVpcConfiguration
-            .getRouteTables());
+      RouteTable myRouteTable = findMyRouteTable(
+            awsVpcConfiguration.getRouteTables());
 
       if (myRouteTable == null) {
-         throw new BatfishException("Could not find a route table for subnet "
-               + _subnetId);
+         throw new BatfishException(
+               "Could not find a route table for subnet " + _subnetId);
       }
 
       for (Route route : myRouteTable.getRoutes()) {
@@ -253,12 +251,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
          }
       }
 
-      NetworkAcl myNetworkAcl = findMyNetworkAcl(awsVpcConfiguration
-            .getNetworkAcls());
+      NetworkAcl myNetworkAcl = findMyNetworkAcl(
+            awsVpcConfiguration.getNetworkAcls());
 
       if (myNetworkAcl == null) {
-         throw new BatfishException("Could not find a network acl for subnet "
-               + _subnetId);
+         throw new BatfishException(
+               "Could not find a network acl for subnet " + _subnetId);
       }
 
       IpAccessList inAcl = myNetworkAcl.getIngressAcl();
@@ -266,11 +264,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
       cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
       cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
 
-      for (Entry<String, Interface> eIface : cfgNode.getInterfaces().entrySet()) {
+      for (Entry<String, Interface> eIface : cfgNode.getInterfaces()
+            .entrySet()) {
          String ifaceName = eIface.getKey();
          if (awsVpcConfiguration.getVpcs().containsKey(ifaceName)
-               || awsVpcConfiguration.getInternetGateways().containsKey(
-                     ifaceName)
+               || awsVpcConfiguration.getInternetGateways()
+                     .containsKey(ifaceName)
                || awsVpcConfiguration.getVpnGateways().containsKey(ifaceName)) {
             Interface iface = eIface.getValue();
             iface.setIncomingFilter(inAcl);

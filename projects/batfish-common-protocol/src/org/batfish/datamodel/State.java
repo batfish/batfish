@@ -17,7 +17,7 @@ public enum State {
    private final static Map<Integer, State> _map = buildMap();
 
    private static Map<Integer, State> buildMap() {
-      Map<Integer, State> map = new HashMap<Integer, State>();
+      Map<Integer, State> map = new HashMap<>();
       for (State value : State.values()) {
          int num = value._num;
          map.put(num, value);
@@ -29,7 +29,8 @@ public enum State {
    public static State fromNum(int num) {
       State instance = _map.get(num);
       if (instance == null) {
-         throw new BatfishException("Not a valid state number: \"" + num + "\"");
+         throw new BatfishException(
+               "Not a valid state number: \"" + num + "\"");
       }
       return instance;
    }

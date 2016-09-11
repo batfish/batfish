@@ -9,8 +9,8 @@ import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 
-public class FlattenVendorConfigurationJob extends
-      BatfishJob<FlattenVendorConfigurationResult> {
+public class FlattenVendorConfigurationJob
+      extends BatfishJob<FlattenVendorConfigurationResult> {
 
    private String _fileText;
 
@@ -46,8 +46,8 @@ public class FlattenVendorConfigurationJob extends
          if (format == ConfigurationFormat.VYOS) {
             header = Format.BATFISH_FLATTENED_VYOS_HEADER;
          }
-         _logger.debug("Flattening config: \"" + _inputFile.toString()
-               + "\"...");
+         _logger.debug(
+               "Flattening config: \"" + _inputFile.toString() + "\"...");
          String flatConfigText = null;
          try {
             flatConfigText = Batfish.flatten(_fileText, _logger, _settings,
@@ -58,16 +58,16 @@ public class FlattenVendorConfigurationJob extends
                   + inputFileAsString + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
             return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _outputFile, new BatfishException(
-                        error, e));
+                  _logger.getHistory(), _outputFile,
+                  new BatfishException(error, e));
          }
          catch (Exception e) {
             String error = "Error post-processing parse tree of configuration file: \""
                   + inputFileAsString + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
             return new FlattenVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _outputFile, new BatfishException(
-                        error, e));
+                  _logger.getHistory(), _outputFile,
+                  new BatfishException(error, e));
          }
          finally {
             Batfish.logWarnings(_logger, _warnings);
@@ -80,9 +80,9 @@ public class FlattenVendorConfigurationJob extends
             && format == ConfigurationFormat.UNKNOWN) {
          elapsedTime = System.currentTimeMillis() - startTime;
          return new FlattenVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _outputFile, new BatfishException(
-                     "Unknown configuration format for: \""
-                           + _inputFile.toString() + "\""));
+               _logger.getHistory(), _outputFile,
+               new BatfishException("Unknown configuration format for: \""
+                     + _inputFile.toString() + "\""));
       }
       else {
          _logger.debug("Skipping: \"" + _inputFile.toString() + "\"\n");

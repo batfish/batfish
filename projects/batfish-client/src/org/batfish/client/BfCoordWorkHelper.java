@@ -2,7 +2,6 @@ package org.batfish.client;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -13,7 +12,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FileUtils;
@@ -50,9 +48,10 @@ public class BfCoordWorkHelper {
             MediaType.APPLICATION_OCTET_STREAM_TYPE));
    }
 
-   private void addTextMultiPart(MultiPart multiPart, String key, String value) {
-      multiPart.bodyPart(new FormDataBodyPart(key, value,
-            MediaType.TEXT_PLAIN_TYPE));
+   private void addTextMultiPart(MultiPart multiPart, String key,
+         String value) {
+      multiPart.bodyPart(
+            new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
    }
 
    public String checkApiKey() {
@@ -222,12 +221,14 @@ public class BfCoordWorkHelper {
    // }
    // if (e.getMessage().contains("SSLHandshakeException")) {
    // _logger
-   // .errorf("SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+   // .errorf("SSL handshake exception while connecting to coordinator (Is the
+   // coordinator using SSL and using keys that you trust?)\n");
    // return null;
    // }
    // if (e.getMessage().contains("SocketException: Unexpected end of file")) {
    // _logger
-   // .errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
+   // .errorf("SocketException while connecting to coordinator. (Are you using
+   // SSL?)\n");
    // return null;
    // }
    // throw e;
@@ -235,8 +236,10 @@ public class BfCoordWorkHelper {
    // }
 
    private ClientBuilder getClientBuilder() throws Exception {
-      return CommonUtil.getClientBuilder(_settings.getUseSsl(),
-            _settings.getTrustAllSslCerts()).register(MultiPartFeature.class);
+      return CommonUtil
+            .getClientBuilder(_settings.getUseSsl(),
+                  _settings.getTrustAllSslCerts())
+            .register(MultiPartFeature.class);
    }
 
    public String getObject(String containerName, String testrigName,
@@ -244,7 +247,8 @@ public class BfCoordWorkHelper {
       try {
 
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_GET_OBJECT_RSC);
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_GET_OBJECT_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -258,9 +262,9 @@ public class BfCoordWorkHelper {
          addTextMultiPart(multiPart, CoordConsts.SVC_OBJECT_NAME_KEY,
                objectName);
 
-         Response response = webTarget.request(
-               MediaType.APPLICATION_OCTET_STREAM).post(
-               Entity.entity(multiPart, multiPart.getMediaType()));
+         Response response = webTarget
+               .request(MediaType.APPLICATION_OCTET_STREAM)
+               .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
          _logger.info(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
@@ -271,24 +275,19 @@ public class BfCoordWorkHelper {
          }
 
          // see if we have a filename header
-         String outFileStr = objectName;
-
-         MultivaluedMap<String, String> headers = response.getStringHeaders();
-
-         if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
-            String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
-            if (value != null && !value.equals("")) {
-               outFileStr = value;
-            }
-         }
+//         String outFileStr = objectName;
+//
+//         MultivaluedMap<String, String> headers = response.getStringHeaders();
+//
+//         if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
+//            String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
+//            if (value != null && !value.equals("")) {
+//               outFileStr = value;
+//            }
+//         }
 
          File inFile = response.readEntity(File.class);
 
-//         File outdir = new File("client");
-//         outdir.mkdirs();
-//         File outFile = Paths.get(outdir.getAbsolutePath().toString(),
-//               outFileStr).toFile();
-         
          File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
          tmpOutFile.deleteOnExit();
          
@@ -334,8 +333,6 @@ public class BfCoordWorkHelper {
       if (isDelta) {
          wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
       }
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
-      wItem.addRequestParam(BfConsts.COMMAND_GET_HISTORY, "");
       return wItem;
    }
 
@@ -370,9 +367,7 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDataPlane(String containerName,
          String testrigName, String envName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
@@ -380,20 +375,10 @@ public class BfCoordWorkHelper {
    public WorkItem getWorkItemGenerateDeltaDataPlane(String containerName,
          String testrigName, String envName, String diffEnvName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
       wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_DATA_PLANE, "");
       wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
       wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemGenerateFacts(String containerName,
-         String testrigName, String envName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_WRITE_CP_FACTS, "");
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
@@ -412,15 +397,6 @@ public class BfCoordWorkHelper {
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
-      return wItem;
-   }
-
-   public WorkItem getWorkItemPostFlows(String containerName,
-         String testrigName, String envName, String questionName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_NLS_TRAFFIC, "");
-      wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
       return wItem;
    }
 
@@ -444,13 +420,13 @@ public class BfCoordWorkHelper {
          }
 
          if (!jObj.has(CoordConsts.SVC_WORKSTATUS_KEY)) {
-            _logger
-                  .errorf("workstatus key not found in: %s\n", jObj.toString());
+            _logger.errorf("workstatus key not found in: %s\n",
+                  jObj.toString());
             return null;
          }
 
-         return WorkStatusCode.valueOf(jObj
-               .getString(CoordConsts.SVC_WORKSTATUS_KEY));
+         return WorkStatusCode
+               .valueOf(jObj.getString(CoordConsts.SVC_WORKSTATUS_KEY));
       }
       catch (Exception e) {
          _logger.errorf("exception: ");
@@ -557,13 +533,14 @@ public class BfCoordWorkHelper {
             return false;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
-            _logger
-                  .errorf("SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            _logger.errorf(
+                  "SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
             return false;
          }
-         if (e.getMessage().contains("SocketException: Unexpected end of file")) {
-            _logger
-                  .errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
+         if (e.getMessage()
+               .contains("SocketException: Unexpected end of file")) {
+            _logger.errorf(
+                  "SocketException while connecting to coordinator. (Are you using SSL?)\n");
             return false;
          }
          throw e;
@@ -731,7 +708,7 @@ public class BfCoordWorkHelper {
          JSONArray testrigArray = jObj
                .getJSONArray(CoordConsts.SVC_TESTRIG_LIST_KEY);
 
-         Map<String, String> testrigs = new HashMap<String, String>();
+         Map<String, String> testrigs = new HashMap<>();
 
          for (int index = 0; index < testrigArray.length(); index++) {
             JSONObject jObjTestrig = testrigArray.getJSONObject(index);
@@ -783,13 +760,14 @@ public class BfCoordWorkHelper {
             return null;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
-            _logger
-                  .errorf("SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            _logger.errorf(
+                  "SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
             return null;
          }
-         if (e.getMessage().contains("SocketException: Unexpected end of file")) {
-            _logger
-                  .errorf("SocketException while connecting to coordinator. (Are you using SSL?)\n");
+         if (e.getMessage()
+               .contains("SocketException: Unexpected end of file")) {
+            _logger.errorf(
+                  "SocketException while connecting to coordinator. (Are you using SSL?)\n");
             return null;
          }
          throw e;
@@ -800,7 +778,8 @@ public class BfCoordWorkHelper {
 
       try {
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_QUEUE_WORK_RSC);
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_QUEUE_WORK_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -825,7 +804,8 @@ public class BfCoordWorkHelper {
       try {
 
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_PUT_OBJECT_RSC);
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_PUT_OBJECT_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -846,11 +826,10 @@ public class BfCoordWorkHelper {
             _logger.errorf("File not found: %s\n", objFileName);
          }
          else {
-            _logger
-                  .errorf(
-                        "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
-                        _coordWorkMgr, testrigName, objName, objFileName,
-                        ExceptionUtils.getStackTrace(e));
+            _logger.errorf(
+                  "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
+                  _coordWorkMgr, testrigName, objName, objFileName,
+                  ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
@@ -861,7 +840,8 @@ public class BfCoordWorkHelper {
       try {
 
          Client client = getClientBuilder().build();
-         WebTarget webTarget = getTarget(client, CoordConsts.SVC_UPLOAD_ENV_RSC);
+         WebTarget webTarget = getTarget(client,
+               CoordConsts.SVC_UPLOAD_ENV_RSC);
 
          MultiPart multiPart = new MultiPart();
          multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -882,11 +862,10 @@ public class BfCoordWorkHelper {
             _logger.errorf("File not found: %s\n", zipfileName);
          }
          else {
-            _logger
-                  .errorf(
-                        "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
-                        _coordWorkMgr, testrigName, envName, zipfileName,
-                        ExceptionUtils.getStackTrace(e));
+            _logger.errorf(
+                  "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
+                  _coordWorkMgr, testrigName, envName, zipfileName,
+                  ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
@@ -917,17 +896,15 @@ public class BfCoordWorkHelper {
       }
       catch (Exception e) {
          if (e.getMessage().contains("FileNotFoundException")) {
-            _logger
-                  .errorf(
-                        "File not found: %s (question file) or %s (temporary params file) \n",
-                        qFileName, paramsFilename);
+            _logger.errorf(
+                  "File not found: %s (question file) or %s (temporary params file) \n",
+                  qFileName, paramsFilename);
          }
          else {
-            _logger
-                  .errorf(
-                        "Exception when uploading question to %s using (%s, %s, %s): %s\n",
-                        _coordWorkMgr, testrigName, qName, qFileName,
-                        ExceptionUtils.getStackTrace(e));
+            _logger.errorf(
+                  "Exception when uploading question to %s using (%s, %s, %s): %s\n",
+                  _coordWorkMgr, testrigName, qName, qFileName,
+                  ExceptionUtils.getStackTrace(e));
          }
          return false;
       }
@@ -958,11 +935,10 @@ public class BfCoordWorkHelper {
             _logger.errorf("File not found: %s\n", zipfileName);
          }
          else {
-            _logger
-                  .errorf(
-                        "Exception when uploading test rig to %s using (%s, %s): %s\n",
-                        _coordWorkMgr, testrigName, zipfileName,
-                        ExceptionUtils.getStackTrace(e));
+            _logger.errorf(
+                  "Exception when uploading test rig to %s using (%s, %s): %s\n",
+                  _coordWorkMgr, testrigName, zipfileName,
+                  ExceptionUtils.getStackTrace(e));
          }
          return false;
       }

@@ -13,7 +13,7 @@ public class PrefixList extends ComparableStructure<String> {
 
    public PrefixList(String n) {
       super(n);
-      _lines = new ArrayList<PrefixListLine>();
+      _lines = new ArrayList<>();
    }
 
    public void addLine(PrefixListLine r) {

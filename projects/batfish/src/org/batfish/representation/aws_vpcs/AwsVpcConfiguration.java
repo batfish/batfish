@@ -25,35 +25,35 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
    private static final long serialVersionUID = 1L;
 
-   private Map<String, Address> _addresses = new HashMap<String, Address>();
+   private Map<String, Address> _addresses = new HashMap<>();
 
-   private Map<String, Configuration> _configurationNodes = new HashMap<String, Configuration>();
+   private Map<String, Configuration> _configurationNodes = new HashMap<>();
 
    private long _currentGeneratedIpAsLong;
 
-   private Map<String, CustomerGateway> _customerGateways = new HashMap<String, CustomerGateway>();
+   private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
 
-   private Map<String, Instance> _instances = new HashMap<String, Instance>();
+   private Map<String, Instance> _instances = new HashMap<>();
 
-   private Map<String, InternetGateway> _internetGateways = new HashMap<String, InternetGateway>();
+   private Map<String, InternetGateway> _internetGateways = new HashMap<>();
 
-   private Map<String, NetworkAcl> _networkAcls = new HashMap<String, NetworkAcl>();
+   private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
 
-   private Map<String, NetworkInterface> _networkInterfaces = new HashMap<String, NetworkInterface>();
+   private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
 
-   private Map<String, RouteTable> _routeTables = new HashMap<String, RouteTable>();
+   private Map<String, RouteTable> _routeTables = new HashMap<>();
 
-   private Map<String, SecurityGroup> _securityGroups = new HashMap<String, SecurityGroup>();
+   private Map<String, SecurityGroup> _securityGroups = new HashMap<>();
 
-   private Map<String, Subnet> _subnets = new HashMap<String, Subnet>();
+   private Map<String, Subnet> _subnets = new HashMap<>();
 
-   private Map<String, VpcPeeringConnection> _vpcPeerings = new HashMap<String, VpcPeeringConnection>();
+   private Map<String, VpcPeeringConnection> _vpcPeerings = new HashMap<>();
 
-   private Map<String, Vpc> _vpcs = new HashMap<String, Vpc>();
+   private Map<String, Vpc> _vpcs = new HashMap<>();
 
-   private Map<String, VpnConnection> _vpnConnections = new HashMap<String, VpnConnection>();
+   private Map<String, VpnConnection> _vpnConnections = new HashMap<>();
 
-   private Map<String, VpnGateway> _vpnGateways = new HashMap<String, VpnGateway>();
+   private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
 
    private transient Warnings _warnings;
 
@@ -138,8 +138,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
          _vpcs.put(vpc.getId(), vpc);
          break;
       case AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS:
-         VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(
-               jsonObject, logger);
+         VpcPeeringConnection vpcPeerConn = new VpcPeeringConnection(jsonObject,
+               logger);
          _vpcPeerings.put(vpcPeerConn.getId(), vpcPeerConn);
          break;
       case AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS:
@@ -252,8 +252,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       }
 
       for (String vgwId : _vpnGateways.keySet()) {
-         Configuration cfgNode = _vpnGateways.get(vgwId).toConfigurationNode(
-               this);
+         Configuration cfgNode = _vpnGateways.get(vgwId)
+               .toConfigurationNode(this);
          _configurationNodes.put(cfgNode.getName(), cfgNode);
       }
 
@@ -264,8 +264,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       }
 
       for (String subnetId : _subnets.keySet()) {
-         Configuration cfgNode = _subnets.get(subnetId).toConfigurationNode(
-               this);
+         Configuration cfgNode = _subnets.get(subnetId)
+               .toConfigurationNode(this);
          _configurationNodes.put(cfgNode.getName(), cfgNode);
       }
 

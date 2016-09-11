@@ -32,13 +32,13 @@ public class FileAuthorizer implements Authorizer {
             Main.getSettings().getFileAuthorizerPermsFile()).toFile();
 
       if (!_usersFile.exists()) {
-         throw new FileNotFoundException("Users file not found: "
-               + _usersFile.getAbsolutePath());
+         throw new FileNotFoundException(
+               "Users file not found: " + _usersFile.getAbsolutePath());
       }
 
       if (!_permsFile.exists()) {
-         throw new FileNotFoundException("Perms file not found: "
-               + _permsFile.getAbsolutePath());
+         throw new FileNotFoundException(
+               "Perms file not found: " + _permsFile.getAbsolutePath());
       }
    }
 

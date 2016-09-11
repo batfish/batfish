@@ -43,10 +43,11 @@ public class IptablesRule implements Serializable {
    String _nextChain;
 
    public IptablesRule() {
-      _matchList = new LinkedList<IptablesMatch>();
+      _matchList = new LinkedList<>();
    }
 
-   public void addMatch(boolean inverted, MatchType matchType, Object matchData) {
+   public void addMatch(boolean inverted, MatchType matchType,
+         Object matchData) {
       IptablesMatch match = new IptablesMatch(inverted, matchType, matchData);
       _matchList.add(match);
    }

@@ -14,7 +14,7 @@ public class UndefinedReferencesAnswerElement implements AnswerElement {
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _undefinedReferences;
 
    public UndefinedReferencesAnswerElement() {
-      _undefinedReferences = new TreeMap<String, SortedMap<String, SortedSet<String>>>();
+      _undefinedReferences = new TreeMap<>();
    }
 
    public SortedMap<String, SortedMap<String, SortedSet<String>>> getUndefinedReferences() {

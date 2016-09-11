@@ -53,6 +53,9 @@ public class Client {
    private static final String DEFAULT_QUESTION_PREFIX = "q";
    private static final String DEFAULT_TESTRIG_PREFIX = "tr_";
 
+   private static final String FLAG_FAILING_TEST = "-error";
+   private static final String FLAG_NO_DATAPLANE = "-nodataplane";
+
    private String _currContainerName = null;
    private String _currDeltaEnv = null;
    private String _currDeltaTestrig;
@@ -76,12 +79,11 @@ public class Client {
       switch (_settings.getRunMode()) {
       case batch:
          if (_settings.getBatchCommandFile() == null) {
-            System.err
-                  .println("org.batfish.client: Command file not specified while running in batch mode.");
-            System.err
-                  .printf(
-                        "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
-                        Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
+            System.err.println(
+                  "org.batfish.client: Command file not specified while running in batch mode.");
+            System.err.printf(
+                  "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want interactive mode\n",
+                  Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
             System.exit(1);
          }
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
@@ -89,8 +91,8 @@ public class Client {
          break;
       case genquestions:
          if (_settings.getQuestionsDir() == null) {
-            System.err
-                  .println("org.batfish.client: Out dir not specified while running in genquestions mode.");
+            System.err.println(
+                  "org.batfish.client: Out dir not specified while running in genquestions mode.");
             System.err.printf("Use '-%s <cmdfile>'\n",
                   Settings.ARG_QUESTIONS_DIR);
             System.exit(1);
@@ -104,8 +106,7 @@ public class Client {
             _reader.setPrompt("batfish> ");
             _reader.setExpandEvents(false);
 
-            List<Completer> completors = new LinkedList<Completer>();
-
+            List<Completer> completors = new LinkedList<>();
             completors.add(new CommandCompleter());
             
             for (Completer c : completors) {
@@ -139,8 +140,8 @@ public class Client {
          boolean isDelta, FileWriter outWriter) throws Exception {
 
       if (!new File(questionFile).exists()) {
-         throw new FileNotFoundException("Question file not found: "
-               + questionFile);
+         throw new FileNotFoundException(
+               "Question file not found: " + questionFile);
       }
 
       String questionName = DEFAULT_QUESTION_PREFIX + "_"
@@ -259,14 +260,13 @@ public class Client {
 
       // get the answer
       String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
-      String downloadedAnsFile = _workHelper.getObject(
-            wItem.getContainerName(), wItem.getTestrigName(), ansFileName);
+      String downloadedAnsFile = _workHelper.getObject(wItem.getContainerName(),
+            wItem.getTestrigName(), ansFileName);
 
       if (downloadedAnsFile == null) {
-         _logger
-               .errorf(
-                     "Failed to get answer file %s. Fix batfish and remove the statement below this line\n",
-                     ansFileName);
+         _logger.errorf(
+               "Failed to get answer file %s. Fix batfish and remove the statement below this line\n",
+               ansFileName);
          // return false;
       }
       else {
@@ -301,10 +301,9 @@ public class Client {
                JsonNode newTree = mapper.readTree(newAnswerString);
                if (!CommonUtil.checkJsonEqual(tree, newTree)) {
                   // if (!tree.equals(newTree)) {
-                  _logger
-                        .errorf(
-                              "Original and recovered Json are different. Recovered = %s\n",
-                              newAnswerString);
+                  _logger.errorf(
+                        "Original and recovered Json are different. Recovered = %s\n",
+                        newAnswerString);
                }
             }
             catch (Exception e) {
@@ -318,16 +317,16 @@ public class Client {
       if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
          _logger.output("---------------- Service Log --------------\n");
          String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-         String downloadedFile = _workHelper.getObject(
-               wItem.getContainerName(), wItem.getTestrigName(), logFileName);
+         String downloadedFile = _workHelper.getObject(wItem.getContainerName(),
+               wItem.getTestrigName(), logFileName);
 
          if (downloadedFile == null) {
             _logger.errorf("Failed to get log file %s\n", logFileName);
             return false;
          }
          else {
-            try (BufferedReader br = new BufferedReader(new FileReader(
-                  downloadedFile))) {
+            try (BufferedReader br = new BufferedReader(
+                  new FileReader(downloadedFile))) {
                String line = null;
                while ((line = br.readLine()) != null) {
                   _logger.output(line + "\n");
@@ -359,7 +358,8 @@ public class Client {
 
    private boolean generateDeltaDataplane(FileWriter outWriter)
          throws Exception {
-      if (!isSetDeltaEnvironment() || !isSetTestrig() || !isSetContainer(true)) {
+      if (!isSetDeltaEnvironment() || !isSetTestrig()
+            || !isSetContainer(true)) {
          return false;
       }
 
@@ -387,8 +387,8 @@ public class Client {
 
             String qFile = Paths
                   .get(_settings.getQuestionsDir(),
-                        qType.questionTypeName() + ".json").toFile()
-                  .getAbsolutePath();
+                        qType.questionTypeName() + ".json")
+                  .toFile().getAbsolutePath();
 
             PrintWriter writer = new PrintWriter(qFile);
             writer.write(questionString);
@@ -402,7 +402,7 @@ public class Client {
    }
 
    private List<String> getCommandOptions(String[] words) {
-      List<String> options = new LinkedList<String>();
+      List<String> options = new LinkedList<>();
 
       int currIndex = 1;
 
@@ -415,7 +415,7 @@ public class Client {
    }
 
    private List<String> getCommandParameters(String[] words, int numOptions) {
-      List<String> parameters = new LinkedList<String>();
+      List<String> parameters = new LinkedList<>();
 
       for (int index = numOptions + 1; index < words.length; index++) {
          parameters.add(words[index]);
@@ -502,17 +502,17 @@ public class Client {
 
       if (_currTestrig == null) {
          _logger.errorf("Active testrig is not set.\n");
-         _logger
-               .errorf(
-                     "Specify testrig on command line (-%s <testrigdir>) or use command (%s [-nodataplane] <testrigdir>)\n",
-                     Settings.ARG_TESTRIG_DIR, Command.INIT_TESTRIG);
+         _logger.errorf(
+               "Specify testrig on command line (-%s <testrigdir>) or use command (%s [%s] <testrigdir>)\n",
+               Settings.ARG_TESTRIG_DIR, Command.INIT_TESTRIG,
+               FLAG_NO_DATAPLANE);
          return false;
       }
       return true;
    }
 
    private Map<String, String> parseParams(String paramsLine) {
-      Map<String, String> parameters = new HashMap<String, String>();
+      Map<String, String> parameters = new HashMap<>();
 
       Pattern pattern = Pattern.compile("([\\w_]+)\\s*=\\s*(.+)");
 
@@ -615,6 +615,9 @@ public class Client {
 
             return true;
          }
+         case CLEAR_SCREEN:
+            //this should have taken care of before coming in here
+            return false;
          case DEL_CONTAINER: {
             String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
@@ -664,10 +667,8 @@ public class Client {
             return true;
          }
          case ECHO: {
-            _logger.outputf(
-                  "%s\n",
-                  CommonUtil.joinStrings(" ",
-                        Arrays.copyOfRange(words, 1, words.length)));
+            _logger.outputf("%s\n", CommonUtil.joinStrings(" ",
+                  Arrays.copyOfRange(words, 1, words.length)));
             return true;
          }
          case EXIT:
@@ -695,7 +696,8 @@ public class Client {
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
             if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX)
-                  && QuestionType.fromName(qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
+                  && QuestionType.fromName(
+                        qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
 
                String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX
                      + UUID.randomUUID().toString();
@@ -827,7 +829,7 @@ public class Client {
             boolean generateDeltaDataplane = true;
 
             if (options.size() == 1) {
-               if (options.get(0).equals("-nodataplane")) {
+               if (options.get(0).equals(FLAG_NO_DATAPLANE)) {
                   generateDeltaDataplane = false;
                }
                else {
@@ -847,8 +849,7 @@ public class Client {
             _currDeltaEnv = deltaEnvName;
             _currDeltaTestrig = _currTestrig;
 
-            _logger.outputf(
-                  "Active delta testrig->environment is now %s->%s\n",
+            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
                   _currDeltaTestrig, _currDeltaEnv);
 
             WorkItem wItemGenDdp = _workHelper
@@ -876,7 +877,7 @@ public class Client {
             boolean generateDataplane = true;
 
             if (options.size() == 1) {
-               if (options.get(0).equals("-nodataplane")) {
+               if (options.get(0).equals(FLAG_NO_DATAPLANE)) {
                   generateDataplane = false;
                }
                else {
@@ -903,8 +904,8 @@ public class Client {
 
             _logger.output("Uploaded testrig. Parsing now.\n");
 
-            WorkItem wItemParse = _workHelper.getWorkItemParse(
-                  _currContainerName, testrigName);
+            WorkItem wItemParse = _workHelper
+                  .getWorkItemParse(_currContainerName, testrigName);
 
             if (!execute(wItemParse, outWriter)) {
                return false;
@@ -943,8 +944,8 @@ public class Client {
                return false;
             }
 
-            String[] environmentList = _workHelper.listEnvironments(
-                  _currContainerName, _currTestrig);
+            String[] environmentList = _workHelper
+                  .listEnvironments(_currContainerName, _currTestrig);
             _logger.outputf("Environments: %s\n",
                   Arrays.toString(environmentList));
 
@@ -954,8 +955,8 @@ public class Client {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
             }
-            String[] questionList = _workHelper.listQuestions(
-                  _currContainerName, _currTestrig);
+            String[] questionList = _workHelper
+                  .listQuestions(_currContainerName, _currTestrig);
             _logger.outputf("Questions: %s\n", Arrays.toString(questionList));
             return true;
          }
@@ -973,8 +974,8 @@ public class Client {
          case PROMPT: {
             if (_settings.getRunMode() == RunMode.interactive) {
                _logger.output("\n\n[Press enter to proceed]\n\n");
-               BufferedReader in = new BufferedReader(new InputStreamReader(
-                     System.in));
+               BufferedReader in = new BufferedReader(
+                     new InputStreamReader(System.in));
                in.readLine();
             }
             return true;
@@ -1005,8 +1006,7 @@ public class Client {
             if (_currDeltaTestrig == null) {
                _currDeltaTestrig = _currTestrig;
             }
-            _logger.outputf(
-                  "Active delta testrig->environment is now %s->%s\n",
+            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
                   _currDeltaTestrig, _currDeltaEnv);
             return true;
          }
@@ -1097,15 +1097,22 @@ public class Client {
             return true;
          }
          case TEST: {
+            boolean failingTest = false;
+            int testCommandIndex = 1;
+            if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
+               testCommandIndex++;
+               failingTest = true;
+            }
             String referenceFileName = parameters.get(0);
 
-            String[] testCommand = parameters.subList(1, parameters.size())
+            String[] testCommand = parameters
+                  .subList(testCommandIndex, parameters.size())
                   .toArray(new String[0]);
 
             _logger.debugf("Ref file is %s. \n", referenceFileName,
                   parameters.size());
-            _logger
-                  .debugf("Test command is %s\n", Arrays.toString(testCommand));
+            _logger.debugf("Test command is %s\n",
+                  Arrays.toString(testCommand));
 
             File referenceFile = new File(referenceFileName);
 
@@ -1120,42 +1127,50 @@ public class Client {
 
             FileWriter testoutWriter = new FileWriter(testoutFile);
 
-            processCommand(testCommand, testoutWriter);
+            boolean testCommandSucceeded = processCommand(testCommand,
+                  testoutWriter);
             testoutWriter.close();
 
             boolean testPassed = false;
 
-            try {
-               String referenceOutput = CommonUtil.readFile(Paths
-                     .get(referenceFileName));
-               String testOutput = CommonUtil.readFile(Paths.get(testoutFile
-                     .getAbsolutePath()));
+            if (!failingTest && testCommandSucceeded) {
+               try {
+                  String referenceOutput = CommonUtil
+                        .readFile(Paths.get(referenceFileName));
+                  String testOutput = CommonUtil
+                        .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-               ObjectMapper mapper = new BatfishObjectMapper();
-               JsonNode referenceJson = mapper.readTree(referenceOutput);
-               JsonNode testJson = mapper.readTree(testOutput);
-               if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
-                  testPassed = true;
+                  ObjectMapper mapper = new BatfishObjectMapper();
+                  JsonNode referenceJson = mapper.readTree(referenceOutput);
+                  JsonNode testJson = mapper.readTree(testOutput);
+                  if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
+                     testPassed = true;
+                  }
+               }
+               catch (Exception e) {
+                  _logger.errorf("Exception in comparing test results: "
+                        + ExceptionUtils.getStackTrace(e));
                }
             }
-            catch (Exception e) {
-               _logger.errorf("Exception in comparing test results: "
-                     + ExceptionUtils.getStackTrace(e));
+            else if (failingTest) {
+               testPassed = !testCommandSucceeded;
             }
 
-            if (testPassed) {
-               _logger.outputf("Test result for %s: Pass\n", referenceFileName);
-            }
-            else {
-               String outFileName = referenceFile + ".testout";
-               Files.move(Paths.get(testoutFile.getAbsolutePath()),
-                     Paths.get(referenceFile + ".testout"),
-                     StandardCopyOption.REPLACE_EXISTING);
+            String message = "Test: " + Arrays.asList(testCommand).toString()
+                  + (failingTest ? " results in error as expected: "
+                        : " matches " + referenceFileName)
+                  + (testPassed ? ": Pass\n" : ": Fail\n");
 
-               _logger.outputf("Test result for %s: Fail\n", referenceFileName);
-               _logger.outputf("Copied output to %s\n", outFileName);
+            _logger.output(message);
+            if (!failingTest) {
+               if (!testPassed) {
+                  String outFileName = referenceFile + ".testout";
+                  Files.move(Paths.get(testoutFile.getAbsolutePath()),
+                        Paths.get(referenceFile + ".testout"),
+                        StandardCopyOption.REPLACE_EXISTING);
+                  _logger.outputf("Copied output to %s\n", outFileName);
+               }
             }
-
             return true;
          }
          case UPLOAD_CUSTOM_OBJECT: {
@@ -1204,8 +1219,8 @@ public class Client {
 
       // set container if specified
       if (_settings.getContainerId() != null) {
-         if (!processCommand(Command.SET_CONTAINER + "  "
-               + _settings.getContainerId())) {
+         if (!processCommand(
+               Command.SET_CONTAINER + "  " + _settings.getContainerId())) {
             return;
          }
       }
@@ -1213,18 +1228,18 @@ public class Client {
       // set testrig if dir or id is specified
       if (_settings.getTestrigDir() != null) {
          if (_settings.getTestrigId() != null) {
-            System.err
-                  .println("org.batfish.client: Cannot supply both testrigDir and testrigId.");
+            System.err.println(
+                  "org.batfish.client: Cannot supply both testrigDir and testrigId.");
             System.exit(1);
          }
-         if (!processCommand(Command.INIT_TESTRIG + " -nodataplane "
-               + _settings.getTestrigDir())) {
+         if (!processCommand(Command.INIT_TESTRIG + " " + FLAG_NO_DATAPLANE
+               + " " + _settings.getTestrigDir())) {
             return;
          }
       }
       if (_settings.getTestrigId() != null) {
-         if (!processCommand(Command.SET_TESTRIG + "  "
-               + _settings.getTestrigId())) {
+         if (!processCommand(
+               Command.SET_TESTRIG + "  " + _settings.getTestrigId())) {
             return;
          }
       }
@@ -1286,8 +1301,8 @@ public class Client {
       }
    }
 
-   private boolean uploadTestrigOrEnv(String fileOrDir,
-         String testrigOrEnvName, boolean isTestrig) throws Exception {
+   private boolean uploadTestrigOrEnv(String fileOrDir, String testrigOrEnvName,
+         boolean isTestrig) throws Exception {
 
       File filePointer = new File(fileOrDir);
 
@@ -1300,9 +1315,10 @@ public class Client {
          ZipUtility.zipFiles(filePointer.getAbsolutePath(), uploadFilename);
       }
 
-      boolean result = (isTestrig) ? _workHelper.uploadTestrig(
-            _currContainerName, testrigOrEnvName, uploadFilename) : _workHelper
-            .uploadEnvironment(_currContainerName, _currTestrig,
+      boolean result = (isTestrig)
+            ? _workHelper.uploadTestrig(_currContainerName, testrigOrEnvName,
+                  uploadFilename)
+            : _workHelper.uploadEnvironment(_currContainerName, _currTestrig,
                   testrigOrEnvName, uploadFilename);
 
       // unequal means we must have created a temporary file

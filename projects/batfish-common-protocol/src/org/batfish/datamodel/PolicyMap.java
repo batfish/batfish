@@ -50,7 +50,7 @@ public class PolicyMap extends ComparableStructure<String> {
    @JsonCreator
    public PolicyMap(@JsonProperty(NAME_VAR) String name) {
       super(name);
-      _clauses = new ArrayList<PolicyMapClause>();
+      _clauses = new ArrayList<>();
    }
 
    /**
@@ -70,12 +70,13 @@ public class PolicyMap extends ComparableStructure<String> {
    private void initPrefixSpace() {
       if (_prefixSpace == null) {
          _prefixSpace = new PrefixSpace();
-         Set<PrefixRange> prefixRanges = new HashSet<PrefixRange>();
+         Set<PrefixRange> prefixRanges = new HashSet<>();
          for (PolicyMapClause clause : _clauses) {
             if (clause.getAction() == PolicyMapAction.PERMIT) {
                boolean foundMatchRouteFilter = false;
                for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                  if (matchLine.getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
+                  if (matchLine
+                        .getType() == PolicyMapMatchType.ROUTE_FILTER_LIST) {
                      foundMatchRouteFilter = true;
                      PolicyMapMatchRouteFilterListLine matchRouteFilterLine = (PolicyMapMatchRouteFilterListLine) matchLine;
                      for (RouteFilterList list : matchRouteFilterLine
@@ -84,16 +85,16 @@ public class PolicyMap extends ComparableStructure<String> {
                            Prefix prefix = line.getPrefix();
                            SubRange lengthRange = line.getLengthRange();
                            if (line.getAction() == LineAction.ACCEPT) {
-                              prefixRanges.add(new PrefixRange(prefix,
-                                    lengthRange));
+                              prefixRanges
+                                    .add(new PrefixRange(prefix, lengthRange));
                            }
                         }
                      }
                   }
                }
                if (!foundMatchRouteFilter) {
-                  prefixRanges.add(new PrefixRange(Prefix.ZERO, new SubRange(0,
-                        32)));
+                  prefixRanges
+                        .add(new PrefixRange(Prefix.ZERO, new SubRange(0, 32)));
                }
             }
          }

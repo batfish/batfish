@@ -1,6 +1,5 @@
 package org.batfish.answerer;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,9 +29,8 @@ public class TracerouteAnswerer extends Answerer {
    public AnswerElement answer(TestrigSettings testrigSettings) {
       _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
       String tag = _batfish.getFlowTag(testrigSettings);
-      Map<String, StringBuilder> trafficFactBins = getTrafficFactBins(tag);
-      _batfish.dumpTrafficFacts(trafficFactBins);
-      _batfish.nlsTraffic(testrigSettings);
+      Set<Flow> flows = getFlows(tag);
+      _batfish.getDataPlanePlugin().processFlows(flows, testrigSettings);
       AnswerElement answerElement = _batfish.getHistory(testrigSettings);
       return answerElement;
    }
@@ -40,23 +38,25 @@ public class TracerouteAnswerer extends Answerer {
    @Override
    public AnswerElement answerDiff() {
       String tag = _batfish.getDifferentialFlowTag();
-      Map<String, StringBuilder> trafficFactBins = getTrafficFactBins(tag);
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      Set<Flow> flows = getFlows(tag);
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getBaseTestrigSettings());
-      _batfish.dumpTrafficFacts(trafficFactBins,
+      _batfish.getDataPlanePlugin().processFlows(flows,
             _batfish.getDeltaTestrigSettings());
-      _batfish.nlsTraffic();
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
       for (String flowText : history.getFlowsByText().keySet()) {
-         String baseEnvId = _batfish.getBaseTestrigSettings().getName()
-               + ":"
-               + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
-                     .getName();
-         String deltaEnvId = _batfish.getDeltaTestrigSettings().getName()
-               + ":"
-               + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
-                     .getName();
+         // String baseEnvId = _batfish.getBaseTestrigSettings().getName() + ":"
+         // + _batfish.getBaseTestrigSettings().getEnvironmentSettings()
+         // .getName();
+         String baseEnvId = _batfish
+               .getFlowTag(_batfish.getBaseTestrigSettings());
+         // String deltaEnvId = _batfish.getDeltaTestrigSettings().getName() +
+         // ":"
+         // + _batfish.getDeltaTestrigSettings().getEnvironmentSettings()
+         // .getName();
+         String deltaEnvId = _batfish
+               .getFlowTag(_batfish.getDeltaTestrigSettings());
          Set<FlowTrace> baseFlowTraces = history.getTraces().get(flowText)
                .get(baseEnvId);
          Set<FlowTrace> deltaFlowTraces = history.getTraces().get(flowText)
@@ -74,25 +74,23 @@ public class TracerouteAnswerer extends Answerer {
       return filteredHistory;
    }
 
-   private Map<String, StringBuilder> getTrafficFactBins(String tag) {
+   private Set<Flow> getFlows(String tag) {
+      Set<Flow> flows = new TreeSet<>();
       TracerouteQuestion question = (TracerouteQuestion) _question;
-      Map<String, StringBuilder> trafficFactBins = new LinkedHashMap<String, StringBuilder>();
       Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
-      Batfish.initTrafficFactBins(trafficFactBins);
-      StringBuilder wSetFlowOriginate = trafficFactBins.get("SetFlowOriginate");
       Map<String, Configuration> configurations = null;
       for (FlowBuilder flowBuilder : flowBuilders) {
          if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
             if (configurations == null) {
                _batfish.checkConfigurations();
-               configurations = _batfish.loadConfigurations(_batfish
-                     .getBaseTestrigSettings());
+               configurations = _batfish
+                     .loadConfigurations(_batfish.getBaseTestrigSettings());
             }
             String hostname = flowBuilder.getIngressNode();
-            Configuration node = (hostname == null) ? null : configurations
-                  .get(hostname);
+            Configuration node = (hostname == null) ? null
+                  : configurations.get(hostname);
             if (node != null) {
-               Set<Ip> ips = new TreeSet<Ip>();
+               Set<Ip> ips = new TreeSet<>();
                for (Interface i : node.getInterfaces().values()) {
                   ips.addAll(i.getAllPrefixes().stream()
                         .map(prefix -> prefix.getAddress())
@@ -116,8 +114,8 @@ public class TracerouteAnswerer extends Answerer {
          }
          flowBuilder.setTag(tag);
          Flow flow = flowBuilder.build();
-         wSetFlowOriginate.append(flow.toLBLine());
+         flows.add(flow);
       }
-      return trafficFactBins;
+      return flows;
    }
 }

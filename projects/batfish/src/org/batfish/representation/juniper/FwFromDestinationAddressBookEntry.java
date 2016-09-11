@@ -28,8 +28,8 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
    @Override
    public void applyTo(IpAccessListLine line, JuniperConfiguration jc,
          Warnings w, Configuration c) {
-      Set<Prefix> prefixes = _localAddressBook.getPrefixes(
-            _addressBookEntryName, w);
+      Set<Prefix> prefixes = _localAddressBook
+            .getPrefixes(_addressBookEntryName, w);
       for (Prefix prefix : prefixes) {
          IpWildcard wildcard = new IpWildcard(prefix);
          line.getDstIps().add(wildcard);
