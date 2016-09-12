@@ -763,3 +763,10 @@ batfish_questions_doc() {
 }
 export -f batfish_questions_doc
 
+if batfish_cygwin; then
+   export ANT_BATFISH_PATH="$(cygpath -w "${BATFISH_PATH}")"
+   export ANT_COMMON_PATH="$(cygpath -w "${COMMON_PATH}")"
+else
+   export ANT_BATFISH_PATH="${BATFISH_PATH}"
+   export ANT_COMMON_PATH="${COMMON_PATH}"
+fi
