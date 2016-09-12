@@ -1,0 +1,36 @@
+This file contains notes for batfish developers. 
+
+
+Adding new information to the datamodel 
+----------------------------------------
+
+Batfish focuses on parsing information that it needs for its analysis. Its vendor-independent datamodel thus may not have all the information that the configuration files contain.  This section explains how to add new information to the datamodel using interface MTU for Cisco files as an example.
+
+1. Enhance the Cisco parser to parse interface MTUs. The entry point for parsing Cisco files is org.batfish.grammar.cisco.CiscoParser.g4. The grammar files are in the Antlr framework.
+
+Compile the code so that the java files that are auto-generated (by Antlr) are generated.
+
+2. Extend the vendor-specific representation in package org.batfish.representation.cisco to include new information. The relevant file for our MTU example is Interface.java.
+
+3. Assuming the grammar rule for parsing the MTU is mtu_if_stanza, create the following function in CiscoControlPlaneExtractor.java. 
+
+   @Override
+   public void exitMtu_if_stanza(Mtu_if_stanzaContext ctx) {
+       // 1. recover the necessary information from the context
+       // 2. add it to vendor representation object
+       // see other functions as example
+   }
+
+4. Extend the vendor-independent datamodel in package in org.batfish.datamodel to include the new information. The relevant file for our MTU example is Interface.java.
+
+5. Pass the new information from vendor-specific representation to vendor-independent datamodel. The starting point here is toVendorIndependentConfiguration() in org.batfish.representation.cisco.CiscoVendorConfiguration.java.
+
+6. Add proper Json annotations to ensure that the new information is serialized and deserialized properly. Look at what is being done for other fields.
+
+=====================
+
+Adding parsing for a new vendor
+-------------------------------
+
+Coming soon ....
+

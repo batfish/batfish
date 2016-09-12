@@ -64,15 +64,17 @@ get #checkprotection 2.128.1.101 !ssh
 
 # another example: we also want to ensure that outsiders can *never* reach the SSH server
 # we have ACLs on as2's border routers to prevent this. to test that things are correctly implemented:
-get #checkprotection 2.128.1.101 ssh as(1|3).*
+get #checkprotection 2.128.1.101 ssh as(1|3)border1
 # --> buggy ACL on as2border2!
 
 #############
 # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
-# --> any earlier query can be executed differentially, to see if how behavior differs
 
 # initialize the delta environment and generate its dataplane
 init-delta-environment test_rigs/example-with-delta
+
+# any earlier query can be executed differentially, to see if how behavior differs
+get neighbors differential=true
 
 # a particularly powerful query: reachability diff between the two environments
 get reachability type=reduced
