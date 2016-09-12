@@ -48,6 +48,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -159,9 +160,12 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
    }
 
-   public static void initTrafficFactBins(Map<String, StringBuilder> factBins) {
+   private static void initTrafficFactBins(
+         Map<String, StringBuilder> factBins) {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins);
    }
+
+   private Map<TestrigSettings, Map<String, Configuration>> _configurations;
 
    private final Map<TestrigSettings, EntityTable> _entityTables;
 
@@ -172,6 +176,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    public NlsDataPlanePlugin(Batfish batfish) {
       super(batfish);
       _entityTables = new HashMap<>();
+      _configurations = new HashMap<>();
    }
 
    /**
@@ -314,7 +319,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
    }
 
-   public void cleanupLogicDir() {
+   private void cleanupLogicDir() {
       if (_tmpLogicDir != null) {
          try {
             FileUtils.deleteDirectory(_tmpLogicDir);
@@ -347,8 +352,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          populatePrecomputedBgpAdvertisements(
                _settings.getPrecomputedBgpAdvertisementsPath(), cpFactBins);
       }
-      Map<String, Configuration> configurations = _batfish
-            .loadConfigurations(testrigSettings);
+      Map<String, Configuration> configurations = loadConfigurations(
+            testrigSettings);
       CommunitySet allCommunities = new CommunitySet();
       AdvertisementSet advertSet = _batfish.processExternalBgpAnnouncements(
             configurations, testrigSettings, allCommunities);
@@ -388,7 +393,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       if (dataPlanePath == null) {
          throw new BatfishException("Missing path to data plane");
       }
-      _batfish.writeDataPlane(dataPlanePath, testrigSettings);
+      writeDataPlane(dataPlanePath, testrigSettings);
       // TODO: possibly change line below
       return new Answer();
    }
@@ -493,11 +498,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       _batfish.printElapsedTime();
    }
 
-   public void dumpTrafficFacts(Map<String, StringBuilder> factBins) {
-      dumpTrafficFacts(factBins, _batfish.getTestrigSettings());
-   }
-
-   public void dumpTrafficFacts(Map<String, StringBuilder> factBins,
+   private void dumpTrafficFacts(Map<String, StringBuilder> factBins,
          TestrigSettings testrigSettings) {
       _logger.info("\n*** DUMPING TRAFFIC FACTS ***\n");
       dumpFacts(factBins,
@@ -518,7 +519,19 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    @Override
-   public InterfaceSet getFlowSinkSet(TestrigSettings testrigSettings) {
+   public DataPlane getDataPlane(TestrigSettings testrigSettings) {
+      Path dataPlanePath = testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
+      _logger.info("Deserializing data plane: \"" + dataPlanePath.toString()
+            + "\"...");
+      NlsDataPlane dataPlane = (NlsDataPlane) _batfish
+            .deserializeObject(dataPlanePath);
+      _logger.info("OK\n");
+      return dataPlane;
+
+   }
+
+   private InterfaceSet getFlowSinkSet(TestrigSettings testrigSettings) {
       InterfaceSet flowSinks = new InterfaceSet();
       Relation relation = getRelation(testrigSettings,
             FLOW_SINK_PREDICATE_NAME);
@@ -667,8 +680,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       return symbols;
    }
 
-   @Override
-   public PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
+   private PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
          TestrigSettings testrigSettings) {
       PolicyRouteFibNodeMap nodeMap = new PolicyRouteFibNodeMap();
       Relation relation = getRelation(testrigSettings,
@@ -701,10 +713,6 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       return nodeMap;
    }
 
-   public PredicateInfo getPredicateInfo() {
-      return _predicateInfo;
-   }
-
    private Path getPredicateInfoPath() {
       File logicDir = retrieveLogicDir();
       return Paths.get(logicDir.toString(), PREDICATE_INFO_FILENAME);
@@ -718,8 +726,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       return relation;
    }
 
-   @Override
-   public FibMap getRouteForwardingRules(TestrigSettings testrigSettings) {
+   private FibMap getRouteForwardingRules(TestrigSettings testrigSettings) {
       FibMap fibs = new FibMap();
       Relation relation = getRelation(testrigSettings, FIB_PREDICATE_NAME);
       EntityTable entityTable = initEntityTable(testrigSettings);
@@ -798,12 +805,27 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    @Override
    public void initialize() {
-      throw new BatfishException(
-            "This plugin is not meant to be initialized dynamically");
+      if (_settings.getQuery() || _settings.getPrintSemantics()
+            || _settings.getDataPlane() || _settings.getWriteRoutes()
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors() || _settings.getAnswer()) {
+         initPredicateInfo();
+      }
    }
 
    public void initPredicateInfo() {
       _predicateInfo = loadPredicateInfo();
+   }
+
+   private Map<String, Configuration> loadConfigurations(
+         TestrigSettings testrigSettings) {
+      Map<String, Configuration> configurations = _configurations
+            .get(testrigSettings);
+      if (configurations == null) {
+         configurations = _batfish.loadConfigurations(testrigSettings);
+         _configurations.put(testrigSettings, configurations);
+      }
+      return configurations;
    }
 
    public PredicateInfo loadPredicateInfo() {
@@ -1073,8 +1095,9 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
    }
 
-   public void printAllPredicateSemantics(
-         Map<String, String> predicateSemantics) {
+   public void printAllPredicateSemantics() {
+      Map<String, String> predicateSemantics = _predicateInfo
+            .getPredicateSemantics();
       // Get predicate semantics from rules file
       _logger.info("\n*** PRINTING PREDICATE SEMANTICS ***\n");
       List<String> helpPredicates = getHelpPredicates(predicateSemantics);
@@ -1126,7 +1149,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       _logger.output(sb.toString());
    }
 
-   public void printPredicates(TestrigSettings testrigSettings,
+   private void printPredicates(TestrigSettings testrigSettings,
          Set<String> predicateNames) {
       // Print predicate(s) here
       _logger.info("\n*** SUBMITTING QUERY(IES) ***\n");
@@ -1326,6 +1349,32 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
       _batfish.printElapsedTime();
       return answer;
+   }
+
+   private void writeDataPlane(Path dataPlanePath,
+         TestrigSettings testrigSettings) {
+      _logger.info("\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
+      _batfish.resetTimer();
+
+      _logger.info("Retrieving flow sink information...");
+      InterfaceSet flowSinks = getFlowSinkSet(testrigSettings);
+      _logger.info("OK\n");
+
+      Topology topology = _batfish.loadTopology(testrigSettings);
+      EdgeSet topologyEdges = topology.getEdges();
+
+      _logger.info("Caclulating forwarding rules...");
+      FibMap fibs = getRouteForwardingRules(testrigSettings);
+      PolicyRouteFibNodeMap policyRouteFibNodeMap = getPolicyRouteFibNodeMap(
+            testrigSettings);
+      _logger.info("OK\n");
+      NlsDataPlane dataPlane = new NlsDataPlane(flowSinks, topologyEdges, fibs,
+            policyRouteFibNodeMap);
+      _logger.info("Serializing data plane...");
+      _batfish.serializeObject(dataPlane, dataPlanePath);
+      _logger.info("OK\n");
+
+      _batfish.printElapsedTime();
    }
 
    private void writeFlowSinkFacts(InterfaceSet flowSinks,

@@ -1,49 +1,18 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
-
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 
-public class DataPlane implements Serializable {
+public interface DataPlane {
 
-   /**
-    *
-    */
-   private static final long serialVersionUID = 1L;
+   FibMap getFibs();
 
-   private final FibMap _fibs;
+   InterfaceSet getFlowSinks();
 
-   private final InterfaceSet _flowSinks;
+   PolicyRouteFibNodeMap getPolicyRouteFibNodeMap();
 
-   private final PolicyRouteFibNodeMap _policyRouteFibNodeMap;
-
-   private final EdgeSet _topologyEdges;
-
-   public DataPlane(InterfaceSet flowSinks, EdgeSet topologyEdges, FibMap fibs,
-         PolicyRouteFibNodeMap policyRouteFibNodeMap) {
-      _flowSinks = flowSinks;
-      _topologyEdges = topologyEdges;
-      _fibs = fibs;
-      _policyRouteFibNodeMap = policyRouteFibNodeMap;
-   }
-
-   public FibMap getFibs() {
-      return _fibs;
-   }
-
-   public InterfaceSet getFlowSinks() {
-      return _flowSinks;
-   }
-
-   public PolicyRouteFibNodeMap getPolicyRouteFibNodeMap() {
-      return _policyRouteFibNodeMap;
-   }
-
-   public EdgeSet getTopologyEdges() {
-      return _topologyEdges;
-   }
+   EdgeSet getTopologyEdges();
 
 }

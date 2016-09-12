@@ -1,6 +1,5 @@
 package org.batfish.answerer;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -91,11 +90,9 @@ public class ReachabilityAnswerer extends Answerer {
       String tag = _batfish.getFlowTag(testrigSettings);
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      Path dataPlanePath = testrigSettings.getEnvironmentSettings()
-            .getDataPlanePath();
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(configurations, dataPlanePath);
+            .synthesizeDataPlane(testrigSettings);
       List<NodJob> jobs = new ArrayList<>();
       for (String node : configurations.keySet()) {
          MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
@@ -123,18 +120,14 @@ public class ReachabilityAnswerer extends Answerer {
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = _batfish
             .loadConfigurations(_batfish.getBaseTestrigSettings());
-      Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
       Synthesizer baseDataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(baseConfigurations, baseDataPlanePath);
+            .synthesizeDataPlane(_batfish.getBaseTestrigSettings());
 
       // load diff configurations and generate diff data plane
       Map<String, Configuration> diffConfigurations = _batfish
             .loadConfigurations(_batfish.getDeltaTestrigSettings());
-      Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
       Synthesizer diffDataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(diffConfigurations, diffDataPlanePath);
+            .synthesizeDataPlane(_batfish.getDeltaTestrigSettings());
 
       Set<String> commonNodes = new TreeSet<>();
       commonNodes.addAll(baseConfigurations.keySet());
@@ -229,18 +222,14 @@ public class ReachabilityAnswerer extends Answerer {
       // load base configurations and generate base data plane
       Map<String, Configuration> baseConfigurations = _batfish
             .loadConfigurations(_batfish.getBaseTestrigSettings());
-      Path baseDataPlanePath = _batfish.getBaseTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
       Synthesizer baseDataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(baseConfigurations, baseDataPlanePath);
+            .synthesizeDataPlane(_batfish.getBaseTestrigSettings());
 
       // load diff configurations and generate diff data plane
       Map<String, Configuration> diffConfigurations = _batfish
             .loadConfigurations(_batfish.getDeltaTestrigSettings());
-      Path diffDataPlanePath = _batfish.getDeltaTestrigSettings()
-            .getEnvironmentSettings().getDataPlanePath();
       Synthesizer diffDataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(diffConfigurations, diffDataPlanePath);
+            .synthesizeDataPlane(_batfish.getDeltaTestrigSettings());
 
       Set<String> commonNodes = new TreeSet<>();
       commonNodes.addAll(baseConfigurations.keySet());
@@ -306,11 +295,9 @@ public class ReachabilityAnswerer extends Answerer {
       String tag = _batfish.getFlowTag(testrigSettings);
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      Path dataPlanePath = testrigSettings.getEnvironmentSettings()
-            .getDataPlanePath();
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = _batfish
-            .synthesizeDataPlane(configurations, dataPlanePath);
+            .synthesizeDataPlane(testrigSettings);
 
       // collect ingress nodes
       Pattern ingressNodeRegex = Pattern

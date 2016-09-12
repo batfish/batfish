@@ -96,14 +96,12 @@ import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
-import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
-import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -131,6 +129,7 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.nls.NlsDataPlane;
 import org.batfish.nls.NlsDataPlanePlugin;
 import org.batfish.plugin.DataPlanePlugin;
 import org.batfish.plugin.Plugin;
@@ -425,6 +424,8 @@ public class Batfish implements AutoCloseable {
    }
 
    private TestrigSettings _baseTestrigSettings;
+
+   private ClassLoader _currentClassLoader;
 
    private DataPlanePlugin _dataPlanePlugin;
 
@@ -877,10 +878,6 @@ public class Batfish implements AutoCloseable {
    }
 
    public Object deserializeObject(Path inputFile) {
-      return deserializeObject(inputFile, null);
-   }
-
-   public Object deserializeObject(Path inputFile, ClassLoader cl) {
       FileInputStream fis;
       Object o = null;
       ObjectInputStream ois;
@@ -888,13 +885,11 @@ public class Batfish implements AutoCloseable {
          fis = new FileInputStream(inputFile.toFile());
          if (!isJavaSerializationData(inputFile)) {
             XStream xstream = new XStream(new DomDriver("UTF-8"));
+            xstream.setClassLoader(_currentClassLoader);
             ois = xstream.createObjectInputStream(fis);
          }
-         else if (cl != null) {
-            ois = new BatfishObjectInputStream(fis, cl);
-         }
          else {
-            ois = new ObjectInputStream(fis);
+            ois = new BatfishObjectInputStream(fis, _currentClassLoader);
          }
          o = ois.readObject();
          ois.close();
@@ -1272,6 +1267,10 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
+   public ClassLoader getCurrentClassLoader() {
+      return _currentClassLoader;
+   }
+
    public DataPlanePlugin getDataPlanePlugin() {
       return _dataPlanePlugin;
    }
@@ -1328,7 +1327,7 @@ public class Batfish implements AutoCloseable {
 
    private InterfaceSet getFlowSinkSet(Path dataPlanePath) {
       _logger.info("Deserializing data plane: \"" + dataPlanePath + "\"...");
-      DataPlane dataPlane = (DataPlane) deserializeObject(dataPlanePath);
+      NlsDataPlane dataPlane = (NlsDataPlane) deserializeObject(dataPlanePath);
       _logger.info("OK\n");
       return dataPlane.getFlowSinks();
    }
@@ -1788,7 +1787,8 @@ public class Batfish implements AutoCloseable {
          try {
             URL[] urls = { new URL("jar:file:" + pathString + "!/") };
             URLClassLoader cl = URLClassLoader.newInstance(urls,
-                  getClass().getClassLoader());
+                  _currentClassLoader);
+            _currentClassLoader = cl;
             JarFile jar = new JarFile(path.toFile());
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
@@ -2304,22 +2304,16 @@ public class Batfish implements AutoCloseable {
    }
 
    public Answer run() {
+      _currentClassLoader = getClass().getClassLoader();
       _nls = new NlsDataPlanePlugin(this);
+      _nls.initialize();
       _dataPlanePlugin = _nls;
       boolean action = false;
       Answer answer = new Answer();
 
-      if (_settings.getQuery() || _settings.getPrintSemantics()
-            || _settings.getDataPlane() || _settings.getWriteRoutes()
-            || _settings.getWriteBgpAdvertisements()
-            || _settings.getWriteIbgpNeighbors() || _settings.getAnswer()) {
-         _nls.initPredicateInfo();
-         // Print predicate semantics and quit if requested
-         if (_settings.getPrintSemantics()) {
-            _nls.printAllPredicateSemantics(
-                  _nls.getPredicateInfo().getPredicateSemantics());
-            return answer;
-         }
+      if (_settings.getPrintSemantics()) {
+         _nls.printAllPredicateSemantics();
+         return answer;
       }
 
       loadPlugins();
@@ -2731,17 +2725,16 @@ public class Batfish implements AutoCloseable {
       _terminatedWithException = terminatedWithException;
    }
 
-   public Synthesizer synthesizeDataPlane(
-         Map<String, Configuration> configurations, Path dataPlanePath) {
+   public Synthesizer synthesizeDataPlane(TestrigSettings testrigSettings) {
+
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
-      _logger.info("Deserializing data plane: \"" + dataPlanePath.toString()
-            + "\"...");
-      DataPlane dataPlane = (DataPlane) deserializeObject(dataPlanePath);
-      _logger.info("OK\n");
+      DataPlane dataPlane = _dataPlanePlugin.getDataPlane(testrigSettings);
 
       _logger.info("Synthesizing Z3 logic...");
+      Map<String, Configuration> configurations = loadConfigurations(
+            testrigSettings);
       Synthesizer s = new Synthesizer(configurations, dataPlane,
             _settings.getSimplify());
 
@@ -2810,32 +2803,6 @@ public class Batfish implements AutoCloseable {
             + "\"...");
       serializeObject(adverts, writeAdvertsPath);
       _logger.info("OK\n");
-   }
-
-   public void writeDataPlane(Path dataPlanePath,
-         TestrigSettings testrigSettings) {
-      _logger.info("\n*** COMPUTING DATA PLANE STRUCTURES ***\n");
-      resetTimer();
-
-      _logger.info("Retrieving flow sink information...");
-      InterfaceSet flowSinks = _dataPlanePlugin.getFlowSinkSet(testrigSettings);
-      _logger.info("OK\n");
-
-      Topology topology = loadTopology(testrigSettings);
-      EdgeSet topologyEdges = topology.getEdges();
-
-      _logger.info("Caclulating forwarding rules...");
-      FibMap fibs = _dataPlanePlugin.getRouteForwardingRules(testrigSettings);
-      PolicyRouteFibNodeMap policyRouteFibNodeMap = _dataPlanePlugin
-            .getPolicyRouteFibNodeMap(testrigSettings);
-      _logger.info("OK\n");
-      DataPlane dataPlane = new DataPlane(flowSinks, topologyEdges, fibs,
-            policyRouteFibNodeMap);
-      _logger.info("Serializing data plane...");
-      serializeObject(dataPlane, dataPlanePath);
-      _logger.info("OK\n");
-
-      printElapsedTime();
    }
 
    private void writeIbgpNeighbors(Path ibgpTopologyPath) {

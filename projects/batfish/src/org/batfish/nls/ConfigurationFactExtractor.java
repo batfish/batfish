@@ -1454,7 +1454,7 @@ public class ConfigurationFactExtractor {
                + network_end + "|" + prefix_length + "\n");
          if (nextHopInt != null) { // use next hop interface instead
             if (CommonUtil.isNullInterface(nextHopInt)) {
-               nextHopInt = CommonUtil.NULL_INTERFACE_NAME;
+               nextHopInt = Interface.NULL_INTERFACE_NAME;
             }
             wSetStaticIntRoute_flat.append(hostName + "|" + network_start + "|"
                   + network_end + "|" + prefix_length + "|" + nextHopIp.asLong()

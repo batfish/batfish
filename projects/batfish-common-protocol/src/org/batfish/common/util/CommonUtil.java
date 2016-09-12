@@ -43,8 +43,6 @@ public class CommonUtil {
    public static final String FACT_BLOCK_FOOTER = "\n//FACTS END HERE\n"
          + "   }) // clauses\n" + "} <-- .\n";
 
-   public static final String NULL_INTERFACE_NAME = "null_interface";
-
    public static String applyPrefix(String prefix, String msg) {
       String[] lines = msg.split("\n");
       StringBuilder sb = new StringBuilder();

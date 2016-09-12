@@ -43,6 +43,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String NATIVE_VLAN_VAR = "nativeVlan";
 
+   public static final String NULL_INTERFACE_NAME = "null_interface";
+
    private static final String OSPF_AREA_VAR = "ospfArea";
 
    private static final String OSPF_COST_VAR = "ospfCost";

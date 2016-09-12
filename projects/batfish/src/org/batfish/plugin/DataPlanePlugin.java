@@ -3,14 +3,12 @@ package org.batfish.plugin;
 import java.util.List;
 import java.util.Set;
 
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
-import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.IbgpTopology;
-import org.batfish.datamodel.collections.InterfaceSet;
-import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
@@ -49,7 +47,7 @@ public abstract class DataPlanePlugin extends Plugin {
    public abstract AdvertisementSet getAdvertisements(
          TestrigSettings testrigSettings);
 
-   public abstract InterfaceSet getFlowSinkSet(TestrigSettings testrigSettings);
+   public abstract DataPlane getDataPlane(TestrigSettings testrigSettings);
 
    public abstract List<Flow> getHistoryFlows(TestrigSettings testrigSettings);
 
@@ -57,12 +55,6 @@ public abstract class DataPlanePlugin extends Plugin {
          TestrigSettings testrigSettings);
 
    public abstract IbgpTopology getIbgpNeighbors(
-         TestrigSettings testrigSettings);
-
-   public abstract PolicyRouteFibNodeMap getPolicyRouteFibNodeMap(
-         TestrigSettings testrigSettings);
-
-   public abstract FibMap getRouteForwardingRules(
          TestrigSettings testrigSettings);
 
    public abstract RouteSet getRoutes(TestrigSettings testrigSettings);

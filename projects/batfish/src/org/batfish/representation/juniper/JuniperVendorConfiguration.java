@@ -15,7 +15,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -1100,7 +1099,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
    private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
       Prefix prefix = route.getPrefix();
       Ip nextHopIp = route.getNextHopIp();
-      String nextHopInterface = route.getDrop() ? CommonUtil.NULL_INTERFACE_NAME
+      String nextHopInterface = route.getDrop()
+            ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
       int administrativeCost = route.getMetric();
       Integer oldTag = route.getTag();
