@@ -129,7 +129,6 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.main.Settings.EnvironmentSettings;
-import org.batfish.nls.NlsDataPlane;
 import org.batfish.nls.NlsDataPlanePlugin;
 import org.batfish.plugin.DataPlanePlugin;
 import org.batfish.plugin.Plugin;
@@ -627,8 +626,8 @@ public class Batfish implements AutoCloseable {
          Topology topology) {
       InterfaceSet flowSinks = null;
       if (differentialContext) {
-         flowSinks = getFlowSinkSet(_baseTestrigSettings
-               .getEnvironmentSettings().getDataPlanePath());
+         flowSinks = _dataPlanePlugin.getDataPlane(_baseTestrigSettings)
+               .getFlowSinks();
       }
       NodeSet blacklistNodes = getNodeBlacklist(testrigSettings);
       if (blacklistNodes != null) {
@@ -1323,13 +1322,6 @@ public class Batfish implements AutoCloseable {
       long difference = System.currentTimeMillis() - beforeTime;
       double seconds = difference / 1000d;
       return seconds;
-   }
-
-   private InterfaceSet getFlowSinkSet(Path dataPlanePath) {
-      _logger.info("Deserializing data plane: \"" + dataPlanePath + "\"...");
-      NlsDataPlane dataPlane = (NlsDataPlane) deserializeObject(dataPlanePath);
-      _logger.info("OK\n");
-      return dataPlane.getFlowSinks();
    }
 
    public String getFlowTag() {
