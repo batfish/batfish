@@ -66,7 +66,7 @@ public class Client {
 
    @SuppressWarnings("unused")
    private BfCoordPoolHelper _poolHelper;
-   
+
    private ConsoleReader _reader;
 
    private Settings _settings;
@@ -108,7 +108,7 @@ public class Client {
 
             List<Completer> completors = new LinkedList<>();
             completors.add(new CommandCompleter());
-            
+
             for (Completer c : completors) {
                _reader.addCompleter(c);
             }
@@ -544,8 +544,7 @@ public class Client {
    private void printUsage(Command command) {
       Pair<String, String> usage = Command.getUsageMap().get(command);
       _logger.outputf("%s %s\n\t%s\n\n", command.commandName(),
-            usage.getFirst(),
-            usage.getSecond());
+            usage.getFirst(), usage.getSecond());
    }
 
    private boolean processCommand(String command) {
@@ -573,12 +572,12 @@ public class Client {
 
          switch (command) {
          // this is a hidden command for testing
-         
-//         case "add-worker": {
-//            boolean result = _poolHelper.addBatfishWorker(words[1]);
-//            _logger.output("Result: " + result + "\n");
-//            return true;
-//         }
+
+         // case "add-worker": {
+         // boolean result = _poolHelper.addBatfishWorker(words[1]);
+         // _logger.output("Result: " + result + "\n");
+         // return true;
+         // }
          case ANSWER: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
@@ -616,7 +615,7 @@ public class Client {
             return true;
          }
          case CLEAR_SCREEN:
-            //this should have taken care of before coming in here
+            // this should have taken care of before coming in here
             return false;
          case DEL_CONTAINER: {
             String containerName = parameters.get(0);
@@ -731,33 +730,37 @@ public class Client {
             }
 
             boolean formatJson = true;
-            
+
             if (options.size() == 1) {
                if (options.get(0).equals("-html")) {
                   formatJson = false;
                }
                else {
-                  _logger.outputf("Unknown option: %s (note that json does not need a flag)\n", options.get(0));
+                  _logger.outputf(
+                        "Unknown option: %s (note that json does not need a flag)\n",
+                        options.get(0));
                   return false;
                }
             }
 
             String questionName = parameters.get(0);
-            
-            String answerFileName = String.format("%s/%s/%s", 
+
+            String answerFileName = String.format("%s/%s/%s",
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName,
-                  (formatJson)? BfConsts.RELPATH_ANSWER_JSON : BfConsts.RELPATH_ANSWER_HTML);
-            
-            String downloadedAnsFile = _workHelper.getObject(_currContainerName, _currTestrig, answerFileName);
+                  (formatJson) ? BfConsts.RELPATH_ANSWER_JSON
+                        : BfConsts.RELPATH_ANSWER_HTML);
+
+            String downloadedAnsFile = _workHelper.getObject(_currContainerName,
+                  _currTestrig, answerFileName);
             if (downloadedAnsFile == null) {
-               _logger.errorf("Failed to get answer file %s\n",
-                           answerFileName);
+               _logger.errorf("Failed to get answer file %s\n", answerFileName);
                return false;
             }
 
-            String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));               
-           _logger.output(answerString);
-           _logger.output("\n");
+            String answerString = CommonUtil
+                  .readFile(Paths.get(downloadedAnsFile));
+            _logger.output(answerString);
+            _logger.output("\n");
 
             return true;
          }
@@ -767,41 +770,45 @@ public class Client {
             }
 
             String questionName = parameters.get(0);
-            
-            String questionFileName = String.format("%s/%s/%s", 
+
+            String questionFileName = String.format("%s/%s/%s",
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName,
                   BfConsts.RELPATH_QUESTION_FILE);
 
-            String downloadedQuestionFile = _workHelper.getObject(_currContainerName, _currTestrig, questionFileName);
+            String downloadedQuestionFile = _workHelper.getObject(
+                  _currContainerName, _currTestrig, questionFileName);
             if (downloadedQuestionFile == null) {
                _logger.errorf("Failed to get question file %s\n",
-                           questionFileName);
+                     questionFileName);
                return false;
             }
 
-           String questionString = CommonUtil.readFile(Paths.get(downloadedQuestionFile));             
-          _logger.outputf("Question:\n%s\n", questionString);
+            String questionString = CommonUtil
+                  .readFile(Paths.get(downloadedQuestionFile));
+            _logger.outputf("Question:\n%s\n", questionString);
 
-            String paramsFileName = String.format("%s/%s/%s", 
+            String paramsFileName = String.format("%s/%s/%s",
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName,
                   BfConsts.RELPATH_QUESTION_PARAM_FILE);
 
-            String downloadedParamsFile = _workHelper.getObject(_currContainerName, _currTestrig, paramsFileName);
+            String downloadedParamsFile = _workHelper
+                  .getObject(_currContainerName, _currTestrig, paramsFileName);
             if (downloadedParamsFile == null) {
                _logger.errorf("Failed to get parameters file %s\n",
-                           paramsFileName);
+                     paramsFileName);
                return false;
             }
 
-           String paramsString = CommonUtil.readFile(Paths.get(downloadedParamsFile));             
-          _logger.outputf("Parameters:\n%s\n", paramsString);
+            String paramsString = CommonUtil
+                  .readFile(Paths.get(downloadedParamsFile));
+            _logger.outputf("Parameters:\n%s\n", paramsString);
 
             return true;
          }
          case HELP: {
             if (parameters.size() == 1) {
-             Command cmd = Command.fromName(parameters.get(0));
-             printUsage(cmd);
+               Command cmd = Command.fromName(parameters.get(0));
+               printUsage(cmd);
             }
             else {
                printUsage();

@@ -58,11 +58,11 @@ public enum Command {
    UPLOAD_CUSTOM_OBJECT("upload-custom");
 
    private final static Map<String, Command> _nameMap = buildNameMap();
-   
+
    private final static Map<Command, Pair<String, String>> _usageMap = buildUsageMap();
-   
+
    private static Map<String, Command> buildNameMap() {
-      Map<String, Command> map = new HashMap<String, Command>();
+      Map<String, Command> map = new HashMap<>();
       for (Command value : Command.values()) {
          String name = value._name;
          map.put(name, value);
@@ -71,150 +71,102 @@ public enum Command {
    }
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
-      Map<Command, Pair<String, String>> descs = new TreeMap<Command, Pair<String, String>>();
-      descs.put(ANSWER, new Pair<String,String>(
+      Map<Command, Pair<String, String>> descs = new TreeMap<>();
+      descs.put(ANSWER, new Pair<>(
             "<question-file> [param1=value1 [param2=value2] ...]",
             "Answer the question in the file for the default environment"));
-      descs.put(ANSWER_DELTA, new Pair<String,String>(
-            "<question-file>  [param1=value1 [param2=value2] ...]",
-            "Answer the question in the file for the delta environment"));
-      descs.put(CAT, new Pair<String,String>(
-            "<filename>",
-            "Print the contents of the file"));
-      descs.put(CHECK_API_KEY, new Pair<String,String>(
-            "",
-            "Check if API Key is valid"));
+      descs.put(ANSWER_DELTA,
+            new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
+                  "Answer the question in the file for the delta environment"));
+      descs.put(CAT,
+            new Pair<>("<filename>", "Print the contents of the file"));
+      descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
       // descs.put(CHANGE_DIR, CHANGE_DIR
       // + " <dirname>\n"
       // + "\t Change the working directory");
-      descs.put(CLEAR_SCREEN, new Pair<String,String>(
-            "",
-            "Clear screen"));
-      descs.put(DEL_CONTAINER, new Pair<String,String>(
-            "<container-name>",
-            "Delete the specified container"));
-      descs.put(DEL_ENVIRONMENT, new Pair<String,String>(
-            "<environment-name>",
+      descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
+      descs.put(DEL_CONTAINER,
+            new Pair<>("<container-name>", "Delete the specified container"));
+      descs.put(DEL_ENVIRONMENT, new Pair<>("<environment-name>",
             "Delete the specified environment"));
-      descs.put(DEL_QUESTION, new Pair<String,String>(
-            "<question-name>",
-            "Delete the specified question"));
-      descs.put(DEL_TESTRIG, new Pair<String,String>(
-            "<testrig-name>",
-            "Delete the specified testrig"));
-      descs.put(DIR, new Pair<String,String>(
-            "<dir>",
-            "List directory contents"));
-      descs.put(ECHO, new Pair<String,String>(
-            "<message>",
-            "Echo the message"));
-      descs.put(EXIT, new Pair<String,String>(
-            "",
-            "Terminate interactive client session"));
-      descs.put(GEN_DELTA_DP, new Pair<String,String>(
-            "",
-            "Generate dataplane for the delta environment"));
-      descs.put(GEN_DP, new Pair<String,String>(
-            "",
-            "Generate dataplane for the default environment"));
-      descs.put(GET, new Pair<String,String>(
-            "<question-type>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the delta environment"));
-      descs.put(GET_ANSWER, new Pair<String,String>(
-            "[-html] <question-name>",
+      descs.put(DEL_QUESTION,
+            new Pair<>("<question-name>", "Delete the specified question"));
+      descs.put(DEL_TESTRIG,
+            new Pair<>("<testrig-name>", "Delete the specified testrig"));
+      descs.put(DIR, new Pair<>("<dir>", "List directory contents"));
+      descs.put(ECHO, new Pair<>("<message>", "Echo the message"));
+      descs.put(EXIT, new Pair<>("", "Terminate interactive client session"));
+      descs.put(GEN_DELTA_DP,
+            new Pair<>("", "Generate dataplane for the delta environment"));
+      descs.put(GEN_DP,
+            new Pair<>("", "Generate dataplane for the default environment"));
+      descs.put(GET,
+            new Pair<>("<question-type>  [param1=value1 [param2=value2] ...]",
+                  "Answer the question by type for the delta environment"));
+      descs.put(GET_ANSWER, new Pair<>("[-html] <question-name>",
             "Get the answer for a previously answered question"));
-      descs.put(GET_DELTA, new Pair<String,String>(
-            "<question-file>  [param1=value1 [param2=value2] ...]",
-            "Answer the question by type for the delta environment"));
-      descs.put(GET_QUESTION, new Pair<String,String>(
-            "<question-name>",
+      descs.put(GET_DELTA,
+            new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
+                  "Answer the question by type for the delta environment"));
+      descs.put(GET_QUESTION, new Pair<>("<question-name>",
             "Get the question and parameter files"));
-      descs.put(HELP, new Pair<String,String>(
-            "[command]",
-            "Print the list of supported commands"));
-      descs.put(INIT_CONTAINER, new Pair<String,String>(
-            "[<container-name-prefix>]",
+      descs.put(HELP,
+            new Pair<>("[command]", "Print the list of supported commands"));
+      descs.put(INIT_CONTAINER, new Pair<>("[<container-name-prefix>]",
             "Initialize a new container"));
-      descs.put(INIT_DELTA_ENV, new Pair<String,String>(
-            "[-nodataplane] <environment zipfile or directory> [<environment-name>]",
-            "Initialize the delta environment"));
-      descs.put(INIT_DELTA_TESTRIG,new Pair<String,String>(
-            "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
-            "Initialize the delta testrig with default environment"));
-      descs.put(INIT_TESTRIG, new Pair<String,String>(
-            "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
-            "Initialize the testrig with default environment"));
-      descs.put(LIST_CONTAINERS, new Pair<String,String>( 
-            "",
-            "List the containers to which you have access"));
-      descs.put(LIST_ENVIRONMENTS, new Pair<String,String>(
-            "",
+      descs.put(INIT_DELTA_ENV,
+            new Pair<>(
+                  "[-nodataplane] <environment zipfile or directory> [<environment-name>]",
+                  "Initialize the delta environment"));
+      descs.put(INIT_DELTA_TESTRIG,
+            new Pair<>(
+                  "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
+                  "Initialize the delta testrig with default environment"));
+      descs.put(INIT_TESTRIG,
+            new Pair<>(
+                  "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
+                  "Initialize the testrig with default environment"));
+      descs.put(LIST_CONTAINERS,
+            new Pair<>("", "List the containers to which you have access"));
+      descs.put(LIST_ENVIRONMENTS, new Pair<>("",
             "List the environments under current container and testrig"));
-      descs.put(LIST_QUESTIONS, new Pair<String,String>(
-            "",
+      descs.put(LIST_QUESTIONS, new Pair<>("",
             "List the questions under current container and testrig"));
-      descs.put(LIST_TESTRIGS, new Pair<String,String>(
-            "",
-            "List the testrigs within the current container"));
-      descs.put(PROMPT, new Pair<String,String>(
-            "",
-            "Prompts for user to press enter"));
-      descs.put(PWD, new Pair<String,String>(
-            "",
-            "Prints the working directory"));
-      descs.put(QUIT, new Pair<String,String>(
-            "",
-            "Terminate interactive client session"));
-      descs.put(SET_BATFISH_LOGLEVEL, new Pair<String,String>(
-            "<debug|info|output|warn|error>",
-            "Set the batfish loglevel. Default is warn"));
-      descs.put(SET_CONTAINER, new Pair<String,String>(
-            "<container-name>",
-            "Set the current container"));
-      descs.put(SET_DELTA_ENV, new Pair<String,String>(
-            "<environment-name>",
-            "Set the delta environment"));
-      descs.put(SET_DELTA_TESTRIG, new Pair<String,String>(
-            "<testrig-name> [environment name]",
-            "Set the delta testrig"));
-      descs.put(SET_ENV, new Pair<String,String>(
-            "<environment-name>",
+      descs.put(LIST_TESTRIGS,
+            new Pair<>("", "List the testrigs within the current container"));
+      descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
+      descs.put(PWD, new Pair<>("", "Prints the working directory"));
+      descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
+      descs.put(SET_BATFISH_LOGLEVEL,
+            new Pair<>("<debug|info|output|warn|error>",
+                  "Set the batfish loglevel. Default is warn"));
+      descs.put(SET_CONTAINER,
+            new Pair<>("<container-name>", "Set the current container"));
+      descs.put(SET_DELTA_ENV,
+            new Pair<>("<environment-name>", "Set the delta environment"));
+      descs.put(SET_DELTA_TESTRIG, new Pair<>(
+            "<testrig-name> [environment name]", "Set the delta testrig"));
+      descs.put(SET_ENV, new Pair<>("<environment-name>",
             "Set the current base environment"));
-      descs.put(SET_LOGLEVEL, new Pair<String,String>(
-            "<debug|info|output|warn|error>",
+      descs.put(SET_LOGLEVEL, new Pair<>("<debug|info|output|warn|error>",
             "Set the client loglevel. Default is output"));
-      descs.put(SET_PRETTY_PRINT, new Pair<String,String>(
-            "<true|false>",
-            "Whether to pretty print answers"));
-      descs.put(SET_TESTRIG, new Pair<String,String>(
-            "<testrig-name> [environment name]",
+      descs.put(SET_PRETTY_PRINT,
+            new Pair<>("<true|false>", "Whether to pretty print answers"));
+      descs.put(SET_TESTRIG, new Pair<>("<testrig-name> [environment name]",
             "Set the base testrig"));
-      descs.put(SHOW_API_KEY, new Pair<String,String>(
-            "",
-            "Show API Key"));
-      descs.put(SHOW_BATFISH_LOGLEVEL, new Pair<String,String>(
-            "",
-            "Show current batfish loglevel"));
-      descs.put(SHOW_CONTAINER, new Pair<String,String>(
-            "",
-            "Show active container"));
-      descs.put(SHOW_COORDINATOR_HOST, new Pair<String,String>(
-            "",
-            "Show coordinator host"));
-      descs.put(SHOW_LOGLEVEL, new Pair<String,String>(
-            "",
-            "Show current client loglevel"));
-      descs.put(SHOW_DELTA_TESTRIG, new Pair<String,String>(
-            "",
-            "Show delta testrig and environment"));
-      descs.put(SHOW_TESTRIG, new Pair<String,String>(
-            "",
+      descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
+      descs.put(SHOW_BATFISH_LOGLEVEL,
+            new Pair<>("", "Show current batfish loglevel"));
+      descs.put(SHOW_CONTAINER, new Pair<>("", "Show active container"));
+      descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
+      descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
+      descs.put(SHOW_DELTA_TESTRIG,
+            new Pair<>("", "Show delta testrig and environment"));
+      descs.put(SHOW_TESTRIG,
+            new Pair<>("", "Show base testrig and environment"));
+      descs.put(TEST, new Pair<>("<reference file> <command>",
             "Show base testrig and environment"));
-      descs.put(TEST, new Pair<String,String>(
-            "<reference file> <command>",
-            "Show base testrig and environment"));
-      descs.put(UPLOAD_CUSTOM_OBJECT, new Pair<String,String>(
-            "<object-name> <object-file>",
+      descs.put(UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>",
             "Uploads a custom object"));
       return descs;
    }
@@ -222,10 +174,18 @@ public enum Command {
    public static Command fromName(String name) {
       Command instance = _nameMap.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException("Not a valid QuestionType: \"" + name
-               + "\"");
+         throw new BatfishException(
+               "Not a valid QuestionType: \"" + name + "\"");
       }
       return instance;
+   }
+
+   public static Map<String, Command> getNameMap() {
+      return _nameMap;
+   }
+
+   public static Map<Command, Pair<String, String>> getUsageMap() {
+      return _usageMap;
    }
 
    private final String _name;
@@ -236,13 +196,5 @@ public enum Command {
 
    public String commandName() {
       return _name;
-   }
-
-   public static Map<String, Command> getNameMap() {
-      return _nameMap;
-   }
-   
-   public static Map<Command, Pair<String,String>> getUsageMap() {
-      return _usageMap;
    }
 }
