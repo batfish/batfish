@@ -1228,8 +1228,16 @@ public class Client {
                testPassed = !testCommandSucceeded;
             }
 
-            String message = "Test: " + Arrays.asList(testCommand).toString()
-                  + (failingTest ? " results in error as expected: "
+            StringBuilder sb = new StringBuilder();
+            sb.append("'" + testCommand[0]);
+            for (int i = 1; i < testCommand.length; i++) {
+               sb.append(" " + testCommand[i]);
+            }
+            sb.append("'");
+            String testCommandText = sb.toString();
+
+            String message = "Test: " + testCommandText
+                  + (failingTest ? " results in error as expected"
                         : " matches " + referenceFileName)
                   + (testPassed ? ": Pass\n" : ": Fail\n");
 
