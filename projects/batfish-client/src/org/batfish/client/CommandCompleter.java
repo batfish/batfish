@@ -10,38 +10,40 @@ import jline.console.completer.Completer;
 
 public class CommandCompleter implements Completer {
 
-   private final SortedSet<String> commandStrs = new TreeSet<String>();
+   private final SortedSet<String> commandStrs = new TreeSet<>();
 
    public CommandCompleter() {
       commandStrs.addAll(Command.getNameMap().keySet());
    }
-   
+
    @Override
-   public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+   public int complete(String buffer, int cursor,
+         List<CharSequence> candidates) {
       checkNotNull(candidates);
-      
+
       if (buffer == null) {
          candidates.addAll(commandStrs);
       }
       else {
          String trimmedBuffer = buffer.trim();
-         
+
          for (String match : commandStrs.tailSet(buffer)) {
             if (!match.startsWith(trimmedBuffer)) {
-                break;
+               break;
             }
 
             candidates.add(match);
-        }
+         }
       }
-      
-      //if the match was unique and the complete command was specified, print the command usage
-      if (candidates.size() == 1 && 
-            candidates.get(0).equals(buffer)) {
+
+      // if the match was unique and the complete command was specified, print
+      // the command usage
+      if (candidates.size() == 1 && candidates.get(0).equals(buffer)) {
          candidates.clear();
-         candidates.add(buffer + " " + Command.getUsageMap().get(Command.getNameMap().get(buffer)).getFirst());
+         candidates.add(buffer + " " + Command.getUsageMap()
+               .get(Command.getNameMap().get(buffer)).getFirst());
       }
-      
-      return candidates.isEmpty() ? -1 : 0;         
-   }             
- }
+
+      return candidates.isEmpty() ? -1 : 0;
+   }
+}

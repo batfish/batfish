@@ -275,22 +275,24 @@ public class BfCoordWorkHelper {
          }
 
          // see if we have a filename header
-//         String outFileStr = objectName;
-//
-//         MultivaluedMap<String, String> headers = response.getStringHeaders();
-//
-//         if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
-//            String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
-//            if (value != null && !value.equals("")) {
-//               outFileStr = value;
-//            }
-//         }
+         // String outFileStr = objectName;
+         //
+         // MultivaluedMap<String, String> headers =
+         // response.getStringHeaders();
+         //
+         // if (headers.containsKey(CoordConsts.SVC_FILENAME_HDR)) {
+         // String value = headers.getFirst(CoordConsts.SVC_FILENAME_HDR);
+         // if (value != null && !value.equals("")) {
+         // outFileStr = value;
+         // }
+         // }
 
          File inFile = response.readEntity(File.class);
 
-         File tmpOutFile = Files.createTempFile("batfish_client", null).toFile();
+         File tmpOutFile = Files.createTempFile("batfish_client", null)
+               .toFile();
          tmpOutFile.deleteOnExit();
-         
+
          FileUtils.copyFile(inFile, tmpOutFile);
          if (!inFile.delete()) {
             throw new BatfishException("Failed to delete temporary file: "
