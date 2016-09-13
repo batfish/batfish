@@ -41,6 +41,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String ISIS_L2_INTERFACE_MODE_VAR = "isisL2InterfaceMode";
 
+   private static final String MTU = "mtu";
+   
    private static final String NATIVE_VLAN_VAR = "nativeVlan";
 
    public static final String NULL_INTERFACE_NAME = "null_interface";
@@ -267,6 +269,8 @@ public final class Interface extends ComparableStructure<String> {
    private IsisInterfaceMode _isisL1InterfaceMode;
 
    private IsisInterfaceMode _isisL2InterfaceMode;
+   
+   private int _mtu;
 
    private int _nativeVlan;
 
@@ -376,6 +380,12 @@ public final class Interface extends ComparableStructure<String> {
       return _isisL2InterfaceMode;
    }
 
+   @JsonProperty(MTU)
+   public int getMtu()
+   {
+      return _mtu;
+   }
+   
    @JsonProperty(NATIVE_VLAN_VAR)
    public int getNativeVlan() {
       return _nativeVlan;
@@ -520,6 +530,12 @@ public final class Interface extends ComparableStructure<String> {
       _isisL2InterfaceMode = mode;
    }
 
+   @JsonProperty(MTU)
+   public void setMTU(int mtu)
+   {
+      _mtu = mtu;
+   }
+   
    @JsonProperty(NATIVE_VLAN_VAR)
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;

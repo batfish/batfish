@@ -57,6 +57,7 @@ if_stanza
    | isis_network_if_stanza
    | isis_passive_if_stanza
    | isis_tag_if_stanza
+   | mtu_if_stanza
    | no_ip_address_if_stanza
    | null_if_stanza
    | shutdown_if_stanza
@@ -216,6 +217,11 @@ isis_tag_if_stanza
    ISIS TAG tag = DEC NEWLINE
 ;
 
+mtu_if_stanza
+:
+   MTU mtu_size = DEC NEWLINE
+;
+   
 no_ip_address_if_stanza
 :
    NO IP ADDRESS NEWLINE

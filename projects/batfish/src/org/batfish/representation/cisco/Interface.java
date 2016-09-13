@@ -31,7 +31,7 @@ public class Interface extends ComparableStructure<String> {
    private static final long serialVersionUID = 1L;
 
    private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
-
+   
    public static double getDefaultBandwidth(String name) {
       Double bandwidth = null;
       if (name.startsWith("FastEthernet")) {
@@ -58,6 +58,13 @@ public class Interface extends ComparableStructure<String> {
       return bandwidth;
    }
 
+   private static final int DEFAULT_INTERFACE_MTU = 1500;
+   
+   public static int getDefaultMtu()
+   {
+      return DEFAULT_INTERFACE_MTU;
+   }
+   
    private int _accessVlan;
 
    private boolean _active;
@@ -73,6 +80,8 @@ public class Interface extends ComparableStructure<String> {
    private Integer _isisCost;
 
    private IsisInterfaceMode _isisInterfaceMode;
+   
+   private int _mtu;
 
    private int _nativeVlan;
 
@@ -153,6 +162,11 @@ public class Interface extends ComparableStructure<String> {
 
    public IsisInterfaceMode getIsisInterfaceMode() {
       return _isisInterfaceMode;
+   }
+   
+   public int getMtu()
+   {
+      return _mtu;
    }
 
    public int getNativeVlan() {
@@ -235,6 +249,11 @@ public class Interface extends ComparableStructure<String> {
       _isisInterfaceMode = mode;
    }
 
+   public void setMtu(int mtu)
+   {
+      _mtu = mtu;
+   }
+   
    public void setNativeVlan(int vlan) {
       _nativeVlan = vlan;
    }

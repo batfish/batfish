@@ -734,7 +734,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return IpProtocol.IP;
       }
       else if (ctx.IPV6() != null) {
-         return IpProtocol.IPv6;
+         return IpProtocol.IPV6;
       }
       else if (ctx.OSPF() != null) {
          return IpProtocol.OSPF;
@@ -909,7 +909,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNexusNeighborAddressFamilies = new HashSet<>();
    }
 
-   private void addInterface(String vrf, double bandwidth, String name) {
+   private void addInterface(String vrf, double bandwidth, int mtu, String name) {
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
          newInterface = new Interface(name);
@@ -921,6 +921,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentInterfaces.add(newInterface);
       newInterface.setBandwidth(bandwidth);
       newInterface.setVrf(vrf);
+      newInterface.setMtu(mtu);
    }
 
    @Override
@@ -1026,6 +1027,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
             : CiscoConfiguration.MASTER_VRF_NAME;
       double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
+      int mtu = Interface.getDefaultMtu();
+      
       String namePrefix = canonicalNamePrefix;
       for (Token part : ctx.iname.name_middle_parts) {
          namePrefix += part.getText();
@@ -1036,13 +1039,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          for (SubRange range : ranges) {
             for (int i = range.getStart(); i <= range.getEnd(); i++) {
                String name = namePrefix + i;
-               addInterface(vrf, bandwidth, name);
+               addInterface(vrf, bandwidth, mtu, name);
             }
          }
       }
       else {
          String name = namePrefix;
-         addInterface(vrf, bandwidth, name);
+         addInterface(vrf, bandwidth, mtu, name);
       }
       if (ctx.MULTIPOINT() != null) {
          todo(ctx, F_INTERFACE_MULTIPOINT);
@@ -1679,7 +1682,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       LineAction action = getAccessListAction(ctx.ala);
       IpProtocol protocol = toIpProtocol(ctx.prot);
       switch (protocol) {
-      case IPv6:
+      case IPV6:
       case IPv6_Frag:
       case IPv6_ICMP:
       case IPv6_NoNxt:
@@ -2295,6 +2298,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getManagementAccessGroups().add(name);
    }
 
+   @Override
+   public void exitMtu_if_stanza(Mtu_if_stanzaContext ctx) {
+     int mtu = toInteger(ctx.DEC());
+     for (Interface currentInterface : _currentInterfaces) {
+        currentInterface.setMtu(mtu);
+     }
+   }
    @Override
    public void exitNeighbor_group_rb_stanza(
          Neighbor_group_rb_stanzaContext ctx) {

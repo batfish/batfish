@@ -1273,7 +1273,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return IpProtocol.IPINIP;
       }
       else if (ctx.IPV6() != null) {
-         return IpProtocol.IPv6;
+         return IpProtocol.IPV6;
       }
       else if (ctx.OSPF() != null) {
          return IpProtocol.OSPF;
