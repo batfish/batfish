@@ -11,9 +11,19 @@ import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
 import org.batfish.z3.node.DebugExpr;
+import org.batfish.z3.node.DropAclExpr;
+import org.batfish.z3.node.DropAclInExpr;
+import org.batfish.z3.node.DropAclOutExpr;
 import org.batfish.z3.node.DropExpr;
+import org.batfish.z3.node.DropNoRouteExpr;
+import org.batfish.z3.node.DropNullRouteExpr;
 import org.batfish.z3.node.NodeAcceptExpr;
+import org.batfish.z3.node.NodeDropAclExpr;
+import org.batfish.z3.node.NodeDropAclInExpr;
+import org.batfish.z3.node.NodeDropAclOutExpr;
 import org.batfish.z3.node.NodeDropExpr;
+import org.batfish.z3.node.NodeDropNoRouteExpr;
+import org.batfish.z3.node.NodeDropNullRouteExpr;
 import org.batfish.z3.node.OrExpr;
 import org.batfish.z3.node.OriginateExpr;
 import org.batfish.z3.node.QueryExpr;
@@ -90,10 +100,66 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
             break;
 
          case DROP_ACL:
+            if (_finalNodes.size() > 0) {
+               for (String finalNode : _finalNodes) {
+                  NodeDropAclExpr drop = new NodeDropAclExpr(finalNode);
+                  finalActions.addDisjunct(drop);
+               }
+            }
+            else {
+               finalActions.addDisjunct(DropAclExpr.INSTANCE);
+            }
+            break;
+
          case DROP_ACL_IN:
+            if (_finalNodes.size() > 0) {
+               for (String finalNode : _finalNodes) {
+                  NodeDropAclInExpr drop = new NodeDropAclInExpr(finalNode);
+                  finalActions.addDisjunct(drop);
+               }
+            }
+            else {
+               finalActions.addDisjunct(DropAclInExpr.INSTANCE);
+            }
+            break;
+
          case DROP_ACL_OUT:
+            if (_finalNodes.size() > 0) {
+               for (String finalNode : _finalNodes) {
+                  NodeDropAclOutExpr drop = new NodeDropAclOutExpr(finalNode);
+                  finalActions.addDisjunct(drop);
+               }
+            }
+            else {
+               finalActions.addDisjunct(DropAclOutExpr.INSTANCE);
+            }
+            break;
+
          case DROP_NO_ROUTE:
+            if (_finalNodes.size() > 0) {
+               for (String finalNode : _finalNodes) {
+                  NodeDropNoRouteExpr drop = new NodeDropNoRouteExpr(finalNode);
+                  finalActions.addDisjunct(drop);
+               }
+            }
+            else {
+               finalActions.addDisjunct(DropNoRouteExpr.INSTANCE);
+            }
+            break;
+
          case DROP_NULL_ROUTE:
+            if (_finalNodes.size() > 0) {
+               for (String finalNode : _finalNodes) {
+                  NodeDropNullRouteExpr drop = new NodeDropNullRouteExpr(
+                        finalNode);
+                  finalActions.addDisjunct(drop);
+               }
+            }
+            else {
+               finalActions.addDisjunct(DropNullRouteExpr.INSTANCE);
+            }
+            break;
+
          case FORWARD:
          default:
             throw new BatfishException("unsupported action");

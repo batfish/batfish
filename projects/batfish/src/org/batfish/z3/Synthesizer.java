@@ -61,7 +61,12 @@ import org.batfish.z3.node.DebugExpr;
 import org.batfish.z3.node.DeclareRelExpr;
 import org.batfish.z3.node.DeclareVarExpr;
 import org.batfish.z3.node.DestinationRouteExpr;
+import org.batfish.z3.node.DropAclExpr;
+import org.batfish.z3.node.DropAclInExpr;
+import org.batfish.z3.node.DropAclOutExpr;
 import org.batfish.z3.node.DropExpr;
+import org.batfish.z3.node.DropNoRouteExpr;
+import org.batfish.z3.node.DropNullRouteExpr;
 import org.batfish.z3.node.EqExpr;
 import org.batfish.z3.node.ExternalDestinationIpExpr;
 import org.batfish.z3.node.ExternalSourceIpExpr;
@@ -70,7 +75,12 @@ import org.batfish.z3.node.InboundInterfaceExpr;
 import org.batfish.z3.node.IntExpr;
 import org.batfish.z3.node.LitIntExpr;
 import org.batfish.z3.node.NodeAcceptExpr;
+import org.batfish.z3.node.NodeDropAclExpr;
+import org.batfish.z3.node.NodeDropAclInExpr;
+import org.batfish.z3.node.NodeDropAclOutExpr;
 import org.batfish.z3.node.NodeDropExpr;
+import org.batfish.z3.node.NodeDropNoRouteExpr;
+import org.batfish.z3.node.NodeDropNullRouteExpr;
 import org.batfish.z3.node.NodeTransitExpr;
 import org.batfish.z3.node.NonInboundNullSrcZoneExpr;
 import org.batfish.z3.node.NonInboundSrcInterfaceExpr;
@@ -936,10 +946,12 @@ public class Synthesizer {
             conditions.addConjunct(destRoute);
             String ifaceOutName = currentRow.getInterface();
             PacketRelExpr action;
-            if (ifaceOutName.equals(FibRow.DROP_INTERFACE)
-                  || isLoopbackInterface(ifaceOutName)
+            if (isLoopbackInterface(ifaceOutName)
                   || CommonUtil.isNullInterface(ifaceOutName)) {
-               action = new NodeDropExpr(hostname);
+               action = new NodeDropNullRouteExpr(hostname);
+            }
+            else if (ifaceOutName.equals(FibRow.DROP_INTERFACE)) {
+               action = new NodeDropNoRouteExpr(hostname);
             }
             else {
                String nextHop = currentRow.getNextHop();
@@ -999,6 +1011,72 @@ public class Synthesizer {
          RuleExpr connectDrops = new RuleExpr(nodeDrop, DropExpr.INSTANCE);
          statements.add(connectDrops);
       }
+
+      statements.add(new Comment("Node drop_acl lead to universal drop_acl"));
+      for (String nodeName : _configurations.keySet()) {
+         NodeDropAclExpr nodeDrop = new NodeDropAclExpr(nodeName);
+         RuleExpr connectDrops = new RuleExpr(nodeDrop, DropAclExpr.INSTANCE);
+         statements.add(connectDrops);
+         NodeDropExpr nodeDropBase = new NodeDropExpr(nodeName);
+         RuleExpr connectNodeDrops = new RuleExpr(nodeDrop, nodeDropBase);
+         statements.add(connectNodeDrops);
+      }
+      statements.add(new RuleExpr(DropAclExpr.INSTANCE, DropExpr.INSTANCE));
+
+      statements
+            .add(new Comment("Node drop_acl_in lead to universal drop_acl_in"));
+      for (String nodeName : _configurations.keySet()) {
+         NodeDropAclInExpr nodeDrop = new NodeDropAclInExpr(nodeName);
+         RuleExpr connectDrops = new RuleExpr(nodeDrop, DropAclInExpr.INSTANCE);
+         statements.add(connectDrops);
+         NodeDropAclExpr nodeDropBase = new NodeDropAclExpr(nodeName);
+         RuleExpr connectNodeDrops = new RuleExpr(nodeDrop, nodeDropBase);
+         statements.add(connectNodeDrops);
+      }
+      statements
+            .add(new RuleExpr(DropAclInExpr.INSTANCE, DropAclExpr.INSTANCE));
+
+      statements.add(
+            new Comment("Node drop_acl_out lead to universal drop_acl_out"));
+      for (String nodeName : _configurations.keySet()) {
+         NodeDropAclOutExpr nodeDrop = new NodeDropAclOutExpr(nodeName);
+         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+               DropAclOutExpr.INSTANCE);
+         statements.add(connectDrops);
+         NodeDropAclExpr nodeDropBase = new NodeDropAclExpr(nodeName);
+         RuleExpr connectNodeDrops = new RuleExpr(nodeDrop, nodeDropBase);
+         statements.add(connectNodeDrops);
+      }
+      statements
+            .add(new RuleExpr(DropAclOutExpr.INSTANCE, DropAclExpr.INSTANCE));
+
+      statements.add(
+            new Comment("Node drop_no_route lead to universal drop_no_route"));
+      for (String nodeName : _configurations.keySet()) {
+         NodeDropNoRouteExpr nodeDrop = new NodeDropNoRouteExpr(nodeName);
+         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+               DropNoRouteExpr.INSTANCE);
+         statements.add(connectDrops);
+         NodeDropExpr nodeDropBase = new NodeDropExpr(nodeName);
+         RuleExpr connectNodeDrops = new RuleExpr(nodeDrop, nodeDropBase);
+         statements.add(connectNodeDrops);
+      }
+      statements.add(new RuleExpr(DropNoRouteExpr.INSTANCE, DropExpr.INSTANCE));
+
+      statements.add(new Comment(
+            "Node drop_null_route lead to universal drop_null_route"));
+      for (String nodeName : _configurations.keySet()) {
+         NodeDropNullRouteExpr nodeDrop = new NodeDropNullRouteExpr(nodeName);
+         RuleExpr connectDrops = new RuleExpr(nodeDrop,
+               DropNullRouteExpr.INSTANCE);
+         statements.add(connectDrops);
+         NodeDropExpr nodeDropBase = new NodeDropExpr(nodeName);
+         RuleExpr connectNodeDrops = new RuleExpr(nodeDrop, nodeDropBase);
+         statements.add(connectNodeDrops);
+      }
+      statements
+            .add(new RuleExpr(DropNullRouteExpr.INSTANCE, DropExpr.INSTANCE));
+
       return statements;
    }
 
@@ -1805,7 +1883,7 @@ public class Synthesizer {
             if (isFlowSink(hostname, ifaceName)) {
                continue;
             }
-            NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
+            NodeDropAclInExpr nodeDrop = new NodeDropAclInExpr(hostname);
             PreInInterfaceExpr preInIface = new PreInInterfaceExpr(hostname,
                   ifaceName);
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
@@ -1872,7 +1950,7 @@ public class Synthesizer {
          UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
-            NodeDropExpr nodeDrop = new NodeDropExpr(hostname);
+            NodeDropAclOutExpr nodeDrop = new NodeDropAclOutExpr(hostname);
             PreOutInterfaceExpr preOutIface = new PreOutInterfaceExpr(hostname,
                   ifaceName);
             PostOutInterfaceExpr postOutIface = new PostOutInterfaceExpr(
