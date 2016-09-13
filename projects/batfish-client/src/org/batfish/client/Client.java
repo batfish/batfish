@@ -1148,9 +1148,31 @@ public class Client {
                         .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
                   ObjectMapper mapper = new BatfishObjectMapper();
-                  JsonNode referenceJson = mapper.readTree(referenceOutput);
-                  JsonNode testJson = mapper.readTree(testOutput);
-                  if (CommonUtil.checkJsonEqual(referenceJson, testJson)) {
+
+                  // first rewrite reference string using local implementation
+                  Answer referenceAnswer;
+                  try {
+                     referenceAnswer = mapper.readValue(referenceOutput,
+                           Answer.class);
+                  }
+                  catch (Exception e) {
+                     throw new BatfishException(
+                           "Error reading reference output using current schema (reference output is likely obsolete)",
+                           e);
+                  }
+                  String referenceAnswerString = mapper
+                        .writeValueAsString(referenceAnswer);
+
+                  // then rewrite new answer string using local implementation
+                  Answer testAnswer = mapper.readValue(testOutput,
+                        Answer.class);
+                  String testAnswerString = mapper
+                        .writeValueAsString(testAnswer);
+
+                  // due to options chosen in BatfishObjectMapper, if json
+                  // outputs were equal, then strings should be equal
+
+                  if (referenceAnswerString.equals(testAnswerString)) {
                      testPassed = true;
                   }
                }

@@ -172,6 +172,7 @@ public final class GeneratedRoute extends AbstractRoute
    }
 
    @Override
+   @JsonIgnore
    public int getTag() {
       return NO_TAG;
    }

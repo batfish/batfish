@@ -1240,7 +1240,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return IpProtocol.AHP;
       }
       else if (ctx.DSTOPTS() != null) {
-         return IpProtocol.IPv6_Opts;
+         return IpProtocol.IPV6_OPTS;
       }
       else if (ctx.EGP() != null) {
          return IpProtocol.EGP;
@@ -1249,7 +1249,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return IpProtocol.ESP;
       }
       else if (ctx.FRAGMENT() != null) {
-         return IpProtocol.IPv6_Frag;
+         return IpProtocol.IPV6_FRAG;
       }
       else if (ctx.GRE() != null) {
          return IpProtocol.GRE;
@@ -1261,10 +1261,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          return IpProtocol.ICMP;
       }
       else if (ctx.ICMP6() != null) {
-         return IpProtocol.IPv6_ICMP;
+         return IpProtocol.IPV6_ICMP;
       }
       else if (ctx.ICMPV6() != null) {
-         return IpProtocol.IPv6_ICMP;
+         return IpProtocol.IPV6_ICMP;
       }
       else if (ctx.IGMP() != null) {
          return IpProtocol.IGMP;

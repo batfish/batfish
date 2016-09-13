@@ -1156,7 +1156,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
       newIface.setBandwidth(iface.getBandwidth());
-      newIface.setMTU(iface.getMtu());
+      newIface.setMtu(iface.getMtu());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
          newIface.getAllPrefixes().add(iface.getPrefix());
@@ -2382,7 +2382,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       processFailoverSettings();
 
       // convert Interface MTUs
-     
+
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
          AsPathAccessList apList = toAsPathAccessList(pathList);

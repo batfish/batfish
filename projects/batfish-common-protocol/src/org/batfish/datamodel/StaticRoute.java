@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class StaticRoute extends AbstractRoute
@@ -101,6 +102,7 @@ public class StaticRoute extends AbstractRoute
    }
 
    @Override
+   @JsonIgnore
    public Integer getMetric() {
       return 0;
    }

@@ -909,7 +909,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNexusNeighborAddressFamilies = new HashSet<>();
    }
 
-   private void addInterface(String vrf, double bandwidth, int mtu, String name) {
+   private void addInterface(String vrf, double bandwidth, int mtu,
+         String name) {
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
          newInterface = new Interface(name);
@@ -1028,7 +1029,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             : CiscoConfiguration.MASTER_VRF_NAME;
       double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
       int mtu = Interface.getDefaultMtu();
-      
+
       String namePrefix = canonicalNamePrefix;
       for (Token part : ctx.iname.name_middle_parts) {
          namePrefix += part.getText();
@@ -1683,11 +1684,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       IpProtocol protocol = toIpProtocol(ctx.prot);
       switch (protocol) {
       case IPV6:
-      case IPv6_Frag:
-      case IPv6_ICMP:
-      case IPv6_NoNxt:
-      case IPv6_Opts:
-      case IPv6_Route:
+      case IPV6_FRAG:
+      case IPV6_ICMP:
+      case IPV6_NO_NXT:
+      case IPV6_OPTS:
+      case IPV6_ROUTE:
          _currentExtendedAcl.setIpv6(true);
          // $CASES-OMITTED$
       default:
@@ -2300,11 +2301,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitMtu_if_stanza(Mtu_if_stanzaContext ctx) {
-     int mtu = toInteger(ctx.DEC());
-     for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setMtu(mtu);
-     }
+      int mtu = toInteger(ctx.DEC());
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setMtu(mtu);
+      }
    }
+
    @Override
    public void exitNeighbor_group_rb_stanza(
          Neighbor_group_rb_stanzaContext ctx) {
