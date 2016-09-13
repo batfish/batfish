@@ -66,7 +66,7 @@ public enum IpProtocol {
    IPIP(94),
    IPLT(129),
    IPPC(67),
-   IPv6(41),
+   IPV6(41),
    IPv6_Frag(44),
    IPv6_ICMP(58),
    IPv6_NoNxt(59),
