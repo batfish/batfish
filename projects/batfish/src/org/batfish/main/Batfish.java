@@ -1,25 +1,13 @@
 package org.batfish.main;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -30,8 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,7 +35,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Warning;
-import org.batfish.common.util.BatfishObjectInputStream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -131,7 +116,6 @@ import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.nls.NlsDataPlanePlugin;
 import org.batfish.plugin.DataPlanePlugin;
-import org.batfish.plugin.Plugin;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
@@ -153,30 +137,22 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
+
+import plugin.PluginClient;
+import plugin.PluginClientType;
 
 /**
  * This class encapsulates the main control logic for Batfish.
  */
-public class Batfish implements AutoCloseable {
+public class Batfish extends PluginClient implements AutoCloseable {
 
    private static final String BASE_TESTRIG_TAG = "BASE";
-
-   private static final String CLASS_EXTENSION = ".class";
 
    private static final String DELTA_TESTRIG_TAG = "DELTA";
 
    private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
    private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
-
-   /**
-    * A byte-array containing the first 4 bytes of the header for a file that is
-    * the output of java serialization
-    */
-   private static final byte[] JAVA_SERIALIZED_OBJECT_HEADER = { (byte) 0xac,
-         (byte) 0xed, (byte) 0x00, (byte) 0x05 };
 
    /**
     * Role name for generated stubs
@@ -424,8 +400,6 @@ public class Batfish implements AutoCloseable {
 
    private TestrigSettings _baseTestrigSettings;
 
-   private ClassLoader _currentClassLoader;
-
    private DataPlanePlugin _dataPlanePlugin;
 
    private TestrigSettings _deltaTestrigSettings;
@@ -445,6 +419,10 @@ public class Batfish implements AutoCloseable {
    private long _timerCount;
 
    public Batfish(Settings settings) {
+      super(settings.getSerializeToText(),
+            settings.getPluginDir() != null
+                  ? Collections.singletonList(settings.getPluginDir())
+                  : Collections.emptyList());
       _settings = settings;
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getTestrigSettings();
@@ -895,30 +873,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   public Object deserializeObject(Path inputFile) {
-      FileInputStream fis;
-      Object o = null;
-      ObjectInputStream ois;
-      try {
-         fis = new FileInputStream(inputFile.toFile());
-         if (!isJavaSerializationData(inputFile)) {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            xstream.setClassLoader(_currentClassLoader);
-            ois = xstream.createObjectInputStream(fis);
-         }
-         else {
-            ois = new BatfishObjectInputStream(fis, _currentClassLoader);
-         }
-         o = ois.readObject();
-         ois.close();
-      }
-      catch (IOException | ClassNotFoundException e) {
-         throw new BatfishException("Failed to deserialize object from file: "
-               + inputFile.toString(), e);
-      }
-      return o;
-   }
-
    public Map<String, GenericConfigObject> deserializeVendorConfigurations(
          Path serializedVendorConfigPath) {
       _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
@@ -1285,10 +1239,6 @@ public class Batfish implements AutoCloseable {
       return configurations;
    }
 
-   public ClassLoader getCurrentClassLoader() {
-      return _currentClassLoader;
-   }
-
    public DataPlanePlugin getDataPlanePlugin() {
       return _dataPlanePlugin;
    }
@@ -1449,6 +1399,11 @@ public class Batfish implements AutoCloseable {
 
    public TestrigSettings getTestrigSettings() {
       return _testrigSettings;
+   }
+
+   @Override
+   public PluginClientType getType() {
+      return PluginClientType.BATFISH;
    }
 
    private void histogram(Path testRigPath) {
@@ -1754,22 +1709,6 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   private boolean isJavaSerializationData(Path inputFile) {
-      try (FileInputStream i = new FileInputStream(inputFile.toFile())) {
-         int headerLength = JAVA_SERIALIZED_OBJECT_HEADER.length;
-         byte[] headerBytes = new byte[headerLength];
-         int result = i.read(headerBytes, 0, headerLength);
-         if (result != headerLength) {
-            throw new BatfishException("Read wrong number of bytes");
-         }
-         return Arrays.equals(headerBytes, JAVA_SERIALIZED_OBJECT_HEADER);
-      }
-      catch (IOException e) {
-         throw new BatfishException(
-               "Could not read header from file: " + inputFile.toString(), e);
-      }
-   }
-
    public Map<String, Configuration> loadConfigurations() {
       return loadConfigurations(_testrigSettings);
    }
@@ -1783,100 +1722,6 @@ public class Batfish implements AutoCloseable {
       processDeltaConfigurations(configurations, testrigSettings);
       disableUnusableVpnInterfaces(configurations, testrigSettings);
       return configurations;
-   }
-
-   private void loadPluginJar(Path path) {
-      /*
-       * Adapted from
-       * http://stackoverflow.com/questions/11016092/how-to-load-classes-at-
-       * runtime-from-a-folder-or-jar Retrieved: 2016-08-31 Original Authors:
-       * Kevin Crain http://stackoverflow.com/users/2688755/kevin-crain
-       * Apfelsaft http://stackoverflow.com/users/1447641/apfelsaft License:
-       * https://creativecommons.org/licenses/by-sa/3.0/
-       */
-      String pathString = path.toString();
-      if (pathString.endsWith(".jar")) {
-         try {
-            URL[] urls = { new URL("jar:file:" + pathString + "!/") };
-            URLClassLoader cl = URLClassLoader.newInstance(urls,
-                  _currentClassLoader);
-            _currentClassLoader = cl;
-            JarFile jar = new JarFile(path.toFile());
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-               JarEntry element = entries.nextElement();
-               String name = element.getName();
-               if (element.isDirectory() || !name.endsWith(CLASS_EXTENSION)) {
-                  continue;
-               }
-               String className = name
-                     .substring(0, name.length() - CLASS_EXTENSION.length())
-                     .replace("/", ".");
-               try {
-                  cl.loadClass(className);
-                  Class<?> pluginClass = Class.forName(className, true, cl);
-                  if (!Plugin.class.isAssignableFrom(pluginClass)) {
-                     continue;
-                  }
-                  Constructor<?> pluginConstructor;
-                  try {
-                     pluginConstructor = pluginClass
-                           .getConstructor(Batfish.class);
-                  }
-                  catch (NoSuchMethodException | SecurityException e) {
-                     throw new BatfishException(
-                           "Could not find constructor taking argument of type '"
-                                 + getClass().getSimpleName() + "' in plugin: '"
-                                 + className + "'",
-                           e);
-                  }
-                  Object pluginObj;
-                  try {
-                     pluginObj = pluginConstructor.newInstance(Batfish.this);
-                  }
-                  catch (InstantiationException | IllegalAccessException
-                        | IllegalArgumentException
-                        | InvocationTargetException e) {
-                     throw new BatfishException("Could not instantiate plugin '"
-                           + className + "' from constructor", e);
-                  }
-                  Plugin plugin = (Plugin) pluginObj;
-                  plugin.initialize();
-
-               }
-               catch (ClassNotFoundException e) {
-                  jar.close();
-                  throw new BatfishException(
-                        "Unexpected error loading classes from jar", e);
-               }
-            }
-            jar.close();
-         }
-         catch (IOException e) {
-            throw new BatfishException(
-                  "Error loading plugin jar: '" + path.toString() + "'", e);
-         }
-      }
-   }
-
-   private void loadPlugins() {
-      Path pluginDir = _settings.getPluginDir();
-      if (pluginDir != null) {
-         try {
-            Files.walkFileTree(pluginDir, new SimpleFileVisitor<Path>() {
-               @Override
-               public FileVisitResult visitFile(Path path,
-                     BasicFileAttributes attrs) throws IOException {
-                  loadPluginJar(path);
-                  return FileVisitResult.CONTINUE;
-               }
-            });
-         }
-         catch (IOException e) {
-            throw new BatfishException("Error walking through plugin dir: '"
-                  + pluginDir.toString() + "'", e);
-         }
-      }
    }
 
    public Topology loadTopology(TestrigSettings testrigSettings) {
@@ -2316,10 +2161,13 @@ public class Batfish implements AutoCloseable {
    }
 
    public Answer run() {
-      _currentClassLoader = getClass().getClassLoader();
-      _nls = new NlsDataPlanePlugin(this);
-      _nls.initialize();
-      _dataPlanePlugin = _nls;
+      loadPlugins();
+      if (_dataPlanePlugin == null) {
+         _nls = new NlsDataPlanePlugin();
+         _nls.initialize(this);
+         _dataPlanePlugin = _nls;
+      }
+
       boolean action = false;
       Answer answer = new Answer();
 
@@ -2327,8 +2175,6 @@ public class Batfish implements AutoCloseable {
          _nls.printAllPredicateSemantics();
          return answer;
       }
-
-      loadPlugins();
 
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
@@ -2670,29 +2516,6 @@ public class Batfish implements AutoCloseable {
 
       }
       return answer;
-   }
-
-   public void serializeObject(Object object, Path outputFile) {
-      FileOutputStream fos;
-      ObjectOutputStream oos;
-      try {
-         fos = new FileOutputStream(outputFile.toFile());
-         if (_settings.getSerializeToText()) {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            oos = xstream.createObjectOutputStream(fos);
-         }
-         else {
-            oos = new ObjectOutputStream(fos);
-         }
-         oos.writeObject(object);
-         oos.close();
-      }
-      catch (IOException e) {
-         throw new BatfishException(
-               "Failed to serialize object to output file: "
-                     + outputFile.toString(),
-               e);
-      }
    }
 
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {

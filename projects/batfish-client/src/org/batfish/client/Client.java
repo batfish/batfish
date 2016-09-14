@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +45,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
+import plugin.PluginClient;
+import plugin.PluginClientType;
 
-public class Client {
+public class Client extends PluginClient {
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -74,6 +77,7 @@ public class Client {
    private BfCoordWorkHelper _workHelper;
 
    public Client(Settings settings) {
+      super(false, Collections.emptyList());
       _settings = settings;
 
       switch (_settings.getRunMode()) {
@@ -426,6 +430,11 @@ public class Client {
 
    public BatfishLogger getLogger() {
       return _logger;
+   }
+
+   @Override
+   public PluginClientType getType() {
+      return PluginClientType.CLIENT;
    }
 
    private void initHelpers() {
@@ -1369,4 +1378,5 @@ public class Client {
    private boolean validCommandUsage(String[] words) {
       return true;
    }
+
 }

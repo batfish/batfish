@@ -173,8 +173,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    private File _tmpLogicDir;
 
-   public NlsDataPlanePlugin(Batfish batfish) {
-      super(batfish);
+   public NlsDataPlanePlugin() {
       _entityTables = new HashMap<>();
       _configurations = new HashMap<>();
    }
@@ -460,6 +459,16 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       }
       notes = disposition + notes;
       return new FlowTrace(disposition, flowTraceHops, notes);
+   }
+
+   @Override
+   public void dataPlanePluginInitialize() {
+      if (_settings.getQuery() || _settings.getPrintSemantics()
+            || _settings.getDataPlane() || _settings.getWriteRoutes()
+            || _settings.getWriteBgpAdvertisements()
+            || _settings.getWriteIbgpNeighbors() || _settings.getAnswer()) {
+         initPredicateInfo();
+      }
    }
 
    private void dumpControlPlaneFacts(TestrigSettings testrigSettings,
@@ -801,16 +810,6 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          _entityTables.put(testrigSettings, entityTable);
       }
       return entityTable;
-   }
-
-   @Override
-   public void initialize() {
-      if (_settings.getQuery() || _settings.getPrintSemantics()
-            || _settings.getDataPlane() || _settings.getWriteRoutes()
-            || _settings.getWriteBgpAdvertisements()
-            || _settings.getWriteIbgpNeighbors() || _settings.getAnswer()) {
-         initPredicateInfo();
-      }
    }
 
    public void initPredicateInfo() {

@@ -10,10 +10,9 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.RouteSet;
-import org.batfish.main.Batfish;
 import org.batfish.main.Settings.TestrigSettings;
 
-public abstract class DataPlanePlugin extends Plugin {
+public abstract class DataPlanePlugin extends BatfishPlugin {
 
    private static DataPlanePlugin DATA_PLANE_PLUGIN;
 
@@ -37,12 +36,17 @@ public abstract class DataPlanePlugin extends Plugin {
       DATA_PLANE_PLUGIN_CLASS = dataPlanePlugin;
    }
 
-   public DataPlanePlugin(Batfish batfish) {
-      super(batfish);
+   @Override
+   protected final void batfishPluginInitialize() {
+      _batfish.setDataPlanePlugin(this);
+      dataPlanePluginInitialize();
    }
 
    public abstract Answer computeDataPlane(TestrigSettings testrigSettings,
          boolean differentialContext);
+
+   protected void dataPlanePluginInitialize() {
+   }
 
    public abstract AdvertisementSet getAdvertisements(
          TestrigSettings testrigSettings);
