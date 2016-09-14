@@ -46,7 +46,6 @@ public class BgpSessionCheckAnswerer extends Answerer {
       _batfish.checkConfigurations();
       Map<String, Configuration> configurations = _batfish
             .loadConfigurations(testrigSettings);
-      _batfish.initRemoteBgpNeighbors(configurations);
 
       BgpSessionCheckAnswerElement answerElement = new BgpSessionCheckAnswerElement();
       Set<Ip> allInterfaceIps = new HashSet<>();
@@ -54,23 +53,26 @@ public class BgpSessionCheckAnswerer extends Answerer {
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       for (Configuration c : configurations.values()) {
          for (Interface i : c.getInterfaces().values()) {
-            if (i.getPrefix() != null) {
-               for (Prefix prefix : i.getAllPrefixes()) {
-                  Ip address = prefix.getAddress();
-                  if (i.isLoopback(c.getConfigurationFormat())) {
-                     loopbackIps.add(address);
+            if (i.getActive()) {
+               if (i.getPrefix() != null) {
+                  for (Prefix prefix : i.getAllPrefixes()) {
+                     Ip address = prefix.getAddress();
+                     if (i.isLoopback(c.getConfigurationFormat())) {
+                        loopbackIps.add(address);
+                     }
+                     allInterfaceIps.add(address);
+                     Set<String> currentIpOwners = ipOwners.get(address);
+                     if (currentIpOwners == null) {
+                        currentIpOwners = new HashSet<>();
+                        ipOwners.put(address, currentIpOwners);
+                     }
+                     currentIpOwners.add(c.getHostname());
                   }
-                  allInterfaceIps.add(address);
-                  Set<String> currentIpOwners = ipOwners.get(address);
-                  if (currentIpOwners == null) {
-                     currentIpOwners = new HashSet<>();
-                     ipOwners.put(address, currentIpOwners);
-                  }
-                  currentIpOwners.add(c.getHostname());
                }
             }
          }
       }
+      _batfish.initRemoteBgpNeighbors(configurations, ipOwners);
       for (Configuration c : configurations.values()) {
          if (!node1Regex.matcher(c.getHostname()).matches()) {
             continue;

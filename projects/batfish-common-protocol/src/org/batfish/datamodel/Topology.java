@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -75,10 +74,6 @@ public class Topology implements Serializable {
    }
 
    public void removeInterface(NodeInterfacePair iface) {
-      if (_interfaceEdges == null) {
-         throw new BatfishException(
-               "Operation not supported on deserialized topology");
-      }
       EdgeSet interfaceEdges = _interfaceEdges.get(iface);
       if (interfaceEdges != null) {
          _edges.removeAll(interfaceEdges);
@@ -86,10 +81,6 @@ public class Topology implements Serializable {
    }
 
    public void removeNode(String hostname) {
-      if (_nodeEdges == null) {
-         throw new BatfishException(
-               "Operation not supported on deserialized topology");
-      }
       EdgeSet nodeEdges = _nodeEdges.get(hostname);
       if (nodeEdges != null) {
          _edges.removeAll(nodeEdges);

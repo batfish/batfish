@@ -673,6 +673,27 @@ public class Batfish implements AutoCloseable {
       return flowSinks;
    }
 
+   public Map<Ip, Set<String>> computeIpOwners(
+         Map<String, Configuration> configurations) {
+      Map<Ip, Set<String>> ipOwners = new HashMap<>();
+      configurations.forEach((hostname, c) -> {
+         for (Interface i : c.getInterfaces().values()) {
+            if (i.getActive()) {
+               i.getAllPrefixes().stream().map(p -> p.getAddress())
+                     .forEach(ip -> {
+                        Set<String> owners = ipOwners.get(ip);
+                        if (owners == null) {
+                           owners = new HashSet<>();
+                           ipOwners.put(ip, owners);
+                        }
+                        owners.add(hostname);
+                     });
+            }
+         }
+      });
+      return ipOwners;
+   }
+
    public <Key, Result> void computeNodFirstUnsatOutput(
          List<NodFirstUnsatJob<Key, Result>> jobs, Map<Key, Result> output) {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
@@ -707,16 +728,13 @@ public class Batfish implements AutoCloseable {
 
    public Topology computeTopology(Map<String, Configuration> configurations,
          TestrigSettings testrigSettings) {
-      EnvironmentSettings envSettings = testrigSettings
-            .getEnvironmentSettings();
       Topology topology = computeTopology(testrigSettings.getTestRigPath(),
             configurations);
-      Path edgeBlacklistPath = envSettings.getEdgeBlacklistPath();
       EdgeSet blacklistEdges = getEdgeBlacklist(testrigSettings);
-      if (edgeBlacklistPath != null) {
-         if (Files.exists(edgeBlacklistPath)) {
-            EdgeSet edges = topology.getEdges();
-            edges.removeAll(blacklistEdges);
+      if (blacklistEdges != null) {
+         EdgeSet edges = topology.getEdges();
+         edges.removeAll(blacklistEdges);
+         if (blacklistEdges.size() > 0) {
          }
       }
       NodeSet blacklistNodes = getNodeBlacklist(testrigSettings);
@@ -732,7 +750,8 @@ public class Batfish implements AutoCloseable {
             topology.removeInterface(blacklistInterface);
          }
       }
-      return topology;
+      Topology prunedTopology = new Topology(topology.getEdges());
+      return prunedTopology;
    }
 
    private Topology computeTopology(Path testRigPath,
@@ -1608,8 +1627,8 @@ public class Batfish implements AutoCloseable {
       }
    }
 
-   public void initRemoteBgpNeighbors(
-         Map<String, Configuration> configurations) {
+   public void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
+         Map<Ip, Set<String>> ipOwners) {
       Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
       Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
       for (Configuration node : configurations.values()) {
@@ -1630,7 +1649,8 @@ public class Batfish implements AutoCloseable {
                         + bgpNeighbor);
                }
                Ip localAddress = bgpNeighbor.getLocalIp();
-               if (localAddress == null) {
+               if (localAddress == null || !ipOwners.containsKey(localAddress)
+                     || !ipOwners.get(localAddress).contains(hostname)) {
                   continue;
                }
                remoteAddresses.put(bgpNeighbor, remoteAddress);

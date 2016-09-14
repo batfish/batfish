@@ -1,6 +1,7 @@
 package org.batfish.answerer;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -145,7 +146,9 @@ public class NeighborsAnswerer extends Answerer {
    private void initRemoteBgpNeighbors(Batfish batfish,
          Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
-         batfish.initRemoteBgpNeighbors(configurations);
+         Map<Ip, Set<String>> ipOwners = _batfish
+               .computeIpOwners(configurations);
+         batfish.initRemoteBgpNeighbors(configurations, ipOwners);
          _remoteBgpNeighborsInitialized = true;
       }
    }
