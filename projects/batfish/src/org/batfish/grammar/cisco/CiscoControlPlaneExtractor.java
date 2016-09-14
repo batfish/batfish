@@ -1004,7 +1004,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_currentExtendedAcl == null) {
          _currentExtendedAcl = new ExtendedAccessList(name);
          _currentExtendedAcl.setIpv6(ipv6);
-         _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+         if (!ipv6) {
+            _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
+         }
       }
    }
 
@@ -1388,7 +1390,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_currentStandardAcl == null) {
          _currentStandardAcl = new StandardAccessList(name);
          _currentStandardAcl.setIpv6(ipv6);
-         _configuration.getStandardAcls().put(name, _currentStandardAcl);
+         if (!ipv6) {
+            _configuration.getStandardAcls().put(name, _currentStandardAcl);
+         }
       }
    }
 
