@@ -1,4 +1,4 @@
 *.suo
-testdata
-wwwroot
-doc
+/testdata
+/wwwroot
+/doc

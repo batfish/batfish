@@ -1,8 +1,8 @@
 *.tokens
-bin
-cygwin-symlink-restore-data
-doc
-out
+/bin
+/cygwin-symlink-restore-data
+/doc
+/out
 BatfishTopologyLexer*.java
 BatfishTopologyParser*.java
 CiscoLexer*.java
@@ -25,4 +25,3 @@ RoleLexer*.java
 RoleParser*.java
 VyosLexer*.java
 VyosParser*.java
-/bin/

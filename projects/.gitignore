@@ -1,2 +1,2 @@
-cygwin-symlink-restore-data
-.DS_store
+/cygwin-symlink-restore-data
+/.DS_store

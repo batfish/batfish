@@ -1,4 +1,5 @@
-bin
-out
-doc
-client
+/bin
+/out
+/doc
+/client
+/containers
