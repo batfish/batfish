@@ -28,9 +28,12 @@ public class MatchCommunitySet extends AbstractBooleanExpr {
    public Result evaluate(Environment environment,
          AbstractRouteBuilder<?> outputRoute) {
       Result result = new Result();
-      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
-      boolean match = _expr.matchSingleCommunity(environment,
-            bgpRoute.getCommunities());
+      boolean match = false;
+      if (environment.getOriginalRoute() instanceof BgpRoute) {
+         BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+         match = _expr.matchSingleCommunity(environment,
+               bgpRoute.getCommunities());
+      }
       result.setBooleanValue(match);
       return result;
    }
