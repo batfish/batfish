@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.CommunityList;
@@ -2364,6 +2365,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       Ip nextHopIp = staticRoute.getNextHopIp();
       Prefix prefix = staticRoute.getPrefix();
       String nextHopInterface = staticRoute.getNextHopInterface();
+      if (nextHopInterface != null
+            && CommonUtil.isNullInterface(nextHopInterface)) {
+         nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+      }
       Integer oldTag = staticRoute.getTag();
       int tag;
       tag = oldTag != null ? oldTag : -1;
