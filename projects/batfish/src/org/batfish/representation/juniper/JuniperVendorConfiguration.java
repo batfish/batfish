@@ -42,13 +42,17 @@ import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.PolicyMapSetNextHopLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -62,6 +66,8 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
    private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
+
+   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
 
    private static final String FILTER = "filter";
 
@@ -115,6 +121,26 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
    private BgpProcess createBgpProcess() {
       BgpProcess proc = new BgpProcess();
       BgpGroup mg = _defaultRoutingInstance.getMasterBgpGroup();
+
+      // set up default export policy (accept bgp routes)
+      RoutingPolicy defaultBgpExportPolicy = new RoutingPolicy(
+            DEFAULT_BGP_EXPORT_POLICY_NAME);
+      _c.getRoutingPolicies().put(DEFAULT_BGP_EXPORT_POLICY_NAME,
+            defaultBgpExportPolicy);
+      If defaultBgpExportPolicyConditional = new If();
+      defaultBgpExportPolicy.getStatements()
+            .add(defaultBgpExportPolicyConditional);
+      defaultBgpExportPolicyConditional.getTrueStatements()
+            .add(Statements.ExitAccept.toStaticStatement());
+      defaultBgpExportPolicyConditional.getFalseStatements()
+            .add(Statements.ExitReject.toStaticStatement());
+      Disjunction isBgp = new Disjunction();
+      defaultBgpExportPolicyConditional.setGuard(isBgp);
+      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
+      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
+      CallExpr callDefaultBgpExportPolicy = new CallExpr(
+            DEFAULT_BGP_EXPORT_POLICY_NAME);
+
       if (mg.getLocalAs() == null) {
          Integer defaultRoutingInstanceAs = _defaultRoutingInstance.getAs();
          if (defaultRoutingInstanceAs == null) {
@@ -168,7 +194,23 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
          }
          neighbor.setAdvertiseInactive(advertiseInactive);
          neighbor.setGroup(ig.getGroupName());
+
          // import policies
+         String peerImportPolicyName = "~PEER_IMPORT_POLICY:"
+               + ig.getRemoteAddress().toString() + "~";
+         neighbor.setImportPolicy(peerImportPolicyName);
+         RoutingPolicy peerImportPolicy = new RoutingPolicy(
+               peerImportPolicyName);
+         _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
+         If peerImportPolicyConditional = new If();
+         // default import policy is to accept
+         peerImportPolicy.getStatements()
+               .add(Statements.SetDefaultActionAccept.toStaticStatement());
+         peerImportPolicy.getStatements().add(peerImportPolicyConditional);
+         peerImportPolicyConditional.getTrueStatements()
+               .add(Statements.ExitAccept.toStaticStatement());
+         Disjunction matchSomeImportPolicy = new Disjunction();
+         peerImportPolicyConditional.setGuard(matchSomeImportPolicy);
          for (String importPolicyName : ig.getImportPolicies()) {
             PolicyMap importPolicy = _c.getPolicyMaps().get(importPolicyName);
             if (importPolicy == null) {
@@ -180,9 +222,26 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
                      ig.getImportPolicies(), "BGP import policy for neighbor: "
                            + ig.getRemoteAddress().toString());
                neighbor.getInboundPolicyMaps().add(importPolicy);
+               CallExpr callPolicy = new CallExpr(importPolicyName);
+               matchSomeImportPolicy.getDisjuncts().add(callPolicy);
             }
          }
+
          // export policies
+         String peerExportPolicyName = "~PEER_EXPORT_POLICY:"
+               + ig.getRemoteAddress().toString() + "~";
+         neighbor.setExportPolicy(peerExportPolicyName);
+         RoutingPolicy peerExportPolicy = new RoutingPolicy(
+               peerExportPolicyName);
+         _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
+         If peerExportPolicyConditional = new If();
+         peerExportPolicy.getStatements().add(peerExportPolicyConditional);
+         peerExportPolicyConditional.getTrueStatements()
+               .add(Statements.ExitAccept.toStaticStatement());
+         peerImportPolicyConditional.getFalseStatements()
+               .add(Statements.ExitReject.toStaticStatement());
+         Disjunction matchSomeExportPolicy = new Disjunction();
+         peerExportPolicyConditional.setGuard(matchSomeExportPolicy);
          for (String exportPolicyName : ig.getExportPolicies()) {
             PolicyMap exportPolicy = _c.getPolicyMaps().get(exportPolicyName);
             if (exportPolicy == null) {
@@ -194,8 +253,12 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
                      ig.getExportPolicies(), "BGP export policy for neighbor: "
                            + ig.getRemoteAddress().toString());
                neighbor.getOutboundPolicyMaps().add(exportPolicy);
+               CallExpr callPolicy = new CallExpr(exportPolicyName);
+               matchSomeExportPolicy.getDisjuncts().add(callPolicy);
             }
          }
+         matchSomeExportPolicy.getDisjuncts().add(callDefaultBgpExportPolicy);
+
          // inherit local-as
          neighbor.setLocalAs(ig.getLocalAs());
 
@@ -452,10 +515,20 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
             .replace('.', '_');
       String policyName = "~AGGREGATE_" + policyNameSuffix + "~";
       PolicyMap policy = new PolicyMap(policyName);
+      RoutingPolicy routingPolicy = new RoutingPolicy(policyName);
+      If routingPolicyConditional = new If();
+      routingPolicy.getStatements().add(routingPolicyConditional);
+      routingPolicyConditional.getTrueStatements()
+            .add(Statements.ExitAccept.toStaticStatement());
+      routingPolicyConditional.getFalseStatements()
+            .add(Statements.ExitReject.toStaticStatement());
       PolicyMapClause clause = new PolicyMapClause();
       policy.getClauses().add(clause);
       clause.setAction(PolicyMapAction.PERMIT);
       String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
+      MatchPrefixSet isContributingRoute = new MatchPrefixSet(
+            new NamedPrefixSet(rflName));
+      routingPolicyConditional.setGuard(isContributingRoute);
       RouteFilterList rfList = new RouteFilterList(rflName);
       rfList.addLine(new org.batfish.datamodel.RouteFilterLine(
             LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
@@ -466,7 +539,9 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       org.batfish.datamodel.GeneratedRoute newRoute = new org.batfish.datamodel.GeneratedRoute(
             prefix, administrativeCost, policies);
       newRoute.setDiscard(true);
+      newRoute.setGenerationPolicy(policyName);
       _c.getPolicyMaps().put(policyName, policy);
+      _c.getRoutingPolicies().put(policyName, routingPolicy);
       _c.getRouteFilterLists().put(rflName, rfList);
       return newRoute;
    }
@@ -500,21 +575,41 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
          metric = DEFAULT_AGGREGATE_ROUTE_COST;
       }
       Set<PolicyMap> policies = new LinkedHashSet<>();
-      for (String policyName : route.getPolicies()) {
-         PolicyMap policy = _c.getPolicyMaps().get(policyName);
-         if (policy == null) {
-            _w.redFlag("missing generated route policy: '" + policyName + "'");
-         }
-         else {
-            setPolicyStatementReferent(policyName, route.getPolicies(),
-                  "Generated route policy for prefix: "
-                        + route.getPrefix().toString());
-            policies.add(policy);
+      String generationPolicyName = null;
+      if (!route.getPolicies().isEmpty()) {
+         generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix.toString()
+               + "~";
+         RoutingPolicy generationPolicy = new RoutingPolicy(
+               generationPolicyName);
+         _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
+         If generationPolicyConditional = new If();
+         Disjunction matchSomeGenerationPolicy = new Disjunction();
+         generationPolicyConditional.setGuard(matchSomeGenerationPolicy);
+         generationPolicyConditional.getTrueStatements()
+               .add(Statements.ExitAccept.toStaticStatement());
+         generationPolicyConditional.getFalseStatements()
+               .add(Statements.ExitReject.toStaticStatement());
+         generationPolicy.getStatements().add(generationPolicyConditional);
+         for (String policyName : route.getPolicies()) {
+            PolicyMap policy = _c.getPolicyMaps().get(policyName);
+            if (policy == null) {
+               _w.redFlag(
+                     "missing generated route policy: '" + policyName + "'");
+            }
+            else {
+               setPolicyStatementReferent(policyName, route.getPolicies(),
+                     "Generated route policy for prefix: "
+                           + route.getPrefix().toString());
+               policies.add(policy);
+               CallExpr callPolicy = new CallExpr(policyName);
+               matchSomeGenerationPolicy.getDisjuncts().add(callPolicy);
+            }
          }
       }
       org.batfish.datamodel.GeneratedRoute newRoute = new org.batfish.datamodel.GeneratedRoute(
             prefix, administrativeCost, policies);
       newRoute.setMetric(metric);
+      newRoute.setGenerationPolicy(generationPolicyName);
       return newRoute;
    }
 
