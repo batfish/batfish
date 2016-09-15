@@ -1,5 +1,7 @@
 package org.batfish.answerer;
 
+import java.util.function.BiFunction;
+
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -17,60 +19,71 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class Answerer {
 
-   public static Answerer Create(Question question, Batfish batfish) {
-
-      switch (question.getType()) {
-      case ACL_REACHABILITY:
-         return new AclReachabilityAnswerer(question, batfish);
-      case BGP_ADVERTISEMENTS:
-         return new BgpAdvertisementsAnswerer(question, batfish);
-      case BGP_SESSION_CHECK:
-         return new BgpSessionCheckAnswerer(question, batfish);
-      case COMPARE_SAME_NAME:
-         return new CompareSameNameAnswerer(question, batfish);
-      case ENVIRONMENT_CREATION:
-         return new EnvironmentCreationAnswerer(question, batfish);
-      case ERROR:
-         return new ErrorAnswerer(question, batfish);
-      case IPSEC_VPN_CHECK:
-         return new IpsecVpnCheckAnswerer(question, batfish);
-      case ISIS_LOOPBACKS:
-         return new IsisLoopbacksAnswerer(question, batfish);
-      case NEIGHBORS:
-         return new NeighborsAnswerer(question, batfish);
-      case NODES:
-         return new NodesAnswerer(question, batfish);
-      case OSPF_LOOPBACKS:
-         return new OspfLoopbacksAnswerer(question, batfish);
-      case PAIRWISE_VPN_CONNECTIVITY:
-         return new PairwiseVpnConnectivityAnswerer(question, batfish);
-      case PROTOCOL_DEPENDENCIES:
-         return new ProtocolDependenciesAnswerer(question, batfish);
-      case REACHABILITY:
-         return new ReachabilityAnswerer(question, batfish);
-      case ROUTES:
-         return new RoutesAnswerer(question, batfish);
-      case SELF_ADJACENCIES:
-         return new SelfAdjacenciesAnswerer(question, batfish);
-      case TRACEROUTE:
-         return new TracerouteAnswerer(question, batfish);
-      case UNDEFINED_REFERENCES:
-         return new UndefinedReferencesAnswerer(question, batfish);
-      case UNIQUE_BGP_PREFIX_ORIGINATION:
-         return new UniqueBgpPrefixOriginationAnswerer(question, batfish);
-      case UNIQUE_IP_ASSIGNMENTS:
-         return new UniqueIpAssignmentsAnswerer(question, batfish);
-      case UNUSED_STRUCTURES:
-         return new UnusedStructuresAnswerer(question, batfish);
-      default:
-         throw new BatfishException("Unknown question type");
+   public static Answerer create(Question question, Batfish batfish) {
+      if (question.getType() != null) {
+         switch (question.getType()) {
+         case ACL_REACHABILITY:
+            return new AclReachabilityAnswerer(question, batfish);
+         case BGP_ADVERTISEMENTS:
+            return new BgpAdvertisementsAnswerer(question, batfish);
+         case BGP_SESSION_CHECK:
+            return new BgpSessionCheckAnswerer(question, batfish);
+         case COMPARE_SAME_NAME:
+            return new CompareSameNameAnswerer(question, batfish);
+         case ENVIRONMENT_CREATION:
+            return new EnvironmentCreationAnswerer(question, batfish);
+         case ERROR:
+            return new ErrorAnswerer(question, batfish);
+         case IPSEC_VPN_CHECK:
+            return new IpsecVpnCheckAnswerer(question, batfish);
+         case ISIS_LOOPBACKS:
+            return new IsisLoopbacksAnswerer(question, batfish);
+         case NEIGHBORS:
+            return new NeighborsAnswerer(question, batfish);
+         case NODES:
+            return new NodesAnswerer(question, batfish);
+         case OSPF_LOOPBACKS:
+            return new OspfLoopbacksAnswerer(question, batfish);
+         case PAIRWISE_VPN_CONNECTIVITY:
+            return new PairwiseVpnConnectivityAnswerer(question, batfish);
+         case PROTOCOL_DEPENDENCIES:
+            return new ProtocolDependenciesAnswerer(question, batfish);
+         case REACHABILITY:
+            return new ReachabilityAnswerer(question, batfish);
+         case SELF_ADJACENCIES:
+            return new SelfAdjacenciesAnswerer(question, batfish);
+         case TRACEROUTE:
+            return new TracerouteAnswerer(question, batfish);
+         case UNDEFINED_REFERENCES:
+            return new UndefinedReferencesAnswerer(question, batfish);
+         case UNIQUE_BGP_PREFIX_ORIGINATION:
+            return new UniqueBgpPrefixOriginationAnswerer(question, batfish);
+         case UNIQUE_IP_ASSIGNMENTS:
+            return new UniqueIpAssignmentsAnswerer(question, batfish);
+         case UNUSED_STRUCTURES:
+            return new UnusedStructuresAnswerer(question, batfish);
+         default:
+            throw new BatfishException("Unknown question type");
+         }
+      }
+      else {
+         String questionClassName = question.getClass().getCanonicalName();
+         BiFunction<Question, Batfish, Answerer> answererCreator = batfish
+               .getAnswererCreators().get(questionClassName);
+         if (answererCreator == null) {
+            throw new BatfishException(
+                  "Cannot create answerer for missing question class: "
+                        + questionClassName);
+         }
+         return answererCreator.apply(question, batfish);
       }
    }
 
-   Batfish _batfish;
-   BatfishLogger _logger;
+   protected final Batfish _batfish;
 
-   Question _question;
+   protected final BatfishLogger _logger;
+
+   protected final Question _question;
 
    public Answerer(Question question, Batfish batfish) {
       _batfish = batfish;
@@ -86,9 +99,9 @@ public abstract class Answerer {
    public AnswerElement answerDiff() {
       _batfish.checkEnvironmentExists(_batfish.getBaseTestrigSettings());
       _batfish.checkEnvironmentExists(_batfish.getDeltaTestrigSettings());
-      AnswerElement before = Create(_question, _batfish)
+      AnswerElement before = create(_question, _batfish)
             .answer(_batfish.getBaseTestrigSettings());
-      AnswerElement after = Create(_question, _batfish)
+      AnswerElement after = create(_question, _batfish)
             .answer(_batfish.getDeltaTestrigSettings());
       ObjectMapper mapper = new BatfishObjectMapper();
       try {

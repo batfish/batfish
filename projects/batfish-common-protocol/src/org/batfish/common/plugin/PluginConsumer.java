@@ -1,4 +1,4 @@
-package plugin;
+package org.batfish.common.plugin;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
@@ -26,7 +27,7 @@ import org.batfish.common.util.BatfishObjectInputStream;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-public abstract class PluginClient {
+public abstract class PluginConsumer {
 
    private static final String CLASS_EXTENSION = ".class";
 
@@ -43,7 +44,7 @@ public abstract class PluginClient {
 
    private final boolean _serializeToText;
 
-   public PluginClient(boolean serializeToText, List<Path> pluginDirs) {
+   public PluginConsumer(boolean serializeToText, List<Path> pluginDirs) {
       _currentClassLoader = getClass().getClassLoader();
       _serializeToText = serializeToText;
       _pluginDirs = pluginDirs;
@@ -71,6 +72,10 @@ public abstract class PluginClient {
                + inputFile.toString(), e);
       }
       return o;
+   }
+
+   public ClassLoader getCurrentClassLoader() {
+      return _currentClassLoader;
    }
 
    public abstract PluginClientType getType();
@@ -107,6 +112,7 @@ public abstract class PluginClient {
             URLClassLoader cl = URLClassLoader.newInstance(urls,
                   _currentClassLoader);
             _currentClassLoader = cl;
+            Thread.currentThread().setContextClassLoader(cl);
             JarFile jar = new JarFile(path.toFile());
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
@@ -121,7 +127,8 @@ public abstract class PluginClient {
                try {
                   cl.loadClass(className);
                   Class<?> pluginClass = Class.forName(className, true, cl);
-                  if (!Plugin.class.isAssignableFrom(pluginClass)) {
+                  if (!Plugin.class.isAssignableFrom(pluginClass)
+                        || Modifier.isAbstract(pluginClass.getModifiers())) {
                      continue;
                   }
                   Constructor<?> pluginConstructor;

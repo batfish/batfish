@@ -1,4 +1,4 @@
-package org.batfish.datamodel.answers;
+package org.batfish.question;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;

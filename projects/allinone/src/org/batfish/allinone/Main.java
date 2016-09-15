@@ -57,7 +57,18 @@ public class Main {
                _settings.getTestrigDir());
       }
 
-      String[] argArray = getArgArrayFromString(argString);
+      String[] initialArgArray = getArgArrayFromString(argString);
+      List<String> clientArgs = new ArrayList<>(Arrays.asList(initialArgArray));
+      if (_settings.getPluginDirs() != null) {
+         clientArgs.add("-" + BfConsts.ARG_PLUGIN_DIRS);
+         StringBuilder sb = new StringBuilder();
+         sb.append(_settings.getPluginDirs().get(0));
+         for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
+            sb.append("," + _settings.getPluginDirs().get(i));
+         }
+         clientArgs.add(sb.toString());
+      }
+      final String[] argArray = clientArgs.toArray(new String[] {});
 
       try {
          _client = new Client(argArray);
@@ -92,9 +103,14 @@ public class Main {
 
       String[] initialArgArray = getArgArrayFromString(batfishArgs);
       List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
-      if (_settings.getPluginDir() != null) {
-         args.add("-" + BfConsts.ARG_PLUGIN_DIR);
-         args.add(_settings.getPluginDir().toString());
+      if (_settings.getPluginDirs() != null) {
+         args.add("-" + BfConsts.ARG_PLUGIN_DIRS);
+         StringBuilder sb = new StringBuilder();
+         sb.append(_settings.getPluginDirs().get(0));
+         for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
+            sb.append("," + _settings.getPluginDirs().get(i));
+         }
+         args.add(sb.toString());
       }
       final String[] argArray = args.toArray(new String[] {});
       _logger.debugf("Starting batfish worker with args: %s\n",

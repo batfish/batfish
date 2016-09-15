@@ -1,4 +1,4 @@
-package plugin;
+package org.batfish.common.plugin;
 
 public enum PluginClientType {
    BATFISH,

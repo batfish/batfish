@@ -22,6 +22,9 @@ export ALLINONE="$ALLINONE_PATH/allinone"
 export COMMON_PATH="$BATFISH_ROOT/projects/batfish-common-protocol"
 export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 
+export QUESTION_PATH="$BATFISH_ROOT/projects/question"
+export BATFISH_QUESTION_PLUGIN_DIR="$BATFISH_ROOT/projects/question/out"
+
 batfish() {
    # if cygwin, shift and replace each parameter
    if batfish_cygwin; then
@@ -102,6 +105,8 @@ _batfish_build_all() {
    ant "$@" || return 1
    cd $BATFISH_CLIENT_PATH
    ant "$@" || return 1
+   cd $QUESTION_PATH
+   ant "$@" || return 1  
    cd $ALLINONE_PATH
    ant "$@" || return 1  
 }
@@ -765,8 +770,12 @@ export -f batfish_questions_doc
 
 if batfish_cygwin; then
    export ANT_BATFISH_PATH="$(cygpath -w "${BATFISH_PATH}")"
+   export ANT_BATFISH_CLIENT_PATH="$(cygpath -w "${BATFISH_CLIENT_PATH}")"
    export ANT_COMMON_PATH="$(cygpath -w "${COMMON_PATH}")"
+   export BATFISH_JAVA_QUESTION_PLUGIN_DIR="$(cygpath -w "${BATFISH_QUESTION_PLUGIN_DIR}")"
 else
    export ANT_BATFISH_PATH="${BATFISH_PATH}"
+   export ANT_BATFISH_CLIENT_PATH="${BATFISH_CLIENT_PATH}"
    export ANT_COMMON_PATH="${COMMON_PATH}"
+   export BATFISH_JAVA_QUESTION_PLUGIN_DIR="${BATFISH_QUESTION_PLUGIN_DIR}"
 fi

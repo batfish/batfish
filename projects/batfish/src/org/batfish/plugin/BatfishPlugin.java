@@ -1,10 +1,9 @@
 package org.batfish.plugin;
 
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
-
-import plugin.Plugin;
 
 public abstract class BatfishPlugin extends Plugin {
 
@@ -18,9 +17,9 @@ public abstract class BatfishPlugin extends Plugin {
 
    @Override
    protected final void pluginInitialize() {
-      switch (_pluginClient.getType()) {
+      switch (_pluginConsumer.getType()) {
       case BATFISH:
-         _batfish = (Batfish) _pluginClient;
+         _batfish = (Batfish) _pluginConsumer;
          _settings = _batfish.getSettings();
          _logger = _batfish.getLogger();
          batfishPluginInitialize();

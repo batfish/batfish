@@ -340,7 +340,7 @@ public class Driver {
       try {
          settings = new Settings(args);
          // inherit pluginDir passed to service on startup
-         settings.setPluginDir(_mainSettings.getPluginDir());
+         settings.setPluginDirs(_mainSettings.getPluginDirs());
          settings.setNlsDebugSymbols(_mainSettings.getNlsDebugSymbols());
       }
       catch (Exception e) {

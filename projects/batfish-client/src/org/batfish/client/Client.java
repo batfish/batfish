@@ -15,12 +15,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,11 +33,14 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.plugin.PluginClientType;
+import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.EnvironmentCreationQuestion;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,10 +48,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
-import plugin.PluginClient;
-import plugin.PluginClientType;
 
-public class Client extends PluginClient {
+public class Client extends PluginConsumer {
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -70,6 +71,8 @@ public class Client extends PluginClient {
    @SuppressWarnings("unused")
    private BfCoordPoolHelper _poolHelper;
 
+   private final Map<String, Supplier<Question>> _questions;
+
    private ConsoleReader _reader;
 
    private Settings _settings;
@@ -77,8 +80,9 @@ public class Client extends PluginClient {
    private BfCoordWorkHelper _workHelper;
 
    public Client(Settings settings) {
-      super(false, Collections.emptyList());
+      super(false, settings.getPluginDirs());
       _settings = settings;
+      _questions = new HashMap<>();
 
       switch (_settings.getRunMode()) {
       case batch:
@@ -196,7 +200,8 @@ public class Client extends PluginClient {
          }
       }
       else {
-         questionString = QuestionHelper.getQuestionString(questionType);
+         questionString = QuestionHelper.getQuestionString(questionType,
+               _questions);
          _logger.debugf("Question Json:\n%s\n", questionString);
 
          parametersString = QuestionHelper.getParametersString(parameters);
@@ -430,6 +435,10 @@ public class Client extends PluginClient {
 
    public BatfishLogger getLogger() {
       return _logger;
+   }
+
+   public Settings getSettings() {
+      return _settings;
    }
 
    @Override
@@ -699,7 +708,7 @@ public class Client extends PluginClient {
                return false;
             }
 
-            String qTypeStr = parameters.get(0);
+            String qTypeStr = parameters.get(0).toLowerCase();
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
@@ -1252,7 +1261,13 @@ public class Client extends PluginClient {
       return true;
    }
 
+   public void registerQuestion(String questionName,
+         Supplier<Question> questionCreator) {
+      _questions.put(questionName, questionCreator);
+   }
+
    public void run(List<String> initialCommands) {
+      loadPlugins();
       initHelpers();
 
       _logger.debugf("Will use coordinator at %s://%s\n",

@@ -1,6 +1,7 @@
 package org.batfish.main;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import org.batfish.common.BaseSettings;
@@ -578,7 +579,7 @@ public final class Settings extends BaseSettings {
 
    private boolean _pedanticRecord;
 
-   private Path _pluginDir;
+   private List<Path> _pluginDirs;
 
    private Path _precomputedBgpAdvertisementsPath;
 
@@ -874,8 +875,8 @@ public final class Settings extends BaseSettings {
       return _pedanticRecord;
    }
 
-   public Path getPluginDir() {
-      return _pluginDir;
+   public List<Path> getPluginDirs() {
+      return _pluginDirs;
    }
 
    public Path getPrecomputedBgpAdvertisementsPath() {
@@ -1055,6 +1056,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
       setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
       setDefaultProperty(ARG_BUILD_PREDICATE_INFO, null);
+      setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_POOL_PORT);
@@ -1091,7 +1093,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
-      setDefaultProperty(BfConsts.ARG_PLUGIN_DIR, null);
+      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String> emptyList());
       setDefaultProperty(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_FACTS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
@@ -1264,8 +1267,8 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS,
             "suppresses pedantic warnings");
 
-      addOption(BfConsts.ARG_PLUGIN_DIR, "path to plugin directory",
-            ARGNAME_PATH);
+      addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories",
+            ARGNAME_PATHS);
 
       addOption(ARG_PRECOMPUTED_ADVERTISEMENTS_PATH,
             "path to precomputed bgp advertisements", ARGNAME_PATH);
@@ -1398,6 +1401,7 @@ public final class Settings extends BaseSettings {
          printHelp(EXECUTABLE_NAME);
          return;
       }
+      _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
       _buildPredicateInfo = getStringOptionValue(
             ARG_BUILD_PREDICATE_INFO) != null;
       if (_buildPredicateInfo) {
@@ -1453,7 +1457,6 @@ public final class Settings extends BaseSettings {
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
-      _pluginDir = getPathOptionValue(BfConsts.ARG_PLUGIN_DIR);
       _precomputedBgpAdvertisementsPath = getPathOptionValue(
             ARG_PRECOMPUTED_ADVERTISEMENTS_PATH);
       _precomputedFactsPath = getPathOptionValue(ARG_PRECOMPUTED_FACTS_PATH);
@@ -1571,8 +1574,8 @@ public final class Settings extends BaseSettings {
       _nodeRolesPath = nodeRolesPath;
    }
 
-   public void setPluginDir(Path pluginDir) {
-      _pluginDir = pluginDir;
+   public void setPluginDirs(List<Path> pluginDirs) {
+      _pluginDirs = pluginDirs;
    }
 
    public void setQuestionParametersPath(Path questionParametersPath) {

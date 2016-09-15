@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
@@ -103,8 +104,6 @@ public class QuestionHelper {
          return new ProtocolDependenciesQuestion();
       case REACHABILITY:
          return new ReachabilityQuestion();
-      case ROUTES:
-         return new RoutesQuestion();
       case SELF_ADJACENCIES:
          return new SelfAdjacenciesQuestion();
       case TRACEROUTE:
@@ -124,9 +123,22 @@ public class QuestionHelper {
       throw new BatfishException("Unsupported question type " + questionType);
    }
 
-   public static Question getQuestion(String questionTypeStr) {
+   public static Question getQuestion(String questionTypeStr,
+         Map<String, Supplier<Question>> questions) {
       QuestionType qType = QuestionType.fromName(questionTypeStr);
-      return getQuestion(qType);
+      Question question;
+      if (qType != null) {
+         question = getQuestion(qType);
+      }
+      else {
+         Supplier<Question> supplier = questions.get(questionTypeStr);
+         if (supplier == null) {
+            throw new BatfishException(
+                  "No question of type: " + questionTypeStr);
+         }
+         question = supplier.get();
+      }
+      return question;
    }
 
    public static String getQuestionString(QuestionType questionType)
@@ -134,9 +146,10 @@ public class QuestionHelper {
       return getQuestion(questionType).toJsonString();
    }
 
-   public static String getQuestionString(String questionTypeStr)
+   public static String getQuestionString(String questionTypeStr,
+         Map<String, Supplier<Question>> questions)
          throws JsonProcessingException {
-      Question question = getQuestion(questionTypeStr);
+      Question question = getQuestion(questionTypeStr, questions);
       return question.toJsonString();
    }
 

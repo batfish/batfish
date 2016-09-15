@@ -1,5 +1,9 @@
 package org.batfish.client;
 
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
+
 import org.batfish.client.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -48,10 +52,11 @@ public class Settings extends BaseSettings {
    private String _logFile;
    private String _logLevel;
    private long _periodCheckWorkMs;
+   private List<Path> _pluginDirs;
    private boolean _prettyPrintAnswers;
    private String _questionsDir;
-   private RunMode _runMode;
 
+   private RunMode _runMode;
    private boolean _sanityCheck;
    private String _testrigDir;
    private String _testrigId;
@@ -108,6 +113,10 @@ public class Settings extends BaseSettings {
       return _periodCheckWorkMs;
    }
 
+   public List<Path> getPluginDirs() {
+      return _pluginDirs;
+   }
+
    public boolean getPrettyPrintAnswers() {
       return _prettyPrintAnswers;
    }
@@ -144,6 +153,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
       setDefaultProperty(ARG_BATFISH_LOG_LEVEL,
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_WARN));
+      setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_DISABLE_SSL, CoordConsts.SVC_DISABLE_SSL);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_LOG_FILE, null);
@@ -151,9 +161,10 @@ public class Settings extends BaseSettings {
             BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
       setDefaultProperty(ARG_NO_SANITY_CHECK, false);
       setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
+      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String> emptyList());
       setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
       setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
-      setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_POOL_PORT);
       setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_WORK_PORT);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
@@ -164,6 +175,9 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_COMMAND_FILE,
             "read commands from the specified command file", "cmdfile");
+
+      addOption(ARG_COORDINATOR_HOST, "hostname for the service",
+            "base url for coordinator service");
 
       addOption(ARG_BATFISH_LOG_LEVEL, "log level for batfish",
             "batfish_loglevel");
@@ -184,6 +198,9 @@ public class Settings extends BaseSettings {
       addOption(ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)",
             "period_check_work_ms");
 
+      addListOption(BfConsts.ARG_PLUGIN_DIRS,
+            "directories containing plugin jars", "paths");
+
       addBooleanOption(ARG_PRETTY_PRINT_ANSWERS, "pretty print answers");
 
       addOption(ARG_QUESTIONS_DIR, "directory to output questions in",
@@ -193,18 +210,15 @@ public class Settings extends BaseSettings {
             "which mode to run in (batch|interactive|genquestions)",
             "run_mode");
 
-      addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
-
-      addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
-
-      addOption(ARG_COORDINATOR_HOST, "hostname for the service",
-            "base url for coordinator service");
-
       addOption(ARG_SERVICE_POOL_PORT, "port for pool management service",
             "port_number_pool_service");
 
       addOption(ARG_SERVICE_WORK_PORT, "port for work management service",
             "port_number_work_service");
+
+      addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
+
+      addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
 
       addBooleanOption(ARG_TRUST_ALL_SSL_CERTS,
             "whether we should trust any coordinator SSL certs (for testing locally)");
@@ -225,6 +239,7 @@ public class Settings extends BaseSettings {
       _logFile = getStringOptionValue(ARG_LOG_FILE);
       _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
       _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
+      _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
       _prettyPrintAnswers = getBooleanOptionValue(ARG_PRETTY_PRINT_ANSWERS);
       _questionsDir = getStringOptionValue(ARG_QUESTIONS_DIR);
       _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
@@ -237,6 +252,7 @@ public class Settings extends BaseSettings {
       _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
       _trustAllSslCerts = getBooleanOptionValue(ARG_TRUST_ALL_SSL_CERTS);
       _useSsl = !getBooleanOptionValue(ARG_DISABLE_SSL);
+
    }
 
    public void setBatfishLogLevel(String logLevel) {

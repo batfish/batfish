@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.RoutesAnswerElement",
+    "class" : "org.batfish.question.RoutesAnswerElement",
     "routes" : [ {
       "@id" : 1,
       "administrativeCost" : 0,
@@ -3024,7 +3024,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.RoutesQuestion",
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },

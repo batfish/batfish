@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +36,8 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Warning;
+import org.batfish.common.plugin.PluginClientType;
+import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -138,13 +141,10 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import plugin.PluginClient;
-import plugin.PluginClientType;
-
 /**
  * This class encapsulates the main control logic for Batfish.
  */
-public class Batfish extends PluginClient implements AutoCloseable {
+public class Batfish extends PluginConsumer implements AutoCloseable {
 
    private static final String BASE_TESTRIG_TAG = "BASE";
 
@@ -339,7 +339,7 @@ public class Batfish extends PluginClient implements AutoCloseable {
          }
          initQuestionSettings(settings);
       }
-      else if (!settings.getBuildPredicateInfo()) {
+      else if (!settings.getBuildPredicateInfo() && containerDir != null) {
          throw new CleanBatfishException(
                "Must supply argument to -" + BfConsts.ARG_TESTRIG);
       }
@@ -398,6 +398,8 @@ public class Batfish extends PluginClient implements AutoCloseable {
       return parse(parser, logger, settings);
    }
 
+   private final Map<String, BiFunction<Question, Batfish, Answerer>> _answererCreators;
+
    private TestrigSettings _baseTestrigSettings;
 
    private DataPlanePlugin _dataPlanePlugin;
@@ -419,16 +421,14 @@ public class Batfish extends PluginClient implements AutoCloseable {
    private long _timerCount;
 
    public Batfish(Settings settings) {
-      super(settings.getSerializeToText(),
-            settings.getPluginDir() != null
-                  ? Collections.singletonList(settings.getPluginDir())
-                  : Collections.emptyList());
+      super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
       _logger = _settings.getLogger();
       _terminatedWithException = false;
+      _answererCreators = new HashMap<>();
    }
 
    private void anonymizeConfigurations() {
@@ -447,12 +447,11 @@ public class Batfish extends PluginClient implements AutoCloseable {
       AnswerElement answerElement = null;
       BatfishException exception = null;
       try {
-
          if (question.getDifferential() == true) {
-            answerElement = Answerer.Create(question, this).answerDiff();
+            answerElement = Answerer.create(question, this).answerDiff();
          }
          else {
-            answerElement = Answerer.Create(question, this)
+            answerElement = Answerer.create(question, this)
                   .answer(_testrigSettings);
          }
       }
@@ -1225,6 +1224,10 @@ public class Batfish extends PluginClient implements AutoCloseable {
             _testrigSettings.getSerializeIndependentPath());
    }
 
+   public Map<String, BiFunction<Question, Batfish, Answerer>> getAnswererCreators() {
+      return _answererCreators;
+   }
+
    public TestrigSettings getBaseTestrigSettings() {
       return _baseTestrigSettings;
    }
@@ -1861,7 +1864,7 @@ public class Batfish extends PluginClient implements AutoCloseable {
       _logger.info("OK\n");
 
       try {
-         ObjectMapper mapper = new ObjectMapper();
+         ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
          Question question = mapper.readValue(questionText, Question.class);
          JSONObject parameters = (JSONObject) parseQuestionParameters();
          question.setJsonParameters(parameters);
@@ -2115,6 +2118,11 @@ public class Batfish extends PluginClient implements AutoCloseable {
       }
       printElapsedTime();
       return configurationData;
+   }
+
+   public void registerAnswerer(String questionClassName,
+         BiFunction<Question, Batfish, Answerer> answererCreator) {
+      _answererCreators.put(questionClassName, answererCreator);
    }
 
    private AnswerElement report() {

@@ -1,6 +1,8 @@
 package org.batfish.allinone;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import org.batfish.allinone.config.ConfigurationLocator;
 import org.batfish.common.BaseSettings;
@@ -28,7 +30,7 @@ public class Settings extends BaseSettings {
    private String _coordinatorArgs;
    private String _logFile;
    private String _logLevel;
-   private Path _pluginDir;
+   private List<Path> _pluginDirs;
    private String _runMode;
    private String _testrigDir;
 
@@ -66,8 +68,8 @@ public class Settings extends BaseSettings {
       return _logLevel;
    }
 
-   public Path getPluginDir() {
-      return _pluginDir;
+   public List<Path> getPluginDirs() {
+      return _pluginDirs;
    }
 
    public String getRunMode() {
@@ -91,7 +93,8 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
       setDefaultProperty(ARG_RUN_MODE, "batch");
-      setDefaultProperty(BfConsts.ARG_PLUGIN_DIR, null);
+      setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
+            Collections.<String> emptyList());
    }
 
    private void initOptions() {
@@ -120,8 +123,9 @@ public class Settings extends BaseSettings {
 
       addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
-      addOption(BfConsts.ARG_PLUGIN_DIR,
-            "plugin directory to be passed to batfish process", "path");
+      addOption(BfConsts.ARG_PLUGIN_DIRS,
+            "plugin directories to be passed to batfish and client processes",
+            "paths");
    }
 
    private void parseCommandLine(String[] args) {
@@ -140,6 +144,6 @@ public class Settings extends BaseSettings {
       _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
       _runMode = getStringOptionValue(ARG_RUN_MODE);
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
-      _pluginDir = getPathOptionValue(BfConsts.ARG_PLUGIN_DIR);
+      _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
    }
 }

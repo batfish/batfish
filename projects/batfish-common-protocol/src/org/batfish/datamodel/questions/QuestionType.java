@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.batfish.common.BatfishException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum QuestionType {
@@ -23,7 +21,6 @@ public enum QuestionType {
    PAIRWISE_VPN_CONNECTIVITY("pairwisevpnconnectivity"),
    PROTOCOL_DEPENDENCIES("protocoldependencies"),
    REACHABILITY("reachability"),
-   ROUTES("routes"),
    SELF_ADJACENCIES("selfadjacencies"),
    TRACEROUTE("traceroute"),
    UNDEFINED_REFERENCES("undefinedreferences"),
@@ -44,12 +41,7 @@ public enum QuestionType {
 
    @JsonCreator
    public static QuestionType fromName(String name) {
-      QuestionType instance = _map.get(name.toLowerCase());
-      if (instance == null) {
-         throw new BatfishException(
-               "Not a valid QuestionType: \"" + name + "\"");
-      }
-      return instance;
+      return _map.get(name.toLowerCase());
    }
 
    private final String _name;
