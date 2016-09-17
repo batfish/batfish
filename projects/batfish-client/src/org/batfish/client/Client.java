@@ -287,7 +287,8 @@ public class Client extends PluginConsumer implements IClient {
          // that case
          String answerStringToPrint = answerString;
          if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-            ObjectMapper mapper = new BatfishObjectMapper();
+            ObjectMapper mapper = new BatfishObjectMapper(
+                  getCurrentClassLoader());
             Answer answer = mapper.readValue(answerString, Answer.class);
             answerStringToPrint = answer.prettyPrint();
          }
@@ -302,7 +303,8 @@ public class Client extends PluginConsumer implements IClient {
          // tests serialization/deserialization when running in debug mode
          if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
             try {
-               ObjectMapper mapper = new BatfishObjectMapper();
+               ObjectMapper mapper = new BatfishObjectMapper(
+                     getCurrentClassLoader());
                Answer answer = mapper.readValue(answerString, Answer.class);
 
                String newAnswerString = mapper.writeValueAsString(answer);
@@ -1164,7 +1166,8 @@ public class Client extends PluginConsumer implements IClient {
                   String testOutput = CommonUtil
                         .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-                  ObjectMapper mapper = new BatfishObjectMapper();
+                  ObjectMapper mapper = new BatfishObjectMapper(
+                        getCurrentClassLoader());
 
                   // first rewrite reference string using local implementation
                   Answer referenceAnswer;
