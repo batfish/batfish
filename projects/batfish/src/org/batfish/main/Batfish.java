@@ -40,6 +40,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.Warning;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
@@ -132,7 +133,6 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.nls.NlsDataPlanePlugin;
-import org.batfish.plugin.DataPlanePlugin;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
@@ -863,6 +863,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return flows;
    }
 
+   @Override
    public InterfaceSet computeFlowSinks(
          Map<String, Configuration> configurations, boolean differentialContext,
          Topology topology) {
@@ -2052,6 +2053,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
+   @Override
    public DataPlane loadDataPlane() {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
@@ -3119,6 +3121,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
    }
 
+   @Override
    public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
       _dataPlanePlugin = dataPlanePlugin;
    }
@@ -3299,6 +3302,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("OK\n");
    }
 
+   @Override
    public void writeDataPlane(DataPlane dp) {
       serializeObject(dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());

@@ -40,6 +40,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.StringFilter;
 import org.batfish.common.util.UrlZipExplorer;
@@ -83,9 +84,9 @@ import org.batfish.grammar.logicblox.LogiQLCombinedParser;
 import org.batfish.grammar.logicblox.LogiQLPredicateInfoResolver;
 import org.batfish.logic.LogicResourceLocator;
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 import org.batfish.main.Settings.TestrigSettings;
-import org.batfish.plugin.DataPlanePlugin;
 
 public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
@@ -163,11 +164,15 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       initFactBins(Facts.TRAFFIC_FACT_COLUMN_HEADERS, factBins);
    }
 
+   private Batfish _batfish;
+
    private Map<TestrigSettings, Map<String, Configuration>> _configurations;
 
    private final Map<TestrigSettings, EntityTable> _entityTables;
 
    private PredicateInfo _predicateInfo;
+
+   private Settings _settings;
 
    private File _tmpLogicDir;
 
@@ -448,6 +453,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
 
    @Override
    public void dataPlanePluginInitialize() {
+      _batfish = (Batfish) super._batfish;
+      _settings = _batfish.getSettings();
       if (_settings.getQuery() || _settings.getPrintSemantics()
             || _settings.getDataPlane() || _settings.getWriteRoutes()
             || _settings.getWriteBgpAdvertisements()

@@ -2,18 +2,17 @@
 ALLINONE=${BASH_SOURCE[0]}
 ALLINONE_PATH=$(dirname $ALLINONE)
 ALLINONE_JAR=$ALLINONE_PATH/out/allinone.jar
-if [ -n "$BATFISH_PLUGIN_DIRS" ]; then                                                                                                     
-   BATFISH_PLUGIN_DIRS_ARG="-plugindirs ${BATFISH_PLUGIN_DIRS}"
-else
-   BATFISH_PLUGIN_DIRS_ARG=""
-fi
 ALLINONE_JAVA_ARGS=
 if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w $ALLINONE_JAR)"
    ALLINONE_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
-java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" "${BATFISH_PLUGIN_DIRS_ARG}" "$@"
+if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
+   java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" -plugindirs "${BATFISH_PLUGIN_DIRS}" "$@"
+else
+   java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" "$@"
+fi
 if batfish_cygwin; then
    stty icanon echo
 fi

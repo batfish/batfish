@@ -50,7 +50,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
    public PluginConsumer(boolean serializeToText, List<Path> pluginDirs) {
       _currentClassLoader = getClass().getClassLoader();
       _serializeToText = serializeToText;
-      _pluginDirs = new ArrayList<Path>(pluginDirs);
+      _pluginDirs = new ArrayList<>(pluginDirs);
       String questionPluginDirStr = System
             .getProperty(BfConsts.PROP_QUESTION_PLUGIN_DIR);
       // try to place question plugin first if system property is defined

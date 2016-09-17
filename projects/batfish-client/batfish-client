@@ -2,18 +2,17 @@
 BATFISH_CLIENT=${BASH_SOURCE[0]}
 BATFISH_CLIENT_PATH=$(dirname $BATFISH_CLIENT)
 BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/out/batfish-client.jar
-if [ -n "$BATFISH_PLUGIN_DIRS" ]; then                                                                                                     
-   BATFISH_PLUGIN_DIRS_ARG="-plugindirs ${BATFISH_PLUGIN_DIRS}"
-else
-   BATFISH_PLUGIN_DIRS_ARG=""
-fi
 BATFISH_CLIENT_JAVA_ARGS=
 if batfish_cygwin; then
    BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
    BATFISH_CLIENT_JAVA_ARGS="-Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
-java $BATFISH_CLIENT_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$BATFISH_CLIENT_JAR" "${BATFISH_PLUGIN_DIRS_ARG}" "$@"
+if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
+   java $BATFISH_CLIENT_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$BATFISH_CLIENT_JAR" -plugindirs "${BATFISH_PLUGIN_DIRS}" "$@"
+else
+   java $BATFISH_CLIENT_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$BATFISH_CLIENT_JAR" "$@"
+fi
 if batfish_cygwin; then
    stty icanon echo
 fi

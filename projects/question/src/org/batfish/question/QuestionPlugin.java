@@ -3,10 +3,11 @@ package org.batfish.question;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IClient;
+import org.batfish.common.plugin.IQuestionPlugin;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.questions.Question;
 
-public abstract class QuestionPlugin extends Plugin {
+public abstract class QuestionPlugin extends Plugin implements IQuestionPlugin {
 
    protected abstract Answerer createAnswerer(Question question,
          IBatfish batfish);
