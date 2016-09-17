@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.UniqueIpAssignmentsAnswerElement",
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsAnswerElement",
     "allIps" : {
       "2.1.1.2" : [ {
         "hostname" : "as2border2",
@@ -21,7 +21,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion",
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion",
     "differential" : false,
     "nodeRegex" : ".*",
     "verbose" : false

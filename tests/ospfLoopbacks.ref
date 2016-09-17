@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.OspfLoopbacksAnswerElement",
+    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksAnswerElement",
     "active" : {
       "as1border1" : [ "Loopback0" ],
       "as1border2" : [ "Loopback0" ],
@@ -36,7 +36,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.OspfLoopbacksQuestion",
+    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },

@@ -873,7 +873,7 @@
     "unreachableLines" : { }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.AclReachabilityQuestion",
+    "class" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",
     "aclNameRegex" : ".*",
     "differential" : false,
     "nodeRegex" : ".*"

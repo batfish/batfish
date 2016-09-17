@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.question.RoutesAnswerElement",
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
     "routes" : [ {
       "@id" : 1,
       "administrativeCost" : 0,

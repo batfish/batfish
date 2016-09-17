@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.UniqueBgpPrefixOriginationAnswerElement",
+    "class" : "org.batfish.question.UniqueBgpPrefixOriginationQuestionPlugin$UniqueBgpPrefixOriginationAnswerElement",
     "intersections" : {
       "as1border1" : {
         "as1border2" : [ "1.0.2.0/24", "1.0.1.0/24" ]
@@ -32,7 +32,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.UniqueBgpPrefixOriginationQuestion",
+    "class" : "org.batfish.question.UniqueBgpPrefixOriginationQuestionPlugin$UniqueBgpPrefixOriginationQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },

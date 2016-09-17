@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.UndefinedReferencesAnswerElement",
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesAnswerElement",
     "undefinedReferences" : {
       "as2core2" : {
         "route-map" : [ "filter-bogons" ]
@@ -8,7 +8,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.UndefinedReferencesQuestion",
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },

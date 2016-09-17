@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.CompareSameNameAnswerElement",
+    "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
     "equivalenceSetsMap" : {
       "AsPathAccessList" : {
         "sameNamedStructures" : { },
@@ -178,7 +178,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.CompareSameNameQuestion",
+    "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
     "differential" : false,
     "namedStructType" : [ ],
     "nodeRegex" : ".*"

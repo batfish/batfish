@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.NeighborsAnswerElement",
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
     "ebgpNeighbors" : [ {
       "ip1" : "10.12.11.1",
       "ip2" : "10.12.11.2",
@@ -54,7 +54,7 @@
     } ]
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "differential" : false,
     "neighborType" : [ "ebgp" ],
     "node1Regex" : ".*",

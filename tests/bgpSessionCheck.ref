@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.BgpSessionCheckAnswerElement",
+    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckAnswerElement",
     "allBgpNeighbors" : {
       "as1border1" : {
         "1.10.1.1/32" : {
@@ -466,7 +466,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.BgpSessionCheckQuestion",
+    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion",
     "differential" : false,
     "foreignBgpGroups" : [ ],
     "node1Regex" : ".*",
