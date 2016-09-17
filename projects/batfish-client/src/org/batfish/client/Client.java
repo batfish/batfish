@@ -724,7 +724,8 @@ public class Client extends PluginConsumer implements IClient {
                String prefixString = (paramsLine.trim().length() > 0) ? " | "
                      : "";
                paramsLine += String.format("%s %s=%s", prefixString,
-                     "environmentName", deltaEnvName);
+                     IEnvironmentCreationQuestion.ENVIRONMENT_NAME_KEY,
+                     deltaEnvName);
 
                if (!answerType(qTypeStr, paramsLine, isDelta, outWriter)) {
                   return false;

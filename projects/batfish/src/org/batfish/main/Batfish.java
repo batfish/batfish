@@ -1097,7 +1097,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          _dataPlanePlugin.computeDataPlane(true);
-         _nls.clearEntityTables();
+         if (_nls != null) {
+            _nls.clearEntityTables();
+         }
       }
       return answerElement;
    }
@@ -1889,7 +1891,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          _dataPlanePlugin.computeDataPlane(differentialContext);
-         _nls.clearEntityTables();
+         if (_nls != null) {
+            _nls.clearEntityTables();
+         }
       }
    }
 

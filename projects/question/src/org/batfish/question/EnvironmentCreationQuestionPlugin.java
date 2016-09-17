@@ -46,7 +46,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
    public static class EnvironmentCreationQuestion extends Question
          implements IEnvironmentCreationQuestion {
 
-      private static final String ENVIRONMENT_NAME_VAR = NAME;
+      private static final String ENVIRONMENT_NAME_VAR = ENVIRONMENT_NAME_KEY;
       private static final String INTERFACE_BLACKLIST_VAR = "interfaceBlacklist";
       private static final String NODE_BLACKLIST_VAR = "nodeBlacklist";
 
