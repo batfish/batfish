@@ -215,7 +215,8 @@ SetIpAccessListLine_notDstPorts(list, line, dstPort_start, dstPort_end) ->
 SetIpAccessListLine_icmpCodes(list, line, start, end) ->
    IpAccessList(list),
    int(line),
-   int(icmpCode).
+   int(start),
+   int(end).
 
 SetIpAccessListLine_notIcmpCodes(list, line, start, end) ->
    IpAccessList(list),
