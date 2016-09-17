@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.batfish.datamodel.collections.CommunitySet;
 
 public class BgpRoute extends AbstractRoute {
@@ -7,6 +10,8 @@ public class BgpRoute extends AbstractRoute {
    public static class Builder extends AbstractRouteBuilder<BgpRoute> {
 
       private AsPath _asPath;
+
+      private final Set<Long> _clusterList;
 
       private CommunitySet _communities;
 
@@ -18,22 +23,30 @@ public class BgpRoute extends AbstractRoute {
 
       private RoutingProtocol _protocol;
 
+      private boolean _receivedFromRouteReflectorClient;
+
       private RoutingProtocol _srcProtocol;
 
       public Builder() {
          _asPath = new AsPath();
          _communities = new CommunitySet();
+         _clusterList = new HashSet<>();
       }
 
       @Override
       public BgpRoute build() {
          return new BgpRoute(_network, _nextHopIp, _admin, _asPath,
                _communities, _localPreference, _metric, _originatorIp,
-               _originType, _protocol, _srcProtocol);
+               _clusterList, _receivedFromRouteReflectorClient, _originType,
+               _protocol, _srcProtocol);
       }
 
       public AsPath getAsPath() {
          return _asPath;
+      }
+
+      public Set<Long> getClusterList() {
+         return _clusterList;
       }
 
       public CommunitySet getCommunities() {
@@ -80,6 +93,11 @@ public class BgpRoute extends AbstractRoute {
          _protocol = protocol;
       }
 
+      public void setReceivedFromRouteReflectorClient(
+            boolean receivedFromRouteReflectorClient) {
+         _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
+      }
+
       public void setSrcProtocol(RoutingProtocol srcProtocol) {
          _srcProtocol = srcProtocol;
       }
@@ -97,6 +115,8 @@ public class BgpRoute extends AbstractRoute {
 
    private final AsPath _asPath;
 
+   private final Set<Long> _clusterList;
+
    private final CommunitySet _communities;
 
    private final int _localPreference;
@@ -109,21 +129,26 @@ public class BgpRoute extends AbstractRoute {
 
    private final RoutingProtocol _protocol;
 
+   private final boolean _receivedFromRouteReflectorClient;
+
    private final RoutingProtocol _srcProtocol;
 
    public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
          CommunitySet communities, int localPreference, int med,
-         Ip originatorIp, OriginType originType, RoutingProtocol protocol,
-         RoutingProtocol srcProtocol) {
+         Ip originatorIp, Set<Long> clusterList,
+         boolean receivedFromRouteReflectorClient, OriginType originType,
+         RoutingProtocol protocol, RoutingProtocol srcProtocol) {
       super(network, nextHopIp);
       _admin = admin;
       _asPath = asPath;
+      _clusterList = clusterList;
       _communities = communities;
       _localPreference = localPreference;
       _med = med;
       _originatorIp = originatorIp;
       _originType = originType;
       _protocol = protocol;
+      _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
       _srcProtocol = srcProtocol;
    }
 
@@ -137,6 +162,9 @@ public class BgpRoute extends AbstractRoute {
          return false;
       }
       if (!_asPath.equals(other._asPath)) {
+         return false;
+      }
+      if (!_clusterList.equals(other._clusterList)) {
          return false;
       }
       if (!_communities.equals(other._communities)) {
@@ -185,6 +213,10 @@ public class BgpRoute extends AbstractRoute {
       return _asPath;
    }
 
+   public Set<Long> getClusterList() {
+      return _clusterList;
+   }
+
    public CommunitySet getCommunities() {
       return _communities;
    }
@@ -216,6 +248,10 @@ public class BgpRoute extends AbstractRoute {
       return _protocol;
    }
 
+   public boolean getReceivedFromRouteReflectorClient() {
+      return _receivedFromRouteReflectorClient;
+   }
+
    public RoutingProtocol getSrcProtocol() {
       return _srcProtocol;
    }
@@ -231,6 +267,7 @@ public class BgpRoute extends AbstractRoute {
       int result = 1;
       result = prime * result + _admin;
       result = prime * result + ((_asPath == null) ? 0 : _asPath.hashCode());
+      result = prime * result + _clusterList.hashCode();
       result = prime * result
             + ((_communities == null) ? 0 : _communities.hashCode());
       result = prime * result + _localPreference;
