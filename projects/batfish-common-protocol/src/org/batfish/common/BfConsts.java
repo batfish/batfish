@@ -56,7 +56,6 @@ public class BfConsts {
    public static final String COMMAND_WRITE_ROUTES = "writeroutes";
 
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
-   public static final String PREDICATE_FLOW_PATH_HISTORY = "FlowPathHistory";
 
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
 

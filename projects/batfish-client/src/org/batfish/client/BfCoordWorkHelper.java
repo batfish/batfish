@@ -384,16 +384,6 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemGetFlowTraces(String containerName,
-         String testrigName, String envName, String questionName) {
-      WorkItem wItem = new WorkItem(containerName, testrigName);
-      wItem.addRequestParam(BfConsts.COMMAND_QUERY, "");
-      wItem.addRequestParam(BfConsts.ARG_PREDICATES,
-            BfConsts.PREDICATE_FLOW_PATH_HISTORY);
-      wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-      return wItem;
-   }
-
    public WorkItem getWorkItemParse(String containerName, String testrigName) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
