@@ -13,8 +13,10 @@ import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectInputStream;
 
 import com.thoughtworks.xstream.XStream;
@@ -47,7 +50,19 @@ public abstract class PluginConsumer implements IPluginConsumer {
    public PluginConsumer(boolean serializeToText, List<Path> pluginDirs) {
       _currentClassLoader = getClass().getClassLoader();
       _serializeToText = serializeToText;
-      _pluginDirs = pluginDirs;
+      _pluginDirs = new ArrayList<Path>(pluginDirs);
+      String questionPluginDirStr = System
+            .getProperty(BfConsts.PROP_QUESTION_PLUGIN_DIR);
+      // try to place question plugin first if system property is defined
+      if (questionPluginDirStr != null) {
+         Path questionPluginDir = Paths.get(questionPluginDirStr);
+         if (_pluginDirs.isEmpty()
+               || !_pluginDirs.get(0).equals(questionPluginDir)) {
+            _pluginDirs.add(0, questionPluginDir);
+         }
+      }
+      return;
+
    }
 
    public final Object deserializeObject(Path inputFile) {
