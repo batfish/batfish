@@ -73,77 +73,14 @@ public class QuestionHelper {
       return retString;
    }
 
-   public static Question getQuestion(QuestionType questionType) {
-
-      switch (questionType) {
-      case ACL_REACHABILITY:
-         return new AclReachabilityQuestion();
-      case BGP_ADVERTISEMENTS:
-         return new BgpAdvertisementsQuestion();
-      case BGP_SESSION_CHECK:
-         return new BgpSessionCheckQuestion();
-      case COMPARE_SAME_NAME:
-         return new CompareSameNameQuestion();
-      case ENVIRONMENT_CREATION:
-         return new EnvironmentCreationQuestion();
-      case ERROR:
-         return new ErrorQuestion();
-      case IPSEC_VPN_CHECK:
-         return new IpsecVpnCheckQuestion();
-      case ISIS_LOOPBACKS:
-         return new IsisLoopbacksQuestion();
-      case NEIGHBORS:
-         return new NeighborsQuestion();
-      case NODES:
-         return new NodesQuestion();
-      case OSPF_LOOPBACKS:
-         return new OspfLoopbacksQuestion();
-      case PAIRWISE_VPN_CONNECTIVITY:
-         return new PairwiseVpnConnectivityQuestion();
-      case PROTOCOL_DEPENDENCIES:
-         return new ProtocolDependenciesQuestion();
-      case REACHABILITY:
-         return new ReachabilityQuestion();
-      case SELF_ADJACENCIES:
-         return new SelfAdjacenciesQuestion();
-      case TRACEROUTE:
-         return new TracerouteQuestion();
-      case UNDEFINED_REFERENCES:
-         return new UndefinedReferencesQuestion();
-      case UNIQUE_BGP_PREFIX_ORIGINATION:
-         return new UniqueBgpPrefixOriginationQuestion();
-      case UNIQUE_IP_ASSIGNMENTS:
-         return new UniqueIpAssignmentsQuestion();
-      case UNUSED_STRUCTURES:
-         return new UnusedStructuresQuestion();
-      default:
-         break;
-      }
-
-      throw new BatfishException("Unsupported question type " + questionType);
-   }
-
    public static Question getQuestion(String questionTypeStr,
          Map<String, Supplier<Question>> questions) {
-      QuestionType qType = QuestionType.fromName(questionTypeStr);
-      Question question;
-      if (qType != null) {
-         question = getQuestion(qType);
+      Supplier<Question> supplier = questions.get(questionTypeStr);
+      if (supplier == null) {
+         throw new BatfishException("No question of type: " + questionTypeStr);
       }
-      else {
-         Supplier<Question> supplier = questions.get(questionTypeStr);
-         if (supplier == null) {
-            throw new BatfishException(
-                  "No question of type: " + questionTypeStr);
-         }
-         question = supplier.get();
-      }
+      Question question = supplier.get();
       return question;
-   }
-
-   public static String getQuestionString(QuestionType questionType)
-         throws JsonProcessingException {
-      return getQuestion(questionType).toJsonString();
    }
 
    public static String getQuestionString(String questionTypeStr,
@@ -153,9 +90,11 @@ public class QuestionHelper {
       return question.toJsonString();
    }
 
-   public static ReachabilityQuestion getReachabilityQuestion(String dstIp,
-         String protocol, String ingressNodeRegex, ForwardingAction action) {
-      ReachabilityQuestion question = new ReachabilityQuestion();
+   public static IQuestion getReachabilityQuestion(String dstIp,
+         String protocol, String ingressNodeRegex, ForwardingAction action,
+         Map<String, Supplier<Question>> questions) {
+      IReachabilityQuestion question = (IReachabilityQuestion) questions
+            .get(IReachabilityQuestion.NAME).get();
 
       question.setDstIps(Collections.singleton(new IpWildcard(new Ip(dstIp))));
 
@@ -199,7 +138,8 @@ public class QuestionHelper {
       return question;
    }
 
-   public static String resolveMacro(String macroName, String paramsLine)
+   public static String resolveMacro(String macroName, String paramsLine,
+         Map<String, Supplier<Question>> questions)
          throws JsonProcessingException {
       String macro = macroName.replace(MACRO_PREFIX, "");
       MacroType macroType = MacroType.fromName(macro);
@@ -217,7 +157,7 @@ public class QuestionHelper {
          String ingressNodeRegex = (words.length == 3) ? words[2] : null;
 
          return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex,
-               ForwardingAction.ACCEPT).toJsonString();
+               ForwardingAction.ACCEPT, questions).toJsonString();
       }
       case CHECKREACHABILITY: {
          String[] words = paramsLine.split(" ");
@@ -231,7 +171,7 @@ public class QuestionHelper {
          String ingressNodeRegex = (words.length == 3) ? words[2] : null;
 
          return getReachabilityQuestion(dstIp, protocol, ingressNodeRegex,
-               ForwardingAction.DROP).toJsonString();
+               ForwardingAction.DROP, questions).toJsonString();
       }
       case TRACEROUTE: {
          String[] words = paramsLine.split(" ");
@@ -239,7 +179,8 @@ public class QuestionHelper {
             throw new BatfishException("Incorrect usage for traceroute macro. "
                   + "Should be:\n #traceroute <srcNode> <dstip> [<protocol>]");
          }
-         TracerouteQuestion question = new TracerouteQuestion();
+         ITracerouteQuestion question = (ITracerouteQuestion) questions
+               .get(ITracerouteQuestion.NAME).get();
          String srcNode = words[0];
          String dstIp = words[1];
 

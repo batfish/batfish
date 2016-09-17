@@ -3,14 +3,12 @@ package org.batfish.plugin;
 import java.util.List;
 import java.util.Set;
 
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.RouteSet;
-import org.batfish.main.Settings.TestrigSettings;
 
 public abstract class DataPlanePlugin extends BatfishPlugin {
 
@@ -42,28 +40,21 @@ public abstract class DataPlanePlugin extends BatfishPlugin {
       dataPlanePluginInitialize();
    }
 
-   public abstract Answer computeDataPlane(TestrigSettings testrigSettings,
-         boolean differentialContext);
+   public abstract Answer computeDataPlane(boolean differentialContext);
 
    protected void dataPlanePluginInitialize() {
    }
 
-   public abstract AdvertisementSet getAdvertisements(
-         TestrigSettings testrigSettings);
+   public abstract AdvertisementSet getAdvertisements();
 
-   public abstract DataPlane getDataPlane(TestrigSettings testrigSettings);
+   public abstract List<Flow> getHistoryFlows();
 
-   public abstract List<Flow> getHistoryFlows(TestrigSettings testrigSettings);
+   public abstract List<FlowTrace> getHistoryFlowTraces();
 
-   public abstract List<FlowTrace> getHistoryFlowTraces(
-         TestrigSettings testrigSettings);
+   public abstract IbgpTopology getIbgpNeighbors();
 
-   public abstract IbgpTopology getIbgpNeighbors(
-         TestrigSettings testrigSettings);
+   public abstract RouteSet getRoutes();
 
-   public abstract RouteSet getRoutes(TestrigSettings testrigSettings);
-
-   public abstract void processFlows(Set<Flow> flows,
-         TestrigSettings testrigSettings);
+   public abstract void processFlows(Set<Flow> flows);
 
 }

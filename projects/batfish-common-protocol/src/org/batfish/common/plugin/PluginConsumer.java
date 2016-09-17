@@ -27,7 +27,7 @@ import org.batfish.common.util.BatfishObjectInputStream;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
-public abstract class PluginConsumer {
+public abstract class PluginConsumer implements IPluginConsumer {
 
    private static final String CLASS_EXTENSION = ".class";
 

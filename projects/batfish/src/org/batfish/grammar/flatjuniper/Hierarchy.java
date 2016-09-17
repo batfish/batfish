@@ -24,8 +24,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.Settings;
+import org.batfish.main.PartialGroupMatchBatfishException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
 public class Hierarchy {

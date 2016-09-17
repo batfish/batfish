@@ -1,11 +1,9 @@
 package org.batfish.question;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -14,54 +12,28 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class RoutesQuestionPlugin extends QuestionPlugin {
+public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
-   public static class RoutesAnswerElement implements AnswerElement {
+   public static class UnusedStructuresAnswerElement implements AnswerElement {
 
-      private SortedSet<Route> _routes;
+      private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
 
-      private SortedMap<String, SortedSet<Route>> _routesByHostname;
-
-      @JsonCreator
-      public RoutesAnswerElement() {
+      public UnusedStructuresAnswerElement() {
+         _unusedStructures = new TreeMap<>();
       }
 
-      public RoutesAnswerElement(Map<String, Configuration> configurations,
-            Pattern nodeRegex) {
-         _routes = new TreeSet<>();
-         _routesByHostname = new TreeMap<>();
-         for (Entry<String, Configuration> e : configurations.entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
-            }
-            Configuration c = e.getValue();
-            SortedSet<Route> routes = c.getRoutes();
-            _routes.addAll(routes);
-            _routesByHostname.put(hostname, routes);
-         }
-      }
-
-      public SortedSet<Route> getRoutes() {
-         return _routes;
-      }
-
-      @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedSet<Route>> getRoutesByHostname() {
-         return _routesByHostname;
+      public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {
+         return _unusedStructures;
       }
 
       @Override
@@ -71,27 +43,23 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          return mapper.writeValueAsString(this);
       }
 
-      public void setRoutes(SortedSet<Route> routes) {
-         _routes = routes;
+      public void setUnusedStructures(
+            SortedMap<String, SortedMap<String, SortedSet<String>>> undefinedReferences) {
+         _unusedStructures = undefinedReferences;
       }
-
-      public void setRoutesByHostname(
-            SortedMap<String, SortedSet<Route>> routesByHostname) {
-         _routesByHostname = routesByHostname;
-      }
-
    }
 
-   public static class RoutesAnswerer extends Answerer {
+   public static class UnusedStructuresAnswerer extends Answerer {
 
-      public RoutesAnswerer(Question question, IBatfish batfish) {
+      public UnusedStructuresAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
       }
 
       @Override
       public AnswerElement answer() {
 
-         RoutesQuestion question = (RoutesQuestion) _question;
+         UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
+
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -102,35 +70,43 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-         _batfish.checkDataPlaneQuestionDependencies();
-         Map<String, Configuration> configurations = _batfish
-               .loadConfigurations();
-         _batfish.initRoutes(configurations);
-         RoutesAnswerElement answerElement = new RoutesAnswerElement(
-               configurations, nodeRegex);
+
+         _batfish.checkConfigurations();
+         UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
+         ConvertConfigurationAnswerElement ccae = _batfish
+               .getConvertConfigurationAnswerElement();
+         for (Entry<String, SortedMap<String, SortedSet<String>>> e : ccae
+               .getUnusedStructures().entrySet()) {
+            String hostname = e.getKey();
+            if (!nodeRegex.matcher(hostname).matches()) {
+               continue;
+            }
+            SortedMap<String, SortedSet<String>> byType = e.getValue();
+            answerElement.getUnusedStructures().put(hostname, byType);
+         }
          return answerElement;
       }
 
    }
 
-   public static class RoutesQuestion extends Question {
+   public static class UnusedStructuresQuestion extends Question {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
       private String _nodeRegex;
 
-      public RoutesQuestion() {
+      public UnusedStructuresQuestion() {
          _nodeRegex = ".*";
       }
 
       @Override
       public boolean getDataPlane() {
-         return true;
+         return false;
       }
 
       @Override
       public String getName() {
-         return "routes";
+         return "unusedstructures";
       }
 
       @JsonProperty(NODE_REGEX_VAR)
@@ -171,17 +147,16 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }
-
    }
 
    @Override
    protected Answerer createAnswerer(Question question, IBatfish batfish) {
-      return new RoutesAnswerer(question, batfish);
+      return new UnusedStructuresAnswerer(question, batfish);
    }
 
    @Override
    protected Question createQuestion() {
-      return new RoutesQuestion();
+      return new UnusedStructuresQuestion();
    }
 
 }
