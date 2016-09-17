@@ -80,6 +80,8 @@ public interface IBatfish extends IPluginConsumer {
 
    void popEnvironment();
 
+   void printElapsedTime();
+
    void processFlows(Set<Flow> flows);
 
    void pushBaseEnvironment();
@@ -90,6 +92,8 @@ public interface IBatfish extends IPluginConsumer {
 
    void registerAnswerer(String questionClassName,
          BiFunction<Question, IBatfish, Answerer> answererCreator);
+
+   void resetTimer();
 
    void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 

@@ -2451,6 +2451,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
    }
 
+   @Override
    public void printElapsedTime() {
       double seconds = getElapsedTime(_timerCount);
       _logger.info("Time taken for this task: " + seconds + " seconds\n");
@@ -2725,6 +2726,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answerElement;
    }
 
+   @Override
    public void resetTimer() {
       _timerCount = System.currentTimeMillis();
    }
