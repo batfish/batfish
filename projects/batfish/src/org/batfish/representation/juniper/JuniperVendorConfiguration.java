@@ -188,6 +188,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
             advertisePeerAs = false;
          }
          neighbor.setAllowRemoteAsOut(advertisePeerAs);
+         Boolean advertiseExternal = ig.getAdvertiseExternal();
+         if (advertiseExternal == null) {
+            advertiseExternal = false;
+         }
+         neighbor.setAdvertiseExternal(advertiseExternal);
          Boolean advertiseInactive = ig.getAdvertiseInactive();
          if (advertiseInactive == null) {
             advertiseInactive = false;

@@ -2345,6 +2345,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitBt_advertise_external(Bt_advertise_externalContext ctx) {
+      _currentBgpGroup.setAdvertiseExternal(true);
+   }
+
+   @Override
    public void exitBt_advertise_inactive(Bt_advertise_inactiveContext ctx) {
       _currentBgpGroup.setAdvertiseInactive(true);
    }
