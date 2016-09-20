@@ -133,6 +133,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    private static final String ADDRESS_VAR = "address";
 
+   private static final String ADVERTISE_EXTERNAL_VAR = "advertiseExternal";
+
    private static final String ADVERTISE_INACTIVE_VAR = "advertiseInactive";
 
    private static final String ALLOW_LOCAL_AS_IN_VAR = "allowLocalAsIn";
@@ -177,6 +179,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     *
     */
    private static final long serialVersionUID = 1L;
+
+   private boolean _advertiseExternal;
 
    private boolean _advertiseInactive;
 
@@ -306,6 +310,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       else {
          return null;
       }
+   }
+
+   @JsonProperty(ADVERTISE_EXTERNAL_VAR)
+   public boolean getAdvertiseExternal() {
+      return _advertiseExternal;
    }
 
    @JsonProperty(ADVERTISE_INACTIVE_VAR)
@@ -468,6 +477,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(ADDRESS_VAR)
    public void setAddress(Ip address) {
       // Intentionally empty
+   }
+
+   @JsonProperty(ADVERTISE_EXTERNAL_VAR)
+   public void setAdvertiseExternal(boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
    }
 
    @JsonProperty(ADVERTISE_INACTIVE_VAR)

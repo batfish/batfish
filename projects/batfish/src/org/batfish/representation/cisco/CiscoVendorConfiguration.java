@@ -954,12 +954,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          originationPolicies.add(explicitOriginationPolicyMap);
 
          // add redistribution origination policies
-         if (proc.getRedistributionPolicies()
-               .containsKey(RoutingProtocol.STATIC)) {
+         if (redistributeStaticPolicyMap != null) {
             originationPolicies.add(redistributeStaticPolicyMap);
          }
-         if (proc.getRedistributionPolicies()
-               .containsKey(RoutingProtocol.CONNECTED)) {
+         if (redistributeConnectedPolicyMap != null) {
             originationPolicies.add(redistributeConnectedPolicyMap);
          }
 
@@ -980,6 +978,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                   "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + lpg.getName() + "~",
                   Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
                   RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
+
+            if (defaultOriginationPolicyMap == null) {
+               throw new BatfishException(
+                     "tried to add null defaultOriginationPolicyMap");
+            }
             originationPolicies.add(defaultOriginationPolicyMap);
 
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();

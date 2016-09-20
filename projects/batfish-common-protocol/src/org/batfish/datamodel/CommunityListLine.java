@@ -64,14 +64,15 @@ public class CommunityListLine implements Serializable {
       return matchingCommunitites;
    }
 
-   public Set<Long> getMatchingCommunities(Set<Long> allCommunities) {
+   public Set<Long> getMatchingCommunities(Set<Long> allCommunities,
+         boolean invertMatch) {
       Pattern p = Pattern.compile(_regex);
       Set<Long> matchingCommunitites = new LinkedHashSet<>();
       for (long candidateCommunity : allCommunities) {
          String candidateCommunityStr = CommonUtil
                .longToCommunity(candidateCommunity);
          Matcher matcher = p.matcher(candidateCommunityStr);
-         if (matcher.find()) {
+         if (matcher.find() ^ invertMatch) {
             matchingCommunitites.add(candidateCommunity);
          }
       }

@@ -47,7 +47,8 @@ public class NamedCommunitySet implements CommunitySetExpr {
       CommunityList cl = environment.getConfiguration().getCommunityLists()
             .get(_name);
       for (CommunityListLine line : cl.getLines()) {
-         if (!line.getMatchingCommunities(communities).isEmpty()) {
+         if (!line.getMatchingCommunities(communities, cl.getInvertMatch())
+               .isEmpty()) {
             return line.getAction() == LineAction.ACCEPT;
          }
       }

@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.BgpAdvertisementsAnswerElement",
+    "class" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsAnswerElement",
     "@id" : 1,
     "allRequestedAdvertisements" : [ {
       "@id" : 2,
@@ -4921,7 +4921,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.BgpAdvertisementsQuestion",
+    "class" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsQuestion",
     "differential" : false,
     "ebgp" : true,
     "ibgp" : true,

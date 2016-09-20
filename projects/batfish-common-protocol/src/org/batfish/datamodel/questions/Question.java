@@ -14,16 +14,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public abstract class Question {
+public abstract class Question implements IQuestion {
 
    private static final String DIFF_VAR = "differential";
 
    private boolean _differential;
 
-   private final QuestionType _type;
-
-   public Question(QuestionType type) {
-      _type = type;
+   public Question() {
       _differential = false;
    }
 
@@ -36,12 +33,10 @@ public abstract class Question {
    }
 
    @JsonIgnore
-   public abstract boolean getTraffic();
+   public abstract String getName();
 
    @JsonIgnore
-   public QuestionType getType() {
-      return _type;
-   }
+   public abstract boolean getTraffic();
 
    protected boolean isBaseParamKey(String paramKey) {
       switch (paramKey) {
@@ -104,8 +99,10 @@ public abstract class Question {
 
    }
 
+   @Override
    public String toJsonString() throws JsonProcessingException {
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
    }
+
 }

@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.NeighborsAnswerElement",
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
     "lanNeighbors" : [ {
       "node1" : "as1border1",
       "node1interface" : "FastEthernet0/0",
@@ -204,7 +204,7 @@
     } ]
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "differential" : false,
     "neighborType" : [ ],
     "node1Regex" : ".*",

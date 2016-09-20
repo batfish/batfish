@@ -151,7 +151,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.TracerouteQuestion",
+    "class" : "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion",
     "differential" : false,
     "dscp" : null,
     "dstIp" : "1.0.1.1",

@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.IsisLoopbacksAnswerElement",
+    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksAnswerElement",
     "inactive" : {
       "as1border1" : [ "Loopback0" ],
       "as1border2" : [ "Loopback0" ],
@@ -25,7 +25,7 @@
     "running" : { }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.IsisLoopbacksQuestion",
+    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },

@@ -382,8 +382,8 @@ public class ConfigurationFactExtractor {
          List<CommunityListLine> lineList = list.getLines();
          for (int i = 0; i < lineList.size(); i++) {
             CommunityListLine line = lineList.get(i);
-            for (Long community : line
-                  .getMatchingCommunities(_allCommunities)) {
+            for (Long community : line.getMatchingCommunities(_allCommunities,
+                  list.getInvertMatch())) {
                wSetCommunityListLine
                      .append(listName + "|" + i + "|" + community + "\n");
             }

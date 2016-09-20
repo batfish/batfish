@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.NodesAnswerElement",
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
     "nodes" : {
       "as1border1" : {
         "@id" : 1,
@@ -10234,8 +10234,7 @@
           "network" : "0.0.0.0/0",
           "nextHopInterface" : "eth0",
           "tag" : -1,
-          "administrativeCost" : 1,
-          "metric" : 0
+          "administrativeCost" : 1
         } ],
         "zones" : { }
       },
@@ -10707,15 +10706,14 @@
           "network" : "0.0.0.0/0",
           "nextHopInterface" : "eth0",
           "tag" : -1,
-          "administrativeCost" : 1,
-          "metric" : 0
+          "administrativeCost" : 1
         } ],
         "zones" : { }
       }
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.NodesQuestion",
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "differential" : false,
     "nodeRegex" : ".*",
     "nodeType" : [ ],

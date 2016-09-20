@@ -18,6 +18,8 @@ public class BgpGroup implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
+   private Boolean _advertiseExternal;
+
    private Boolean _advertiseInactive;
 
    private Boolean _advertisePeerAs;
@@ -62,6 +64,9 @@ public class BgpGroup implements Serializable {
       _inherited = true;
       if (_parent != null) {
          _parent.cascadeInheritance();
+         if (_advertiseExternal == null) {
+            _advertiseExternal = _parent._advertiseExternal;
+         }
          if (_advertiseInactive == null) {
             _advertiseInactive = _parent._advertiseInactive;
          }
@@ -99,6 +104,10 @@ public class BgpGroup implements Serializable {
             _type = _parent._type;
          }
       }
+   }
+
+   public Boolean getAdvertiseExternal() {
+      return _advertiseExternal;
    }
 
    public Boolean getAdvertiseInactive() {
@@ -159,6 +168,10 @@ public class BgpGroup implements Serializable {
 
    public final BgpGroupType getType() {
       return _type;
+   }
+
+   public void setAdvertiseExternal(boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
    }
 
    public void setAdvertiseInactive(boolean advertiseInactive) {

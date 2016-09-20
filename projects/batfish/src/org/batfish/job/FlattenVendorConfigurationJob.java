@@ -3,10 +3,10 @@ package org.batfish.job;
 import java.nio.file.Path;
 
 import org.batfish.main.Batfish;
+import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
-import org.batfish.main.Settings;
 import org.batfish.main.Warnings;
 
 public class FlattenVendorConfigurationJob

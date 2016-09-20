@@ -32,11 +32,7 @@
       <javac destdir="bin" includes="**/*.java" debug="true" includeantruntime="false">
          <src path="src" />
          <classpath>
-            <fileset dir="${env.ANT_BATFISH_PATH}/lib" includes="**/*.jar"/>
-            <fileset dir="${env.ANT_BATFISH_CLIENT_PATH}/lib" includes="**/*.jar"/>
             <fileset dir="${env.ANT_COMMON_PATH}/lib" includes="**/*.jar"/>
-            <pathelement path="${env.ANT_BATFISH_PATH}/bin"/>
-            <pathelement path="${env.ANT_BATFISH_CLIENT_PATH}/bin"/>
             <pathelement path="${env.ANT_COMMON_PATH}/bin"/>
          </classpath>
       </javac>

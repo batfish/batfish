@@ -2,31 +2,94 @@ package org.batfish.question;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.batfish.answerer.Answerer;
+import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.main.Batfish;
-import org.batfish.main.Settings.TestrigSettings;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutesQuestionPlugin extends QuestionPlugin {
 
+   public static class RoutesAnswerElement implements AnswerElement {
+
+      private SortedSet<Route> _routes;
+
+      private SortedMap<String, SortedSet<Route>> _routesByHostname;
+
+      @JsonCreator
+      public RoutesAnswerElement() {
+      }
+
+      public RoutesAnswerElement(Map<String, Configuration> configurations,
+            Pattern nodeRegex) {
+         _routes = new TreeSet<>();
+         _routesByHostname = new TreeMap<>();
+         for (Entry<String, Configuration> e : configurations.entrySet()) {
+            String hostname = e.getKey();
+            if (!nodeRegex.matcher(hostname).matches()) {
+               continue;
+            }
+            Configuration c = e.getValue();
+            SortedSet<Route> routes = c.getRoutes();
+            _routes.addAll(routes);
+            _routesByHostname.put(hostname, routes);
+         }
+      }
+
+      public SortedSet<Route> getRoutes() {
+         return _routes;
+      }
+
+      @JsonIdentityReference(alwaysAsId = true)
+      public SortedMap<String, SortedSet<Route>> getRoutesByHostname() {
+         return _routesByHostname;
+      }
+
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         // TODO: change this function to pretty print the answer
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
+
+      public void setRoutes(SortedSet<Route> routes) {
+         _routes = routes;
+      }
+
+      public void setRoutesByHostname(
+            SortedMap<String, SortedSet<Route>> routesByHostname) {
+         _routesByHostname = routesByHostname;
+      }
+
+   }
+
    public static class RoutesAnswerer extends Answerer {
 
-      public RoutesAnswerer(Question question, Batfish batfish) {
+      public RoutesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
       }
 
       @Override
-      public AnswerElement answer(TestrigSettings testrigSettings) {
+      public AnswerElement answer() {
 
          RoutesQuestion question = (RoutesQuestion) _question;
          Pattern nodeRegex;
@@ -39,10 +102,9 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
-         _batfish.checkDataPlaneQuestionDependencies(testrigSettings);
+         _batfish.checkDataPlaneQuestionDependencies();
          Map<String, Configuration> configurations = _batfish
-               .loadConfigurations(testrigSettings);
+               .loadConfigurations();
          _batfish.initRoutes(configurations);
          RoutesAnswerElement answerElement = new RoutesAnswerElement(
                configurations, nodeRegex);
@@ -58,13 +120,17 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       private String _nodeRegex;
 
       public RoutesQuestion() {
-         super(null);
          _nodeRegex = ".*";
       }
 
       @Override
       public boolean getDataPlane() {
          return true;
+      }
+
+      @Override
+      public String getName() {
+         return "routes";
       }
 
       @JsonProperty(NODE_REGEX_VAR)
@@ -109,23 +175,13 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
    }
 
    @Override
-   protected Answerer createAnswerer(Question question, Batfish batfish) {
+   protected Answerer createAnswerer(Question question, IBatfish batfish) {
       return new RoutesAnswerer(question, batfish);
    }
 
    @Override
    protected Question createQuestion() {
       return new RoutesQuestion();
-   }
-
-   @Override
-   protected String getQuestionClassName() {
-      return RoutesQuestion.class.getCanonicalName();
-   }
-
-   @Override
-   protected String getQuestionName() {
-      return "routes";
    }
 
 }

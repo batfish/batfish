@@ -21,25 +21,32 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.answerer.Answerer;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Pair;
 import org.batfish.common.Warning;
+import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -50,9 +57,13 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.GenericConfigObject;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
@@ -70,6 +81,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -81,19 +93,22 @@ import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
+import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
+import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
-import org.batfish.datamodel.questions.EnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -115,10 +130,9 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.main.Settings.EnvironmentSettings;
+import org.batfish.main.Settings.TestrigSettings;
 import org.batfish.nls.NlsDataPlanePlugin;
-import org.batfish.plugin.DataPlanePlugin;
 import org.batfish.protocoldependency.DependencyDatabase;
 import org.batfish.protocoldependency.DependentRoute;
 import org.batfish.protocoldependency.PotentialExport;
@@ -127,13 +141,21 @@ import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
+import org.batfish.z3.AclLine;
+import org.batfish.z3.AclReachabilityQuerySynthesizer;
+import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
+import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
+import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodFirstUnsatResult;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
 import org.batfish.z3.NodSatResult;
+import org.batfish.z3.QuerySynthesizer;
+import org.batfish.z3.ReachEdgeQuerySynthesizer;
+import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -144,7 +166,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * This class encapsulates the main control logic for Batfish.
  */
-public class Batfish extends PluginConsumer implements AutoCloseable {
+public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private static final String BASE_TESTRIG_TAG = "BASE";
 
@@ -398,11 +420,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return parse(parser, logger, settings);
    }
 
-   private final Map<String, BiFunction<Question, Batfish, Answerer>> _answererCreators;
+   private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
 
    private TestrigSettings _baseTestrigSettings;
 
    private DataPlanePlugin _dataPlanePlugin;
+
+   private final Map<TestrigSettings, DataPlane> _dataPlanes;
 
    private TestrigSettings _deltaTestrigSettings;
 
@@ -418,17 +442,21 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
 
    private TestrigSettings _testrigSettings;
 
+   private final List<TestrigSettings> _testrigSettingsStack;
+
    private long _timerCount;
 
    public Batfish(Settings settings) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
+      _dataPlanes = new HashMap<>();
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
       _logger = _settings.getLogger();
       _terminatedWithException = false;
       _answererCreators = new HashMap<>();
+      _testrigSettingsStack = new ArrayList<>();
    }
 
    private void anonymizeConfigurations() {
@@ -451,8 +479,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
             answerElement = Answerer.create(question, this).answerDiff();
          }
          else {
-            answerElement = Answerer.create(question, this)
-                  .answer(_testrigSettings);
+            answerElement = Answerer.create(question, this).answer();
          }
       }
       catch (Exception e) {
@@ -475,6 +502,233 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return answer;
    }
 
+   @Override
+   public AnswerElement answerAclReachability(String aclNameRegexStr,
+         NamedStructureEquivalenceSets<?> aclEqSets) {
+      AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
+
+      Pattern aclNameRegex;
+      try {
+         aclNameRegex = Pattern.compile(aclNameRegexStr);
+      }
+      catch (PatternSyntaxException e) {
+         throw new BatfishException(
+               "Supplied regex for nodes is not a valid java regex: \""
+                     + aclNameRegexStr + "\"",
+               e);
+      }
+
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+
+      List<NodSatJob<AclLine>> jobs = new ArrayList<>();
+
+      for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
+         String aclName = e.getKey();
+         if (!aclNameRegex.matcher(aclName).matches()) {
+            continue;
+         }
+         // skip juniper srx inbound filters, as they can't really contain
+         // operator error
+         if (aclName.contains("~ZONE_INTERFACE_FILTER~")
+               || aclName.contains("~INBOUND_ZONE_FILTER~")) {
+            continue;
+         }
+         SortedSet<?> s = (SortedSet<?>) e.getValue();
+         for (Object o : s) {
+            NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
+            String hostname = aclEqSet.getRepresentativeElement();
+            SortedSet<String> eqClassNodes = aclEqSet.getNodes();
+            answerElement.addEquivalenceClass(aclName, hostname, eqClassNodes);
+            Configuration c = configurations.get(hostname);
+            IpAccessList acl = c.getIpAccessLists().get(aclName);
+            int numLines = acl.getLines().size();
+            if (numLines == 0) {
+               _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName
+                     + "\" contains no lines\n");
+               continue;
+            }
+            AclReachabilityQuerySynthesizer query = new AclReachabilityQuerySynthesizer(
+                  hostname, aclName, numLines);
+            Synthesizer aclSynthesizer = synthesizeAcls(
+                  Collections.singletonMap(hostname, c));
+            NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer,
+                  query);
+            jobs.add(job);
+         }
+      }
+
+      Map<AclLine, Boolean> output = new TreeMap<>();
+      computeNodSatOutput(jobs, output);
+
+      // rearrange output for next step
+      Map<String, Map<String, List<AclLine>>> arrangedAclLines = new TreeMap<>();
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine line = e.getKey();
+         String hostname = line.getHostname();
+         Map<String, List<AclLine>> byAclName = arrangedAclLines.get(hostname);
+         if (byAclName == null) {
+            byAclName = new TreeMap<>();
+            arrangedAclLines.put(hostname, byAclName);
+         }
+         String aclName = line.getAclName();
+         List<AclLine> aclLines = byAclName.get(aclName);
+         if (aclLines == null) {
+            aclLines = new ArrayList<>();
+            byAclName.put(aclName, aclLines);
+         }
+         aclLines.add(line);
+      }
+
+      // now get earliest more general lines
+      List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs = new ArrayList<>();
+      for (Entry<String, Map<String, List<AclLine>>> e : arrangedAclLines
+            .entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = configurations.get(hostname);
+         Synthesizer aclSynthesizer = synthesizeAcls(
+               Collections.singletonMap(hostname, c));
+         Map<String, List<AclLine>> byAclName = e.getValue();
+         for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
+            String aclName = e2.getKey();
+            IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
+            List<AclLine> lines = e2.getValue();
+            for (int i = 0; i < lines.size(); i++) {
+               AclLine line = lines.get(i);
+               boolean reachable = output.get(line);
+               if (!reachable) {
+                  List<AclLine> toCheck = new ArrayList<>();
+                  for (int j = 0; j < i; j++) {
+                     AclLine earlierLine = lines.get(j);
+                     boolean earlierIsReachable = output.get(earlierLine);
+                     if (earlierIsReachable) {
+                        toCheck.add(earlierLine);
+                     }
+                  }
+                  EarliestMoreGeneralReachableLineQuerySynthesizer query = new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                        line, toCheck, ipAccessList);
+                  NodFirstUnsatJob<AclLine, Integer> job = new NodFirstUnsatJob<>(
+                        _settings, aclSynthesizer, query);
+                  step2Jobs.add(job);
+               }
+            }
+         }
+      }
+      Map<AclLine, Integer> step2Output = new TreeMap<>();
+      computeNodFirstUnsatOutput(step2Jobs, step2Output);
+      for (AclLine line : output.keySet()) {
+         Integer earliestMoreGeneralReachableLine = step2Output.get(line);
+         line.setEarliestMoreGeneralReachableLine(
+               earliestMoreGeneralReachableLine);
+      }
+
+      Set<Pair<String, String>> aclsWithUnreachableLines = new TreeSet<>();
+      Set<Pair<String, String>> allAcls = new TreeSet<>();
+      int numUnreachableLines = 0;
+      int numLines = output.entrySet().size();
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine aclLine = e.getKey();
+         boolean sat = e.getValue();
+         String hostname = aclLine.getHostname();
+         String aclName = aclLine.getAclName();
+         Pair<String, String> qualifiedAclName = new Pair<>(hostname, aclName);
+         allAcls.add(qualifiedAclName);
+         if (!sat) {
+            numUnreachableLines++;
+            aclsWithUnreachableLines.add(qualifiedAclName);
+         }
+      }
+      for (Entry<AclLine, Boolean> e : output.entrySet()) {
+         AclLine aclLine = e.getKey();
+         int index = aclLine.getLine();
+         boolean sat = e.getValue();
+         String hostname = aclLine.getHostname();
+         String aclName = aclLine.getAclName();
+         Pair<String, String> qualifiedAclName = new Pair<>(hostname, aclName);
+         IpAccessList ipAccessList = configurations.get(hostname)
+               .getIpAccessLists().get(aclName);
+         IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(index);
+         AclReachabilityEntry line = new AclReachabilityEntry(index,
+               ipAccessListLine.getName());
+         if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
+            if (sat) {
+               _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName,
+                     line.getIndex(), line.getName());
+               answerElement.addReachableLine(hostname, ipAccessList, line);
+            }
+            else {
+               _logger.debugf("%s:%s:%d:'%s' is UNREACHABLE\n\t%s\n", hostname,
+                     aclName, line.getIndex(), line.getName(),
+                     ipAccessListLine.toString());
+               Integer earliestMoreGeneralLineIndex = aclLine
+                     .getEarliestMoreGeneralReachableLine();
+               if (earliestMoreGeneralLineIndex != null) {
+                  IpAccessListLine earliestMoreGeneralLine = ipAccessList
+                        .getLines().get(earliestMoreGeneralLineIndex);
+                  line.setEarliestMoreGeneralLineIndex(
+                        earliestMoreGeneralLineIndex);
+                  line.setEarliestMoreGeneralLineName(
+                        earliestMoreGeneralLine.getName());
+                  if (!earliestMoreGeneralLine.getAction()
+                        .equals(ipAccessListLine.getAction())) {
+                     line.setDifferentAction(true);
+                  }
+               }
+               answerElement.addUnreachableLine(hostname, ipAccessList, line);
+               aclsWithUnreachableLines.add(qualifiedAclName);
+            }
+         }
+         else {
+            answerElement.addReachableLine(hostname, ipAccessList, line);
+         }
+      }
+      for (Pair<String, String> qualfiedAcl : aclsWithUnreachableLines) {
+         String hostname = qualfiedAcl.getFirst();
+         String aclName = qualfiedAcl.getSecond();
+         _logger.debugf("%s:%s has at least 1 unreachable line\n", hostname,
+               aclName);
+      }
+      int numAclsWithUnreachableLines = aclsWithUnreachableLines.size();
+      int numAcls = allAcls.size();
+      double percentUnreachableAcls = 100d * numAclsWithUnreachableLines
+            / numAcls;
+      double percentUnreachableLines = 100d * numUnreachableLines / numLines;
+      _logger.debugf("SUMMARY:\n");
+      _logger.debugf("\t%d/%d (%.1f%%) acls have unreachable lines\n",
+            numAclsWithUnreachableLines, numAcls, percentUnreachableAcls);
+      _logger.debugf("\t%d/%d (%.1f%%) acl lines are unreachable\n",
+            numUnreachableLines, numLines, percentUnreachableLines);
+
+      return answerElement;
+   }
+
+   @Override
+   public String answerProtocolDependencies() {
+      checkConfigurations();
+      Map<String, Configuration> configurations = loadConfigurations();
+
+      ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
+            configurations);
+      analysis.printDependencies(_logger);
+      analysis.writeGraphs(this, _logger);
+      Path protocolDependencyGraphPath = _testrigSettings
+            .getProtocolDependencyGraphPath();
+      Path protocolDependencyGraphZipPath = _testrigSettings
+            .getProtocolDependencyGraphZipPath();
+      ZipUtility.zipFiles(protocolDependencyGraphPath.toString(),
+            protocolDependencyGraphZipPath.toString());
+      byte[] zipBytes;
+      try {
+         zipBytes = Files.readAllBytes(protocolDependencyGraphZipPath);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Could not read zip", e);
+      }
+      String zipBase64 = Base64.encodeBase64String(zipBytes);
+      return zipBase64;
+
+   }
+
    private void checkBaseDirExists() {
       Path baseDir = _testrigSettings.getBasePath();
       if (!Files.exists(baseDir)) {
@@ -483,6 +737,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void checkConfigurations() {
       checkConfigurations(_testrigSettings);
    }
@@ -499,6 +754,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
+   public void checkDataPlane() {
+      checkDataPlane(_testrigSettings);
+   }
+
    public void checkDataPlane(TestrigSettings testrigSettings) {
       EnvironmentSettings envSettings = testrigSettings
             .getEnvironmentSettings();
@@ -509,6 +769,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void checkDataPlaneQuestionDependencies() {
       checkDataPlaneQuestionDependencies(_testrigSettings);
    }
@@ -536,6 +797,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       checkConfigurations();
       checkDataPlane(_baseTestrigSettings);
       checkDataPlane(_deltaTestrigSettings);
+   }
+
+   @Override
+   public void checkEnvironmentExists() {
+      checkEnvironmentExists(_testrigSettings);
    }
 
    public void checkEnvironmentExists(TestrigSettings testrigSettings) {
@@ -597,23 +863,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return flows;
    }
 
+   @Override
    public InterfaceSet computeFlowSinks(
-         Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings, boolean differentialContext,
+         Map<String, Configuration> configurations, boolean differentialContext,
          Topology topology) {
       InterfaceSet flowSinks = null;
       if (differentialContext) {
-         flowSinks = _dataPlanePlugin.getDataPlane(_baseTestrigSettings)
-               .getFlowSinks();
+         pushBaseEnvironment();
+         flowSinks = loadDataPlane().getFlowSinks();
+         popEnvironment();
       }
-      NodeSet blacklistNodes = getNodeBlacklist(testrigSettings);
+      NodeSet blacklistNodes = getNodeBlacklist();
       if (blacklistNodes != null) {
          if (differentialContext) {
             flowSinks.removeNodes(blacklistNodes);
          }
       }
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(
-            testrigSettings);
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
             if (differentialContext) {
@@ -650,6 +916,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return flowSinks;
    }
 
+   @Override
    public Map<Ip, Set<String>> computeIpOwners(
          Map<String, Configuration> configurations) {
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
@@ -703,25 +970,24 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       printElapsedTime();
    }
 
-   public Topology computeTopology(Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings) {
-      Topology topology = computeTopology(testrigSettings.getTestRigPath(),
+   @Override
+   public Topology computeTopology(Map<String, Configuration> configurations) {
+      Topology topology = computeTopology(_testrigSettings.getTestRigPath(),
             configurations);
-      EdgeSet blacklistEdges = getEdgeBlacklist(testrigSettings);
+      EdgeSet blacklistEdges = getEdgeBlacklist();
       if (blacklistEdges != null) {
          EdgeSet edges = topology.getEdges();
          edges.removeAll(blacklistEdges);
          if (blacklistEdges.size() > 0) {
          }
       }
-      NodeSet blacklistNodes = getNodeBlacklist(testrigSettings);
+      NodeSet blacklistNodes = getNodeBlacklist();
       if (blacklistNodes != null) {
          for (String blacklistNode : blacklistNodes) {
             topology.removeNode(blacklistNode);
          }
       }
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(
-            testrigSettings);
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
             topology.removeInterface(blacklistInterface);
@@ -779,12 +1045,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return configurations;
    }
 
-   public EnvironmentCreationAnswerElement createEnvironment(
-         TestrigSettings testrigSettings, EnvironmentCreationQuestion question,
+   @Override
+   public EnvironmentCreationAnswerElement createEnvironment(String newEnvName,
+         NodeSet nodeBlacklist, Set<NodeInterfacePair> interfaceBlacklist,
          boolean dp) {
       EnvironmentCreationAnswerElement answerElement = new EnvironmentCreationAnswerElement();
-      String newEnvName = question.getEnvironmentName();
-      EnvironmentSettings envSettings = testrigSettings
+      EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
       String oldEnvName = envSettings.getName();
       if (oldEnvName.equals(newEnvName)) {
@@ -796,7 +1062,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       Path oldEnvPath = envSettings.getEnvPath();
       applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
             _settings.getTestrig(), newEnvName, _settings.getQuestionName());
-      EnvironmentSettings newEnvSettings = testrigSettings
+      EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
       newEnvPath.toFile().mkdirs();
@@ -809,30 +1075,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
 
       // write node blacklist from question
-      if (!question.getNodeBlacklist().isEmpty()) {
+      if (!nodeBlacklist.isEmpty()) {
          StringBuilder nodeBlacklistSb = new StringBuilder();
-         for (String node : question.getNodeBlacklist()) {
+         for (String node : nodeBlacklist) {
             nodeBlacklistSb.append(node + "\n");
          }
-         String nodeBlacklist = nodeBlacklistSb.toString();
+         String nodeBlacklistStr = nodeBlacklistSb.toString();
          CommonUtil.writeFile(newEnvSettings.getNodeBlacklistPath(),
-               nodeBlacklist);
+               nodeBlacklistStr);
       }
       // write interface blacklist from question
-      if (!question.getInterfaceBlacklist().isEmpty()) {
+      if (!interfaceBlacklist.isEmpty()) {
          StringBuilder interfaceBlacklistSb = new StringBuilder();
-         for (NodeInterfacePair pair : question.getInterfaceBlacklist()) {
+         for (NodeInterfacePair pair : interfaceBlacklist) {
             interfaceBlacklistSb.append(
                   pair.getHostname() + ":" + pair.getInterface() + "\n");
          }
-         String interfaceBlacklist = interfaceBlacklistSb.toString();
+         String interfaceBlacklistStr = interfaceBlacklistSb.toString();
          CommonUtil.writeFile(newEnvSettings.getInterfaceBlacklistPath(),
-               interfaceBlacklist);
+               interfaceBlacklistStr);
       }
 
-      if (dp && !dataPlaneDependenciesExist(testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(testrigSettings, true);
-         _nls.clearEntityTables();
+      if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
+         _dataPlanePlugin.computeDataPlane(true);
+         if (_nls != null) {
+            _nls.clearEntityTables();
+         }
       }
       return answerElement;
    }
@@ -897,8 +1165,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
    }
 
    private void disableUnusableVpnInterfaces(
-         Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings) {
+         Map<String, Configuration> configurations) {
       initRemoteIpsecVpns(configurations);
       for (Configuration c : configurations.values()) {
          for (IpsecVpn vpn : c.getIpsecVpns().values()) {
@@ -1224,7 +1491,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
             _testrigSettings.getSerializeIndependentPath());
    }
 
-   public Map<String, BiFunction<Question, Batfish, Answerer>> getAnswererCreators() {
+   @Override
+   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
       return _answererCreators;
    }
 
@@ -1242,13 +1510,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return configurations;
    }
 
+   public Path getControlPlaneFactsDir() {
+      return _testrigSettings.getEnvironmentSettings()
+            .getControlPlaneFactsDir();
+   }
+
+   @Override
+   public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement() {
+      return (ConvertConfigurationAnswerElement) deserializeObject(
+            _testrigSettings.getConvertAnswerPath());
+   }
+
    public DataPlanePlugin getDataPlanePlugin() {
       return _dataPlanePlugin;
    }
 
-   private Map<String, Configuration> getDeltaConfigurations(
-         TestrigSettings testrigSettings) {
-      EnvironmentSettings envSettings = testrigSettings
+   private Map<String, Configuration> getDeltaConfigurations() {
+      EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
       if (Files.exists(envSettings.getDeltaConfigurationsDir())) {
          if (Files.exists(envSettings.getDeltaCompiledConfigurationsDir())) {
@@ -1268,6 +1546,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return _deltaTestrigSettings;
    }
 
+   @Override
    public String getDifferentialFlowTag() {
       // return _settings.getQuestionName() + ":" +
       // _baseTestrigSettings.getName()
@@ -1277,9 +1556,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return DIFFERENTIAL_FLOW_TAG;
    }
 
-   public EdgeSet getEdgeBlacklist(TestrigSettings testrigSettings) {
+   public EdgeSet getEdgeBlacklist() {
       EdgeSet blacklistEdges = null;
-      Path edgeBlacklistPath = testrigSettings.getEnvironmentSettings()
+      Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings()
             .getEdgeBlacklistPath();
       if (edgeBlacklistPath != null) {
          if (Files.exists(edgeBlacklistPath)) {
@@ -1296,6 +1575,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return seconds;
    }
 
+   public String getEnvironmentName() {
+      return _testrigSettings.getEnvironmentSettings().getName();
+   }
+
+   @Override
    public String getFlowTag() {
       return getFlowTag(_testrigSettings);
    }
@@ -1315,11 +1599,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public FlowHistory getHistory() {
-      return getHistory(_testrigSettings);
-   }
-
-   public FlowHistory getHistory(TestrigSettings testrigSettings) {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
          String tag = getDifferentialFlowTag();
@@ -1329,29 +1610,31 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
          // String deltaName = _deltaTestrigSettings.getName() + ":"
          // + _deltaTestrigSettings.getEnvironmentSettings().getName();
          String deltaName = getFlowTag(_deltaTestrigSettings);
-         populateFlowHistory(flowHistory, _baseTestrigSettings, baseName, tag);
-         populateFlowHistory(flowHistory, _deltaTestrigSettings, deltaName,
-               tag);
+         pushBaseEnvironment();
+         populateFlowHistory(flowHistory, baseName, tag);
+         popEnvironment();
+         pushDeltaEnvironment();
+         populateFlowHistory(flowHistory, deltaName, tag);
+         popEnvironment();
       }
       else {
          String tag = getFlowTag();
          // String name = testrigSettings.getName() + ":"
          // + testrigSettings.getEnvironmentSettings().getName();
          String envName = tag;
-         populateFlowHistory(flowHistory, testrigSettings, envName, tag);
+         populateFlowHistory(flowHistory, envName, tag);
       }
       _logger.debug(flowHistory.toString());
       return flowHistory;
    }
 
    private IbgpTopology getIbgpNeighbors() {
-      return _dataPlanePlugin.getIbgpNeighbors(_testrigSettings);
+      return _dataPlanePlugin.getIbgpNeighbors();
    }
 
-   public Set<NodeInterfacePair> getInterfaceBlacklist(
-         TestrigSettings testrigSettings) {
+   public Set<NodeInterfacePair> getInterfaceBlacklist() {
       Set<NodeInterfacePair> blacklistInterfaces = null;
-      Path interfaceBlacklistPath = testrigSettings.getEnvironmentSettings()
+      Path interfaceBlacklistPath = _testrigSettings.getEnvironmentSettings()
             .getInterfaceBlacklistPath();
       if (interfaceBlacklistPath != null) {
          if (Files.exists(interfaceBlacklistPath)) {
@@ -1362,13 +1645,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return blacklistInterfaces;
    }
 
+   @Override
    public BatfishLogger getLogger() {
       return _logger;
    }
 
-   public NodeSet getNodeBlacklist(TestrigSettings testrigSettings) {
+   public Path getNlsDataPlaneInputFile() {
+      return _testrigSettings.getEnvironmentSettings()
+            .getNlsDataPlaneInputFile();
+   }
+
+   public Path getNlsDataPlaneOutputDir() {
+      return _testrigSettings.getEnvironmentSettings()
+            .getNlsDataPlaneOutputDir();
+   }
+
+   public Path getNlsTrafficInputFile() {
+      return _testrigSettings.getEnvironmentSettings().getNlsTrafficInputFile();
+   }
+
+   public Path getNlsTrafficOutputDir() {
+      return _testrigSettings.getEnvironmentSettings().getNlsTrafficOutputDir();
+   }
+
+   public NodeSet getNodeBlacklist() {
       NodeSet blacklistNodes = null;
-      Path nodeBlacklistPath = testrigSettings.getEnvironmentSettings()
+      Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings()
             .getNodeBlacklistPath();
       if (nodeBlacklistPath != null) {
          if (Files.exists(nodeBlacklistPath)) {
@@ -1376,6 +1678,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
          }
       }
       return blacklistNodes;
+   }
+
+   public Path getPrecomputedRoutesPath() {
+      return _testrigSettings.getEnvironmentSettings()
+            .getPrecomputedRoutesPath();
+   }
+
+   public Path getSerializedTopologyPath() {
+      return _testrigSettings.getEnvironmentSettings()
+            .getSerializedTopologyPath();
    }
 
    public Settings getSettings() {
@@ -1400,8 +1712,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return _terminatedWithException;
    }
 
+   public String getTestrigName() {
+      return _testrigSettings.getName();
+   }
+
    public TestrigSettings getTestrigSettings() {
       return _testrigSettings;
+   }
+
+   public Path getTrafficFactsDir() {
+      return _testrigSettings.getEnvironmentSettings().getTrafficFactsDir();
    }
 
    @Override
@@ -1430,10 +1750,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void initBgpAdvertisements(
          Map<String, Configuration> configurations) {
       AdvertisementSet globalBgpAdvertisements = _dataPlanePlugin
-            .getAdvertisements(_testrigSettings);
+            .getAdvertisements();
       for (Configuration node : configurations.values()) {
          node.initBgpAdvertisements();
       }
@@ -1531,6 +1852,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void initBgpOriginationSpaceExplicit(
          Map<String, Configuration> configurations) {
       ProtocolDependencyAnalysis protocolDependencyAnalysis = new ProtocolDependencyAnalysis(
@@ -1559,32 +1881,38 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
-   private void initQuestionEnvironment(TestrigSettings testrigSettings,
-         Question question, boolean dp, boolean differentialContext) {
-      EnvironmentSettings envSettings = testrigSettings
+   private void initQuestionEnvironment(Question question, boolean dp,
+         boolean differentialContext) {
+      EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
-      if (!environmentExists(testrigSettings)) {
+      if (!environmentExists(_testrigSettings)) {
          Path envPath = envSettings.getEnvPath();
          // create environment required folders
          CommonUtil.createDirectories(envPath);
       }
-      if (dp && !dataPlaneDependenciesExist(testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(testrigSettings,
-               differentialContext);
-         _nls.clearEntityTables();
+      if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
+         _dataPlanePlugin.computeDataPlane(differentialContext);
+         if (_nls != null) {
+            _nls.clearEntityTables();
+         }
       }
    }
 
    private void initQuestionEnvironments(Question question, boolean diff,
          boolean diffActive, boolean dp) {
       if (diff || !diffActive) {
-         initQuestionEnvironment(_baseTestrigSettings, question, dp, false);
+         pushBaseEnvironment();
+         initQuestionEnvironment(question, dp, false);
+         popEnvironment();
       }
       if (diff || diffActive) {
-         initQuestionEnvironment(_deltaTestrigSettings, question, dp, true);
+         pushDeltaEnvironment();
+         initQuestionEnvironment(question, dp, true);
+         popEnvironment();
       }
    }
 
+   @Override
    public void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners) {
       Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
@@ -1642,6 +1970,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
       Map<IpsecVpn, Ip> remoteAddresses = new HashMap<>();
       Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
@@ -1693,8 +2022,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void initRoutes(Map<String, Configuration> configurations) {
-      Set<Route> globalRoutes = _dataPlanePlugin.getRoutes(_testrigSettings);
+      Set<Route> globalRoutes = _dataPlanePlugin.getRoutes();
       for (Configuration node : configurations.values()) {
          node.initRoutes();
       }
@@ -1712,28 +2042,62 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public Map<String, Configuration> loadConfigurations() {
-      return loadConfigurations(_testrigSettings);
-   }
-
-   public Map<String, Configuration> loadConfigurations(
-         TestrigSettings testrigSettings) {
       Map<String, Configuration> configurations = deserializeConfigurations(
-            testrigSettings.getSerializeIndependentPath());
-      processNodeBlacklist(configurations, testrigSettings);
-      processInterfaceBlacklist(configurations, testrigSettings);
-      processDeltaConfigurations(configurations, testrigSettings);
-      disableUnusableVpnInterfaces(configurations, testrigSettings);
+            _testrigSettings.getSerializeIndependentPath());
+      processNodeBlacklist(configurations);
+      processInterfaceBlacklist(configurations);
+      processDeltaConfigurations(configurations);
+      disableUnusableVpnInterfaces(configurations);
       return configurations;
    }
 
-   public Topology loadTopology(TestrigSettings testrigSettings) {
-      Path topologyPath = testrigSettings.getEnvironmentSettings()
+   @Override
+   public DataPlane loadDataPlane() {
+      DataPlane dp = _dataPlanes.get(_testrigSettings);
+      if (dp == null) {
+         dp = (DataPlane) deserializeObject(
+               _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+         _dataPlanes.put(_testrigSettings, dp);
+      }
+      return dp;
+   }
+
+   public Topology loadTopology() {
+      Path topologyPath = _testrigSettings.getEnvironmentSettings()
             .getSerializedTopologyPath();
       _logger.info("Deserializing topology...");
       Topology topology = (Topology) deserializeObject(topologyPath);
       _logger.info("OK\n");
       return topology;
+   }
+
+   @Override
+   public AnswerElement multipath(HeaderSpace headerSpace) {
+      Settings settings = getSettings();
+      checkDataPlaneQuestionDependencies();
+      String tag = getFlowTag(_testrigSettings);
+      Map<String, Configuration> configurations = loadConfigurations();
+      Set<Flow> flows = null;
+      Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
+      List<NodJob> jobs = new ArrayList<>();
+      for (String node : configurations.keySet()) {
+         MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
+               node, headerSpace);
+         NodeSet nodes = new NodeSet();
+         nodes.add(node);
+         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
+               tag);
+         jobs.add(job);
+      }
+
+      flows = computeNodOutput(jobs);
+
+      getDataPlanePlugin().processFlows(flows);
+
+      AnswerElement answerElement = getHistory();
+      return answerElement;
    }
 
    void outputAnswer(Answer answer) {
@@ -1961,11 +2325,122 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return vendorConfigurations;
    }
 
+   @Override
+   public AnswerElement pathDiff(HeaderSpace headerSpace) {
+      Settings settings = getSettings();
+      checkDifferentialDataPlaneQuestionDependencies();
+      String tag = getDifferentialFlowTag();
+
+      // load base configurations and generate base data plane
+      pushBaseEnvironment();
+      Map<String, Configuration> baseConfigurations = loadConfigurations();
+      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
+      popEnvironment();
+
+      // load diff configurations and generate diff data plane
+      pushDeltaEnvironment();
+      Map<String, Configuration> diffConfigurations = loadConfigurations();
+      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+      popEnvironment();
+
+      Set<String> commonNodes = new TreeSet<>();
+      commonNodes.addAll(baseConfigurations.keySet());
+      commonNodes.retainAll(diffConfigurations.keySet());
+
+      pushDeltaEnvironment();
+      NodeSet blacklistNodes = getNodeBlacklist();
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
+      EdgeSet blacklistEdges = getEdgeBlacklist();
+      popEnvironment();
+
+      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
+
+      // compute composite program and flows
+      List<Synthesizer> commonEdgeSynthesizers = new ArrayList<>();
+      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      commonEdgeSynthesizers.add(diffDataPlaneSynthesizer);
+      commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+
+      List<CompositeNodJob> jobs = new ArrayList<>();
+
+      // generate local edge reachability and black hole queries
+      pushDeltaEnvironment();
+      Topology diffTopology = loadTopology();
+      popEnvironment();
+      EdgeSet diffEdges = diffTopology.getEdges();
+      for (Edge edge : diffEdges) {
+         String ingressNode = edge.getNode1();
+         ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
+               ingressNode, edge, true, headerSpace);
+         ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
+               ingressNode, edge, true, new HeaderSpace());
+         noReachQuery.setNegate(true);
+         List<QuerySynthesizer> queries = new ArrayList<>();
+         queries.add(reachQuery);
+         queries.add(noReachQuery);
+         queries.add(blacklistQuery);
+         NodeSet nodes = new NodeSet();
+         nodes.add(ingressNode);
+         CompositeNodJob job = new CompositeNodJob(settings,
+               commonEdgeSynthesizers, queries, nodes, tag);
+         jobs.add(job);
+      }
+
+      // we also need queries for nodes next to edges that are now missing,
+      // in the case that those nodes still exist
+      List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
+      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+      pushBaseEnvironment();
+      Topology baseTopology = loadTopology();
+      popEnvironment();
+      EdgeSet baseEdges = baseTopology.getEdges();
+      EdgeSet missingEdges = new EdgeSet();
+      missingEdges.addAll(baseEdges);
+      missingEdges.removeAll(diffEdges);
+      for (Edge missingEdge : missingEdges) {
+         String ingressNode = missingEdge.getNode1();
+         if (diffConfigurations.containsKey(ingressNode)) {
+            ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
+                  ingressNode, missingEdge, true, headerSpace);
+            List<QuerySynthesizer> queries = new ArrayList<>();
+            queries.add(reachQuery);
+            queries.add(blacklistQuery);
+            NodeSet nodes = new NodeSet();
+            nodes.add(ingressNode);
+            CompositeNodJob job = new CompositeNodJob(settings,
+                  missingEdgeSynthesizers, queries, nodes, tag);
+            jobs.add(job);
+         }
+
+      }
+
+      // TODO: maybe do something with nod answer element
+      Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
+      pushBaseEnvironment();
+      getDataPlanePlugin().processFlows(flows);
+      popEnvironment();
+      pushDeltaEnvironment();
+      getDataPlanePlugin().processFlows(flows);
+      popEnvironment();
+
+      AnswerElement answerElement = getHistory();
+      return answerElement;
+   }
+
+   @Override
+   public void popEnvironment() {
+      int lastIndex = _testrigSettingsStack.size() - 1;
+      _testrigSettings = _testrigSettingsStack.get(lastIndex);
+      _testrigSettingsStack.remove(lastIndex);
+   }
+
    private void populateFlowHistory(FlowHistory flowHistory,
-         TestrigSettings testrigSettings, String environmentName, String tag) {
-      List<Flow> flows = _dataPlanePlugin.getHistoryFlows(testrigSettings);
-      List<FlowTrace> flowTraces = _dataPlanePlugin
-            .getHistoryFlowTraces(testrigSettings);
+         String environmentName, String tag) {
+      List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
+      List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
       int numEntries = flows.size();
       for (int i = 0; i < numEntries; i++) {
          Flow flow = flows.get(i);
@@ -1976,6 +2451,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
+   @Override
    public void printElapsedTime() {
       double seconds = getElapsedTime(_timerCount);
       _logger.info("Time taken for this task: " + seconds + " seconds\n");
@@ -1999,10 +2475,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
    }
 
    private void processDeltaConfigurations(
-         Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings) {
-      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations(
-            testrigSettings);
+         Map<String, Configuration> configurations) {
+      Map<String, Configuration> deltaConfigurations = getDeltaConfigurations();
       configurations.putAll(deltaConfigurations);
       // TODO: deal with topological changes
    }
@@ -2021,12 +2495,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
     */
    public AdvertisementSet processExternalBgpAnnouncements(
          Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings, CommunitySet allCommunities) {
-      EnvironmentSettings envSettings = testrigSettings
-            .getEnvironmentSettings();
+         CommunitySet allCommunities) {
       AdvertisementSet advertSet = new AdvertisementSet();
-      Path externalBgpAnnouncementsPath = envSettings
-            .getExternalBgpAnnouncementsPath();
+      Path externalBgpAnnouncementsPath = _testrigSettings
+            .getEnvironmentSettings().getExternalBgpAnnouncementsPath();
       if (Files.exists(externalBgpAnnouncementsPath)) {
          String externalBgpAnnouncementsFileContents = CommonUtil
                .readFile(externalBgpAnnouncementsPath);
@@ -2069,11 +2541,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return advertSet;
    }
 
+   @Override
+   public void processFlows(Set<Flow> flows) {
+      _dataPlanePlugin.processFlows(flows);
+   }
+
    private void processInterfaceBlacklist(
-         Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings) {
-      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist(
-            testrigSettings);
+         Map<String, Configuration> configurations) {
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
       if (blacklistInterfaces != null) {
          for (NodeInterfacePair p : blacklistInterfaces) {
             String hostname = p.getHostname();
@@ -2084,9 +2559,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
-   private void processNodeBlacklist(Map<String, Configuration> configurations,
-         TestrigSettings testrigSettings) {
-      NodeSet blacklistNodes = getNodeBlacklist(testrigSettings);
+   private void processNodeBlacklist(
+         Map<String, Configuration> configurations) {
+      NodeSet blacklistNodes = getNodeBlacklist();
       if (blacklistNodes != null) {
          for (String hostname : blacklistNodes) {
             configurations.remove(hostname);
@@ -2097,6 +2572,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
    private Topology processTopologyFile(Path topologyFilePath) {
       Topology topology = parseTopology(topologyFilePath);
       return topology;
+   }
+
+   @Override
+   public void pushBaseEnvironment() {
+      _testrigSettingsStack.add(_testrigSettings);
+      _testrigSettings = _baseTestrigSettings;
+   }
+
+   @Override
+   public void pushDeltaEnvironment() {
+      _testrigSettingsStack.add(_testrigSettings);
+      _testrigSettings = _deltaTestrigSettings;
    }
 
    private Map<Path, String> readConfigurationFiles(Path testRigPath,
@@ -2120,8 +2607,83 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return configurationData;
    }
 
+   @Override
+   public AnswerElement reducedReachability(HeaderSpace headerSpace) {
+      Settings settings = getSettings();
+      checkDifferentialDataPlaneQuestionDependencies();
+      String tag = getDifferentialFlowTag();
+
+      // load base configurations and generate base data plane
+      pushBaseEnvironment();
+      Map<String, Configuration> baseConfigurations = loadConfigurations();
+      Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
+      popEnvironment();
+
+      // load diff configurations and generate diff data plane
+      pushDeltaEnvironment();
+      Map<String, Configuration> diffConfigurations = loadConfigurations();
+      Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+      popEnvironment();
+
+      Set<String> commonNodes = new TreeSet<>();
+      commonNodes.addAll(baseConfigurations.keySet());
+      commonNodes.retainAll(diffConfigurations.keySet());
+
+      pushDeltaEnvironment();
+      NodeSet blacklistNodes = getNodeBlacklist();
+      Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
+      EdgeSet blacklistEdges = getEdgeBlacklist();
+      popEnvironment();
+
+      BlacklistDstIpQuerySynthesizer blacklistQuery = new BlacklistDstIpQuerySynthesizer(
+            null, blacklistNodes, blacklistInterfaces, blacklistEdges,
+            baseConfigurations);
+
+      // compute composite program and flows
+      List<Synthesizer> synthesizers = new ArrayList<>();
+      synthesizers.add(baseDataPlaneSynthesizer);
+      synthesizers.add(diffDataPlaneSynthesizer);
+      synthesizers.add(baseDataPlaneSynthesizer);
+
+      List<CompositeNodJob> jobs = new ArrayList<>();
+
+      // generate base reachability and diff blackhole and blacklist queries
+      for (String node : commonNodes) {
+         ReachabilityQuerySynthesizer acceptQuery = new ReachabilityQuerySynthesizer(
+               Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
+               Collections.<String> emptySet(), Collections.singleton(node));
+         ReachabilityQuerySynthesizer notAcceptQuery = new ReachabilityQuerySynthesizer(
+               Collections.singleton(ForwardingAction.ACCEPT),
+               new HeaderSpace(), Collections.<String> emptySet(),
+               Collections.singleton(node));
+         notAcceptQuery.setNegate(true);
+         NodeSet nodes = new NodeSet();
+         nodes.add(node);
+         List<QuerySynthesizer> queries = new ArrayList<>();
+         queries.add(acceptQuery);
+         queries.add(notAcceptQuery);
+         queries.add(blacklistQuery);
+         CompositeNodJob job = new CompositeNodJob(settings, synthesizers,
+               queries, nodes, tag);
+         jobs.add(job);
+      }
+
+      // TODO: maybe do something with nod answer element
+      Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
+      pushBaseEnvironment();
+      getDataPlanePlugin().processFlows(flows);
+      popEnvironment();
+      pushDeltaEnvironment();
+      getDataPlanePlugin().processFlows(flows);
+      popEnvironment();
+
+      AnswerElement answerElement = getHistory();
+      return answerElement;
+   }
+
+   @Override
    public void registerAnswerer(String questionClassName,
-         BiFunction<Question, Batfish, Answerer> answererCreator) {
+         BiFunction<Question, IBatfish, Answerer> answererCreator) {
       _answererCreators.put(questionClassName, answererCreator);
    }
 
@@ -2164,6 +2726,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return answerElement;
    }
 
+   @Override
    public void resetTimer() {
       _timerCount = System.currentTimeMillis();
    }
@@ -2287,19 +2850,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
 
       if (_settings.getDataPlane()) {
-         answer.append(_dataPlanePlugin.computeDataPlane(_testrigSettings,
-               _settings.getDiffActive()));
+         answer.append(
+               _dataPlanePlugin.computeDataPlane(_settings.getDiffActive()));
          action = true;
       }
 
       if (_settings.getWriteRoutes()) {
-         writeRoutes(_settings.getPrecomputedRoutesPath(), _testrigSettings);
+         writeRoutes(_settings.getPrecomputedRoutesPath());
          action = true;
       }
 
       if (_settings.getWriteBgpAdvertisements()) {
-         writeBgpAdvertisements(_settings.getPrecomputedBgpAdvertisementsPath(),
-               _testrigSettings);
+         writeBgpAdvertisements(
+               _settings.getPrecomputedBgpAdvertisementsPath());
          action = true;
       }
 
@@ -2560,6 +3123,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return answer;
    }
 
+   @Override
    public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
       _dataPlanePlugin = dataPlanePlugin;
    }
@@ -2568,16 +3132,110 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       _terminatedWithException = terminatedWithException;
    }
 
-   public Synthesizer synthesizeDataPlane(TestrigSettings testrigSettings) {
+   @Override
+   public AnswerElement standard(HeaderSpace headerSpace,
+         Set<ForwardingAction> actions, String ingressNodeRegexStr,
+         String notIngressNodeRegexStr, String finalNodeRegexStr,
+         String notFinalNodeRegexStr) {
+      Settings settings = getSettings();
+      checkDataPlaneQuestionDependencies(_testrigSettings);
+      String tag = getFlowTag(_testrigSettings);
+      Map<String, Configuration> configurations = loadConfigurations();
+      Set<Flow> flows = null;
+      Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
+
+      // collect ingress nodes
+      Pattern ingressNodeRegex = Pattern.compile(ingressNodeRegexStr);
+      Pattern notIngressNodeRegex = Pattern.compile(notIngressNodeRegexStr);
+      Set<String> activeIngressNodes = new TreeSet<>();
+      for (String node : configurations.keySet()) {
+         Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
+         Matcher notIngressNodeMatcher = notIngressNodeRegex.matcher(node);
+         if (ingressNodeMatcher.matches() && !notIngressNodeMatcher.matches()) {
+            activeIngressNodes.add(node);
+         }
+      }
+      if (activeIngressNodes.isEmpty()) {
+         return new StringAnswerElement(
+               "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
+                     + ingressNodeRegexStr
+                     + "' and fail to match notIngressNodeRegex: '"
+                     + notIngressNodeRegexStr + "'");
+      }
+
+      // collect final nodes
+      Pattern finalNodeRegex = Pattern.compile(finalNodeRegexStr);
+      Pattern notFinalNodeRegex = Pattern.compile(notFinalNodeRegexStr);
+      Set<String> activeFinalNodes = new TreeSet<>();
+      for (String node : configurations.keySet()) {
+         Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
+         Matcher notFinalNodeMatcher = notFinalNodeRegex.matcher(node);
+         if (finalNodeMatcher.matches() && !notFinalNodeMatcher.matches()) {
+            activeFinalNodes.add(node);
+         }
+      }
+      if (activeFinalNodes.isEmpty()) {
+         return new StringAnswerElement(
+               "NOTHING TO DO: No nodes both match finalNodeRegex: '"
+                     + finalNodeRegexStr
+                     + "' and fail to match notFinalNodeRegex: '"
+                     + notFinalNodeRegexStr + "'");
+      }
+
+      // build query jobs
+      List<NodJob> jobs = new ArrayList<>();
+      for (String ingressNode : activeIngressNodes) {
+         ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
+               actions, headerSpace, activeFinalNodes,
+               Collections.singleton(ingressNode));
+         NodeSet nodes = new NodeSet();
+         nodes.add(ingressNode);
+         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
+               tag);
+         jobs.add(job);
+      }
+
+      // run jobs and get resulting flows
+      flows = computeNodOutput(jobs);
+
+      getDataPlanePlugin().processFlows(flows);
+
+      AnswerElement answerElement = getHistory();
+      return answerElement;
+
+   }
+
+   private Synthesizer synthesizeAcls(
+         Map<String, Configuration> configurations) {
+      _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
+      resetTimer();
+
+      _logger.info("Synthesizing Z3 ACL logic...");
+      Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
+
+      List<String> warnings = s.getWarnings();
+      int numWarnings = warnings.size();
+      if (numWarnings == 0) {
+         _logger.info("OK\n");
+      }
+      else {
+         for (String warning : warnings) {
+            _logger.warn(warning);
+         }
+      }
+      printElapsedTime();
+      return s;
+   }
+
+   public Synthesizer synthesizeDataPlane() {
 
       _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
       resetTimer();
 
-      DataPlane dataPlane = _dataPlanePlugin.getDataPlane(testrigSettings);
+      DataPlane dataPlane = loadDataPlane();
 
       _logger.info("Synthesizing Z3 logic...");
-      Map<String, Configuration> configurations = loadConfigurations(
-            testrigSettings);
+      Map<String, Configuration> configurations = loadConfigurations();
       Synthesizer s = new Synthesizer(configurations, dataPlane,
             _settings.getSimplify());
 
@@ -2637,15 +3295,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       return new Topology(edges);
    }
 
-   private void writeBgpAdvertisements(Path writeAdvertsPath,
-         TestrigSettings testrigSettings) {
-      AdvertisementSet adverts = _dataPlanePlugin
-            .getAdvertisements(testrigSettings);
+   private void writeBgpAdvertisements(Path writeAdvertsPath) {
+      AdvertisementSet adverts = _dataPlanePlugin.getAdvertisements();
       CommonUtil.createDirectories(writeAdvertsPath.getParent());
       _logger.info("Serializing: BGP advertisements => \"" + writeAdvertsPath
             + "\"...");
       serializeObject(adverts, writeAdvertsPath);
       _logger.info("OK\n");
+   }
+
+   @Override
+   public void writeDataPlane(DataPlane dp) {
+      serializeObject(dp,
+            _testrigSettings.getEnvironmentSettings().getDataPlanePath());
    }
 
    private void writeIbgpNeighbors(Path ibgpTopologyPath) {
@@ -2705,9 +3367,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable {
       }
    }
 
-   public void writeRoutes(Path writeRoutesPath,
-         TestrigSettings testrigSettings) {
-      RouteSet routes = _dataPlanePlugin.getRoutes(testrigSettings);
+   public void writeRoutes(Path writeRoutesPath) {
+      RouteSet routes = _dataPlanePlugin.getRoutes();
       CommonUtil.createDirectories(writeRoutesPath.getParent());
       _logger.info("Serializing: routes => \"" + writeRoutesPath + "\"...");
       serializeObject(routes, writeRoutesPath);

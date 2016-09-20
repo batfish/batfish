@@ -33,15 +33,15 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.plugin.IClient;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.questions.EnvironmentCreationQuestion;
+import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.QuestionType;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 
-public class Client extends PluginConsumer {
+public class Client extends PluginConsumer implements IClient {
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -192,7 +192,7 @@ public class Client extends PluginConsumer {
       if (questionType.startsWith(QuestionHelper.MACRO_PREFIX)) {
          try {
             questionString = QuestionHelper.resolveMacro(questionType,
-                  paramsLine);
+                  paramsLine, _questions);
          }
          catch (BatfishException e) {
             _logger.errorf("Could not resolve macro: %s\n", e.getMessage());
@@ -287,7 +287,8 @@ public class Client extends PluginConsumer {
          // that case
          String answerStringToPrint = answerString;
          if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-            ObjectMapper mapper = new BatfishObjectMapper();
+            ObjectMapper mapper = new BatfishObjectMapper(
+                  getCurrentClassLoader());
             Answer answer = mapper.readValue(answerString, Answer.class);
             answerStringToPrint = answer.prettyPrint();
          }
@@ -302,7 +303,8 @@ public class Client extends PluginConsumer {
          // tests serialization/deserialization when running in debug mode
          if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
             try {
-               ObjectMapper mapper = new BatfishObjectMapper();
+               ObjectMapper mapper = new BatfishObjectMapper(
+                     getCurrentClassLoader());
                Answer answer = mapper.readValue(answerString, Answer.class);
 
                String newAnswerString = mapper.writeValueAsString(answer);
@@ -390,24 +392,23 @@ public class Client extends PluginConsumer {
          }
       }
 
-      for (QuestionType qType : QuestionType.values()) {
+      _questions.forEach((qName, supplier) -> {
          try {
-            String questionString = QuestionHelper.getQuestionString(qType);
-
+            String questionString = QuestionHelper.getQuestionString(qName,
+                  _questions);
             String qFile = Paths
-                  .get(_settings.getQuestionsDir(),
-                        qType.questionTypeName() + ".json")
-                  .toFile().getAbsolutePath();
+                  .get(_settings.getQuestionsDir(), qName + ".json").toFile()
+                  .getAbsolutePath();
 
             PrintWriter writer = new PrintWriter(qFile);
             writer.write(questionString);
             writer.close();
          }
          catch (Exception e) {
-            _logger.errorf("Could not write question %s: %s\n",
-                  qType.questionTypeName(), e.getMessage());
+            _logger.errorf("Could not write question %s: %s\n", qName,
+                  e.getMessage());
          }
-      }
+      });
    }
 
    private List<String> getCommandOptions(String[] words) {
@@ -433,6 +434,7 @@ public class Client extends PluginConsumer {
       return parameters;
    }
 
+   @Override
    public BatfishLogger getLogger() {
       return _logger;
    }
@@ -712,9 +714,9 @@ public class Client extends PluginConsumer {
             String paramsLine = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
+            // TODO: make environment creation a command, not a question
             if (!qTypeStr.startsWith(QuestionHelper.MACRO_PREFIX)
-                  && QuestionType.fromName(
-                        qTypeStr) == QuestionType.ENVIRONMENT_CREATION) {
+                  && qTypeStr.equals(IEnvironmentCreationQuestion.NAME)) {
 
                String deltaEnvName = DEFAULT_DELTA_ENV_PREFIX
                      + UUID.randomUUID().toString();
@@ -722,7 +724,7 @@ public class Client extends PluginConsumer {
                String prefixString = (paramsLine.trim().length() > 0) ? " | "
                      : "";
                paramsLine += String.format("%s %s=%s", prefixString,
-                     EnvironmentCreationQuestion.ENVIRONMENT_NAME_VAR,
+                     IEnvironmentCreationQuestion.ENVIRONMENT_NAME_KEY,
                      deltaEnvName);
 
                if (!answerType(qTypeStr, paramsLine, isDelta, outWriter)) {
@@ -1165,7 +1167,8 @@ public class Client extends PluginConsumer {
                   String testOutput = CommonUtil
                         .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-                  ObjectMapper mapper = new BatfishObjectMapper();
+                  ObjectMapper mapper = new BatfishObjectMapper(
+                        getCurrentClassLoader());
 
                   // first rewrite reference string using local implementation
                   Answer referenceAnswer;
@@ -1261,6 +1264,7 @@ public class Client extends PluginConsumer {
       return true;
    }
 
+   @Override
    public void registerQuestion(String questionName,
          Supplier<Question> questionCreator) {
       _questions.put(questionName, questionCreator);

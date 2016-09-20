@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.NodesAnswerElement",
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
     "summary" : {
       "as1border1" : {
         "communityLists" : [ "as1_community", "as2_community", "as3_community" ],
@@ -127,7 +127,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.NodesQuestion",
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "differential" : false,
     "nodeRegex" : ".*",
     "nodeType" : [ ],

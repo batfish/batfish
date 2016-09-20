@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.IpsecVpnCheckAnswerElement",
+    "class" : "org.batfish.question.IpsecVpnCheckQuestionPlugin$IpsecVpnCheckAnswerElement",
     "incompatibleIkeProposals" : { },
     "incompatibleIpsecProposals" : { },
     "missingEndpoint" : { },
@@ -8,7 +8,7 @@
     "preSharedKeyMismatch" : { }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.IpsecVpnCheckQuestion",
+    "class" : "org.batfish.question.IpsecVpnCheckQuestionPlugin$IpsecVpnCheckQuestion",
     "differential" : false,
     "node1Regex" : ".*",
     "node2Regex" : ".*"

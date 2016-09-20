@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.UnusedStructuresAnswerElement",
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
     "unusedStructures" : {
       "as1border1" : {
         "bgp group" : [ "as3" ],
@@ -44,7 +44,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.datamodel.questions.UnusedStructuresQuestion",
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
     "differential" : false,
     "nodeRegex" : ".*"
   },
