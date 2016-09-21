@@ -2869,6 +2869,11 @@ ISDN
    'isdn'
 ;
 
+IS
+:
+   'is'
+;
+
 IS_TYPE
 :
    'is-type'

@@ -43,6 +43,12 @@ boolean_rib_has_route_rp_stanza
    RIB_HAS_ROUTE IN rp_prefix_set
 ;
 
+boolean_rp_stanza
+:
+   boolean_and_rp_stanza
+   | boolean_rp_stanza OR boolean_and_rp_stanza
+;
+
 boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
@@ -50,12 +56,12 @@ boolean_simple_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
    | boolean_rib_has_route_rp_stanza
+   | boolean_tag_is_rp_stanza
 ;
 
-boolean_rp_stanza
+boolean_tag_is_rp_stanza
 :
-   boolean_and_rp_stanza
-   | boolean_rp_stanza OR boolean_and_rp_stanza
+   TAG IS DEC 
 ;
 
 delete_rp_stanza
@@ -438,6 +444,12 @@ set_tag_rm_stanza
    SET TAG tag = DEC NEWLINE
 ;
 
+set_tag_rp_stanza
+:
+   set_tag_rm_stanza
+;
+
+
 set_weight_rm_stanza
 :
    SET WEIGHT weight = DEC NEWLINE
@@ -474,4 +486,5 @@ set_rp_stanza
    | set_local_preference_rp_stanza
    | set_med_rp_stanza
    | set_next_hop_rp_stanza
+   | set_tag_rp_stanza
 ;
