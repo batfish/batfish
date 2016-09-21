@@ -1,7 +1,9 @@
 #this file assumes that we are running from top-level source directory
 
 test tests/init.ref init-testrig -nodataplane test_rigs/example
+test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
 test tests/genDp.ref generate-dataplane
+test tests/genDp-delta.ref generate-delta-dataplane
 test tests/aclReachability.ref get aclReachability
 test tests/bgpAdvertisements.ref get bgpAdvertisements
 test tests/bgpSessionCheck.ref get bgpSessionCheck
@@ -16,6 +18,7 @@ test tests/nodes.ref get nodes summary=false
 test tests/ospfLoopbacks.ref get ospfLoopbacks
 test tests/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/routes.ref get routes
+test tests/routes-diff.ref get routes differential=true
 test tests/selfAdjacencies.ref get selfAdjacencies
 test tests/traceroute-1-2.ref get traceroute ingressNode="as1core1" | dstIp="2.128.0.101"
 test tests/traceroute-2-1.ref get traceroute ingressNode="host2" | dstIp="1.0.1.1"
