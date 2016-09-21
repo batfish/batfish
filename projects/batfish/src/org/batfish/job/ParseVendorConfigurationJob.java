@@ -165,9 +165,19 @@ public class ParseVendorConfigurationJob
             // +
             // "\" on-the-fly; line-numbers reported for this file will be
             // spurious\n");
-            _fileText = Batfish.flatten(_fileText, _logger, _settings,
-                  ConfigurationFormat.JUNIPER,
-                  Format.BATFISH_FLATTENED_JUNIPER_HEADER);
+            try {
+               _fileText = Batfish.flatten(_fileText, _logger, _settings,
+                     ConfigurationFormat.JUNIPER,
+                     Format.BATFISH_FLATTENED_JUNIPER_HEADER);
+            }
+            catch (BatfishException e) {
+               String error = "Error flattening configuration file: '"
+                     + currentPath + "'";
+               elapsedTime = System.currentTimeMillis() - startTime;
+               return new ParseVendorConfigurationResult(elapsedTime,
+                     _logger.getHistory(), _file,
+                     new BatfishException(error, e));
+            }
          }
          else {
             elapsedTime = System.currentTimeMillis() - startTime;
