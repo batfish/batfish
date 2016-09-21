@@ -4469,6 +4469,11 @@ PRE_SHARED_KEY
    'pre-shared-key'
 ;
 
+PRECEDENCE
+:
+   'precedence'
+;
+
 PRECONFIGURE
 :
    'preconfigure'
