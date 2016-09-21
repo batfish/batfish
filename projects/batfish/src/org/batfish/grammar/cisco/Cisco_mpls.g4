@@ -80,6 +80,25 @@ null_mplst_stanza
       | AUTO_TUNNEL
       | LOGGING
       | REOPTIMIZE
+      | reoptimize_stanza
+      | soft_preemption_stanza
       | TUNNEL_ID
    ) ~NEWLINE* NEWLINE
 ;
+
+reoptimize_stanza
+:
+   REOPTIMIZE 
+   (
+      TIMERS
+      | DELAY
+      | CLEANUP
+      | DEC
+    )*
+;
+
+soft_preemption_stanza
+:
+   SOFT_PREEMPTION NEWLINE TIMEOUT DEC
+;
+

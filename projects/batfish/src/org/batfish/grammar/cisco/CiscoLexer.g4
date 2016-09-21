@@ -1042,6 +1042,12 @@ CLASS_MAP
    'class-map'
 ;
 
+CLEANUP
+:
+
+   'cleanup'
+;
+
 CLI
 :
    'cli'
@@ -5462,6 +5468,11 @@ SPE
 SPF_INTERVAL
 :
    'spf-interval'
+;
+
+SOFT_PREEMPTION 
+:
+   'soft-preemption'
 ;
 
 SOFT_RECONFIGURATION
