@@ -104,6 +104,11 @@ as_override_bgp_tail
    AS_OVERRIDE NEWLINE
 ;
 
+auto_local_addr_bgp_tail
+:
+   AUTO_LOCAL_ADDR NEWLINE
+;
+
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
@@ -136,6 +141,7 @@ bgp_tail
    activate_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
+   | auto_local_addr_bgp_tail
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail

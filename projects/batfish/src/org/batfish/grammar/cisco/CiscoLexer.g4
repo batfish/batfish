@@ -622,6 +622,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_LOCAL_ADDR
+:
+   'auto-local-addr'
+;
+
 AUTO_RECOVERY
 :
    'auto-recovery'
