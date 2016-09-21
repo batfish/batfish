@@ -142,9 +142,12 @@ cmm_access_group
 :
    (
       IP
-      | IPV4
       | IPV6
-   ) ? ACCESS_GROUP
+   ) ? ACCESS_GROUP 
+   ( IP 
+      | IPV6 
+      | IPV4
+   )?
    (
       num = DEC
       |
