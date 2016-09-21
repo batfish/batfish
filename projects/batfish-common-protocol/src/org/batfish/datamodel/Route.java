@@ -3,16 +3,17 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
+@JsonPropertyOrder({ Route.DIFF_SYMBOL_VAR })
 public class Route implements Comparable<Route>, Serializable {
 
    private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";
 
    public static final String AMBIGUOUS_NEXT_HOP = "(ambiguous)";
+
+   protected static final String DIFF_SYMBOL_VAR = "diffSymbol";
 
    private static final String METRIC_VAR = "metric";
 
@@ -48,6 +49,8 @@ public class Route implements Comparable<Route>, Serializable {
    public static final int UNSET_ROUTE_TAG = -1;
 
    private final int _administrativeCost;
+
+   private transient String _diffSymbol;
 
    private final int _metric;
 
@@ -151,6 +154,11 @@ public class Route implements Comparable<Route>, Serializable {
       return _administrativeCost;
    }
 
+   @JsonProperty(DIFF_SYMBOL_VAR)
+   public String getDiffSymbol() {
+      return _diffSymbol;
+   }
+
    @JsonProperty(METRIC_VAR)
    public int getMetric() {
       return _metric;
@@ -203,6 +211,11 @@ public class Route implements Comparable<Route>, Serializable {
       result = prime * result + _protocol.hashCode();
       result = prime * result + _tag;
       return result;
+   }
+
+   @JsonProperty(DIFF_SYMBOL_VAR)
+   public void setDiffSymbol(String diffSymbol) {
+      _diffSymbol = diffSymbol;
    }
 
    @Override

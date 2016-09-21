@@ -15,6 +15,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -81,6 +82,9 @@ public interface IBatfish extends IPluginConsumer {
    void popEnvironment();
 
    void printElapsedTime();
+
+   AdvertisementSet processExternalBgpAnnouncements(
+         Map<String, Configuration> configurations);
 
    void processFlows(Set<Flow> flows);
 

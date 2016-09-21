@@ -12,7 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,8 @@ public class WorkMgr {
       }
    }
 
+   private static final Set<String> ENV_FILENAMES = initEnvFilenames();
+
    // private Runnable _checkWorkTask;
    // private Runnable _assignWorkTask;
    //
@@ -86,6 +90,15 @@ public class WorkMgr {
             new AssignWorkTask(), 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
 
+   }
+
+   private static Set<String> initEnvFilenames() {
+      Set<String> envFilenames = new HashSet<>();
+      envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+      return envFilenames;
    }
 
    private void assignWork() {
@@ -949,16 +962,6 @@ public class WorkMgr {
       // the top-level folder");
       // }
 
-      // things look ok, now make the move
-      for (File file : subFileList) {
-         File target = Paths.get(unzipDir.toString(), file.getName()).toFile();
-         moveByCopy(file, target);
-      }
-
-      // delete the empty directory and the zip file
-      fileList[0].delete();
-      zipFile.delete();
-
       // create empty default environment
       File defaultEnvironmentLeafDir = Paths.get(testrigDir.getAbsolutePath(),
             BfConsts.RELPATH_ENVIRONMENTS_DIR,
@@ -966,6 +969,28 @@ public class WorkMgr {
             .toFile();
       defaultEnvironmentLeafDir.mkdirs();
 
+      // things look ok, now make the move
+      for (File file : subFileList) {
+         File target;
+         if (isEnvFile(file)) {
+            target = Paths.get(defaultEnvironmentLeafDir.getAbsolutePath(),
+                  file.getName()).toFile();
+         }
+         else {
+            target = Paths.get(unzipDir.toString(), file.getName()).toFile();
+         }
+         moveByCopy(file, target);
+      }
+
+      // delete the empty directory and the zip file
+      fileList[0].delete();
+      zipFile.delete();
+
+   }
+
+   private boolean isEnvFile(File file) {
+      String name=  file.getName();
+      return ENV_FILENAMES.contains(name);
    }
 
 }
