@@ -142,6 +142,7 @@ cmm_access_group
 :
    (
       IP
+      | IPV4
       | IPV6
    ) ? ACCESS_GROUP
    (
