@@ -1111,7 +1111,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
       setDefaultProperty(ARG_SEQUENTIAL, false);
       setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
-      setDefaultProperty(ARG_SERVICE_HOST, "0.0.0.0");
+      setDefaultProperty(ARG_SERVICE_HOST, "localhost");
       setDefaultProperty(ARG_SERVICE_MODE, false);
       setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
