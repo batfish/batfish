@@ -17,6 +17,11 @@ boolean_and_rp_stanza
    | boolean_and_rp_stanza AND boolean_not_rp_stanza
 ;
 
+boolean_as_path_in_rp_stanza
+:
+   AS_PATH_NOPUSH IN name = variable
+;
+
 boolean_community_matches_any_rp_stanza
 :
    COMMUNITY MATCHES_ANY rp_community_set
@@ -52,6 +57,7 @@ boolean_rp_stanza
 boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
+   | boolean_as_path_in_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza

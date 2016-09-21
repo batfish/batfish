@@ -482,6 +482,11 @@ AS_OVERRIDE
    'as-override'
 ;
 
+AS_PATH_NOPUSH
+:
+   'as-path'
+;
+
 AS_PATH
 :
    'as-path' -> pushMode ( M_AsPath )
