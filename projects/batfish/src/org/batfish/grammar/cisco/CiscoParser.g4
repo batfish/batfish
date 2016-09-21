@@ -140,7 +140,10 @@ cm_match_tail
 
 cmm_access_group
 :
-   IP? ACCESS_GROUP
+   (
+      IP
+      | IPV6
+   ) ? ACCESS_GROUP
    (
       num = DEC
       |
@@ -229,7 +232,10 @@ cmm_redirect
 
 cp_ip_access_group
 :
-   IP ACCESS_GROUP name = variable
+   (
+      IP
+      | IPV6
+   ) ACCESS_GROUP name = variable
    (
       VRF vrf = variable
    )?
@@ -476,6 +482,18 @@ l2vpn_stanza
    L2VPN NEWLINE xconnect_stanza*
 ;
 
+mgmt_api_stanza
+:
+   MANAGEMENT API HTTP_COMMANDS NEWLINE
+   (
+      (
+         PROTOCOL HTTPS NEWLINE
+         | mgmt_null
+         | vrfd_stanza
+      )+   
+   )
+;
+
 mgmt_egress_iface_stanza
 :
    MANAGEMENT EGRESS_INTERFACE_SELECTION NEWLINE
@@ -698,6 +716,7 @@ null_vrfd_stanza
    (
       RD
       | ROUTE_TARGET
+      | NO SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1281,6 +1300,7 @@ stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
+   | mgmt_api_stanza
    | mgmt_egress_iface_stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza

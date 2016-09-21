@@ -274,8 +274,14 @@ set_as_path_prepend_rm_stanza
 :
    SET AS_PATH PREPEND LAST_AS?
    (
-      as_list += DEC
-   )+ NEWLINE
+         (
+            as_list += 
+            (
+               DEC
+               | AUTO
+               )
+         )+ NEWLINE
+   )
 ;
 
 set_comm_list_delete_rm_stanza

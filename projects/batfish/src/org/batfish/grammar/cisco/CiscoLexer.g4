@@ -430,6 +430,11 @@ AP
    'ap'
 ;
 
+API
+:
+   'api'
+;
+
 APPLICATION
 :
    'application'
@@ -2391,6 +2396,11 @@ GROUP_URL
    'group-url'
 ;
 
+GSHUT
+:
+      'GSHUT'
+;
+
 GT
 :
    'gt'
@@ -2549,6 +2559,11 @@ HSRP
 HTTP
 :
    'http'
+;
+
+HTTP_COMMANDS
+:
+   'http-commands'
 ;
 
 HTTPS

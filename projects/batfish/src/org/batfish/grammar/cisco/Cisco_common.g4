@@ -18,6 +18,7 @@ community
    | com = LOCAL_AS
    | com = NO_ADVERTISE
    | com = NO_EXPORT
+   | com = GSHUT
 ;
 
 description_line

@@ -57,6 +57,7 @@ if_stanza
    | isis_network_if_stanza
    | isis_passive_if_stanza
    | isis_tag_if_stanza
+   | load_interval_if_stanza
    | mtu_if_stanza
    | no_ip_address_if_stanza
    | null_if_stanza
@@ -215,6 +216,11 @@ isis_passive_if_stanza
 isis_tag_if_stanza
 :
    ISIS TAG tag = DEC NEWLINE
+;
+
+load_interval_if_stanza
+:
+   LOAD_INTERVAL li = DEC NEWLINE
 ;
 
 mtu_if_stanza
@@ -401,7 +407,6 @@ null_block_if_stanza
       | MOBILITY
       | MOP
       | MPLS
-      | MTU
       | NAME
       | NAMEIF
       | NEGOTIATE
@@ -442,6 +447,7 @@ null_block_if_stanza
       | SERIAL
       | SERVICE_MODULE
       | SERVICE_POLICY
+      | SFLOW
       | SIGNALLED_BANDWIDTH
       | SIGNALLED_NAME
       | SONET
