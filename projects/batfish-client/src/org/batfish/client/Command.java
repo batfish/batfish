@@ -39,6 +39,8 @@ public enum Command {
    PROMPT("prompt"),
    PWD("pwd"),
    QUIT("quit"),
+   REINIT_DELTA_TESTRIG("reinit-delta-testrig"),
+   REINIT_TESTRIG("reinit-testrig"),
    SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
    SET_CONTAINER("set-container"),
    SET_DELTA_ENV("set-delta-environment"),
@@ -137,6 +139,10 @@ public enum Command {
       descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
       descs.put(PWD, new Pair<>("", "Prints the working directory"));
       descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
+      descs.put(REINIT_DELTA_TESTRIG, new Pair<>("[-nodataplane]",
+            "Reinitialize the delta testrig with default environment"));
+      descs.put(REINIT_TESTRIG, new Pair<>("[-nodataplane]",
+            "Reinitialize the testrig with default environment"));
       descs.put(SET_BATFISH_LOGLEVEL,
             new Pair<>("<debug|info|output|warn|error>",
                   "Set the batfish loglevel. Default is warn"));

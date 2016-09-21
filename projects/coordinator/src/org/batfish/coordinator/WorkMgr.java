@@ -949,22 +949,29 @@ public class WorkMgr {
       // the top-level folder");
       // }
 
-      // things look ok, now make the move
-      for (File file : subFileList) {
-         File target = Paths.get(unzipDir.toString(), file.getName()).toFile();
-         moveByCopy(file, target);
-      }
-
-      // delete the empty directory and the zip file
-      fileList[0].delete();
-      zipFile.delete();
-
       // create empty default environment
       File defaultEnvironmentLeafDir = Paths.get(testrigDir.getAbsolutePath(),
             BfConsts.RELPATH_ENVIRONMENTS_DIR,
             BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME, BfConsts.RELPATH_ENV_DIR)
             .toFile();
       defaultEnvironmentLeafDir.mkdirs();
+
+      // things look ok, now make the move
+      for (File file : subFileList) {
+         File target;
+         if (file.getName().equals(BfConsts.RELPATH_CONFIGURATIONS_DIR)) {
+            target = Paths.get(unzipDir.toString(), file.getName()).toFile();
+         }
+         else {
+            target = Paths.get(defaultEnvironmentLeafDir.getAbsolutePath(),
+                  file.getName()).toFile();
+         }
+         moveByCopy(file, target);
+      }
+
+      // delete the empty directory and the zip file
+      fileList[0].delete();
+      zipFile.delete();
 
    }
 

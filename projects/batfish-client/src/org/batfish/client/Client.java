@@ -952,7 +952,12 @@ public class Client extends PluginConsumer implements IClient {
             if (generateDataplane) {
                _logger.output("Generating dataplane now\n");
 
-               if (!generateDataplane(outWriter)) {
+               if (command == Command.INIT_TESTRIG) {
+                  if (!generateDataplane(outWriter)) {
+                     return false;
+                  }
+               }
+               else if (!generateDeltaDataplane(outWriter)) {
                   return false;
                }
 
@@ -1012,6 +1017,55 @@ public class Client extends PluginConsumer implements IClient {
             _logger.output("working directory = " + dir + "\n");
             return true;
          }
+         case REINIT_TESTRIG:
+         case REINIT_DELTA_TESTRIG: {
+            boolean generateDataplane = true;
+
+            if (options.size() == 1) {
+               if (options.get(0).equals(FLAG_NO_DATAPLANE)) {
+                  generateDataplane = false;
+               }
+               else {
+                  _logger.outputf("Unknown option %s\n", options.get(0));
+                  return false;
+               }
+            }
+
+            String testrig;
+            if (command == Command.REINIT_TESTRIG) {
+               _logger.output("Reinitializing testrig. Parsing now.\n");
+               testrig = _currTestrig;
+            }
+            else {
+               _logger.output("Reinitializing delta testrig. Parsing now.\n");
+               testrig = _currDeltaTestrig;
+            }
+
+            WorkItem wItemParse = _workHelper
+                  .getWorkItemParse(_currContainerName, testrig);
+
+            if (!execute(wItemParse, outWriter)) {
+               return false;
+            }
+
+            if (generateDataplane) {
+               _logger.output("Generating dataplane now\n");
+
+               if (command == Command.REINIT_TESTRIG) {
+                  if (!generateDataplane(outWriter)) {
+                     return false;
+                  }
+               }
+               else if (!generateDeltaDataplane(outWriter)) {
+                  return false;
+               }
+
+               _logger.output("Generated dataplane\n");
+            }
+
+            return true;
+         }
+
          case SET_BATFISH_LOGLEVEL: {
             String logLevelStr = parameters.get(0).toLowerCase();
             if (!BatfishLogger.isValidLogLevel(logLevelStr)) {

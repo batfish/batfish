@@ -1,12 +1,15 @@
 package org.batfish.question;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -31,8 +34,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
    public static class RoutesAnswerElement implements AnswerElement {
 
-      private SortedSet<Route> _routes;
-
       private SortedMap<String, SortedSet<Route>> _routesByHostname;
 
       @JsonCreator
@@ -41,7 +42,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public RoutesAnswerElement(Map<String, Configuration> configurations,
             Pattern nodeRegex) {
-         _routes = new TreeSet<>();
          _routesByHostname = new TreeMap<>();
          for (Entry<String, Configuration> e : configurations.entrySet()) {
             String hostname = e.getKey();
@@ -50,13 +50,47 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             }
             Configuration c = e.getValue();
             SortedSet<Route> routes = c.getRoutes();
-            _routes.addAll(routes);
             _routesByHostname.put(hostname, routes);
          }
       }
 
-      public SortedSet<Route> getRoutes() {
-         return _routes;
+      public RoutesAnswerElement(RoutesAnswerElement base,
+            RoutesAnswerElement delta) {
+         _routesByHostname = new TreeMap<>();
+         Set<String> hosts = new LinkedHashSet<>();
+         hosts.addAll(base.getRoutesByHostname().keySet());
+         hosts.addAll(delta.getRoutesByHostname().keySet());
+         for (String host : hosts) {
+            SortedSet<Route> routes = new TreeSet<>();
+            _routesByHostname.put(host, routes);
+            SortedSet<Route> baseRoutes = base._routesByHostname.get(host);
+            SortedSet<Route> deltaRoutes = delta._routesByHostname.get(host);
+            if (baseRoutes == null) {
+               for (Route route : deltaRoutes) {
+                  route.setDiffSymbol("+");
+                  routes.add(route);
+               }
+            }
+            else if (deltaRoutes == null) {
+               for (Route route : baseRoutes) {
+                  route.setDiffSymbol("-");
+                  routes.add(route);
+               }
+            }
+            else {
+               Set<Route> tmpBaseRoutes = new HashSet<>(baseRoutes);
+               baseRoutes.removeAll(deltaRoutes);
+               deltaRoutes.removeAll(tmpBaseRoutes);
+               for (Route route : baseRoutes) {
+                  route.setDiffSymbol("-");
+                  routes.add(route);
+               }
+               for (Route route : deltaRoutes) {
+                  route.setDiffSymbol("+");
+                  routes.add(route);
+               }
+            }
+         }
       }
 
       @JsonIdentityReference(alwaysAsId = true)
@@ -69,10 +103,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          // TODO: change this function to pretty print the answer
          ObjectMapper mapper = new BatfishObjectMapper();
          return mapper.writeValueAsString(this);
-      }
-
-      public void setRoutes(SortedSet<Route> routes) {
-         _routes = routes;
       }
 
       public void setRoutesByHostname(
@@ -89,8 +119,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
-
+      public RoutesAnswerElement answer() {
          RoutesQuestion question = (RoutesQuestion) _question;
          Pattern nodeRegex;
          try {
@@ -109,6 +138,17 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
          RoutesAnswerElement answerElement = new RoutesAnswerElement(
                configurations, nodeRegex);
          return answerElement;
+      }
+
+      @Override
+      public AnswerElement answerDiff() {
+         _batfish.pushBaseEnvironment();
+         RoutesAnswerElement base = answer();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         RoutesAnswerElement delta = answer();
+         _batfish.popEnvironment();
+         return new RoutesAnswerElement(base, delta);
       }
 
    }

@@ -26,7 +26,8 @@ public final class Format {
             .compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER))
             .matcher(fileText);
       Matcher flatJuniperHostnameDeclarationMatcher = Pattern
-            .compile("(?m)^set (groups [^ ][^ ]* )?system host-name ").matcher(fileText);
+            .compile("(?m)^set (groups [^ ][^ ]* )?system host-name ")
+            .matcher(fileText);
       Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
             .matcher(fileText);
       Matcher ciscoLike = Pattern
