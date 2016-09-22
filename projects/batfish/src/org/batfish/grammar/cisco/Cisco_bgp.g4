@@ -254,6 +254,11 @@ local_as_bgp_tail
    )* NEWLINE
 ;
 
+maximum_paths_bgp_tail
+:
+   MAXIMUM_PATHS DEC ECMP DEC
+;
+
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
@@ -490,7 +495,7 @@ null_bgp_tail
       | FALL_OVER
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
-      | MAXIMUM_PATHS
+      | maximum_paths_bgp_tail
       | MAXIMUM_PREFIX
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
@@ -510,8 +515,7 @@ null_bgp_tail
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
-      | TIMERS
-      | timers_bgp_stanza
+      | timers_bgp_tail
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -718,9 +722,12 @@ subnet_bgp_tail
    ) NEWLINE
 ;
 
-timers_bgp_stanza
+timers_bgp_tail
 :
-   TIMERS BGP DEC DEC
+   TIMERS 
+   ( 
+      BGP DEC DEC
+   )?
 ;
 
 template_peer_address_family

@@ -1823,6 +1823,11 @@ ECHO_REQUEST
    'echo-request'
 ;
 
+ECMP
+:
+   'ecmp'
+;
+
 ECMP_GROUP
 :
    'ecmp-group'
