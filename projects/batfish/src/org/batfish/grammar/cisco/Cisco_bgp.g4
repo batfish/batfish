@@ -511,6 +511,7 @@ null_bgp_tail
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
       | TIMERS
+      | timers_bgp_stanza
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -715,6 +716,11 @@ subnet_bgp_tail
       prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
    ) NEWLINE
+;
+
+timers_bgp_stanza
+:
+   TIMERS BGP DEC DEC
 ;
 
 template_peer_address_family

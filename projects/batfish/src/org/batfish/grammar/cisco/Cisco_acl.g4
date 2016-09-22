@@ -390,6 +390,11 @@ irs_stanza
    bandwidth_irs_stanza
 ;
 
+no_ip_prefix_list_stanza
+:
+   NO IP PREFIX_LIST name = variable NEWLINE
+;
+
 null_as_path_regex
 :
    ~NEWLINE*

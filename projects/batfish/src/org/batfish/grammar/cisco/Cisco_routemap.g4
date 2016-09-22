@@ -216,6 +216,11 @@ match_tag_rm_stanza
    )+ NEWLINE
 ;
 
+no_route_map_stanza 
+:
+   NO ROUTE_MAP name = variable NEWLINE
+;
+
 null_rm_stanza
 :
    NO?

@@ -1,6 +1,6 @@
 parser grammar CiscoParser;
 
-import
+import 
 Cisco_common, Cisco_acl, Cisco_bgp, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
 
 options {
@@ -1315,6 +1315,8 @@ stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
+   | no_ip_prefix_list_stanza
+   | no_route_map_stanza
    | null_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
