@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -27,8 +28,7 @@ public class RetainCommunity extends AbstractStatement {
    @Override
    public Result execute(Environment environment,
          AbstractRouteBuilder<?> route) {
-      Result result = new Result();
-      return result;
+      throw new BatfishException("unimplemented");
    }
 
    public CommunitySetExpr getExpr() {
