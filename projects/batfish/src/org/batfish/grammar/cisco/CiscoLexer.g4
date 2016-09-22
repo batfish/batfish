@@ -482,11 +482,6 @@ AS_OVERRIDE
    'as-override'
 ;
 
-AS_PATH_NOPUSH
-:
-   'as-path'
-;
-
 AS_PATH
 :
    'as-path' -> pushMode ( M_AsPath )
@@ -7154,6 +7149,11 @@ M_AsPath_ACCESS_LIST
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_AsPath_In
+:
+   'in' -> type ( IN ) , popMode
 ;
 
 M_AsPath_PREPEND

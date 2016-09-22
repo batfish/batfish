@@ -19,7 +19,7 @@ boolean_and_rp_stanza
 
 boolean_as_path_in_rp_stanza
 :
-   AS_PATH_NOPUSH IN name = variable
+   AS_PATH IN name = variable
 ;
 
 boolean_community_matches_any_rp_stanza
