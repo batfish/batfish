@@ -114,6 +114,11 @@ auto_summary_bgp_tail
    NO? AUTO_SUMMARY NEWLINE
 ;
 
+bestpath_bgp_tail
+:
+   BESTPATH AS_PATH MULTIPATH_RELAX NEWLINE
+;
+
 bgp_advertise_inactive_rb_stanza
 :
    BGP ADVERTISE_INACTIVE NEWLINE
@@ -142,6 +147,7 @@ bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | auto_local_addr_bgp_tail
+   | bestpath_bgp_tail
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
@@ -151,6 +157,7 @@ bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
+   | maximum_paths_bgp_tail
    | maximum_peers_bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
@@ -254,7 +261,7 @@ local_as_bgp_tail
    )* NEWLINE
 ;
 
-maximum_paths_bgp_tail
+maximum_ecmp_paths
 :
    MAXIMUM_PATHS DEC ECMP DEC
 ;
@@ -262,6 +269,11 @@ maximum_paths_bgp_tail
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
+;
+
+maximum_paths_bgp_tail
+:
+   MAXIMUM_PATHS DEC NEWLINE
 ;
 
 maximum_prefix_bgp_tail
@@ -469,7 +481,7 @@ null_bgp_tail
       | BFD
       |
       (
-         BGP
+         BGP 
          (
             ATTRIBUTE_DOWNLOAD
             | BESTPATH
@@ -495,8 +507,7 @@ null_bgp_tail
       | FALL_OVER
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
-      | maximum_paths_bgp_tail
-      | MAXIMUM_PREFIX
+      | maximum_ecmp_paths
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
@@ -512,10 +523,11 @@ null_bgp_tail
       | NEIGHBOR_DOWN
       | PASSWORD
       | SEND_LABEL
+      | SHUTDOWN
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
-      | timers_bgp_tail
+      | timers_bgp
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -683,7 +695,6 @@ router_bgp_stanza_tail
    {!_nonNexus}?
 
    nexus_vrf_rb_stanza
-   | unrecognized_line
 ;
 
 router_id_bgp_tail
@@ -722,12 +733,9 @@ subnet_bgp_tail
    ) NEWLINE
 ;
 
-timers_bgp_tail
+timers_bgp
 :
-   TIMERS 
-   ( 
-      BGP DEC DEC
-   )?
+   TIMERS BGP? DEC? DEC?
 ;
 
 template_peer_address_family

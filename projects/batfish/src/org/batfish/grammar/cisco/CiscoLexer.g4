@@ -3700,6 +3700,11 @@ MULTIPATH
    'multipath'
 ;
 
+MULTIPATH_RELAX
+:
+   'multipath-relax'
+;
+
 MULTIPOINT
 :
    'multipoint'
