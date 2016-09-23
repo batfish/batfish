@@ -58,4 +58,7 @@ From the root of the batfish repository, run:
 allinone -cmdfile demo/commands
 
 9. Now what?
-See README.client
+To get an interactive batfish prompt to play around with, run:
+   allinone -runmode interactive
+This will start batfish service locally in a self-contained fashion
+You can read read README.client for example commands to use
