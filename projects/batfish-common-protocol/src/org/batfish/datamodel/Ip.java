@@ -61,19 +61,15 @@ public class Ip implements Comparable<Ip>, Serializable {
       return new Ip(mask);
    }
 
-   private final int _hashCode;
-
-   private final Long _ip;
+   private final long _ip;
 
    public Ip(long ipAsLong) {
       _ip = ipAsLong;
-      _hashCode = _ip.hashCode();
    }
 
    @JsonCreator
    public Ip(String ipAsString) {
       _ip = ipStrToLong(ipAsString);
-      _hashCode = _ip.hashCode();
    }
 
    public long asLong() {
@@ -88,7 +84,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    @Override
    public boolean equals(Object o) {
       Ip rhs = (Ip) o;
-      return _ip.equals(rhs._ip);
+      return _ip == rhs._ip;
    }
 
    public Ip getClassMask() {
@@ -103,7 +99,7 @@ public class Ip implements Comparable<Ip>, Serializable {
          return new Ip(0xFFFFFF00l);
       }
       else {
-         return null;
+         throw new BatfishException("Cannot compute classmask");
       }
    }
 
@@ -126,7 +122,7 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    @Override
    public int hashCode() {
-      return _hashCode;
+      return Long.hashCode(_ip);
    }
 
    public Ip inverted() {
@@ -144,7 +140,7 @@ public class Ip implements Comparable<Ip>, Serializable {
 
    public int numSubnetBits() {
       int count = 0;
-      int subnetInt = (int) _ip.longValue();
+      int subnetInt = (int) _ip;
       while (subnetInt != 0) {
          subnetInt <<= 1;
          count++;

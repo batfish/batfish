@@ -39,12 +39,21 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
    private int _prefixLength;
 
-   public Prefix(Ip network, int prefixLength) {
-      _address = network;
+   public Prefix(Ip address, int prefixLength) {
+      if (address == null) {
+         throw new BatfishException("Cannot create prefix with null network");
+      }
+      _address = address;
       _prefixLength = prefixLength;
    }
 
    public Prefix(Ip address, Ip mask) {
+      if (address == null) {
+         throw new BatfishException("Cannot create prefix with null network");
+      }
+      if (mask == null) {
+         throw new BatfishException("Cannot create prefix with null mask");
+      }
       _address = address;
       _prefixLength = mask.numSubnetBits();
    }

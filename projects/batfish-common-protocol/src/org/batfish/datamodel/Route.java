@@ -3,10 +3,13 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonPropertyOrder({ Route.DIFF_SYMBOL_VAR })
+@JsonInclude(Include.NON_NULL)
 public class Route implements Comparable<Route>, Serializable {
 
    private static final String ADMINISTRATIVE_COST_VAR = "administrativeCost";

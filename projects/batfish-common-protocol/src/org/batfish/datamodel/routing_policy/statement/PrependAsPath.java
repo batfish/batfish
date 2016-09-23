@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import java.util.List;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -28,8 +29,7 @@ public class PrependAsPath extends AbstractStatement {
    @Override
    public Result execute(Environment environment,
          AbstractRouteBuilder<?> route) {
-      Result result = new Result();
-      return result;
+      throw new BatfishException("unimplemented");
    }
 
    public List<Integer> getAsList() {

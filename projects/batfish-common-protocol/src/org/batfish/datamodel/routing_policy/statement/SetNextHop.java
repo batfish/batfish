@@ -31,6 +31,7 @@ public class SetNextHop extends AbstractStatement {
    public Result execute(Environment environment,
          AbstractRouteBuilder<?> route) {
       Result result = new Result();
+      route.setNextHopIp(_expr.getNextHopIp());
       return result;
    }
 
