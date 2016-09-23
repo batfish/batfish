@@ -49,53 +49,13 @@ Note that 'batfish_build_all' runs 'ant' in each batfish project directory with 
 You can clean all generated output with:
    batfish_build_all distclean
 
-7. run batfish
-The output of this step will be placed in the current folder.
-If you want to confirm running of each subtask, run:
-    batfish_confirm_analyze_multipath /path/to/test/rig
-OR to run everything:
-    batfish_analyze_multipath /path/to/test/rig
+7. Tests
+From the root of the batfish repository, run:
+allinone -cmdfile tests/commands
 
-**************************************************
-Notes on running
-**************************************************
-This repository should contain an example test rig at <batfish-root>/test_rigs/example
-After running step 10 above on the example test rig, as:
-   batfish_analyze_multipath <batfish-root>/test_rigs/example
-you should see the following output in the current folder:
+8. Demo
+From the root of the batfish repository, run:
+allinone -cmdfile demo/commands
 
-example (directory) - base directory of intermediate output
-example-multipath-default-multipath-result - result of multipath consistency check. If multipath consistency is satisfied, this file will be empty. Otherwise, it will contain counterexample pairs of ingress node and packet that violate multipath consistency. Traceroutes for such packets are included.
-
-Results of intermediate computations during data plane generation are stored in predicates in the output directory.  To see the schema and comments for the predicates, run:
-   batfish -predhelp <predicate-name..>
-To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
-   batfish -predhelp
-Individual predicates for a processed test rig can be dumped to stdout by running:
-   batfish_query_predicate <testrigname> <environmentname> <predicates..>
-The <environment-name> for this example is 'multipath-default'.
-** TODO: Explain environment management **
-So for example, one could query the routing tables by running:
-   batfish_query_predicate example multipath-default InstalledRoute
-
-Other intermediate output is stored in the 'example' base directory mentioned above.
-Within this base directory one finds:
-   vendor (directory): This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
-
-   indep (directory): This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
-
-   environments (directory): holds the environments used in intermediate computation. In the example this contains a single environment called 'multipath-default'. Within this directory we see:
-      dp : a serialized representation of the data plane induced by the environment
-
-      cp_facts (directory): This folder contains files named for input predicates. Note that these files are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
-
-      env (directory): a directory in which modifications to a default environment are specified. Modifications could include failed nodes, failed interfaces, failed links, or updated configuration files.
-
-      **TODO: explain nls* files/dirs, precomputedroutes
-
-***
-One can also run a single-node-failure or single-link-failure consistency check with:
-   batfish_analyze_node_failures <batfish-root>/test_rigs/example
-OR
-   batfish_analyze_link_failures <batfish-root>/test_rigs/example
-Since these checks produce multiple environments, it may be instructive to examine the output for those environments after running each command.
+9. Now what?
+See README.client
