@@ -1,9 +1,10 @@
 package org.batfish.datamodel;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.batfish.common.util.ComparableStructure;
 
@@ -78,8 +79,8 @@ public class RouteFilterList extends ComparableStructure<String> {
 
    public boolean permits(Prefix prefix) {
       if (_permittedCache == null) {
-         _deniedCache = new HashSet<>();
-         _permittedCache = new HashSet<>();
+         _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+         _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
       }
       else if (_deniedCache.contains(prefix)) {
          return false;
