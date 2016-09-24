@@ -1,5 +1,4 @@
 Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
-***PROJECT IN FLUX - INSTRUCTIONS WILL CHANGE DRAMATICALLY IN NEAR FUTURE***
 
 Homepage: http://www.batfish.org
 Source:   http://github.com/arifogel/batfish
@@ -7,11 +6,13 @@ Source:   http://github.com/arifogel/batfish
 **************************************************
 Instructions for building and running Batfish
 **************************************************
+Cygwin: Read README.CYGWIN before continuing
+OSX: Read README.OSX before continuing
 
-Prerequisites:
+
+Common Prerequisites:
    ant
-   GNU parallel
-   java 8 jdk
+   Java 8 JDK
    Network Logic Solver (nls) (not required for all tasks)
    python
    z3
