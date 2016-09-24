@@ -23,10 +23,7 @@ Optional:
 Steps:
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
-1. Install gnu parallel 20150109 or later from https://www.gnu.org/software/parallel/
-standard autotools install (extract, configure, make, make install)
-
-2. Install z3 - use master branch
+1. Install z3 - use master branch
 git clone https://github.com/Z3Prover/z3
 cd z3
 python scripts/mk_make.py --java
@@ -34,31 +31,31 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. Install nls into your path
+2. Install nls into your path
    You can download the Windows version from: https://www.microsoft.com/en-us/download/details.aspx?id=52259
 
-4. Clone batfish
+3. Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-5. prepare your environment for batfish by adding the following to your .bashrc or equivalent
+4. prepare your environment for batfish by adding the following to your .bashrc or equivalent
     . <batfish-root>/tools/batfish_functions.sh
 Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
 
-6. compile batfish
+5. compile batfish
    batfish_build_all
 Note that 'batfish_build_all' runs 'ant' in each batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build_all distclean
 
-7. Tests
+6. Tests
 From the root of the batfish repository, run:
 allinone -cmdfile tests/commands
 
-8. Demo
+7. Demo
 From the root of the batfish repository, run:
 allinone -cmdfile demo/commands
 
-9. Now what?
+8. Now what?
 To get an interactive batfish prompt to play around with, run:
    allinone -runmode interactive
 This will start batfish service locally in a self-contained fashion

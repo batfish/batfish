@@ -1,6 +1,10 @@
 I. PREREQUISITES:
    1. Visual Studio (for building z3)
-   2. GNU Parallel (for building batfish)
+   2. GNU Parallel (for building batfish): https://www.gnu.org/software/parallel/
+      2a. Extract
+      2b. ./configure
+      2c. make
+      2d. make install
 
 
 II. Symlink issues
