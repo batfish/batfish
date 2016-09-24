@@ -133,6 +133,7 @@ cm_match_tail
    | cmm_mpls
    | cmm_non_client_nrt
    | cmm_port
+   | cmm_precedence
    | cmm_protocol
    | cmm_redirect
    | cmm_qos_group
@@ -210,6 +211,11 @@ cmm_port
       TCP
       | UDP
    ) port_specifier NEWLINE
+;
+
+cmm_precedence
+:
+   IP PRECEDENCE DEC NEWLINE
 ;
 
 cmm_protocol
@@ -1008,7 +1014,8 @@ pim_accept_rp
    (
       AUTO_RP
       | IP_ADDRESS
-   ) name = variable NEWLINE
+   ) 
+   (name = variable)? NEWLINE
 ;
 
 pim_null

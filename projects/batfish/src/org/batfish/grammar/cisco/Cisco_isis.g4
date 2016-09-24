@@ -29,7 +29,9 @@ address_family_is_stanza
    (
       UNICAST
       | MULTICAST
-   ) NEWLINE isaf_stanza*
+   )? NEWLINE 
+   isaf_stanza*
+   address_family_footer
 ;
 
 advertise_is_stanza
@@ -147,6 +149,7 @@ null_is_stanza
       | MAX_LSP_LIFETIME
       | MAXIMUM_PATHS
       | MPLS
+      | MULTI_TOPOLOGY
       | NSF
       | NSR
       | PRC_INTERVAL
@@ -167,7 +170,7 @@ passive_iis_stanza
 
 passive_interface_is_stanza
 :
-   PASSIVE_INTERFACE name = variable NEWLINE
+   NO? PASSIVE_INTERFACE name = variable NEWLINE
 ;
 
 redistribute_connected_is_stanza

@@ -38,16 +38,6 @@ bgp_address_family
    )?
 ;
 
-address_family_footer
-:
-   (
-      (
-         EXIT_ADDRESS_FAMILY
-         | EXIT
-      ) NEWLINE
-   )?
-;
-
 address_family_rb_stanza
 :
    address_family_header

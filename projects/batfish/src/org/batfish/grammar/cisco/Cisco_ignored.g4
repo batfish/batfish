@@ -144,8 +144,9 @@ null_block_stanza
                IP
                | IPV6
                | LDP ~NEWLINE
-            )
+            )            
             | OAM
+            | TRAFFIC_ENG
          )
       )
       | MULTI_CONFIG

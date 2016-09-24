@@ -53,6 +53,7 @@ if_stanza
    | ip_router_isis_if_stanza
    | isis_circuit_type_if_stanza
    | isis_enable_if_stanza
+   | isis_hello_interval_if_stanza
    | isis_metric_if_stanza
    | isis_network_if_stanza
    | isis_passive_if_stanza
@@ -197,9 +198,14 @@ isis_enable_if_stanza
    ISIS ENABLE num = DEC NEWLINE
 ;
 
+isis_hello_interval_if_stanza
+:
+   ISIS HELLO_INTERVAL DEC NEWLINE
+;
+
 isis_metric_if_stanza
 :
-   ISIS METRIC metric = DEC NEWLINE
+   ISIS IPV6? METRIC metric = DEC LEVEL_2? NEWLINE
 ;
 
 isis_network_if_stanza

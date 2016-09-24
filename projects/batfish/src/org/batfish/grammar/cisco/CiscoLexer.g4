@@ -3674,6 +3674,11 @@ MULTI_CONFIG
    'multi-config'
 ;
 
+MULTI_TOPOLOGY
+:
+   'multi-topology'
+;
+
 MVR
 :
    'mvr'
@@ -4447,6 +4452,11 @@ PRC_INTERVAL
 PRE_SHARED_KEY
 :
    'pre-shared-key'
+;
+
+PRECEDENCE
+:
+   'precedence'
 ;
 
 PRECONFIGURE
@@ -7118,6 +7128,11 @@ M_AsPath_PREPEND
 M_AsPath_REGEX_MODE
 :
    'regex-mode' -> type ( REGEX_MODE ) , popMode
+;
+
+M_AsPath_TAG
+:
+   'tag' -> type ( TAG ) , popMode
 ;
 
 M_AsPath_VARIABLE

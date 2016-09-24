@@ -10,6 +10,16 @@ access_list_action
    | DENY
 ;
 
+address_family_footer
+:
+   (
+      (
+         EXIT_ADDRESS_FAMILY
+         | EXIT
+      ) NEWLINE
+   )?
+;
+
 community
 :
    com = COMMUNITY_NUMBER
