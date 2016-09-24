@@ -181,7 +181,7 @@ public enum Command {
       Command instance = _nameMap.get(name.toLowerCase());
       if (instance == null) {
          throw new BatfishException(
-               "Not a valid QuestionType: \"" + name + "\"");
+               "Not a valid command: \"" + name + "\"");
       }
       return instance;
    }
