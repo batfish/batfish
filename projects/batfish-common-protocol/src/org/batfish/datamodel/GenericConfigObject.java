@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
-public interface GenericConfigObject {
+import java.io.Serializable;
+
+public interface GenericConfigObject extends Serializable {
 
 }

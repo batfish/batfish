@@ -1,12 +1,12 @@
 package org.batfish.common.plugin;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.GZIPInputStream;
@@ -29,6 +32,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectInputStream;
 
@@ -70,13 +74,12 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
    }
 
-   public final Object deserializeObject(Path inputFile) {
-      Object o = null;
-      ObjectInputStream ois;
+   private <S extends Serializable> S deserializeObject(byte[] data,
+         Class<S> outputClass) {
       try {
-         byte[] data = Files.readAllBytes(inputFile);
          boolean isJavaSerializationData = isJavaSerializationData(data);
          ByteArrayInputStream bais = new ByteArrayInputStream(data);
+         ObjectInputStream ois;
          if (!isJavaSerializationData) {
             XStream xstream = new XStream(new DomDriver("UTF-8"));
             xstream.setClassLoader(_currentClassLoader);
@@ -85,43 +88,54 @@ public abstract class PluginConsumer implements IPluginConsumer {
          else {
             ois = new BatfishObjectInputStream(bais, _currentClassLoader);
          }
-         o = ois.readObject();
+         Object o = ois.readObject();
          ois.close();
+         return outputClass.cast(o);
       }
-      catch (IOException | ClassNotFoundException e) {
-         throw new BatfishException("Failed to deserialize object from file: "
-               + inputFile.toString(), e);
+      catch (IOException | ClassNotFoundException | ClassCastException e) {
+         throw new BatfishException("Failed to deserialize object of type '"
+               + outputClass.getCanonicalName() + "' from data");
       }
-      return o;
    }
 
-   public Object deserializeObjectFromGzip(Path inputFile) {
-      GZIPInputStream gis;
-      FileInputStream fis;
-      Object o = null;
-      ObjectInputStream ois;
+   public <S extends Serializable> S deserializeObject(Path inputFile,
+         Class<S> outputClass) {
+      byte[] data = fromGzipFile(inputFile);
+      return deserializeObject(data, outputClass);
+   }
+
+   public <S extends Serializable> Map<String, S> deserializeObjects(
+         Map<Path, String> namesByPath, Class<S> outputClass) {
+      BatfishLogger logger = getLogger();
+      Map<String, byte[]> dataByName = new TreeMap<>();
+      namesByPath.forEach((inputPath, name) -> {
+         logger.debug("Reading " + outputClass.getName() + " '" + name
+               + "' from '" + inputPath.toString() + "'");
+         byte[] data = fromGzipFile(inputPath);
+         logger.debug(" ...OK\n");
+         dataByName.put(name, data);
+      });
+      Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
+      dataByName.keySet().parallelStream().forEach(name -> {
+         byte[] data = dataByName.get(name);
+         S object = deserializeObject(data, outputClass);
+         unsortedOutput.put(name, object);
+      });
+      Map<String, S> output = new TreeMap<>(unsortedOutput);
+      return output;
+   }
+
+   private byte[] fromGzipFile(Path inputFile) {
       try {
-         fis = new FileInputStream(inputFile.toFile());
-         gis = new GZIPInputStream(fis);
+         FileInputStream fis = new FileInputStream(inputFile.toFile());
+         GZIPInputStream gis = new GZIPInputStream(fis);
          byte[] data = IOUtils.toByteArray(gis);
-         boolean isJavaSerializationData = isJavaSerializationData(data);
-         ByteArrayInputStream bais = new ByteArrayInputStream(data);
-         if (!isJavaSerializationData) {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            xstream.setClassLoader(_currentClassLoader);
-            ois = xstream.createObjectInputStream(bais);
-         }
-         else {
-            ois = new BatfishObjectInputStream(bais, _currentClassLoader);
-         }
-         o = ois.readObject();
-         ois.close();
+         return data;
       }
-      catch (IOException | ClassNotFoundException e) {
-         throw new BatfishException("Failed to deserialize object from file: "
-               + inputFile.toString(), e);
+      catch (IOException e) {
+         throw new BatfishException(
+               "Failed to gunzip file: " + inputFile.toString(), e);
       }
-      return o;
    }
 
    public ClassLoader getCurrentClassLoader() {
@@ -232,52 +246,60 @@ public abstract class PluginConsumer implements IPluginConsumer {
       }
    }
 
-   public final void serializeObject(Object object, OutputStream outputStream) {
+   public void serializeObject(Serializable object, Path outputFile) {
       try {
-         ObjectOutputStream oos;
-         if (_serializeToText) {
-            XStream xstream = new XStream(new DomDriver("UTF-8"));
-            oos = xstream.createObjectOutputStream(outputStream);
-         }
-         else {
-            oos = new ObjectOutputStream(outputStream);
-         }
-         oos.writeObject(object);
-         oos.close();
-      }
-      catch (IOException e) {
-         throw new BatfishException(
-               "Failed to serialize object to output stream", e);
-      }
-   }
-
-   public final void serializeObject(Object object, Path outputFile) {
-      FileOutputStream fos;
-      try {
-         fos = new FileOutputStream(outputFile.toFile());
-         serializeObject(object, fos);
-      }
-      catch (IOException e) {
-         throw new BatfishException(
-               "Failed to serialize object to output file: "
-                     + outputFile.toString(),
-               e);
-      }
-   }
-
-   public void serializeObjectToGzip(Object object, Path outputFile) {
-      FileOutputStream fos;
-      GZIPOutputStream gos;
-      try {
-         fos = new FileOutputStream(outputFile.toFile());
-         gos = new GZIPOutputStream(fos);
-         serializeObject(object, gos);
+         byte[] data = toGzipData(object);
+         Files.write(outputFile, data);
       }
       catch (IOException e) {
          throw new BatfishException(
                "Failed to serialize object to gzip output file: "
                      + outputFile.toString(),
                e);
+      }
+   }
+
+   public <S extends Serializable> void serializeObjects(
+         Map<Path, S> objectsByPath) {
+      BatfishLogger logger = getLogger();
+      Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+      objectsByPath.keySet().parallelStream().forEach(outputPath -> {
+         S object = objectsByPath.get(outputPath);
+         byte[] gzipData = toGzipData(object);
+         dataByPath.put(outputPath, gzipData);
+      });
+      dataByPath.forEach((outputPath, data) -> {
+         logger.debug("Writing: \"" + outputPath.toString() + "\"...");
+         try {
+            Files.write(outputPath, data);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to write: '" + outputPath.toString() + "'");
+         }
+         logger.debug("OK\n");
+      });
+   }
+
+   private byte[] toGzipData(Serializable object) {
+      try {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         GZIPOutputStream gos = new GZIPOutputStream(baos);
+         ObjectOutputStream oos;
+         if (_serializeToText) {
+            XStream xstream = new XStream(new DomDriver("UTF-8"));
+            oos = xstream.createObjectOutputStream(gos);
+         }
+         else {
+            oos = new ObjectOutputStream(gos);
+         }
+         oos.writeObject(object);
+         oos.close();
+         byte[] data = baos.toByteArray();
+         return data;
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to convert object to gzip data", e);
       }
    }
 

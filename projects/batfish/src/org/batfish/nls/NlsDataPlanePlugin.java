@@ -793,8 +793,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       _logger.info("\n*** PARSING PREDICATE INFO ***\n");
       _batfish.resetTimer();
       Path predicateInfoPath = getPredicateInfoPath();
-      PredicateInfo predicateInfo = (PredicateInfo) _batfish
-            .deserializeObject(predicateInfoPath);
+      PredicateInfo predicateInfo = _batfish
+            .deserializeObject(predicateInfoPath, PredicateInfo.class);
       _batfish.printElapsedTime();
       return predicateInfo;
    }
@@ -972,8 +972,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    private void populatePrecomputedBgpAdvertisements(
          Path precomputedBgpAdvertisementsPath,
          Map<String, StringBuilder> cpFactBins) {
-      AdvertisementSet rawAdvertSet = (AdvertisementSet) _batfish
-            .deserializeObject(precomputedBgpAdvertisementsPath);
+      AdvertisementSet rawAdvertSet = _batfish.deserializeObject(
+            precomputedBgpAdvertisementsPath, AdvertisementSet.class);
       AdvertisementSet incomingAdvertSet = new AdvertisementSet();
       for (BgpAdvertisement advert : rawAdvertSet) {
          String type = advert.getType();
@@ -995,8 +995,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
          Map<String, StringBuilder> cpFactBins) {
       StringBuilder sb = cpFactBins
             .get(PRECOMPUTED_IBGP_NEIGHBORS_PREDICATE_NAME);
-      IbgpTopology topology = (IbgpTopology) _batfish
-            .deserializeObject(precomputedIbgpNeighborsPath);
+      IbgpTopology topology = _batfish.deserializeObject(
+            precomputedIbgpNeighborsPath, IbgpTopology.class);
       for (IpEdge edge : topology) {
          String node1 = edge.getNode1();
          long ip1 = edge.getIp1().asLong();
@@ -1012,8 +1012,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
       StringBuilder wNetworks = cpFactBins.get(NETWORKS_PREDICATE_NAME);
       Set<Prefix> networks = new HashSet<>();
       for (Path precomputedRoutesPath : precomputedRoutesPaths) {
-         RouteSet routes = (RouteSet) _batfish
-               .deserializeObject(precomputedRoutesPath);
+         RouteSet routes = _batfish.deserializeObject(precomputedRoutesPath,
+               RouteSet.class);
          for (Route route : routes) {
             String node = route.getNode();
             Prefix prefix = route.getNetwork();
