@@ -2057,7 +2057,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public DataPlane loadDataPlane() {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
-         dp = (DataPlane) deserializeObject(
+         dp = (DataPlane) deserializeObjectFromGzip(
                _testrigSettings.getEnvironmentSettings().getDataPlanePath());
          _dataPlanes.put(_testrigSettings, dp);
       }
@@ -3353,7 +3353,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public void writeDataPlane(DataPlane dp) {
-      serializeObject(dp,
+      serializeObjectToGzip(dp,
             _testrigSettings.getEnvironmentSettings().getDataPlanePath());
    }
 
