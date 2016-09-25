@@ -863,6 +863,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return flows;
    }
 
+   private Answer computeDataPlane(boolean differentialContext) {
+      return _dataPlanePlugin.computeDataPlane(differentialContext);
+   }
+
    @Override
    public InterfaceSet computeFlowSinks(
          Map<String, Configuration> configurations, boolean differentialContext,
@@ -972,6 +976,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Topology computeTopology(Map<String, Configuration> configurations) {
+      resetTimer();
       Topology topology = computeTopology(_testrigSettings.getTestRigPath(),
             configurations);
       EdgeSet blacklistEdges = getEdgeBlacklist();
@@ -994,6 +999,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       Topology prunedTopology = new Topology(topology.getEdges());
+      printElapsedTime();
       return prunedTopology;
    }
 
@@ -1097,7 +1103,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(true);
+         computeDataPlane(true);
          if (_nls != null) {
             _nls.clearEntityTables();
          }
@@ -1118,8 +1124,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       if (!Files.exists(serializedConfigPath)) {
          throw new BatfishException(
-               "Error reading vendor-independent configs directory: \""
-                     + serializedConfigPath.toString() + "\"");
+               "Missing vendor-independent configs directory: '"
+                     + serializedConfigPath.toString() + "'");
       }
       Map<Path, String> namesByPath = new TreeMap<>();
       try (DirectoryStream<Path> stream = Files
@@ -1130,7 +1136,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       catch (IOException e) {
-         throw new BatfishException("Could not list files", e);
+         throw new BatfishException(
+               "Error reading vendor-independent configs directory: '"
+                     + serializedConfigPath.toString() + "'",
+               e);
       }
       Map<String, Configuration> configurations = deserializeObjects(
             namesByPath, Configuration.class);
@@ -1888,7 +1897,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          CommonUtil.createDirectories(envPath);
       }
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(differentialContext);
+         computeDataPlane(differentialContext);
          if (_nls != null) {
             _nls.clearEntityTables();
          }
@@ -2895,8 +2904,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getDataPlane()) {
-         answer.append(
-               _dataPlanePlugin.computeDataPlane(_settings.getDiffActive()));
+         answer.append(computeDataPlane(_settings.getDiffActive()));
          action = true;
       }
 
