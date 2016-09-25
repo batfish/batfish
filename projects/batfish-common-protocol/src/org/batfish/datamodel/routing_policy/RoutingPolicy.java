@@ -7,6 +7,7 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -32,9 +33,9 @@ public class RoutingPolicy extends ComparableStructure<String> {
       _statements = new ArrayList<>();
    }
 
-   public Result call(Environment environment, AbstractRouteBuilder<?> route) {
+   public Result call(Environment environment) {
       for (Statement statement : _statements) {
-         Result result = statement.execute(environment, route);
+         Result result = statement.execute(environment);
          if (result.getExit()) {
             return result;
          }
@@ -59,8 +60,9 @@ public class RoutingPolicy extends ComparableStructure<String> {
    }
 
    public boolean process(AbstractRoute inputRoute,
-         AbstractRouteBuilder<?> outputRoute) {
-      Result result = call(new Environment(_owner, inputRoute), outputRoute);
+         AbstractRouteBuilder<?> outputRoute, Ip peerAddress) {
+      Result result = call(
+            new Environment(_owner, inputRoute, outputRoute, peerAddress));
       return result.getBooleanValue();
    }
 

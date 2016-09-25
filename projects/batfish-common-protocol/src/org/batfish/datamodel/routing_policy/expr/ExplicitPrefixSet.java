@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -29,8 +28,7 @@ public class ExplicitPrefixSet implements PrefixSetExpr {
    }
 
    @Override
-   public boolean matches(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
+   public boolean matches(Environment environment) {
       Prefix prefix = environment.getOriginalRoute().getNetwork();
       boolean value = _prefixSpace.containsPrefix(prefix);
       return value;

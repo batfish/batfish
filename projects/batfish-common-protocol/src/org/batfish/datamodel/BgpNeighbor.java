@@ -263,6 +263,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    private transient BgpNeighbor _remoteBgpNeighbor;
 
+   private boolean _routeReflectorClient;
+
    /**
     * Flag governing whether to include community numbers in outgoing route
     * advertisements to this peer
@@ -462,6 +464,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return _remoteBgpNeighbor;
    }
 
+   public boolean getRouteReflectorClient() {
+      return _routeReflectorClient;
+   }
+
    /**
     * @return {@link #_sendCommunity}
     */
@@ -575,11 +581,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    /**
     * Sets {@link #_localIp}
     *
-    * @param updateSource
+    * @param localIp
     */
    @JsonProperty(LOCAL_IP_VAR)
-   public void setLocalIp(Ip updateSource) {
-      _localIp = updateSource;
+   public void setLocalIp(Ip localIp) {
+      _localIp = localIp;
    }
 
    @JsonProperty(ORIGINATION_POLICIES_VAR)
@@ -614,6 +620,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(REMOTE_PREFIX_VAR)
    public void setRemotePrefix(Prefix remotePrefix) {
       // Intentionally empty
+   }
+
+   public void setRouteReflectorClient(boolean routeReflectorClient) {
+      _routeReflectorClient = routeReflectorClient;
    }
 
    /**

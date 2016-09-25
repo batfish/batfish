@@ -175,7 +175,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                                  ConnectedRoute route = new ConnectedRoute(
                                        prefix, interfaceName);
                                  if (exportPolicy.process(route,
-                                       new OspfExternalRoute.Builder())) {
+                                       new OspfExternalRoute.Builder(), null)) {
                                     exported = true;
                                  }
                               }

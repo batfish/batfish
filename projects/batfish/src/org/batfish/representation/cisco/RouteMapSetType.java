@@ -12,5 +12,6 @@ public enum RouteMapSetType {
    LOCAL_PREFERENCE,
    METRIC,
    NEXT_HOP,
+   NEXT_HOP_PEER_ADDRESS,
    ORIGIN_TYPE
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -29,7 +30,7 @@ public class NextHopIp6 implements NextHopExpr {
    }
 
    @Override
-   public Ip getNextHopIp() {
+   public Ip getNextHopIp(Environment environment) {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub

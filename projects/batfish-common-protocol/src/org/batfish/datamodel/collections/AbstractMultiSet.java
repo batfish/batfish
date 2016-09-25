@@ -40,11 +40,22 @@ public abstract class AbstractMultiSet<E> implements MultiSet<E> {
       }
    }
 
+   protected abstract <F> MultiSet<F> create();
+
    @Override
    public final Set<E> elements() {
       return _map.keySet();
    }
 
    protected abstract Map<E, Integer> initializeMap();
+
+   @Override
+   public MultiSet<Integer> quantityHistogram() {
+      MultiSet<Integer> quantityHistogram = this.<Integer> create();
+      for (int i : _map.values()) {
+         quantityHistogram.add(i);
+      }
+      return quantityHistogram;
+   }
 
 }

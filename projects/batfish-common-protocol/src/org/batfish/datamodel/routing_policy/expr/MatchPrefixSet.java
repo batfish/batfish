@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -24,9 +23,8 @@ public class MatchPrefixSet extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
-      boolean match = _expr.matches(environment, outputRoute);
+   public Result evaluate(Environment environment) {
+      boolean match = _expr.matches(environment);
       Result result = new Result();
       result.setBooleanValue(match);
       return result;
