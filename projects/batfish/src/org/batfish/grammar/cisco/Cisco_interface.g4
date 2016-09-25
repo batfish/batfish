@@ -80,7 +80,7 @@ interface_stanza
 :
    INTERFACE PRECONFIGURE? iname = interface_name
    (
-      L2TRANSPORT
+	  L2TRANSPORT
       | MULTIPOINT
       | POINT_TO_POINT
    )? NEWLINE interface_stanza_tail
@@ -370,6 +370,7 @@ null_block_if_stanza
             MTU
             | UNNUMBERED
             | UNREACHABLES
+            | VERIFY
          )
       )
       | IPV6

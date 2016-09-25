@@ -339,3 +339,8 @@ variable
 :
    ~NEWLINE
 ;
+
+variable_with_colon
+:
+   (COLON|~NEWLINE)+
+;

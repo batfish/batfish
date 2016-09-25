@@ -468,6 +468,7 @@ null_bgp_tail
          )
       )
       | DESCRIPTION
+      | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
       | EXIT
@@ -496,6 +497,7 @@ null_bgp_tail
       | SYNCHRONIZATION
       | TIMERS
       | TRANSPORT
+      | USE NEXTHOP_ATTRIBUTE
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -616,6 +618,10 @@ redistribute_static_bgp_tail
    (
       (
          ROUTE_MAP map = VARIABLE
+      )
+      |
+      (
+      	 ROUTE_POLICY policy = VARIABLE
       )
       |
       (

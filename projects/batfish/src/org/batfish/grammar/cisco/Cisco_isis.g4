@@ -60,6 +60,7 @@ common_is_stanza
    | metric_style_is_stanza
    | net_is_stanza
    | null_is_stanza
+   | redistribute_connected_is_stanza
    | redistribute_static_is_stanza
    | passive_interface_is_stanza
    | summary_address_is_stanza
@@ -127,7 +128,8 @@ null_iis_stanza
 :
    NO?
    (
-      HELLO_PADDING
+      HELLO_INTERVAL
+      | HELLO_PADDING
       | HELLO_PASSWORD
       | POINT_TO_POINT
    ) ~NEWLINE* NEWLINE
@@ -189,6 +191,10 @@ redistribute_connected_is_stanza
       (
          ROUTE_MAP map = VARIABLE
       )
+      | 
+      (
+      	ROUTE_POLICY policy = VARIABLE
+      )
    )* NEWLINE
 ;
 
@@ -208,6 +214,10 @@ redistribute_static_is_stanza
       (
          ROUTE_MAP map = VARIABLE
       )
+      | 
+      (
+      	ROUTE_POLICY policy = VARIABLE
+      )
    )* NEWLINE
 ;
 
@@ -216,7 +226,7 @@ router_isis_stanza
    ROUTER ISIS
    (
       name = variable
-   )? NEWLINE is_stanza+
+   )? NEWLINE is_stanza*
 ;
 
 summary_address_is_stanza

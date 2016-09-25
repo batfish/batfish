@@ -39,6 +39,7 @@ address_family_multicast_tail
    (
       MULTIPATH NEWLINE
       | interface_multicast_stanza
+      | ip_pim_tail
    )*
 ;
 
@@ -141,7 +142,7 @@ cm_match_tail
 
 cmm_access_group
 :
-   IP? ACCESS_GROUP
+   IP? ACCESS_GROUP IPV4?
    (
       num = DEC
       |
@@ -215,7 +216,11 @@ cmm_port
 
 cmm_precedence
 :
-   IP PRECEDENCE DEC NEWLINE
+   IP? PRECEDENCE IPV4? 
+   (
+   	  DEC+ 
+   	  | name = variable
+   ) NEWLINE
 ;
 
 cmm_protocol
@@ -367,6 +372,7 @@ interface_multicast_stanza
    INTERFACE ~NEWLINE* NEWLINE
    (
       BSR_BORDER NEWLINE
+      | BOUNDARY MCAST_BOUNDARY NEWLINE
    )?
    (
       ENABLE NEWLINE
@@ -1027,9 +1033,11 @@ pim_null
       | BIDIR_OFFER_LIMIT
       | BSR_CANDIDATE
       | DM_FALLBACK
+      | LOG NEIGHBOR CHANGES
       | LOG_NEIGHBOR_CHANGES
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE
+      | RPF_VECTOR
       | SEND_RP_DISCOVERY
       | V1_RP_REACHABILITY
    ) ~NEWLINE* NEWLINE
