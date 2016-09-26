@@ -5,6 +5,7 @@ import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapSetAsPathPrependLine;
 import org.batfish.datamodel.PolicyMapSetLine;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -13,9 +14,9 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
 
    private static final long serialVersionUID = 1L;
 
-   private List<Integer> _asList;
+   private List<AsExpr> _asList;
 
-   public RouteMapSetAsPathPrependLine(List<Integer> asList) {
+   public RouteMapSetAsPathPrependLine(List<AsExpr> asList) {
       _asList = asList;
    }
 
@@ -25,7 +26,7 @@ public class RouteMapSetAsPathPrependLine extends RouteMapSetLine {
       statements.add(new PrependAsPath(_asList));
    }
 
-   public List<Integer> getAsList() {
+   public List<AsExpr> getAsList() {
       return _asList;
    }
 

@@ -11,7 +11,7 @@ apply_rp_stanza
    APPLY name = variable NEWLINE
 ;
 
-as_path_expr
+as_expr
 :
    DEC
    | AUTO
@@ -298,7 +298,7 @@ set_as_path_prepend_rm_stanza
    SET AS_PATH PREPEND LAST_AS?
    (
       (
-         as_list += as_path_expr
+         as_list += as_expr
       )+ NEWLINE
    )
 ;

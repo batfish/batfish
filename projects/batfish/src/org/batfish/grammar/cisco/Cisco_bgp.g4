@@ -136,8 +136,6 @@ bgp_tail
    activate_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
-   //| bestpath_bgp_tail
-
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail

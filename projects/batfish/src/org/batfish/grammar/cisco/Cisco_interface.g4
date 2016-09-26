@@ -227,7 +227,7 @@ mtu_if_stanza
 :
    MTU mtu_size = DEC NEWLINE
 ;
-   
+
 no_ip_address_if_stanza
 :
    NO IP ADDRESS NEWLINE

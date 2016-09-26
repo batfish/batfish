@@ -47,6 +47,9 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
+import org.batfish.datamodel.routing_policy.expr.AutoAs;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -99,14 +102,14 @@ import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import org.batfish.representation.cisco.RoutePolicy;
 import org.batfish.representation.cisco.RoutePolicyApplyStatement;
 import org.batfish.representation.cisco.RoutePolicyBoolean;
-import org.batfish.representation.cisco.RoutePolicyBooleanASPathIn;
+import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIn;
 import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
 import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco.RoutePolicyBooleanNot;
 import org.batfish.representation.cisco.RoutePolicyBooleanOr;
-import org.batfish.representation.cisco.RoutePolicyBooleanRIBHasRoute;
+import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco.RoutePolicyCommunitySet;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetNumber;
@@ -2442,13 +2445,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
+   public void exitNo_ip_prefix_list_stanza(
+         No_ip_prefix_list_stanzaContext ctx) {
       String prefixListName = ctx.name.getText();
       if (_configuration.getPrefixLists().containsKey(prefixListName)) {
          _configuration.getPrefixLists().remove(prefixListName);
       }
    }
-   
+
    @Override
    public void exitNo_neighbor_activate_rb_stanza(
          No_neighbor_activate_rb_stanzaContext ctx) {
@@ -2521,14 +2525,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   @Override 
+   @Override
    public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
       String mapName = ctx.name.getText();
       if (_configuration.getRouteMaps().containsKey(mapName)) {
          _configuration.getRouteMaps().remove(mapName);
       }
    }
-   
+
    @Override
    public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
       // TODO: see if it is always ok to set active on 'no shutdown'
@@ -3025,10 +3029,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_as_path_prepend_rm_stanza(
          Set_as_path_prepend_rm_stanzaContext ctx) {
-      List<Integer> asList = new ArrayList<>();
-      for (As_path_exprContext t : ctx.as_list) {
-//         int as = toInteger(t);
-//         asList.add(as);
+      List<AsExpr> asList = new ArrayList<>();
+      for (As_exprContext asx : ctx.as_list) {
+         AsExpr as = toAsExpr(asx);
+         asList.add(as);
       }
       RouteMapSetAsPathPrependLine line = new RouteMapSetAsPathPrependLine(
             asList);
@@ -3500,6 +3504,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentPeerGroup = pg;
    }
 
+   private AsExpr toAsExpr(As_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int as = toInteger(ctx.DEC());
+         return new ExplicitAs(as);
+      }
+      else if (ctx.AUTO() != null) {
+         return new AutoAs();
+      }
+      else {
+         throw new BatfishException("Cannot convert '" + ctx.getText() + "' to "
+               + AsExpr.class.getSimpleName());
+      }
+   }
+
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
       _unimplementedFeatures.add("Cisco: " + feature);
@@ -3587,16 +3605,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Boolean_rib_has_route_rp_stanzaContext rctxt = ctxt
             .boolean_rib_has_route_rp_stanza();
       if (rctxt != null) {
-         return new RoutePolicyBooleanRIBHasRoute(
+         return new RoutePolicyBooleanRibHasRoute(
                toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
       }
-      
+
       Boolean_as_path_in_rp_stanzaContext actxt = ctxt
             .boolean_as_path_in_rp_stanza();
       if (actxt != null) {
-          return new RoutePolicyBooleanASPathIn(actxt.name.getText());
-      }      
-      
+         return new RoutePolicyBooleanAsPathIn(actxt.name.getText());
+      }
+
       return null;
 
    }

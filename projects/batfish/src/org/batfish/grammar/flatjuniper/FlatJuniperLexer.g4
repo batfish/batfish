@@ -731,11 +731,6 @@ ECHO_REQUEST
    'echo-request'
 ;
 
-EDIT
-:
-   'edit'
-;
-
 EGP
 :
    'egp'

@@ -1,6 +1,6 @@
 parser grammar CiscoParser;
 
-import 
+import
 Cisco_common, Cisco_acl, Cisco_bgp, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
 
 options {
@@ -144,9 +144,10 @@ cmm_access_group
    (
       IP
       | IPV6
-   ) ? ACCESS_GROUP 
-   ( IP 
-      | IPV6 
+   )? ACCESS_GROUP
+   (
+      IP
+      | IPV6
       | IPV4
    )?
    (
@@ -290,10 +291,10 @@ color_setter
 :
    SET_COLOR
    (
-    RED 
-    | YELLOW
-    | GREEN  
-   ) 
+      RED
+      | YELLOW
+      | GREEN
+   )
 ;
 
 del_stanza
@@ -497,10 +498,12 @@ mgmt_api_stanza
    MANAGEMENT API HTTP_COMMANDS NEWLINE
    (
       (
-         PROTOCOL HTTPS NEWLINE
+         (
+            PROTOCOL HTTPS NEWLINE
+         )
          | mgmt_null
          | vrfd_stanza
-      )+   
+      )+
    )
 ;
 

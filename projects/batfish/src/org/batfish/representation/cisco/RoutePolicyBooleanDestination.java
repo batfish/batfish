@@ -20,11 +20,6 @@ public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
    }
 
    @Override
-   public RoutePolicyBooleanType getType() {
-      return RoutePolicyBooleanType.DESTINATION;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new MatchPrefixSet(_prefixSet.toPrefixSetExpr(cc, c, w));

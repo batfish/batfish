@@ -5,23 +5,18 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.main.Warnings;
 
-public class RoutePolicyBooleanRIBHasRoute extends RoutePolicyBoolean {
+public class RoutePolicyBooleanRibHasRoute extends RoutePolicyBoolean {
 
    private static final long serialVersionUID = 1L;
 
    private RoutePolicyPrefixSet _prefixSet;
 
-   public RoutePolicyBooleanRIBHasRoute(RoutePolicyPrefixSet prefixSet) {
+   public RoutePolicyBooleanRibHasRoute(RoutePolicyPrefixSet prefixSet) {
       _prefixSet = prefixSet;
    }
 
    public RoutePolicyPrefixSet getPrefixSet() {
       return _prefixSet;
-   }
-
-   @Override
-   public RoutePolicyBooleanType getType() {
-      return RoutePolicyBooleanType.RIB_HAS_ROUTE;
    }
 
    @Override

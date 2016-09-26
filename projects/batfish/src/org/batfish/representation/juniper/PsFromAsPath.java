@@ -4,6 +4,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.main.Warnings;
 
 public class PsFromAsPath extends PsFrom {
@@ -35,7 +36,7 @@ public class PsFromAsPath extends PsFrom {
    @Override
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchAsPath(_asPathName);
+      return new MatchAsPath(new NamedAsPathSet(_asPathName));
    }
 
 }

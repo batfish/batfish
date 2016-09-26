@@ -30,11 +30,6 @@ public class RoutePolicyBooleanAnd extends RoutePolicyBoolean {
    }
 
    @Override
-   public RoutePolicyBooleanType getType() {
-      return RoutePolicyBooleanType.AND;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
       Conjunction conj = new Conjunction();

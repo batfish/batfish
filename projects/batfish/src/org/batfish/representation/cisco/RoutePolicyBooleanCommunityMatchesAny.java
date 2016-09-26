@@ -21,11 +21,6 @@ public class RoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
    }
 
    @Override
-   public RoutePolicyBooleanType getType() {
-      return RoutePolicyBooleanType.COMMUNITY_MATCHES_ANY;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
       return new MatchCommunitySet(_commSet.toCommunitySetExpr(cc, c, w));
