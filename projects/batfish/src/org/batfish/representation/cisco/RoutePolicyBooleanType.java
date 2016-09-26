@@ -7,5 +7,6 @@ public enum RoutePolicyBooleanType {
    DESTINATION,
    NOT,
    OR,
-   RIB_HAS_ROUTE
+   RIB_HAS_ROUTE, 
+   ASPATHIN
 }

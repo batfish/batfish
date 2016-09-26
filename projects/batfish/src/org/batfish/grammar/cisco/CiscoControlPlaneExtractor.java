@@ -99,6 +99,7 @@ import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import org.batfish.representation.cisco.RoutePolicy;
 import org.batfish.representation.cisco.RoutePolicyApplyStatement;
 import org.batfish.representation.cisco.RoutePolicyBoolean;
+import org.batfish.representation.cisco.RoutePolicyBooleanASPathIn;
 import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
@@ -3025,9 +3026,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitSet_as_path_prepend_rm_stanza(
          Set_as_path_prepend_rm_stanzaContext ctx) {
       List<Integer> asList = new ArrayList<>();
-      for (Token t : ctx.as_list) {
-         int as = toInteger(t);
-         asList.add(as);
+      for (As_path_exprContext t : ctx.as_list) {
+//         int as = toInteger(t);
+//         asList.add(as);
       }
       RouteMapSetAsPathPrependLine line = new RouteMapSetAsPathPrependLine(
             asList);
@@ -3589,7 +3590,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return new RoutePolicyBooleanRIBHasRoute(
                toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
       }
-
+      
+      Boolean_as_path_in_rp_stanzaContext actxt = ctxt
+            .boolean_as_path_in_rp_stanza();
+      if (actxt != null) {
+          return new RoutePolicyBooleanASPathIn(actxt.name.getText());
+      }      
+      
       return null;
 
    }

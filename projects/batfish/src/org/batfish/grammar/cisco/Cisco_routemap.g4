@@ -11,6 +11,12 @@ apply_rp_stanza
    APPLY name = variable NEWLINE
 ;
 
+as_path_expr
+:
+   DEC
+   | AUTO
+;
+
 boolean_and_rp_stanza
 :
    boolean_not_rp_stanza
@@ -67,7 +73,7 @@ boolean_simple_rp_stanza
 
 boolean_tag_is_rp_stanza
 :
-   TAG IS DEC 
+   TAG IS DEC
 ;
 
 delete_rp_stanza
@@ -216,7 +222,7 @@ match_tag_rm_stanza
    )+ NEWLINE
 ;
 
-no_route_map_stanza 
+no_route_map_stanza
 :
    NO ROUTE_MAP name = variable NEWLINE
 ;
@@ -291,13 +297,9 @@ set_as_path_prepend_rm_stanza
 :
    SET AS_PATH PREPEND LAST_AS?
    (
-         (
-            as_list += 
-            (
-               DEC
-               | AUTO
-               )
-         )+ NEWLINE
+      (
+         as_list += as_path_expr
+      )+ NEWLINE
    )
 ;
 
@@ -459,7 +461,6 @@ set_tag_rp_stanza
 :
    set_tag_rm_stanza
 ;
-
 
 set_weight_rm_stanza
 :
