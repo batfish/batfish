@@ -104,19 +104,9 @@ as_override_bgp_tail
    AS_OVERRIDE NEWLINE
 ;
 
-auto_local_addr_bgp_tail
-:
-   AUTO_LOCAL_ADDR NEWLINE
-;
-
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
-;
-
-bestpath_bgp_tail
-:
-   BESTPATH AS_PATH MULTIPATH_RELAX NEWLINE
 ;
 
 bgp_advertise_inactive_rb_stanza
@@ -146,8 +136,8 @@ bgp_tail
    activate_bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
-   | auto_local_addr_bgp_tail
-   | bestpath_bgp_tail
+   //| bestpath_bgp_tail
+
    | cluster_id_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
@@ -269,6 +259,11 @@ maximum_ecmp_paths
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
+;
+
+maximum_paths_ebgp
+:
+   MAXIMUM_PATHS EBGP DEC
 ;
 
 maximum_paths_bgp_tail
@@ -469,6 +464,7 @@ null_bgp_tail
    (
       ADVERTISEMENT_INTERVAL
       | AUTO_SUMMARY
+      | AUTO_LOCAL_ADDR
       |
       (
          AGGREGATE_ADDRESS
@@ -481,7 +477,7 @@ null_bgp_tail
       | BFD
       |
       (
-         BGP 
+         BGP
          (
             ATTRIBUTE_DOWNLOAD
             | BESTPATH
@@ -507,7 +503,7 @@ null_bgp_tail
       | FALL_OVER
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
-      | maximum_ecmp_paths
+      | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
@@ -527,7 +523,7 @@ null_bgp_tail
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
-      | timers_bgp
+      | TIMERS
       | TRANSPORT
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -695,6 +691,7 @@ router_bgp_stanza_tail
    {!_nonNexus}?
 
    nexus_vrf_rb_stanza
+   | unrecognized_line
 ;
 
 router_id_bgp_tail
@@ -731,11 +728,6 @@ subnet_bgp_tail
       prefix = IP_PREFIX
       | ipv6_prefix = IPV6_PREFIX
    ) NEWLINE
-;
-
-timers_bgp
-:
-   TIMERS BGP? DEC? DEC?
 ;
 
 template_peer_address_family

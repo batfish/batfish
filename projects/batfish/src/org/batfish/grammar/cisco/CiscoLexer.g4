@@ -1039,7 +1039,6 @@ CLASS_MAP
 
 CLEANUP
 :
-
    'cleanup'
 ;
 
@@ -1798,6 +1797,11 @@ DYNAMIC_MAP
    'dynamic-map'
 ;
 
+EBGP
+:
+   'ebgp'
+;
+
 EBGP_MULTIHOP
 :
    'ebgp-multihop'
@@ -1855,7 +1859,7 @@ EGRESS
 
 EGRESS_INTERFACE_SELECTION
 :
-   'egress-interface-selection'  
+   'egress-interface-selection'
 ;
 
 EIGRP
@@ -2414,7 +2418,7 @@ GROUP_URL
 
 GSHUT
 :
-      'GSHUT'
+   'GSHUT'
 ;
 
 GT
@@ -5475,7 +5479,7 @@ SPF_INTERVAL
    'spf-interval'
 ;
 
-SOFT_PREEMPTION 
+SOFT_PREEMPTION
 :
    'soft-preemption'
 ;

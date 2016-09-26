@@ -2443,7 +2443,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
       String prefixListName = ctx.name.getText();
       if (_configuration.getPrefixLists().containsKey(prefixListName)) {
-         _configuration.getRouteMaps().remove(prefixListName);
+         _configuration.getPrefixLists().remove(prefixListName);
       }
    }
    
