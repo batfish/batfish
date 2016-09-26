@@ -26,7 +26,7 @@ public class FlowBuilder {
 
    private Integer _srcPort;
 
-   private Integer _state;
+   private State _state;
 
    private String _tag;
 
@@ -57,7 +57,7 @@ public class FlowBuilder {
       _srcPort = 0;
       _icmpType = IcmpType.UNSET;
       _icmpCode = IcmpCode.UNSET;
-      _state = 0;
+      _state = State.NEW;
       _tcpFlagsCwr = 0;
       _tcpFlagsEce = 0;
       _tcpFlagsUrg = 0;
@@ -122,7 +122,7 @@ public class FlowBuilder {
       return _srcPort;
    }
 
-   public Integer getState() {
+   public State getState() {
       return _state;
    }
 
@@ -214,7 +214,7 @@ public class FlowBuilder {
       _srcPort = srcPort;
    }
 
-   public void setState(Integer state) {
+   public void setState(State state) {
       _state = state;
    }
 

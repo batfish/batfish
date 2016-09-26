@@ -53,6 +53,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LBValueType;
@@ -388,7 +389,7 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
    }
 
    private FlowTrace createFlowTrace(String historyLine) {
-      List<Edge> flowTraceHops = new ArrayList<>();
+      List<FlowTraceHop> flowTraceHops = new ArrayList<>();
       FlowDisposition disposition = null;
       String notes = "";
       String[] hops = historyLine.split("(\\];\\[)|(\\])|(\\[)");
@@ -427,7 +428,8 @@ public final class NlsDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
-            flowTraceHops.add(new Edge(outgoingInterface, incomingInterface));
+            flowTraceHops.add(new FlowTraceHop(
+                  new Edge(outgoingInterface, incomingInterface), null));
          }
          else if (hop.contains("accepted")) {
             disposition = FlowDisposition.ACCEPTED;

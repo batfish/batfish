@@ -94,7 +94,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
       }
       catch (IOException | ClassNotFoundException | ClassCastException e) {
          throw new BatfishException("Failed to deserialize object of type '"
-               + outputClass.getCanonicalName() + "' from data");
+               + outputClass.getCanonicalName() + "' from data", e);
       }
    }
 

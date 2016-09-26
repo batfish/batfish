@@ -424,6 +424,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private TestrigSettings _baseTestrigSettings;
 
+   private final Map<TestrigSettings, Map<String, Configuration>> _cachedConfigurations;
+
    private DataPlanePlugin _dataPlanePlugin;
 
    private final Map<TestrigSettings, DataPlane> _dataPlanes;
@@ -449,6 +451,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public Batfish(Settings settings) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
+      _cachedConfigurations = new HashMap<>();
       _dataPlanes = new HashMap<>();
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getTestrigSettings();
@@ -2050,8 +2053,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Map<String, Configuration> loadConfigurations() {
-      Map<String, Configuration> configurations = deserializeConfigurations(
-            _testrigSettings.getSerializeIndependentPath());
+      Map<String, Configuration> configurations = _cachedConfigurations
+            .get(_testrigSettings);
+      if (configurations == null) {
+         configurations = deserializeConfigurations(
+               _testrigSettings.getSerializeIndependentPath());
+         _cachedConfigurations.put(_testrigSettings, configurations);
+      }
       processNodeBlacklist(configurations);
       processInterfaceBlacklist(configurations);
       processDeltaConfigurations(configurations);
