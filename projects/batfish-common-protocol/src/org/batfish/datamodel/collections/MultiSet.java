@@ -12,4 +12,6 @@ public interface MultiSet<E> {
 
    Set<E> elements();
 
+   MultiSet<Integer> quantityHistogram();
+
 }

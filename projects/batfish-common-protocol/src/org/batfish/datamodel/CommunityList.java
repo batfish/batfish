@@ -1,7 +1,13 @@
 package org.batfish.datamodel;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,6 +26,8 @@ public class CommunityList extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
+   private transient Set<Long> _denyCache;
+
    private boolean _invertMatch;
 
    /**
@@ -27,6 +35,8 @@ public class CommunityList extends ComparableStructure<String> {
     * attribute(s) of a bgp advertisement
     */
    private final List<CommunityListLine> _lines;
+
+   private transient Set<Long> _permitCache;
 
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
@@ -64,6 +74,40 @@ public class CommunityList extends ComparableStructure<String> {
    @JsonProperty(NAME_VAR)
    public String getName() {
       return _key;
+   }
+
+   private boolean newPermits(long community) {
+      boolean accept = false;
+      for (CommunityListLine line : _lines) {
+         Pattern p = Pattern.compile(line.getRegex());
+         String communityStr = CommonUtil.longToCommunity(community);
+         Matcher matcher = p.matcher(communityStr);
+         if (matcher.find() ^ _invertMatch) {
+            accept = line.getAction() == LineAction.ACCEPT;
+            break;
+         }
+      }
+      if (accept) {
+         _permitCache.add(community);
+      }
+      else {
+         _denyCache.add(community);
+      }
+      return accept;
+   }
+
+   public boolean permits(long community) {
+      if (_permitCache == null) {
+         _denyCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+         _permitCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+      }
+      else if (_permitCache.contains(community)) {
+         return true;
+      }
+      else if (_denyCache.contains(community)) {
+         return false;
+      }
+      return newPermits(community);
    }
 
    public void setInvertMatch(boolean invertMatch) {

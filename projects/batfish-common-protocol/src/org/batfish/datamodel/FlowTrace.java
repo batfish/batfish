@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,12 +13,12 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
    private final FlowDisposition _disposition;
 
-   private final List<Edge> _hops;
+   private final List<FlowTraceHop> _hops;
 
    private final String _notes;
 
    public FlowTrace(@JsonProperty(DISPOSITION_VAR) FlowDisposition disposition,
-         @JsonProperty(HOPS_VAR) List<Edge> hops,
+         @JsonProperty(HOPS_VAR) List<FlowTraceHop> hops,
          @JsonProperty(NOTES_VAR) String notes) {
       _disposition = disposition;
       _hops = hops;
@@ -30,8 +31,8 @@ public class FlowTrace implements Comparable<FlowTrace> {
          if (rhs._hops.size() < i + 1) {
             return 1;
          }
-         Edge leftHop = _hops.get(i);
-         Edge rightHop = rhs._hops.get(i);
+         Edge leftHop = _hops.get(i).getEdge();
+         Edge rightHop = rhs._hops.get(i).getEdge();
          int result = leftHop.compareTo(rightHop);
          if (result != 0) {
             return result;
@@ -66,7 +67,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
    }
 
    @JsonProperty(HOPS_VAR)
-   public List<Edge> getHops() {
+   public List<FlowTraceHop> getHops() {
       return _hops;
    }
 
@@ -92,11 +93,14 @@ public class FlowTrace implements Comparable<FlowTrace> {
    public String toString(String prefixString) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < _hops.size(); i++) {
-         Edge hop = _hops.get(i);
+         FlowTraceHop hop = _hops.get(i);
+         Set<String> routes = hop.getRoutes();
+         String routesStr = routes != null ? (" --- " + routes) : "";
+         Edge edge = hop.getEdge();
          int num = i + 1;
-         sb.append(prefixString + "Hop " + num + ": " + hop.getNode1() + ":"
-               + hop.getInt1() + " -> " + hop.getNode2() + ":" + hop.getInt2()
-               + "\n");
+         sb.append(prefixString + "Hop " + num + ": " + edge.getNode1() + ":"
+               + edge.getInt1() + " -> " + edge.getNode2() + ":"
+               + edge.getInt2() + routesStr + "\n");
       }
       sb.append(prefixString + _notes + "\n");
       return sb.toString();

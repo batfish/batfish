@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -24,9 +23,8 @@ public class Not extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
-      Result result = _expr.evaluate(environment, outputRoute);
+   public Result evaluate(Environment environment) {
+      Result result = _expr.evaluate(environment);
       if (!result.getExit()) {
          result.setBooleanValue(!result.getBooleanValue());
       }

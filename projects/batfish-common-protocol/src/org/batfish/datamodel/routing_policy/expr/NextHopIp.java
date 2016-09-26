@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -29,7 +30,7 @@ public class NextHopIp implements NextHopExpr {
    }
 
    @Override
-   public Ip getNextHopIp() {
+   public Ip getNextHopIp(Environment environment) {
       if (_ips.size() == 1) {
          return _ips.get(0);
       }

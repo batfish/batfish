@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -32,16 +31,15 @@ public class If extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
-      Result exprResult = _guard.evaluate(environment, route);
+   public Result execute(Environment environment) {
+      Result exprResult = _guard.evaluate(environment);
       if (exprResult.getExit()) {
          return exprResult;
       }
       List<Statement> toExecute = exprResult.getBooleanValue() ? _trueStatements
             : _falseStatements;
       for (Statement statement : toExecute) {
-         Result result = statement.execute(environment, route);
+         Result result = statement.execute(environment);
          if (result.getExit() || result.getReturn()) {
             return result;
          }

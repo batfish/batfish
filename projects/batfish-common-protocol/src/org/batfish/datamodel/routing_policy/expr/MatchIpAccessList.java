@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -25,8 +24,7 @@ public class MatchIpAccessList extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
+   public Result evaluate(Environment environment) {
       Result result = new Result();
       IpAccessList list = environment.getConfiguration().getIpAccessLists()
             .get(_list);

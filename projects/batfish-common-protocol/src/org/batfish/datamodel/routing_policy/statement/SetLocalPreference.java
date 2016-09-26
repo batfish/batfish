@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -24,10 +23,10 @@ public class SetLocalPreference extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       Result result = new Result();
-      BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) route;
+      BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) environment
+            .getOutputRoute();
       bgpBuilder.setLocalPreference(_localPreference);
       return result;
    }

@@ -1,7 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -26,8 +25,7 @@ public class DeleteCommunity extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       throw new BatfishException("not yet implemented");
    }
 

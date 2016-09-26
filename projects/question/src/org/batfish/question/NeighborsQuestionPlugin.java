@@ -169,10 +169,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                            Configuration remoteHost = remoteBgpNeighbor
                                  .getOwner();
                            String remoteHostname = remoteHost.getHostname();
-                           Ip localIp = bgpNeighbor.getLocalIp();
-                           Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                           answerElement.getEbgpNeighbors().add(new IpEdge(
-                                 hostname, localIp, remoteHostname, remoteIp));
+                           Matcher node1Matcher = node1Regex.matcher(hostname);
+                           Matcher node2Matcher = node2Regex
+                                 .matcher(remoteHostname);
+                           if (node1Matcher.matches()
+                                 && node2Matcher.matches()) {
+                              Ip localIp = bgpNeighbor.getLocalIp();
+                              Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                              answerElement.getEbgpNeighbors()
+                                    .add(new IpEdge(hostname, localIp,
+                                          remoteHostname, remoteIp));
+                           }
                         }
                      }
                   }
@@ -197,10 +204,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                            Configuration remoteHost = remoteBgpNeighbor
                                  .getOwner();
                            String remoteHostname = remoteHost.getHostname();
-                           Ip localIp = bgpNeighbor.getLocalIp();
-                           Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                           answerElement.getIbgpNeighbors().add(new IpEdge(
-                                 hostname, localIp, remoteHostname, remoteIp));
+                           Matcher node1Matcher = node1Regex.matcher(hostname);
+                           Matcher node2Matcher = node2Regex
+                                 .matcher(remoteHostname);
+                           if (node1Matcher.matches()
+                                 && node2Matcher.matches()) {
+                              Ip localIp = bgpNeighbor.getLocalIp();
+                              Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                              answerElement.getIbgpNeighbors()
+                                    .add(new IpEdge(hostname, localIp,
+                                          remoteHostname, remoteIp));
+                           }
                         }
                      }
                   }

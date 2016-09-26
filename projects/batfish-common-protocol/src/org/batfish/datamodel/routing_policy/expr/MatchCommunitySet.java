@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -25,8 +24,7 @@ public class MatchCommunitySet extends AbstractBooleanExpr {
    }
 
    @Override
-   public Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
+   public Result evaluate(Environment environment) {
       Result result = new Result();
       boolean match = false;
       if (environment.getOriginalRoute() instanceof BgpRoute) {

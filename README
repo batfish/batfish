@@ -1,5 +1,4 @@
 Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
-***PROJECT IN FLUX - INSTRUCTIONS WILL CHANGE DRAMATICALLY IN NEAR FUTURE***
 
 Homepage: http://www.batfish.org
 Source:   http://github.com/arifogel/batfish
@@ -7,11 +6,13 @@ Source:   http://github.com/arifogel/batfish
 **************************************************
 Instructions for building and running Batfish
 **************************************************
+Cygwin: Read README.CYGWIN before continuing
+OSX: Read README.OSX before continuing
 
-Prerequisites:
+
+Common Prerequisites:
    ant
-   GNU parallel
-   java 8 jdk
+   Java 8 JDK
    Network Logic Solver (nls) (not required for all tasks)
    python
    z3
@@ -22,10 +23,7 @@ Optional:
 Steps:
 NOTE: After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.
 
-1. Install gnu parallel 20150109 or later (20150109 available at <http://alpha.gnu.org/gnu/parallel/paralell-20150109.tar.bz2>)
-standard autotools install (extract, configure, make, make install)
-
-2. Install z3 - use master branch
+1. Install z3 - use master branch
 git clone https://github.com/Z3Prover/z3
 cd z3
 python scripts/mk_make.py --java
@@ -33,69 +31,32 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-3. Install nls into your path
+2. Install nls into your path
    You can download the Windows version from: https://www.microsoft.com/en-us/download/details.aspx?id=52259
 
-4. Clone batfish
+3. Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-5. prepare your environment for batfish by adding the following to your .bashrc or equivalent
+4. prepare your environment for batfish by adding the following to your .bashrc or equivalent
     . <batfish-root>/tools/batfish_functions.sh
 Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
 
-6. compile batfish
+5. compile batfish
    batfish_build_all
 Note that 'batfish_build_all' runs 'ant' in each batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build_all distclean
 
-7. run batfish
-The output of this step will be placed in the current folder.
-If you want to confirm running of each subtask, run:
-    batfish_confirm_analyze_multipath /path/to/test/rig
-OR to run everything:
-    batfish_analyze_multipath /path/to/test/rig
+6. Tests
+From the root of the batfish repository, run:
+allinone -cmdfile tests/commands
 
-**************************************************
-Notes on running
-**************************************************
-This repository should contain an example test rig at <batfish-root>/test_rigs/example
-After running step 10 above on the example test rig, as:
-   batfish_analyze_multipath <batfish-root>/test_rigs/example
-you should see the following output in the current folder:
+7. Demo
+From the root of the batfish repository, run:
+allinone -cmdfile demo/commands
 
-example (directory) - base directory of intermediate output
-example-multipath-default-multipath-result - result of multipath consistency check. If multipath consistency is satisfied, this file will be empty. Otherwise, it will contain counterexample pairs of ingress node and packet that violate multipath consistency. Traceroutes for such packets are included.
-
-Results of intermediate computations during data plane generation are stored in predicates in the output directory.  To see the schema and comments for the predicates, run:
-   batfish -predhelp <predicate-name..>
-To see help for ALL predicates, including IDB (derived) predicates, use the '-predhelp' flag without arguments:
-   batfish -predhelp
-Individual predicates for a processed test rig can be dumped to stdout by running:
-   batfish_query_predicate <testrigname> <environmentname> <predicates..>
-The <environment-name> for this example is 'multipath-default'.
-** TODO: Explain environment management **
-So for example, one could query the routing tables by running:
-   batfish_query_predicate example multipath-default InstalledRoute
-
-Other intermediate output is stored in the 'example' base directory mentioned above.
-Within this base directory one finds:
-   vendor (directory): This folder contains parsed versions of the vendor configuration files, serialized into an XML-like format.
-
-   indep (directory): This folder contains vendor-independent representations of the configurations, created by processing the vendor configuration structures. The former are also serialized into an XML-like format.
-
-   environments (directory): holds the environments used in intermediate computation. In the example this contains a single environment called 'multipath-default'. Within this directory we see:
-      dp : a serialized representation of the data plane induced by the environment
-
-      cp_facts (directory): This folder contains files named for input predicates. Note that these files are in raw CSV format (with '|' as a delimiter), and may not be very legible, even with the schema.
-
-      env (directory): a directory in which modifications to a default environment are specified. Modifications could include failed nodes, failed interfaces, failed links, or updated configuration files.
-
-      **TODO: explain nls* files/dirs, precomputedroutes
-
-***
-One can also run a single-node-failure or single-link-failure consistency check with:
-   batfish_analyze_node_failures <batfish-root>/test_rigs/example
-OR
-   batfish_analyze_link_failures <batfish-root>/test_rigs/example
-Since these checks produce multiple environments, it may be instructive to examine the output for those environments after running each command.
+8. Now what?
+To get an interactive batfish prompt to play around with, run:
+   allinone -runmode interactive
+This will start batfish service locally in a self-contained fashion
+You can read read README.client for example commands to use

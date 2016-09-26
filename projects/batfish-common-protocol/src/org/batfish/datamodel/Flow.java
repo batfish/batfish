@@ -72,7 +72,7 @@ public final class Flow implements Comparable<Flow> {
 
    private final int _srcPort;
 
-   private final int _state;
+   private final State _state;
 
    private final String _tag;
 
@@ -102,7 +102,7 @@ public final class Flow implements Comparable<Flow> {
          @JsonProperty(FRAGMENT_OFFSET_VAR) int fragmentOffset,
          @JsonProperty(ICMP_TYPE_VAR) int icmpType,
          @JsonProperty(ICMP_CODE_VAR) int icmpCode,
-         @JsonProperty(STATE_VAR) int state,
+         @JsonProperty(STATE_VAR) State state,
          @JsonProperty(TCP_FLAGS_CWR_VAR) int tcpFlagsCwr,
          @JsonProperty(TCP_FLAGS_ECE_VAR) int tcpFlagsEce,
          @JsonProperty(TCP_FLAGS_URG_VAR) int tcpFlagsUrg,
@@ -182,7 +182,7 @@ public final class Flow implements Comparable<Flow> {
       if (ret != 0) {
          return ret;
       }
-      ret = Integer.compare(_state, rhs._state);
+      ret = _state.compareTo(rhs._state);
       if (ret != 0) {
          return ret;
       }
@@ -339,7 +339,7 @@ public final class Flow implements Comparable<Flow> {
    }
 
    @JsonProperty(STATE_VAR)
-   public int getState() {
+   public State getState() {
       return _state;
    }
 
@@ -403,7 +403,7 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _srcPort;
       result = prime * result + _icmpType;
       result = prime * result + _icmpCode;
-      result = prime * result + _state;
+      result = prime * result + _state.hashCode();
       result = prime * result + _tag.hashCode();
       result = prime * result + _tcpFlagsCwr;
       result = prime * result + _tcpFlagsEce;

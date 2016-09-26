@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -28,8 +27,7 @@ public class ExplicitPrefix6Set implements PrefixSetExpr {
    }
 
    @Override
-   public boolean matches(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
+   public boolean matches(Environment environment) {
       throw new UnsupportedOperationException(
             "no implementation for generated method"); // TODO Auto-generated
                                                        // method stub

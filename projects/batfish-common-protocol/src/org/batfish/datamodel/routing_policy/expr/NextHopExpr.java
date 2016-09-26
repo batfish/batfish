@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import java.io.Serializable;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -12,5 +13,5 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public interface NextHopExpr extends Serializable {
 
-   Ip getNextHopIp();
+   Ip getNextHopIp(Environment environment);
 }

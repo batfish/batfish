@@ -94,6 +94,7 @@ import org.batfish.representation.cisco.RouteMapSetLine;
 import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco.RouteMapSetMetricLine;
 import org.batfish.representation.cisco.RouteMapSetNextHopLine;
+import org.batfish.representation.cisco.RouteMapSetNextHopPeerAddress;
 import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
 import org.batfish.representation.cisco.RoutePolicy;
 import org.batfish.representation.cisco.RoutePolicyApplyStatement;
@@ -3124,6 +3125,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitSet_metric_type_rm_stanza(
          Set_metric_type_rm_stanzaContext ctx) {
       todo(ctx, F_ROUTE_MAP_SET_METRIC_TYPE);
+   }
+
+   @Override
+   public void exitSet_next_hop_peer_address_stanza(
+         Set_next_hop_peer_address_stanzaContext ctx) {
+      RouteMapSetNextHopPeerAddress line = new RouteMapSetNextHopPeerAddress();
+      _currentRouteMapClause.addSetLine(line);
    }
 
    @Override

@@ -10,5 +10,6 @@ public enum PolicyMapSetType {
    LOCAL_PREFERENCE,
    METRIC,
    NEXT_HOP,
+   NOP,
    ORIGIN_TYPE
 }

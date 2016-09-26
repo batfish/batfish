@@ -2,7 +2,6 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -46,10 +45,9 @@ public class NamedCommunitySet implements CommunitySetExpr {
          CommunitySet communities) {
       CommunityList cl = environment.getConfiguration().getCommunityLists()
             .get(_name);
-      for (CommunityListLine line : cl.getLines()) {
-         if (!line.getMatchingCommunities(communities, cl.getInvertMatch())
-               .isEmpty()) {
-            return line.getAction() == LineAction.ACCEPT;
+      for (Long community : communities) {
+         if (cl.permits(community)) {
+            return true;
          }
       }
       return false;
