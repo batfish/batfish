@@ -98,7 +98,13 @@ public class ParseVendorConfigurationJob
                _logger.getHistory(), _file, _warnings);
       }
       switch (format) {
-
+      case BladeNetwork:
+         String bladeNetworkUnsupportedError = "Unsupported configuration format (BladeNetwork) for file: \""
+               + currentPath + "\"\n";
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file, new BatfishException(bladeNetworkUnsupportedError));
+     
       case ARISTA:
       case CISCO:
       case CISCO_IOS_XR:
