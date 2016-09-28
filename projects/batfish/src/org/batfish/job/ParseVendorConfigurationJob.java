@@ -26,19 +26,19 @@ import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 
-public class ParseVendorConfigurationJob
-      extends BatfishJob<ParseVendorConfigurationResult> {
+public class ParseVendorConfigurationJob extends
+      BatfishJob<ParseVendorConfigurationResult> {
 
-   private static Pattern BANNER_PATTERN = Pattern.compile(
-         "(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
+   private static Pattern BANNER_PATTERN = Pattern
+         .compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
    private static String preprocessBanner(String fileText) {
       Matcher matcher = BANNER_PATTERN.matcher(fileText);
       if (matcher.find()) {
          int delimiterIndex = matcher.start(1);
          char delimiter = fileText.charAt(delimiterIndex);
-         Pattern finalDelimiterPattern = Pattern
-               .compile("(?m)" + delimiter + "[\r\n]");
+         Pattern finalDelimiterPattern = Pattern.compile("(?m)" + delimiter
+               + "[\r\n]");
          Matcher finalDelimiterMatcher = finalDelimiterPattern
                .matcher(fileText);
          if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
@@ -70,8 +70,7 @@ public class ParseVendorConfigurationJob
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
-         Path file, Warnings warnings,
-         ConfigurationFormat configurationFormat) {
+         Path file, Warnings warnings, ConfigurationFormat configurationFormat) {
       super(settings);
       _fileText = fileText;
       _file = file;
@@ -89,22 +88,19 @@ public class ParseVendorConfigurationJob
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = _format;
+      
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
-      if (format == ConfigurationFormat.EMPTY) {
+
+      switch (format) {
+      case EMPTY:
+      case BrokenJuniper:
+      case BladeNetwork:
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);
-      }
-      switch (format) {
-      case BladeNetwork:
-         String bladeNetworkUnsupportedError = "Unsupported configuration format (BladeNetwork) for file: \""
-               + currentPath + "\"\n";
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, new BatfishException(bladeNetworkUnsupportedError));
-     
+
       case ARISTA:
       case CISCO:
       case CISCO_IOS_XR:
@@ -130,7 +126,8 @@ public class ParseVendorConfigurationJob
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
-            String msg = "Flattening: \"" + currentPath
+            String msg = "Flattening: \""
+                  + currentPath
                   + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
             _warnings.pedantic(msg);
             // _logger
@@ -146,8 +143,7 @@ public class ParseVendorConfigurationJob
          else {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file,
-                  new BatfishException(
+                  _logger.getHistory(), _file, new BatfishException(
                         "Vyos configurations must be flattened prior to this stage: \""
                               + _file.toString() + "\""));
          }
@@ -162,7 +158,8 @@ public class ParseVendorConfigurationJob
 
       case JUNIPER:
          if (_settings.flattenOnTheFly()) {
-            String msg = "Flattening: \"" + currentPath
+            String msg = "Flattening: \""
+                  + currentPath
                   + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
             _warnings.pedantic(msg);
             // _logger
@@ -188,8 +185,7 @@ public class ParseVendorConfigurationJob
          else {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file,
-                  new BatfishException(
+                  _logger.getHistory(), _file, new BatfishException(
                         "Juniper configurations must be flattened prior to this stage: \""
                               + _file.toString() + "\""));
          }
@@ -228,8 +224,8 @@ public class ParseVendorConfigurationJob
          if (!_settings.ignoreUnsupported()) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file,
-                  new BatfishException(unsupportedError));
+                  _logger.getHistory(), _file, new BatfishException(
+                        unsupportedError));
          }
          else {
             // _logger.warn(unsupportedError);
@@ -239,7 +235,6 @@ public class ParseVendorConfigurationJob
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);
 
-      case EMPTY:
       case UNKNOWN:
       default:
          String unknownError = "Unknown configuration format for file: \""
@@ -299,10 +294,10 @@ public class ParseVendorConfigurationJob
    }
 
    private boolean checkNonNexus(String fileText) {
-      Matcher neighborActivateMatcher = Pattern
-            .compile("(?m)^neighbor.*activate$")
+      Matcher neighborActivateMatcher = Pattern.compile(
+            "(?m)^neighbor.*activate$")
 
-            .matcher(fileText);
+      .matcher(fileText);
       return fileText.contains("exit-address-family")
             || neighborActivateMatcher.find();
    }

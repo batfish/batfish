@@ -684,6 +684,7 @@ router_bgp_stanza_tail
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
    | template_peer_rb_stanza
+   | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    |
    {!_nonNexus}?
@@ -777,6 +778,17 @@ locals [boolean active]
       |
       // intentional blank
 
+   )
+;
+
+template_peer_policy_rb_stanza
+:
+   TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
+   (
+      bgp_tail
+   ) *
+   (
+      EXIT_PEER_POLICY NEWLINE
    )
 ;
 

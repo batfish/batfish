@@ -1413,7 +1413,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       pushPeer(_currentNamedPeerGroup);
    }
-
+   
+   @Override 
+   public void enterTemplate_peer_policy_rb_stanza(
+         Template_peer_policy_rb_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+   }
+   
    @Override
    public void enterTemplate_peer_session_rb_stanza(
          Template_peer_session_rb_stanzaContext ctx) {

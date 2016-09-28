@@ -2047,6 +2047,11 @@ EXIT_ADDRESS_FAMILY
    'exit-address-family'
 ;
 
+EXIT_PEER_POLICY
+:
+   'exit-peer-policy'
+;
+
 EXIT_PEER_SESSION
 :
    'exit-peer-session'
@@ -4292,6 +4297,11 @@ PEER_KEEPALIVE
 PEER_LINK
 :
    'peer-link'
+;
+
+PEER_POLICY
+:
+   'peer-policy'
 ;
 
 PEER_SESSION

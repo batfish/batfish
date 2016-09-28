@@ -65,11 +65,12 @@ public final class Format {
       else if (flattenedJuniperMatcher.find(0)
             || flatJuniperHostnameDeclarationMatcher.find(0)
             || (fileText.contains("apply-groups") && setMatcher.find(0))) {
-         if (!fileText.contains("edit")) {
-            return ConfigurationFormat.FLAT_JUNIPER;
+         if (fileText.contains("edit")) {
+            return ConfigurationFormat.BrokenJuniper;
+            
          }
          else {
-            return ConfigurationFormat.UNKNOWN;
+            return ConfigurationFormat.FLAT_JUNIPER;
          }
       }
       else if (firstChar == '#'
@@ -77,11 +78,11 @@ public final class Format {
                   && fileText.contains("{") && fileText.contains("}")
                   && fileText.contains("host-name") && fileText
                      .contains("interfaces"))) {
-         if (!fileText.contains("edit")) {
-            return ConfigurationFormat.JUNIPER;
+         if (fileText.contains("edit")) {
+            return ConfigurationFormat.BrokenJuniper;
          }
          else {
-            return ConfigurationFormat.UNKNOWN;
+            return ConfigurationFormat.JUNIPER;
          }
       }
       else if (aristaMatcher.find()) {

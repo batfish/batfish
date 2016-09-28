@@ -5,6 +5,7 @@ public enum ConfigurationFormat {
    ARISTA("arista"),
    AWS_VPC("aws_vpc"),
    BladeNetwork("bladenetwork"),
+   BrokenJuniper("BrokenJuniper"),
    CISCO("cisco"),
    CISCO_IOS_XR("cisco"),
    EMPTY("empty"),
