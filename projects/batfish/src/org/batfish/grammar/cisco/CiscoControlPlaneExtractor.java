@@ -142,13 +142,15 @@ import org.batfish.representation.cisco.StaticRoute;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       implements ControlPlaneExtractor {
-
+   
    private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
    private static final Interface DUMMY_INTERFACE = new Interface("dummy");
 
+   private static final String DUPLICATE = "DUPLICATE";
+   
    private static final String F_ALLOWAS_IN_NUMBER = "bgp -  allowas-in with number - ignored and effectively infinite for now";
 
    private static final String F_BGP_AUTO_SUMMARY = "bgp - auto-summary";
@@ -1274,6 +1276,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             proc.addIpPeerGroup(ip);
             _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
          }
+         else {
+            _w.redFlag("Duplicate IP peer group in neighbor config (line:" + ctx.start.getLine() + ")",
+                  DUPLICATE);
+         }
          pushPeer(_currentIpPeerGroup);
       }
       else if (ctx.ip_prefix != null) {
@@ -1283,6 +1289,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentDynamicPeerGroup = proc.getDynamicPeerGroups().get(prefix);
          if (_currentDynamicPeerGroup == null) {
             _currentDynamicPeerGroup = proc.addDynamicPeerGroup(prefix);
+         }
+         else {
+            _w.redFlag("Duplicate DynamicIP peer group neighbor config (line:" + ctx.start.getLine() +")",
+                  DUPLICATE);
          }
          pushPeer(_currentDynamicPeerGroup);
       }

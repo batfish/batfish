@@ -101,4 +101,21 @@ public abstract class VendorConfiguration
       byType.add(name);
    }
 
+   protected void duplicate(String message, String type, String name) {
+      _w.redFlag(message, UNUSED);
+      String hostname = getHostname();
+      SortedMap<String, SortedSet<String>> byHostname = _answerElement
+            .getUnusedStructures().get(hostname);
+      if (byHostname == null) {
+         byHostname = new TreeMap<>();
+         _answerElement.getUnusedStructures().put(hostname, byHostname);
+      }
+      SortedSet<String> byType = byHostname.get(type);
+      if (byType == null) {
+         byType = new TreeSet<>();
+         byHostname.put(type, byType);
+      }
+      byType.add(name);
+   }
+   
 }

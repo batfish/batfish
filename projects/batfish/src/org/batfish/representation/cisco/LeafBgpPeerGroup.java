@@ -43,7 +43,7 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
    }
 
    public void setGroupName(String name) throws IllegalArgumentException {
-      if (_groupName != null) {
+      if (_groupName != null && !_groupName.equals(name)) {
          throw new IllegalArgumentException("Group name has been set.");
       }
       _groupName = name;
