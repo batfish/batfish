@@ -227,20 +227,27 @@ public class ParseVendorConfigurationJob extends
                         unsupportedError));
          }
          else {
-            // _logger.warn(unsupportedError);
             _warnings.unimplemented(unsupportedError);
-         }
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);
+         }
 
       case UNKNOWN:
       default:
          String unknownError = "Unknown configuration format for file: \""
                + currentPath + "\"\n";
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, new BatfishException(unknownError));
+         if (!_settings.ignoreUnknown()) {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file, new BatfishException(unknownError));
+         }
+         else {
+            _warnings.unimplemented(unknownError);
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file, _warnings);
+         }
       }
 
       try {
