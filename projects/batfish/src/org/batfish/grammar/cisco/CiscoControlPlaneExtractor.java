@@ -1884,7 +1884,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
       String groupName = ctx.name.getText();
       if (_currentIpPeerGroup != null) {
-         _currentIpPeerGroup.setGroupName(groupName);
+         _currentIpPeerGroup.setPeerSession(groupName);
       }
       else if (_currentNamedPeerGroup != null) {
          _currentNamedPeerGroup.setPeerSession(groupName);

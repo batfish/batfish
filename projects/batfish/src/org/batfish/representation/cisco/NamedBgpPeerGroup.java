@@ -12,6 +12,8 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private boolean _created;
 
+   private String _groupName;
+
    private String _name;
 
    private Set<Ip> _neighborAddresses;
@@ -36,6 +38,10 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    public boolean getCreated() {
       return _created;
+   }
+
+   public String getGroupName() {
+      return _groupName;
    }
 
    @Override
@@ -67,6 +73,10 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    public void setCreated(boolean b) {
       _created = b;
+   }
+
+   public void setGroupName(String groupName) {
+      _groupName = groupName;
    }
 
    public void setPeerSession(String peerSession) {

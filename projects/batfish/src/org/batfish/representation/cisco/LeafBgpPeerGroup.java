@@ -11,7 +11,7 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
 
    private String _groupName = null;
 
-   private String _peerTemplateName = null;
+   private String _peerSession = null;
 
    public String getGroupName() {
       return _groupName;
@@ -38,11 +38,22 @@ public abstract class LeafBgpPeerGroup extends BgpPeerGroup {
       return parent;
    }
 
+   public String getPeerSession() {
+      return _peerSession;
+   }
+
    public void setGroupName(String name) throws IllegalArgumentException {
-      if (_peerTemplateName != null) {
+      if (_groupName != null) {
          throw new IllegalArgumentException("Group name has been set.");
       }
       _groupName = name;
+   }
+
+   public void setPeerSession(String peerSession) {
+      if (_peerSession != null) {
+         throw new IllegalArgumentException("Peer-session name has been set.");
+      }
+      _peerSession = peerSession;
    }
 
 }
