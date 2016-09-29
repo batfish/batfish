@@ -95,8 +95,6 @@ public class ParseVendorConfigurationJob extends
 
       switch (format) {
       case EMPTY:
-      case BrokenJuniper:
-      case BladeNetwork:
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);
@@ -216,6 +214,7 @@ public class ParseVendorConfigurationJob extends
 
       case ALCATEL_AOS:
       case AWS_VPC:
+      case BLADENETWORK:
       case JUNIPER_SWITCH:
       case MSS:
       case VXWORKS:

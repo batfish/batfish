@@ -1415,11 +1415,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
    
    @Override 
-   public void enterTemplate_peer_policy_rb_stanza(
-         Template_peer_policy_rb_stanzaContext ctx) {
+   public void enterTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
       String name = ctx.name.getText();
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-   }
+      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      if (_currentNamedPeerGroup == null) {
+         proc.addNamedPeerGroup(name);
+         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      }
+      pushPeer(_currentNamedPeerGroup);
+   };
    
    @Override
    public void enterTemplate_peer_session_rb_stanza(
@@ -1885,6 +1890,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.setHostname(hostname);
    }
 
+   @Override
+   public void exitInherit_peer_policy_bgp_tail(Inherit_peer_policy_bgp_tailContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      String groupName = ctx.name.getText();
+      if (_currentIpPeerGroup != null) {
+         _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentNamedPeerGroup != null) {
+         // May not hit this since parser for peer-policy does not have recursion.
+         _currentNamedPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         throw new BatfishException("Invalid peer context for inheritance");
+      }
+      else {
+         todo(ctx, F_BGP_INHERIT_PEER_SESSION_OTHER);
+      }
+   };
+   
    @Override
    public void exitInherit_peer_session_bgp_tail(
          Inherit_peer_session_bgp_tailContext ctx) {
@@ -3380,6 +3404,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       popPeer();
    }
 
+   @Override
+   public void exitTemplate_peer_policy_rb_stanza(Template_peer_policy_rb_stanzaContext ctx) {
+      _currentIpPeerGroup = null;
+      _currentIpv6PeerGroup = null;
+      _currentNamedPeerGroup = null;
+      popPeer();
+   };
+   
    @Override
    public void exitTemplate_peer_session_rb_stanza(
          Template_peer_session_rb_stanzaContext ctx) {

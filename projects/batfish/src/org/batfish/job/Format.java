@@ -54,7 +54,7 @@ public final class Format {
          return ConfigurationFormat.ARISTA;
       }
       else if (bladeNetworkMatcher.find()) {
-         return ConfigurationFormat.BladeNetwork;
+         return ConfigurationFormat.BLADENETWORK;
       }
       else if (firstChar == '!' && fileText.contains("set prompt")) {
          return ConfigurationFormat.VXWORKS;
@@ -65,25 +65,14 @@ public final class Format {
       else if (flattenedJuniperMatcher.find(0)
             || flatJuniperHostnameDeclarationMatcher.find(0)
             || (fileText.contains("apply-groups") && setMatcher.find(0))) {
-         if (fileText.contains("edit")) {
-            return ConfigurationFormat.BrokenJuniper;
-            
-         }
-         else {
             return ConfigurationFormat.FLAT_JUNIPER;
-         }
       }
       else if (firstChar == '#'
             || (fileText.contains("version") && fileText.contains("system")
                   && fileText.contains("{") && fileText.contains("}")
                   && fileText.contains("host-name") && fileText
                      .contains("interfaces"))) {
-         if (fileText.contains("edit")) {
-            return ConfigurationFormat.BrokenJuniper;
-         }
-         else {
             return ConfigurationFormat.JUNIPER;
-         }
       }
       else if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
