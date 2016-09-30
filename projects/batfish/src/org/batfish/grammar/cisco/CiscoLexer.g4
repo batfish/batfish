@@ -812,6 +812,11 @@ BOTH
    'both'
 ;
 
+BOUNDARY
+:
+   'boundary'
+;
+
 BREAKOUT
 :
    'breakout'
@@ -3464,6 +3469,11 @@ MAXIMUM_ROUTES
    'maximum-routes'
 ;
 
+MCAST_BOUNDARY
+:
+   'mcast-boundary'
+;
+
 MDIX
 :
    'mdix'
@@ -3719,6 +3729,11 @@ MULTI_CONFIG
    'multi-config'
 ;
 
+MULTI_TOPOLOGY
+:
+   'multi-topology'
+;
+
 MVR
 :
    'mvr'
@@ -3907,6 +3922,11 @@ NEXTHOP1
 NEXTHOP2
 :
    'nexthop2'
+;
+
+NEXTHOP_ATTRIBUTE
+:
+   'nexthop-attribute'
 ;
 
 NHOP_ONLY
@@ -5032,6 +5052,11 @@ ROUTER_SOLICITATION
 ROUTING
 :
    'routing'
+;
+
+RPF_VECTOR
+:
+    'rpf-vector'
 ;
 
 RP_ADDRESS
@@ -7180,6 +7205,11 @@ M_AsPath_REGEX_MODE
    'regex-mode' -> type ( REGEX_MODE ) , popMode
 ;
 
+M_AsPath_TAG
+:
+   'tag' -> type ( TAG ) , popMode
+;
+
 M_AsPath_VARIABLE
 :
    F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE ) ,
@@ -7684,6 +7714,12 @@ M_Name_NAME
 ;
 
 mode M_NEIGHBOR;
+
+M_NEIGHBOR_CHANGES
+:
+   'changes' -> type ( CHANGES ) , popMode
+;
+
 
 M_NEIGHBOR_IP_ADDRESS
 :

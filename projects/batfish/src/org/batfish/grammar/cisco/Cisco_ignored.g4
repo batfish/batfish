@@ -144,8 +144,9 @@ null_block_stanza
                IP
                | IPV6
                | LDP ~NEWLINE
-            )
+            )            
             | OAM
+            | TRAFFIC_ENG
          )
       )
       | MULTI_CONFIG
@@ -214,6 +215,7 @@ null_block_stanza
       | TEMPLATE
       | TERMINAL
       | TIMEOUT
+      | TFTP
       | TRACE
       | TRACK
       | TRANSCEIVER
@@ -565,6 +567,7 @@ null_block_substanza
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
          | SSH_KEYDIR
+         | STATISTICS
          | STICKY
          | STOPBITS
          | STP

@@ -234,6 +234,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("fc", "fc");
       prefixes.put("fe", "FastEthernet");
       prefixes.put("fortyGigE", "FortyGigabitEthernet");
+      prefixes.put("FortyGigabitEthernet", "FortyGigabitEthernet");
       prefixes.put("GigabitEthernet", "GigabitEthernet");
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");
@@ -2566,8 +2567,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitPassive_interface_is_stanza(
          Passive_interface_is_stanzaContext ctx) {
       String ifaceName = ctx.name.getText();
-      _configuration.getInterfaces().get(ifaceName)
+      
+      if (ifaceName.equals("default")) {
+        for (Interface iface : _configuration.getInterfaces().values()) {
+           iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+        }         
+      }
+      else {      
+         if (ctx.NO() == null) {
+            _configuration.getInterfaces().get(ifaceName)
             .setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else {
+            _configuration.getInterfaces().get(ifaceName)
+            .setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);         
+         }
+      }
    }
 
    @Override
@@ -2633,8 +2648,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitPim_accept_rp(Pim_accept_rpContext ctx) {
-      String name = ctx.name.getText();
-      _configuration.getPimAcls().add(name);
+      if (ctx.name != null) {
+         String name = ctx.name.getText();
+         _configuration.getPimAcls().add(name);
+      }
    }
 
    @Override

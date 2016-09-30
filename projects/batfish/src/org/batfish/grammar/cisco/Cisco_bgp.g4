@@ -38,16 +38,6 @@ bgp_address_family
    )?
 ;
 
-address_family_footer
-:
-   (
-      (
-         EXIT_ADDRESS_FAMILY
-         | EXIT
-      ) NEWLINE
-   )?
-;
-
 address_family_rb_stanza
 :
    address_family_header
@@ -495,6 +485,7 @@ null_bgp_tail
          )
       )
       | DESCRIPTION
+      | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
       | EXIT
@@ -523,6 +514,7 @@ null_bgp_tail
       | SYNCHRONIZATION
       | TIMERS
       | TRANSPORT
+      | USE NEXTHOP_ATTRIBUTE
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -643,6 +635,10 @@ redistribute_static_bgp_tail
    (
       (
          ROUTE_MAP map = VARIABLE
+      )
+      |
+      (
+      	 ROUTE_POLICY policy = VARIABLE
       )
       |
       (
