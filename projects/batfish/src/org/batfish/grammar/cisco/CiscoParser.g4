@@ -39,6 +39,7 @@ address_family_multicast_tail
    (
       MULTIPATH NEWLINE
       | interface_multicast_stanza
+      | ip_pim_tail
    )*
 ;
 
@@ -223,7 +224,11 @@ cmm_port
 
 cmm_precedence
 :
-   PRECEDENCE ~NEWLINE* NEWLINE
+   IP? PRECEDENCE IPV4? 
+   (
+   	  DEC+ 
+   	  | name = variable
+   ) NEWLINE
 ;
 
 cmm_protocol
@@ -291,10 +296,10 @@ color_setter
 :
    SET_COLOR
    (
-      RED
-      | YELLOW
-      | GREEN
-   )
+    RED 
+    | YELLOW
+    | GREEN  
+   ) 
 ;
 
 del_stanza
@@ -377,7 +382,13 @@ interface_multicast_stanza
 :
    INTERFACE ~NEWLINE* NEWLINE
    (
-      BSR_BORDER NEWLINE
+      (
+         BSR_BORDER
+         |
+         (
+            BOUNDARY MCAST_BOUNDARY
+         )
+      ) NEWLINE
    )?
    (
       ENABLE NEWLINE
@@ -1040,7 +1051,8 @@ pim_accept_rp
    (
       AUTO_RP
       | IP_ADDRESS
-   ) name = variable NEWLINE
+   ) 
+   (name = variable)? NEWLINE
 ;
 
 pim_null

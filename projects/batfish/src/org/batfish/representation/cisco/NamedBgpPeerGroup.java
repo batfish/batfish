@@ -12,15 +12,11 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private boolean _created;
 
-   private String _groupName;
-
    private String _name;
 
    private Set<Ip> _neighborAddresses;
 
    private Set<Prefix> _neighborPrefixes;
-
-   private String _peerSession;
 
    public NamedBgpPeerGroup(String name) {
       _neighborAddresses = new LinkedHashSet<>();
@@ -40,47 +36,13 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
       return _created;
    }
 
-   public String getGroupName() {
-      return _groupName;
-   }
-
    @Override
    public String getName() {
       return _name;
    }
 
-   @Override
-   protected final BgpPeerGroup getParent(BgpProcess proc,
-         CiscoVendorConfiguration cv) {
-      BgpPeerGroup parent = null;
-      if (_peerSession != null) {
-         parent = proc.getPeerSessions().get(_peerSession);
-         if (parent == null) {
-            cv.undefined(
-                  "Reference to undefined peer-session: '" + _peerSession + "'",
-                  CiscoVendorConfiguration.BGP_PEER_GROUP, _peerSession);
-         }
-      }
-      if (parent == null) {
-         parent = proc.getMasterBgpPeerGroup();
-      }
-      return parent;
-   }
-
-   public String getPeerSession() {
-      return _peerSession;
-   }
-
    public void setCreated(boolean b) {
       _created = b;
-   }
-
-   public void setGroupName(String groupName) {
-      _groupName = groupName;
-   }
-
-   public void setPeerSession(String peerSession) {
-      _peerSession = peerSession;
    }
 
 }

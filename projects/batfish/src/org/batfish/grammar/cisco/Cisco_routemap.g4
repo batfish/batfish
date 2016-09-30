@@ -8,7 +8,10 @@ options {
 
 apply_rp_stanza
 :
-   APPLY name = variable NEWLINE
+   APPLY name = variable
+   (
+      PAREN_LEFT varname = variable PAREN_RIGHT
+   )? NEWLINE
 ;
 
 as_expr
@@ -68,7 +71,13 @@ boolean_simple_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
    | boolean_rib_has_route_rp_stanza
+   | boolean_tag_eq_rp_stanza
    | boolean_tag_is_rp_stanza
+;
+
+boolean_tag_eq_rp_stanza
+:
+   TAG EQ name = variable
 ;
 
 boolean_tag_is_rp_stanza
@@ -238,6 +247,7 @@ null_rm_stanza
 null_rp_stanza
 :
    POUND ~NEWLINE* NEWLINE
+   | PREPEND AS_PATH ~NEWLINE NEWLINE
 ;
 
 rm_stanza
@@ -255,7 +265,10 @@ route_map_stanza
 
 route_policy_stanza
 :
-   ROUTE_POLICY name = variable NEWLINE route_policy_tail
+   ROUTE_POLICY name = variable
+   (
+      PAREN_LEFT varname = variable PAREN_RIGHT
+   )? NEWLINE route_policy_tail
 ;
 
 route_policy_tail
@@ -297,10 +310,13 @@ set_as_path_prepend_rm_stanza
 :
    SET AS_PATH PREPEND LAST_AS?
    (
-      (
-         as_list += as_expr
-      )+ NEWLINE
-   )
+      as_list += as_expr
+   )+ NEWLINE
+;
+
+set_as_path_tag_rm_stanza
+:
+   SET AS_PATH TAG NEWLINE
 ;
 
 set_comm_list_delete_rm_stanza
@@ -452,6 +468,18 @@ set_origin_rm_stanza
    ) NEWLINE
 ;
 
+set_origin_rp_stanza
+:
+   SET ORIGIN
+   (
+      (
+         EGP as = DEC
+      )
+      | IGP
+      | INCOMPLETE
+   ) NEWLINE
+;
+
 set_tag_rm_stanza
 :
    SET TAG tag = DEC NEWLINE
@@ -459,7 +487,7 @@ set_tag_rm_stanza
 
 set_tag_rp_stanza
 :
-   set_tag_rm_stanza
+   SET TAG tag = DEC NEWLINE
 ;
 
 set_weight_rm_stanza
@@ -467,9 +495,15 @@ set_weight_rm_stanza
    SET WEIGHT weight = DEC NEWLINE
 ;
 
+set_weight_rp_stanza
+:
+   SET WEIGHT weight = DEC NEWLINE
+;
+
 set_rm_stanza
 :
    set_as_path_prepend_rm_stanza
+   | set_as_path_tag_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
    | set_community_additive_rm_stanza
@@ -498,5 +532,7 @@ set_rp_stanza
    | set_local_preference_rp_stanza
    | set_med_rp_stanza
    | set_next_hop_rp_stanza
+   | set_origin_rp_stanza
    | set_tag_rp_stanza
+   | set_weight_rp_stanza
 ;
