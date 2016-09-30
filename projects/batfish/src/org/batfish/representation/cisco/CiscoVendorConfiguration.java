@@ -133,6 +133,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
    protected static final String ROUTE_MAP = "route-map";
 
+   protected static final String TAG = "tag";
+   
    private static final long serialVersionUID = 1L;
 
    public static final String VENDOR_NAME = "cisco";

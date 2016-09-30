@@ -110,6 +110,7 @@ import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco.RoutePolicyBooleanNot;
 import org.batfish.representation.cisco.RoutePolicyBooleanOr;
 import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
+import org.batfish.representation.cisco.RoutePolicyBooleanTagIs;
 import org.batfish.representation.cisco.RoutePolicyCommunitySet;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetNumber;
@@ -3691,6 +3692,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return new RoutePolicyBooleanAsPathIn(actxt.name.getText());
       }
 
+      Boolean_tag_is_rp_stanzaContext tagctxt = ctxt.boolean_tag_is_rp_stanza();
+      if (tagctxt != null) {
+         return new RoutePolicyBooleanTagIs(tagctxt.DEC().toString());
+      }
+      
       return null;
 
    }
