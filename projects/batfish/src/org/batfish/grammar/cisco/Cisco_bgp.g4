@@ -225,6 +225,11 @@ filter_list_bgp_tail
    ) NEWLINE
 ;
 
+inherit_peer_policy_bgp_tail
+:
+   INHERIT PEER_POLICY name = variable NEWLINE
+;
+
 inherit_peer_session_bgp_tail
 :
    INHERIT PEER_SESSION name = variable NEWLINE
@@ -275,6 +280,7 @@ neighbor_rb_stanza
    (
       bgp_tail
       | inherit_peer_session_bgp_tail
+      | inherit_peer_policy_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
    )
@@ -680,6 +686,7 @@ router_bgp_stanza_tail
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
    | template_peer_rb_stanza
+   | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    |
    {!_nonNexus}?
@@ -776,9 +783,20 @@ locals [boolean active]
    )
 ;
 
+template_peer_policy_rb_stanza
+:
+   TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
+   (
+      bgp_tail
+   ) *
+   (
+      EXIT_PEER_POLICY NEWLINE
+   )
+;
+
 template_peer_session_rb_stanza
 :
-   TEMPLATE PEER_SESSION name = VARIABLE NEWLINE
+   TEMPLATE PEER_SESSION  name = VARIABLE NEWLINE
    (
       bgp_tail
       | remote_as_bgp_tail
