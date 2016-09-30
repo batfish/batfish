@@ -35,10 +35,8 @@ public final class Format {
             fileText);
       Matcher mssMatcher = Pattern.compile("(?m)^set system name").matcher(
             fileText);
-     if (fileText.contains("edit interface")) {
-        return ConfigurationFormat.UNKNOWN;
-     }
-     else if (fileText.contains("set system config-management commit-revisions")) {
+      
+      if (fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
       else if (fileText.contains("INPUT") && fileText.contains("OUTPUT")

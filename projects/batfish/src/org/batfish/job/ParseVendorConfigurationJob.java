@@ -78,6 +78,7 @@ public class ParseVendorConfigurationJob extends
       _format = configurationFormat;
    }
 
+  
    @Override
    public ParseVendorConfigurationResult call() throws Exception {
       long startTime = System.currentTimeMillis();
@@ -89,12 +90,23 @@ public class ParseVendorConfigurationJob extends
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = _format;
       
+      for (String s : _settings.ignoreFilesWithStrings()) {
+         if (_fileText.contains(s)) {
+            format = ConfigurationFormat.IGNORED;
+            break;
+         }
+      }
+      
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
 
       switch (format) {
       case EMPTY:
+      case IGNORED:
+         String emptyOrIgnoredError = "Empty or ignored file: \""
+               + currentPath + "\"\n";
+         _warnings.unimplemented(emptyOrIgnoredError);
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);

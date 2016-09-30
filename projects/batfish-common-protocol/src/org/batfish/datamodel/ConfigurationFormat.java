@@ -11,6 +11,7 @@ public enum ConfigurationFormat {
    FLAT_JUNIPER("juniper"),
    FLAT_VYOS("vyos"),
    HOST("host"),
+   IGNORED("ignored"),
    IPTABLES("iptables"),
    JUNIPER("juniper"),
    JUNIPER_SWITCH("juniper"),

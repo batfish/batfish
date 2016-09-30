@@ -394,8 +394,10 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_HISTOGRAM = "histogram";
 
+   private static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
+
    private static final String ARG_IGNORE_UNKNOWN = "ignoreunknown";
-   
+
    private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
 
    private static final String ARG_JOBS = "jobs";
@@ -481,6 +483,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARGNAME_ROLE = "role";
 
+   private static final String ARGNAME_STRINGS = "string..";
+
    private static final String EXECUTABLE_NAME = "batfish";
 
    private TestrigSettings _activeTestrigSettings;
@@ -547,8 +551,10 @@ public final class Settings extends BaseSettings {
 
    private boolean _histogram;
 
+   private List<String> _ignoreFilesWithStrings;
+
    private boolean _ignoreUnknown;
-   
+
    private boolean _ignoreUnsupported;
 
    private int _jobs;
@@ -1051,14 +1057,18 @@ public final class Settings extends BaseSettings {
       return _writeRoutes;
    }
 
+   public List<String> ignoreFilesWithStrings() {
+      return _ignoreFilesWithStrings;
+   }
+
    public boolean ignoreUnknown() {
       return _ignoreUnknown;
    }
-   
+
    public boolean ignoreUnsupported() {
       return _ignoreUnsupported;
    }
-  
+
    private void initConfigDefaults() {
       setDefaultProperty(ARG_ANONYMIZE, false);
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
@@ -1229,9 +1239,13 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_HELP, "print this message");
 
+      addOption(ARG_IGNORE_FILES_WITH_STRINGS,
+            "ignore configuration files containing these strings",
+            ARGNAME_STRINGS);
+      
       addBooleanOption(ARG_IGNORE_UNKNOWN,
             "ignore configuration files with unknown format instead of crashing");
-      
+
       addBooleanOption(ARG_IGNORE_UNSUPPORTED,
             "ignore configuration files with unsupported format instead of crashing");
 
@@ -1456,6 +1470,8 @@ public final class Settings extends BaseSettings {
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
       _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
+      _ignoreFilesWithStrings = getStringListOptionValue(
+            ARG_IGNORE_FILES_WITH_STRINGS);
       _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
       _jobs = getIntOptionValue(ARG_JOBS);
