@@ -786,6 +786,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case CiscoLexer.INTERNET:
          return 0l;
 
+      case CiscoLexer.GSHUT:
+         return 0xFFFFFF04l;
+         
       case CiscoLexer.LOCAL_AS:
          return 0xFFFFFF03l;
 

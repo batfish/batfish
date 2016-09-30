@@ -296,6 +296,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 110;
          case EMPTY:
+         case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
