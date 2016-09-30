@@ -30,10 +30,4 @@ public class MasterBgpPeerGroup extends BgpPeerGroup {
       return MASTER_BGP_PEER_GROUP_NAME;
    }
 
-   @Override
-   protected BgpPeerGroup getParent(BgpProcess proc,
-         CiscoVendorConfiguration cv) {
-      return null;
-   }
-
 }

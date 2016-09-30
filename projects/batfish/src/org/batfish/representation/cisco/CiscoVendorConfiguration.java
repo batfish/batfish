@@ -727,7 +727,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       _unusedPeerSessions = new TreeSet<>();
       int fakeGroupCounter = 1;
       for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
-         namedPeerGroup.getParent(proc, this).inheritUnsetFields(proc, this);
+         namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc,
+               this);
       }
       for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions()
             .entrySet()) {

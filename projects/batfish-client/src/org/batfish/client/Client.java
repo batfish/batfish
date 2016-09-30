@@ -1351,8 +1351,8 @@ public class Client extends PluginConsumer implements IClient {
                   "org.batfish.client: Cannot supply both testrigDir and testrigId.");
             System.exit(1);
          }
-         if (!processCommand(Command.INIT_TESTRIG.commandName() + " " + FLAG_NO_DATAPLANE
-               + " " + _settings.getTestrigDir())) {
+         if (!processCommand(Command.INIT_TESTRIG.commandName() + " "
+               + FLAG_NO_DATAPLANE + " " + _settings.getTestrigDir())) {
             return;
          }
       }
