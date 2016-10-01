@@ -256,6 +256,9 @@ ip_as_path_access_list_stanza
 
 ip_as_path_access_list_tail
 :
+   (
+   	  SEQ DEC
+   )?
    action = access_list_action
    (
       as_path_regex
@@ -267,11 +270,15 @@ ip_community_list_expanded_stanza
 :
    (
       (
-         IP COMMUNITY_LIST name = variable NEWLINE
+         IP COMMUNITY_LIST name = variable NEWLINE?
       )
       |
       (
          IP COMMUNITY_LIST EXPANDED name = variable
+      )
+      |
+      (
+         IP COMMUNITY_LIST EXTENDED name = variable
       )
       |
       (
@@ -288,6 +295,9 @@ ip_community_list_expanded_stanza
 
 ip_community_list_expanded_tail
 :
+   (
+   	  SEQ DEC
+   )?
    ala = access_list_action
    (
       remainder += ~NEWLINE

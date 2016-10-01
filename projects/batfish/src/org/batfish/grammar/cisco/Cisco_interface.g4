@@ -191,7 +191,7 @@ ip_router_isis_if_stanza
 
 isis_circuit_type_if_stanza
 :
-   ISIS CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
+   ISIS CIRCUIT_TYPE (LEVEL_2_ONLY|LEVEL_2) NEWLINE
 ;
 
 isis_enable_if_stanza
@@ -340,6 +340,7 @@ null_block_if_stanza
             | MROUTE_CACHE
             | MTU
             | MULTICAST
+            | MULTICAST_BOUNDARY
             |
             (
                OSPF
@@ -355,6 +356,7 @@ null_block_if_stanza
             )
             | NAT
             | PIM
+            | PIM_SPARSE
             | PORT_UNREACHABLE
             | PROXY_ARP
             | REDIRECTS
@@ -392,6 +394,7 @@ null_block_if_stanza
             | HELLO
             | HELLO_MULTIPLIER
             | LSP_INTERVAL
+            | POINT_TO_POINT
          )
       )
       | KEEPALIVE

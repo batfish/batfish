@@ -41,7 +41,7 @@ advertise_is_stanza
 
 circuit_type_iis_stanza
 :
-   CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
+   CIRCUIT_TYPE (LEVEL_2_ONLY|LEVEL_2) NEWLINE
 ;
 
 common_iis_stanza
@@ -140,6 +140,7 @@ null_is_stanza
    NO?
    (
       AUTHENTICATION
+      | BFD
       | FAST_FLOOD
       | HELLO
       | ISPF

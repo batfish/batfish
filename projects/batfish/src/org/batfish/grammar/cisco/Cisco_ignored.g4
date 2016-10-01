@@ -95,6 +95,7 @@ null_block_stanza
             | ROUTER_ID
             | SLA
             | SOURCE
+            | SYSLOG
             | VIRTUAL_ROUTER
             |
             (
@@ -120,6 +121,7 @@ null_block_stanza
          (
             CONFLICT_POLICY
             | HARDWARE
+            | MROUTE
          )
       )
       | KEY
@@ -202,6 +204,7 @@ null_block_stanza
       | SPANNING_TREE
       | STACK_MAC
       | STACK_UNIT
+      | STATISTICS
       | STCAPP
       | SVCLC
       | SWITCH
@@ -214,6 +217,7 @@ null_block_stanza
       | TACACS
       | TACACS_SERVER
       | TAP
+      | TASKGROUP
       | TCP
       | TEMPLATE
       | TERMINAL
@@ -362,6 +366,7 @@ null_block_substanza
          | EXPORT
          | EXPORT_PROTOCOL
          | EXPORTER
+         | EXTENDED_COUNTERS
          | FABRIC
          | FAILED
          | FAIR_QUEUE
@@ -383,6 +388,7 @@ null_block_substanza
          | GROUP_URL
          | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
+         | HELPER_ADDRESS
          | HIDDEN_LITERAL
          | HIDDEN_SHARES
          | HIDEKEYS
@@ -503,6 +509,7 @@ null_block_substanza
          | PRIVATE_VLAN
          | PRIVILEGE
          | PROBE
+         | PROFILE
          | PROPOSAL
          | PROTOCOL
          | PROVISION
@@ -537,7 +544,9 @@ null_block_substanza
          | ROTARY
          | ROUTE
          | ROUTE_TARGET
+         | RP_ADDRESS
          | RULE
+         | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -582,6 +591,9 @@ null_block_substanza
          | SYNC
          | SYSTEM_PRIORITY
          | TAG
+         | TAGGED
+         | TASK
+         | TASK_SPACE_EXECUTE
          | TASKGROUP
          | TB_VLAN1
          | TB_VLAN2
@@ -593,6 +605,7 @@ null_block_substanza
          | TIMER
          | TIMESTAMP
          | TIMING
+         | TM_VOQ_COLLECTION
          | TOP
          | TOS
          | TRACKING_PRIORITY_INCREMENT

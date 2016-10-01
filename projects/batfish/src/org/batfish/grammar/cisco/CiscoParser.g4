@@ -320,6 +320,19 @@ del_stanza
    DEL ~NEWLINE* NEWLINE
 ;
 
+dhcp_stanza
+:
+	DHCP IPV4 NEWLINE 
+	dhcp_substanza+
+;
+
+dhcp_substanza
+:
+	PROFILE ~NEWLINE+ NEWLINE
+	| HELPER_ADDRESS ~NEWLINE+ NEWLINE
+	| INTERFACE ~NEWLINE+ NEWLINE
+;
+
 failover_lan
 :
    LAN failover_lan_tail
@@ -1184,6 +1197,7 @@ router_hsrp_tail
 
 router_multicast_stanza
 :
+   IPV6?
    ROUTER
    (
       IGMP
@@ -1347,6 +1361,7 @@ stanza
 :
    appletalk_access_list_stanza
    | community_set_stanza
+   | dhcp_stanza
    | extended_access_list_stanza
    | hostname_stanza
    | interface_stanza

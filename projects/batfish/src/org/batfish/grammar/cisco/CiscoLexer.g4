@@ -2124,6 +2124,11 @@ EXTENDED
 
 ;
 
+EXTENDED_COUNTERS
+:
+   'extended-counters'
+;
+
 EXTERNAL
 :
    'external'
@@ -3724,6 +3729,11 @@ MULTICAST
    'multicast'
 ;
 
+MULTICAST_BOUNDARY
+:
+   'multicast-boundary'
+;
+
 MULTICAST_ROUTING
 :
    'multicast-routing'
@@ -4404,6 +4414,11 @@ PIM_AUTO_RP
    'pim-auto-rp'
 ;
 
+PIM_SPARSE
+:
+   'pim-sparse'
+;
+
 PINNING
 :
    'pinning'
@@ -4882,6 +4897,11 @@ REGISTER_RATE_LIMIT
 REGISTER_SOURCE
 :
    'register-source'
+;
+
+RELAY
+:
+   'relay'
 ;
 
 RELOAD
@@ -5931,6 +5951,16 @@ TAP
    'tap'
 ;
 
+TASK
+:
+   'task'
+;
+
+TASK_SPACE_EXECUTE
+:
+   'task execute'
+;
+
 TASKGROUP
 :
    'taskgroup'
@@ -6074,6 +6104,11 @@ TIMING
 TLS_PROXY
 :
    'tls-proxy'
+;
+
+TM_VOQ_COLLECTION
+:
+   'tm-voq-collection'
 ;
 
 TOOL
@@ -7285,6 +7320,11 @@ M_AsPathAccessList_PERMIT
    'permit' -> type ( PERMIT ) , mode ( M_AsPathRegex )
 ;
 
+M_AsPathAccessList_SEQ
+:
+   'seq' -> type ( SEQ )
+;
+
 M_AsPathAccessList_VARIABLE
 :
    F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE )
@@ -7641,6 +7681,11 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+;
+
+M_Interface_RELAY
+:
+   'relay' -> type ( RELAY ) , popMode
 ;
 
 M_Interface_SLASH
