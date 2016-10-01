@@ -180,8 +180,7 @@ public enum Command {
    public static Command fromName(String name) {
       Command instance = _nameMap.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException(
-               "Not a valid command: \"" + name + "\"");
+         throw new BatfishException("Not a valid command: \"" + name + "\"");
       }
       return instance;
    }

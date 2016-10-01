@@ -135,6 +135,7 @@ bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
+   | maximum_paths_bgp_tail
    | maximum_peers_bgp_tail
    | network_bgp_tail
    | network6_bgp_tail
@@ -225,6 +226,11 @@ filter_list_bgp_tail
    ) NEWLINE
 ;
 
+inherit_peer_policy_bgp_tail
+:
+   INHERIT PEER_POLICY name = variable NEWLINE
+;
+
 inherit_peer_session_bgp_tail
 :
    INHERIT PEER_SESSION name = variable NEWLINE
@@ -239,9 +245,24 @@ local_as_bgp_tail
    )* NEWLINE
 ;
 
+maximum_ecmp_paths
+:
+   MAXIMUM_PATHS DEC ECMP DEC
+;
+
 maximum_peers_bgp_tail
 :
    MAXIMUM_PEERS DEC NEWLINE
+;
+
+maximum_paths_ebgp
+:
+   MAXIMUM_PATHS EBGP DEC
+;
+
+maximum_paths_bgp_tail
+:
+   MAXIMUM_PATHS DEC NEWLINE
 ;
 
 maximum_prefix_bgp_tail
@@ -260,6 +281,7 @@ neighbor_rb_stanza
    (
       bgp_tail
       | inherit_peer_session_bgp_tail
+      | inherit_peer_policy_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
    )
@@ -437,6 +459,7 @@ null_bgp_tail
    (
       ADVERTISEMENT_INTERVAL
       | AUTO_SUMMARY
+      | AUTO_LOCAL_ADDR
       |
       (
          AGGREGATE_ADDRESS
@@ -478,7 +501,6 @@ null_bgp_tail
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
-      | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
       |
@@ -494,6 +516,7 @@ null_bgp_tail
       | NSR
       | PASSWORD
       | SEND_LABEL
+      | SHUTDOWN
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
@@ -669,6 +692,7 @@ router_bgp_stanza_tail
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
    | template_peer_rb_stanza
+   | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    |
    {!_nonNexus}?
@@ -765,9 +789,20 @@ locals [boolean active]
    )
 ;
 
+template_peer_policy_rb_stanza
+:
+   TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
+   (
+      bgp_tail
+   ) *
+   (
+      EXIT_PEER_POLICY NEWLINE
+   )
+;
+
 template_peer_session_rb_stanza
 :
-   TEMPLATE PEER_SESSION name = VARIABLE NEWLINE
+   TEMPLATE PEER_SESSION  name = VARIABLE NEWLINE
    (
       bgp_tail
       | remote_as_bgp_tail

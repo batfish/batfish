@@ -155,7 +155,15 @@ cm_match_tail
 
 cmm_access_group
 :
-   IP? ACCESS_GROUP IPV4?
+   (
+      IP
+      | IPV6
+   )? ACCESS_GROUP
+   (
+      IP
+      | IPV6
+      | IPV4
+   )?
    (
       num = DEC
       |
@@ -253,7 +261,10 @@ cmm_redirect
 
 cp_ip_access_group
 :
-   IP ACCESS_GROUP name = variable
+   (
+      IP
+      | IPV6
+   ) ACCESS_GROUP name = variable
    (
       VRF vrf = variable
    )?
@@ -384,8 +395,13 @@ interface_multicast_stanza
 :
    INTERFACE ~NEWLINE* NEWLINE
    (
-      BSR_BORDER NEWLINE
-      | BOUNDARY MCAST_BOUNDARY NEWLINE
+      (
+         BSR_BORDER
+         |
+         (
+            BOUNDARY MCAST_BOUNDARY
+         )
+      ) NEWLINE
    )?
    (
       ENABLE NEWLINE
@@ -499,6 +515,20 @@ l_access_class
 l2vpn_stanza
 :
    L2VPN NEWLINE xconnect_stanza*
+;
+
+mgmt_api_stanza
+:
+   MANAGEMENT API HTTP_COMMANDS NEWLINE
+   (
+      (
+         (
+            PROTOCOL HTTPS NEWLINE
+         )
+         | mgmt_null
+         | vrfd_stanza
+      )+
+   )
 ;
 
 mgmt_egress_iface_stanza
@@ -729,6 +759,7 @@ null_vrfd_stanza
    (
       RD
       | ROUTE_TARGET
+      | NO SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1052,11 +1083,9 @@ pim_null
       | BIDIR_OFFER_LIMIT
       | BSR_CANDIDATE
       | DM_FALLBACK
-      | LOG NEIGHBOR CHANGES
       | LOG_NEIGHBOR_CHANGES
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE
-      | RPF_VECTOR
       | SEND_RP_DISCOVERY
       | SNOOPING
       | V1_RP_REACHABILITY
@@ -1331,10 +1360,13 @@ stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
+   | mgmt_api_stanza
    | mgmt_egress_iface_stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
+   | no_ip_prefix_list_stanza
+   | no_route_map_stanza
    | null_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza

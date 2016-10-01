@@ -30,6 +30,8 @@ public final class Format {
             .matcher(fileText);
       Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
             .matcher(fileText);
+      Matcher bladeNetworkMatcher = Pattern.compile("(?m)^switch-type")
+            .matcher(fileText);
       Matcher ciscoLike = Pattern
             .compile("(?m)(^boot system flash.*$)|(^interface .*$)")
             .matcher(fileText);
@@ -37,7 +39,11 @@ public final class Format {
             .matcher(fileText);
       Matcher mssMatcher = Pattern.compile("(?m)^set system name")
             .matcher(fileText);
-      if (fileText.contains("set system config-management commit-revisions")) {
+      if (fileText.contains("edit interface")) {
+         return ConfigurationFormat.UNKNOWN;
+      }
+      else if (fileText
+            .contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
       }
       else if (fileText.contains("INPUT") && fileText.contains("OUTPUT")
@@ -54,6 +60,9 @@ public final class Format {
       }
       else if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
+      }
+      else if (bladeNetworkMatcher.find()) {
+         return ConfigurationFormat.BLADENETWORK;
       }
       else if (firstChar == '!' && fileText.contains("set prompt")) {
          return ConfigurationFormat.VXWORKS;

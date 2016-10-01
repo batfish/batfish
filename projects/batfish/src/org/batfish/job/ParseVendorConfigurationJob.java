@@ -89,15 +89,16 @@ public class ParseVendorConfigurationJob
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = _format;
+
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
-      if (format == ConfigurationFormat.EMPTY) {
+
+      switch (format) {
+      case EMPTY:
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);
-      }
-      switch (format) {
 
       case ARISTA:
       case CISCO:
@@ -214,6 +215,7 @@ public class ParseVendorConfigurationJob
 
       case ALCATEL_AOS:
       case AWS_VPC:
+      case BLADENETWORK:
       case JUNIPER_SWITCH:
       case MSS:
       case VXWORKS:
@@ -226,21 +228,28 @@ public class ParseVendorConfigurationJob
                   new BatfishException(unsupportedError));
          }
          else {
-            // _logger.warn(unsupportedError);
             _warnings.unimplemented(unsupportedError);
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file, _warnings);
          }
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, _warnings);
 
-      case EMPTY:
       case UNKNOWN:
       default:
          String unknownError = "Unknown configuration format for file: \""
                + currentPath + "\"\n";
-         elapsedTime = System.currentTimeMillis() - startTime;
-         return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, new BatfishException(unknownError));
+         if (!_settings.ignoreUnknown()) {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file,
+                  new BatfishException(unknownError));
+         }
+         else {
+            _warnings.unimplemented(unknownError);
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(elapsedTime,
+                  _logger.getHistory(), _file, _warnings);
+         }
       }
 
       try {

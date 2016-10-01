@@ -4,6 +4,7 @@ public enum ConfigurationFormat {
    ALCATEL_AOS("alcatel_aos"),
    ARISTA("arista"),
    AWS_VPC("aws_vpc"),
+   BLADENETWORK("bladenetwork"),
    CISCO("cisco"),
    CISCO_IOS_XR("cisco"),
    EMPTY("empty"),

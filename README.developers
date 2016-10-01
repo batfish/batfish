@@ -1,5 +1,14 @@
 This file contains notes for batfish developers. 
 
+Running from an IDE
+-------------------
+When you run batfish, allinone, batfish_client, or coordinator using the corresponding shell script, a required Java sytem variable is automatically set. When running in an IDE (not using the shell script), you must add this system variable to your java flags.
+   - Eclipse:
+      1. Add every project from the 'projects' dir
+      2. Go to Window->Preferences->Java->Installed JREs->Edit: set 'Default VM arguments' to (without quotes): '-DbatfishQuestionPluginDir=${workspace_loc:question}/out'
+   - Other IDE:
+      Make sure you add (without quotes, and replacing <batfish-repo-root> appropriately) '-DbatfishQuestinPluginDir=<batfish-repo-root>/projects/question/out' to your java flags when running.
+
 
 Adding new information to the datamodel 
 ----------------------------------------

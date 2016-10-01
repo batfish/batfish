@@ -1,7 +1,9 @@
 package org.batfish.datamodel.routing_policy;
 
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 
 public class Environment {
 
@@ -11,7 +13,7 @@ public class Environment {
 
    private boolean _callStatementContext;
 
-   private Configuration _configuration;
+   private final Configuration _configuration;
 
    private boolean _defaultAction;
 
@@ -21,10 +23,16 @@ public class Environment {
 
    private final AbstractRoute _originalRoute;
 
-   public Environment(Configuration configuration,
-         AbstractRoute originalRoute) {
+   private final AbstractRouteBuilder<?> _outputRoute;
+
+   private final Ip _peerAddress;
+
+   public Environment(Configuration configuration, AbstractRoute originalRoute,
+         AbstractRouteBuilder<?> outputRoute, Ip peerAddress) {
       _configuration = configuration;
       _originalRoute = originalRoute;
+      _outputRoute = outputRoute;
+      _peerAddress = peerAddress;
    }
 
    public boolean getBuffered() {
@@ -57,6 +65,14 @@ public class Environment {
 
    public AbstractRoute getOriginalRoute() {
       return _originalRoute;
+   }
+
+   public AbstractRouteBuilder<?> getOutputRoute() {
+      return _outputRoute;
+   }
+
+   public Ip getPeerAddress() {
+      return _peerAddress;
    }
 
    public void setBuffered(boolean buffered) {

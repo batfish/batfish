@@ -430,6 +430,11 @@ AP
    'ap'
 ;
 
+API
+:
+   'api'
+;
+
 APPLICATION
 :
    'application'
@@ -620,6 +625,11 @@ AUTO
 AUTO_COST
 :
    'auto-cost'
+;
+
+AUTO_LOCAL_ADDR
+:
+   'auto-local-addr'
 ;
 
 AUTO_RECOVERY
@@ -1035,6 +1045,11 @@ CLASSLESS
 CLASS_MAP
 :
    'class-map'
+;
+
+CLEANUP
+:
+   'cleanup'
 ;
 
 CLI
@@ -1797,6 +1812,11 @@ DYNAMIC_MAP
    'dynamic-map'
 ;
 
+EBGP
+:
+   'ebgp'
+;
+
 EBGP_MULTIHOP
 :
    'ebgp-multihop'
@@ -1820,6 +1840,11 @@ ECHO_REPLY
 ECHO_REQUEST
 :
    'echo-request'
+;
+
+ECMP
+:
+   'ecmp'
 ;
 
 ECMP_GROUP
@@ -1849,7 +1874,7 @@ EGRESS
 
 EGRESS_INTERFACE_SELECTION
 :
-   'egress-interface-selection'  
+   'egress-interface-selection'
 ;
 
 EIGRP
@@ -2035,6 +2060,11 @@ EXIT
 EXIT_ADDRESS_FAMILY
 :
    'exit-address-family'
+;
+
+EXIT_PEER_POLICY
+:
+   'exit-peer-policy'
 ;
 
 EXIT_PEER_SESSION
@@ -2411,6 +2441,11 @@ GROUP_URL
    'group-url'
 ;
 
+GSHUT
+:
+   'GSHUT'
+;
+
 GT
 :
    'gt'
@@ -2569,6 +2604,11 @@ HSRP
 HTTP
 :
    'http'
+;
+
+HTTP_COMMANDS
+:
+   'http-commands'
 ;
 
 HTTPS
@@ -2872,6 +2912,11 @@ ISAKMP
 ISDN
 :
    'isdn'
+;
+
+IS
+:
+   'is'
 ;
 
 IS_TYPE
@@ -3694,6 +3739,11 @@ MULTIPATH
    'multipath'
 ;
 
+MULTIPATH_RELAX
+:
+   'multipath-relax'
+;
+
 MULTIPOINT
 :
    'multipoint'
@@ -4292,6 +4342,11 @@ PEER_KEEPALIVE
 PEER_LINK
 :
    'peer-link'
+;
+
+PEER_POLICY
+:
+   'peer-policy'
 ;
 
 PEER_SESSION
@@ -5487,6 +5542,11 @@ SPE
 SPF_INTERVAL
 :
    'spf-interval'
+;
+
+SOFT_PREEMPTION
+:
+   'soft-preemption'
 ;
 
 SOFT_RECONFIGURATION

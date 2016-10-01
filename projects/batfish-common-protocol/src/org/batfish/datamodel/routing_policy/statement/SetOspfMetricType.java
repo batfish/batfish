@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -26,10 +25,10 @@ public class SetOspfMetricType extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       Result result = new Result();
-      OspfExternalRoute.Builder ospfExternalRoute = (OspfExternalRoute.Builder) route;
+      OspfExternalRoute.Builder ospfExternalRoute = (OspfExternalRoute.Builder) environment
+            .getOutputRoute();
       ospfExternalRoute.setOspfMetricType(_metricType);
       return result;
    }

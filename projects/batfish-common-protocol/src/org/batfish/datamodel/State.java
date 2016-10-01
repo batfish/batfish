@@ -14,9 +14,20 @@ public enum State {
    NEW(0),
    RELATED(2);
 
-   private final static Map<Integer, State> _map = buildMap();
+   private final static Map<Integer, State> _map = buildNumberMap();
 
-   private static Map<Integer, State> buildMap() {
+   private final static Map<String, State> _nameMap = buildNameMap();
+
+   private synchronized static Map<String, State> buildNameMap() {
+      Map<String, State> map = new HashMap<>();
+      for (State value : State.values()) {
+         String name = value.name().toLowerCase();
+         map.put(name, value);
+      }
+      return Collections.unmodifiableMap(map);
+   }
+
+   private synchronized static Map<Integer, State> buildNumberMap() {
       Map<Integer, State> map = new HashMap<>();
       for (State value : State.values()) {
          int num = value._num;
@@ -25,14 +36,21 @@ public enum State {
       return Collections.unmodifiableMap(map);
    }
 
-   @JsonCreator
    public static State fromNum(int num) {
       State instance = _map.get(num);
       if (instance == null) {
-         throw new BatfishException(
-               "Not a valid state number: \"" + num + "\"");
+         throw new BatfishException("Not a valid state number: '" + num + "'");
       }
       return instance;
+   }
+
+   @JsonCreator
+   public static State fromString(String name) {
+      State state = _nameMap.get(name.toLowerCase());
+      if (state == null) {
+         throw new BatfishException("No state with name: '" + name + "'");
+      }
+      return state;
    }
 
    private final int _num;

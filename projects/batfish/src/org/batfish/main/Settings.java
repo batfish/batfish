@@ -394,6 +394,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_HISTOGRAM = "histogram";
 
+   private static final String ARG_IGNORE_UNKNOWN = "ignoreunknown";
+
    private static final String ARG_IGNORE_UNSUPPORTED = "ignoreunsupported";
 
    private static final String ARG_JOBS = "jobs";
@@ -544,6 +546,8 @@ public final class Settings extends BaseSettings {
    private List<String> _helpPredicates;
 
    private boolean _histogram;
+
+   private boolean _ignoreUnknown;
 
    private boolean _ignoreUnsupported;
 
@@ -1047,6 +1051,10 @@ public final class Settings extends BaseSettings {
       return _writeRoutes;
    }
 
+   public boolean ignoreUnknown() {
+      return _ignoreUnknown;
+   }
+
    public boolean ignoreUnsupported() {
       return _ignoreUnsupported;
    }
@@ -1079,6 +1087,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
       setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
+      setDefaultProperty(ARG_IGNORE_UNKNOWN, false);
       setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
       setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
@@ -1219,6 +1228,9 @@ public final class Settings extends BaseSettings {
             "autonomous system number of stubs to be generated", ARGNAME_AS);
 
       addBooleanOption(ARG_HELP, "print this message");
+
+      addBooleanOption(ARG_IGNORE_UNKNOWN,
+            "ignore configuration files with unknown format instead of crashing");
 
       addBooleanOption(ARG_IGNORE_UNSUPPORTED,
             "ignore configuration files with unsupported format instead of crashing");
@@ -1444,6 +1456,7 @@ public final class Settings extends BaseSettings {
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
       _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
+      _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
       _jobs = getIntOptionValue(ARG_JOBS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);

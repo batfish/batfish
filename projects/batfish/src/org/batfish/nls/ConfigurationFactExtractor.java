@@ -1391,12 +1391,12 @@ public class ConfigurationFactExtractor {
             long neighborPrefixEnd = neighborPrefix.getEndAddress().asLong();
             int neighborPrefixLength = neighborPrefix.getPrefixLength();
             Long clusterId = neighbor.getClusterId();
-            if (clusterId == null) {
-               continue;
+            boolean rr = neighbor.getRouteReflectorClient();
+            if (rr) {
+               wSetRouteReflectorClient.append(hostname + "|"
+                     + neighborPrefixStart + "|" + neighborPrefixEnd + "|"
+                     + neighborPrefixLength + "|" + clusterId + "\n");
             }
-            wSetRouteReflectorClient.append(
-                  hostname + "|" + neighborPrefixStart + "|" + neighborPrefixEnd
-                        + "|" + neighborPrefixLength + "|" + clusterId + "\n");
          }
       }
    }

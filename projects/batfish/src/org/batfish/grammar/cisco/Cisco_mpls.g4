@@ -8,7 +8,8 @@ options {
 
 implst_stanza
 :
-   null_implst_stanza | null_mplst_stanza
+   null_implst_stanza
+   | null_mplst_stanza
 ;
 
 interface_mplst_stanza
@@ -18,7 +19,10 @@ interface_mplst_stanza
 
 mpls_ldp_stanza
 :
-   MPLS (LABEL PROTOCOL)? LDP NEWLINE mplsl_stanza*
+   MPLS
+   (
+      LABEL PROTOCOL
+   )? LDP NEWLINE mplsl_stanza*
 ;
 
 mpls_traffic_eng_stanza
@@ -80,6 +84,15 @@ null_mplst_stanza
       | AUTO_TUNNEL
       | LOGGING
       | REOPTIMIZE
+      | SOFT_PREEMPTION
       | TUNNEL_ID
+   ) ~NEWLINE* NEWLINE null_mplst_substanza*
+;
+
+null_mplst_substanza
+:
+   (
+      TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
+

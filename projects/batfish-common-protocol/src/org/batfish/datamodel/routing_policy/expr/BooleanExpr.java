@@ -2,7 +2,6 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.io.Serializable;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -14,8 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public interface BooleanExpr extends Serializable {
 
-   Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute);
+   Result evaluate(Environment environment);
 
    BooleanExpr simplify();
 

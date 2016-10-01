@@ -8,11 +8,16 @@ options {
 
 apply_rp_stanza
 :
-   APPLY 
+   APPLY name = variable
    (
-  	  name = variable 
-   	  | name = variable route_policy_params_list
-   	) NEWLINE   
+      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
+   )? NEWLINE
+;
+
+as_expr
+:
+   DEC
+   | AUTO
 ;
 
 boolean_and_rp_stanza
@@ -21,9 +26,9 @@ boolean_and_rp_stanza
    | boolean_and_rp_stanza AND boolean_not_rp_stanza
 ;
 
-boolean_as_path_rp_stanza
+boolean_as_path_in_rp_stanza
 :
-	AS_PATH IN name = variable
+   AS_PATH IN name = variable
 ;
 
 boolean_community_matches_any_rp_stanza
@@ -52,26 +57,32 @@ boolean_rib_has_route_rp_stanza
    RIB_HAS_ROUTE IN rp_prefix_set
 ;
 
-boolean_simple_rp_stanza
-:
-   PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
-   | boolean_as_path_rp_stanza
-   | boolean_community_matches_any_rp_stanza
-   | boolean_community_matches_every_rp_stanza
-   | boolean_destination_rp_stanza
-   | boolean_rib_has_route_rp_stanza
-   | boolean_tag_eq_rp_stanza
-;
-
 boolean_rp_stanza
 :
    boolean_and_rp_stanza
    | boolean_rp_stanza OR boolean_and_rp_stanza
 ;
 
+boolean_simple_rp_stanza
+:
+   PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
+   | boolean_as_path_in_rp_stanza
+   | boolean_community_matches_any_rp_stanza
+   | boolean_community_matches_every_rp_stanza
+   | boolean_destination_rp_stanza
+   | boolean_rib_has_route_rp_stanza
+   | boolean_tag_eq_rp_stanza
+   | boolean_tag_is_rp_stanza
+;
+
 boolean_tag_eq_rp_stanza
 :
-	TAG EQ name = variable	
+   TAG EQ name = variable
+;
+
+boolean_tag_is_rp_stanza
+:
+   TAG IS DEC
 ;
 
 delete_rp_stanza
@@ -220,6 +231,11 @@ match_tag_rm_stanza
    )+ NEWLINE
 ;
 
+no_route_map_stanza
+:
+   NO ROUTE_MAP name = variable NEWLINE
+;
+
 null_rm_stanza
 :
    NO?
@@ -249,19 +265,18 @@ route_map_stanza
 
 route_policy_stanza
 :
-   ROUTE_POLICY 
+   ROUTE_POLICY name = variable
    (
-   	  name = variable 
-   	  | name = variable route_policy_params_list 
-   ) NEWLINE route_policy_tail
+	  PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
+   )? NEWLINE route_policy_tail
 ;
 
 route_policy_params_list
 :
-   PAREN_LEFT params_list += variable
+   params_list += variable
    (
       COMMA params_list += variable
-   )* PAREN_RIGHT
+   )*
 ;
 
 route_policy_tail
@@ -303,7 +318,7 @@ set_as_path_prepend_rm_stanza
 :
    SET AS_PATH PREPEND LAST_AS?
    (
-      as_list += DEC
+      as_list += as_expr
    )+ NEWLINE
 ;
 
@@ -483,6 +498,11 @@ set_tag_rm_stanza
    SET TAG tag = DEC NEWLINE
 ;
 
+set_tag_rp_stanza
+:
+   SET TAG tag = DEC NEWLINE
+;
+
 set_weight_rm_stanza
 :
    SET WEIGHT weight = DEC NEWLINE
@@ -527,5 +547,6 @@ set_rp_stanza
    | set_metric_type_rp_stanza
    | set_next_hop_rp_stanza
    | set_origin_rp_stanza
+   | set_tag_rp_stanza
    | set_weight_rp_stanza
 ;

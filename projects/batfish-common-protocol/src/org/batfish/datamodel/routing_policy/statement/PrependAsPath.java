@@ -3,9 +3,9 @@ package org.batfish.datamodel.routing_policy.statement;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.expr.AsExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -16,27 +16,26 @@ public class PrependAsPath extends AbstractStatement {
     */
    private static final long serialVersionUID = 1L;
 
-   private List<Integer> _asList;
+   private List<AsExpr> _asList;
 
    @JsonCreator
    public PrependAsPath() {
    }
 
-   public PrependAsPath(List<Integer> asList) {
+   public PrependAsPath(List<AsExpr> asList) {
       _asList = asList;
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       throw new BatfishException("unimplemented");
    }
 
-   public List<Integer> getAsList() {
+   public List<AsExpr> getAsList() {
       return _asList;
    }
 
-   public void setAsList(List<Integer> asList) {
+   public void setAsList(List<AsExpr> asList) {
       _asList = asList;
    }
 

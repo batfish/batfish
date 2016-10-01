@@ -80,4 +80,9 @@ public abstract class AbstractRoute implements Serializable {
       _nonRouting = nonRouting;
    }
 
+   @Override
+   public String toString() {
+      return this.getClass().getSimpleName() + "<" + _network.toString() + ">";
+   }
+
 }

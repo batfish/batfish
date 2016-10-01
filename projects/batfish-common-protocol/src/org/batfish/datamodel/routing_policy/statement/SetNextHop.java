@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -28,10 +27,10 @@ public class SetNextHop extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       Result result = new Result();
-      route.setNextHopIp(_expr.getNextHopIp());
+      environment.getOutputRoute()
+            .setNextHopIp(_expr.getNextHopIp(environment));
       return result;
    }
 

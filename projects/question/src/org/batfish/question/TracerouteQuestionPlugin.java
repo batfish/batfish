@@ -18,6 +18,7 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.ITracerouteQuestion;
 import org.batfish.datamodel.questions.Question;
@@ -161,6 +162,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String SRC_PORT_VAR = "srcPort";
 
+      private static final String STATE_VAR = "state";
+
       private static final String TCP_FLAGS_ACK_VAR = "tcpAck";
 
       private static final String TCP_FLAGS_CWR_VAR = "tcpCwr";
@@ -196,6 +199,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private Ip _srcIp;
 
       private Integer _srcPort;
+
+      private State _state;
 
       private Boolean _tcpFlagsAck;
 
@@ -250,6 +255,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          }
          if (_srcPort != null) {
             flowBuilder.setSrcPort(_srcPort);
+         }
+         if (_state != null) {
+            flowBuilder.setState(_state);
          }
          if (_tcpFlagsAck != null) {
             flowBuilder.setTcpFlagsAck(_tcpFlagsAck ? 1 : 0);
@@ -343,6 +351,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return _srcPort;
       }
 
+      @JsonProperty(STATE_VAR)
+      public State getState() {
+         return _state;
+      }
+
       @JsonProperty(TCP_FLAGS_ACK_VAR)
       public Boolean getTcpFlagsAck() {
          return _tcpFlagsAck;
@@ -420,6 +433,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             }
             if (_srcPort != null) {
                retString += String.format(" | srcPort=%s", _srcPort);
+            }
+            if (_state != null) {
+               retString += String.format(" | state=%s", _state);
             }
             if (_tcpFlagsAck != null) {
                retString += String.format(" | tcpFlagsAck=%s", _tcpFlagsAck);
@@ -538,6 +554,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                case SRC_PORT_VAR:
                   setSrcPort(parameters.getInt(paramKey));
                   break;
+               case STATE_VAR:
+                  setState(State.fromString(parameters.getString(paramKey)));
+                  break;
                case TCP_FLAGS_ACK_VAR:
                   setTcpFlagsAck(parameters.getBoolean(paramKey));
                   break;
@@ -579,6 +598,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       public void setSrcPort(Integer srcPort) {
          _srcPort = srcPort;
+      }
+
+      public void setState(State state) {
+         _state = state;
       }
 
       public void setTcpFlagsAck(Boolean tcpFlagsAck) {

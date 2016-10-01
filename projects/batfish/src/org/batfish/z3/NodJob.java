@@ -15,6 +15,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.collections.NodeSet;
 
 import com.microsoft.z3.BitVecExpr;
@@ -73,7 +74,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             break;
 
          case Synthesizer.STATE_VAR:
-            flowBuilder.setState(value.intValue());
+            flowBuilder.setState(State.fromNum(value.intValue()));
             break;
 
          case Synthesizer.ICMP_TYPE_VAR:

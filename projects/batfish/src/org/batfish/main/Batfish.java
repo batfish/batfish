@@ -424,6 +424,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private TestrigSettings _baseTestrigSettings;
 
+   private final Map<TestrigSettings, Map<String, Configuration>> _cachedConfigurations;
+
    private DataPlanePlugin _dataPlanePlugin;
 
    private final Map<TestrigSettings, DataPlane> _dataPlanes;
@@ -449,6 +451,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public Batfish(Settings settings) {
       super(settings.getSerializeToText(), settings.getPluginDirs());
       _settings = settings;
+      _cachedConfigurations = new HashMap<>();
       _dataPlanes = new HashMap<>();
       _testrigSettings = settings.getActiveTestrigSettings();
       _baseTestrigSettings = settings.getTestrigSettings();
@@ -863,6 +866,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return flows;
    }
 
+   private Answer computeDataPlane(boolean differentialContext) {
+      return _dataPlanePlugin.computeDataPlane(differentialContext);
+   }
+
    @Override
    public InterfaceSet computeFlowSinks(
          Map<String, Configuration> configurations, boolean differentialContext,
@@ -972,6 +979,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Topology computeTopology(Map<String, Configuration> configurations) {
+      resetTimer();
       Topology topology = computeTopology(_testrigSettings.getTestRigPath(),
             configurations);
       EdgeSet blacklistEdges = getEdgeBlacklist();
@@ -994,6 +1002,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       Topology prunedTopology = new Topology(topology.getEdges());
+      printElapsedTime();
       return prunedTopology;
    }
 
@@ -1097,7 +1106,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(true);
+         computeDataPlane(true);
          if (_nls != null) {
             _nls.clearEntityTables();
          }
@@ -1116,26 +1125,27 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info(
             "\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
       resetTimer();
-      Map<String, Configuration> configurations = new TreeMap<>();
       if (!Files.exists(serializedConfigPath)) {
          throw new BatfishException(
-               "Error reading vendor-independent configs directory: \""
-                     + serializedConfigPath.toString() + "\"");
+               "Missing vendor-independent configs directory: '"
+                     + serializedConfigPath.toString() + "'");
       }
+      Map<Path, String> namesByPath = new TreeMap<>();
       try (DirectoryStream<Path> stream = Files
             .newDirectoryStream(serializedConfigPath)) {
          for (Path serializedConfig : stream) {
             String name = serializedConfig.getFileName().toString();
-            _logger.debug("Reading config: \"" + serializedConfig + "\"");
-            Object object = deserializeObject(serializedConfig);
-            Configuration c = (Configuration) object;
-            configurations.put(name, c);
-            _logger.debug(" ...OK\n");
+            namesByPath.put(serializedConfig, name);
          }
       }
       catch (IOException e) {
-         throw new BatfishException("Could not list files", e);
+         throw new BatfishException(
+               "Error reading vendor-independent configs directory: '"
+                     + serializedConfigPath.toString() + "'",
+               e);
       }
+      Map<String, Configuration> configurations = deserializeObjects(
+            namesByPath, Configuration.class);
       printElapsedTime();
       return configurations;
    }
@@ -1144,22 +1154,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path serializedVendorConfigPath) {
       _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
       resetTimer();
-      Map<String, GenericConfigObject> vendorConfigurations = new TreeMap<>();
+      Map<Path, String> namesByPath = new TreeMap<>();
       try (DirectoryStream<Path> serializedConfigs = Files
             .newDirectoryStream(serializedVendorConfigPath)) {
          for (Path serializedConfig : serializedConfigs) {
             String name = serializedConfig.getFileName().toString();
-            _logger.info("Reading vendor config: \"" + serializedConfig + "\"");
-            Object object = deserializeObject(serializedConfig);
-            GenericConfigObject vc = (GenericConfigObject) object;
-            vendorConfigurations.put(name, vc);
-            _logger.info("...OK\n");
+            namesByPath.put(serializedConfig, name);
          }
       }
       catch (IOException e) {
          throw new BatfishException("Error reading vendor configs directory",
                e);
       }
+      Map<String, GenericConfigObject> vendorConfigurations = deserializeObjects(
+            namesByPath, GenericConfigObject.class);
       printElapsedTime();
       return vendorConfigurations;
    }
@@ -1340,7 +1348,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path nodeRolesPath = _settings.getNodeRolesPath();
       _logger.info("Deserializing old node-roles mappings: \"" + nodeRolesPath
             + "\" ...");
-      NodeRoleMap nodeRoles = (NodeRoleMap) deserializeObject(nodeRolesPath);
+      NodeRoleMap nodeRoles = deserializeObject(nodeRolesPath,
+            NodeRoleMap.class);
       _logger.info("OK\n");
 
       // create origination policy common to all stubs
@@ -1517,8 +1526,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement() {
-      return (ConvertConfigurationAnswerElement) deserializeObject(
-            _testrigSettings.getConvertAnswerPath());
+      return deserializeObject(_testrigSettings.getConvertAnswerPath(),
+            ConvertConfigurationAnswerElement.class);
    }
 
    public DataPlanePlugin getDataPlanePlugin() {
@@ -1891,7 +1900,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          CommonUtil.createDirectories(envPath);
       }
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-         _dataPlanePlugin.computeDataPlane(differentialContext);
+         computeDataPlane(differentialContext);
          if (_nls != null) {
             _nls.clearEntityTables();
          }
@@ -2044,8 +2053,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public Map<String, Configuration> loadConfigurations() {
-      Map<String, Configuration> configurations = deserializeConfigurations(
-            _testrigSettings.getSerializeIndependentPath());
+      Map<String, Configuration> configurations = _cachedConfigurations
+            .get(_testrigSettings);
+      if (configurations == null) {
+         configurations = deserializeConfigurations(
+               _testrigSettings.getSerializeIndependentPath());
+         _cachedConfigurations.put(_testrigSettings, configurations);
+      }
       processNodeBlacklist(configurations);
       processInterfaceBlacklist(configurations);
       processDeltaConfigurations(configurations);
@@ -2057,8 +2071,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public DataPlane loadDataPlane() {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
-         dp = (DataPlane) deserializeObject(
-               _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+         dp = deserializeObject(
+               _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
+               DataPlane.class);
          _dataPlanes.put(_testrigSettings, dp);
       }
       return dp;
@@ -2068,7 +2083,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path topologyPath = _testrigSettings.getEnvironmentSettings()
             .getSerializedTopologyPath();
       _logger.info("Deserializing topology...");
-      Topology topology = (Topology) deserializeObject(topologyPath);
+      Topology topology = deserializeObject(topologyPath, Topology.class);
       _logger.info("OK\n");
       return topology;
    }
@@ -2897,8 +2912,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       if (_settings.getDataPlane()) {
-         answer.append(
-               _dataPlanePlugin.computeDataPlane(_settings.getDiffActive()));
+         answer.append(computeDataPlane(_settings.getDiffActive()));
          action = true;
       }
 
@@ -3033,14 +3047,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
          resetTimer();
          CommonUtil.createDirectories(outputPath);
-         for (String name : hostConfigurations.keySet()) {
-            VendorConfiguration vc = hostConfigurations.get(name);
+
+         Map<Path, VendorConfiguration> output = new TreeMap<>();
+         hostConfigurations.forEach((name, vc) -> {
             Path currentOutputPath = outputPath.resolve(name);
-            _logger.debug("Serializing: \"" + name + "\" ==> \""
-                  + currentOutputPath.toString() + "\"...");
-            serializeObject(vc, currentOutputPath);
-            _logger.debug("OK\n");
-         }
+            output.put(currentOutputPath, vc);
+         });
+         serializeObjects(output);
          // serialize warnings
          serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
          printElapsedTime();
@@ -3059,14 +3072,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
          resetTimer();
          outputPath.toFile().mkdirs();
-         for (String name : configurations.keySet()) {
-            Configuration c = configurations.get(name);
+         Map<Path, Configuration> output = new TreeMap<>();
+         configurations.forEach((name, vc) -> {
             Path currentOutputPath = outputPath.resolve(name);
-            _logger.info("Serializing: \"" + name + "\" ==> \""
-                  + currentOutputPath.toString() + "\"");
-            serializeObject(c, currentOutputPath);
-            _logger.info(" ...OK\n");
-         }
+            output.put(currentOutputPath, vc);
+         });
+         serializeObjects(output);
          printElapsedTime();
       }
    }
@@ -3120,14 +3131,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
          resetTimer();
          CommonUtil.createDirectories(outputPath);
-         for (String name : vendorConfigurations.keySet()) {
-            VendorConfiguration vc = vendorConfigurations.get(name);
+         Map<Path, VendorConfiguration> output = new TreeMap<>();
+         vendorConfigurations.forEach((name, vc) -> {
             Path currentOutputPath = outputPath.resolve(name);
-            _logger.debug("Serializing: \"" + name + "\" ==> \""
-                  + currentOutputPath.toString() + "\"...");
-            serializeObject(vc, currentOutputPath);
-            _logger.debug("OK\n");
-         }
+            output.put(currentOutputPath, vc);
+         });
+         serializeObjects(output);
          // serialize warnings
          serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
          printElapsedTime();

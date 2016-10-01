@@ -68,6 +68,15 @@ public class WorkMgr {
    // private ScheduledFuture<?> _checkFuture;
    // private ScheduledFuture<?> _assignFuture;
 
+   private static Set<String> initEnvFilenames() {
+      Set<String> envFilenames = new HashSet<>();
+      envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
+      envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+      return envFilenames;
+   }
+
    private BatfishLogger _logger;
 
    private WorkQueueMgr _workQueueMgr;
@@ -90,15 +99,6 @@ public class WorkMgr {
             new AssignWorkTask(), 0, Main.getSettings().getPeriodAssignWorkMs(),
             TimeUnit.MILLISECONDS);
 
-   }
-
-   private static Set<String> initEnvFilenames() {
-      Set<String> envFilenames = new HashSet<>();
-      envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
-      envFilenames.add(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
-      envFilenames.add(BfConsts.RELPATH_EDGE_BLACKLIST_FILE);
-      envFilenames.add(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
-      return envFilenames;
    }
 
    private void assignWork() {
@@ -546,6 +546,11 @@ public class WorkMgr {
       return containerName;
    }
 
+   private boolean isEnvFile(File file) {
+      String name = file.getName();
+      return ENV_FILENAMES.contains(name);
+   }
+
    public String[] listContainers(String apiKey) throws Exception {
 
       File containersDir = new File(Main.getSettings().getContainersLocation());
@@ -986,11 +991,6 @@ public class WorkMgr {
       fileList[0].delete();
       zipFile.delete();
 
-   }
-
-   private boolean isEnvFile(File file) {
-      String name=  file.getName();
-      return ENV_FILENAMES.contains(name);
    }
 
 }

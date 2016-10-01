@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -24,10 +23,9 @@ public class BufferedStatement extends AbstractStatement {
    }
 
    @Override
-   public Result execute(Environment environment,
-         AbstractRouteBuilder<?> route) {
+   public Result execute(Environment environment) {
       environment.setBuffered(true);
-      Result result = _statement.execute(environment, route);
+      Result result = _statement.execute(environment);
       return result;
    }
 

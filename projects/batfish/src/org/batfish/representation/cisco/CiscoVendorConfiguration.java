@@ -727,7 +727,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       _unusedPeerSessions = new TreeSet<>();
       int fakeGroupCounter = 1;
       for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
-         namedPeerGroup.getParent(proc, this).inheritUnsetFields(proc, this);
+         namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc,
+               this);
       }
       for (Entry<String, NamedBgpPeerGroup> e : proc.getPeerSessions()
             .entrySet()) {
@@ -1030,12 +1031,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          }
 
          Ip clusterId = lpg.getClusterId();
-         boolean routeReflectorClient = lpg.getRouteReflectorClient();
-         if (routeReflectorClient) {
-            if (clusterId == null) {
-               clusterId = updateSource;
-            }
+         if (clusterId == null) {
+            clusterId = bgpRouterId;
          }
+         boolean routeReflectorClient = lpg.getRouteReflectorClient();
          boolean sendCommunity = lpg.getSendCommunity();
          boolean advertiseInactive = lpg.getAdvertiseInactive();
          boolean ebgpMultihop = lpg.getEbgpMultihop();
@@ -1102,9 +1101,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             newNeighbor.setAdvertiseInactive(advertiseInactive);
             newNeighbor.setAllowLocalAsIn(allowasIn);
             newNeighbor.setAllowRemoteAsOut(disablePeerAsCheck);
-            if (routeReflectorClient) {
-               newNeighbor.setClusterId(clusterId.asLong());
-            }
+            newNeighbor.setRouteReflectorClient(routeReflectorClient);
+            newNeighbor.setClusterId(clusterId.asLong());
             newNeighbor.setDefaultMetric(defaultMetric);
             newNeighbor.setDescription(description);
             newNeighbor.setEbgpMultihop(ebgpMultihop);
@@ -2518,6 +2516,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                case LOCAL_PREFERENCE:
                case METRIC:
                case NEXT_HOP:
+               case NOP:
                case ORIGIN_TYPE:
                case LEVEL:
                   break;

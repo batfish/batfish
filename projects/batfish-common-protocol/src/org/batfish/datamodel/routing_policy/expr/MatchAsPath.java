@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -10,26 +9,27 @@ public class MatchAsPath extends AbstractBooleanExpr {
     *
     */
    private static final long serialVersionUID = 1L;
-   private String _list;
 
-   public MatchAsPath(String list) {
-      _list = list;
+   private AsPathSetExpr _expr;
+
+   public MatchAsPath(AsPathSetExpr expr) {
+      _expr = expr;
    }
 
    @Override
-   public Result evaluate(Environment environment,
-         AbstractRouteBuilder<?> outputRoute) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+   public Result evaluate(Environment environment) {
+      boolean match = _expr.matches(environment);
+      Result result = new Result();
+      result.setBooleanValue(match);
+      return result;
    }
 
-   public String getList() {
-      return _list;
+   public AsPathSetExpr getExpr() {
+      return _expr;
    }
 
-   public void setList(String list) {
-      _list = list;
+   public void setExpr(AsPathSetExpr expr) {
+      _expr = expr;
    }
 
 }

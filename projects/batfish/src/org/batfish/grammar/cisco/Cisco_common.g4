@@ -24,6 +24,7 @@ community
 :
    com = COMMUNITY_NUMBER
    | com = DEC
+   | com = GSHUT
    | com = INTERNET
    | com = LOCAL_AS
    | com = NO_ADVERTISE
