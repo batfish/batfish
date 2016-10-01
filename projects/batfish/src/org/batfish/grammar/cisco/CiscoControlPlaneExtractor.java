@@ -786,6 +786,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case CiscoLexer.NO_EXPORT:
          return 0xFFFFFF01l;
 
+      //TODO: this should be fixed when we add proper support for $ in route policy communities
+      case CiscoLexer.VARIABLE:
+         return 0x00;
+         
       default:
          throw new BatfishException("bad community");
       }
@@ -3156,6 +3160,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("bad origin type");
       }
       RouteMapSetLine line = new RouteMapSetOriginTypeLine(originType, asNum);
+
       _currentRouteMapClause.addSetLine(line);
    }
 
@@ -3782,7 +3787,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public RoutePolicyStatement toRoutePolicyStatement(
          Set_med_rp_stanzaContext ctxt) {
-      return new RoutePolicySetMed(toInteger(ctxt.med));
+      if (ctxt.med != null) {
+         return new RoutePolicySetMed(toInteger(ctxt.med));
+      }   
+      else {
+         todo(ctxt, "No support for igp cost in set MEDs");
+         return new RoutePolicySetMed(0);
+      }
    }
 
    public RoutePolicyStatement toRoutePolicyStatement(

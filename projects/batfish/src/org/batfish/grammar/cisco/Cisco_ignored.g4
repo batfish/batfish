@@ -17,6 +17,7 @@ null_block_stanza
       | ADMIN
       | ALLOW
       | ARCHIVE
+      | AS_PATH_SET
       | ATM
       | BASH
       | BFD
@@ -78,6 +79,7 @@ null_block_stanza
             | DHCP
             | DNS
             | ECMP_GROUP
+            | FLOW_CAPTURE
             | FLOW_TOP_TALKERS
             | HARDWARE
             | ICMP_ERRORS
@@ -87,6 +89,7 @@ null_block_stanza
             (
                OSPF NAME_LOOKUP
             )
+            | PIM
             | POLICY_LIST
             | REFLEXIVE_LIST
             | ROUTER_ID
@@ -466,6 +469,7 @@ null_block_substanza
          | OPTION
          | OPTIONS
          | OPS
+         | ORIGINATOR_ID
          | OUI
          | PARAMETERS
          | PARENT

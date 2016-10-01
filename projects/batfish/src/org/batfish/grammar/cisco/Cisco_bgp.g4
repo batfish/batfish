@@ -187,6 +187,7 @@ default_originate_bgp_tail
    DEFAULT_ORIGINATE
    (
       ROUTE_MAP map = VARIABLE
+      | ROUTE_POLICY policy = VARIABLE
    )? NEWLINE
 ;
 
@@ -490,6 +491,7 @@ null_bgp_tail
          )
       )
       | NEIGHBOR_DOWN
+      | NSR
       | PASSWORD
       | SEND_LABEL
       | SOFT_RECONFIGURATION
@@ -559,7 +561,11 @@ route_map_bgp_tail
 
 route_policy_bgp_tail
 :
-   ROUTE_POLICY name = variable
+   ROUTE_POLICY 
+   (
+   	   name = variable
+   	   | name = variable route_policy_params_list
+   )
    (
       IN
       | OUT

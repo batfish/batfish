@@ -38,6 +38,7 @@ address_family_multicast_tail
 :
    (
       MULTIPATH NEWLINE
+      | null_af_multicast_tail
       | interface_multicast_stanza
       | ip_pim_tail
    )*
@@ -77,6 +78,18 @@ allow_iimgp_stanza
 asa_comment_stanza
 :
    COLON ~NEWLINE* NEWLINE
+;
+
+as_path_set_stanza
+:
+   AS_PATH_SET name = variable NEWLINE as_path_set_elem_list END_SET NEWLINE
+;
+
+as_path_set_elem_list
+:
+   (
+      IOS_REGEX ~NEWLINE* NEWLINE
+   )*
 ;
 
 banner_stanza
@@ -679,9 +692,15 @@ ntp_update_calendar
    UPDATE_CALENDAR ~NEWLINE* NEWLINE
 ;
 
+null_af_multicast_tail
+:
+	NSF NEWLINE
+;
+
 null_stanza
 :
    asa_comment_stanza
+   | as_path_set_stanza
    | banner_stanza
    | certificate_stanza
    | del_stanza
@@ -1039,6 +1058,7 @@ pim_null
       | REGISTER_SOURCE
       | RPF_VECTOR
       | SEND_RP_DISCOVERY
+      | SNOOPING
       | V1_RP_REACHABILITY
    ) ~NEWLINE* NEWLINE
 ;
@@ -1116,6 +1136,21 @@ pim_ssm
          RANGE name = variable
       )
    ) NEWLINE
+;
+
+router_hsrp_stanza
+:
+   ROUTER HSRP NEWLINE router_hsrp_tail
+;
+
+//this is temporary hack
+router_hsrp_tail
+:
+	INTERFACE interface_name NEWLINE
+	    ADDRESS_FAMILY IPV4 NEWLINE
+	      HSRP NEWLINE
+	        PREEMPT NEWLINE
+	        ADDRESS IP_ADDRESS NEWLINE
 ;
 
 router_multicast_stanza
@@ -1306,6 +1341,7 @@ stanza
    | route_map_stanza
    | route_policy_stanza
    | router_bgp_stanza
+   | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
    | router_ospf_stanza

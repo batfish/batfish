@@ -11,7 +11,7 @@ apply_rp_stanza
    APPLY 
    (
   	  name = variable 
-   	  | name = variable PAREN_LEFT varname = variable PAREN_RIGHT 
+   	  | name = variable route_policy_params_list
    	) NEWLINE   
 ;
 
@@ -19,6 +19,11 @@ boolean_and_rp_stanza
 :
    boolean_not_rp_stanza
    | boolean_and_rp_stanza AND boolean_not_rp_stanza
+;
+
+boolean_as_path_rp_stanza
+:
+	AS_PATH IN name = variable
 ;
 
 boolean_community_matches_any_rp_stanza
@@ -50,6 +55,7 @@ boolean_rib_has_route_rp_stanza
 boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
+   | boolean_as_path_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
@@ -246,8 +252,16 @@ route_policy_stanza
    ROUTE_POLICY 
    (
    	  name = variable 
-   	  | name = variable PAREN_LEFT varname = variable PAREN_RIGHT 
+   	  | name = variable route_policy_params_list 
    ) NEWLINE route_policy_tail
+;
+
+route_policy_params_list
+:
+   PAREN_LEFT params_list += variable
+   (
+      COMMA params_list += variable
+   )* PAREN_RIGHT
 ;
 
 route_policy_tail
@@ -393,7 +407,7 @@ set_local_preference_rp_stanza
 
 set_med_rp_stanza
 :
-   SET MED med = DEC NEWLINE
+   SET MED (med = DEC | igp = IGP_COST) NEWLINE
 ;
 
 set_metric_rm_stanza
@@ -402,6 +416,11 @@ set_metric_rm_stanza
 ;
 
 set_metric_type_rm_stanza
+:
+   SET METRIC_TYPE type = variable NEWLINE
+;
+
+set_metric_type_rp_stanza
 :
    SET METRIC_TYPE type = variable NEWLINE
 ;
@@ -505,6 +524,7 @@ set_rp_stanza
    set_community_rp_stanza
    | set_local_preference_rp_stanza
    | set_med_rp_stanza
+   | set_metric_type_rp_stanza
    | set_next_hop_rp_stanza
    | set_origin_rp_stanza
    | set_weight_rp_stanza

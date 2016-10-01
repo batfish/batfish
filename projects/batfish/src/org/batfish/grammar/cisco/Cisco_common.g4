@@ -28,6 +28,7 @@ community
    | com = LOCAL_AS
    | com = NO_ADVERTISE
    | com = NO_EXPORT
+   | com = VARIABLE
 ;
 
 description_line
@@ -133,6 +134,7 @@ interface_name
       name = VARIABLE
       (
          FORWARD_SLASH DEC
+         | FORWARD_SLASH DEC COLON DEC
       )?
    )
 ;
@@ -313,6 +315,14 @@ range
       )*
    )
    | NONE
+;
+
+route_policy_params_list
+:
+   PAREN_LEFT params_list += variable
+   (
+      COMMA params_list += variable
+   )* PAREN_RIGHT
 ;
 
 subrange

@@ -71,6 +71,9 @@ community_set_stanza
 
 community_set_elem_list
 :
+   | // no elements
+
+   |
    (
       community_set_elem COMMA NEWLINE
    )* community_set_elem NEWLINE
@@ -322,6 +325,7 @@ ip_prefix_list_stanza
 :
    (
       IP
+      | IPV4
       | IPV6
    ) PREFIX_LIST name = variable
    (

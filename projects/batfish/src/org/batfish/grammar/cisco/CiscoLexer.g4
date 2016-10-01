@@ -482,6 +482,11 @@ AS_PATH
    'as-path' -> pushMode ( M_AsPath )
 ;
 
+AS_PATH_SET
+:
+   'as-path-set'
+;
+
 AS_SET
 :
    'as-set'
@@ -1315,6 +1320,11 @@ CS6
 CS7
 :
    'cs7'
+;
+
+CSNP_INTERVAL
+:
+   'csnp-interval'
 ;
 
 CTIQBE
@@ -2196,6 +2206,11 @@ FLOW
    'flow'
 ;
 
+FLOW_CAPTURE
+:
+   'flow-capture'
+;
+
 FLOW_CACHE
 :
    'flow-cache'
@@ -2634,6 +2649,11 @@ IF
 IGMP
 :
    'igmp'
+;
+
+IGP_COST
+:
+   'igp-cost'
 ;
 
 IGRP
@@ -4089,6 +4109,11 @@ ORIGINATE
    'originate'
 ;
 
+ORIGINATOR_ID
+:
+   'originator-id'
+;
+
 OSPF
 :
    'ospf'
@@ -5439,6 +5464,11 @@ SNMPTRAP
    'snmptrap'
 ;
 
+SNOOPING
+:
+   'snooping'
+;
+
 SNP
 :
    'snp'
@@ -6775,10 +6805,12 @@ COMMUNITY_SET_VALUE
    (
       F_Dec16
       | ASTERISK
+      | BRACKET_LEFT F_Dec16 PERIOD PERIOD F_Dec16 BRACKET_RIGHT
    ) COLON
    (
       F_Dec16
       | ASTERISK
+      | BRACKET_LEFT F_Dec16 PERIOD PERIOD F_Dec16 BRACKET_RIGHT
    )
 ;
 
@@ -7111,13 +7143,13 @@ F_Variable_RequiredVarChar_Ipv6
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r()!]
+   ~[ \t\n\r(),!]
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r()!] | ':' )
+   ~( [ \t\n\r(),!] | ':' )
 ;
 
 fragment
@@ -7138,6 +7170,11 @@ M_AsPath_ACCESS_LIST
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_AsPath_IN
+:
+   'in' -> type ( IN ) , popMode
 ;
 
 M_AsPath_PREPEND

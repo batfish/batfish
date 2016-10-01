@@ -200,12 +200,12 @@ isis_enable_if_stanza
 
 isis_hello_interval_if_stanza
 :
-   ISIS HELLO_INTERVAL DEC NEWLINE
+   ISIS HELLO_INTERVAL DEC (LEVEL_1|LEVEL_2)? NEWLINE
 ;
 
 isis_metric_if_stanza
 :
-   ISIS IPV6? METRIC metric = DEC LEVEL_2? NEWLINE
+   ISIS IPV6? METRIC metric = DEC (LEVEL_1|LEVEL_2)? NEWLINE
 ;
 
 isis_network_if_stanza
@@ -298,6 +298,7 @@ null_block_if_stanza
       | GROUP_RANGE
       | H323_GATEWAY
       | HALF_DUPLEX
+      | HISTORY
       | HOLD_QUEUE
       |
       (
@@ -354,6 +355,7 @@ null_block_if_stanza
             | RIP
             | ROUTE_CACHE
             | ROUTER
+            | SDR
             | TCP
             | UNNUMBERED
             | UNREACHABLES
@@ -380,6 +382,9 @@ null_block_if_stanza
          ISIS
          (
             AUTHENTICATION
+            | CSNP_INTERVAL
+            | HELLO
+            | HELLO_MULTIPLIER
             | LSP_INTERVAL
          )
       )
