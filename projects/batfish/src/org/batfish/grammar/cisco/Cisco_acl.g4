@@ -122,6 +122,7 @@ extended_access_list_additional_feature
    | MLD_QUERY
    | MLD_REDUCTION
    | MLD_REPORT
+   | ND
    | ND_NA
    | ND_NS
    | NETWORK_UNKNOWN
@@ -130,6 +131,7 @@ extended_access_list_additional_feature
    | PARAMETER_PROBLEM
    | PORT_UNREACHABLE
    | REDIRECT
+   | ROUTER
    | ROUTER_ADVERTISEMENT
    | ROUTER_SOLICITATION
    | RST

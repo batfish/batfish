@@ -259,6 +259,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("trunk", "trunk");
       prefixes.put("Tunnel", "Tunnel");
       prefixes.put("tunnel-te", "tunnel-te");
+      prefixes.put("ve", "VirtualEthernet");
       prefixes.put("Virtual-Template", "Virtual-Template");
       prefixes.put("Vlan", "Vlan");
       return prefixes;
@@ -1367,7 +1368,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-      int procNum = toInteger(ctx.procnum);
+      int procNum = (ctx.procnum == null)? 0 : toInteger(ctx.procnum);
       BgpProcess proc = new BgpProcess(procNum);
       _configuration.getBgpProcesses().put(_currentVrf, proc);
       _dummyPeerGroup = new MasterBgpPeerGroup();

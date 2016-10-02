@@ -6506,6 +6506,11 @@ VPDN_GROUP
    'vpdn-group'
 ;
 
+VPLS
+:
+   'vpls'
+;
+
 VPN
 :
    'vpn'

@@ -26,12 +26,14 @@ bgp_address_family
          IPV4 MDT?
       )
       | IPV6
+      | L2VPN
       | VPNV4
       | VPNV6
    )
    (
       UNICAST
       | MULTICAST
+      | VPLS
    )?
    (
       VRF vrf_name = VARIABLE
@@ -320,7 +322,10 @@ network6_bgp_tail
    (
       address = IPV6_ADDRESS
       | prefix = IPV6_PREFIX
-   ) NEWLINE
+   ) 
+   (
+      ROUTE_MAP mapname = VARIABLE
+   )? NEWLINE
 ;
 
 next_hop_self_bgp_tail
@@ -491,12 +496,14 @@ null_bgp_tail
             | SCAN_TIME
          )
       )
+      | DAMPENING
       | DESCRIPTION
       | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
       | EXIT
       | FALL_OVER
+      | GRACEFUL_RESTART
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
       | MAXIMUM_PATHS
@@ -575,20 +582,20 @@ remove_private_as_bgp_tail
 
 route_map_bgp_tail
 :
-   ROUTE_MAP name = variable
+   ROUTE_MAP 
    (
-      IN
-      | OUT
-   ) NEWLINE
+   	 name = variable (IN | OUT ) 
+   	 | (IN | OUT) name = variable   	 
+   )
+   NEWLINE
 ;
 
 route_policy_bgp_tail
 :
-   ROUTE_POLICY 
-   (
-   	   name = variable
-   	   | name = variable route_policy_params_list
-   )
+   ROUTE_POLICY name = variable
+   (   	   
+   	   PAREN_LEFT route_policy_params_list PAREN_RIGHT
+   )?
    (
       IN
       | OUT
@@ -661,7 +668,7 @@ redistribute_static_bgp_tail
 
 router_bgp_stanza
 :
-   ROUTER BGP procnum = DEC NEWLINE router_bgp_stanza_tail+
+   ROUTER BGP (procnum = DEC)? NEWLINE router_bgp_stanza_tail+
 ;
 
 router_bgp_stanza_tail

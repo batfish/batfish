@@ -320,10 +320,10 @@ range
 
 route_policy_params_list
 :
-   PAREN_LEFT params_list += variable
+   params_list += variable
    (
       COMMA params_list += variable
-   )* PAREN_RIGHT
+   )*
 ;
 
 subrange

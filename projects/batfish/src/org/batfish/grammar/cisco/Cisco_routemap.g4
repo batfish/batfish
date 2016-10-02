@@ -427,7 +427,7 @@ set_med_rp_stanza
 
 set_metric_rm_stanza
 :
-   SET METRIC metric = DEC NEWLINE
+   SET METRIC (DASH|PLUS)? metric = DEC NEWLINE
 ;
 
 set_metric_type_rm_stanza
