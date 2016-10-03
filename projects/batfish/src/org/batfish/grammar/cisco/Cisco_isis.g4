@@ -204,7 +204,8 @@ redistribute_static_is_stanza
 :
    REDISTRIBUTE STATIC
    (
-      IP
+   	  CLNS
+      | IP
       | LEVEL_1
       | LEVEL_1_2
       | LEVEL_2

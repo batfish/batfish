@@ -194,11 +194,7 @@ match_ip_prefix_list_rm_stanza
 :
    MATCH IP ADDRESS IP? PREFIX_LIST
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable
    )+ NEWLINE
 ;
 
@@ -439,7 +435,7 @@ set_med_rp_stanza
 
 set_metric_rm_stanza
 :
-   SET METRIC (DASH|PLUS)? metric = DEC NEWLINE
+   SET METRIC metric = variable NEWLINE
 ;
 
 set_metric_type_rm_stanza

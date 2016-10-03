@@ -217,6 +217,7 @@ port
    | LOTUSNOTES
    | MLAG
    | MOBILE_IP
+   | MSRPC
    | NAMESERVER
    | NETBIOS_DGM
    | NETBIOS_NS

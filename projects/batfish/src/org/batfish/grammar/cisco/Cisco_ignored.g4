@@ -30,12 +30,14 @@ null_block_stanza
       | CHAT_SCRIPT
       | CISP
       | CLI
+      | CLNS
       | CLOCK
       | CONFDCONFIG
       | CONFIGURATION
       | CONTROLLER
       | COPP
       | COPY
+      | COS_QUEUE_GROUP
       | CPD
       | CRYPTO
       | CTL_FILE
@@ -79,8 +81,11 @@ null_block_stanza
             | DHCP
             | DNS
             | ECMP_GROUP
+            | FLOW_AGGREGATION
             | FLOW_CAPTURE
+            | FLOW_SAMPLING_MODE
             | FLOW_TOP_TALKERS
+            | GLOBAL_MTU
             | HARDWARE
             | ICMP_ERRORS
             | INSPECT
@@ -91,8 +96,12 @@ null_block_stanza
             )
             | PIM
             | POLICY_LIST
+            | RATE_LIMIT
+            | RECEIVE
             | REFLEXIVE_LIST
             | ROUTER_ID
+            | RSVP
+            | SDR
             | SLA
             | SOURCE
             | SYSLOG
@@ -185,6 +194,7 @@ null_block_stanza
       | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
+      | QOS_MAPPING
       | QOS_POLICY_OUTPUT
       | REDUNDANCY
       | RELOAD_TYPE
@@ -346,6 +356,7 @@ null_block_substanza
          | DOMAIN_ID
          | DOMAIN_NAME
          | DROP
+         | DSCP
          | DS0_GROUP
          | DTMF_RELAY
          | DUAL_ACTIVE
@@ -502,6 +513,8 @@ null_block_substanza
          | POLICY_LIST
          | POLICY_MAP
          | PORT
+         | PORT_NAME
+         | PRECEDENCE
          | PREDICTOR
          | PRE_SHARED_KEY
          | PREEMPT
@@ -517,6 +530,7 @@ null_block_substanza
          | PROTOCOL
          | PROVISION
          | PROXY_SERVER
+         | QUEUE
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
          | RANDOM

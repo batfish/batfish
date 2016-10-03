@@ -386,6 +386,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (ctx.MOBILE_IP() != null) {
          return NamedPort.MOBILE_IP_AGENT;
       }
+      else if (ctx.MSRPC() != null) {
+         return NamedPort.MSRPC;
+      }
       else if (ctx.NAMESERVER() != null) {
          return NamedPort.NAMESERVER;
       }
@@ -668,6 +671,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                "Unhandled dscp type: '" + ctx.getText() + "'");
       }
       return val;
+   }
+
+   public static int toInteger(String str) {
+      return Integer.parseInt(str);
    }
 
    public static int toInteger(TerminalNode t) {
@@ -2321,7 +2328,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitMatch_ip_prefix_list_rm_stanza(
          Match_ip_prefix_list_rm_stanzaContext ctx) {
       Set<String> names = new TreeSet<>();
-      for (Token t : ctx.name_list) {
+      for (VariableContext t : ctx.name_list) {
          names.add(t.getText());
       }
       RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(
@@ -3193,7 +3200,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_metric_rm_stanza(Set_metric_rm_stanzaContext ctx) {
-      int metric = toInteger(ctx.metric);
+      int metric = toInteger(ctx.metric.getText());
       RouteMapSetMetricLine line = new RouteMapSetMetricLine(metric);
       _currentRouteMapClause.addSetLine(line);
    }

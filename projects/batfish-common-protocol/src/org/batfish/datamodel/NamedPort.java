@@ -58,6 +58,7 @@ public enum NamedPort {
    MOBILE_IP_AGENT(434),
    MOBILE_IP_MN(435),
    MSDP(639),
+   MSRPC(135),
    NAMESERVER(42),
    NETBIOS_DGM(138),
    NETBIOS_NS(137),

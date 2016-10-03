@@ -145,7 +145,10 @@ ip_address_dhcp_if_stanza
 
 ip_address_secondary_if_stanza
 :
-   IP ADDRESS
+   (
+      IP
+      | IPV4
+   ) ADDRESS
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
@@ -363,6 +366,7 @@ null_block_if_stanza
             | RIP
             | ROUTE_CACHE
             | ROUTER
+            | RSVP
             | SDR
             | TCP
             | UNNUMBERED

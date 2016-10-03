@@ -1252,6 +1252,11 @@ COS
    'cos'
 ;
 
+COS_QUEUE_GROUP
+:
+    'cos-queue-group'
+;
+ 
 COST
 :
    'cost'
@@ -2241,6 +2246,11 @@ FLOW
    'flow'
 ;
 
+FLOW_AGGREGATION
+:
+   'flow-aggregation'
+;
+
 FLOW_CAPTURE
 :
    'flow-capture'
@@ -2259,6 +2269,11 @@ FLOW_CONTROL
 FLOW_EXPORT
 :
    'flow-export'
+;
+
+FLOW_SAMPLING_MODE
+:
+   'flow-sampling-mode'
 ;
 
 FLOW_TOP_TALKERS
@@ -2384,6 +2399,11 @@ GIG_DEFAULT
 GLBP
 :
    'glbp'
+;
+
+GLOBAL_MTU
+:
+   'global-mtu'
 ;
 
 GOPHER
@@ -3714,6 +3734,11 @@ MSDP
    'msdp'
 ;
 
+MSRPC
+:
+   'msrpc'
+;
+
 MTA
 :
    'mta'
@@ -3972,6 +3997,11 @@ NEXTHOP_ATTRIBUTE
 NHOP_ONLY
 :
    'nhop-only'
+;
+
+NLRI
+:
+   'nlri'
 ;
 
 NLS
@@ -4739,6 +4769,11 @@ QOS_GROUP
    'qos-group'
 ;
 
+QOS_MAPPING
+:
+   'qos-mapping'
+;
+
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
@@ -4747,6 +4782,11 @@ QOS_POLICY_OUTPUT
 QUERY_ONLY
 :
    'query-only'
+;
+
+QUEUE
+:
+   'queue'
 ;
 
 QUEUE_BUFFERS

@@ -1186,18 +1186,26 @@ pim_ssm
 
 router_hsrp_stanza
 :
-   ROUTER HSRP NEWLINE router_hsrp_tail+
+   ROUTER HSRP NEWLINE router_hsrp_substanza+
 ;
 
-//this is temporary hack
-router_hsrp_tail
+router_hsrp_substanza
 :
 	INTERFACE interface_name NEWLINE
 	    ADDRESS_FAMILY IPV4 NEWLINE
-	      HSRP DEC? NEWLINE
-	        PREEMPT NEWLINE
-	        (PRIORITY DEC NEWLINE)?
-	        ADDRESS IP_ADDRESS NEWLINE
+	      HSRP DEC? (VERSION DEC)? NEWLINE
+			router_hsrp_tail+
+;
+
+router_hsrp_tail
+:
+	(
+	    ADDRESS IP_ADDRESS
+	    | PREEMPT
+	    | PRIORITY DEC
+	    | TIMERS DEC+
+	    | TRACK OBJECT DEC+
+	 ) NEWLINE
 ;
 
 router_multicast_stanza
