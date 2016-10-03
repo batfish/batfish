@@ -38,6 +38,7 @@ address_family_multicast_tail
 :
    (
       MULTIPATH NEWLINE
+      | INTERFACE ALL ENABLE NEWLINE
       | null_af_multicast_tail
       | interface_multicast_stanza
       | ip_pim_tail
@@ -406,19 +407,21 @@ interface_imgp_stanza
 
 interface_multicast_stanza
 :
-   INTERFACE ~NEWLINE* NEWLINE
+   INTERFACE 
    (
-      (
-         BSR_BORDER
-         |
-         (
-            BOUNDARY MCAST_BOUNDARY
-         )
-      ) NEWLINE
-   )?
+   	ALL ~NEWLINE* NEWLINE
+   	| ~NEWLINE* NEWLINE interface_multicast_tail*   	
+   )
+;
+
+interface_multicast_tail
+:
    (
-      ENABLE NEWLINE
-   )?
+	  BSR_BORDER
+      | BOUNDARY MCAST_BOUNDARY
+      | DISABLE
+      | ENABLE       
+   ) NEWLINE
 ;
 
 ip_as_path_regex_mode_stanza
@@ -1099,6 +1102,7 @@ pim_null
       | LOG_NEIGHBOR_CHANGES
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE
+      | RPF_VECTOR
       | SEND_RP_DISCOVERY
       | SNOOPING
       | V1_RP_REACHABILITY
@@ -1182,7 +1186,7 @@ pim_ssm
 
 router_hsrp_stanza
 :
-   ROUTER HSRP NEWLINE router_hsrp_tail
+   ROUTER HSRP NEWLINE router_hsrp_tail+
 ;
 
 //this is temporary hack
@@ -1190,8 +1194,9 @@ router_hsrp_tail
 :
 	INTERFACE interface_name NEWLINE
 	    ADDRESS_FAMILY IPV4 NEWLINE
-	      HSRP NEWLINE
+	      HSRP DEC? NEWLINE
 	        PREEMPT NEWLINE
+	        (PRIORITY DEC NEWLINE)?
 	        ADDRESS IP_ADDRESS NEWLINE
 ;
 
@@ -1211,6 +1216,7 @@ router_multicast_tail
 :
    (
       address_family_multicast_stanza
+      | interface_multicast_stanza
       | null_block_substanza
       | peer_stanza
    )*

@@ -2879,6 +2879,11 @@ IPSEC_UDP
    'ipsec-udp'
 ;
 
+IPSLA
+:
+   'ipsla'
+;
+
 IPV4
 :
    'ipv4'
@@ -4134,6 +4139,11 @@ OPENFLOW
    'openflow'
 ;
 
+OPERATION
+:
+   'operation'
+;
+
 OPS
 :
    'ops'
@@ -4167,6 +4177,11 @@ ORIGIN
 ORIGINATE
 :
    'originate'
+;
+
+ORIGINATES_FROM
+:
+   'originates-from'
 ;
 
 ORIGINATOR_ID
@@ -4267,6 +4282,11 @@ PARTICIPATE
 PASS
 :
    'pass'
+;
+
+PASSES_THROUGH
+:
+   'passes-through'
 ;
 
 PASSIVE
@@ -4812,6 +4832,16 @@ RCV_QUEUE
 RD
 :
    'rd'
+;
+
+REACT
+:
+   'react'
+;
+
+REACTION
+:
+   'reaction'
 ;
 
 REAL
@@ -6216,6 +6246,11 @@ TTL_EXCEEDED
    'ttl-exceeded'
 ;
 
+TTL_THRESHOLD
+:
+   'ttl-threshold'
+;
+
 TUNNEL
 :
    'tunnel'
@@ -7277,9 +7312,19 @@ M_AsPath_IN
    'in' -> type ( IN ) , popMode
 ;
 
+M_AsPath_PASSES_THROUGH
+:
+   'passes-through' -> type ( PASSES_THROUGH ) , popMode
+;
+
 M_AsPath_PREPEND
 :
    'prepend' -> type ( PREPEND ) , popMode
+;
+
+M_AsPath_ORIGINATES_FROM
+:
+   'originates-from' -> type ( ORIGINATES_FROM ) , popMode
 ;
 
 M_AsPath_REGEX_MODE
@@ -7599,6 +7644,11 @@ M_Extcommunity_WS
 ;
 
 mode M_Interface;
+
+M_Interface_ALL
+:
+   'all' -> type ( ALL ) , popMode
+;
 
 M_Interface_BREAKOUT
 :

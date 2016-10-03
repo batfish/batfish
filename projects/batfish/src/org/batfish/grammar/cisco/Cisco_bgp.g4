@@ -313,7 +313,11 @@ network_bgp_tail
    )?
    (
       ROUTE_MAP mapname = VARIABLE
-   )? NEWLINE
+   )? 
+   (
+   	   ROUTE_POLICY policyname = VARIABLE
+   )?
+   NEWLINE
 ;
 
 network6_bgp_tail
@@ -325,7 +329,11 @@ network6_bgp_tail
    ) 
    (
       ROUTE_MAP mapname = VARIABLE
-   )? NEWLINE
+   )? 
+   (
+   	   ROUTE_POLICY policyname = VARIABLE
+   )?
+   NEWLINE
 ;
 
 next_hop_self_bgp_tail
@@ -510,6 +518,7 @@ null_bgp_tail
       | MAXIMUM_PREFIX
       | MAXIMUM_ACCEPTED_ROUTES
       | MAXIMUM_ROUTES
+      | MULTIPATH
       |
       (
          NO

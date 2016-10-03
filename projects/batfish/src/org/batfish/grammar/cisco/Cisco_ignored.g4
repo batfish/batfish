@@ -104,6 +104,7 @@ null_block_stanza
          )
       )
       | IPC
+      | IPSLA
       |
       (
          IPV4
@@ -428,6 +429,7 @@ null_block_substanza
          | IPV6_ADDRESS_POOL
          | ISAKMP
          | ISSUER_NAME
+         | FREQUENCY
          | KEEPALIVE_ENABLE
          | KEEPOUT
          | KEY_STRING
@@ -472,6 +474,7 @@ null_block_substanza
          | NOTIFY
          | OBJECT
          | OPEN
+         | OPERATION
          | OPTION
          | OPTIONS
          | OPS
@@ -519,6 +522,8 @@ null_block_substanza
          | RANDOM
          | RANDOM_DETECT
          | RD
+         | REACT
+         | REACTION
          | REAL
          | RECEIVE
          | RECORD
@@ -613,9 +618,11 @@ null_block_substanza
          | TRIGGER
          | TRUNK
          | TRUST
+         | TTL_THRESHOLD
          | TUNNEL
          | TUNNEL_GROUP
          | TUNNEL_GROUP_LIST
+         | TYPE
          | UDP_JITTER
          | UID
          | UNTAGGED

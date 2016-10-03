@@ -125,6 +125,7 @@ extended_access_list_additional_feature
    | ND
    | ND_NA
    | ND_NS
+   | NEIGHBOR
    | NETWORK_UNKNOWN
    | NET_UNREACHABLE
    | PACKET_TOO_BIG

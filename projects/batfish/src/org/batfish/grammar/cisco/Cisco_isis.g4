@@ -128,7 +128,8 @@ null_iis_stanza
 :
    NO?
    (
-      HELLO_INTERVAL
+   	  BFD 
+      | HELLO_INTERVAL
       | HELLO_PADDING
       | HELLO_PASSWORD
       | POINT_TO_POINT

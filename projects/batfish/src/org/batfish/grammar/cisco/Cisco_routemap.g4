@@ -31,6 +31,16 @@ boolean_as_path_in_rp_stanza
    AS_PATH IN name = variable
 ;
 
+boolean_as_path_originates_from_rp_stanza
+:
+   AS_PATH ORIGINATES_FROM name = variable
+;
+
+boolean_as_path_passes_through_rp_stanza
+:
+   AS_PATH PASSES_THROUGH name = variable
+;
+
 boolean_community_matches_any_rp_stanza
 :
    COMMUNITY MATCHES_ANY rp_community_set
@@ -67,6 +77,8 @@ boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
    | boolean_as_path_in_rp_stanza
+   | boolean_as_path_originates_from_rp_stanza
+   | boolean_as_path_passes_through_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
@@ -247,7 +259,7 @@ null_rm_stanza
 null_rp_stanza
 :
    POUND ~NEWLINE* NEWLINE
-   | PREPEND AS_PATH ~NEWLINE NEWLINE
+   | PREPEND AS_PATH ~NEWLINE+ NEWLINE
 ;
 
 rm_stanza
