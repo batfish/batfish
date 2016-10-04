@@ -1,0 +1,9 @@
+!
+hostname if_tag_is 
+!
+route-policy FOO 
+  if tag is 12 then
+    set tag 12 
+    pass
+  endif
+end-policy

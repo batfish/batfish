@@ -558,7 +558,7 @@ set_tag_rm_stanza
 
 set_tag_rp_stanza
 :
-   SET TAG tag = DEC NEWLINE
+   SET TAG tag = int_expr NEWLINE
 ;
 
 set_weight_rm_stanza

@@ -159,6 +159,7 @@ import org.batfish.representation.cisco.RoutePolicySetLocalPref;
 import org.batfish.representation.cisco.RoutePolicySetMed;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
 import org.batfish.representation.cisco.RoutePolicySetOspfMetricType;
+import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
@@ -4173,6 +4174,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(
+         Set_tag_rp_stanzaContext ctx)
+   {
+      return new RoutePolicySetTag(toMetricIntExpr(ctx.tag));
+   }
+   
+   private RoutePolicyStatement toRoutePolicyStatement(
          Set_rp_stanzaContext ctx) {
       Prepend_as_path_rp_stanzaContext p = ctx.prepend_as_path_rp_stanza();
       if (p != null) {
@@ -4205,6 +4212,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyStatement(hctxt);
       }
 
+      Set_tag_rp_stanzaContext tctxt = ctx.set_tag_rp_stanza();
+      if (tctxt != null) {
+         return toRoutePolicyStatement(tctxt);
+      }
+      
       throw convError(RoutePolicyStatement.class, ctx);
    }
 
