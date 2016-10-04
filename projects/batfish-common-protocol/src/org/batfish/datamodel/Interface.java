@@ -292,7 +292,7 @@ public final class Interface extends ComparableStructure<String> {
 
    private Prefix _prefix;
 
-   private PolicyMap _routingPolicy;
+   private String _routingPolicy;
 
    private SwitchportMode _switchportMode;
 
@@ -440,7 +440,7 @@ public final class Interface extends ComparableStructure<String> {
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(ROUTING_POLICY_VAR)
-   public PolicyMap getRoutingPolicy() {
+   public String getRoutingPolicy() {
       return _routingPolicy;
    }
 
@@ -585,7 +585,7 @@ public final class Interface extends ComparableStructure<String> {
    }
 
    @JsonProperty(ROUTING_POLICY_VAR)
-   public void setRoutingPolicy(PolicyMap policy) {
+   public void setRoutingPolicy(String policy) {
       _routingPolicy = policy;
    }
 

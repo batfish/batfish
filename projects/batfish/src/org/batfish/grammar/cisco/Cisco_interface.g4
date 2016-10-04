@@ -81,7 +81,7 @@ interface_stanza
 :
    INTERFACE PRECONFIGURE? iname = interface_name
    (
-	  L2TRANSPORT
+      L2TRANSPORT
       | MULTIPOINT
       | POINT_TO_POINT
    )? NEWLINE interface_stanza_tail
@@ -194,7 +194,11 @@ ip_router_isis_if_stanza
 
 isis_circuit_type_if_stanza
 :
-   ISIS CIRCUIT_TYPE (LEVEL_2_ONLY|LEVEL_2) NEWLINE
+   ISIS CIRCUIT_TYPE
+   (
+      LEVEL_2_ONLY
+      | LEVEL_2
+   ) NEWLINE
 ;
 
 isis_enable_if_stanza
@@ -204,12 +208,20 @@ isis_enable_if_stanza
 
 isis_hello_interval_if_stanza
 :
-   ISIS HELLO_INTERVAL DEC (LEVEL_1|LEVEL_2)? NEWLINE
+   ISIS HELLO_INTERVAL DEC
+   (
+      LEVEL_1
+      | LEVEL_2
+   )? NEWLINE
 ;
 
 isis_metric_if_stanza
 :
-   ISIS IPV6? METRIC metric = DEC (LEVEL_1|LEVEL_2)? NEWLINE
+   ISIS IPV6? METRIC metric = DEC
+   (
+      LEVEL_1
+      | LEVEL_2
+   )? NEWLINE
 ;
 
 isis_network_if_stanza
@@ -462,6 +474,7 @@ null_block_if_stanza
       | RATE_MODE
       | RCV_QUEUE
       | ROUTE_CACHE
+      | ROUTE_ONLY
       | SECURITY_LEVEL
       | SERIAL
       | SERVICE_MODULE

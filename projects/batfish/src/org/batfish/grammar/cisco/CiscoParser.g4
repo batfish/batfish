@@ -83,14 +83,7 @@ asa_comment_stanza
 
 as_path_set_stanza
 :
-   AS_PATH_SET name = variable NEWLINE as_path_set_elem_list END_SET NEWLINE
-;
-
-as_path_set_elem_list
-:
-   (
-      IOS_REGEX ~NEWLINE* NEWLINE
-   )*
+   AS_PATH_SET name = variable NEWLINE (elems+=as_path_set_elem NEWLINE)* END_SET NEWLINE
 ;
 
 banner_stanza
@@ -238,10 +231,10 @@ cmm_port
 
 cmm_precedence
 :
-   IP? PRECEDENCE IPV4? 
+   IP? PRECEDENCE IPV4?
    (
-   	  DEC+ 
-   	  | name = variable
+      DEC+
+      | name = variable
    ) NEWLINE
 ;
 
@@ -310,10 +303,10 @@ color_setter
 :
    SET_COLOR
    (
-    RED 
-    | YELLOW
-    | GREEN  
-   ) 
+      RED
+      | YELLOW
+      | GREEN
+   )
 ;
 
 del_stanza
@@ -323,15 +316,14 @@ del_stanza
 
 dhcp_stanza
 :
-	DHCP IPV4 NEWLINE 
-	dhcp_substanza+
+   DHCP IPV4 NEWLINE dhcp_substanza+
 ;
 
 dhcp_substanza
 :
-	PROFILE ~NEWLINE+ NEWLINE
-	| HELPER_ADDRESS ~NEWLINE+ NEWLINE
-	| INTERFACE ~NEWLINE+ NEWLINE
+   PROFILE ~NEWLINE+ NEWLINE
+   | HELPER_ADDRESS ~NEWLINE+ NEWLINE
+   | INTERFACE ~NEWLINE+ NEWLINE
 ;
 
 failover_lan
@@ -407,20 +399,20 @@ interface_imgp_stanza
 
 interface_multicast_stanza
 :
-   INTERFACE 
+   INTERFACE
    (
-   	ALL ~NEWLINE* NEWLINE
-   	| ~NEWLINE* NEWLINE interface_multicast_tail*   	
+      ALL ~NEWLINE* NEWLINE
+      | ~NEWLINE* NEWLINE interface_multicast_tail*
    )
 ;
 
 interface_multicast_tail
 :
    (
-	  BSR_BORDER
+      BSR_BORDER
       | BOUNDARY MCAST_BOUNDARY
       | DISABLE
-      | ENABLE       
+      | ENABLE
    ) NEWLINE
 ;
 
@@ -740,7 +732,7 @@ ntp_update_calendar
 
 null_af_multicast_tail
 :
-	NSF NEWLINE
+   NSF NEWLINE
 ;
 
 null_stanza
@@ -1086,8 +1078,10 @@ pim_accept_rp
    (
       AUTO_RP
       | IP_ADDRESS
-   ) 
-   (name = variable)? NEWLINE
+   )
+   (
+      name = variable
+   )? NEWLINE
 ;
 
 pim_null
@@ -1191,27 +1185,26 @@ router_hsrp_stanza
 
 router_hsrp_substanza
 :
-	INTERFACE interface_name NEWLINE
-	    ADDRESS_FAMILY IPV4 NEWLINE
-	      HSRP DEC? (VERSION DEC)? NEWLINE
-			router_hsrp_tail+
+   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE HSRP DEC?
+   (
+      VERSION DEC
+   )? NEWLINE router_hsrp_tail+
 ;
 
 router_hsrp_tail
 :
-	(
-	    ADDRESS IP_ADDRESS
-	    | PREEMPT
-	    | PRIORITY DEC
-	    | TIMERS DEC+
-	    | TRACK OBJECT DEC+
-	 ) NEWLINE
+   (
+      ADDRESS IP_ADDRESS
+      | PREEMPT
+      | PRIORITY DEC
+      | TIMERS DEC+
+      | TRACK OBJECT DEC+
+   ) NEWLINE
 ;
 
 router_multicast_stanza
 :
-   IPV6?
-   ROUTER
+   IPV6? ROUTER
    (
       IGMP
       | MLD

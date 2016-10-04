@@ -1,0 +1,12 @@
+!
+hostname prefix_list_ipv4
+!
+ipv4 prefix-list test
+ 10 permit 192.168.100.2/31
+!
+ip prefix-list default permit 0.0.0.0/0
+!
+route-map to_elacc permit 10
+ match ip address prefix-list default
+!
+ 

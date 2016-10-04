@@ -159,7 +159,7 @@ null_block_stanza
                IP
                | IPV6
                | LDP ~NEWLINE
-            )            
+            )
             | OAM
             | TRAFFIC_ENG
          )
@@ -172,7 +172,7 @@ null_block_stanza
             CLASS_MAP
             |
             (
-               IP 
+               IP
                (
                   AS_PATH
                )
@@ -208,6 +208,7 @@ null_block_stanza
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
+      | SCHEDULE
       | SDR
       | SERVICE_CLASS
       | SFLOW
@@ -450,6 +451,7 @@ null_block_substanza
          | L2TP
          | LEASE
          | LENGTH
+         | LIFE
          | LIMIT_RESOURCE
          | LINECODE
          | LLDP
@@ -563,6 +565,7 @@ null_block_substanza
          | ROTARY
          | ROUTE
          | ROUTE_TARGET
+         | ROUTER_INTERFACE
          | RP_ADDRESS
          | RULE
          | SA_FILTER
@@ -599,6 +602,7 @@ null_block_substanza
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
          | SSH_KEYDIR
+         | START_TIME
          | STATISTICS
          | STICKY
          | STOPBITS
@@ -927,7 +931,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | RSAKEYPAIR
       | RTR
       | SAME_SECURITY_TRAFFIC
-      | SCHEDULE
       | SCHEDULER
       | SCRIPTING
       | SDM

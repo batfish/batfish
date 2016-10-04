@@ -3,8 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.List;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapSetLocalPreferenceLine;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -26,15 +25,7 @@ public final class PsThenLocalPreference extends PsThen {
    public void applyTo(List<Statement> statements,
          JuniperConfiguration juniperVendorConfiguration, Configuration c,
          Warnings warnings) {
-      statements.add(new SetLocalPreference(_localPreference));
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
-      PolicyMapSetLocalPreferenceLine line = new PolicyMapSetLocalPreferenceLine(
-            _localPreference);
-      clause.getSetLines().add(line);
+      statements.add(new SetLocalPreference(new LiteralInt(_localPreference)));
    }
 
    public int getLocalPreference() {

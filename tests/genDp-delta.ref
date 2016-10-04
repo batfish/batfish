@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "com.intentionet.bdp.BdpAnswerElement",
+    "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
     "bgpIterations" : {
       "1" : 2,
       "2" : 2,
@@ -13,7 +13,7 @@
     },
     "dependentRoutesIterations" : 8,
     "ospfInternalIterations" : 3,
-    "totalRoutes" : 298
+    "totalRoutes" : 301
   } ],
   "question" : null,
   "status" : "SUCCESS"

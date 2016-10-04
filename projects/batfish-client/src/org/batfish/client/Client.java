@@ -375,7 +375,8 @@ public class Client extends PluginConsumer implements IClient {
       }
 
       WorkItem wItemGenDdp = _workHelper.getWorkItemGenerateDeltaDataPlane(
-            _currContainerName, _currTestrig, _currEnv, _currDeltaEnv);
+            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig,
+            _currDeltaEnv);
 
       return execute(wItemGenDdp, outWriter);
    }
@@ -946,7 +947,7 @@ public class Client extends PluginConsumer implements IClient {
             else {
                _currDeltaTestrig = testrigName;
                _currDeltaEnv = DEFAULT_ENV_NAME;
-               _logger.outputf("Delta testrig is now %s\n", _currTestrig);
+               _logger.outputf("Delta testrig is now %s\n", _currDeltaTestrig);
             }
 
             if (generateDataplane) {

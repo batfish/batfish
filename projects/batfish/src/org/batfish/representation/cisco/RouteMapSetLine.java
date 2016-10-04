@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
 
@@ -16,8 +15,5 @@ public abstract class RouteMapSetLine implements Serializable {
          CiscoConfiguration cc, Configuration c, Warnings w);
 
    public abstract RouteMapSetType getType();
-
-   public abstract PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
-         Configuration c, Warnings w);
 
 }

@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.routing_policy.Environment;
+
 public class ExplicitAs implements AsExpr {
 
    /**
@@ -11,6 +13,11 @@ public class ExplicitAs implements AsExpr {
 
    public ExplicitAs(int as) {
       _as = as;
+   }
+
+   @Override
+   public int evaluate(Environment environment) {
+      return _as;
    }
 
    public int getAs() {

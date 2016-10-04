@@ -1,0 +1,13 @@
+!
+hostname msdp_originator_id
+!
+router msdp
+ connect-source Loopback0
+ originator-id Loopback0
+ maximum external-sa 20000
+ peer 137.164.16.4
+  description DC:tri-agg2
+   mesh-group internal
+ !
+!
+

@@ -1,0 +1,14 @@
+!
+hostname route_map
+!
+route-map connected-to-bgp permit 10
+ match ip address prefix-list hpr-connector-subnets
+ set origin igp
+ set metric -1
+ set community  2153:65515 2153:65535
+!
+route-map to_svl-hub-router permit 100
+ set metric +5
+ !
+!
+

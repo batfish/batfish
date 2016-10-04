@@ -1,0 +1,76 @@
+!
+hostname router_isis
+!
+interface GigabitEthernet0/1
+!
+interface Serial4/0
+!
+interface HundredGigE0/0/0/0.2302
+!
+interface GigabitEthernet0/0/1
+ isis hello-interval 3 level-2
+ port-name [bb-rive1]SAC-HPR2:RIVE1CA51O-1/13:CLR-1046
+ enable
+ load-interval 30
+ no cdp enable
+ route-only
+ bfd interval 500 min-rx 500 multiplier 3
+ ip router isis
+ ip address 137.164.25.57/30
+ ip pim-sparse
+ ip pim border
+ ip multicast-boundary 82
+ ip mtu 9180
+ ipv6 address 2607:f380::108:9a41:9391/122
+ ipv6 enable
+ ipv6 mtu 9180
+ ipv6 router isis
+ ipv6 pim-sparse
+ isis circuit-type level-2
+ isis hello-interval 3
+ isis ipv6 metric 15 level-2
+ isis metric 15 level-2
+ isis point-to-point
+ gig-default neg-off
+ sflow forwarding
+!
+router isis
+ net 49.2153.1371.6401.7008.00
+ bfd all-interfaces
+ is-type level-2
+ log adjacency
+ address-family ipv4 unicast
+  metric-style wide
+  redistribute connected route-map connected-to-isis
+ exit-address-family
+ address-family ipv6 unicast
+  redistribute connected route-map connected-to-isis-v6
+ exit-address-family
+ interface HundredGigE0/0/0/0.2302
+  circuit-type level-2-only
+  bfd minimum-interval 300
+  bfd multiplier 3
+  bfd fast-detect ipv4
+  point-to-point
+  hello-padding disable
+  hello-interval 3
+  address-family ipv4 unicast
+   metric 99999
+  !
+  address-family ipv6 unicast
+   metric 99999
+  !
+ !
+ net 49.2152.1371.6403.9016.1371.6403.9016.00
+ is-type level-2-only
+ metric-style wide
+ log-adjacency-changes all
+ redistribute static clns route-map static-to-bgp
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface Serial4/0
+ !
+ address-family ipv6
+ exit-address-family
+!
+

@@ -15,6 +15,7 @@ boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 boolean enableACL_NUM = false;
 boolean enableCOMMUNITY_LIST_NUM = false;
+boolean inCommunitySet = false;
 
 @Override
 public String printStateVariables() {
@@ -742,6 +743,11 @@ BFD
    'bfd'
 ;
 
+BFD_ENABLE
+:
+   'bfd-enable'
+;
+
 BGP
 :
    'bgp'
@@ -1155,6 +1161,10 @@ COMMUNITY_LIST
 COMMUNITY_SET
 :
    'community-set'
+   {
+      inCommunitySet = true;
+      enableIPV6_ADDRESS = false;
+   }
 ;
 
 CONFDCONFIG
@@ -1254,9 +1264,9 @@ COS
 
 COS_QUEUE_GROUP
 :
-    'cos-queue-group'
+   'cos-queue-group'
 ;
- 
+
 COST
 :
    'cost'
@@ -1950,6 +1960,7 @@ END_POLICY_MAP
 END_SET
 :
    'end-set'
+   { inCommunitySet = false; }
 ;
 
 ENFORCE_FIRST_AS
@@ -2025,6 +2036,11 @@ EVENT_HANDLER
 EVENT_HISTORY
 :
    'event-history'
+;
+
+EXACT
+:
+   'exact'
 ;
 
 EXCEED_ACTION
@@ -3167,6 +3183,11 @@ LENGTH
 LICENSE
 :
    'license'
+;
+
+LIFE
+:
+   'life'
 ;
 
 LIFETIME
@@ -5099,6 +5120,16 @@ RIB_HAS_ROUTE
    'rib-has-route'
 ;
 
+RIB_METRIC_AS_EXTERNAL
+:
+   'rib-metric-as-external'
+;
+
+RIB_METRIC_AS_INTERNAL
+:
+   'rib-metric-as-internal'
+;
+
 RING
 :
    'ring'
@@ -5139,6 +5170,11 @@ ROUTE_MAP
    'route-map'
 ;
 
+ROUTE_ONLY
+:
+   'route-only'
+;
+
 ROUTE_POLICY
 :
    'route-policy'
@@ -5169,6 +5205,11 @@ ROUTER_ID
    'router-id'
 ;
 
+ROUTER_INTERFACE
+:
+   'router-interface'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -5181,7 +5222,7 @@ ROUTING
 
 RPF_VECTOR
 :
-    'rpf-vector'
+   'rpf-vector'
 ;
 
 RP_ADDRESS
@@ -5766,6 +5807,11 @@ STANDBY
    'standby'
 ;
 
+START_TIME
+:
+   'start-time'
+;
+
 STATE_REFRESH
 :
    'state-refresh'
@@ -6321,6 +6367,16 @@ TYPE
    'type'
 ;
 
+TYPE_1
+:
+   'type-1'
+;
+
+TYPE_2
+:
+   'type-2'
+;
+
 UC_TX_QUEUE
 :
    'uc-tx-queue'
@@ -6799,18 +6855,19 @@ VARIABLE
 :
    (
       (
+         F_Variable_RequiredVarChar
          (
-            F_Variable_RequiredVarChar
-            {!enableIPV6_ADDRESS}?
+            (
+               {!enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_RequiredVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+               F_Variable_VarChar*
+            )
+            |
+            (
+               {enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar_Ipv6*
+               F_Variable_VarChar_Ipv6*
+            )
          )
       )
       |
@@ -6826,7 +6883,7 @@ VARIABLE
             F_Variable_VarChar_Ipv6
             {enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
+            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
             F_Variable_VarChar_Ipv6*
          )
       )
@@ -6915,6 +6972,16 @@ BACKSLASH
    '\\'
 ;
 
+BLANK_LINE
+:
+   (
+      F_Whitespace
+   )* F_Newline
+   {lastTokenType == NEWLINE}?
+
+   F_Newline* -> channel ( HIDDEN )
+;
+
 BRACE_LEFT
 :
    '{'
@@ -6972,21 +7039,7 @@ COMMUNITY_LIST_NUM
 
 COMMUNITY_SET_REGEX
 :
-   SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
-;
-
-COMMUNITY_SET_VALUE
-:
-   (
-      F_Dec16
-      | ASTERISK
-      | BRACKET_LEFT F_Dec16 PERIOD PERIOD F_Dec16 BRACKET_RIGHT
-   ) COLON
-   (
-      F_Dec16
-      | ASTERISK
-      | BRACKET_LEFT F_Dec16 PERIOD PERIOD F_Dec16 BRACKET_RIGHT
-   )
+   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\''
 ;
 
 COMMENT_LINE
@@ -7137,7 +7190,9 @@ NEWLINE
 :
    F_Newline+
    {
-   	enableIPV6_ADDRESS = true;
+      if (!inCommunitySet) {
+   	  enableIPV6_ADDRESS = true;
+   	}
    	enableIP_ADDRESS = true;
   }
 
@@ -7171,6 +7226,11 @@ PLUS
 POUND
 :
    '#'
+;
+
+RP_VARIABLE
+:
+   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
 ;
 
 SEMICOLON
@@ -7306,25 +7366,19 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] )
-;
-
-fragment
-F_Variable_RequiredVarChar_Ipv6
-:
-   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r(),!]
+   ~( [ \t\n\r(),!+$'*] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!] | ':' )
+   ~( [ \t\n\r(),!+$'*] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -7901,7 +7955,6 @@ M_NEIGHBOR_CHANGES
 :
    'changes' -> type ( CHANGES ) , popMode
 ;
-
 
 M_NEIGHBOR_IP_ADDRESS
 :

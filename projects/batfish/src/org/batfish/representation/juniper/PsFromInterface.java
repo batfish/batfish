@@ -1,8 +1,6 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapClauseMatchInterfaceLine;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceInterface;
 import org.batfish.main.Warnings;
@@ -18,14 +16,6 @@ public final class PsFromInterface extends PsFrom {
 
    public PsFromInterface(String name) {
       _name = name;
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
-         JuniperConfiguration jc, Configuration c, Warnings warnings) {
-      PolicyMapClauseMatchInterfaceLine line = new PolicyMapClauseMatchInterfaceLine(
-            _name);
-      clause.getMatchLines().add(line);
    }
 
    public String getName() {

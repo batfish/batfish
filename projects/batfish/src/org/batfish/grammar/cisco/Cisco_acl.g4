@@ -71,7 +71,7 @@ community_set_stanza
 
 community_set_elem_list
 :
-   | // no elements
+// no elements
 
    |
    (
@@ -81,7 +81,7 @@ community_set_elem_list
 
 community_set_elem
 :
-   COMMUNITY_SET_VALUE
+   rp_community_set_elem
    | ACCEPT_OWN
    | DFA_REGEX COMMUNITY_SET_REGEX
    | INTERNET
@@ -260,9 +260,8 @@ ip_as_path_access_list_stanza
 ip_as_path_access_list_tail
 :
    (
-   	  SEQ DEC
-   )?
-   action = access_list_action
+      SEQ DEC
+   )? action = access_list_action
    (
       as_path_regex
       | null_as_path_regex
@@ -299,9 +298,8 @@ ip_community_list_expanded_stanza
 ip_community_list_expanded_tail
 :
    (
-   	  SEQ DEC
-   )?
-   ala = access_list_action
+      SEQ DEC
+   )? ala = access_list_action
    (
       remainder += ~NEWLINE
    )+ NEWLINE

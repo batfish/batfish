@@ -59,8 +59,6 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String OSPF_PROCESS_VAR = "ospfProcess";
 
-   private static final String POLICY_MAPS_VAR = "policyMaps";
-
    private static final String ROLES_VAR = "roles";
 
    private static final String ROUTE_FILTER_LISTS_VAR = "routeFilterLists";
@@ -117,8 +115,6 @@ public final class Configuration extends ComparableStructure<String> {
 
    private OspfProcess _ospfProcess;
 
-   private NavigableMap<String, PolicyMap> _policyMaps;
-
    private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
 
    private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
@@ -158,7 +154,6 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
-      _policyMaps = new TreeMap<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
@@ -279,11 +274,6 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(OSPF_PROCESS_VAR)
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
-   }
-
-   @JsonProperty(POLICY_MAPS_VAR)
-   public NavigableMap<String, PolicyMap> getPolicyMaps() {
-      return _policyMaps;
    }
 
    @JsonIgnore
@@ -454,11 +444,6 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(OSPF_PROCESS_VAR)
    public void setOspfProcess(OspfProcess process) {
       _ospfProcess = process;
-   }
-
-   @JsonProperty(POLICY_MAPS_VAR)
-   public void setPolicyMaps(NavigableMap<String, PolicyMap> policyMaps) {
-      _policyMaps = policyMaps;
    }
 
    public void setRoles(RoleSet roles) {

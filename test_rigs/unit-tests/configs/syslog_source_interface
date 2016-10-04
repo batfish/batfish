@@ -1,0 +1,6 @@
+!
+hostname syslog_source_interface
+!
+ip syslog source-interface loopback 1
+!
+

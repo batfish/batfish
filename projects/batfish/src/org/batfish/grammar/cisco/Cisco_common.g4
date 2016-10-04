@@ -20,6 +20,11 @@ address_family_footer
    )?
 ;
 
+as_path_set_elem
+:
+   IOS_REGEX SINGLE_QUOTE ~SINGLE_QUOTE* SINGLE_QUOTE
+;
+
 community
 :
    com = COMMUNITY_NUMBER
@@ -29,7 +34,6 @@ community
    | com = LOCAL_AS
    | com = NO_ADVERTISE
    | com = NO_EXPORT
-   | com = VARIABLE
 ;
 
 description_line
@@ -110,6 +114,18 @@ icmp_object_type
    | TIMESTAMP_REQUEST
    | TRACEROUTE
    | UNREACHABLE
+;
+
+int_expr
+:
+   (
+      (
+         PLUS
+         | DASH
+      )? DEC
+   )
+   | IGP_COST
+   | RP_VARIABLE
 ;
 
 interface_name
@@ -327,6 +343,26 @@ route_policy_params_list
    )*
 ;
 
+rp_community_set_elem
+:
+   (
+      prefix = rp_community_set_elem_half COLON suffix =
+      rp_community_set_elem_half
+   )
+   | community
+;
+
+rp_community_set_elem_half
+:
+   value = DEC
+   | var = RP_VARIABLE
+   |
+   (
+      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
+   )
+   | ASTERISK
+;
+
 subrange
 :
    low = DEC
@@ -354,5 +390,8 @@ variable
 
 variable_with_colon
 :
-   (COLON|~NEWLINE)+
+   (
+      COLON
+      | ~NEWLINE
+   )+
 ;

@@ -22,6 +22,5 @@ test tests/selfAdjacencies.ref get selfAdjacencies
 test tests/traceroute-1-2.ref get traceroute ingressNode="as1core1" | dstIp="2.128.0.101"
 test tests/traceroute-2-1.ref get traceroute ingressNode="host2" | dstIp="1.0.1.1"
 test tests/undefinedReferences.ref get undefinedReferences
-test tests/uniqueBgpPrefixOrigination.ref get uniqueBgpPrefixOrigination
 test tests/uniqueIpAssignments.ref get uniqueIpAssignments
 test tests/unusedStructures.ref get unusedStructures

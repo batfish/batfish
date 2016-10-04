@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import java.util.Collections;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.ExplicitCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -22,7 +22,7 @@ public class RoutePolicyDeleteAllStatement extends RoutePolicyDeleteStatement {
          Warnings w) {
       // TODO: this should actually just retain all well-known communities
       return new SetCommunity(
-            new ExplicitCommunitySet(Collections.<Long> emptySet()));
+            new InlineCommunitySet(Collections.<Long> emptySet()));
    }
 
 }

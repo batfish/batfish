@@ -12,7 +12,7 @@
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
-			<triggers>full,incremental,</triggers>
+			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
@@ -27,20 +27,6 @@
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
 			<arguments>
-			</arguments>
-		</buildCommand>
-		<buildCommand>
-			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
-			<triggers>clean,full,incremental,</triggers>
-			<arguments>
-				<dictionary>
-					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/ant_eclipse_post_compile.launch</value>
-				</dictionary>
-				<dictionary>
-					<key>incclean</key>
-					<value>true</value>
-				</dictionary>
 			</arguments>
 		</buildCommand>
 	</buildSpec>

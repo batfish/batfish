@@ -1,11 +1,7 @@
 package org.batfish.representation.juniper;
 
-import java.util.Collections;
-
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -25,18 +21,6 @@ public final class PsFromRouteFilter extends PsFrom {
       _routeFilterName = routeFilterName;
    }
 
-   @Override
-   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
-         JuniperConfiguration jc, Configuration c, Warnings warnings) {
-      RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
-      if (rfl == null) {
-         throw new VendorConversionException(
-               "missing route filter list: \"" + _routeFilterName + "\"");
-      }
-      clause.getMatchLines().add(
-            new PolicyMapMatchRouteFilterListLine(Collections.singleton(rfl)));
-   }
-
    public String getRouteFilterName() {
       return _routeFilterName;
    }
@@ -44,6 +28,13 @@ public final class PsFromRouteFilter extends PsFrom {
    @Override
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchPrefixSet(new NamedPrefixSet(_routeFilterName));
+      RouteFilterList rfl = c.getRouteFilterLists().get(_routeFilterName);
+      if (rfl != null) {
+         return new MatchPrefixSet(new NamedPrefixSet(_routeFilterName));
+      }
+      else {
+         throw new VendorConversionException(
+               "missing route filter list: \"" + _routeFilterName + "\"");
+      }
    }
 }

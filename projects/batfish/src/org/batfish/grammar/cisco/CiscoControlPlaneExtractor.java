@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -30,6 +32,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisLevel;
+import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
@@ -48,8 +51,25 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
+import org.batfish.datamodel.routing_policy.expr.CommunitySetElemHalfExpr;
+import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
+import org.batfish.datamodel.routing_policy.expr.IgpCost;
+import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.VarAs;
+import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -103,6 +123,8 @@ import org.batfish.representation.cisco.RoutePolicy;
 import org.batfish.representation.cisco.RoutePolicyApplyStatement;
 import org.batfish.representation.cisco.RoutePolicyBoolean;
 import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIn;
+import org.batfish.representation.cisco.RoutePolicyBooleanAsPathOriginatesFrom;
+import org.batfish.representation.cisco.RoutePolicyBooleanAsPathPassesThrough;
 import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
 import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
@@ -112,7 +134,7 @@ import org.batfish.representation.cisco.RoutePolicyBooleanOr;
 import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco.RoutePolicyCommunitySet;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
-import org.batfish.representation.cisco.RoutePolicyCommunitySetNumber;
+import org.batfish.representation.cisco.RoutePolicyCommunitySetInline;
 import org.batfish.representation.cisco.RoutePolicyDeleteAllStatement;
 import org.batfish.representation.cisco.RoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco.RoutePolicyDispositionStatement;
@@ -129,10 +151,14 @@ import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
 import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
 import org.batfish.representation.cisco.RoutePolicyPrefixSet;
 import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
+import org.batfish.representation.cisco.RoutePolicyPrependAsPath;
 import org.batfish.representation.cisco.RoutePolicySetCommunity;
+import org.batfish.representation.cisco.RoutePolicySetIsisMetricType;
 import org.batfish.representation.cisco.RoutePolicySetLocalPref;
 import org.batfish.representation.cisco.RoutePolicySetMed;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
+import org.batfish.representation.cisco.RoutePolicySetOspfMetricType;
+import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -209,6 +235,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private static String getCanonicalInterfaceName(String ifaceName) {
+      Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]")
+            .matcher(ifaceName);
+      if (matcher.find()) {
+         String ifacePrefix = matcher.group();
+         String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
+         String suffix = ifaceName.substring(ifacePrefix.length());
+         return canonicalPrefix + suffix;
+      }
+      throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
+   }
+
    private static String getCanonicalInterfaceNamePrefix(String prefix) {
       for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
          String matchPrefix = e.getKey();
@@ -221,11 +259,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             "Invalid interface name prefix: '" + prefix + "'");
    }
 
-   private static Map<String, String> getCiscoInterfacePrefixes() {
+   private synchronized static Map<String, String> getCiscoInterfacePrefixes() {
       Map<String, String> prefixes = new LinkedHashMap<>();
       prefixes.put("Async", "Async");
       prefixes.put("ATM", "ATM");
-      prefixes.put("Bundle-Ether", "Bundle-Ether");
+      prefixes.put("Bundle-Ether", "Bundle-Ethernet");
       prefixes.put("BVI", "BVI");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
       prefixes.put("Dialer", "Dialer");
@@ -240,7 +278,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("GigabitEthernet", "GigabitEthernet");
       prefixes.put("ge", "GigabitEthernet");
       prefixes.put("GMPLS", "GMPLS");
-      prefixes.put("HundredGigE", "HundredGigE");
+      prefixes.put("HundredGigE", "HundredGigabitEthernet");
       prefixes.put("ip", "ip");
       prefixes.put("Group-Async", "Group-Async");
       prefixes.put("LongReachEthernet", "LongReachEthernet");
@@ -254,7 +292,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("POS", "POS");
       prefixes.put("Serial", "Serial");
       prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
-      prefixes.put("TenGigE", "TenGigE");
+      prefixes.put("TenGigE", "TenGigabitEthernet");
       prefixes.put("te", "TenGigabitEthernet");
       prefixes.put("trunk", "trunk");
       prefixes.put("Tunnel", "Tunnel");
@@ -598,6 +636,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private static AsExpr toAsExpr(As_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int as = toInteger(ctx.DEC());
+         return new ExplicitAs(as);
+      }
+      else if (ctx.AUTO() != null) {
+         return new AutoAs();
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarAs(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         throw new BatfishException("Cannot convert '" + ctx.getText() + "' to "
+               + AsExpr.class.getSimpleName());
+      }
+   }
+
    private static int toDscpType(Dscp_typeContext ctx) {
       int val;
       if (ctx.DEC() != null) {
@@ -673,8 +728,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return val;
    }
 
-   public static int toInteger(String str) {
-      return Integer.parseInt(str);
+   private static SwitchportEncapsulationType toEncapsulation(
+         Switchport_trunk_encapsulationContext ctx) {
+      if (ctx.DOT1Q() != null) {
+         return SwitchportEncapsulationType.DOT1Q;
+      }
+      else if (ctx.ISL() != null) {
+         return SwitchportEncapsulationType.ISL;
+      }
+      else if (ctx.NEGOTIATE() != null) {
+         return SwitchportEncapsulationType.NEGOTIATE;
+      }
+      else {
+         throw new BatfishException("bad encapsulation");
+      }
    }
 
    public static int toInteger(TerminalNode t) {
@@ -778,41 +845,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public static long toLong(CommunityContext ctx) {
-      switch (ctx.com.getType()) {
-      case CiscoLexer.COMMUNITY_NUMBER:
-         String numberText = ctx.com.getText();
-         String[] parts = numberText.split(":");
-         String leftStr = parts[0];
-         String rightStr = parts[1];
-         long left = Long.parseLong(leftStr);
-         long right = Long.parseLong(rightStr);
-         return (left << 16) | right;
-
-      case CiscoLexer.DEC:
-         return toLong(ctx.com);
-
-      case CiscoLexer.INTERNET:
-         return 0l;
-
-      case CiscoLexer.GSHUT:
-         return 0xFFFFFF04l;
-
-      case CiscoLexer.LOCAL_AS:
-         return 0xFFFFFF03l;
-
-      case CiscoLexer.NO_ADVERTISE:
-         return 0xFFFFFF02l;
-
-      case CiscoLexer.NO_EXPORT:
-         return 0xFFFFFF01l;
-
-      //TODO: this should be fixed when we add proper support for $ in route policy communities
-      case CiscoLexer.VARIABLE:
-         return 0x00;
-         
-      default:
-         throw new BatfishException("bad community");
+   private static IntExpr toLocalPreferenceIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int val = toInteger(ctx.DEC());
+         if (ctx.PLUS() != null) {
+            return new IncrementLocalPreference(val);
+         }
+         else if (ctx.DASH() != null) {
+            return new DecrementLocalPreference(val);
+         }
+         else {
+            return new LiteralInt(val);
+         }
+      }
+      else {
+         throw new BatfishException(
+               "Unsupported local-preference integer expression");
       }
    }
 
@@ -822,6 +870,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    public static long toLong(Token t) {
       return Long.parseLong(t.getText());
+   }
+
+   private static IntExpr toMetricIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int val = toInteger(ctx.DEC());
+         if (ctx.PLUS() != null) {
+            return new IncrementMetric(val);
+         }
+         else if (ctx.DASH() != null) {
+            return new DecrementMetric(val);
+         }
+         else {
+            return new LiteralInt(val);
+         }
+      }
+      else if (ctx.IGP_COST() != null) {
+         return new IgpCost();
+      }
+      else {
+         throw new BatfishException(
+               "Unsupported local-preference integer expression");
+      }
    }
 
    public static List<SubRange> toRange(RangeContext ctx) {
@@ -949,6 +1019,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       newInterface.setBandwidth(bandwidth);
       newInterface.setVrf(vrf);
       newInterface.setMtu(mtu);
+   }
+
+   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
+      String typeName = type.getSimpleName();
+      String txt = getFullText(ctx);
+      return new BatfishException(
+            "Could not convert to " + typeName + ": " + txt);
    }
 
    @Override
@@ -1083,7 +1160,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterInterface_xr_ro_stanza(Interface_xr_ro_stanzaContext ctx) {
-      String ifaceName = ctx.interface_name().getText();
+      String ifaceName = getCanonicalInterfaceName(
+            ctx.interface_name().getText());
       // may have to change if interfaces are ever declared after ospf
       Interface iface = _configuration.getInterfaces().get(ifaceName);
       if (iface == null) {
@@ -1375,7 +1453,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-      int procNum = (ctx.procnum == null)? 0 : toInteger(ctx.procnum);
+      int procNum = (ctx.procnum == null) ? 0 : toInteger(ctx.procnum);
       BgpProcess proc = new BgpProcess(procNum);
       _configuration.getBgpProcesses().put(_currentVrf, proc);
       _dummyPeerGroup = new MasterBgpPeerGroup();
@@ -1399,7 +1477,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          _configuration.setOspfProcess(_currentOspfProcess);
       }
-   }
+   };
 
    @Override
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
@@ -1454,7 +1532,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       }
       pushPeer(_currentNamedPeerGroup);
-   };
+   }
 
    @Override
    public void enterTemplate_peer_session_rb_stanza(
@@ -1886,7 +1964,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getFailoverInterfaces().put(alias, ifaceName);
       _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
       _configuration.setFailoverStatefulSignalingInterface(ifaceName);
-   }
+   };
 
    @Override
    public void exitFlan_interface(Flan_interfaceContext ctx) {
@@ -1939,7 +2017,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          todo(ctx, F_BGP_INHERIT_PEER_SESSION_OTHER);
       }
-   };
+   }
 
    @Override
    public void exitInherit_peer_session_bgp_tail(
@@ -2636,13 +2714,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       else {
-         if (ctx.NO() == null) {
-            _configuration.getInterfaces().get(ifaceName)
-                  .setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+         String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+         Interface iface = _configuration.getInterfaces()
+               .get(canonicalIfaceName);
+         if (iface != null) {
+            if (ctx.NO() == null) {
+               iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+            }
+            else {
+               iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+            }
          }
          else {
-            _configuration.getInterfaces().get(ifaceName)
-                  .setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+            throw new BatfishException(
+                  "FIXME: Reference to undefined interface: '"
+                        + canonicalIfaceName + "'");
          }
       }
    }
@@ -3192,7 +3278,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSet_local_preference_rm_stanza(
          Set_local_preference_rm_stanzaContext ctx) {
-      int localPreference = toInteger(ctx.pref);
+      IntExpr localPreference = toLocalPreferenceIntExpr(ctx.pref);
       RouteMapSetLocalPreferenceLine line = new RouteMapSetLocalPreferenceLine(
             localPreference);
       _currentRouteMapClause.addSetLine(line);
@@ -3200,7 +3286,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_metric_rm_stanza(Set_metric_rm_stanzaContext ctx) {
-      int metric = toInteger(ctx.metric.getText());
+      IntExpr metric = toMetricIntExpr(ctx.metric);
       RouteMapSetMetricLine line = new RouteMapSetMetricLine(metric);
       _currentRouteMapClause.addSetLine(line);
    }
@@ -3443,7 +3529,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitTemplate_peer_address_family(
          Template_peer_address_familyContext ctx) {
       popPeer();
-   }
+   };
 
    @Override
    public void exitTemplate_peer_policy_rb_stanza(
@@ -3460,7 +3546,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
       popPeer();
-   };
+   }
 
    @Override
    public void exitTemplate_peer_session_rb_stanza(
@@ -3593,17 +3679,68 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentPeerGroup = pg;
    }
 
-   private AsExpr toAsExpr(As_exprContext ctx) {
-      if (ctx.DEC() != null) {
-         int as = toInteger(ctx.DEC());
-         return new ExplicitAs(as);
+   private List<AsExpr> toAsExprList(List<As_exprContext> list) {
+      return list.stream().map(ctx -> toAsExpr(ctx))
+            .collect(Collectors.toList());
+   }
+
+   private AsPathSetExpr toAsPathSetExpr(As_path_set_exprContext ctx) {
+      if (ctx.named != null) {
+         return new NamedAsPathSet(ctx.named.getText());
       }
-      else if (ctx.AUTO() != null) {
-         return new AutoAs();
+      else if (ctx.rpvar != null) {
+         return new VarAsPathSet(ctx.rpvar.getText());
+      }
+      else if (ctx.inline != null) {
+         return toAsPathSetExpr(ctx.inline);
       }
       else {
-         throw new BatfishException("Cannot convert '" + ctx.getText() + "' to "
-               + AsExpr.class.getSimpleName());
+         throw convError(AsPathSetExpr.class, ctx);
+      }
+   }
+
+   private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
+   }
+
+   private CommunitySetElem toCommunitySetElemExpr(
+         Rp_community_set_elemContext ctx) {
+      if (ctx.prefix != null) {
+         CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(
+               ctx.prefix);
+         CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(
+               ctx.suffix);
+         return new CommunitySetElem(prefix, suffix);
+      }
+      else if (ctx.community() != null) {
+         long value = toLong(ctx.community());
+         return new CommunitySetElem(value);
+      }
+      else {
+         throw convError(CommunitySetElem.class, ctx);
+      }
+   }
+
+   private CommunitySetElemHalfExpr toCommunitySetElemHalfExpr(
+         Rp_community_set_elem_halfContext ctx) {
+      if (ctx.value != null) {
+         int value = toInteger(ctx.value);
+         return new LiteralCommunitySetElemHalf(value);
+      }
+      else if (ctx.var != null) {
+         String var = ctx.var.getText();
+         return new VarCommunitySetElemHalf(var);
+      }
+      else if (ctx.first != null) {
+         int first = toInteger(ctx.first);
+         int last = toInteger(ctx.last);
+         SubRange range = new SubRange(first, last);
+         return new RangeCommunitySetElemHalf(range);
+      }
+      else {
+         throw convError(CommunitySetElem.class, ctx);
       }
    }
 
@@ -3612,23 +3749,83 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _unimplementedFeatures.add("Cisco: " + feature);
    }
 
-   public SwitchportEncapsulationType toEncapsulation(
-         Switchport_trunk_encapsulationContext ctx) {
-      if (ctx.DOT1Q() != null) {
-         return SwitchportEncapsulationType.DOT1Q;
+   private IntExpr toIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+         int val = toInteger(ctx.DEC());
+         return new LiteralInt(val);
       }
-      else if (ctx.ISL() != null) {
-         return SwitchportEncapsulationType.ISL;
-      }
-      else if (ctx.NEGOTIATE() != null) {
-         return SwitchportEncapsulationType.NEGOTIATE;
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarInt(ctx.RP_VARIABLE().getText());
       }
       else {
-         throw new BatfishException("bad encapsulation");
+         throw convError(IntExpr.class, ctx);
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(
+   private IsisMetricType toIsisMetricType(Rp_isis_metric_typeContext ctx) {
+      if (ctx.EXTERNAL() != null) {
+         return IsisMetricType.EXTERNAL;
+      }
+      else if (ctx.INTERNAL() != null) {
+         return IsisMetricType.INTERNAL;
+      }
+      else if (ctx.RIB_METRIC_AS_EXTERNAL() != null) {
+         return IsisMetricType.RIB_METRIC_AS_EXTERNAL;
+      }
+      else if (ctx.RIB_METRIC_AS_INTERNAL() != null) {
+         return IsisMetricType.RIB_METRIC_AS_INTERNAL;
+      }
+      else {
+         throw convError(IsisMetricType.class, ctx);
+      }
+   }
+
+   public long toLong(CommunityContext ctx) {
+      if (ctx.COMMUNITY_NUMBER() != null) {
+         String numberText = ctx.com.getText();
+         String[] parts = numberText.split(":");
+         String leftStr = parts[0];
+         String rightStr = parts[1];
+         long left = Long.parseLong(leftStr);
+         long right = Long.parseLong(rightStr);
+         return (left << 16) | right;
+      }
+      else if (ctx.DEC() != null) {
+         return toLong(ctx.com);
+      }
+      else if (ctx.INTERNET() != null) {
+         return 0l;
+      }
+      else if (ctx.GSHUT() != null) {
+         return 0xFFFFFF04l;
+      }
+      else if (ctx.LOCAL_AS() != null) {
+         return 0xFFFFFF03l;
+      }
+      else if (ctx.NO_ADVERTISE() != null) {
+         return 0xFFFFFF02l;
+      }
+      else if (ctx.NO_EXPORT() != null) {
+         return 0xFFFFFF01l;
+      }
+      else {
+         throw convError(Long.class, ctx);
+      }
+   }
+
+   private OspfMetricType toOspfMetricType(Rp_ospf_metric_typeContext ctx) {
+      if (ctx.TYPE_1() != null) {
+         return OspfMetricType.E1;
+      }
+      else if (ctx.TYPE_2() != null) {
+         return OspfMetricType.E2;
+      }
+      else {
+         throw convError(OspfMetricType.class, ctx);
+      }
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_and_rp_stanzaContext ctxt) {
       if (ctxt.AND() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza());
@@ -3640,7 +3837,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_not_rp_stanzaContext ctxt) {
       if (ctxt.NOT() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza());
@@ -3651,7 +3848,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_rp_stanzaContext ctxt) {
       if (ctxt.OR() == null) {
          return toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza());
@@ -3663,93 +3860,106 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyBoolean toRoutePolicyBoolean(
-         Boolean_simple_rp_stanzaContext ctxt) {
-      Boolean_rp_stanzaContext bctxt = ctxt.boolean_rp_stanza();
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_simple_rp_stanzaContext ctx) {
+      Boolean_rp_stanzaContext bctxt = ctx.boolean_rp_stanza();
       if (bctxt != null) {
          return toRoutePolicyBoolean(bctxt);
       }
 
-      Boolean_community_matches_any_rp_stanzaContext mactxt = ctxt
+      Boolean_community_matches_any_rp_stanzaContext mactxt = ctx
             .boolean_community_matches_any_rp_stanza();
       if (mactxt != null) {
          return new RoutePolicyBooleanCommunityMatchesAny(
                toRoutePolicyCommunitySet(mactxt.rp_community_set()));
       }
 
-      Boolean_community_matches_every_rp_stanzaContext mectxt = ctxt
+      Boolean_community_matches_every_rp_stanzaContext mectxt = ctx
             .boolean_community_matches_every_rp_stanza();
       if (mectxt != null) {
          return new RoutePolicyBooleanCommunityMatchesEvery(
                toRoutePolicyCommunitySet(mectxt.rp_community_set()));
       }
 
-      Boolean_destination_rp_stanzaContext dctxt = ctxt
+      Boolean_destination_rp_stanzaContext dctxt = ctx
             .boolean_destination_rp_stanza();
       if (dctxt != null) {
          return new RoutePolicyBooleanDestination(
                toRoutePolicyPrefixSet(dctxt.rp_prefix_set()));
       }
 
-      Boolean_rib_has_route_rp_stanzaContext rctxt = ctxt
+      Boolean_rib_has_route_rp_stanzaContext rctxt = ctx
             .boolean_rib_has_route_rp_stanza();
       if (rctxt != null) {
          return new RoutePolicyBooleanRibHasRoute(
                toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
       }
 
-      Boolean_as_path_in_rp_stanzaContext actxt = ctxt
+      Boolean_as_path_in_rp_stanzaContext actxt = ctx
             .boolean_as_path_in_rp_stanza();
       if (actxt != null) {
-         return new RoutePolicyBooleanAsPathIn(actxt.name.getText());
+         return new RoutePolicyBooleanAsPathIn(toAsPathSetExpr(actxt.expr));
       }
 
-      return null;
+      Boolean_as_path_originates_from_rp_stanzaContext aotxt = ctx
+            .boolean_as_path_originates_from_rp_stanza();
+      if (aotxt != null) {
+         return new RoutePolicyBooleanAsPathOriginatesFrom(
+               toAsExprList(aotxt.as_list), aotxt.EXACT() != null);
+      }
 
+      Boolean_as_path_passes_through_rp_stanzaContext aptxt = ctx
+            .boolean_as_path_passes_through_rp_stanza();
+      if (aptxt != null) {
+         return new RoutePolicyBooleanAsPathPassesThrough(
+               toAsExprList(aptxt.as_list), aptxt.EXACT() != null);
+      }
+      throw convError(RoutePolicyBoolean.class, ctx);
    }
 
-   public RoutePolicyCommunitySet toRoutePolicyCommunitySet(
-         Rp_community_setContext ctxt) {
-      if (ctxt.name != null) {
+   private RoutePolicyCommunitySet toRoutePolicyCommunitySet(
+         Rp_community_setContext ctx) {
+      if (ctx.name != null) {
          // named
-         return new RoutePolicyCommunitySetName(ctxt.name.getText());
+         return new RoutePolicyCommunitySetName(ctx.name.getText());
       }
       else {
          // inline
-         return new RoutePolicyCommunitySetNumber(ctxt.elems.stream()
-               .map(elem -> toLong(elem)).collect(Collectors.toSet()));
+         return new RoutePolicyCommunitySetInline(
+               ctx.elems.stream().map(elem -> toCommunitySetElemExpr(elem))
+                     .collect(Collectors.toSet()));
       }
    }
 
-   public RoutePolicyElseBlock toRoutePolicyElseBlock(
-         Else_rp_stanzaContext ctxt) {
+   private RoutePolicyElseBlock toRoutePolicyElseBlock(
+         Else_rp_stanzaContext ctx) {
       List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
-            ctxt.rp_stanza());
+            ctx.rp_stanza());
       return new RoutePolicyElseBlock(stmts);
 
    }
 
-   public RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(
-         Elseif_rp_stanzaContext ctxt) {
-      RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
+   private RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(
+         Elseif_rp_stanzaContext ctx) {
+      RoutePolicyBoolean b = toRoutePolicyBoolean(ctx.boolean_rp_stanza());
       List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
-            ctxt.rp_stanza());
+            ctx.rp_stanza());
       return new RoutePolicyElseIfBlock(b, stmts);
 
    }
 
-   public RoutePolicyPrefixSet toRoutePolicyPrefixSet(
-         Rp_prefix_setContext ctxt) {
-      if (ctxt.name != null) {
+   private RoutePolicyPrefixSet toRoutePolicyPrefixSet(
+         Rp_prefix_setContext ctx) {
+      if (ctx.name != null) {
          // named
-         return new RoutePolicyPrefixSetName(ctxt.name.getText());
+         return new RoutePolicyPrefixSetName(ctx.name.getText());
       }
       else {
          // inline
          PrefixSpace prefixSpace = new PrefixSpace();
          Prefix6Space prefix6Space = new Prefix6Space();
          boolean ipv6 = false;
-         for (Prefix_set_elemContext pctxt : ctxt.elems) {
+         for (Prefix_set_elemContext pctxt : ctx.elems) {
             int lower;
             int upper;
             Prefix prefix = null;
@@ -3808,158 +4018,190 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Apply_rp_stanzaContext ctxt) {
-      return new RoutePolicyApplyStatement(ctxt.name.getText());
+   private RoutePolicyApplyStatement toRoutePolicyStatement(
+         Apply_rp_stanzaContext ctx) {
+      return new RoutePolicyApplyStatement(ctx.name.getText());
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Delete_rp_stanzaContext ctxt) {
-      if (ctxt.ALL() != null) {
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Delete_rp_stanzaContext ctx) {
+      if (ctx.ALL() != null) {
          return new RoutePolicyDeleteAllStatement();
       }
       else {
-         boolean negated = (ctxt.NOT() != null);
+         boolean negated = (ctx.NOT() != null);
          return new RoutePolicyDeleteCommunityStatement(negated,
-               toRoutePolicyCommunitySet(ctxt.rp_community_set()));
+               toRoutePolicyCommunitySet(ctx.rp_community_set()));
       }
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Disposition_rp_stanzaContext ctxt) {
+   private RoutePolicyDispositionStatement toRoutePolicyStatement(
+         Disposition_rp_stanzaContext ctx) {
       RoutePolicyDispositionType t = null;
-      if (ctxt.DONE() != null) {
+      if (ctx.DONE() != null) {
          t = RoutePolicyDispositionType.DONE;
       }
-      else if (ctxt.DROP() != null) {
+      else if (ctx.DROP() != null) {
          t = RoutePolicyDispositionType.DROP;
       }
-      else if (ctxt.PASS() != null) {
+      else if (ctx.PASS() != null) {
          t = RoutePolicyDispositionType.PASS;
       }
       return new RoutePolicyDispositionStatement(t);
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         If_rp_stanzaContext ctxt) {
-      RoutePolicyBoolean b = toRoutePolicyBoolean(ctxt.boolean_rp_stanza());
+   private RoutePolicyIfStatement toRoutePolicyStatement(
+         If_rp_stanzaContext ctx) {
+      RoutePolicyBoolean b = toRoutePolicyBoolean(ctx.boolean_rp_stanza());
       List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(
-            ctxt.rp_stanza());
+            ctx.rp_stanza());
       List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<>();
-      for (Elseif_rp_stanzaContext ectxt : ctxt.elseif_rp_stanza()) {
+      for (Elseif_rp_stanzaContext ectxt : ctx.elseif_rp_stanza()) {
          elseIfs.add(toRoutePolicyElseIfBlock(ectxt));
       }
       RoutePolicyElseBlock els = null;
-      Else_rp_stanzaContext elctxt = ctxt.else_rp_stanza();
+      Else_rp_stanzaContext elctxt = ctx.else_rp_stanza();
       if (elctxt != null) {
          els = toRoutePolicyElseBlock(elctxt);
       }
-
       return new RoutePolicyIfStatement(b, stmts, elseIfs, els);
 
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctxt) {
-      Apply_rp_stanzaContext actxt = ctxt.apply_rp_stanza();
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Prepend_as_path_rp_stanzaContext ctx) {
+      AsExpr expr = toAsExpr(ctx.as);
+      IntExpr number = null;
+      if (ctx.number != null) {
+         number = toIntExpr(ctx.number);
+      }
+      return new RoutePolicyPrependAsPath(expr, number);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctx) {
+      Apply_rp_stanzaContext actxt = ctx.apply_rp_stanza();
       if (actxt != null) {
          return toRoutePolicyStatement(actxt);
       }
 
-      Delete_rp_stanzaContext dctxt = ctxt.delete_rp_stanza();
+      Delete_rp_stanzaContext dctxt = ctx.delete_rp_stanza();
       if (dctxt != null) {
          return toRoutePolicyStatement(dctxt);
       }
 
-      Disposition_rp_stanzaContext pctxt = ctxt.disposition_rp_stanza();
+      Disposition_rp_stanzaContext pctxt = ctx.disposition_rp_stanza();
       if (pctxt != null) {
          return toRoutePolicyStatement(pctxt);
       }
 
-      If_rp_stanzaContext ictxt = ctxt.if_rp_stanza();
+      If_rp_stanzaContext ictxt = ctx.if_rp_stanza();
       if (ictxt != null) {
          return toRoutePolicyStatement(ictxt);
       }
 
-      Set_rp_stanzaContext sctxt = ctxt.set_rp_stanza();
+      Set_rp_stanzaContext sctxt = ctx.set_rp_stanza();
       if (sctxt != null) {
          return toRoutePolicyStatement(sctxt);
       }
 
-      return null;
+      throw convError(RoutePolicyStatement.class, ctx);
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Set_community_rp_stanzaContext ctxt) {
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_community_rp_stanzaContext ctx) {
       RoutePolicyCommunitySet cset = toRoutePolicyCommunitySet(
-            ctxt.rp_community_set());
-      boolean additive = (ctxt.ADDITIVE() != null);
+            ctx.rp_community_set());
+      boolean additive = (ctx.ADDITIVE() != null);
       return new RoutePolicySetCommunity(cset, additive);
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Set_local_preference_rp_stanzaContext ctxt) {
-      return new RoutePolicySetLocalPref(toInteger(ctxt.pref));
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_local_preference_rp_stanzaContext ctx) {
+      return new RoutePolicySetLocalPref(toLocalPreferenceIntExpr(ctx.pref));
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Set_med_rp_stanzaContext ctxt) {
-      if (ctxt.med != null) {
-         return new RoutePolicySetMed(toInteger(ctxt.med));
-      }   
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_med_rp_stanzaContext ctx) {
+      return new RoutePolicySetMed(toMetricIntExpr(ctx.med));
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_metric_type_rp_stanzaContext ctx) {
+      Rp_metric_typeContext t = ctx.type;
+      if (t.rp_ospf_metric_type() != null) {
+         return new RoutePolicySetOspfMetricType(
+               toOspfMetricType(t.rp_ospf_metric_type()));
+      }
+      else if (t.rp_isis_metric_type() != null) {
+         return new RoutePolicySetIsisMetricType(
+               toIsisMetricType(t.rp_isis_metric_type()));
+      }
+      else if (t.RP_VARIABLE() != null) {
+         return new RoutePolicySetVarMetricType(t.RP_VARIABLE().getText());
+      }
       else {
-         todo(ctxt, "No support for igp cost in set MEDs");
-         return new RoutePolicySetMed(0);
+         throw convError(RoutePolicyStatement.class, ctx);
       }
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Set_next_hop_rp_stanzaContext ctxt) {
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_next_hop_rp_stanzaContext ctx) {
       RoutePolicyNextHop hop = null;
-      if (ctxt.IP_ADDRESS() != null) {
-         hop = new RoutePolicyNextHopIp(toIp(ctxt.IP_ADDRESS()));
+      if (ctx.IP_ADDRESS() != null) {
+         hop = new RoutePolicyNextHopIp(toIp(ctx.IP_ADDRESS()));
       }
-      else if (ctxt.IPV6_ADDRESS() != null) {
-         hop = new RoutePolicyNextHopIP6(toIp6(ctxt.IPV6_ADDRESS()));
+      else if (ctx.IPV6_ADDRESS() != null) {
+         hop = new RoutePolicyNextHopIP6(toIp6(ctx.IPV6_ADDRESS()));
       }
-      else if (ctxt.PEER_ADDRESS() != null) {
+      else if (ctx.PEER_ADDRESS() != null) {
          hop = new RoutePolicyNextHopPeerAddress();
       }
-      else if (ctxt.SELF() != null) {
+      else if (ctx.SELF() != null) {
          hop = new RoutePolicyNextHopSelf();
       }
 
-      boolean dest_vrf = (ctxt.DESTINATION_VRF() != null);
+      boolean dest_vrf = (ctx.DESTINATION_VRF() != null);
       return new RoutePolicySetNextHop(hop, dest_vrf);
 
    }
 
-   public RoutePolicyStatement toRoutePolicyStatement(
-         Set_rp_stanzaContext ctxt) {
-      Set_community_rp_stanzaContext cctxt = ctxt.set_community_rp_stanza();
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_rp_stanzaContext ctx) {
+      Prepend_as_path_rp_stanzaContext p = ctx.prepend_as_path_rp_stanza();
+      if (p != null) {
+         return toRoutePolicyStatement(p);
+      }
+
+      Set_community_rp_stanzaContext cctxt = ctx.set_community_rp_stanza();
       if (cctxt != null) {
          return toRoutePolicyStatement(cctxt);
       }
 
-      Set_local_preference_rp_stanzaContext lpctxt = ctxt
+      Set_local_preference_rp_stanzaContext lpctxt = ctx
             .set_local_preference_rp_stanza();
       if (lpctxt != null) {
          return toRoutePolicyStatement(lpctxt);
       }
 
-      Set_med_rp_stanzaContext mctxt = ctxt.set_med_rp_stanza();
+      Set_med_rp_stanzaContext mctxt = ctx.set_med_rp_stanza();
       if (mctxt != null) {
          return toRoutePolicyStatement(mctxt);
       }
 
-      Set_next_hop_rp_stanzaContext hctxt = ctxt.set_next_hop_rp_stanza();
+      Set_metric_type_rp_stanzaContext mt = ctx.set_metric_type_rp_stanza();
+      if (mt != null) {
+         return toRoutePolicyStatement(mt);
+      }
+
+      Set_next_hop_rp_stanzaContext hctxt = ctx.set_next_hop_rp_stanza();
       if (hctxt != null) {
          return toRoutePolicyStatement(hctxt);
       }
 
-      return null;
+      throw convError(RoutePolicyStatement.class, ctx);
    }
 
-   public List<RoutePolicyStatement> toRoutePolicyStatementList(
+   private List<RoutePolicyStatement> toRoutePolicyStatementList(
          List<Rp_stanzaContext> ctxts) {
       List<RoutePolicyStatement> stmts = new ArrayList<>();
       for (Rp_stanzaContext ctxt : ctxts) {

@@ -1,0 +1,14 @@
+!
+hostname route_policy_igp_cost
+!
+route-policy EBGP_CUST_FULL_v4
+   if ((community matches-any DC_CF_COMMODITY_PEER) or (community matches-any DC_CF_ISP) or (community matches-any HPR_CF_RE_PEER) or (community matches-any DC_AT_MEMBERS)) then
+      set med igp-cost
+   elseif (community matches-any No_Export) then
+      drop
+   else
+      drop
+   endif
+end-policy
+!
+
