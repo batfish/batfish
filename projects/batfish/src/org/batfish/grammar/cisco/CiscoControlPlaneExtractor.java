@@ -3694,7 +3694,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
       Boolean_tag_is_rp_stanzaContext tagctxt = ctxt.boolean_tag_is_rp_stanza();
       if (tagctxt != null) {
-         return new RoutePolicyBooleanTagIs(tagctxt.DEC().toString());
+         return new RoutePolicyBooleanTagIs(toInteger(tagctxt.DEC()));
       }
       
       return null;
