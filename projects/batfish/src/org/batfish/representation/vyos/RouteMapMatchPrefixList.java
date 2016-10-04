@@ -1,12 +1,6 @@
 package org.batfish.representation.vyos;
 
-import java.util.Collections;
-
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
-import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -24,22 +18,6 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
 
    public RouteMapMatchPrefixList(String prefixList) {
       _prefixList = prefixList;
-   }
-
-   @Override
-   public void applyTo(Configuration c, PolicyMap policyMap,
-         PolicyMapClause clause, Warnings w) {
-      RouteFilterList routeFilterList = c.getRouteFilterLists()
-            .get(_prefixList);
-      if (routeFilterList == null) {
-         w.redFlag(
-               "Reference to undefined prefix-list: \"" + _prefixList + "\"");
-      }
-      else {
-         PolicyMapMatchRouteFilterListLine line = new PolicyMapMatchRouteFilterListLine(
-               Collections.singleton(routeFilterList));
-         clause.getMatchLines().add(line);
-      }
    }
 
    public String getPrefixList() {

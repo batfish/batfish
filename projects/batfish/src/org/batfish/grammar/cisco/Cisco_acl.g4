@@ -71,6 +71,9 @@ community_set_stanza
 
 community_set_elem_list
 :
+// no elements
+
+   |
    (
       community_set_elem COMMA NEWLINE
    )* community_set_elem NEWLINE
@@ -78,7 +81,7 @@ community_set_elem_list
 
 community_set_elem
 :
-   COMMUNITY_SET_VALUE
+   rp_community_set_elem
    | ACCEPT_OWN
    | DFA_REGEX COMMUNITY_SET_REGEX
    | INTERNET
@@ -119,14 +122,17 @@ extended_access_list_additional_feature
    | MLD_QUERY
    | MLD_REDUCTION
    | MLD_REPORT
+   | ND
    | ND_NA
    | ND_NS
+   | NEIGHBOR
    | NETWORK_UNKNOWN
    | NET_UNREACHABLE
    | PACKET_TOO_BIG
    | PARAMETER_PROBLEM
    | PORT_UNREACHABLE
    | REDIRECT
+   | ROUTER
    | ROUTER_ADVERTISEMENT
    | ROUTER_SOLICITATION
    | RST
@@ -253,7 +259,9 @@ ip_as_path_access_list_stanza
 
 ip_as_path_access_list_tail
 :
-   action = access_list_action
+   (
+      SEQ DEC
+   )? action = access_list_action
    (
       as_path_regex
       | null_as_path_regex
@@ -264,11 +272,15 @@ ip_community_list_expanded_stanza
 :
    (
       (
-         IP COMMUNITY_LIST name = variable NEWLINE
+         IP COMMUNITY_LIST name = variable NEWLINE?
       )
       |
       (
          IP COMMUNITY_LIST EXPANDED name = variable
+      )
+      |
+      (
+         IP COMMUNITY_LIST EXTENDED name = variable
       )
       |
       (
@@ -285,7 +297,9 @@ ip_community_list_expanded_stanza
 
 ip_community_list_expanded_tail
 :
-   ala = access_list_action
+   (
+      SEQ DEC
+   )? ala = access_list_action
    (
       remainder += ~NEWLINE
    )+ NEWLINE
@@ -322,6 +336,7 @@ ip_prefix_list_stanza
 :
    (
       IP
+      | IPV4
       | IPV6
    ) PREFIX_LIST name = variable
    (

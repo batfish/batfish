@@ -14,6 +14,7 @@ s_router_eigrp
 s_router_eigrp_tail
 :
    re_auto_summary
+   | re_distribute_list
    | re_network
    | re_nsf
    | re_passive_interface
@@ -23,6 +24,15 @@ s_router_eigrp_tail
 re_auto_summary
 :
    NO? AUTO_SUMMARY NEWLINE
+;
+
+re_distribute_list
+:
+   DISTRIBUTE_LIST DEC
+   (
+      OUT
+      | IN
+   ) NEWLINE
 ;
 
 re_network

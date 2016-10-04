@@ -1,6 +1,24 @@
 !
 hostname xrOSPF
 !
+interface Bundle-Ether101
+!
+interface Bundle-Ether103
+!
+interface Bundle-Ether201
+!
+interface Loopback0
+!
+interface TenGigE0/0/0/2
+!
+interface TenGigE0/0/0/4
+!
+interface TenGigE0/0/0/5
+!
+interface HundredGigE0/2/0/0.292
+!
+interface HundredGigE0/2/0/3
+!
 router ospf 52
  nsr
  log adjacency changes detail

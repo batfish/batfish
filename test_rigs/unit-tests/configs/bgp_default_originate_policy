@@ -1,0 +1,20 @@
+!
+hostname bgp_default_originate_policy
+!
+router bgp 1
+ neighbor-group ama-coe
+  remote-as 64666
+  !  password <removed>
+  description amador coe bgp gw
+  address-family ipv4 unicast
+   send-community-ebgp
+   route-policy cust_v4_in(ama-coe-v4, ama-coe-as-path, ama-coe-no-auth, ama-coe-need-auth, 65517, ama-coe-isp-authorized) in
+   maximum-prefix 500 80 restart 60
+   route-policy EBGP_CUST_FULL_v4 out
+   default-originate route-policy DEFAULT_ORIGINATE
+   remove-private-AS
+   soft-reconfiguration inbound always
+  !
+ !
+!
+

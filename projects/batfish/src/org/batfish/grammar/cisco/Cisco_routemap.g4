@@ -10,7 +10,7 @@ apply_rp_stanza
 :
    APPLY name = variable
    (
-      PAREN_LEFT varname = variable PAREN_RIGHT
+      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
    )? NEWLINE
 ;
 
@@ -18,6 +18,22 @@ as_expr
 :
    DEC
    | AUTO
+   | RP_VARIABLE
+;
+
+as_path_set_expr
+:
+   inline = as_path_set_inline
+   | rpvar = RP_VARIABLE
+   | named = variable
+;
+
+as_path_set_inline
+:
+   PAREN_LEFT elems += as_path_set_elem
+   (
+      COMMA elems += as_path_set_elem
+   )* PAREN_RIGHT
 ;
 
 boolean_and_rp_stanza
@@ -28,7 +44,23 @@ boolean_and_rp_stanza
 
 boolean_as_path_in_rp_stanza
 :
-   AS_PATH IN name = variable
+   AS_PATH IN expr = as_path_set_expr
+;
+
+boolean_as_path_originates_from_rp_stanza
+:
+   AS_PATH ORIGINATES_FROM SINGLE_QUOTE
+   (
+      as_list += as_expr
+   )+ SINGLE_QUOTE EXACT?
+;
+
+boolean_as_path_passes_through_rp_stanza
+:
+   AS_PATH PASSES_THROUGH SINGLE_QUOTE
+   (
+      as_list += as_expr
+   )+ SINGLE_QUOTE EXACT?
 ;
 
 boolean_community_matches_any_rp_stanza
@@ -67,6 +99,8 @@ boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
    | boolean_as_path_in_rp_stanza
+   | boolean_as_path_originates_from_rp_stanza
+   | boolean_as_path_passes_through_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
@@ -182,11 +216,7 @@ match_ip_prefix_list_rm_stanza
 :
    MATCH IP ADDRESS IP? PREFIX_LIST
    (
-      name_list +=
-      (
-         VARIABLE
-         | DEC
-      )
+      name_list += variable
    )+ NEWLINE
 ;
 
@@ -247,7 +277,14 @@ null_rm_stanza
 null_rp_stanza
 :
    POUND ~NEWLINE* NEWLINE
-   | PREPEND AS_PATH ~NEWLINE NEWLINE
+;
+
+prepend_as_path_rp_stanza
+:
+   PREPEND AS_PATH as = as_expr
+   (
+      number = int_expr
+   )? NEWLINE
 ;
 
 rm_stanza
@@ -267,8 +304,16 @@ route_policy_stanza
 :
    ROUTE_POLICY name = variable
    (
-      PAREN_LEFT varname = variable PAREN_RIGHT
+      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
    )? NEWLINE route_policy_tail
+;
+
+route_policy_params_list
+:
+   params_list += variable
+   (
+      COMMA params_list += variable
+   )*
 ;
 
 route_policy_tail
@@ -281,10 +326,31 @@ route_policy_tail
 rp_community_set
 :
    name = variable
-   | PAREN_LEFT elems += community
+   | PAREN_LEFT elems += rp_community_set_elem
    (
-      COMMA elems += community
+      COMMA elems += rp_community_set_elem
    )* PAREN_RIGHT
+;
+
+rp_isis_metric_type
+:
+   EXTERNAL
+   | INTERNAL
+   | RIB_METRIC_AS_EXTERNAL
+   | RIB_METRIC_AS_INTERNAL
+;
+
+rp_metric_type
+:
+   rp_isis_metric_type
+   | rp_ospf_metric_type
+   | RP_VARIABLE
+;
+
+rp_ospf_metric_type
+:
+   TYPE_1
+   | TYPE_2
 ;
 
 rp_prefix_set
@@ -404,27 +470,32 @@ set_ipv6_rm_stanza
 
 set_local_preference_rm_stanza
 :
-   SET LOCAL_PREFERENCE pref = DEC NEWLINE
+   SET LOCAL_PREFERENCE pref = int_expr NEWLINE
 ;
 
 set_local_preference_rp_stanza
 :
-   SET LOCAL_PREFERENCE pref = DEC NEWLINE
+   SET LOCAL_PREFERENCE pref = int_expr NEWLINE
 ;
 
 set_med_rp_stanza
 :
-   SET MED med = DEC NEWLINE
+   SET MED med = int_expr NEWLINE
 ;
 
 set_metric_rm_stanza
 :
-   SET METRIC metric = DEC NEWLINE
+   SET METRIC metric = int_expr NEWLINE
 ;
 
 set_metric_type_rm_stanza
 :
    SET METRIC_TYPE type = variable NEWLINE
+;
+
+set_metric_type_rp_stanza
+:
+   SET METRIC_TYPE type = rp_metric_type NEWLINE
 ;
 
 set_mpls_label_rm_stanza
@@ -528,9 +599,11 @@ set_rm_stanza
 
 set_rp_stanza
 :
-   set_community_rp_stanza
+   prepend_as_path_rp_stanza
+   | set_community_rp_stanza
    | set_local_preference_rp_stanza
    | set_med_rp_stanza
+   | set_metric_type_rp_stanza
    | set_next_hop_rp_stanza
    | set_origin_rp_stanza
    | set_tag_rp_stanza

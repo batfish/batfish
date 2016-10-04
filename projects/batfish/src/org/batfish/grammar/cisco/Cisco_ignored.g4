@@ -17,6 +17,7 @@ null_block_stanza
       | ADMIN
       | ALLOW
       | ARCHIVE
+      | AS_PATH_SET
       | ATM
       | BASH
       | BFD
@@ -29,12 +30,14 @@ null_block_stanza
       | CHAT_SCRIPT
       | CISP
       | CLI
+      | CLNS
       | CLOCK
       | CONFDCONFIG
       | CONFIGURATION
       | CONTROLLER
       | COPP
       | COPY
+      | COS_QUEUE_GROUP
       | CPD
       | CRYPTO
       | CTL_FILE
@@ -78,7 +81,11 @@ null_block_stanza
             | DHCP
             | DNS
             | ECMP_GROUP
+            | FLOW_AGGREGATION
+            | FLOW_CAPTURE
+            | FLOW_SAMPLING_MODE
             | FLOW_TOP_TALKERS
+            | GLOBAL_MTU
             | HARDWARE
             | ICMP_ERRORS
             | INSPECT
@@ -87,11 +94,17 @@ null_block_stanza
             (
                OSPF NAME_LOOKUP
             )
+            | PIM
             | POLICY_LIST
+            | RATE_LIMIT
+            | RECEIVE
             | REFLEXIVE_LIST
             | ROUTER_ID
+            | RSVP
+            | SDR
             | SLA
             | SOURCE
+            | SYSLOG
             | VIRTUAL_ROUTER
             |
             (
@@ -100,6 +113,7 @@ null_block_stanza
          )
       )
       | IPC
+      | IPSLA
       |
       (
          IPV4
@@ -117,6 +131,7 @@ null_block_stanza
          (
             CONFLICT_POLICY
             | HARDWARE
+            | MROUTE
          )
       )
       | KEY
@@ -144,7 +159,7 @@ null_block_stanza
                IP
                | IPV6
                | LDP ~NEWLINE
-            )            
+            )
             | OAM
             | TRAFFIC_ENG
          )
@@ -157,7 +172,7 @@ null_block_stanza
             CLASS_MAP
             |
             (
-               IP 
+               IP
                (
                   AS_PATH
                )
@@ -179,6 +194,7 @@ null_block_stanza
       | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
+      | QOS_MAPPING
       | QOS_POLICY_OUTPUT
       | REDUNDANCY
       | RELOAD_TYPE
@@ -192,6 +208,7 @@ null_block_stanza
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
+      | SCHEDULE
       | SDR
       | SERVICE_CLASS
       | SFLOW
@@ -199,6 +216,7 @@ null_block_stanza
       | SPANNING_TREE
       | STACK_MAC
       | STACK_UNIT
+      | STATISTICS
       | STCAPP
       | SVCLC
       | SWITCH
@@ -211,6 +229,7 @@ null_block_stanza
       | TACACS
       | TACACS_SERVER
       | TAP
+      | TASKGROUP
       | TCP
       | TEMPLATE
       | TERMINAL
@@ -338,6 +357,7 @@ null_block_substanza
          | DOMAIN_ID
          | DOMAIN_NAME
          | DROP
+         | DSCP
          | DS0_GROUP
          | DTMF_RELAY
          | DUAL_ACTIVE
@@ -359,6 +379,7 @@ null_block_substanza
          | EXPORT
          | EXPORT_PROTOCOL
          | EXPORTER
+         | EXTENDED_COUNTERS
          | FABRIC
          | FAILED
          | FAIR_QUEUE
@@ -380,6 +401,7 @@ null_block_substanza
          | GROUP_URL
          | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
+         | HELPER_ADDRESS
          | HIDDEN_LITERAL
          | HIDDEN_SHARES
          | HIDEKEYS
@@ -419,6 +441,7 @@ null_block_substanza
          | IPV6_ADDRESS_POOL
          | ISAKMP
          | ISSUER_NAME
+         | FREQUENCY
          | KEEPALIVE_ENABLE
          | KEEPOUT
          | KEY_STRING
@@ -428,6 +451,7 @@ null_block_substanza
          | L2TP
          | LEASE
          | LENGTH
+         | LIFE
          | LIMIT_RESOURCE
          | LINECODE
          | LLDP
@@ -463,9 +487,11 @@ null_block_substanza
          | NOTIFY
          | OBJECT
          | OPEN
+         | OPERATION
          | OPTION
          | OPTIONS
          | OPS
+         | ORIGINATOR_ID
          | OUI
          | PARAMETERS
          | PARENT
@@ -489,6 +515,8 @@ null_block_substanza
          | POLICY_LIST
          | POLICY_MAP
          | PORT
+         | PORT_NAME
+         | PRECEDENCE
          | PREDICTOR
          | PRE_SHARED_KEY
          | PREEMPT
@@ -499,15 +527,19 @@ null_block_substanza
          | PRIVATE_VLAN
          | PRIVILEGE
          | PROBE
+         | PROFILE
          | PROPOSAL
          | PROTOCOL
          | PROVISION
          | PROXY_SERVER
+         | QUEUE
          | QUEUE_BUFFERS
          | QUEUE_LIMIT
          | RANDOM
          | RANDOM_DETECT
          | RD
+         | REACT
+         | REACTION
          | REAL
          | RECEIVE
          | RECORD
@@ -533,7 +565,10 @@ null_block_substanza
          | ROTARY
          | ROUTE
          | ROUTE_TARGET
+         | ROUTER_INTERFACE
+         | RP_ADDRESS
          | RULE
+         | SA_FILTER
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -567,6 +602,7 @@ null_block_substanza
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
          | SSH_KEYDIR
+         | START_TIME
          | STATISTICS
          | STICKY
          | STOPBITS
@@ -578,6 +614,9 @@ null_block_substanza
          | SYNC
          | SYSTEM_PRIORITY
          | TAG
+         | TAGGED
+         | TASK
+         | TASK_SPACE_EXECUTE
          | TASKGROUP
          | TB_VLAN1
          | TB_VLAN2
@@ -589,6 +628,7 @@ null_block_substanza
          | TIMER
          | TIMESTAMP
          | TIMING
+         | TM_VOQ_COLLECTION
          | TOP
          | TOS
          | TRACKING_PRIORITY_INCREMENT
@@ -596,9 +636,11 @@ null_block_substanza
          | TRIGGER
          | TRUNK
          | TRUST
+         | TTL_THRESHOLD
          | TUNNEL
          | TUNNEL_GROUP
          | TUNNEL_GROUP_LIST
+         | TYPE
          | UDP_JITTER
          | UID
          | UNTAGGED
@@ -889,7 +931,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | RSAKEYPAIR
       | RTR
       | SAME_SECURITY_TRAFFIC
-      | SCHEDULE
       | SCHEDULER
       | SCRIPTING
       | SDM

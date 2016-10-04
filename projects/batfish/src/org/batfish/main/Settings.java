@@ -15,8 +15,6 @@ public final class Settings extends BaseSettings {
 
    public static final class EnvironmentSettings {
 
-      private Path _controlPlaneFactsDir;
-
       private Path _dataPlanePath;
 
       private Path _deltaCompiledConfigurationsDir;
@@ -37,14 +35,6 @@ public final class Settings extends BaseSettings {
 
       private String _name;
 
-      private Path _nlsDataPlaneInputFile;
-
-      private Path _nlsDataPlaneOutputDir;
-
-      private Path _nlsTrafficInputFile;
-
-      private Path _nlsTrafficOutputDir;
-
       private Path _nodeBlacklistPath;
 
       private Path _precomputedRoutesPath;
@@ -52,12 +42,6 @@ public final class Settings extends BaseSettings {
       private Path _serializedTopologyPath;
 
       private Path _trafficFactsDir;
-
-      private Path _z3File;
-
-      public Path getControlPlaneFactsDir() {
-         return _controlPlaneFactsDir;
-      }
 
       public Path getDataPlanePath() {
          return _dataPlanePath;
@@ -99,22 +83,6 @@ public final class Settings extends BaseSettings {
          return _name;
       }
 
-      public Path getNlsDataPlaneInputFile() {
-         return _nlsDataPlaneInputFile;
-      }
-
-      public Path getNlsDataPlaneOutputDir() {
-         return _nlsDataPlaneOutputDir;
-      }
-
-      public Path getNlsTrafficInputFile() {
-         return _nlsTrafficInputFile;
-      }
-
-      public Path getNlsTrafficOutputDir() {
-         return _nlsTrafficOutputDir;
-      }
-
       public Path getNodeBlacklistPath() {
          return _nodeBlacklistPath;
       }
@@ -129,14 +97,6 @@ public final class Settings extends BaseSettings {
 
       public Path getTrafficFactsDir() {
          return _trafficFactsDir;
-      }
-
-      public Path getZ3File() {
-         return _z3File;
-      }
-
-      public void setControlPlaneFactsDir(Path path) {
-         _controlPlaneFactsDir = path;
       }
 
       public void setDataPlanePath(Path path) {
@@ -182,22 +142,6 @@ public final class Settings extends BaseSettings {
          _name = name;
       }
 
-      public void setNlsDataPlaneInputFile(Path nlsDataPlaneInputFile) {
-         _nlsDataPlaneInputFile = nlsDataPlaneInputFile;
-      }
-
-      public void setNlsDataPlaneOutputDir(Path nlsDataPlaneOutputDir) {
-         _nlsDataPlaneOutputDir = nlsDataPlaneOutputDir;
-      }
-
-      public void setNlsTrafficInputFile(Path nlsTrafficInputFile) {
-         _nlsTrafficInputFile = nlsTrafficInputFile;
-      }
-
-      public void setNlsTrafficOutputDir(Path nlsTrafficOutputDir) {
-         _nlsTrafficOutputDir = nlsTrafficOutputDir;
-      }
-
       public void setNodeBlacklistPath(Path nodeBlacklistPath) {
          _nodeBlacklistPath = nodeBlacklistPath;
       }
@@ -212,10 +156,6 @@ public final class Settings extends BaseSettings {
 
       public void setTrafficFactsDir(Path trafficFactsDir) {
          _trafficFactsDir = trafficFactsDir;
-      }
-
-      public void setZ3DataPlaneFile(Path path) {
-         _z3File = path;
       }
 
    }
@@ -356,8 +296,6 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_ANONYMIZE = "anonymize";
 
-   private static final String ARG_BUILD_PREDICATE_INFO = "bpi";
-
    public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
    private static final String ARG_COORDINATOR_NO_SSL = "coordinator.NoSsl";
@@ -410,12 +348,6 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
 
-   private static final String ARG_NLS_DEBUG_SYMBOLS = "nlsdebugsymbols";
-
-   private static final String ARG_NLS_DRY = "nlsdry";
-
-   private static final String ARG_NO_OUTPUT = "nooutput";
-
    private static final String ARG_NO_SHUFFLE = "noshuffle";
 
    private static final String ARG_PRECOMPUTED_ADVERTISEMENTS_PATH = "precomputedadvertisementspath";
@@ -428,17 +360,9 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_PRECOMPUTED_ROUTES_PATHS = "precomputedroutespaths";
 
-   private static final String ARG_PREDHELP = "predhelp";
-
-   private static final String ARG_PREDICATES = "predicates";
-
    private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
    private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
-
-   private static final String ARG_QUERY = "query";
-
-   private static final String ARG_QUERY_ALL = "all";
 
    private static final String ARG_SEQUENTIAL = "sequential";
 
@@ -479,8 +403,6 @@ public final class Settings extends BaseSettings {
 
    private static final String ARGNAME_PORT = "port";
 
-   private static final String ARGNAME_PREDICATES = "predicates";
-
    private static final String ARGNAME_ROLE = "role";
 
    private static final String ARGNAME_STRINGS = "string..";
@@ -496,8 +418,6 @@ public final class Settings extends BaseSettings {
    private Path _answerJsonPath;
 
    private List<String> _blockNames;
-
-   private boolean _buildPredicateInfo;
 
    private boolean _canExecute;
 
@@ -563,8 +483,6 @@ public final class Settings extends BaseSettings {
 
    private BatfishLogger _logger;
 
-   private String _logicSrcDir;
-
    private String _logLevel;
 
    private boolean _logTee;
@@ -575,13 +493,7 @@ public final class Settings extends BaseSettings {
 
    private int _maxRuntimeMs;
 
-   private boolean _nlsDebugSymbols;
-
-   private boolean _nlsDry;
-
    private Path _nodeRolesPath;
-
-   private boolean _noOutput;
 
    private String _outputEnvironmentName;
 
@@ -605,13 +517,7 @@ public final class Settings extends BaseSettings {
 
    private boolean _printParseTree;
 
-   private boolean _printSemantics;
-
    private boolean _printSymmetricEdges;
-
-   private boolean _query;
-
-   private boolean _queryAll;
 
    private String _questionName;
 
@@ -719,10 +625,6 @@ public final class Settings extends BaseSettings {
 
    public List<String> getBlockNames() {
       return _blockNames;
-   }
-
-   public boolean getBuildPredicateInfo() {
-      return _buildPredicateInfo;
    }
 
    public boolean getCompileEnvironment() {
@@ -833,10 +735,6 @@ public final class Settings extends BaseSettings {
       return _logger;
    }
 
-   public String getLogicSrcDir() {
-      return _logicSrcDir;
-   }
-
    public String getLogLevel() {
       return _logLevel;
    }
@@ -857,20 +755,8 @@ public final class Settings extends BaseSettings {
       return _maxRuntimeMs;
    }
 
-   public boolean getNlsDebugSymbols() {
-      return _nlsDebugSymbols;
-   }
-
-   public boolean getNlsDry() {
-      return _nlsDry;
-   }
-
    public Path getNodeRolesPath() {
       return _nodeRolesPath;
-   }
-
-   public boolean getNoOutput() {
-      return _noOutput;
    }
 
    public String getOutputEnvironmentName() {
@@ -913,20 +799,8 @@ public final class Settings extends BaseSettings {
       return _predicates;
    }
 
-   public boolean getPrintSemantics() {
-      return _printSemantics;
-   }
-
    public boolean getPrintSymmetricEdgePairs() {
       return _printSymmetricEdges;
-   }
-
-   public boolean getQuery() {
-      return _query;
-   }
-
-   public boolean getQueryAll() {
-      return _queryAll;
    }
 
    public String getQuestionName() {
@@ -1073,7 +947,6 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_ANONYMIZE, false);
       setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
       setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
-      setDefaultProperty(ARG_BUILD_PREDICATE_INFO, null);
       setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
       setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
       setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
@@ -1105,9 +978,6 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
       setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
       setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
-      setDefaultProperty(ARG_NLS_DEBUG_SYMBOLS, true);
-      setDefaultProperty(ARG_NLS_DRY, false);
-      setDefaultProperty(ARG_NO_OUTPUT, false);
       setDefaultProperty(ARG_NO_SHUFFLE, false);
       setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
       setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
@@ -1119,12 +989,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATHS, new String[] {});
-      setDefaultProperty(ARG_PREDHELP, new String[] {});
-      setDefaultProperty(ARG_PREDICATES, new String[] {});
       setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
       setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
-      setDefaultProperty(ARG_QUERY, false);
-      setDefaultProperty(ARG_QUERY_ALL, false);
       setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
       setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
@@ -1167,10 +1033,6 @@ public final class Settings extends BaseSettings {
 
       addListOption(BfConsts.ARG_BLOCK_NAMES,
             "list of blocks of logic rules to add or remove", "blocknames");
-
-      addOption(ARG_BUILD_PREDICATE_INFO,
-            "build predicate info (should only be called by ant build script) with provided input logic dir",
-            ARGNAME_PATH);
 
       addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory",
             ARGNAME_PATH);
@@ -1273,14 +1135,6 @@ public final class Settings extends BaseSettings {
       addOption(ARG_MAX_RUNTIME_MS,
             "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
-      addBooleanOption(ARG_NLS_DEBUG_SYMBOLS,
-            "compute/display nls debug symbols for querying");
-
-      addBooleanOption(ARG_NLS_DRY,
-            "prepare nls facts only without executing nls");
-
-      addBooleanOption(ARG_NO_OUTPUT, "do not produce output files");
-
       addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
       addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment",
@@ -1311,21 +1165,10 @@ public final class Settings extends BaseSettings {
       addListOption(ARG_PRECOMPUTED_ROUTES_PATHS,
             "input paths to precomputed routes", ARGNAME_PATHS);
 
-      addListOption(ARG_PREDHELP,
-            "print semantics for all predicates, or for predicates supplied as optional arguments",
-            ARGNAME_PREDICATES);
-
-      addListOption(ARG_PREDICATES, "list of predicates to query",
-            ARGNAME_PREDICATES);
-
       addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
       addBooleanOption(ARG_PRINT_SYMMETRIC_EDGES,
             "print topology with symmetric edges adjacent in listing");
-
-      addBooleanOption(ARG_QUERY, "query one or more nls relations");
-
-      addBooleanOption(ARG_QUERY_ALL, "query ALL predicates");
 
       addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
 
@@ -1403,13 +1246,13 @@ public final class Settings extends BaseSettings {
             "generate report based on answered questions");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_ADVERTISEMENTS,
-            "write bgp advertisements from nls data plane model to disk");
+            "write bgp advertisements from data plane model to disk");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS,
-            "write ibgp neighbors from nls data plane model to disk");
+            "write ibgp neighbors from data plane model to disk");
 
       addBooleanOption(BfConsts.COMMAND_WRITE_ROUTES,
-            "write routes from nls data plane model to disk");
+            "write routes from data plane model to disk");
 
    }
 
@@ -1417,7 +1260,6 @@ public final class Settings extends BaseSettings {
       initCommandLine(args);
       _canExecute = true;
       _runInServiceMode = false;
-      _printSemantics = false;
 
       // SPECIAL OPTIONS
       _logFile = getStringOptionValue(BfConsts.ARG_LOG_FILE);
@@ -1428,13 +1270,6 @@ public final class Settings extends BaseSettings {
          return;
       }
       _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
-      _buildPredicateInfo = getStringOptionValue(
-            ARG_BUILD_PREDICATE_INFO) != null;
-      if (_buildPredicateInfo) {
-         _logicSrcDir = getStringOptionValue(ARG_BUILD_PREDICATE_INFO);
-         return;
-      }
-      _printSemantics = getStringListOptionValue(ARG_PREDHELP).size() != 0;
 
       // REGULAR OPTIONS
       _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
@@ -1468,7 +1303,6 @@ public final class Settings extends BaseSettings {
       _generateStubsRemoteAs = getIntegerOptionValue(
             ARG_GENERATE_STUBS_REMOTE_AS);
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
-      _helpPredicates = getStringListOptionValue(ARG_PREDHELP);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
       _ignoreFilesWithStrings = getStringListOptionValue(
             ARG_IGNORE_FILES_WITH_STRINGS);
@@ -1480,9 +1314,6 @@ public final class Settings extends BaseSettings {
       _maxParserContextTokens = getIntOptionValue(
             ARG_MAX_PARSER_CONTEXT_TOKENS);
       _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
-      _noOutput = getBooleanOptionValue(ARG_NO_OUTPUT);
-      _nlsDry = getBooleanOptionValue(ARG_NLS_DRY);
-      _nlsDebugSymbols = getBooleanOptionValue(ARG_NLS_DEBUG_SYMBOLS);
       _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
       _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
       _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
@@ -1494,11 +1325,8 @@ public final class Settings extends BaseSettings {
       _precomputedRoutesPath = getPathOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
       _precomputedRoutesPaths = getPathListOptionValue(
             ARG_PRECOMPUTED_ROUTES_PATHS);
-      _predicates = getStringListOptionValue(ARG_PREDICATES);
       _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
       _printSymmetricEdges = getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
-      _query = getBooleanOptionValue(ARG_QUERY);
-      _queryAll = getBooleanOptionValue(ARG_QUERY_ALL);
       _questionName = getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
       _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
       _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
@@ -1589,14 +1417,6 @@ public final class Settings extends BaseSettings {
 
    public void setMaxRuntimeMs(int runtimeMs) {
       _maxRuntimeMs = runtimeMs;
-   }
-
-   public void setNlsDebugSymbols(boolean nlsDebugSymbols) {
-      _nlsDebugSymbols = nlsDebugSymbols;
-   }
-
-   public void setNlsDry(boolean nlsDry) {
-      _nlsDry = nlsDry;
    }
 
    public void setNodeRolesPath(Path nodeRolesPath) {

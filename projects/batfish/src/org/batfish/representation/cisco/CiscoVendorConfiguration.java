@@ -28,27 +28,9 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchAsPathAccessListLine;
-import org.batfish.datamodel.PolicyMapMatchCommunityListLine;
-import org.batfish.datamodel.PolicyMapMatchIpAccessListLine;
-import org.batfish.datamodel.PolicyMapMatchLine;
-import org.batfish.datamodel.PolicyMapMatchPolicyLine;
-import org.batfish.datamodel.PolicyMapMatchProtocolLine;
-import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
-import org.batfish.datamodel.PolicyMapMatchTagLine;
-import org.batfish.datamodel.PolicyMapSetAddCommunityLine;
-import org.batfish.datamodel.PolicyMapSetCommunityLine;
-import org.batfish.datamodel.PolicyMapSetLevelLine;
-import org.batfish.datamodel.PolicyMapSetLine;
-import org.batfish.datamodel.PolicyMapSetMetricLine;
-import org.batfish.datamodel.PolicyMapSetType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -67,6 +49,7 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -95,39 +78,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
    protected static final String COMMUNITY_LIST = "community-list";
 
-   private static final String DEFAULT_ROUTE_FILTER_NAME = "~DEFAULT_ROUTE_FILTER~";
-
    protected static final String INTERFACE = "interface";
 
    protected static final String IP_ACCESS_LIST = "ip acl";
 
-   private static final String ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME = "~ISIS_ALLOW_SUMMARY_FILTER~";
-
-   private static final String ISIS_EXPORT_CONNECTED_POLICY_NAME = "~ISIS_EXPORT_CONNECTED_POLICY~";
-
-   private static final String ISIS_EXPORT_STATIC_POLICY_NAME = "~ISIS_EXPORT_STATIC_POLICY~";
-
-   private static final String ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER~";
-
-   private static final String ISIS_LEAK_L1_ROUTES_POLICY_NAME = "~ISIS_LEAK_L1_ROUTES_POLICY~";
-
-   private static final String ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME = "~ISIS_SUPPRESS_SUMMARIZED_FILTER~";
-
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
-   private static final String OSPF_EXPORT_BGP_POLICY_NAME = "~OSPF_EXPORT_BGP_POLICY~";
-
-   private static final String OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER~";
-
-   private static final String OSPF_EXPORT_CONNECTED_POLICY_NAME = "~OSPF_EXPORT_CONNECTED_POLICY~";
-
-   private static final String OSPF_EXPORT_DEFAULT_POLICY_NAME = "~OSPF_EXPORT_DEFAULT_ROUTE_POLICY~";
-
    private static final String OSPF_EXPORT_POLICY_NAME = "~OSPF_EXPORT_POLICY~";
-
-   private static final String OSPF_EXPORT_STATIC_POLICY_NAME = "~OSPF_EXPORT_STATIC_POLICY~";
-
-   private static final String OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME = "~OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER~";
 
    protected static final String PREFIX_LIST = "prefix-list";
 
@@ -138,59 +95,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private static final long serialVersionUID = 1L;
 
    public static final String VENDOR_NAME = "cisco";
-
-   private static PolicyMap makeRouteExportPolicy(Configuration c, String name,
-         String prefixListName, Prefix prefix, SubRange prefixRange,
-         LineAction prefixAction, Integer metric, RoutingProtocol protocol,
-         PolicyMapAction policyAction) {
-      PolicyMapClause clause = new PolicyMapClause();
-      Set<PolicyMapMatchLine> matchLines = clause.getMatchLines();
-      if (protocol != null) {
-         PolicyMapMatchProtocolLine matchProtocolLine = new PolicyMapMatchProtocolLine(
-               protocol);
-         matchLines.add(matchProtocolLine);
-      }
-      if (prefixListName != null) {
-         RouteFilterList newRouteFilter = c.getRouteFilterLists()
-               .get(prefixListName);
-         if (newRouteFilter == null) {
-            newRouteFilter = makeRouteFilter(prefixListName, prefix,
-                  prefixRange, prefixAction);
-            c.getRouteFilterLists().put(newRouteFilter.getName(),
-                  newRouteFilter);
-         }
-         PolicyMapMatchRouteFilterListLine matchRouteLine = new PolicyMapMatchRouteFilterListLine(
-               Collections.singleton(newRouteFilter));
-         matchLines.add(matchRouteLine);
-      }
-      Set<PolicyMapSetLine> setLines = clause.getSetLines();
-      if (metric != null) {
-         PolicyMapSetMetricLine setMetricLine = new PolicyMapSetMetricLine(
-               metric);
-         setLines.add(setMetricLine);
-      }
-      clause.setAction(policyAction);
-      clause.setName("");
-      PolicyMap output = new PolicyMap(name);
-      output.getClauses().add(clause);
-      c.getPolicyMaps().put(output.getName(), output);
-      return output;
-   }
-
-   private static RouteFilterList makeRouteFilter(String name, Prefix prefix,
-         SubRange prefixRange, LineAction prefixAction) {
-      RouteFilterList list = new RouteFilterList(name);
-      RouteFilterLine line = new RouteFilterLine(prefixAction, prefix,
-            prefixRange);
-      list.addLine(line);
-      // TODO: FIX TERRIBLE HACK!!!
-      if (prefixAction == LineAction.REJECT) {
-         RouteFilterLine acceptLine = new RouteFilterLine(LineAction.ACCEPT,
-               Prefix.ZERO, new SubRange(0, 32));
-         list.addLine(acceptLine);
-      }
-      return list;
-   }
 
    private static String toJavaRegex(String ciscoRegex) {
       String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
@@ -393,43 +297,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
    }
 
-   private boolean modifyRejectDefault(PolicyMapClause clause) {
-      boolean containsRouteFilterList = false;
-      for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-         switch (matchLine.getType()) {
-         case ROUTE_FILTER_LIST:
-            PolicyMapMatchRouteFilterListLine rLine = (PolicyMapMatchRouteFilterListLine) matchLine;
-            for (RouteFilterList list : rLine.getLists()) {
-               containsRouteFilterList = true;
-               list.getLines().add(0, new RouteFilterLine(LineAction.REJECT,
-                     Prefix.ZERO, new SubRange(0, 0)));
-            }
-            break;
-         // allowed match lines
-         case PROTOCOL:
-         case TAG:
-            break;
-
-         // disallowed match lines
-         case AS_PATH_ACCESS_LIST:
-         case COMMUNITY_LIST:
-         case IP_ACCESS_LIST:
-         case NEIGHBOR:
-         case POLICY:
-         case COLOR:
-         case INTERFACE:
-         case POLICY_CONJUNCTION:
-         default:
-            // note: don't allow ip access lists in policies that
-            // are for prefix matching
-            // i.e. convert them, or throw error if they are used
-            // ambiguously
-            throw new VendorConversionException("Unexpected match line type");
-         }
-      }
-      return containsRouteFilterList;
-   }
-
    private void processFailoverSettings() {
       if (_failover) {
          Interface commIface;
@@ -498,8 +365,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          boolean summaryOnly = aggNet.getSummaryOnly();
          int prefixLength = prefix.getPrefixLength();
          SubRange prefixRange = new SubRange(prefixLength + 1, 32);
-         LineAction prefixAction = LineAction.ACCEPT;
-         String filterName = "~MATCH_SUMMARIZED_OF:" + prefix.toString() + "~";
          if (summaryOnly) {
             summaryOnlyNetworks.add(aggNet);
          }
@@ -507,9 +372,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          // create generation policy for aggregate network
          String generationPolicyName = "~AGGREGATE_ROUTE_GEN:"
                + prefix.toString() + "~";
-         PolicyMap generationPolicyMap = makeRouteExportPolicy(c,
-               generationPolicyName, filterName, prefix, prefixRange,
-               prefixAction, null, null, PolicyMapAction.PERMIT);
          RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
                generationPolicyName);
          If currentGeneratedRouteConditional = new If();
@@ -522,10 +384,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                .add(Statements.ReturnTrue.toStaticStatement());
          c.getRoutingPolicies().put(generationPolicyName,
                currentGeneratedRoutePolicy);
-         Set<PolicyMap> generationPolicies = new HashSet<>();
-         generationPolicies.add(generationPolicyMap);
          GeneratedRoute gr = new GeneratedRoute(prefix,
-               CISCO_AGGREGATE_ROUTE_ADMIN_COST, generationPolicies);
+               CISCO_AGGREGATE_ROUTE_ADMIN_COST);
          gr.setGenerationPolicy(generationPolicyName);
          gr.setDiscard(true);
          c.getGeneratedRoutes().add(gr);
@@ -537,9 +397,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             if (attributeMap != null) {
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
-               PolicyMap attributePolicy = c.getPolicyMaps()
-                     .get(attributeMapName);
-               gr.getAttributePolicies().put(attributeMapName, attributePolicy);
                gr.setAttributePolicy(attributeMapName);
             }
             else {
@@ -564,22 +421,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             .getStatements();
 
       // create policy for denying suppressed summary-only networks
-      PolicyMap suppressSummaryOnlyPolicyMap = null;
-      PolicyMap suppressSummaryOnlyDenyOnMatchPolicyMap = null;
       if (summaryOnlyNetworks.size() > 0) {
          If suppressSummaryOnly = new If();
          bgpCommonExportStatements.add(suppressSummaryOnly);
          suppressSummaryOnly.setComment(
                "Suppress summarized of summary-only aggregate-address networks");
-         String suppressSummaryOnlyName = "~SUPRESS_SUMMARY_ONLY~";
-         String suppressSummaryOnlyDenyOnMatchName = "~SUPRESS_SUMMARY_ONLY_DENY_ON_MATCH~";
-         suppressSummaryOnlyPolicyMap = new PolicyMap(suppressSummaryOnlyName);
-         suppressSummaryOnlyDenyOnMatchPolicyMap = new PolicyMap(
-               suppressSummaryOnlyDenyOnMatchName);
-         c.getPolicyMaps().put(suppressSummaryOnlyName,
-               suppressSummaryOnlyPolicyMap);
-         c.getPolicyMaps().put(suppressSummaryOnlyDenyOnMatchName,
-               suppressSummaryOnlyDenyOnMatchPolicyMap);
          String matchSuppressedSummaryOnlyRoutesName = "~MATCH_SUPPRESSED_SUMMARY_ONLY~";
          RouteFilterList matchSuppressedSummaryOnlyRoutes = new RouteFilterList(
                matchSuppressedSummaryOnlyRoutesName);
@@ -592,29 +438,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                   prefix, new SubRange(prefixLength + 1, 32));
             matchSuppressedSummaryOnlyRoutes.addLine(line);
          }
-         PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
-               Collections.singleton(matchSuppressedSummaryOnlyRoutes));
          suppressSummaryOnly.setGuard(new MatchPrefixSet(
                new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)));
          suppressSummaryOnly.getTrueStatements()
                .add(Statements.ReturnFalse.toStaticStatement());
-         PolicyMapClause suppressSummaryOnlyClause = new PolicyMapClause();
-         suppressSummaryOnlyClause.setAction(PolicyMapAction.PERMIT);
-         suppressSummaryOnlyClause.getMatchLines().add(matchLine);
-         suppressSummaryOnlyPolicyMap.getClauses()
-               .add(suppressSummaryOnlyClause);
-         PolicyMapClause suppressSummaryOnlyDenyOnMatchDenyClause = new PolicyMapClause();
-         suppressSummaryOnlyDenyOnMatchDenyClause
-               .setAction(PolicyMapAction.DENY);
-         suppressSummaryOnlyDenyOnMatchDenyClause.getMatchLines()
-               .add(matchLine);
-         suppressSummaryOnlyDenyOnMatchPolicyMap.getClauses()
-               .add(suppressSummaryOnlyDenyOnMatchDenyClause);
-         PolicyMapClause suppressSummaryOnlyDenyOnMatchPermitClause = new PolicyMapClause();
-         suppressSummaryOnlyDenyOnMatchPermitClause
-               .setAction(PolicyMapAction.PERMIT);
-         suppressSummaryOnlyDenyOnMatchPolicyMap.getClauses()
-               .add(suppressSummaryOnlyDenyOnMatchPermitClause);
       }
 
       If preFilter = new If();
@@ -627,7 +454,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
       // create redistribution origination policies
       // redistribute static
-      PolicyMap redistributeStaticPolicyMap = null;
       BgpRedistributionPolicy redistributeStaticPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.STATIC);
       if (redistributeStaticPolicy != null) {
@@ -643,7 +469,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
                exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
-               redistributeStaticPolicyMap = c.getPolicyMaps().get(mapName);
             }
             else {
                undefined(
@@ -652,17 +477,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                      ROUTE_MAP, mapName);
             }
          }
-         else {
-            redistributeStaticPolicyMap = makeRouteExportPolicy(c,
-                  "~BGP_REDISTRIBUTE_STATIC_ORIGINATION_POLICY~", null, null,
-                  null, null, null, RoutingProtocol.STATIC,
-                  PolicyMapAction.PERMIT);
-         }
          preFilterConditions.getDisjuncts().add(exportStaticConditions);
       }
 
       // redistribute connected
-      PolicyMap redistributeConnectedPolicyMap = null;
       BgpRedistributionPolicy redistributeConnectedPolicy = proc
             .getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
       if (redistributeConnectedPolicy != null) {
@@ -679,7 +497,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                      "connected redistribution route-map");
                exportConnectedConditions.getConjuncts()
                      .add(new CallExpr(mapName));
-               redistributeConnectedPolicyMap = c.getPolicyMaps().get(mapName);
             }
             else {
                undefined(
@@ -687,12 +504,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                            + mapName + "'",
                      ROUTE_MAP, mapName);
             }
-         }
-         else {
-            redistributeConnectedPolicyMap = makeRouteExportPolicy(c,
-                  "~BGP_REDISTRIBUTE_CONNECTED_ORIGINATION_POLICY~", null, null,
-                  null, null, null, RoutingProtocol.CONNECTED,
-                  PolicyMapAction.PERMIT);
          }
          preFilterConditions.getDisjuncts().add(exportConnectedConditions);
       }
@@ -769,12 +580,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // add prefilter policy for explicitly advertised networks
       Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
       localRfLists.add(localFilter);
-      PolicyMapMatchRouteFilterListLine localRfLine = new PolicyMapMatchRouteFilterListLine(
-            localRfLists);
-      PolicyMapClause localAdvertisedNetworksClause = new PolicyMapClause();
-      localAdvertisedNetworksClause.setName("");
-      localAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
-      localAdvertisedNetworksClause.getMatchLines().add(localRfLine);
       preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
             new NamedPrefixSet(BGP_NETWORK_NETWORKS_FILTER_NAME)));
 
@@ -794,22 +599,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
       Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<>();
       aggregateRfLists.add(aggregateFilter);
-      PolicyMapMatchRouteFilterListLine aggregateRfLine = new PolicyMapMatchRouteFilterListLine(
-            aggregateRfLists);
-      PolicyMapClause aggregatedAdvertisedNetworksClause = new PolicyMapClause();
-      aggregatedAdvertisedNetworksClause.setName("");
-      aggregatedAdvertisedNetworksClause.setAction(PolicyMapAction.PERMIT);
-      aggregatedAdvertisedNetworksClause.getMatchLines().add(aggregateRfLine);
-      aggregatedAdvertisedNetworksClause.getMatchLines()
-            .add(new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
-      PolicyMap explicitOriginationPolicyMap = new PolicyMap(
-            "~BGP_ADVERTISED_NETWORKS_POLICY~");
-      explicitOriginationPolicyMap.getClauses()
-            .add(localAdvertisedNetworksClause);
-      explicitOriginationPolicyMap.getClauses()
-            .add(aggregatedAdvertisedNetworksClause);
-      c.getPolicyMaps().put(explicitOriginationPolicyMap.getName(),
-            explicitOriginationPolicyMap);
 
       for (LeafBgpPeerGroup lpg : leafGroups) {
          // update source
@@ -854,11 +643,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             _w.redFlag("Could not determine update source for BGP neighbor: '"
                   + lpg.getName() + "'");
          }
-         PolicyMap newInboundPolicyMap = null;
          RoutingPolicy importPolicy = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
          if (inboundRouteMapName != null) {
-            newInboundPolicyMap = c.getPolicyMaps().get(inboundRouteMapName);
             importPolicy = c.getRoutingPolicies().get(inboundRouteMapName);
             if (importPolicy == null) {
                String msg = "neighbor: '" + lpg.getName() + "': ";
@@ -876,7 +663,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                      "inbound route-map for leaf peer-group: " + lpg.getName());
             }
          }
-         PolicyMap newOutboundPolicyMap = null;
          String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:"
                + lpg.getName() + "~";
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
@@ -904,9 +690,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                .add(new CallExpr(BGP_COMMON_EXPORT_POLICY_NAME));
          String outboundRouteMapName = lpg.getOutboundRouteMap();
          if (outboundRouteMapName != null) {
-            PolicyMap outboundPolicyMap = c.getPolicyMaps()
-                  .get(outboundRouteMapName);
-            if (outboundPolicyMap == null) {
+            RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
+            if (outboundRouteMap == null) {
                String msg = "neighbor: '" + lpg.getName() + "': ";
                String groupName = lpg.getGroupName();
                if (groupName != null) {
@@ -917,56 +702,16 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                undefined(msg, ROUTE_MAP, outboundRouteMapName);
             }
             else {
-               RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
                outboundRouteMap.getReferers().put(lpg,
                      "outbound route-map for leaf peer-group: "
                            + lpg.getName());
                peerExportConditions.getConjuncts()
                      .add(new CallExpr(outboundRouteMapName));
             }
-            if (suppressSummaryOnlyPolicyMap == null) {
-               newOutboundPolicyMap = outboundPolicyMap;
-            }
-            else {
-               String outboundPolicyName = "~COMPOSITE_OUTBOUND_POLICY:"
-                     + lpg.getName() + "~";
-               newOutboundPolicyMap = new PolicyMap(outboundPolicyName);
-               if (lpg.getActive() && !lpg.getShutdown()) {
-                  c.getPolicyMaps().put(outboundPolicyName,
-                        newOutboundPolicyMap);
-               }
-               PolicyMapClause denyClause = new PolicyMapClause();
-               PolicyMapMatchPolicyLine matchSuppressPolicyLine = new PolicyMapMatchPolicyLine(
-                     suppressSummaryOnlyPolicyMap);
-               denyClause.getMatchLines().add(matchSuppressPolicyLine);
-               denyClause.setAction(PolicyMapAction.DENY);
-               newOutboundPolicyMap.getClauses().add(denyClause);
-               PolicyMapClause permitClause = new PolicyMapClause();
-               permitClause.setAction(PolicyMapAction.PERMIT);
-               PolicyMapMatchPolicyLine matchOutboundPolicyLine = new PolicyMapMatchPolicyLine(
-                     outboundPolicyMap);
-               permitClause.getMatchLines().add(matchOutboundPolicyLine);
-               newOutboundPolicyMap.getClauses().add(permitClause);
-            }
-         }
-         else {
-            newOutboundPolicyMap = suppressSummaryOnlyDenyOnMatchPolicyMap;
-         }
-
-         Set<PolicyMap> originationPolicies = new LinkedHashSet<>();
-         originationPolicies.add(explicitOriginationPolicyMap);
-
-         // add redistribution origination policies
-         if (redistributeStaticPolicyMap != null) {
-            originationPolicies.add(redistributeStaticPolicyMap);
-         }
-         if (redistributeConnectedPolicyMap != null) {
-            originationPolicies.add(redistributeConnectedPolicyMap);
          }
 
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
-         PolicyMap defaultOriginationPolicyMap = null;
          if (lpg.getDefaultOriginate()) {
             MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
                   new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
@@ -974,25 +719,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
             matchDefaultRoute.setComment("match default route");
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
-                  MAX_ADMINISTRATIVE_COST, new LinkedHashSet<PolicyMap>());
-            defaultOriginationPolicyMap = makeRouteExportPolicy(c,
-                  "~BGP_DEFAULT_ROUTE_ORIGINATION_POLICY:" + lpg.getName()
-                        + "~",
-                  "BGP_DEFAULT_ROUTE_ORIGINATION_FILTER:" + lpg.getName() + "~",
-                  Prefix.ZERO, new SubRange(0, 0), LineAction.ACCEPT, 0,
-                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-
-            if (defaultOriginationPolicyMap == null) {
-               throw new BatfishException(
-                     "tried to add null defaultOriginationPolicyMap");
-            }
-            originationPolicies.add(defaultOriginationPolicyMap);
+                  MAX_ADMINISTRATIVE_COST);
 
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();
             if (defaultOriginateMapName != null) { // originate contingent on
                                                    // generation policy
-               PolicyMap defaultRouteGenerationPolicyMap = c.getPolicyMaps()
-                     .get(defaultOriginateMapName);
                RoutingPolicy defaultRouteGenerationPolicy = c
                      .getRoutingPolicies().get(defaultOriginateMapName);
                if (defaultRouteGenerationPolicy == null) {
@@ -1009,8 +740,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                               + lpg.getName());
                   defaultRoute.setGenerationPolicy(defaultOriginateMapName);
                }
-               defaultRoute.getGenerationPolicies()
-                     .add(defaultRouteGenerationPolicyMap);
             }
             else {
                String defaultRouteGenerationPolicyName = "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:"
@@ -1112,23 +841,12 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                newNeighbor.getGeneratedRoutes().add(defaultRoute);
             }
             newNeighbor.setGroup(lpg.getGroupName());
-            if (newInboundPolicyMap != null) {
-               newNeighbor.getInboundPolicyMaps().add(newInboundPolicyMap);
-            }
             if (importPolicy != null) {
                newNeighbor.setImportPolicy(inboundRouteMapName);
             }
             newNeighbor.setLocalAs(proc.getName());
             newNeighbor.setLocalIp(updateSource);
-            newNeighbor.getOriginationPolicies().addAll(originationPolicies);
             newNeighbor.setExportPolicy(peerExportPolicyName);
-            if (newOutboundPolicyMap != null) {
-               newNeighbor.getOutboundPolicyMaps().add(newOutboundPolicyMap);
-               if (defaultOriginationPolicyMap != null) {
-                  newNeighbor.getOutboundPolicyMaps()
-                        .add(defaultOriginationPolicyMap);
-               }
-            }
             newNeighbor.setRemoteAs(lpg.getRemoteAs());
             newNeighbor.setSendCommunity(sendCommunity);
          }
@@ -1153,8 +871,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    }
 
    private org.batfish.datamodel.Interface toInterface(Interface iface,
-         Map<String, IpAccessList> ipAccessLists,
-         Map<String, PolicyMap> policyMaps, Configuration c) {
+         Map<String, IpAccessList> ipAccessLists, Configuration c) {
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             iface.getName(), c);
       newIface.setDescription(iface.getDescription());
@@ -1262,18 +979,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
       String routingPolicyName = iface.getRoutingPolicy();
       if (routingPolicyName != null) {
-         PolicyMap routingPolicy = policyMaps.get(routingPolicyName);
-         if (routingPolicy == null) {
+         RouteMap routingPolicyRouteMap = _routeMaps.get(routingPolicyName);
+         if (routingPolicyRouteMap == null) {
             _w.redFlag("Interface: '" + iface.getName()
                   + "' configured with non-existent policy-routing route-map '"
                   + routingPolicyName + "'");
          }
          else {
-            RouteMap routingPolicyRouteMap = _routeMaps.get(routingPolicyName);
             routingPolicyRouteMap.getReferers().put(iface,
                   "routing policy for interface: " + iface.getName());
          }
-         newIface.setRoutingPolicy(routingPolicy);
+         newIface.setRoutingPolicy(routingPolicyName);
       }
       return newIface;
    }
@@ -1331,265 +1047,272 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       newProcess.setNetAddress(proc.getNetAddress());
       newProcess.setLevel(proc.getLevel());
 
-      if (proc.getLevel() == IsisLevel.LEVEL_1_2) {
-         PolicyMap leakL1Policy = new PolicyMap(
-               ISIS_LEAK_L1_ROUTES_POLICY_NAME);
-         c.getPolicyMaps().put(ISIS_LEAK_L1_ROUTES_POLICY_NAME, leakL1Policy);
-         for (Entry<RoutingProtocol, IsisRedistributionPolicy> e : proc
-               .getRedistributionPolicies().entrySet()) {
-            if (!e.getKey().equals(RoutingProtocol.ISIS_L1)) {
-               continue;
-            }
-            IsisRedistributionPolicy rp = e.getValue();
-            Prefix summaryPrefix = rp.getSummaryPrefix();
-            // add clause suppressing l1 summarized routes, and also add
-            // aggregates for summarized addresses
-            PolicyMapClause suppressClause = new PolicyMapClause();
-            PolicyMapClause allowSummaryClause = new PolicyMapClause();
-            leakL1Policy.getClauses().add(suppressClause);
-            leakL1Policy.getClauses().add(allowSummaryClause);
-            suppressClause.setAction(PolicyMapAction.DENY);
-            allowSummaryClause.setAction(PolicyMapAction.PERMIT);
-            String summarizedFilterName = ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME
-                  + ":" + summaryPrefix.toString();
-            RouteFilterList summarizedFilter = new RouteFilterList(
-                  summarizedFilterName);
-            c.getRouteFilterLists().put(summarizedFilterName, summarizedFilter);
-            String summaryFilterName = ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME
-                  + ":" + summaryPrefix.toString();
-            RouteFilterList summaryFilter = new RouteFilterList(
-                  summaryFilterName);
-            c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
-            PolicyMapMatchRouteFilterListLine matchSummarized = new PolicyMapMatchRouteFilterListLine(
-                  Collections.singleton(summarizedFilter));
-            PolicyMapMatchRouteFilterListLine matchSummary = new PolicyMapMatchRouteFilterListLine(
-                  Collections.singleton(summaryFilter));
-            suppressClause.getMatchLines().add(matchSummarized);
-            suppressClause.getMatchLines()
-                  .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
-            allowSummaryClause.getMatchLines().add(matchSummary);
-            allowSummaryClause.getMatchLines().add(
-                  new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
-            Integer summaryMetric = rp.getMetric();
-            if (summaryMetric == null) {
-               summaryMetric = org.batfish.datamodel.IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
-            }
-            allowSummaryClause.getSetLines()
-                  .add(new PolicyMapSetMetricLine(summaryMetric));
-            IsisLevel summaryLevel = rp.getLevel();
-            if (summaryLevel == null) {
-               summaryLevel = IsisRedistributionPolicy.DEFAULT_LEVEL;
-            }
-            allowSummaryClause.getSetLines()
-                  .add(new PolicyMapSetLevelLine(summaryLevel));
-            int length = summaryPrefix.getPrefixLength();
-            int rejectLowerBound = length + 1;
-            if (rejectLowerBound > 32) {
-               throw new VendorConversionException(
-                     "Invalid summary prefix: " + summaryPrefix.toString());
-            }
-            SubRange summarizedRange = new SubRange(rejectLowerBound, 32);
-            RouteFilterLine summarized = new RouteFilterLine(LineAction.ACCEPT,
-                  summaryPrefix, summarizedRange);
-            RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,
-                  summaryPrefix, new SubRange(length, length));
-            summarizedFilter.addLine(summarized);
-            summaryFilter.addLine(summary);
-
-            String filterName = "~ISIS_MATCH_SUMMARIZED_OF:"
-                  + summaryPrefix.toString() + "~";
-            String generationPolicyName = "~ISIS_AGGREGATE_ROUTE_GEN:"
-                  + summaryPrefix.toString() + "~";
-            PolicyMap generationPolicy = makeRouteExportPolicy(c,
-                  generationPolicyName, filterName, summaryPrefix,
-                  summarizedRange, LineAction.ACCEPT, null, null,
-                  PolicyMapAction.PERMIT);
-            Set<PolicyMap> generationPolicies = new HashSet<>();
-            generationPolicies.add(generationPolicy);
-            GeneratedRoute gr = new GeneratedRoute(summaryPrefix,
-                  MAX_ADMINISTRATIVE_COST, generationPolicies);
-            gr.setDiscard(true);
-            newProcess.getGeneratedRoutes().add(gr);
-         }
-         // add clause allowing remaining l1 routes
-         PolicyMapClause leakL1Clause = new PolicyMapClause();
-         leakL1Clause.setAction(PolicyMapAction.PERMIT);
-         leakL1Clause.getMatchLines()
-               .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
-         leakL1Policy.getClauses().add(leakL1Clause);
-         newProcess.getOutboundPolicyMaps().add(leakL1Policy);
-         leakL1Clause.getSetLines()
-               .add(new PolicyMapSetLevelLine(IsisLevel.LEVEL_2));
-
-         // generate routes, policies for summary addresses
-      }
-
-      // policy map for redistributing connected routes
-      // TODO: honor subnets option
-      IsisRedistributionPolicy rcp = proc.getRedistributionPolicies()
-            .get(RoutingProtocol.CONNECTED);
-      if (rcp != null) {
-         Integer metric = rcp.getMetric();
-         IsisLevel exportLevel = rcp.getLevel();
-         boolean explicitMetric = metric != null;
-         boolean routeMapMetric = false;
-         if (!explicitMetric) {
-            metric = IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
-         }
-         // add default export map with metric
-         PolicyMap exportConnectedPolicy;
-         String mapName = rcp.getMap();
-         if (mapName != null) {
-            exportConnectedPolicy = c.getPolicyMaps().get(mapName);
-            if (exportConnectedPolicy == null) {
-               undefined("undefined reference to route-map: " + mapName,
-                     ROUTE_MAP, mapName);
-            }
-            else {
-               RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
-               exportConnectedRouteMap.getReferers().put(proc,
-                     "is-is export connected route-map");
-
-               // crash if both an explicit metric is set and one exists in the
-               // route map
-               for (PolicyMapClause clause : exportConnectedPolicy
-                     .getClauses()) {
-                  for (PolicyMapSetLine line : clause.getSetLines()) {
-                     if (line.getType() == PolicyMapSetType.METRIC) {
-                        if (explicitMetric) {
-                           throw new Error(
-                                 "Explicit redistribution metric set while route map also contains set metric line");
-                        }
-                        else {
-                           routeMapMetric = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                     RoutingProtocol.CONNECTED);
-               PolicyMapSetLine setMetricLine = null;
-               // add a set metric line if no metric provided by route map
-               if (!routeMapMetric) {
-                  // use default metric if no explicit metric is set
-                  setMetricLine = new PolicyMapSetMetricLine(metric);
-               }
-               for (PolicyMapClause clause : exportConnectedPolicy
-                     .getClauses()) {
-                  clause.getMatchLines().add(matchConnectedLine);
-                  if (!routeMapMetric) {
-                     clause.getSetLines().add(setMetricLine);
-                  }
-               }
-               newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-               newProcess.getPolicyExportLevels()
-                     .put(exportConnectedPolicy.getName(), exportLevel);
-            }
-         }
-         else {
-            exportConnectedPolicy = makeRouteExportPolicy(c,
-                  ISIS_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
-                  metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
-            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyExportLevels()
-                  .put(exportConnectedPolicy.getName(), exportLevel);
-            c.getPolicyMaps().put(exportConnectedPolicy.getName(),
-                  exportConnectedPolicy);
-         }
-      }
-
-      // policy map for redistributing static routes
-      // TODO: honor subnets option
-      IsisRedistributionPolicy rsp = proc.getRedistributionPolicies()
-            .get(RoutingProtocol.STATIC);
-      if (rsp != null) {
-         Integer metric = rsp.getMetric();
-         IsisLevel exportLevel = rsp.getLevel();
-         boolean explicitMetric = metric != null;
-         boolean routeMapMetric = false;
-         if (!explicitMetric) {
-            metric = IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
-         }
-         // add export map with metric
-         PolicyMap exportStaticPolicy;
-         String mapName = rsp.getMap();
-         if (mapName != null) {
-            exportStaticPolicy = c.getPolicyMaps().get(mapName);
-            if (exportStaticPolicy == null) {
-               undefined("undefined reference to route-map: " + mapName,
-                     ROUTE_MAP, mapName);
-            }
-            else {
-               RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
-               exportStaticRouteMap.getReferers().put(proc,
-                     "is-is static redistribution route-map");
-               // crash if both an explicit metric is set and one exists in the
-               // route map
-               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-                  for (PolicyMapSetLine line : clause.getSetLines()) {
-                     if (line.getType() == PolicyMapSetType.METRIC) {
-                        if (explicitMetric) {
-                           throw new Error(
-                                 "Explicit redistribution metric set while route map also contains set metric line");
-                        }
-                        else {
-                           routeMapMetric = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               PolicyMapSetLine setMetricLine = null;
-               // add a set metric line if no metric provided by route map
-               if (!routeMapMetric) {
-                  // use default metric if no explicit metric is set
-                  setMetricLine = new PolicyMapSetMetricLine(metric);
-               }
-
-               PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                     RoutingProtocol.STATIC);
-               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-                  boolean containsRouteFilterList = modifyRejectDefault(clause);
-                  if (!containsRouteFilterList) {
-                     RouteFilterList generatedRejectDefaultRouteList = c
-                           .getRouteFilterLists()
-                           .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-                     if (generatedRejectDefaultRouteList == null) {
-                        generatedRejectDefaultRouteList = makeRouteFilter(
-                              ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                              Prefix.ZERO, new SubRange(0, 0),
-                              LineAction.REJECT);
-                     }
-                     Set<RouteFilterList> lists = new HashSet<>();
-                     lists.add(generatedRejectDefaultRouteList);
-                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-                           lists);
-                     clause.getMatchLines().add(line);
-                  }
-                  Set<PolicyMapSetLine> setList = clause.getSetLines();
-                  clause.getMatchLines().add(matchStaticLine);
-                  if (!routeMapMetric) {
-                     setList.add(setMetricLine);
-                  }
-               }
-               newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-               newProcess.getPolicyExportLevels()
-                     .put(exportStaticPolicy.getName(), exportLevel);
-
-            }
-         }
-         else { // export static routes without named policy
-            exportStaticPolicy = makeRouteExportPolicy(c,
-                  ISIS_EXPORT_STATIC_POLICY_NAME,
-                  ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                  Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
-                  RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
-            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyExportLevels().put(exportStaticPolicy.getName(),
-                  exportLevel);
-         }
-      }
+      // if (proc.getLevel() == IsisLevel.LEVEL_1_2) {
+      // PolicyMap leakL1Policy = new PolicyMap(
+      // ISIS_LEAK_L1_ROUTES_POLICY_NAME);
+      // c.getPolicyMaps().put(ISIS_LEAK_L1_ROUTES_POLICY_NAME, leakL1Policy);
+      // for (Entry<RoutingProtocol, IsisRedistributionPolicy> e : proc
+      // .getRedistributionPolicies().entrySet()) {
+      // if (!e.getKey().equals(RoutingProtocol.ISIS_L1)) {
+      // continue;
+      // }
+      // IsisRedistributionPolicy rp = e.getValue();
+      // Prefix summaryPrefix = rp.getSummaryPrefix();
+      // // add clause suppressing l1 summarized routes, and also add
+      // // aggregates for summarized addresses
+      // PolicyMapClause suppressClause = new PolicyMapClause();
+      // PolicyMapClause allowSummaryClause = new PolicyMapClause();
+      // leakL1Policy.getClauses().add(suppressClause);
+      // leakL1Policy.getClauses().add(allowSummaryClause);
+      // suppressClause.setAction(PolicyMapAction.DENY);
+      // allowSummaryClause.setAction(PolicyMapAction.PERMIT);
+      // String summarizedFilterName =
+      // ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME
+      // + ":" + summaryPrefix.toString();
+      // RouteFilterList summarizedFilter = new RouteFilterList(
+      // summarizedFilterName);
+      // c.getRouteFilterLists().put(summarizedFilterName, summarizedFilter);
+      // String summaryFilterName = ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME
+      // + ":" + summaryPrefix.toString();
+      // RouteFilterList summaryFilter = new RouteFilterList(
+      // summaryFilterName);
+      // c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+      // PolicyMapMatchRouteFilterListLine matchSummarized = new
+      // PolicyMapMatchRouteFilterListLine(
+      // Collections.singleton(summarizedFilter));
+      // PolicyMapMatchRouteFilterListLine matchSummary = new
+      // PolicyMapMatchRouteFilterListLine(
+      // Collections.singleton(summaryFilter));
+      // suppressClause.getMatchLines().add(matchSummarized);
+      // suppressClause.getMatchLines()
+      // .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
+      // allowSummaryClause.getMatchLines().add(matchSummary);
+      // allowSummaryClause.getMatchLines().add(
+      // new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
+      // Integer summaryMetric = rp.getMetric();
+      // if (summaryMetric == null) {
+      // summaryMetric =
+      // org.batfish.datamodel.IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
+      // }
+      // allowSummaryClause.getSetLines()
+      // .add(new PolicyMapSetMetricLine(summaryMetric));
+      // IsisLevel summaryLevel = rp.getLevel();
+      // if (summaryLevel == null) {
+      // summaryLevel = IsisRedistributionPolicy.DEFAULT_LEVEL;
+      // }
+      // allowSummaryClause.getSetLines()
+      // .add(new PolicyMapSetLevelLine(summaryLevel));
+      // int length = summaryPrefix.getPrefixLength();
+      // int rejectLowerBound = length + 1;
+      // if (rejectLowerBound > 32) {
+      // throw new VendorConversionException(
+      // "Invalid summary prefix: " + summaryPrefix.toString());
+      // }
+      // SubRange summarizedRange = new SubRange(rejectLowerBound, 32);
+      // RouteFilterLine summarized = new RouteFilterLine(LineAction.ACCEPT,
+      // summaryPrefix, summarizedRange);
+      // RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,
+      // summaryPrefix, new SubRange(length, length));
+      // summarizedFilter.addLine(summarized);
+      // summaryFilter.addLine(summary);
+      //
+      // String filterName = "~ISIS_MATCH_SUMMARIZED_OF:"
+      // + summaryPrefix.toString() + "~";
+      // String generationPolicyName = "~ISIS_AGGREGATE_ROUTE_GEN:"
+      // + summaryPrefix.toString() + "~";
+      // PolicyMap generationPolicy = makeRouteExportPolicy(c,
+      // generationPolicyName, filterName, summaryPrefix,
+      // summarizedRange, LineAction.ACCEPT, null, null,
+      // PolicyMapAction.PERMIT);
+      // Set<PolicyMap> generationPolicies = new HashSet<>();
+      // generationPolicies.add(generationPolicy);
+      // GeneratedRoute gr = new GeneratedRoute(summaryPrefix,
+      // MAX_ADMINISTRATIVE_COST, generationPolicies);
+      // gr.setDiscard(true);
+      // newProcess.getGeneratedRoutes().add(gr);
+      // }
+      // // add clause allowing remaining l1 routes
+      // PolicyMapClause leakL1Clause = new PolicyMapClause();
+      // leakL1Clause.setAction(PolicyMapAction.PERMIT);
+      // leakL1Clause.getMatchLines()
+      // .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
+      // leakL1Policy.getClauses().add(leakL1Clause);
+      // newProcess.getOutboundPolicyMaps().add(leakL1Policy);
+      // leakL1Clause.getSetLines()
+      // .add(new PolicyMapSetLevelLine(IsisLevel.LEVEL_2));
+      //
+      // // generate routes, policies for summary addresses
+      // }
+      //
+      // // policy map for redistributing connected routes
+      // // TODO: honor subnets option
+      // IsisRedistributionPolicy rcp = proc.getRedistributionPolicies()
+      // .get(RoutingProtocol.CONNECTED);
+      // if (rcp != null) {
+      // Integer metric = rcp.getMetric();
+      // IsisLevel exportLevel = rcp.getLevel();
+      // boolean explicitMetric = metric != null;
+      // boolean routeMapMetric = false;
+      // if (!explicitMetric) {
+      // metric =
+      // IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
+      // }
+      // // add default export map with metric
+      // PolicyMap exportConnectedPolicy;
+      // String mapName = rcp.getMap();
+      // if (mapName != null) {
+      // exportConnectedPolicy = c.getPolicyMaps().get(mapName);
+      // if (exportConnectedPolicy == null) {
+      // undefined("undefined reference to route-map: " + mapName,
+      // ROUTE_MAP, mapName);
+      // }
+      // else {
+      // RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
+      // exportConnectedRouteMap.getReferers().put(proc,
+      // "is-is export connected route-map");
+      //
+      // // crash if both an explicit metric is set and one exists in the
+      // // route map
+      // for (PolicyMapClause clause : exportConnectedPolicy
+      // .getClauses()) {
+      // for (PolicyMapSetLine line : clause.getSetLines()) {
+      // if (line.getType() == PolicyMapSetType.METRIC) {
+      // if (explicitMetric) {
+      // throw new Error(
+      // "Explicit redistribution metric set while route map also contains set
+      // metric line");
+      // }
+      // else {
+      // routeMapMetric = true;
+      // break;
+      // }
+      // }
+      // }
+      // }
+      // PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
+      // RoutingProtocol.CONNECTED);
+      // PolicyMapSetLine setMetricLine = null;
+      // // add a set metric line if no metric provided by route map
+      // if (!routeMapMetric) {
+      // // use default metric if no explicit metric is set
+      // setMetricLine = new PolicyMapSetMetricLine(metric);
+      // }
+      // for (PolicyMapClause clause : exportConnectedPolicy
+      // .getClauses()) {
+      // clause.getMatchLines().add(matchConnectedLine);
+      // if (!routeMapMetric) {
+      // clause.getSetLines().add(setMetricLine);
+      // }
+      // }
+      // newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+      // newProcess.getPolicyExportLevels()
+      // .put(exportConnectedPolicy.getName(), exportLevel);
+      // }
+      // }
+      // else {
+      // exportConnectedPolicy = makeRouteExportPolicy(c,
+      // ISIS_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
+      // metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
+      // newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
+      // newProcess.getPolicyExportLevels()
+      // .put(exportConnectedPolicy.getName(), exportLevel);
+      // c.getPolicyMaps().put(exportConnectedPolicy.getName(),
+      // exportConnectedPolicy);
+      // }
+      // }
+      //
+      // // policy map for redistributing static routes
+      // // TODO: honor subnets option
+      // IsisRedistributionPolicy rsp = proc.getRedistributionPolicies()
+      // .get(RoutingProtocol.STATIC);
+      // if (rsp != null) {
+      // Integer metric = rsp.getMetric();
+      // IsisLevel exportLevel = rsp.getLevel();
+      // boolean explicitMetric = metric != null;
+      // boolean routeMapMetric = false;
+      // if (!explicitMetric) {
+      // metric = IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
+      // }
+      // // add export map with metric
+      // PolicyMap exportStaticPolicy;
+      // String mapName = rsp.getMap();
+      // if (mapName != null) {
+      // exportStaticPolicy = c.getPolicyMaps().get(mapName);
+      // if (exportStaticPolicy == null) {
+      // undefined("undefined reference to route-map: " + mapName,
+      // ROUTE_MAP, mapName);
+      // }
+      // else {
+      // RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
+      // exportStaticRouteMap.getReferers().put(proc,
+      // "is-is static redistribution route-map");
+      // // crash if both an explicit metric is set and one exists in the
+      // // route map
+      // for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+      // for (PolicyMapSetLine line : clause.getSetLines()) {
+      // if (line.getType() == PolicyMapSetType.METRIC) {
+      // if (explicitMetric) {
+      // throw new Error(
+      // "Explicit redistribution metric set while route map also contains set
+      // metric line");
+      // }
+      // else {
+      // routeMapMetric = true;
+      // break;
+      // }
+      // }
+      // }
+      // }
+      // PolicyMapSetLine setMetricLine = null;
+      // // add a set metric line if no metric provided by route map
+      // if (!routeMapMetric) {
+      // // use default metric if no explicit metric is set
+      // setMetricLine = new PolicyMapSetMetricLine(metric);
+      // }
+      //
+      // PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
+      // RoutingProtocol.STATIC);
+      // for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
+      // boolean containsRouteFilterList = modifyRejectDefault(clause);
+      // if (!containsRouteFilterList) {
+      // RouteFilterList generatedRejectDefaultRouteList = c
+      // .getRouteFilterLists()
+      // .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
+      // if (generatedRejectDefaultRouteList == null) {
+      // generatedRejectDefaultRouteList = makeRouteFilter(
+      // ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+      // Prefix.ZERO, new SubRange(0, 0),
+      // LineAction.REJECT);
+      // }
+      // Set<RouteFilterList> lists = new HashSet<>();
+      // lists.add(generatedRejectDefaultRouteList);
+      // PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
+      // lists);
+      // clause.getMatchLines().add(line);
+      // }
+      // Set<PolicyMapSetLine> setList = clause.getSetLines();
+      // clause.getMatchLines().add(matchStaticLine);
+      // if (!routeMapMetric) {
+      // setList.add(setMetricLine);
+      // }
+      // }
+      // newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+      // newProcess.getPolicyExportLevels()
+      // .put(exportStaticPolicy.getName(), exportLevel);
+      //
+      // }
+      // }
+      // else { // export static routes without named policy
+      // exportStaticPolicy = makeRouteExportPolicy(c,
+      // ISIS_EXPORT_STATIC_POLICY_NAME,
+      // ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
+      // Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
+      // RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
+      // newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
+      // newProcess.getPolicyExportLevels().put(exportStaticPolicy.getName(),
+      // exportLevel);
+      // }
+      // }
       return newProcess;
    }
 
@@ -1665,19 +1388,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          ospfExportDefaultConditions.getConjuncts().add(new MatchPrefixSet(
                new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                      new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
-         SubRange defaultPrefixRange = new SubRange(0, 0);
          int metric = proc.getDefaultInformationMetric();
-         ospfExportDefaultStatements.add(new SetMetric(metric));
+         ospfExportDefaultStatements.add(new SetMetric(new LiteralInt(metric)));
          OspfMetricType metricType = proc.getDefaultInformationMetricType();
          ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
          // add default export map with metric
-         PolicyMap exportDefaultPolicy;
          String mapName = proc.getDefaultInformationOriginateMap();
-         Set<PolicyMap> generationPolicies = new LinkedHashSet<>();
          boolean useAggregateDefaultOnly;
          if (mapName != null) {
             useAggregateDefaultOnly = true;
-            PolicyMap generationPolicy = c.getPolicyMaps().get(mapName);
             RoutingPolicy ospfDefaultGenerationPolicy = c.getRoutingPolicies()
                   .get(mapName);
             if (ospfDefaultGenerationPolicy == null) {
@@ -1689,16 +1408,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                RouteMap generationRouteMap = _routeMaps.get(mapName);
                generationRouteMap.getReferers().put(proc,
                      "ospf default-originate route-map");
-               exportDefaultPolicy = makeRouteExportPolicy(c,
-                     OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
-                     Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
-                     RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-               newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-               newProcess.getPolicyMetricTypes()
-                     .put(exportDefaultPolicy.getName(), metricType);
-               generationPolicies.add(generationPolicy);
                GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
-                     MAX_ADMINISTRATIVE_COST, generationPolicies);
+                     MAX_ADMINISTRATIVE_COST);
                route.setGenerationPolicy(mapName);
                newProcess.getGeneratedRoutes().add(route);
             }
@@ -1706,32 +1417,14 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          else if (proc.getDefaultInformationOriginateAlways()) {
             useAggregateDefaultOnly = true;
             // add generated aggregate with no precondition
-            exportDefaultPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
-                  Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
-                  RoutingProtocol.AGGREGATE, PolicyMapAction.PERMIT);
-            c.getPolicyMaps().put(exportDefaultPolicy.getName(),
-                  exportDefaultPolicy);
-            newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy.getName(),
-                  metricType);
             GeneratedRoute route = new GeneratedRoute(Prefix.ZERO,
-                  MAX_ADMINISTRATIVE_COST, null);
+                  MAX_ADMINISTRATIVE_COST);
             newProcess.getGeneratedRoutes().add(route);
          }
          else {
             // do not generate an aggregate default route;
             // just redistribute any existing default route with the new metric
             useAggregateDefaultOnly = false;
-            exportDefaultPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_DEFAULT_POLICY_NAME, DEFAULT_ROUTE_FILTER_NAME,
-                  Prefix.ZERO, defaultPrefixRange, LineAction.ACCEPT, metric,
-                  null, PolicyMapAction.PERMIT);
-            c.getPolicyMaps().put(exportDefaultPolicy.getName(),
-                  exportDefaultPolicy);
-            newProcess.getOutboundPolicyMaps().add(exportDefaultPolicy);
-            newProcess.getPolicyMetricTypes().put(exportDefaultPolicy.getName(),
-                  metricType);
          }
          if (useAggregateDefaultOnly) {
             ospfExportDefaultConditions.getConjuncts()
@@ -1748,7 +1441,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             .get(RoutingProtocol.CONNECTED);
       if (rcp != null) {
          If ospfExportConnected = new If();
-         ospfExportStatements.add(ospfExportConnected);
          ospfExportConnected.setComment("OSPF export connected routes");
          Conjunction ospfExportConnectedConditions = new Conjunction();
          ospfExportConnectedConditions.getConjuncts()
@@ -1760,73 +1452,25 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          OspfMetricType metricType = rcp.getMetricType();
          ospfExportConnectedStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
-         boolean routeMapMetric = false;
          if (!explicitMetric) {
             metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
          }
+         ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+         ospfExportStatements.add(ospfExportConnected);
          // add default export map with metric
-         PolicyMap exportConnectedPolicy;
          String mapName = rcp.getMap();
          if (mapName != null) {
-            exportConnectedPolicy = c.getPolicyMaps().get(mapName);
-            if (exportConnectedPolicy == null) {
+            RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
+            if (exportConnectedRouteMap == null) {
                undefined("undefined reference to route-map: " + mapName,
                      ROUTE_MAP, mapName);
             }
             else {
-               RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
                exportConnectedRouteMap.getReferers().put(proc,
                      "ospf redistribute connected route-map");
                ospfExportConnectedConditions.getConjuncts()
                      .add(new CallExpr(mapName));
-               // crash if both an explicit metric is set and one exists in the
-               // route map
-               for (PolicyMapClause clause : exportConnectedPolicy
-                     .getClauses()) {
-                  for (PolicyMapSetLine line : clause.getSetLines()) {
-                     if (line.getType() == PolicyMapSetType.METRIC) {
-                        if (explicitMetric) {
-                           throw new BatfishException(
-                                 "Explicit redistribution metric set while route map also contains set metric line");
-                        }
-                        else {
-                           routeMapMetric = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-                     RoutingProtocol.CONNECTED);
-               PolicyMapSetLine setMetricLine = null;
-               // add a set metric line if no metric provided by route map
-               if (!routeMapMetric) {
-                  // use default metric if no explicit metric is set
-                  setMetricLine = new PolicyMapSetMetricLine(metric);
-                  ospfExportConnectedStatements.add(new SetMetric(metric));
-               }
-               for (PolicyMapClause clause : exportConnectedPolicy
-                     .getClauses()) {
-                  clause.getMatchLines().add(matchConnectedLine);
-                  if (!routeMapMetric) {
-                     clause.getSetLines().add(setMetricLine);
-                  }
-               }
-               newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-               newProcess.getPolicyMetricTypes()
-                     .put(exportConnectedPolicy.getName(), metricType);
             }
-         }
-         else {
-            ospfExportConnectedStatements.add(new SetMetric(metric));
-            exportConnectedPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
-                  metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
-            newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-            newProcess.getPolicyMetricTypes()
-                  .put(exportConnectedPolicy.getName(), metricType);
-            c.getPolicyMaps().put(exportConnectedPolicy.getName(),
-                  exportConnectedPolicy);
          }
          ospfExportConnectedStatements
                .add(Statements.ExitAccept.toStaticStatement());
@@ -1839,7 +1483,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             .get(RoutingProtocol.STATIC);
       if (rsp != null) {
          If ospfExportStatic = new If();
-         ospfExportStatements.add(ospfExportStatic);
          ospfExportStatic.setComment("OSPF export static routes");
          Conjunction ospfExportStaticConditions = new Conjunction();
          ospfExportStaticConditions.getConjuncts()
@@ -1855,91 +1498,25 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          OspfMetricType metricType = rsp.getMetricType();
          ospfExportStaticStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
-         boolean routeMapMetric = false;
          if (!explicitMetric) {
             metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
          }
+         ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+         ospfExportStatements.add(ospfExportStatic);
          // add export map with metric
-         PolicyMap exportStaticPolicy;
          String mapName = rsp.getMap();
          if (mapName != null) {
-            exportStaticPolicy = c.getPolicyMaps().get(mapName);
-            if (exportStaticPolicy == null) {
+            RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
+            if (exportStaticRouteMap == null) {
                undefined("undefined reference to route-map: " + mapName,
                      ROUTE_MAP, mapName);
             }
             else {
-               RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
                exportStaticRouteMap.getReferers().put(proc,
                      "ospf redistribute static route-map");
                ospfExportStaticConditions.getConjuncts()
                      .add(new CallExpr(mapName));
-               // crash if both an explicit metric is set and one exists in the
-               // route map
-               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-                  for (PolicyMapSetLine line : clause.getSetLines()) {
-                     if (line.getType() == PolicyMapSetType.METRIC) {
-                        if (explicitMetric) {
-                           throw new Error(
-                                 "Explicit redistribution metric set while route map also contains set metric line");
-                        }
-                        else {
-                           routeMapMetric = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               PolicyMapSetLine setMetricLine = null;
-               // add a set metric line if no metric provided by route map
-               if (!routeMapMetric) {
-                  // use default metric if no explicit metric is set
-                  setMetricLine = new PolicyMapSetMetricLine(metric);
-                  ospfExportStaticStatements.add(new SetMetric(metric));
-               }
-
-               PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-                     RoutingProtocol.STATIC);
-               for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-                  boolean containsRouteFilterList = modifyRejectDefault(clause);
-                  if (!containsRouteFilterList) {
-                     RouteFilterList generatedRejectDefaultRouteList = c
-                           .getRouteFilterLists()
-                           .get(OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-                     if (generatedRejectDefaultRouteList == null) {
-                        generatedRejectDefaultRouteList = makeRouteFilter(
-                              OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                              Prefix.ZERO, new SubRange(0, 0),
-                              LineAction.REJECT);
-                     }
-                     Set<RouteFilterList> lists = new HashSet<>();
-                     lists.add(generatedRejectDefaultRouteList);
-                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-                           lists);
-                     clause.getMatchLines().add(line);
-                  }
-                  Set<PolicyMapSetLine> setList = clause.getSetLines();
-                  clause.getMatchLines().add(matchStaticLine);
-                  if (!routeMapMetric) {
-                     setList.add(setMetricLine);
-                  }
-               }
-               newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-               newProcess.getPolicyMetricTypes()
-                     .put(exportStaticPolicy.getName(), metricType);
-
             }
-         }
-         else { // export static routes without named policy
-            ospfExportStaticStatements.add(new SetMetric(metric));
-            exportStaticPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_STATIC_POLICY_NAME,
-                  OSPF_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                  Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
-                  RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
-            newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-            newProcess.getPolicyMetricTypes().put(exportStaticPolicy.getName(),
-                  metricType);
          }
          ospfExportStaticStatements
                .add(Statements.ExitAccept.toStaticStatement());
@@ -1952,7 +1529,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             .get(RoutingProtocol.BGP);
       if (rbp != null) {
          If ospfExportBgp = new If();
-         ospfExportStatements.add(ospfExportBgp);
          ospfExportBgp.setComment("OSPF export bgp routes");
          Conjunction ospfExportBgpConditions = new Conjunction();
          ospfExportBgpConditions.getConjuncts()
@@ -1967,91 +1543,25 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          OspfMetricType metricType = rbp.getMetricType();
          ospfExportBgpStatements.add(new SetOspfMetricType(metricType));
          boolean explicitMetric = metric != null;
-         boolean routeMapMetric = false;
          if (!explicitMetric) {
             metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_BGP_METRIC;
          }
+         ospfExportStatements.add(new SetMetric(new LiteralInt(metric)));
+         ospfExportStatements.add(ospfExportBgp);
          // add export map with metric
-         PolicyMap exportBgpPolicy;
          String mapName = rbp.getMap();
          if (mapName != null) {
-            exportBgpPolicy = c.getPolicyMaps().get(mapName);
-            if (exportBgpPolicy == null) {
+            RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
+            if (exportBgpRouteMap == null) {
                undefined("undefined reference to route-map: " + mapName,
                      ROUTE_MAP, mapName);
             }
             else {
-               RouteMap exportBgpRouteMap = _routeMaps.get(mapName);
                exportBgpRouteMap.getReferers().put(proc,
                      "ospf redistribute bgp route-map");
                ospfExportBgpConditions.getConjuncts()
                      .add(new CallExpr(mapName));
-               // crash if both an explicit metric is set and one exists in the
-               // route map
-               for (PolicyMapClause clause : exportBgpPolicy.getClauses()) {
-                  for (PolicyMapSetLine line : clause.getSetLines()) {
-                     if (line.getType() == PolicyMapSetType.METRIC) {
-                        if (explicitMetric) {
-                           throw new Error(
-                                 "Explicit redistribution metric set while route map also contains set metric line");
-                        }
-                        else {
-                           routeMapMetric = true;
-                           break;
-                        }
-                     }
-                  }
-               }
-               PolicyMapSetLine setMetricLine = null;
-               // add a set metric line if no metric provided by route map
-               if (!routeMapMetric) {
-                  // use default metric if no explicit metric is set
-                  setMetricLine = new PolicyMapSetMetricLine(metric);
-                  ospfExportBgpStatements.add(new SetMetric(metric));
-               }
-
-               PolicyMapMatchLine matchBgpLine = new PolicyMapMatchProtocolLine(
-                     RoutingProtocol.BGP);
-               for (PolicyMapClause clause : exportBgpPolicy.getClauses()) {
-                  boolean containsRouteFilterList = modifyRejectDefault(clause);
-                  if (!containsRouteFilterList) {
-                     RouteFilterList generatedRejectDefaultRouteList = c
-                           .getRouteFilterLists()
-                           .get(OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-                     if (generatedRejectDefaultRouteList == null) {
-                        generatedRejectDefaultRouteList = makeRouteFilter(
-                              OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-                              Prefix.ZERO, new SubRange(0, 0),
-                              LineAction.REJECT);
-                     }
-                     Set<RouteFilterList> lists = new HashSet<>();
-                     lists.add(generatedRejectDefaultRouteList);
-                     PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-                           lists);
-                     clause.getMatchLines().add(line);
-                  }
-                  Set<PolicyMapSetLine> setList = clause.getSetLines();
-                  clause.getMatchLines().add(matchBgpLine);
-                  if (!routeMapMetric) {
-                     setList.add(setMetricLine);
-                  }
-               }
-               newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
-               newProcess.getPolicyMetricTypes().put(exportBgpPolicy.getName(),
-                     metricType);
-
             }
-         }
-         else { // export bgp routes without named policy
-            ospfExportBgpStatements.add(new SetMetric(metric));
-            exportBgpPolicy = makeRouteExportPolicy(c,
-                  OSPF_EXPORT_BGP_POLICY_NAME,
-                  OSPF_EXPORT_BGP_REJECT_DEFAULT_ROUTE_FILTER_NAME, Prefix.ZERO,
-                  new SubRange(0, 0), LineAction.REJECT, metric,
-                  RoutingProtocol.BGP, PolicyMapAction.PERMIT);
-            newProcess.getOutboundPolicyMaps().add(exportBgpPolicy);
-            newProcess.getPolicyMetricTypes().put(exportBgpPolicy.getName(),
-                  metricType);
          }
          ospfExportBgpStatements.add(Statements.ExitAccept.toStaticStatement());
          ospfExportBgp.setGuard(ospfExportBgpConditions);
@@ -2095,176 +1605,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
       newProcess.setRouterId(routerId);
       return newProcess;
-   }
-
-   private PolicyMap toPolicyMap(final Configuration c, RouteMap map) {
-      PolicyMap output = new PolicyMap(map.getName());
-      for (RouteMapClause rmClause : map.getClauses().values()) {
-         output.getClauses().add(toPolicyMapClause(c, rmClause));
-      }
-      return output;
-   }
-
-   private PolicyMapClause toPolicyMapClause(final Configuration c,
-         RouteMapClause clause) {
-      PolicyMapClause pmClause = new PolicyMapClause();
-      pmClause.setAction(PolicyMapAction.fromLineAction(clause.getAction()));
-      pmClause.setName(Integer.toString(clause.getSeqNum()));
-      Set<PolicyMapMatchLine> matchLines = pmClause.getMatchLines();
-      for (RouteMapMatchLine rmMatchLine : clause.getMatchList()) {
-         PolicyMapMatchLine matchLine = toPolicyMapMatchLine(c, rmMatchLine);
-         if (matchLine == null) {
-            throw new Error("error converting route map match line");
-         }
-         matchLines.add(matchLine);
-      }
-      Set<PolicyMapSetLine> setLines = pmClause.getSetLines();
-      for (RouteMapSetLine rmSetLine : clause.getSetList()) {
-         setLines.add(rmSetLine.toPolicyMapSetLine(this, c, _w));
-      }
-      return pmClause;
-   }
-
-   private PolicyMapMatchLine toPolicyMapMatchLine(final Configuration c,
-         RouteMapMatchLine matchLine) {
-      PolicyMapMatchLine newLine = null;
-      switch (matchLine.getType()) {
-      case AS_PATH_ACCESS_LIST:
-         RouteMapMatchAsPathAccessListLine pathLine = (RouteMapMatchAsPathAccessListLine) matchLine;
-         Set<AsPathAccessList> newAsPathMatchSet = new LinkedHashSet<>();
-         for (String pathListName : pathLine.getListNames()) {
-            AsPathAccessList list = c.getAsPathAccessLists().get(pathListName);
-            if (list == null) {
-               undefined("Reference to undefined as-path access-list: "
-                     + pathListName, AS_PATH_ACCESS_LIST, pathListName);
-            }
-            else {
-               IpAsPathAccessList ipAsPathAccessList = _asPathAccessLists
-                     .get(pathListName);
-               ipAsPathAccessList.getReferers().put(pathLine,
-                     "route-map match ip as-path access-list");
-               newAsPathMatchSet.add(list);
-            }
-         }
-         newLine = new PolicyMapMatchAsPathAccessListLine(newAsPathMatchSet);
-         break;
-
-      case COMMUNITY_LIST:
-         RouteMapMatchCommunityListLine communityLine = (RouteMapMatchCommunityListLine) matchLine;
-         Set<CommunityList> newCommunityMatchSet = new LinkedHashSet<>();
-         for (String listName : communityLine.getListNames()) {
-            CommunityList list = c.getCommunityLists().get(listName);
-            if (list == null) {
-               undefined("Reference to undefined community list: " + listName,
-                     COMMUNITY_LIST, listName);
-            }
-            else {
-               String msg = "match community line";
-               StandardCommunityList standardCommunityList = _standardCommunityLists
-                     .get(listName);
-               if (standardCommunityList != null) {
-                  standardCommunityList.getReferers().put(communityLine, msg);
-               }
-               ExpandedCommunityList expandedCommunityList = _expandedCommunityLists
-                     .get(listName);
-               if (expandedCommunityList != null) {
-                  expandedCommunityList.getReferers().put(communityLine, msg);
-               }
-               newCommunityMatchSet.add(list);
-            }
-         }
-         newLine = new PolicyMapMatchCommunityListLine(newCommunityMatchSet);
-         break;
-
-      case IP_ACCESS_LIST: {
-         RouteMapMatchIpAccessListLine accessLine = (RouteMapMatchIpAccessListLine) matchLine;
-         Set<IpAccessList> newIpAccessMatchSet = new LinkedHashSet<>();
-         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<>();
-         boolean routing = accessLine.getRouting();
-         for (String listName : accessLine.getListNames()) {
-            Object list;
-            IpAccessList ipAccessList = null;
-            RouteFilterList routeFilterList = null;
-            if (routing) {
-               routeFilterList = c.getRouteFilterLists().get(listName);
-               list = routeFilterList;
-            }
-            else {
-               ipAccessList = c.getIpAccessLists().get(listName);
-               list = ipAccessList;
-            }
-            if (list == null) {
-               undefined("Reference to undefined ip access list: " + listName,
-                     IP_ACCESS_LIST, listName);
-            }
-            else {
-               String msg = "route-map match ip access-list line";
-               ExtendedAccessList extendedAccessList = _extendedAccessLists
-                     .get(listName);
-               if (extendedAccessList != null) {
-                  extendedAccessList.getReferers().put(accessLine, msg);
-               }
-               StandardAccessList standardAccessList = _standardAccessLists
-                     .get(listName);
-               if (standardAccessList != null) {
-                  standardAccessList.getReferers().put(accessLine, msg);
-               }
-               if (routing) {
-                  newRouteFilterMatchSet.add(routeFilterList);
-               }
-               else {
-                  newIpAccessMatchSet.add(ipAccessList);
-               }
-            }
-         }
-         if (routing) {
-            newLine = new PolicyMapMatchRouteFilterListLine(
-                  newRouteFilterMatchSet);
-         }
-         else {
-            newLine = new PolicyMapMatchIpAccessListLine(newIpAccessMatchSet);
-         }
-         break;
-      }
-
-      case IP_PREFIX_LIST:
-         RouteMapMatchIpPrefixListLine prefixLine = (RouteMapMatchIpPrefixListLine) matchLine;
-         Set<RouteFilterList> newRouteFilterMatchSet = new LinkedHashSet<>();
-         for (String prefixListName : prefixLine.getListNames()) {
-            RouteFilterList list = c.getRouteFilterLists().get(prefixListName);
-            if (list == null) {
-               undefined(
-                     "undefined reference to prefix-list: " + prefixListName,
-                     PREFIX_LIST, prefixListName);
-            }
-            else {
-               PrefixList prefixList = _prefixLists.get(prefixListName);
-               prefixList.getReferers().put(prefixLine,
-                     "route-map match prefix-list");
-               newRouteFilterMatchSet.add(list);
-            }
-         }
-         newLine = new PolicyMapMatchRouteFilterListLine(
-               newRouteFilterMatchSet);
-         break;
-
-      case TAG:
-         RouteMapMatchTagLine tagLine = (RouteMapMatchTagLine) matchLine;
-         newLine = new PolicyMapMatchTagLine(tagLine.getTags());
-         break;
-
-      case NEIGHBOR:
-         // TODO: implement
-         // break;
-
-      case PROTOCOL:
-         // TODO: implement
-         // break;
-
-      default:
-         throw new Error("bad type");
-      }
-      return newLine;
    }
 
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
@@ -2447,8 +1787,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          convertForPurpose(routingRouteMaps, map);
-         PolicyMap newMap = toPolicyMap(c, map);
-         c.getPolicyMaps().put(newMap.getName(), newMap);
          // convert route maps to RoutingPolicy objects
          RoutingPolicy newPolicy = toRoutingPolicy(c, map);
          c.getRoutingPolicies().put(newPolicy.getName(), newPolicy);
@@ -2467,7 +1805,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          org.batfish.datamodel.Interface newInterface = toInterface(iface,
-               c.getIpAccessLists(), c.getPolicyMaps(), c);
+               c.getIpAccessLists(), c);
          c.getInterfaces().put(newInterface.getName(), newInterface);
       }
 
@@ -2499,35 +1837,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          c.setBgpProcess(newBgpProcess);
       }
 
-      // get all set and added communities
-      for (PolicyMap map : c.getPolicyMaps().values()) {
-         for (PolicyMapClause clause : map.getClauses()) {
-            for (PolicyMapSetLine setLine : clause.getSetLines()) {
-               switch (setLine.getType()) {
-               case ADDITIVE_COMMUNITY:
-                  PolicyMapSetAddCommunityLine sacLine = (PolicyMapSetAddCommunityLine) setLine;
-                  c.getCommunities().addAll(sacLine.getCommunities());
-                  break;
-               case COMMUNITY:
-                  PolicyMapSetCommunityLine scLine = (PolicyMapSetCommunityLine) setLine;
-                  c.getCommunities().addAll(scLine.getCommunities());
-                  break;
-               case AS_PATH_PREPEND:
-               case COMMUNITY_NONE:
-               case DELETE_COMMUNITY:
-               case LOCAL_PREFERENCE:
-               case METRIC:
-               case NEXT_HOP:
-               case NOP:
-               case ORIGIN_TYPE:
-               case LEVEL:
-                  break;
-               default:
-                  throw new BatfishException("bad set type");
-               }
-            }
-         }
-      }
       markAcls(_lineAccessClassLists, "line access-class list", c);
       markAcls(_classMapAccessGroups, "class-map access-group", c);
       markAcls(_ntpAccessGroups, "ntp access-group", c);

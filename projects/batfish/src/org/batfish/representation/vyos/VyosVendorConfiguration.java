@@ -18,9 +18,6 @@ import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -69,8 +66,6 @@ public class VyosVendorConfiguration extends VyosConfiguration {
       for (Entry<String, RouteMap> e : _routeMaps.entrySet()) {
          String name = e.getKey();
          RouteMap routeMap = e.getValue();
-         PolicyMap policyMap = toPolicyMap(routeMap);
-         _c.getPolicyMaps().put(name, policyMap);
          RoutingPolicy rp = toRoutingPolicy(routeMap);
          _c.getRoutingPolicies().put(name, rp);
       }
@@ -243,23 +238,6 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          _ipToInterfaceMap.put(p.getAddress(), newIface);
       }
       return newIface;
-   }
-
-   private PolicyMap toPolicyMap(RouteMap routeMap) {
-      String name = routeMap.getName();
-      PolicyMap policyMap = new PolicyMap(name);
-      for (Entry<Integer, RouteMapRule> e : routeMap.getRules().entrySet()) {
-         String ruleName = Integer.toString(e.getKey());
-         RouteMapRule rule = e.getValue();
-         PolicyMapClause clause = new PolicyMapClause();
-         clause.setName(ruleName);
-         clause.setAction(PolicyMapAction.fromLineAction(rule.getAction()));
-         policyMap.getClauses().add(clause);
-         for (RouteMapMatch match : rule.getMatches()) {
-            match.applyTo(_c, policyMap, clause, _w);
-         }
-      }
-      return policyMap;
    }
 
    private RouteFilterList toRouteFilterList(PrefixList prefixList) {

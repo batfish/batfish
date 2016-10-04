@@ -38,6 +38,8 @@ address_family_multicast_tail
 :
    (
       MULTIPATH NEWLINE
+      | INTERFACE ALL ENABLE NEWLINE
+      | null_af_multicast_tail
       | interface_multicast_stanza
       | ip_pim_tail
    )*
@@ -77,6 +79,11 @@ allow_iimgp_stanza
 asa_comment_stanza
 :
    COLON ~NEWLINE* NEWLINE
+;
+
+as_path_set_stanza
+:
+   AS_PATH_SET name = variable NEWLINE (elems+=as_path_set_elem NEWLINE)* END_SET NEWLINE
 ;
 
 banner_stanza
@@ -224,10 +231,10 @@ cmm_port
 
 cmm_precedence
 :
-   IP? PRECEDENCE IPV4? 
+   IP? PRECEDENCE IPV4?
    (
-   	  DEC+ 
-   	  | name = variable
+      DEC+
+      | name = variable
    ) NEWLINE
 ;
 
@@ -296,15 +303,27 @@ color_setter
 :
    SET_COLOR
    (
-    RED 
-    | YELLOW
-    | GREEN  
-   ) 
+      RED
+      | YELLOW
+      | GREEN
+   )
 ;
 
 del_stanza
 :
    DEL ~NEWLINE* NEWLINE
+;
+
+dhcp_stanza
+:
+   DHCP IPV4 NEWLINE dhcp_substanza+
+;
+
+dhcp_substanza
+:
+   PROFILE ~NEWLINE+ NEWLINE
+   | HELPER_ADDRESS ~NEWLINE+ NEWLINE
+   | INTERFACE ~NEWLINE+ NEWLINE
 ;
 
 failover_lan
@@ -380,19 +399,21 @@ interface_imgp_stanza
 
 interface_multicast_stanza
 :
-   INTERFACE ~NEWLINE* NEWLINE
+   INTERFACE
    (
-      (
-         BSR_BORDER
-         |
-         (
-            BOUNDARY MCAST_BOUNDARY
-         )
-      ) NEWLINE
-   )?
+      ALL ~NEWLINE* NEWLINE
+      | ~NEWLINE* NEWLINE interface_multicast_tail*
+   )
+;
+
+interface_multicast_tail
+:
    (
-      ENABLE NEWLINE
-   )?
+      BSR_BORDER
+      | BOUNDARY MCAST_BOUNDARY
+      | DISABLE
+      | ENABLE
+   ) NEWLINE
 ;
 
 ip_as_path_regex_mode_stanza
@@ -709,9 +730,15 @@ ntp_update_calendar
    UPDATE_CALENDAR ~NEWLINE* NEWLINE
 ;
 
+null_af_multicast_tail
+:
+   NSF NEWLINE
+;
+
 null_stanza
 :
    asa_comment_stanza
+   | as_path_set_stanza
    | banner_stanza
    | certificate_stanza
    | del_stanza
@@ -1051,8 +1078,10 @@ pim_accept_rp
    (
       AUTO_RP
       | IP_ADDRESS
-   ) 
-   (name = variable)? NEWLINE
+   )
+   (
+      name = variable
+   )? NEWLINE
 ;
 
 pim_null
@@ -1067,7 +1096,9 @@ pim_null
       | LOG_NEIGHBOR_CHANGES
       | REGISTER_RATE_LIMIT
       | REGISTER_SOURCE
+      | RPF_VECTOR
       | SEND_RP_DISCOVERY
+      | SNOOPING
       | V1_RP_REACHABILITY
    ) ~NEWLINE* NEWLINE
 ;
@@ -1147,9 +1178,33 @@ pim_ssm
    ) NEWLINE
 ;
 
+router_hsrp_stanza
+:
+   ROUTER HSRP NEWLINE router_hsrp_substanza+
+;
+
+router_hsrp_substanza
+:
+   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE HSRP DEC?
+   (
+      VERSION DEC
+   )? NEWLINE router_hsrp_tail+
+;
+
+router_hsrp_tail
+:
+   (
+      ADDRESS IP_ADDRESS
+      | PREEMPT
+      | PRIORITY DEC
+      | TIMERS DEC+
+      | TRACK OBJECT DEC+
+   ) NEWLINE
+;
+
 router_multicast_stanza
 :
-   ROUTER
+   IPV6? ROUTER
    (
       IGMP
       | MLD
@@ -1162,6 +1217,7 @@ router_multicast_tail
 :
    (
       address_family_multicast_stanza
+      | interface_multicast_stanza
       | null_block_substanza
       | peer_stanza
    )*
@@ -1312,6 +1368,7 @@ stanza
 :
    appletalk_access_list_stanza
    | community_set_stanza
+   | dhcp_stanza
    | extended_access_list_stanza
    | hostname_stanza
    | interface_stanza
@@ -1338,6 +1395,7 @@ stanza
    | route_map_stanza
    | route_policy_stanza
    | router_bgp_stanza
+   | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
    | router_ospf_stanza

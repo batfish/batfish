@@ -64,11 +64,11 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
          private SortedSet<String> _ipsecVpns;
 
-         private SortedSet<String> _policySortedMaps;
-
          private RoleSet _roles;
 
          private SortedSet<String> _routeFilterLists;
+
+         private SortedSet<String> _routingPolicies;
 
          private EnumSet<RoutingProtocol> _routingProtocols;
 
@@ -110,8 +110,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
             if (!node.getIpsecVpns().isEmpty()) {
                _ipsecVpns = node.getIpsecVpns().navigableKeySet();
             }
-            if (!node.getPolicyMaps().isEmpty()) {
-               _policySortedMaps = node.getPolicyMaps().navigableKeySet();
+            if (!node.getRoutingPolicies().isEmpty()) {
+               _routingPolicies = node.getRoutingPolicies().navigableKeySet();
             }
             if (!node.getRoles().isEmpty()) {
                _roles = node.getRoles();
@@ -185,7 +185,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          }
 
          public SortedSet<String> getPolicySortedMaps() {
-            return _policySortedMaps;
+            return _routingPolicies;
          }
 
          public RoleSet getRoles() {
@@ -250,7 +250,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          }
 
          public void setPolicySortedMaps(SortedSet<String> policySortedMaps) {
-            _policySortedMaps = policySortedMaps;
+            _routingPolicies = policySortedMaps;
          }
 
          public void setRoles(RoleSet roles) {

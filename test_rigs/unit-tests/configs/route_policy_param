@@ -1,0 +1,23 @@
+!
+hostname route_policy_param
+!
+route-policy cust_v4_in($cust_v4_pfx, $cust_v4_as_path, $cust_v4_no_auth, $cust_v4_need_auth, $hub_comm, $cust_v4_isp_auth_comm)
+   if ((as-path in $cust_v4_as_path) and (destination in $cust_v4_pfx)) then
+     apply global_cust_v4($cust_v4_no_auth, $cust_v4_need_auth, $hub_comm, $cust_v4_isp_auth_comm)
+   else
+      drop
+   endif
+end-policy
+
+route-policy global_cust_v4($cust_v4_no_auth, $cust_v4_need_auth, $hub_comm, $cust_v4_isp_auth_comm)
+   if (community matches-any blackhole-all) then
+      apply bgp_standard
+      set community (2152:666, 2152:65498, 2152:$hub_comm) additive
+      set next-hop 1.2.3.255
+   else
+      apply bgp_standard
+      set community (2152:65535, 2152:$hub_comm) additive
+   endif
+end-policy
+!
+

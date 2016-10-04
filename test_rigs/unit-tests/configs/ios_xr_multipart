@@ -11,7 +11,7 @@ banner login ^
 *  This router is : ios_xr_multipart                                      *
 *                                                                         * 
 ***************************************************************************
-cC
+^
 
 rsvp
  interface Bundle-Ether1

@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -34,12 +32,6 @@ public final class PsThenReject extends PsThen {
             .singletonList(Statements.ReturnFalse.toStaticStatement()));
       ifStatement.setFalseStatements(Collections
             .singletonList(Statements.ExitReject.toStaticStatement()));
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
-      clause.setAction(PolicyMapAction.DENY);
    }
 
 }

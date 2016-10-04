@@ -81,7 +81,7 @@ interface_stanza
 :
    INTERFACE PRECONFIGURE? iname = interface_name
    (
-	  L2TRANSPORT
+      L2TRANSPORT
       | MULTIPOINT
       | POINT_TO_POINT
    )? NEWLINE interface_stanza_tail
@@ -145,7 +145,10 @@ ip_address_dhcp_if_stanza
 
 ip_address_secondary_if_stanza
 :
-   IP ADDRESS
+   (
+      IP
+      | IPV4
+   ) ADDRESS
    (
       (
          ip = IP_ADDRESS subnet = IP_ADDRESS
@@ -191,7 +194,11 @@ ip_router_isis_if_stanza
 
 isis_circuit_type_if_stanza
 :
-   ISIS CIRCUIT_TYPE LEVEL_2_ONLY NEWLINE
+   ISIS CIRCUIT_TYPE
+   (
+      LEVEL_2_ONLY
+      | LEVEL_2
+   ) NEWLINE
 ;
 
 isis_enable_if_stanza
@@ -201,12 +208,20 @@ isis_enable_if_stanza
 
 isis_hello_interval_if_stanza
 :
-   ISIS HELLO_INTERVAL DEC NEWLINE
+   ISIS HELLO_INTERVAL DEC
+   (
+      LEVEL_1
+      | LEVEL_2
+   )? NEWLINE
 ;
 
 isis_metric_if_stanza
 :
-   ISIS IPV6? METRIC metric = DEC LEVEL_2? NEWLINE
+   ISIS IPV6? METRIC metric = DEC
+   (
+      LEVEL_1
+      | LEVEL_2
+   )? NEWLINE
 ;
 
 isis_network_if_stanza
@@ -304,6 +319,7 @@ null_block_if_stanza
       | GROUP_RANGE
       | H323_GATEWAY
       | HALF_DUPLEX
+      | HISTORY
       | HOLD_QUEUE
       |
       (
@@ -339,6 +355,7 @@ null_block_if_stanza
             | MROUTE_CACHE
             | MTU
             | MULTICAST
+            | MULTICAST_BOUNDARY
             |
             (
                OSPF
@@ -354,12 +371,15 @@ null_block_if_stanza
             )
             | NAT
             | PIM
+            | PIM_SPARSE
             | PORT_UNREACHABLE
             | PROXY_ARP
             | REDIRECTS
             | RIP
             | ROUTE_CACHE
             | ROUTER
+            | RSVP
+            | SDR
             | TCP
             | UNNUMBERED
             | UNREACHABLES
@@ -386,7 +406,11 @@ null_block_if_stanza
          ISIS
          (
             AUTHENTICATION
+            | CSNP_INTERVAL
+            | HELLO
+            | HELLO_MULTIPLIER
             | LSP_INTERVAL
+            | POINT_TO_POINT
          )
       )
       | KEEPALIVE
@@ -450,6 +474,7 @@ null_block_if_stanza
       | RATE_MODE
       | RCV_QUEUE
       | ROUTE_CACHE
+      | ROUTE_ONLY
       | SECURITY_LEVEL
       | SERIAL
       | SERVICE_MODULE

@@ -3,7 +3,6 @@ package org.batfish.representation.aws_vpcs;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,11 +29,6 @@ import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchProtocolLine;
-import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -315,21 +309,14 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             String originationPolicyName = vpnId + "_origination";
             RoutingPolicy originationRoutingPolicy = new RoutingPolicy(
                   originationPolicyName);
-            PolicyMap originationPolicy = new PolicyMap(originationPolicyName);
-            vpnGatewayCfgNode.getPolicyMaps().put(originationPolicyName,
-                  originationPolicy);
             vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName,
                   originationRoutingPolicy);
-            cgBgpNeighbor.getOriginationPolicies().add(originationPolicy);
             cgBgpNeighbor.setExportPolicy(originationPolicyName);
-            PolicyMapClause originationClause = new PolicyMapClause();
             If originationIf = new If();
             List<Statement> statements = originationRoutingPolicy
                   .getStatements();
             statements.add(originationIf);
             statements.add(Statements.ExitReject.toStaticStatement());
-            originationPolicy.getClauses().add(originationClause);
-            originationClause.setAction(PolicyMapAction.PERMIT);
             originationIf.getTrueStatements()
                   .add(Statements.ExitAccept.toStaticStatement());
             RouteFilterList originationRouteFilter = new RouteFilterList(
@@ -340,18 +327,11 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                   LineAction.ACCEPT, outgoingPrefix,
                   new SubRange(outgoingPrefixLength, outgoingPrefixLength));
             originationRouteFilter.addLine(matchOutgoingPrefix);
-            PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
-                  Collections.singleton(originationRouteFilter));
             Conjunction conj = new Conjunction();
             originationIf.setGuard(conj);
             conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
             conj.getConjuncts().add(new MatchPrefixSet(
                   new NamedPrefixSet(originationPolicyName)));
-            originationClause.getMatchLines().add(matchLine);
-            PolicyMapMatchProtocolLine matchStatic = new PolicyMapMatchProtocolLine(
-                  RoutingProtocol.STATIC);
-            originationClause.getMatchLines().add(matchStatic);
-            // cgBgpNeighbor.getOutboundPolicyMaps().add(originationPolicy);
          }
 
          // static routes (if configured)

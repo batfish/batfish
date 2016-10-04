@@ -1,6 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "com.intentionet.bdp.BdpAnswerElement",
+    "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
     "bgpIterations" : {
       "1" : 2,
       "2" : 2,

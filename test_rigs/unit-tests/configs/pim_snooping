@@ -1,0 +1,6 @@
+!
+hostname pim_snooping
+!
+ip pim snooping
+no ip pim snooping dr-flood
+!

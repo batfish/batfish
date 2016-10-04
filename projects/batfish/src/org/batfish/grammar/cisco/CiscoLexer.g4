@@ -15,6 +15,7 @@ boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 boolean enableACL_NUM = false;
 boolean enableCOMMUNITY_LIST_NUM = false;
+boolean inCommunitySet = false;
 
 @Override
 public String printStateVariables() {
@@ -487,6 +488,11 @@ AS_PATH
    'as-path' -> pushMode ( M_AsPath )
 ;
 
+AS_PATH_SET
+:
+   'as-path-set'
+;
+
 AS_SET
 :
    'as-set'
@@ -735,6 +741,11 @@ BEYOND_SCOPE
 BFD
 :
    'bfd'
+;
+
+BFD_ENABLE
+:
+   'bfd-enable'
 ;
 
 BGP
@@ -1150,6 +1161,10 @@ COMMUNITY_LIST
 COMMUNITY_SET
 :
    'community-set'
+   {
+      inCommunitySet = true;
+      enableIPV6_ADDRESS = false;
+   }
 ;
 
 CONFDCONFIG
@@ -1247,6 +1262,11 @@ COS
    'cos'
 ;
 
+COS_QUEUE_GROUP
+:
+   'cos-queue-group'
+;
+
 COST
 :
    'cost'
@@ -1330,6 +1350,11 @@ CS6
 CS7
 :
    'cs7'
+;
+
+CSNP_INTERVAL
+:
+   'csnp-interval'
 ;
 
 CTIQBE
@@ -1935,6 +1960,7 @@ END_POLICY_MAP
 END_SET
 :
    'end-set'
+   { inCommunitySet = false; }
 ;
 
 ENFORCE_FIRST_AS
@@ -2010,6 +2036,11 @@ EVENT_HANDLER
 EVENT_HISTORY
 :
    'event-history'
+;
+
+EXACT
+:
+   'exact'
 ;
 
 EXCEED_ACTION
@@ -2112,6 +2143,11 @@ EXTENDED
    'extended'
    { enableDEC = true; enableACL_NUM = false; }
 
+;
+
+EXTENDED_COUNTERS
+:
+   'extended-counters'
 ;
 
 EXTERNAL
@@ -2226,6 +2262,16 @@ FLOW
    'flow'
 ;
 
+FLOW_AGGREGATION
+:
+   'flow-aggregation'
+;
+
+FLOW_CAPTURE
+:
+   'flow-capture'
+;
+
 FLOW_CACHE
 :
    'flow-cache'
@@ -2239,6 +2285,11 @@ FLOW_CONTROL
 FLOW_EXPORT
 :
    'flow-export'
+;
+
+FLOW_SAMPLING_MODE
+:
+   'flow-sampling-mode'
 ;
 
 FLOW_TOP_TALKERS
@@ -2364,6 +2415,11 @@ GIG_DEFAULT
 GLBP
 :
    'glbp'
+;
+
+GLOBAL_MTU
+:
+   'global-mtu'
 ;
 
 GOPHER
@@ -2676,6 +2732,11 @@ IGMP
    'igmp'
 ;
 
+IGP_COST
+:
+   'igp-cost'
+;
+
 IGRP
 :
    'igrp'
@@ -2852,6 +2913,11 @@ IPSEC
 IPSEC_UDP
 :
    'ipsec-udp'
+;
+
+IPSLA
+:
+   'ipsla'
 ;
 
 IPV4
@@ -3117,6 +3183,11 @@ LENGTH
 LICENSE
 :
    'license'
+;
+
+LIFE
+:
+   'life'
 ;
 
 LIFETIME
@@ -3684,6 +3755,11 @@ MSDP
    'msdp'
 ;
 
+MSRPC
+:
+   'msrpc'
+;
+
 MTA
 :
    'mta'
@@ -3702,6 +3778,11 @@ MTU_IGNORE
 MULTICAST
 :
    'multicast'
+;
+
+MULTICAST_BOUNDARY
+:
+   'multicast-boundary'
 ;
 
 MULTICAST_ROUTING
@@ -3939,6 +4020,11 @@ NHOP_ONLY
    'nhop-only'
 ;
 
+NLRI
+:
+   'nlri'
+;
+
 NLS
 :
    'nls'
@@ -4104,6 +4190,11 @@ OPENFLOW
    'openflow'
 ;
 
+OPERATION
+:
+   'operation'
+;
+
 OPS
 :
    'ops'
@@ -4137,6 +4228,16 @@ ORIGIN
 ORIGINATE
 :
    'originate'
+;
+
+ORIGINATES_FROM
+:
+   'originates-from'
+;
+
+ORIGINATOR_ID
+:
+   'originator-id'
 ;
 
 OSPF
@@ -4232,6 +4333,11 @@ PARTICIPATE
 PASS
 :
    'pass'
+;
+
+PASSES_THROUGH
+:
+   'passes-through'
 ;
 
 PASSIVE
@@ -4377,6 +4483,11 @@ PIM
 PIM_AUTO_RP
 :
    'pim-auto-rp'
+;
+
+PIM_SPARSE
+:
+   'pim-sparse'
 ;
 
 PINNING
@@ -4679,6 +4790,11 @@ QOS_GROUP
    'qos-group'
 ;
 
+QOS_MAPPING
+:
+   'qos-mapping'
+;
+
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
@@ -4687,6 +4803,11 @@ QOS_POLICY_OUTPUT
 QUERY_ONLY
 :
    'query-only'
+;
+
+QUEUE
+:
+   'queue'
 ;
 
 QUEUE_BUFFERS
@@ -4774,6 +4895,16 @@ RD
    'rd'
 ;
 
+REACT
+:
+   'react'
+;
+
+REACTION
+:
+   'reaction'
+;
+
 REAL
 :
    'real'
@@ -4857,6 +4988,11 @@ REGISTER_RATE_LIMIT
 REGISTER_SOURCE
 :
    'register-source'
+;
+
+RELAY
+:
+   'relay'
 ;
 
 RELOAD
@@ -4984,6 +5120,16 @@ RIB_HAS_ROUTE
    'rib-has-route'
 ;
 
+RIB_METRIC_AS_EXTERNAL
+:
+   'rib-metric-as-external'
+;
+
+RIB_METRIC_AS_INTERNAL
+:
+   'rib-metric-as-internal'
+;
+
 RING
 :
    'ring'
@@ -5024,6 +5170,11 @@ ROUTE_MAP
    'route-map'
 ;
 
+ROUTE_ONLY
+:
+   'route-only'
+;
+
 ROUTE_POLICY
 :
    'route-policy'
@@ -5054,6 +5205,11 @@ ROUTER_ID
    'router-id'
 ;
 
+ROUTER_INTERFACE
+:
+   'router-interface'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -5066,7 +5222,7 @@ ROUTING
 
 RPF_VECTOR
 :
-    'rpf-vector'
+   'rpf-vector'
 ;
 
 RP_ADDRESS
@@ -5494,6 +5650,11 @@ SNMPTRAP
    'snmptrap'
 ;
 
+SNOOPING
+:
+   'snooping'
+;
+
 SNP
 :
    'snp'
@@ -5644,6 +5805,11 @@ STANDARD
 STANDBY
 :
    'standby'
+;
+
+START_TIME
+:
+   'start-time'
 ;
 
 STATE_REFRESH
@@ -5901,6 +6067,16 @@ TAP
    'tap'
 ;
 
+TASK
+:
+   'task'
+;
+
+TASK_SPACE_EXECUTE
+:
+   'task execute'
+;
+
 TASKGROUP
 :
    'taskgroup'
@@ -6046,6 +6222,11 @@ TLS_PROXY
    'tls-proxy'
 ;
 
+TM_VOQ_COLLECTION
+:
+   'tm-voq-collection'
+;
+
 TOOL
 :
    'tool'
@@ -6151,6 +6332,11 @@ TTL_EXCEEDED
    'ttl-exceeded'
 ;
 
+TTL_THRESHOLD
+:
+   'ttl-threshold'
+;
+
 TUNNEL
 :
    'tunnel'
@@ -6179,6 +6365,16 @@ TX_QUEUE
 TYPE
 :
    'type'
+;
+
+TYPE_1
+:
+   'type-1'
+;
+
+TYPE_2
+:
+   'type-2'
 ;
 
 UC_TX_QUEUE
@@ -6441,6 +6637,11 @@ VPDN_GROUP
    'vpdn-group'
 ;
 
+VPLS
+:
+   'vpls'
+;
+
 VPN
 :
    'vpn'
@@ -6654,18 +6855,19 @@ VARIABLE
 :
    (
       (
+         F_Variable_RequiredVarChar
          (
-            F_Variable_RequiredVarChar
-            {!enableIPV6_ADDRESS}?
+            (
+               {!enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_RequiredVarChar_Ipv6
-            {enableIPV6_ADDRESS}?
+               F_Variable_VarChar*
+            )
+            |
+            (
+               {enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar_Ipv6*
+               F_Variable_VarChar_Ipv6*
+            )
          )
       )
       |
@@ -6681,7 +6883,7 @@ VARIABLE
             F_Variable_VarChar_Ipv6
             {enableIPV6_ADDRESS}?
 
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar_Ipv6
+            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
             F_Variable_VarChar_Ipv6*
          )
       )
@@ -6770,6 +6972,16 @@ BACKSLASH
    '\\'
 ;
 
+BLANK_LINE
+:
+   (
+      F_Whitespace
+   )* F_Newline
+   {lastTokenType == NEWLINE}?
+
+   F_Newline* -> channel ( HIDDEN )
+;
+
 BRACE_LEFT
 :
    '{'
@@ -6827,19 +7039,7 @@ COMMUNITY_LIST_NUM
 
 COMMUNITY_SET_REGEX
 :
-   SINGLE_QUOTE ~[':&<> ]* COLON ~[':&<> ]* SINGLE_QUOTE
-;
-
-COMMUNITY_SET_VALUE
-:
-   (
-      F_Dec16
-      | ASTERISK
-   ) COLON
-   (
-      F_Dec16
-      | ASTERISK
-   )
+   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\''
 ;
 
 COMMENT_LINE
@@ -6990,7 +7190,9 @@ NEWLINE
 :
    F_Newline+
    {
-   	enableIPV6_ADDRESS = true;
+      if (!inCommunitySet) {
+   	  enableIPV6_ADDRESS = true;
+   	}
    	enableIP_ADDRESS = true;
   }
 
@@ -7024,6 +7226,11 @@ PLUS
 POUND
 :
    '#'
+;
+
+RP_VARIABLE
+:
+   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
 ;
 
 SEMICOLON
@@ -7159,25 +7366,19 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] )
-;
-
-fragment
-F_Variable_RequiredVarChar_Ipv6
-:
-   ~( '0' .. '9' | '-' | [ \t\n\r()!] | [/.,] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r()!]
+   ~( [ \t\n\r(),!+$'*] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r()!] | ':' )
+   ~( [ \t\n\r(),!+$'*] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -7200,14 +7401,24 @@ M_AsPath_DEC
    F_Digit+ -> type ( DEC ) , popMode
 ;
 
-M_AsPath_In
+M_AsPath_IN
 :
    'in' -> type ( IN ) , popMode
+;
+
+M_AsPath_PASSES_THROUGH
+:
+   'passes-through' -> type ( PASSES_THROUGH ) , popMode
 ;
 
 M_AsPath_PREPEND
 :
    'prepend' -> type ( PREPEND ) , popMode
+;
+
+M_AsPath_ORIGINATES_FROM
+:
+   'originates-from' -> type ( ORIGINATES_FROM ) , popMode
 ;
 
 M_AsPath_REGEX_MODE
@@ -7251,6 +7462,11 @@ M_AsPathAccessList_NEWLINE
 M_AsPathAccessList_PERMIT
 :
    'permit' -> type ( PERMIT ) , mode ( M_AsPathRegex )
+;
+
+M_AsPathAccessList_SEQ
+:
+   'seq' -> type ( SEQ )
 ;
 
 M_AsPathAccessList_VARIABLE
@@ -7523,6 +7739,11 @@ M_Extcommunity_WS
 
 mode M_Interface;
 
+M_Interface_ALL
+:
+   'all' -> type ( ALL ) , popMode
+;
+
 M_Interface_BREAKOUT
 :
    'breakout' -> type ( BREAKOUT ) , popMode
@@ -7609,6 +7830,11 @@ M_Interface_PREFIX
       )*
    )
    | 'Dot11Radio'
+;
+
+M_Interface_RELAY
+:
+   'relay' -> type ( RELAY ) , popMode
 ;
 
 M_Interface_SLASH
@@ -7729,7 +7955,6 @@ M_NEIGHBOR_CHANGES
 :
    'changes' -> type ( CHANGES ) , popMode
 ;
-
 
 M_NEIGHBOR_IP_ADDRESS
 :

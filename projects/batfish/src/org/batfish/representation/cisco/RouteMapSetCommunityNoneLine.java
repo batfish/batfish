@@ -3,8 +3,6 @@ package org.batfish.representation.cisco;
 import java.util.List;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapSetCommunityNoneLine;
-import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Warnings;
@@ -22,12 +20,6 @@ public class RouteMapSetCommunityNoneLine extends RouteMapSetLine {
    @Override
    public RouteMapSetType getType() {
       return RouteMapSetType.COMMUNITY_NONE;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
-         Configuration c, Warnings w) {
-      return new PolicyMapSetCommunityNoneLine();
    }
 
 }

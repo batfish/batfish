@@ -20,6 +20,11 @@ address_family_footer
    )?
 ;
 
+as_path_set_elem
+:
+   IOS_REGEX SINGLE_QUOTE ~SINGLE_QUOTE* SINGLE_QUOTE
+;
+
 community
 :
    com = COMMUNITY_NUMBER
@@ -111,6 +116,18 @@ icmp_object_type
    | UNREACHABLE
 ;
 
+int_expr
+:
+   (
+      (
+         PLUS
+         | DASH
+      )? DEC
+   )
+   | IGP_COST
+   | RP_VARIABLE
+;
+
 interface_name
 :
    (
@@ -134,6 +151,7 @@ interface_name
       name = VARIABLE
       (
          FORWARD_SLASH DEC
+         | FORWARD_SLASH DEC COLON DEC
       )?
    )
 ;
@@ -215,6 +233,7 @@ port
    | LOTUSNOTES
    | MLAG
    | MOBILE_IP
+   | MSRPC
    | NAMESERVER
    | NETBIOS_DGM
    | NETBIOS_NS
@@ -316,6 +335,34 @@ range
    | NONE
 ;
 
+route_policy_params_list
+:
+   params_list += variable
+   (
+      COMMA params_list += variable
+   )*
+;
+
+rp_community_set_elem
+:
+   (
+      prefix = rp_community_set_elem_half COLON suffix =
+      rp_community_set_elem_half
+   )
+   | community
+;
+
+rp_community_set_elem_half
+:
+   value = DEC
+   | var = RP_VARIABLE
+   |
+   (
+      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
+   )
+   | ASTERISK
+;
+
 subrange
 :
    low = DEC
@@ -343,5 +390,8 @@ variable
 
 variable_with_colon
 :
-   (COLON|~NEWLINE)+
+   (
+      COLON
+      | ~NEWLINE
+   )+
 ;

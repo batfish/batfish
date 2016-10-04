@@ -1,0 +1,24 @@
+!
+hostname multicast
+!
+multicast-routing
+ address-family ipv4
+  nsf
+  multipath
+  interface all enable
+  interface GigabitEthernet0/2/1/18.705
+   boundary mcast-boundary
+  !
+  nsf
+  multipath
+  interface all enable           <<< interface all enable
+ !
+ address-family ipv6
+  interface Bundle-Ether3.6
+   disable
+  !
+  nsf
+  interface all enable
+ !
+!
+

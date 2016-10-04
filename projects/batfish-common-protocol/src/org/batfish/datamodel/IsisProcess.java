@@ -1,14 +1,10 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 
 public class IsisProcess implements Serializable {
 
@@ -25,14 +21,11 @@ public class IsisProcess implements Serializable {
 
    private IsoAddress _netAddress;
 
-   private List<PolicyMap> _outboundPolicyMaps;
-
    private SortedMap<String, IsisLevel> _policyExportLevels;
 
    public IsisProcess() {
       _generatedRoutes = new LinkedHashSet<>();
       _policyExportLevels = new TreeMap<>();
-      _outboundPolicyMaps = new ArrayList<>();
    }
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
@@ -45,11 +38,6 @@ public class IsisProcess implements Serializable {
 
    public IsoAddress getNetAddress() {
       return _netAddress;
-   }
-
-   @JsonIdentityReference(alwaysAsId = true)
-   public List<PolicyMap> getOutboundPolicyMaps() {
-      return _outboundPolicyMaps;
    }
 
    public SortedMap<String, IsisLevel> getPolicyExportLevels() {
@@ -66,10 +54,6 @@ public class IsisProcess implements Serializable {
 
    public void setNetAddress(IsoAddress netAddress) {
       _netAddress = netAddress;
-   }
-
-   public void setOutboundPolicyMaps(List<PolicyMap> outboundPolicyMaps) {
-      _outboundPolicyMaps = outboundPolicyMaps;
    }
 
    public void setPolicyExportLevels(

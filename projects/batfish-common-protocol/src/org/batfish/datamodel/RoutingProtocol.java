@@ -113,6 +113,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 20;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -146,6 +147,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 200;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -176,6 +178,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 115;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -206,6 +209,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 115;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -236,6 +240,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 115;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -266,6 +271,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 115;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -296,6 +302,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 110;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -326,6 +333,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 110;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -356,6 +364,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 110;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
@@ -386,6 +395,7 @@ public enum RoutingProtocol {
          case VYOS:
             return 110;
          case EMPTY:
+         case IGNORED:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:

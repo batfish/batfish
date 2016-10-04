@@ -2,12 +2,9 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 
 public class OspfProcess implements Serializable {
 
@@ -19,18 +16,12 @@ public class OspfProcess implements Serializable {
 
    private Set<GeneratedRoute> _generatedRoutes;
 
-   private Set<PolicyMap> _outboundPolicyMaps;
-
-   private Map<String, OspfMetricType> _policyMetricTypes;
-
    private Double _referenceBandwidth;
 
    private Ip _routerId;
 
    public OspfProcess() {
       _generatedRoutes = new LinkedHashSet<>();
-      _outboundPolicyMaps = new LinkedHashSet<>();
-      _policyMetricTypes = new LinkedHashMap<>();
       _referenceBandwidth = null;
       _routerId = null;
       _areas = new HashMap<>();
@@ -46,15 +37,6 @@ public class OspfProcess implements Serializable {
 
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
-   }
-
-   @JsonIdentityReference(alwaysAsId = true)
-   public Set<PolicyMap> getOutboundPolicyMaps() {
-      return _outboundPolicyMaps;
-   }
-
-   public Map<String, OspfMetricType> getPolicyMetricTypes() {
-      return _policyMetricTypes;
    }
 
    public double getReferenceBandwidth() {
@@ -75,15 +57,6 @@ public class OspfProcess implements Serializable {
 
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
-   }
-
-   public void setOutboundPolicyMaps(Set<PolicyMap> outboundPolicyMaps) {
-      _outboundPolicyMaps = outboundPolicyMaps;
-   }
-
-   public void setPolicyMetricTypes(
-         Map<String, OspfMetricType> policyMetricTypes) {
-      _policyMetricTypes = policyMetricTypes;
    }
 
    public void setReferenceBandwidth(double referenceBandwidth) {
