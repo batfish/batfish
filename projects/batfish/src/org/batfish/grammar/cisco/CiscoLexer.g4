@@ -3494,6 +3494,11 @@ MAX_METRIC
    'max-metric'
 ;
 
+MAX_ROUTE
+:
+   'max-route'
+;
+
 MAXIMUM
 :
    'maximum'
