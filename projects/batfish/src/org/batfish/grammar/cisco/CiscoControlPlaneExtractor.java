@@ -1850,6 +1850,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             int dscpType = toDscpType(feature.dscp_type());
             dscps.add(dscpType);
          }
+         if (feature.ECE() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseEce(true);
+            alt.setEce(true);
+            tcpFlags.add(alt);
+         }
          if (feature.ECHO_REPLY() != null) {
             icmpType = IcmpType.ECHO_REPLY;
             icmpCode = IcmpCode.ECHO_REPLY;
@@ -1872,6 +1878,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             alt2.setRst(true);
             tcpFlags.add(alt1);
             tcpFlags.add(alt2);
+         }
+         if (feature.FIN() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseFin(true);
+            alt.setFin(true);
+            tcpFlags.add(alt);
          }
          if (feature.FRAGMENTS() != null) {
             todo(ctx, F_FRAGMENTS);
@@ -1903,6 +1915,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
             icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
          }
+         if (feature.PSH() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUsePsh(true);
+            alt.setPsh(true);
+            tcpFlags.add(alt);
+         }
          if (feature.REDIRECT() != null) {
             icmpType = IcmpType.REDIRECT_MESSAGE;
          }
@@ -1915,6 +1933,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          if (feature.SOURCE_QUENCH() != null) {
             icmpType = IcmpType.SOURCE_QUENCH;
             icmpCode = IcmpCode.SOURCE_QUENCH;
+         }
+         if (feature.SYN() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseSyn(true);
+            alt.setSyn(true);
+            tcpFlags.add(alt);
          }
          if (feature.TIME_EXCEEDED() != null) {
             icmpType = IcmpType.TIME_EXCEEDED;
@@ -1935,6 +1959,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
          if (feature.UNREACHABLE() != null) {
             icmpType = IcmpType.DESTINATION_UNREACHABLE;
+         }
+         if (feature.URG() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseUrg(true);
+            alt.setUrg(true);
+            tcpFlags.add(alt);
          }
       }
       String name = getFullText(ctx).trim();
@@ -3184,6 +3214,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentOspfProcess
             .computeNetworks(_configuration.getInterfaces().values());
       _currentOspfProcess = null;
+   }
+
+   @Override
+   public void exitS_no_access_list_extended(
+         S_no_access_list_extendedContext ctx) {
+      String name = ctx.ACL_NUM_EXTENDED().getText();
+      _configuration.getExtendedAcls().remove(name);
+   }
+
+   @Override
+   public void exitS_no_access_list_standard(
+         S_no_access_list_standardContext ctx) {
+      String name = ctx.ACL_NUM_STANDARD().getText();
+      _configuration.getStandardAcls().remove(name);
    }
 
    @Override
