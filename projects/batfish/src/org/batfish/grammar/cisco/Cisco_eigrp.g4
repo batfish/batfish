@@ -28,7 +28,11 @@ re_auto_summary
 
 re_distribute_list
 :
-   DISTRIBUTE_LIST DEC (OUT | IN) NEWLINE
+   DISTRIBUTE_LIST DEC
+   (
+      OUT
+      | IN
+   ) NEWLINE
 ;
 
 re_network

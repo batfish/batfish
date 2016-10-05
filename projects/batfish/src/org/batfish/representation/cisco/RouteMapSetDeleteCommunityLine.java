@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapSetDeleteCommunityLine;
-import org.batfish.datamodel.PolicyMapSetLine;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -52,13 +50,6 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
    @Override
    public RouteMapSetType getType() {
       return RouteMapSetType.DELETE_COMMUNITY;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
-         Configuration c, Warnings w) {
-      CommunityList dcList = c.getCommunityLists().get(_listName);
-      return new PolicyMapSetDeleteCommunityLine(dcList);
    }
 
 }

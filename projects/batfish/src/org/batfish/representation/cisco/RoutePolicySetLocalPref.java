@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -9,13 +10,13 @@ public class RoutePolicySetLocalPref extends RoutePolicySetStatement {
 
    private static final long serialVersionUID = 1L;
 
-   private int _pref;
+   private IntExpr _pref;
 
-   public RoutePolicySetLocalPref(int pref) {
-      _pref = pref;
+   public RoutePolicySetLocalPref(IntExpr intExpr) {
+      _pref = intExpr;
    }
 
-   public int getLocalPref() {
+   public IntExpr getLocalPref() {
       return _pref;
    }
 

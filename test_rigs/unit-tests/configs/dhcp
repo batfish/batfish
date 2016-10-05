@@ -1,0 +1,13 @@
+!
+hostname dhcp
+!
+dhcp ipv4
+ profile irnc-dhcp relay
+  helper-address vrf default 137.164.55.68
+ !
+ interface Bundle-Ether4.12 relay profile irnc-dhcp
+ interface Bundle-Ether4.13 relay profile irnc-dhcp
+ interface Bundle-Ether1.1031 relay profile irnc-dhcp
+ interface Bundle-Ether1.1032 relay profile irnc-dhcp
+!
+    

@@ -37,8 +37,10 @@ public class ParseVendorConfigurationJob
       if (matcher.find()) {
          int delimiterIndex = matcher.start(1);
          char delimiter = fileText.charAt(delimiterIndex);
+         String delimiterText = (delimiter == '^' ? "\\^"
+               : ("[" + Character.toString(delimiter) + "]"));
          Pattern finalDelimiterPattern = Pattern
-               .compile("(?m)" + delimiter + "[\r\n]");
+               .compile("(?m)[" + delimiterText + "][\r\n]");
          Matcher finalDelimiterMatcher = finalDelimiterPattern
                .matcher(fileText);
          if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
@@ -89,6 +91,7 @@ public class ParseVendorConfigurationJob
       ParserRuleContext tree = null;
       ControlPlaneExtractor extractor = null;
       ConfigurationFormat format = _format;
+      _logger.info("Processing: '" + currentPath + "'\n");
 
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
@@ -106,10 +109,20 @@ public class ParseVendorConfigurationJob
          boolean nonNexus = checkNonNexus(_fileText);
          String newFileText = _fileText;
          String fileText;
+         _logger.info("\tPreprocessing...");
          do {
             fileText = newFileText;
-            newFileText = preprocessBanner(fileText);
+            try {
+               newFileText = preprocessBanner(fileText);
+            }
+            catch (BatfishException e) {
+               elapsedTime = System.currentTimeMillis() - startTime;
+               return new ParseVendorConfigurationResult(elapsedTime,
+                     _logger.getHistory(), _file,
+                     new BatfishException("Error preprocessing banner", e));
+            }
          } while (newFileText != fileText);
+         _logger.info("OK\n");
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText,
                _settings, nonNexus);
          combinedParser = ciscoParser;
@@ -125,8 +138,8 @@ public class ParseVendorConfigurationJob
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
-            String msg = "Flattening: \"" + currentPath
-                  + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
+            String msg = "Flattening: '" + currentPath
+                  + "' on-the-fly; line-numbers reported for this file will be spurious\n";
             _warnings.pedantic(msg);
             // _logger
             // .warn("Flattening: \""
@@ -143,8 +156,8 @@ public class ParseVendorConfigurationJob
             return new ParseVendorConfigurationResult(elapsedTime,
                   _logger.getHistory(), _file,
                   new BatfishException(
-                        "Vyos configurations must be flattened prior to this stage: \""
-                              + _file.toString() + "\""));
+                        "Vyos configurations must be flattened prior to this stage: '"
+                              + _file.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_VYOS:
@@ -157,8 +170,8 @@ public class ParseVendorConfigurationJob
 
       case JUNIPER:
          if (_settings.flattenOnTheFly()) {
-            String msg = "Flattening: \"" + currentPath
-                  + "\" on-the-fly; line-numbers reported for this file will be spurious\n";
+            String msg = "Flattening: '" + currentPath
+                  + "' on-the-fly; line-numbers reported for this file will be spurious\n";
             _warnings.pedantic(msg);
             // _logger
             // .warn("Flattening: \""
@@ -185,8 +198,8 @@ public class ParseVendorConfigurationJob
             return new ParseVendorConfigurationResult(elapsedTime,
                   _logger.getHistory(), _file,
                   new BatfishException(
-                        "Juniper configurations must be flattened prior to this stage: \""
-                              + _file.toString() + "\""));
+                        "Juniper configurations must be flattened prior to this stage: '"
+                              + _file.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
@@ -219,8 +232,8 @@ public class ParseVendorConfigurationJob
       case JUNIPER_SWITCH:
       case MSS:
       case VXWORKS:
-         String unsupportedError = "Unsupported configuration format: \""
-               + format.toString() + "\" for file: \"" + currentPath + "\"\n";
+         String unsupportedError = "Unsupported configuration format: '"
+               + format.toString() + "' for file: '" + currentPath + "'\n";
          if (!_settings.ignoreUnsupported()) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
@@ -236,8 +249,8 @@ public class ParseVendorConfigurationJob
 
       case UNKNOWN:
       default:
-         String unknownError = "Unknown configuration format for file: \""
-               + currentPath + "\"\n";
+         String unknownError = "Unknown configuration format for file: '"
+               + currentPath + "'\n";
          if (!_settings.ignoreUnknown()) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
@@ -253,7 +266,8 @@ public class ParseVendorConfigurationJob
       }
 
       try {
-         tree = Batfish.parse(combinedParser, currentPath, _logger, _settings);
+         _logger.info("\tParsing...");
+         tree = Batfish.parse(combinedParser, _logger, _settings);
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
          _logger.info("OK\n");
@@ -291,9 +305,8 @@ public class ParseVendorConfigurationJob
          }
          String filename = _file.getFileName().toString();
          String guessedHostname = filename.replaceAll("\\.(cfg|conf)$", "");
-         _logger
-               .redflag("\tNo hostname set! Guessing hostname from filename: \""
-                     + filename + "\" ==> \"" + guessedHostname + "\"\n");
+         _logger.redflag("\tNo hostname set! Guessing hostname from filename: '"
+               + filename + "' ==> '" + guessedHostname + "'\n");
          vc.setHostname(guessedHostname);
       }
       elapsedTime = System.currentTimeMillis() - startTime;

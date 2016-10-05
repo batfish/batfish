@@ -155,17 +155,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    private static final String GROUP_VAR = "group";
 
-   private static final String INBOUND_POLICY_MAPS_VAR = "inboundPolicyMaps";
-
    private static final String LOCAL_AS_VAR = "localAs";
 
    private static final String LOCAL_IP_VAR = "localIp";
 
    private static final String NAME_VAR = "name";
-
-   private static final String ORIGINATION_POLICIES_VAR = "originationPolicies";
-
-   private static final String OUTBOUND_POLICY_MAPS_VAR = "outboundPolicyMaps";
 
    private static final String OWNER_VAR = "owner";
 
@@ -223,12 +217,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    private String _importPolicy;
 
    /**
-    * The set of policies applied to inbound routes. Each policy in this set is
-    * applied independently of the others.
-    */
-   private Set<PolicyMap> _inboundPolicyMaps;
-
-   /**
     * The autonomous system number of the containing BGP process as reported to
     * this peer
     */
@@ -238,20 +226,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * The ip address of the containing router as reported to this peer
     */
    private Ip _localIp;
-
-   /**
-    * The set of policies governing routes that may be originated (i.e. routes
-    * not received through BGP) from the containing BGP process. Each policy in
-    * this set is applied independently of the others. These policies are
-    * applied before outbound policies are considered.
-    */
-   private Set<PolicyMap> _originationPolicies;
-
-   /**
-    * The set of policies applied to outbound routes. Each policy in this set is
-    * applied independently of the others.
-    */
-   private Set<PolicyMap> _outboundPolicyMaps;
 
    private Configuration _owner;
 
@@ -294,9 +268,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     */
    public BgpNeighbor(Prefix prefix, Configuration owner) {
       this(prefix);
-      _outboundPolicyMaps = new LinkedHashSet<>();
-      _inboundPolicyMaps = new LinkedHashSet<>();
-      _originationPolicies = new LinkedHashSet<>();
       _generatedRoutes = new LinkedHashSet<>();
       _owner = owner;
    }
@@ -395,15 +366,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    }
 
    /**
-    * @return {@link #_inboundPolicyMaps}
-    */
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(INBOUND_POLICY_MAPS_VAR)
-   public Set<PolicyMap> getInboundPolicyMaps() {
-      return _inboundPolicyMaps;
-   }
-
-   /**
     * @return {@link #_localAs}
     */
    @JsonProperty(LOCAL_AS_VAR)
@@ -417,24 +379,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(LOCAL_IP_VAR)
    public Ip getLocalIp() {
       return _localIp;
-   }
-
-   /**
-    * @return {@link #_originationPolicies}
-    */
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(ORIGINATION_POLICIES_VAR)
-   public Set<PolicyMap> getOriginationPolicies() {
-      return _originationPolicies;
-   }
-
-   /**
-    * @return {@link #_outboundPolicyMaps}
-    */
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OUTBOUND_POLICY_MAPS_VAR)
-   public Set<PolicyMap> getOutboundPolicyMaps() {
-      return _outboundPolicyMaps;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
@@ -563,11 +507,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       _importPolicy = importPolicy;
    }
 
-   @JsonProperty(INBOUND_POLICY_MAPS_VAR)
-   public void setInboundPolicyMaps(Set<PolicyMap> inboundPolicyMaps) {
-      _inboundPolicyMaps = inboundPolicyMaps;
-   }
-
    /**
     * Sets {@link #_localAs}
     *
@@ -586,16 +525,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(LOCAL_IP_VAR)
    public void setLocalIp(Ip localIp) {
       _localIp = localIp;
-   }
-
-   @JsonProperty(ORIGINATION_POLICIES_VAR)
-   public void setOriginationPolicies(Set<PolicyMap> originationPolicies) {
-      _originationPolicies = originationPolicies;
-   }
-
-   @JsonProperty(OUTBOUND_POLICY_MAPS_VAR)
-   public void setOutboundPolicyMaps(Set<PolicyMap> outboundPolicyMaps) {
-      _outboundPolicyMaps = outboundPolicyMaps;
    }
 
    @JsonProperty(OWNER_VAR)

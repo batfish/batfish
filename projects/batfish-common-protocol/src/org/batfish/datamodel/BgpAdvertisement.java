@@ -11,6 +11,7 @@ import org.batfish.datamodel.collections.CommunitySet;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 /**
@@ -26,12 +27,12 @@ public class BgpAdvertisement
       implements Comparable<BgpAdvertisement>, Serializable {
 
    public enum BgpAdvertisementType {
-      EBGP_ORIGINATED("bgp"),
-      EBGP_RECEIVED("bgp_ti"),
-      EBGP_SENT("bgp_to"),
-      IBGP_ORIGINATED("ibgp"),
-      IBGP_RECEIVED("ibgp_ti"),
-      IBGP_SENT("ibgp_to");
+      EBGP_ORIGINATED,
+      EBGP_RECEIVED,
+      EBGP_SENT,
+      IBGP_ORIGINATED,
+      IBGP_RECEIVED,
+      IBGP_SENT;
 
       private final static Map<String, BgpAdvertisementType> _map = buildMap();
 
@@ -39,29 +40,25 @@ public class BgpAdvertisement
          Map<String, BgpAdvertisementType> map = new HashMap<>();
          for (BgpAdvertisementType bgpAdvertisementType : BgpAdvertisementType
                .values()) {
-            String nlsTypeName = bgpAdvertisementType._nlsTypeName;
-            map.put(nlsTypeName, bgpAdvertisementType);
+            String name = bgpAdvertisementType.toString().toLowerCase();
+            map.put(name, bgpAdvertisementType);
          }
          return Collections.unmodifiableMap(map);
       }
 
-      public static BgpAdvertisementType fromNlsTypeName(String nlsTypeName) {
-         BgpAdvertisementType bgpAdvertisementType = _map.get(nlsTypeName);
+      @JsonCreator
+      public static BgpAdvertisementType fromName(String name) {
+         String lName = name.toLowerCase();
+         BgpAdvertisementType bgpAdvertisementType = _map.get(lName);
          if (bgpAdvertisementType == null) {
-            throw new BatfishException(
-                  "Invalid nlsTypeName: \"" + nlsTypeName + "\"");
+            throw new BatfishException("Invalid name: \"" + name + "\"");
          }
          return bgpAdvertisementType;
       }
 
-      private String _nlsTypeName;
-
-      private BgpAdvertisementType(String nlsTypeName) {
-         _nlsTypeName = nlsTypeName;
-      }
-
-      public String getNlsTypeName() {
-         return _nlsTypeName;
+      @JsonValue
+      public String getName() {
+         return name().toLowerCase();
       }
 
    }
@@ -69,21 +66,34 @@ public class BgpAdvertisement
    private static final String AS_PATH_VAR = "asPath";
 
    private static final String COMMUNITIES_VAR = "communities";
+
    private static final String DST_IP_VAR = "dstIp";
+
    private static final String DST_NODE_VAR = "dstNode";
+
    private static final String LOCAL_PREFERENCE_VAR = "localPreference";
+
    private static final String MED_VAR = "med";
+
    private static final String NETWORK_VAR = "network";
+
    private static final String NEXT_HOP_IP_VAR = "nextHopIp";
+
    private static final String ORIGIN_TYPE_VAR = "originType";
+
    private static final String ORIGINATOR_IP_VAR = "originatorIp";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
    private static final String SRC_IP_VAR = "srcIp";
+
    private static final String SRC_NODE_VAR = "srcNode";
+
    private static final String SRC_PROTOCOL_VAR = "srcProtocol";
+
    private static final String TYPE_VAR = "type";
 
    private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
@@ -114,10 +124,10 @@ public class BgpAdvertisement
 
    private final RoutingProtocol _srcProtocol;
 
-   private final String _type;
+   private final BgpAdvertisementType _type;
 
    @JsonCreator
-   public BgpAdvertisement(@JsonProperty(TYPE_VAR) String type,
+   public BgpAdvertisement(@JsonProperty(TYPE_VAR) BgpAdvertisementType type,
          @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(SRC_NODE_VAR) String srcNode,
@@ -318,7 +328,7 @@ public class BgpAdvertisement
    }
 
    @JsonProperty(TYPE_VAR)
-   public String getType() {
+   public BgpAdvertisementType getType() {
       return _type;
    }
 

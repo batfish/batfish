@@ -29,9 +29,7 @@ address_family_is_stanza
    (
       UNICAST
       | MULTICAST
-   )? NEWLINE 
-   isaf_stanza*
-   address_family_footer
+   )? NEWLINE isaf_stanza* address_family_footer
 ;
 
 advertise_is_stanza
@@ -41,7 +39,11 @@ advertise_is_stanza
 
 circuit_type_iis_stanza
 :
-   CIRCUIT_TYPE (LEVEL_2_ONLY|LEVEL_2) NEWLINE
+   CIRCUIT_TYPE
+   (
+      LEVEL_2_ONLY
+      | LEVEL_2
+   ) NEWLINE
 ;
 
 common_iis_stanza
@@ -128,7 +130,7 @@ null_iis_stanza
 :
    NO?
    (
-   	  BFD 
+      BFD
       | HELLO_INTERVAL
       | HELLO_PADDING
       | HELLO_PASSWORD
@@ -193,9 +195,9 @@ redistribute_connected_is_stanza
       (
          ROUTE_MAP map = VARIABLE
       )
-      | 
+      |
       (
-      	ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = VARIABLE
       )
    )* NEWLINE
 ;
@@ -204,7 +206,7 @@ redistribute_static_is_stanza
 :
    REDISTRIBUTE STATIC
    (
-   	  CLNS
+      CLNS
       | IP
       | LEVEL_1
       | LEVEL_1_2
@@ -217,9 +219,9 @@ redistribute_static_is_stanza
       (
          ROUTE_MAP map = VARIABLE
       )
-      | 
+      |
       (
-      	ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = VARIABLE
       )
    )* NEWLINE
 ;

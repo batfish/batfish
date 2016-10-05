@@ -313,11 +313,10 @@ network_bgp_tail
    )?
    (
       ROUTE_MAP mapname = VARIABLE
-   )? 
-   (
-   	   ROUTE_POLICY policyname = VARIABLE
    )?
-   NEWLINE
+   (
+      ROUTE_POLICY policyname = VARIABLE
+   )? NEWLINE
 ;
 
 network6_bgp_tail
@@ -326,14 +325,13 @@ network6_bgp_tail
    (
       address = IPV6_ADDRESS
       | prefix = IPV6_PREFIX
-   ) 
+   )
    (
       ROUTE_MAP mapname = VARIABLE
-   )? 
-   (
-   	   ROUTE_POLICY policyname = VARIABLE
    )?
-   NEWLINE
+   (
+      ROUTE_POLICY policyname = VARIABLE
+   )? NEWLINE
 ;
 
 next_hop_self_bgp_tail
@@ -483,6 +481,7 @@ null_bgp_tail
       )
       | BESTPATH
       | BFD
+      | BFD_ENABLE
       |
       (
          BGP
@@ -564,7 +563,12 @@ peer_group_assignment_rb_stanza
 
 peer_group_creation_rb_stanza
 :
-   NEIGHBOR name = VARIABLE PEER_GROUP PASSIVE? (NLRI|UNICAST|MULTICAST)* NEWLINE
+   NEIGHBOR name = VARIABLE PEER_GROUP PASSIVE?
+   (
+      NLRI
+      | UNICAST
+      | MULTICAST
+   )* NEWLINE
 ;
 
 prefix_list_bgp_tail
@@ -591,19 +595,26 @@ remove_private_as_bgp_tail
 
 route_map_bgp_tail
 :
-   ROUTE_MAP 
+   ROUTE_MAP
    (
-   	 name = variable (IN | OUT ) 
-   	 | (IN | OUT) name = variable   	 
-   )
-   NEWLINE
+      name = variable
+      (
+         IN
+         | OUT
+      )
+      |
+      (
+         IN
+         | OUT
+      ) name = variable
+   ) NEWLINE
 ;
 
 route_policy_bgp_tail
 :
    ROUTE_POLICY name = variable
-   (   	   
-   	   PAREN_LEFT route_policy_params_list PAREN_RIGHT
+   (
+      PAREN_LEFT route_policy_params_list PAREN_RIGHT
    )?
    (
       IN
@@ -666,7 +677,7 @@ redistribute_static_bgp_tail
       )
       |
       (
-      	 ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = VARIABLE
       )
       |
       (
@@ -677,7 +688,10 @@ redistribute_static_bgp_tail
 
 router_bgp_stanza
 :
-   ROUTER BGP (procnum = DEC)? NEWLINE router_bgp_stanza_tail+
+   ROUTER BGP
+   (
+      procnum = DEC
+   )? NEWLINE router_bgp_stanza_tail+
 ;
 
 router_bgp_stanza_tail
@@ -810,7 +824,7 @@ template_peer_policy_rb_stanza
    TEMPLATE PEER_POLICY name = VARIABLE NEWLINE
    (
       bgp_tail
-   ) *
+   )*
    (
       EXIT_PEER_POLICY NEWLINE
    )
@@ -818,7 +832,7 @@ template_peer_policy_rb_stanza
 
 template_peer_session_rb_stanza
 :
-   TEMPLATE PEER_SESSION  name = VARIABLE NEWLINE
+   TEMPLATE PEER_SESSION name = VARIABLE NEWLINE
    (
       bgp_tail
       | remote_as_bgp_tail

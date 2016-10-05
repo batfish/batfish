@@ -1,9 +1,5 @@
 package org.batfish.datamodel;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -60,11 +56,7 @@ public final class GeneratedRoute extends AbstractRoute
 
    private static final String AS_PATH_VAR = "asPath";
 
-   private static final String ATTRIBUTE_POLICIES_VAR = "attributePolicies";
-
    private static final String DISCARD_VAR = "discard";
-
-   private static final String GENERATION_POLICIES_VAR = "generationPolicies";
 
    private static final String METRIC_VAR = "metric";
 
@@ -74,13 +66,9 @@ public final class GeneratedRoute extends AbstractRoute
 
    private AsPath _asPath;
 
-   private Map<String, PolicyMap> _attributePolicies;
-
    private String _attributePolicy;
 
    private boolean _discard;
-
-   private Set<PolicyMap> _generationPolicies;
 
    private String _generationPolicy;
 
@@ -93,12 +81,9 @@ public final class GeneratedRoute extends AbstractRoute
       super(prefix, null);
    }
 
-   public GeneratedRoute(Prefix prefix, int administrativeCost,
-         Set<PolicyMap> generationPolicyMaps) {
+   public GeneratedRoute(Prefix prefix, int administrativeCost) {
       super(prefix, null);
       _administrativeCost = administrativeCost;
-      _generationPolicies = generationPolicyMaps;
-      _attributePolicies = new TreeMap<>();
    }
 
    public GeneratedRoute(Prefix prefix, Ip nextHopIp) {
@@ -126,11 +111,6 @@ public final class GeneratedRoute extends AbstractRoute
       return _asPath;
    }
 
-   @JsonProperty(ATTRIBUTE_POLICIES_VAR)
-   public Map<String, PolicyMap> getAttributePolicies() {
-      return _attributePolicies;
-   }
-
    public String getAttributePolicy() {
       return _attributePolicy;
    }
@@ -138,11 +118,6 @@ public final class GeneratedRoute extends AbstractRoute
    @JsonProperty(DISCARD_VAR)
    public boolean getDiscard() {
       return _discard;
-   }
-
-   @JsonProperty(GENERATION_POLICIES_VAR)
-   public Set<PolicyMap> getGenerationPolicies() {
-      return _generationPolicies;
    }
 
    public String getGenerationPolicy() {
@@ -192,11 +167,6 @@ public final class GeneratedRoute extends AbstractRoute
       _asPath = asPath;
    }
 
-   @JsonProperty(ATTRIBUTE_POLICIES_VAR)
-   public void setAttributePolicies(Map<String, PolicyMap> attributePolicies) {
-      _attributePolicies = attributePolicies;
-   }
-
    public void setAttributePolicy(String attributePolicy) {
       _attributePolicy = attributePolicy;
    }
@@ -204,11 +174,6 @@ public final class GeneratedRoute extends AbstractRoute
    @JsonProperty(DISCARD_VAR)
    public void setDiscard(boolean discard) {
       _discard = discard;
-   }
-
-   @JsonProperty(GENERATION_POLICIES_VAR)
-   public void setGenerationPolicies(Set<PolicyMap> generationPolicies) {
-      _generationPolicies = generationPolicies;
    }
 
    public void setGenerationPolicy(String generationPolicy) {

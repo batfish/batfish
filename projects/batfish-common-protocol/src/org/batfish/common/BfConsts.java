@@ -29,7 +29,6 @@ public class BfConsts {
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    public static final String ARG_PLUGIN_DIRS = "plugindirs";
-   public static final String ARG_PREDICATES = "predicates";
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
@@ -69,7 +68,6 @@ public class BfConsts {
    public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
    public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
    public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
-   public static final String RELPATH_CONTROL_PLANE_FACTS_DIR = "cp_facts";
    public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
    public static final String RELPATH_DATA_PLANE_DIR = "dp";
    public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
@@ -83,15 +81,10 @@ public class BfConsts {
    public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
    public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
    public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
-   public static final String RELPATH_LB_HOSTNAME_PATH = "lb";
    public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
-   public static final String RELPATH_NLS_INPUT_FILE = "nls_input.pl";
-   public static final String RELPATH_NLS_OUTPUT_DIR = "nls_output";
    public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
    public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
    public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
-   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH = "pdgraphs";
-   public static final String RELPATH_PROTOCOL_DEPENDENCY_GRAPH_ZIP = "pdgraphs.zip";
    public static final String RELPATH_QUERIES_DIR = "queries";
    public static final String RELPATH_QUESTION_FILE = "question";
    public static final String RELPATH_QUESTION_PARAM_FILE = "parameters";

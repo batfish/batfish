@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.PolicyMapSetLine;
-import org.batfish.datamodel.PolicyMapSetOriginTypeLine;
 import org.batfish.datamodel.routing_policy.statement.SetOriginType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -40,12 +38,6 @@ public class RouteMapSetOriginTypeLine extends RouteMapSetLine {
    @Override
    public RouteMapSetType getType() {
       return RouteMapSetType.ORIGIN_TYPE;
-   }
-
-   @Override
-   public PolicyMapSetLine toPolicyMapSetLine(CiscoConfiguration v,
-         Configuration c, Warnings w) {
-      return new PolicyMapSetOriginTypeLine(_originType);
    }
 
 }

@@ -26,15 +26,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchIpAccessListLine;
-import org.batfish.datamodel.PolicyMapMatchLine;
-import org.batfish.datamodel.PolicyMapMatchType;
-import org.batfish.datamodel.PolicyMapSetLine;
-import org.batfish.datamodel.PolicyMapSetNextHopLine;
-import org.batfish.datamodel.PolicyMapSetType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
@@ -46,8 +37,6 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
-import org.batfish.datamodel.collections.PolicyRouteFibIpMap;
-import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AclDenyExpr;
@@ -91,9 +80,6 @@ import org.batfish.z3.node.OriginateExpr;
 import org.batfish.z3.node.PacketRelExpr;
 import org.batfish.z3.node.PolicyDenyExpr;
 import org.batfish.z3.node.PolicyExpr;
-import org.batfish.z3.node.PolicyMatchExpr;
-import org.batfish.z3.node.PolicyNoMatchExpr;
-import org.batfish.z3.node.PolicyPermitExpr;
 import org.batfish.z3.node.PostInExpr;
 import org.batfish.z3.node.PostInInterfaceExpr;
 import org.batfish.z3.node.PostOutInterfaceExpr;
@@ -811,7 +797,7 @@ public class Synthesizer {
 
    private InterfaceSet _flowSinks;
 
-   private final PolicyRouteFibNodeMap _prFibs;
+   // private final PolicyRouteFibNodeMap _prFibs;
 
    private final boolean _simplify;
 
@@ -825,7 +811,7 @@ public class Synthesizer {
          boolean simplify) {
       _configurations = configurations;
       _fibs = null;
-      _prFibs = null;
+      // _prFibs = null;
       _topologyEdges = null;
       _flowSinks = null;
       _simplify = simplify;
@@ -837,7 +823,7 @@ public class Synthesizer {
          DataPlane dataPlane, boolean simplify) {
       _configurations = configurations;
       _fibs = dataPlane.getFibs();
-      _prFibs = dataPlane.getPolicyRouteFibNodeMap();
+      // _prFibs = dataPlane.getPolicyRouteFibNodeMap();
       _topologyEdges = dataPlane.getTopologyEdges();
       _flowSinks = dataPlane.getFlowSinks();
       _simplify = simplify;
@@ -1361,7 +1347,7 @@ public class Synthesizer {
                if (iface.getPrefix() != null) {
                   IpAccessList aclIn = iface.getIncomingFilter();
                   IpAccessList aclOut = iface.getOutgoingFilter();
-                  PolicyMap routePolicy = iface.getRoutingPolicy();
+                  String routePolicy = iface.getRoutingPolicy();
                   if (aclIn != null) {
                      String name = aclIn.getName();
                      aclMap.put(name, aclIn);
@@ -1371,19 +1357,25 @@ public class Synthesizer {
                      aclMap.put(name, aclOut);
                   }
                   if (routePolicy != null) {
-                     for (PolicyMapClause clause : routePolicy.getClauses()) {
-                        for (PolicyMapMatchLine matchLine : clause
-                              .getMatchLines()) {
-                           if (matchLine
-                                 .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
-                              PolicyMapMatchIpAccessListLine matchAclLine = (PolicyMapMatchIpAccessListLine) matchLine;
-                              for (IpAccessList acl : matchAclLine.getLists()) {
-                                 String name = acl.getName();
-                                 aclMap.put(name, acl);
-                              }
-                           }
-                        }
-                     }
+                     throw new BatfishException(
+                           "Currently do not support interface routing-policy: '"
+                                 + hostname + ":" + iface.getName() + ":"
+                                 + routePolicy + "'");
+                     // for (PolicyMapClause clause : routePolicy.getClauses())
+                     // {
+                     // for (PolicyMapMatchLine matchLine : clause
+                     // .getMatchLines()) {
+                     // if (matchLine
+                     // .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
+                     // PolicyMapMatchIpAccessListLine matchAclLine =
+                     // (PolicyMapMatchIpAccessListLine) matchLine;
+                     // for (IpAccessList acl : matchAclLine.getLists()) {
+                     // String name = acl.getName();
+                     // aclMap.put(name, acl);
+                     // }
+                     // }
+                     // }
+                     // }
                   }
                }
             }
@@ -1538,155 +1530,162 @@ public class Synthesizer {
 
       for (Entry<String, Set<Interface>> e : _topologyInterfaces.entrySet()) {
          String hostname = e.getKey();
-         PreOutExpr preOut = new PreOutExpr(hostname);
-         PolicyRouteFibIpMap ipMap = _prFibs.get(hostname);
+         // PreOutExpr preOut = new PreOutExpr(hostname);
+         // PolicyRouteFibIpMap ipMap = _prFibs.get(hostname);
          Set<Interface> interfaces = e.getValue();
          for (Interface iface : interfaces) {
             String ifaceName = iface.getName();
-            PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
-                  hostname, ifaceName);
-            PolicyMap p = iface.getRoutingPolicy();
+            // PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
+            // hostname, ifaceName);
+            String p = iface.getRoutingPolicy();
             if (p != null) {
-               String policyName = p.getName();
-               PolicyPermitExpr permit = new PolicyPermitExpr(hostname,
-                     policyName);
-               PolicyDenyExpr deny = new PolicyDenyExpr(hostname, policyName);
-
-               List<PolicyMapClause> clauses = p.getClauses();
-               for (int i = 0; i < clauses.size(); i++) {
-                  PolicyMapClause clause = clauses.get(i);
-                  PolicyMapAction action = clause.getAction();
-                  PolicyMatchExpr match = new PolicyMatchExpr(hostname,
-                        policyName, i);
-                  PolicyNoMatchExpr noMatch = new PolicyNoMatchExpr(hostname,
-                        policyName, i);
-                  BooleanExpr prevNoMatch = (i > 0)
-                        ? new PolicyNoMatchExpr(hostname, policyName, i - 1)
-                        : TrueExpr.INSTANCE;
-                  /**
-                   * If clause matches, and clause number (matched) is that of a
-                   * permit clause, and out interface is among next hops, then
-                   * policy permit on out interface
-                   */
-                  switch (action) {
-                  case PERMIT:
-                     for (PolicyMapSetLine setLine : clause.getSetLines()) {
-                        if (setLine.getType() == PolicyMapSetType.NEXT_HOP) {
-                           PolicyMapSetNextHopLine setNextHopLine = (PolicyMapSetNextHopLine) setLine;
-                           for (Ip nextHopIp : setNextHopLine.getNextHops()) {
-                              EdgeSet edges = ipMap.get(nextHopIp);
-                              /**
-                               * If packet reaches postin_interface on inInt,
-                               * and preout, and inInt has policy, and policy
-                               * matches on out interface, then preout_edge on
-                               * out interface and corresponding in interface
-                               *
-                               */
-                              for (Edge edge : edges) {
-                                 String outInterface = edge.getInt1();
-                                 String nextHop = edge.getNode2();
-                                 String inInterface = edge.getInt2();
-                                 if (!hostname.equals(edge.getNode1())) {
-                                    throw new BatfishException("Invalid edge");
-                                 }
-                                 AndExpr forwardConditions = new AndExpr();
-                                 forwardConditions.addConjunct(postInInterface);
-                                 forwardConditions.addConjunct(preOut);
-                                 forwardConditions.addConjunct(match);
-                                 if (CommonUtil.isNullInterface(outInterface)) {
-                                    NodeDropExpr nodeDrop = new NodeDropExpr(
-                                          hostname);
-                                    RuleExpr dropRule = new RuleExpr(
-                                          forwardConditions, nodeDrop);
-                                    statements.add(dropRule);
-                                 }
-                                 else {
-                                    PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(
-                                          hostname, outInterface, nextHop,
-                                          inInterface);
-                                    RuleExpr preOutEdgeRule = new RuleExpr(
-                                          forwardConditions, preOutEdge);
-                                    statements.add(preOutEdgeRule);
-                                 }
-                              }
-                           }
-                        }
-                     }
-                     RuleExpr permitRule = new RuleExpr(match, permit);
-                     statements.add(permitRule);
-                     break;
-                  case DENY:
-                     /**
-                      * If clause matches and clause is deny clause, just deny
-                      */
-                     RuleExpr denyRule = new RuleExpr(match, deny);
-                     statements.add(denyRule);
-                     break;
-                  default:
-                     throw new Error("bad action");
-                  }
-
-                  /**
-                   * For each clause, if we reach that clause, then if any acl
-                   * in that clause permits, or there are no acls, clause, if
-                   * the packet then the packet is matched by that clause.
-                   *
-                   * If all (at least one) acls deny, then the packed is not
-                   * matched by that clause
-                   *
-                   * If there are no acls to match, then the packet is matched
-                   * by that clause.
-                   *
-                   */
-                  boolean hasMatchIp = false;
-                  AndExpr allAclsDeny = new AndExpr();
-                  OrExpr someAclPermits = new OrExpr();
-                  for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
-                     if (matchLine
-                           .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
-                        hasMatchIp = true;
-                        PolicyMapMatchIpAccessListLine matchIpLine = (PolicyMapMatchIpAccessListLine) matchLine;
-                        for (IpAccessList acl : matchIpLine.getLists()) {
-                           String aclName = acl.getName();
-                           AclDenyExpr currentAclDeny = new AclDenyExpr(
-                                 hostname, aclName);
-                           allAclsDeny.addConjunct(currentAclDeny);
-                           AclPermitExpr currentAclPermit = new AclPermitExpr(
-                                 hostname, aclName);
-                           someAclPermits.addDisjunct(currentAclPermit);
-                        }
-                     }
-                  }
-                  AndExpr matchConditions = new AndExpr();
-                  matchConditions.addConjunct(prevNoMatch);
-                  if (hasMatchIp) {
-                     /**
-                      * no match if all acls deny
-                      */
-                     AndExpr noMatchConditions = new AndExpr();
-                     noMatchConditions.addConjunct(prevNoMatch);
-                     noMatchConditions.addConjunct(allAclsDeny);
-                     RuleExpr noMatchRule = new RuleExpr(noMatchConditions,
-                           noMatch);
-                     statements.add(noMatchRule);
-
-                     /**
-                      * match if some acl permits
-                      */
-                     matchConditions.addConjunct(someAclPermits);
-                  }
-                  RuleExpr matchRule = new RuleExpr(matchConditions, match);
-                  statements.add(matchRule);
-               }
-               /**
-                * If the packet reaches the last clause, and is not matched by
-                * that clause, then it is denied by the policy.
-                */
-               int lastIndex = p.getClauses().size() - 1;
-               PolicyNoMatchExpr noMatchLast = new PolicyNoMatchExpr(hostname,
-                     policyName, lastIndex);
-               RuleExpr noMatchDeny = new RuleExpr(noMatchLast, deny);
-               statements.add(noMatchDeny);
+               throw new BatfishException(
+                     "Currently do not support interface routing-policy: '"
+                           + hostname + ":" + ifaceName + ":" + p + "'");
+               // String policyName = p.getName();
+               // PolicyPermitExpr permit = new PolicyPermitExpr(hostname,
+               // policyName);
+               // PolicyDenyExpr deny = new PolicyDenyExpr(hostname,
+               // policyName);
+               //
+               // List<PolicyMapClause> clauses = p.getClauses();
+               // for (int i = 0; i < clauses.size(); i++) {
+               // PolicyMapClause clause = clauses.get(i);
+               // PolicyMapAction action = clause.getAction();
+               // PolicyMatchExpr match = new PolicyMatchExpr(hostname,
+               // policyName, i);
+               // PolicyNoMatchExpr noMatch = new PolicyNoMatchExpr(hostname,
+               // policyName, i);
+               // BooleanExpr prevNoMatch = (i > 0)
+               // ? new PolicyNoMatchExpr(hostname, policyName, i - 1)
+               // : TrueExpr.INSTANCE;
+               // /**
+               // * If clause matches, and clause number (matched) is that of a
+               // * permit clause, and out interface is among next hops, then
+               // * policy permit on out interface
+               // */
+               // switch (action) {
+               // case PERMIT:
+               // for (PolicyMapSetLine setLine : clause.getSetLines()) {
+               // if (setLine.getType() == PolicyMapSetType.NEXT_HOP) {
+               // PolicyMapSetNextHopLine setNextHopLine =
+               // (PolicyMapSetNextHopLine) setLine;
+               // for (Ip nextHopIp : setNextHopLine.getNextHops()) {
+               // EdgeSet edges = ipMap.get(nextHopIp);
+               // /**
+               // * If packet reaches postin_interface on inInt,
+               // * and preout, and inInt has policy, and policy
+               // * matches on out interface, then preout_edge on
+               // * out interface and corresponding in interface
+               // *
+               // */
+               // for (Edge edge : edges) {
+               // String outInterface = edge.getInt1();
+               // String nextHop = edge.getNode2();
+               // String inInterface = edge.getInt2();
+               // if (!hostname.equals(edge.getNode1())) {
+               // throw new BatfishException("Invalid edge");
+               // }
+               // AndExpr forwardConditions = new AndExpr();
+               // forwardConditions.addConjunct(postInInterface);
+               // forwardConditions.addConjunct(preOut);
+               // forwardConditions.addConjunct(match);
+               // if (CommonUtil.isNullInterface(outInterface)) {
+               // NodeDropExpr nodeDrop = new NodeDropExpr(
+               // hostname);
+               // RuleExpr dropRule = new RuleExpr(
+               // forwardConditions, nodeDrop);
+               // statements.add(dropRule);
+               // }
+               // else {
+               // PreOutEdgeExpr preOutEdge = new PreOutEdgeExpr(
+               // hostname, outInterface, nextHop,
+               // inInterface);
+               // RuleExpr preOutEdgeRule = new RuleExpr(
+               // forwardConditions, preOutEdge);
+               // statements.add(preOutEdgeRule);
+               // }
+               // }
+               // }
+               // }
+               // }
+               // RuleExpr permitRule = new RuleExpr(match, permit);
+               // statements.add(permitRule);
+               // break;
+               // case DENY:
+               // /**
+               // * If clause matches and clause is deny clause, just deny
+               // */
+               // RuleExpr denyRule = new RuleExpr(match, deny);
+               // statements.add(denyRule);
+               // break;
+               // default:
+               // throw new Error("bad action");
+               // }
+               //
+               // /**
+               // * For each clause, if we reach that clause, then if any acl
+               // * in that clause permits, or there are no acls, clause, if
+               // * the packet then the packet is matched by that clause.
+               // *
+               // * If all (at least one) acls deny, then the packed is not
+               // * matched by that clause
+               // *
+               // * If there are no acls to match, then the packet is matched
+               // * by that clause.
+               // *
+               // */
+               // boolean hasMatchIp = false;
+               // AndExpr allAclsDeny = new AndExpr();
+               // OrExpr someAclPermits = new OrExpr();
+               // for (PolicyMapMatchLine matchLine : clause.getMatchLines()) {
+               // if (matchLine
+               // .getType() == PolicyMapMatchType.IP_ACCESS_LIST) {
+               // hasMatchIp = true;
+               // PolicyMapMatchIpAccessListLine matchIpLine =
+               // (PolicyMapMatchIpAccessListLine) matchLine;
+               // for (IpAccessList acl : matchIpLine.getLists()) {
+               // String aclName = acl.getName();
+               // AclDenyExpr currentAclDeny = new AclDenyExpr(
+               // hostname, aclName);
+               // allAclsDeny.addConjunct(currentAclDeny);
+               // AclPermitExpr currentAclPermit = new AclPermitExpr(
+               // hostname, aclName);
+               // someAclPermits.addDisjunct(currentAclPermit);
+               // }
+               // }
+               // }
+               // AndExpr matchConditions = new AndExpr();
+               // matchConditions.addConjunct(prevNoMatch);
+               // if (hasMatchIp) {
+               // /**
+               // * no match if all acls deny
+               // */
+               // AndExpr noMatchConditions = new AndExpr();
+               // noMatchConditions.addConjunct(prevNoMatch);
+               // noMatchConditions.addConjunct(allAclsDeny);
+               // RuleExpr noMatchRule = new RuleExpr(noMatchConditions,
+               // noMatch);
+               // statements.add(noMatchRule);
+               //
+               // /**
+               // * match if some acl permits
+               // */
+               // matchConditions.addConjunct(someAclPermits);
+               // }
+               // RuleExpr matchRule = new RuleExpr(matchConditions, match);
+               // statements.add(matchRule);
+               // }
+               // /**
+               // * If the packet reaches the last clause, and is not matched by
+               // * that clause, then it is denied by the policy.
+               // */
+               // int lastIndex = p.getClauses().size() - 1;
+               // PolicyNoMatchExpr noMatchLast = new
+               // PolicyNoMatchExpr(hostname,
+               // policyName, lastIndex);
+               // RuleExpr noMatchDeny = new RuleExpr(noMatchLast, deny);
+               // statements.add(noMatchDeny);
             }
          }
       }
@@ -2107,9 +2106,8 @@ public class Synthesizer {
             AndExpr receivedDestRouteConditions = new AndExpr();
             receivedDestRouteConditions.addConjunct(postInInterface);
             receivedDestRouteConditions.addConjunct(preOut);
-            PolicyMap policy = i.getRoutingPolicy();
-            if (policy != null) {
-               String policyName = policy.getName();
+            String policyName = i.getRoutingPolicy();
+            if (policyName != null) {
                PolicyDenyExpr policyDeny = new PolicyDenyExpr(hostname,
                      policyName);
                receivedDestRouteConditions.addConjunct(policyDeny);

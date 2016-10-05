@@ -1,8 +1,6 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchColorLine;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.main.Warnings;
@@ -18,13 +16,6 @@ public final class PsFromColor extends PsFrom {
 
    public PsFromColor(int color) {
       _color = color;
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause, PolicyStatement ps,
-         JuniperConfiguration jc, Configuration c, Warnings warnings) {
-      PolicyMapMatchColorLine line = new PolicyMapMatchColorLine(_color);
-      clause.getMatchLines().add(line);
    }
 
    public int getColor() {

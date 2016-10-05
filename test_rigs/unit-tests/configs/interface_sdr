@@ -1,0 +1,12 @@
+!
+hostname interface_sdr
+!
+interface Loopback0
+ description SLO-AGG1 lo0 (Loopback0 Address)
+ ip address 137.164.16.80 255.255.255.255
+ no ip directed-broadcast
+ ip pim sparse-mode
+ ip sdr listen
+ ipv6 address 2607:F380::118:9A41:500/124
+!
+

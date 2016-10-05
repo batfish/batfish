@@ -1,0 +1,14 @@
+!
+hostname router_hsrp
+!
+router hsrp
+ interface TenGigE0/0/2/3
+  address-family ipv4
+   hsrp
+    preempt
+    address 137.164.220.247
+   !
+  !
+ !
+!
+

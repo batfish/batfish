@@ -13,7 +13,6 @@ OSX: Read README.OSX before continuing
 Common Prerequisites:
    ant
    Java 8 JDK
-   Network Logic Solver (nls) (not required for all tasks)
    python
    z3
 
@@ -31,31 +30,28 @@ cd build
 make -j<number-of-jobs>
 make install # as administrator (sudo or whatever)
 
-2. Install nls into your path
-   You can download the Windows version from: https://www.microsoft.com/en-us/download/details.aspx?id=52259
-
-3. Clone batfish
+2. Clone batfish
 git clone https://github.com/arifogel/batfish.git
 
-4. prepare your environment for batfish by adding the following to your .bashrc or equivalent
+3. prepare your environment for batfish by adding the following to your .bashrc or equivalent
     . <batfish-root>/tools/batfish_functions.sh
 Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
 
-5. compile batfish
+4. compile batfish
    batfish_build_all
 Note that 'batfish_build_all' runs 'ant' in each batfish project directory with corresponding args.
 You can clean all generated output with:
    batfish_build_all distclean
 
-6. Tests
+5. Tests
 From the root of the batfish repository, run:
 allinone -cmdfile tests/commands
 
-7. Demo
+6. Demo
 From the root of the batfish repository, run:
 allinone -cmdfile demo/commands
 
-8. Now what?
+7. Now what?
 To get an interactive batfish prompt to play around with, run:
    allinone -runmode interactive
 This will start batfish service locally in a self-contained fashion

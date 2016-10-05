@@ -27,8 +27,6 @@ public interface IBatfish extends IPluginConsumer {
    AnswerElement answerAclReachability(String aclNameRegexStr,
          NamedStructureEquivalenceSets<?> aclEqSets);
 
-   String answerProtocolDependencies();
-
    void checkConfigurations();
 
    void checkDataPlane();

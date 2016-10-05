@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapSetNextHopLine;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -32,14 +30,6 @@ public final class PsThenNextHopIp extends PsThen {
       // todo: something with destination-vrf
       statements.add(new SetNextHop(
             new NextHopIp(Collections.singletonList(_nextHopIp)), false));
-   }
-
-   @Override
-   public void applyTo(PolicyMapClause clause, Configuration c,
-         Warnings warnings) {
-      PolicyMapSetNextHopLine line = new PolicyMapSetNextHopLine(
-            Collections.singletonList(_nextHopIp));
-      clause.getSetLines().add(line);
    }
 
    public Ip getNextHopIp() {

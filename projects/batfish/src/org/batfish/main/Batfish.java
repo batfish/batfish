@@ -30,11 +30,11 @@ import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
@@ -46,7 +46,6 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -65,20 +64,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
-import org.batfish.datamodel.PolicyMap;
-import org.batfish.datamodel.PolicyMapAction;
-import org.batfish.datamodel.PolicyMapClause;
-import org.batfish.datamodel.PolicyMapMatchRouteFilterListLine;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
@@ -132,11 +121,6 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.main.Settings.EnvironmentSettings;
 import org.batfish.main.Settings.TestrigSettings;
-import org.batfish.nls.NlsDataPlanePlugin;
-import org.batfish.protocoldependency.DependencyDatabase;
-import org.batfish.protocoldependency.DependentRoute;
-import org.batfish.protocoldependency.PotentialExport;
-import org.batfish.protocoldependency.ProtocolDependencyAnalysis;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -177,11 +161,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
 
    /**
-    * Role name for generated stubs
-    */
-   private static final String STUB_ROLE = "generated_stubs";
-
-   /**
     * The name of the [optional] topology file within a test-rig
     */
    private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -199,10 +178,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
          settings.setTestRigPath(
                testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
-         settings.setProtocolDependencyGraphPath(
-               testrigDir.resolve(BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH));
-         settings.setProtocolDependencyGraphZipPath(testrigDir
-               .resolve(BfConsts.RELPATH_PROTOCOL_DEPENDENCY_GRAPH_ZIP));
          settings.setParseAnswerPath(
                testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
          settings.setConvertAnswerPath(
@@ -212,16 +187,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR)
                   .resolve(envName);
             envSettings.setEnvironmentBasePath(envPath);
-            envSettings.setControlPlaneFactsDir(
-                  envPath.resolve(BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR));
-            envSettings.setNlsDataPlaneInputFile(
-                  envPath.resolve(BfConsts.RELPATH_NLS_INPUT_FILE));
-            envSettings.setNlsDataPlaneOutputDir(
-                  envPath.resolve(BfConsts.RELPATH_NLS_OUTPUT_DIR));
             envSettings.setDataPlanePath(
                   envPath.resolve(BfConsts.RELPATH_DATA_PLANE_DIR));
-            envSettings.setZ3DataPlaneFile(
-                  envPath.resolve(BfConsts.RELPATH_Z3_DATA_PLANE_FILE));
             Path envDirPath = envPath.resolve(BfConsts.RELPATH_ENV_DIR);
             envSettings.setEnvPath(envDirPath);
             envSettings.setNodeBlacklistPath(
@@ -277,13 +244,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public static void initQuestionSettings(Settings settings) {
       String questionName = settings.getQuestionName();
       Path testrigDir = settings.getTestrigSettings().getBasePath();
-      TestrigSettings testrigSettings = settings.getTestrigSettings();
-      TestrigSettings deltaTestrigSettings = settings.getDeltaTestrigSettings();
-      EnvironmentSettings deltaEnvSettings = deltaTestrigSettings
-            .getEnvironmentSettings();
-      String deltaEnvName = deltaEnvSettings.getName();
-      boolean delta = settings.getDeltaTestrig() != null
-            || deltaEnvName != null;
       if (questionName != null) {
          Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR)
                .resolve(questionName);
@@ -291,40 +251,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
          settings.setQuestionParametersPath(
                questionPath.resolve(BfConsts.RELPATH_QUESTION_PARAM_FILE));
-         EnvironmentSettings envSettings = testrigSettings
-               .getEnvironmentSettings();
-         String envName = envSettings.getName();
-         if (delta) {
-            deltaEnvSettings.setTrafficFactsDir(questionPath.resolve(
-                  Paths.get(BfConsts.RELPATH_DIFF, envName, deltaEnvName,
-                        BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)));
-            deltaEnvSettings.setNlsTrafficInputFile(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_DIFF, envName,
-                        deltaEnvName, BfConsts.RELPATH_NLS_INPUT_FILE)));
-            deltaEnvSettings.setNlsTrafficOutputDir(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_DIFF, envName,
-                        deltaEnvName, BfConsts.RELPATH_NLS_OUTPUT_DIR)));
-            envSettings.setTrafficFactsDir(questionPath.resolve(
-                  Paths.get(BfConsts.RELPATH_BASE, envName, deltaEnvName,
-                        BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)));
-            envSettings.setNlsTrafficInputFile(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_BASE, envName,
-                        deltaEnvName, BfConsts.RELPATH_NLS_INPUT_FILE)));
-            envSettings.setNlsTrafficOutputDir(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_BASE, envName,
-                        deltaEnvName, BfConsts.RELPATH_NLS_OUTPUT_DIR)));
-         }
-         else {
-            envSettings.setTrafficFactsDir(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_BASE, envName,
-                        BfConsts.RELPATH_CONTROL_PLANE_FACTS_DIR)));
-            envSettings.setNlsTrafficInputFile(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_BASE, envName,
-                        BfConsts.RELPATH_NLS_INPUT_FILE)));
-            envSettings.setNlsTrafficOutputDir(
-                  questionPath.resolve(Paths.get(BfConsts.RELPATH_BASE, envName,
-                        BfConsts.RELPATH_NLS_OUTPUT_DIR)));
-         }
       }
    }
 
@@ -361,7 +287,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
          initQuestionSettings(settings);
       }
-      else if (!settings.getBuildPredicateInfo() && containerDir != null) {
+      else if (containerDir != null) {
          throw new CleanBatfishException(
                "Must supply argument to -" + BfConsts.ARG_TESTRIG);
       }
@@ -414,12 +340,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return tree;
    }
 
-   public static ParserRuleContext parse(BatfishCombinedParser<?, ?> parser,
-         String filename, BatfishLogger logger, Settings settings) {
-      logger.info("Parsing: \"" + filename + "\" ...");
-      return parse(parser, logger, settings);
-   }
-
    private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
 
    private TestrigSettings _baseTestrigSettings;
@@ -433,8 +353,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private TestrigSettings _deltaTestrigSettings;
 
    private BatfishLogger _logger;
-
-   private NlsDataPlanePlugin _nls;
 
    private Settings _settings;
 
@@ -703,33 +621,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             numUnreachableLines, numLines, percentUnreachableLines);
 
       return answerElement;
-   }
-
-   @Override
-   public String answerProtocolDependencies() {
-      checkConfigurations();
-      Map<String, Configuration> configurations = loadConfigurations();
-
-      ProtocolDependencyAnalysis analysis = new ProtocolDependencyAnalysis(
-            configurations);
-      analysis.printDependencies(_logger);
-      analysis.writeGraphs(this, _logger);
-      Path protocolDependencyGraphPath = _testrigSettings
-            .getProtocolDependencyGraphPath();
-      Path protocolDependencyGraphZipPath = _testrigSettings
-            .getProtocolDependencyGraphZipPath();
-      ZipUtility.zipFiles(protocolDependencyGraphPath.toString(),
-            protocolDependencyGraphZipPath.toString());
-      byte[] zipBytes;
-      try {
-         zipBytes = Files.readAllBytes(protocolDependencyGraphZipPath);
-      }
-      catch (IOException e) {
-         throw new BatfishException("Could not read zip", e);
-      }
-      String zipBase64 = Base64.encodeBase64String(zipBytes);
-      return zipBase64;
-
    }
 
    private void checkBaseDirExists() {
@@ -1107,9 +998,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          computeDataPlane(true);
-         if (_nls != null) {
-            _nls.clearEntityTables();
-         }
       }
       return answerElement;
    }
@@ -1335,169 +1223,175 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void generateStubs(String inputRole, int stubAs,
          String interfaceDescriptionRegex) {
-      Map<String, Configuration> configs = loadConfigurations();
-      Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
-      Map<String, Configuration> stubConfigurations = new TreeMap<>();
-
-      _logger.info("\n*** GENERATING STUBS ***\n");
-      resetTimer();
-
-      // load old node-roles to be updated at end
-      RoleSet stubRoles = new RoleSet();
-      stubRoles.add(STUB_ROLE);
-      Path nodeRolesPath = _settings.getNodeRolesPath();
-      _logger.info("Deserializing old node-roles mappings: \"" + nodeRolesPath
-            + "\" ...");
-      NodeRoleMap nodeRoles = deserializeObject(nodeRolesPath,
-            NodeRoleMap.class);
-      _logger.info("OK\n");
-
-      // create origination policy common to all stubs
-      String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
-      PolicyMap stubOriginationPolicy = new PolicyMap(
-            stubOriginationPolicyName);
-      PolicyMapClause clause = new PolicyMapClause();
-      stubOriginationPolicy.getClauses().add(clause);
-      String stubOriginationRouteFilterListName = "~STUB_ORIGINATION_ROUTE_FILTER~";
-      RouteFilterList rf = new RouteFilterList(
-            stubOriginationRouteFilterListName);
-      RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT, Prefix.ZERO,
-            new SubRange(0, 0));
-      rf.addLine(rfl);
-      PolicyMapMatchRouteFilterListLine matchLine = new PolicyMapMatchRouteFilterListLine(
-            Collections.singleton(rf));
-      clause.getMatchLines().add(matchLine);
-      clause.setAction(PolicyMapAction.PERMIT);
-
-      Set<String> skipWarningNodes = new HashSet<>();
-
-      for (Configuration config : configs.values()) {
-         if (!config.getRoles().contains(inputRole)) {
-            continue;
-         }
-         for (BgpNeighbor neighbor : config.getBgpProcess().getNeighbors()
-               .values()) {
-            if (!neighbor.getRemoteAs().equals(stubAs)) {
-               continue;
-            }
-            Prefix neighborPrefix = neighbor.getPrefix();
-            if (neighborPrefix.getPrefixLength() != 32) {
-               throw new BatfishException(
-                     "do not currently handle generating stubs based on dynamic bgp sessions");
-            }
-            Ip neighborAddress = neighborPrefix.getAddress();
-            int edgeAs = neighbor.getLocalAs();
-            /*
-             * Now that we have the ip address of the stub, we want to find the
-             * interface that connects to it. We will extract the hostname for
-             * the stub from the description of this interface using the
-             * supplied regex.
-             */
-            boolean found = false;
-            for (Interface iface : config.getInterfaces().values()) {
-               Prefix prefix = iface.getPrefix();
-               if (prefix == null || !prefix.contains(neighborAddress)) {
-                  continue;
-               }
-               // the neighbor address falls within the network assigned to this
-               // interface, so now we check the description
-               String description = iface.getDescription();
-               Matcher matcher = pattern.matcher(description);
-               if (matcher.find()) {
-                  String hostname = matcher.group(1);
-                  if (configs.containsKey(hostname)) {
-                     Configuration duplicateConfig = configs.get(hostname);
-                     if (!duplicateConfig.getRoles().contains(STUB_ROLE)
-                           || duplicateConfig.getRoles().size() != 1) {
-                        throw new BatfishException(
-                              "A non-generated node with hostname: \""
-                                    + hostname
-                                    + "\" already exists in network under analysis");
-                     }
-                     else {
-                        if (!skipWarningNodes.contains(hostname)) {
-                           _logger
-                                 .warn("WARNING: Overwriting previously generated node: \""
-                                       + hostname + "\"\n");
-                           skipWarningNodes.add(hostname);
-                        }
-                     }
-                  }
-                  found = true;
-                  Configuration stub = stubConfigurations.get(hostname);
-
-                  // create stub if it doesn't exist yet
-                  if (stub == null) {
-                     stub = new Configuration(hostname);
-                     stubConfigurations.put(hostname, stub);
-                     // create flow sink interface for stub with common deatils
-                     String flowSinkName = "TenGibabitEthernet100/100";
-                     Interface flowSink = new Interface(flowSinkName, stub);
-                     flowSink.setPrefix(Prefix.ZERO);
-                     flowSink.setActive(true);
-                     flowSink.setBandwidth(10E9d);
-
-                     stub.getInterfaces().put(flowSinkName, flowSink);
-                     stub.setBgpProcess(new BgpProcess());
-                     stub.getPolicyMaps().put(stubOriginationPolicyName,
-                           stubOriginationPolicy);
-                     stub.getRouteFilterLists()
-                           .put(stubOriginationRouteFilterListName, rf);
-                     stub.setConfigurationFormat(ConfigurationFormat.CISCO);
-                     stub.setRoles(stubRoles);
-                     nodeRoles.put(hostname, stubRoles);
-                  }
-
-                  // create interface that will on which peering will occur
-                  Map<String, Interface> stubInterfaces = stub.getInterfaces();
-                  String stubInterfaceName = "TenGigabitEthernet0/"
-                        + (stubInterfaces.size() - 1);
-                  Interface stubInterface = new Interface(stubInterfaceName,
-                        stub);
-                  stubInterfaces.put(stubInterfaceName, stubInterface);
-                  stubInterface.setPrefix(
-                        new Prefix(neighborAddress, prefix.getPrefixLength()));
-                  stubInterface.setActive(true);
-                  stubInterface.setBandwidth(10E9d);
-
-                  // create neighbor within bgp process
-                  BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix, stub);
-                  edgeNeighbor.getOriginationPolicies()
-                        .add(stubOriginationPolicy);
-                  edgeNeighbor.setRemoteAs(edgeAs);
-                  edgeNeighbor.setLocalAs(stubAs);
-                  edgeNeighbor.setSendCommunity(true);
-                  edgeNeighbor.setDefaultMetric(0);
-                  stub.getBgpProcess().getNeighbors()
-                        .put(edgeNeighbor.getPrefix(), edgeNeighbor);
-                  break;
-               }
-               else {
-                  throw new BatfishException(
-                        "Unable to derive stub hostname from interface description: \""
-                              + description + "\" using regex: \""
-                              + interfaceDescriptionRegex + "\"");
-               }
-            }
-            if (!found) {
-               throw new BatfishException(
-                     "Could not determine stub hostname corresponding to ip: \""
-                           + neighborAddress.toString()
-                           + "\" listed as neighbor on router: \""
-                           + config.getHostname() + "\"");
-            }
-         }
-      }
-      // write updated node-roles mappings to disk
-      _logger.info("Serializing updated node-roles mappings: \"" + nodeRolesPath
-            + "\" ...");
-      serializeObject(nodeRoles, nodeRolesPath);
-      _logger.info("OK\n");
-      printElapsedTime();
-
-      // write stubs to disk
-      serializeIndependentConfigs(stubConfigurations,
-            _testrigSettings.getSerializeIndependentPath());
+      // Map<String, Configuration> configs = loadConfigurations();
+      // Pattern pattern = Pattern.compile(interfaceDescriptionRegex);
+      // Map<String, Configuration> stubConfigurations = new TreeMap<>();
+      //
+      // _logger.info("\n*** GENERATING STUBS ***\n");
+      // resetTimer();
+      //
+      // // load old node-roles to be updated at end
+      // RoleSet stubRoles = new RoleSet();
+      // stubRoles.add(STUB_ROLE);
+      // Path nodeRolesPath = _settings.getNodeRolesPath();
+      // _logger.info("Deserializing old node-roles mappings: \"" +
+      // nodeRolesPath
+      // + "\" ...");
+      // NodeRoleMap nodeRoles = deserializeObject(nodeRolesPath,
+      // NodeRoleMap.class);
+      // _logger.info("OK\n");
+      //
+      // // create origination policy common to all stubs
+      // String stubOriginationPolicyName = "~STUB_ORIGINATION_POLICY~";
+      // PolicyMap stubOriginationPolicy = new PolicyMap(
+      // stubOriginationPolicyName);
+      // PolicyMapClause clause = new PolicyMapClause();
+      // stubOriginationPolicy.getClauses().add(clause);
+      // String stubOriginationRouteFilterListName =
+      // "~STUB_ORIGINATION_ROUTE_FILTER~";
+      // RouteFilterList rf = new RouteFilterList(
+      // stubOriginationRouteFilterListName);
+      // RouteFilterLine rfl = new RouteFilterLine(LineAction.ACCEPT,
+      // Prefix.ZERO,
+      // new SubRange(0, 0));
+      // rf.addLine(rfl);
+      // PolicyMapMatchRouteFilterListLine matchLine = new
+      // PolicyMapMatchRouteFilterListLine(
+      // Collections.singleton(rf));
+      // clause.getMatchLines().add(matchLine);
+      // clause.setAction(PolicyMapAction.PERMIT);
+      //
+      // Set<String> skipWarningNodes = new HashSet<>();
+      //
+      // for (Configuration config : configs.values()) {
+      // if (!config.getRoles().contains(inputRole)) {
+      // continue;
+      // }
+      // for (BgpNeighbor neighbor : config.getBgpProcess().getNeighbors()
+      // .values()) {
+      // if (!neighbor.getRemoteAs().equals(stubAs)) {
+      // continue;
+      // }
+      // Prefix neighborPrefix = neighbor.getPrefix();
+      // if (neighborPrefix.getPrefixLength() != 32) {
+      // throw new BatfishException(
+      // "do not currently handle generating stubs based on dynamic bgp
+      // sessions");
+      // }
+      // Ip neighborAddress = neighborPrefix.getAddress();
+      // int edgeAs = neighbor.getLocalAs();
+      // /*
+      // * Now that we have the ip address of the stub, we want to find the
+      // * interface that connects to it. We will extract the hostname for
+      // * the stub from the description of this interface using the
+      // * supplied regex.
+      // */
+      // boolean found = false;
+      // for (Interface iface : config.getInterfaces().values()) {
+      // Prefix prefix = iface.getPrefix();
+      // if (prefix == null || !prefix.contains(neighborAddress)) {
+      // continue;
+      // }
+      // // the neighbor address falls within the network assigned to this
+      // // interface, so now we check the description
+      // String description = iface.getDescription();
+      // Matcher matcher = pattern.matcher(description);
+      // if (matcher.find()) {
+      // String hostname = matcher.group(1);
+      // if (configs.containsKey(hostname)) {
+      // Configuration duplicateConfig = configs.get(hostname);
+      // if (!duplicateConfig.getRoles().contains(STUB_ROLE)
+      // || duplicateConfig.getRoles().size() != 1) {
+      // throw new BatfishException(
+      // "A non-generated node with hostname: \""
+      // + hostname
+      // + "\" already exists in network under analysis");
+      // }
+      // else {
+      // if (!skipWarningNodes.contains(hostname)) {
+      // _logger
+      // .warn("WARNING: Overwriting previously generated node: \""
+      // + hostname + "\"\n");
+      // skipWarningNodes.add(hostname);
+      // }
+      // }
+      // }
+      // found = true;
+      // Configuration stub = stubConfigurations.get(hostname);
+      //
+      // // create stub if it doesn't exist yet
+      // if (stub == null) {
+      // stub = new Configuration(hostname);
+      // stubConfigurations.put(hostname, stub);
+      // // create flow sink interface for stub with common deatils
+      // String flowSinkName = "TenGibabitEthernet100/100";
+      // Interface flowSink = new Interface(flowSinkName, stub);
+      // flowSink.setPrefix(Prefix.ZERO);
+      // flowSink.setActive(true);
+      // flowSink.setBandwidth(10E9d);
+      //
+      // stub.getInterfaces().put(flowSinkName, flowSink);
+      // stub.setBgpProcess(new BgpProcess());
+      // stub.getPolicyMaps().put(stubOriginationPolicyName,
+      // stubOriginationPolicy);
+      // stub.getRouteFilterLists()
+      // .put(stubOriginationRouteFilterListName, rf);
+      // stub.setConfigurationFormat(ConfigurationFormat.CISCO);
+      // stub.setRoles(stubRoles);
+      // nodeRoles.put(hostname, stubRoles);
+      // }
+      //
+      // // create interface that will on which peering will occur
+      // Map<String, Interface> stubInterfaces = stub.getInterfaces();
+      // String stubInterfaceName = "TenGigabitEthernet0/"
+      // + (stubInterfaces.size() - 1);
+      // Interface stubInterface = new Interface(stubInterfaceName,
+      // stub);
+      // stubInterfaces.put(stubInterfaceName, stubInterface);
+      // stubInterface.setPrefix(
+      // new Prefix(neighborAddress, prefix.getPrefixLength()));
+      // stubInterface.setActive(true);
+      // stubInterface.setBandwidth(10E9d);
+      //
+      // // create neighbor within bgp process
+      // BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix, stub);
+      // edgeNeighbor.getOriginationPolicies()
+      // .add(stubOriginationPolicy);
+      // edgeNeighbor.setRemoteAs(edgeAs);
+      // edgeNeighbor.setLocalAs(stubAs);
+      // edgeNeighbor.setSendCommunity(true);
+      // edgeNeighbor.setDefaultMetric(0);
+      // stub.getBgpProcess().getNeighbors()
+      // .put(edgeNeighbor.getPrefix(), edgeNeighbor);
+      // break;
+      // }
+      // else {
+      // throw new BatfishException(
+      // "Unable to derive stub hostname from interface description: \""
+      // + description + "\" using regex: \""
+      // + interfaceDescriptionRegex + "\"");
+      // }
+      // }
+      // if (!found) {
+      // throw new BatfishException(
+      // "Could not determine stub hostname corresponding to ip: \""
+      // + neighborAddress.toString()
+      // + "\" listed as neighbor on router: \""
+      // + config.getHostname() + "\"");
+      // }
+      // }
+      // }
+      // // write updated node-roles mappings to disk
+      // _logger.info("Serializing updated node-roles mappings: \"" +
+      // nodeRolesPath
+      // + "\" ...");
+      // serializeObject(nodeRoles, nodeRolesPath);
+      // _logger.info("OK\n");
+      // printElapsedTime();
+      //
+      // // write stubs to disk
+      // serializeIndependentConfigs(stubConfigurations,
+      // _testrigSettings.getSerializeIndependentPath());
    }
 
    @Override
@@ -1517,11 +1411,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = convertConfigurations(
             vendorConfigurations, answerElement);
       return configurations;
-   }
-
-   public Path getControlPlaneFactsDir() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getControlPlaneFactsDir();
    }
 
    @Override
@@ -1659,24 +1548,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return _logger;
    }
 
-   public Path getNlsDataPlaneInputFile() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getNlsDataPlaneInputFile();
-   }
-
-   public Path getNlsDataPlaneOutputDir() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getNlsDataPlaneOutputDir();
-   }
-
-   public Path getNlsTrafficInputFile() {
-      return _testrigSettings.getEnvironmentSettings().getNlsTrafficInputFile();
-   }
-
-   public Path getNlsTrafficOutputDir() {
-      return _testrigSettings.getEnvironmentSettings().getNlsTrafficOutputDir();
-   }
-
    public NodeSet getNodeBlacklist() {
       NodeSet blacklistNodes = null;
       Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings()
@@ -1768,8 +1639,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          node.initBgpAdvertisements();
       }
       for (BgpAdvertisement bgpAdvertisement : globalBgpAdvertisements) {
-         BgpAdvertisementType type = BgpAdvertisementType
-               .fromNlsTypeName(bgpAdvertisement.getType());
+         BgpAdvertisementType type = bgpAdvertisement.getType();
          switch (type) {
          case EBGP_ORIGINATED: {
             String originationNodeName = bgpAdvertisement.getSrcNode();
@@ -1864,30 +1734,31 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public void initBgpOriginationSpaceExplicit(
          Map<String, Configuration> configurations) {
-      ProtocolDependencyAnalysis protocolDependencyAnalysis = new ProtocolDependencyAnalysis(
-            configurations);
-      DependencyDatabase database = protocolDependencyAnalysis
-            .getDependencyDatabase();
-
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-         PrefixSpace ebgpExportSpace = new PrefixSpace();
-         String name = e.getKey();
-         Configuration node = e.getValue();
-         BgpProcess proc = node.getBgpProcess();
-         if (proc != null) {
-            Set<PotentialExport> bgpExports = database.getPotentialExports(name,
-                  RoutingProtocol.BGP);
-            for (PotentialExport export : bgpExports) {
-               DependentRoute exportSourceRoute = export.getDependency();
-               if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
-                     && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
-                  Prefix prefix = export.getPrefix();
-                  ebgpExportSpace.addPrefix(prefix);
-               }
-            }
-            proc.setOriginationSpace(ebgpExportSpace);
-         }
-      }
+      // ProtocolDependencyAnalysis protocolDependencyAnalysis = new
+      // ProtocolDependencyAnalysis(
+      // configurations);
+      // DependencyDatabase database = protocolDependencyAnalysis
+      // .getDependencyDatabase();
+      //
+      // for (Entry<String, Configuration> e : configurations.entrySet()) {
+      // PrefixSpace ebgpExportSpace = new PrefixSpace();
+      // String name = e.getKey();
+      // Configuration node = e.getValue();
+      // BgpProcess proc = node.getBgpProcess();
+      // if (proc != null) {
+      // Set<PotentialExport> bgpExports = database.getPotentialExports(name,
+      // RoutingProtocol.BGP);
+      // for (PotentialExport export : bgpExports) {
+      // DependentRoute exportSourceRoute = export.getDependency();
+      // if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
+      // && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
+      // Prefix prefix = export.getPrefix();
+      // ebgpExportSpace.addPrefix(prefix);
+      // }
+      // }
+      // proc.setOriginationSpace(ebgpExportSpace);
+      // }
+      // }
    }
 
    private void initQuestionEnvironment(Question question, boolean dp,
@@ -1901,9 +1772,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
          computeDataPlane(differentialContext);
-         if (_nls != null) {
-            _nls.clearEntityTables();
-         }
       }
    }
 
@@ -2796,18 +2664,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public Answer run() {
       loadPlugins();
       if (_dataPlanePlugin == null) {
-         _nls = new NlsDataPlanePlugin();
-         _nls.initialize(this);
-         _dataPlanePlugin = _nls;
+         _dataPlanePlugin = new BdpDataPlanePlugin();
+         _dataPlanePlugin.initialize(this);
       }
 
       boolean action = false;
       Answer answer = new Answer();
-
-      if (_settings.getPrintSemantics()) {
-         _nls.printAllPredicateSemantics();
-         return answer;
-      }
 
       if (_settings.getPrintSymmetricEdgePairs()) {
          printSymmetricEdgePairs();
@@ -2826,11 +2688,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       if (_settings.getSynthesizeJsonTopology()) {
          writeJsonTopology();
-         return answer;
-      }
-
-      if (_settings.getBuildPredicateInfo()) {
-         _nls.buildPredicateInfo();
          return answer;
       }
 
@@ -2906,11 +2763,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          action = true;
       }
 
-      if (_settings.getQuery()) {
-         _nls.query();
-         return answer;
-      }
-
       if (_settings.getDataPlane()) {
          answer.append(computeDataPlane(_settings.getDiffActive()));
          action = true;
@@ -2945,17 +2797,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
       AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
 
-      if (!_settings.getNoOutput()) {
-         _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
-         resetTimer();
-         outputPath.toFile().mkdirs();
-         Path currentOutputPath = outputPath
-               .resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
-         _logger.debug("Serializing AWS VPCs to " + currentOutputPath.toString()
-               + "\"...");
-         serializeObject(config, currentOutputPath);
-         _logger.debug("OK\n");
-      }
+      _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
+      resetTimer();
+      outputPath.toFile().mkdirs();
+      Path currentOutputPath = outputPath
+            .resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
+      _logger.debug("Serializing AWS VPCs to " + currentOutputPath.toString()
+            + "\"...");
+      serializeObject(config, currentOutputPath);
+      _logger.debug("OK\n");
       printElapsedTime();
       return answer;
    }
@@ -2989,12 +2839,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             RoleSet roles = nodeRolesEntry.getValue();
             config.setRoles(roles);
          }
-         if (!_settings.getNoOutput()) {
-            _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
-                  + "\"...");
-            serializeObject(nodeRoles, nodeRolesPath);
-            _logger.info("OK\n");
-         }
+         _logger.info(
+               "Serializing node-roles mappings: \"" + nodeRolesPath + "\"...");
+         serializeObject(nodeRoles, nodeRolesPath);
+         _logger.info("OK\n");
       }
 
       // read and associate iptables files for specified hosts
@@ -3042,23 +2890,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       // now, serialize
-      if (!_settings.getNoOutput()) {
-         _logger
-               .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-         resetTimer();
-         CommonUtil.createDirectories(outputPath);
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      resetTimer();
+      CommonUtil.createDirectories(outputPath);
 
-         Map<Path, VendorConfiguration> output = new TreeMap<>();
-         hostConfigurations.forEach((name, vc) -> {
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-         });
-         serializeObjects(output);
-         // serialize warnings
-         serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
-         printElapsedTime();
-
-      }
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      hostConfigurations.forEach((name, vc) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, vc);
+      });
+      serializeObjects(output);
+      // serialize warnings
+      serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+      printElapsedTime();
       return answer;
    }
 
@@ -3067,19 +2911,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       if (configurations == null) {
          throw new BatfishException("Exiting due to conversion error(s)");
       }
-      if (!_settings.getNoOutput()) {
-         _logger.info(
-               "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
-         resetTimer();
-         outputPath.toFile().mkdirs();
-         Map<Path, Configuration> output = new TreeMap<>();
-         configurations.forEach((name, vc) -> {
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-         });
-         serializeObjects(output);
-         printElapsedTime();
-      }
+      _logger.info(
+            "\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
+      resetTimer();
+      outputPath.toFile().mkdirs();
+      Map<Path, Configuration> output = new TreeMap<>();
+      configurations.forEach((name, vc) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, vc);
+      });
+      serializeObjects(output);
+      printElapsedTime();
    }
 
    private Answer serializeIndependentConfigs(Path vendorConfigPath,
@@ -3119,29 +2961,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             RoleSet roles = nodeRolesEntry.getValue();
             config.setRoles(roles);
          }
-         if (!_settings.getNoOutput()) {
-            _logger.info("Serializing node-roles mappings: \"" + nodeRolesPath
-                  + "\"...");
-            serializeObject(nodeRoles, nodeRolesPath);
-            _logger.info("OK\n");
-         }
+         _logger.info(
+               "Serializing node-roles mappings: \"" + nodeRolesPath + "\"...");
+         serializeObject(nodeRoles, nodeRolesPath);
+         _logger.info("OK\n");
       }
-      if (!_settings.getNoOutput()) {
-         _logger
-               .info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-         resetTimer();
-         CommonUtil.createDirectories(outputPath);
-         Map<Path, VendorConfiguration> output = new TreeMap<>();
-         vendorConfigurations.forEach((name, vc) -> {
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-         });
-         serializeObjects(output);
-         // serialize warnings
-         serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
-         printElapsedTime();
-
-      }
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      resetTimer();
+      CommonUtil.createDirectories(outputPath);
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      vendorConfigurations.forEach((name, vc) -> {
+         Path currentOutputPath = outputPath.resolve(name);
+         output.put(currentOutputPath, vc);
+      });
+      serializeObjects(output);
+      // serialize warnings
+      serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+      printElapsedTime();
       return answer;
    }
 
