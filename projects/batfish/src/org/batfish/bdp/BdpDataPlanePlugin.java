@@ -10,7 +10,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.DataPlanePlugin;
@@ -47,46 +46,62 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    }
 
    private void collectFlowTraces(BdpDataPlane dp, String currentNodeName,
-         List<FlowTraceHop> edgesSoFar, Set<FlowTrace> flowTraces, Flow flow) {
+         List<FlowTraceHop> hopsSoFar, Set<FlowTrace> flowTraces, Flow flow) {
       Ip dstIp = flow.getDstIp();
       Set<String> ipOwners = dp._ipOwners.get(dstIp);
       if (ipOwners != null && ipOwners.contains(currentNodeName)) {
-         FlowTrace trace = new FlowTrace(FlowDisposition.ACCEPTED, edgesSoFar,
+         FlowTrace trace = new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar,
                FlowDisposition.ACCEPTED.toString());
          flowTraces.add(trace);
       }
       else {
          Node currentNode = dp._nodes.get(currentNodeName);
+         Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = currentNode._fib
+               .getNextHopInterfacesByRoute(dstIp);
          Map<String, Set<AbstractRoute>> nextHopInterfacesWithRoutes = currentNode._fib
                .getNextHopInterfaces(dstIp);
          if (!nextHopInterfacesWithRoutes.isEmpty()) {
             for (String nextHopInterfaceName : nextHopInterfacesWithRoutes
                   .keySet()) {
-               SortedSet<String> routesForThisNextHopInterface = new TreeSet<>(
-                     nextHopInterfacesWithRoutes.get(nextHopInterfaceName)
-                           .stream().map(ar -> ar.toString())
-                           .collect(Collectors.toSet()));
+               // SortedSet<String> routesForThisNextHopInterface = new
+               // TreeSet<>(
+               // nextHopInterfacesWithRoutes.get(nextHopInterfaceName)
+               // .stream().map(ar -> ar.toString())
+               // .collect(Collectors.toSet()));
+               SortedSet<String> routesForThisNextHopInterface = new TreeSet<>();
+               nextHopInterfacesByRoute.forEach(
+                     (routeCandidate, routeCandidateNextHopInterfaces) -> {
+                        if (routeCandidateNextHopInterfaces
+                              .contains(nextHopInterfaceName)) {
+                           routesForThisNextHopInterface
+                                 .add(routeCandidate.toString());
+                        }
+                     });
                NodeInterfacePair nextHopInterface = new NodeInterfacePair(
                      currentNodeName, nextHopInterfaceName);
                if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-                  List<FlowTraceHop> newEdges = new ArrayList<>(edgesSoFar);
-                  newEdges.add(new FlowTraceHop(new Edge(nextHopInterface,
+                  List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                  Edge newEdge = new Edge(nextHopInterface,
                         new NodeInterfacePair(Configuration.NODE_NONE_NAME,
-                              Interface.NULL_INTERFACE_NAME)),
-                        routesForThisNextHopInterface));
+                              Interface.NULL_INTERFACE_NAME));
+                  FlowTraceHop newHop = new FlowTraceHop(newEdge,
+                        routesForThisNextHopInterface);
+                  newHops.add(newHop);
                   FlowTrace nullRouteTrace = new FlowTrace(
-                        FlowDisposition.NULL_ROUTED, newEdges,
+                        FlowDisposition.NULL_ROUTED, newHops,
                         FlowDisposition.NULL_ROUTED.toString());
                   flowTraces.add(nullRouteTrace);
                }
                else if (dp._flowSinks.contains(nextHopInterface)) {
-                  List<FlowTraceHop> newEdges = new ArrayList<>(edgesSoFar);
-                  newEdges.add(new FlowTraceHop(new Edge(nextHopInterface,
+                  List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                  Edge newEdge = new Edge(nextHopInterface,
                         new NodeInterfacePair(Configuration.NODE_NONE_NAME,
-                              Interface.FLOW_SINK_TERMINATION_NAME)),
-                        routesForThisNextHopInterface));
+                              Interface.FLOW_SINK_TERMINATION_NAME));
+                  FlowTraceHop newHop = new FlowTraceHop(newEdge,
+                        routesForThisNextHopInterface);
+                  newHops.add(newHop);
                   FlowTrace flowSinkTrace = new FlowTrace(
-                        FlowDisposition.ACCEPTED, newEdges,
+                        FlowDisposition.ACCEPTED, newHops,
                         FlowDisposition.ACCEPTED.toString());
                   flowTraces.add(flowSinkTrace);
                }
@@ -98,13 +113,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                         if (!edge.getNode1().equals(currentNodeName)) {
                            continue;
                         }
-                        List<FlowTraceHop> newEdges = new ArrayList<>(
-                              edgesSoFar);
-                        newEdges.add(new FlowTraceHop(edge,
-                              routesForThisNextHopInterface));
+                        List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                        FlowTraceHop newHop = new FlowTraceHop(edge,
+                              routesForThisNextHopInterface);
+                        newHops.add(newHop);
                         String nextNodeName = edge.getNode2();
                         if (nextNodeName
-                              .equals(newEdges.get(0).getEdge().getNode1())) {
+                              .equals(newHops.get(0).getEdge().getNode1())) {
                            throw new BatfishException("Loop!");
                         }
                         // now check output filter and input filter
@@ -115,7 +130,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                         if (outFilter != null) {
                            FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                            boolean denied = flowTraceDeniedHelper(flowTraces,
-                                 flow, newEdges, outFilter, disposition);
+                                 flow, newHops, outFilter, disposition);
                            if (denied) {
                               continue;
                            }
@@ -126,14 +141,14 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                         if (inFilter != null) {
                            FlowDisposition disposition = FlowDisposition.DENIED_IN;
                            boolean denied = flowTraceDeniedHelper(flowTraces,
-                                 flow, newEdges, inFilter, disposition);
+                                 flow, newHops, inFilter, disposition);
                            if (denied) {
                               continue;
                            }
                         }
                         // recurse
-                        collectFlowTraces(dp, nextNodeName, newEdges,
-                              flowTraces, flow);
+                        collectFlowTraces(dp, nextNodeName, newHops, flowTraces,
+                              flow);
                      }
                   }
                   else {
@@ -145,8 +160,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             }
          }
          else {
-            FlowTrace trace = new FlowTrace(FlowDisposition.NO_ROUTE,
-                  edgesSoFar, FlowDisposition.NO_ROUTE.toString());
+            FlowTrace trace = new FlowTrace(FlowDisposition.NO_ROUTE, hopsSoFar,
+                  FlowDisposition.NO_ROUTE.toString());
             flowTraces.add(trace);
          }
       }

@@ -97,4 +97,16 @@ public class Fib implements Serializable {
       return nextHopInterfaces;
    }
 
+   public Map<AbstractRoute, Set<String>> getNextHopInterfacesByRoute(
+         Ip dstIp) {
+      Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = new HashMap<>();
+      Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(dstIp);
+      for (AbstractRoute nextHopRoute : nextHopRoutes) {
+         Set<String> nextHopInterfaces = _nextHopInterfaces.get(nextHopRoute)
+               .keySet();
+         nextHopInterfacesByRoute.put(nextHopRoute, nextHopInterfaces);
+      }
+      return nextHopInterfacesByRoute;
+   }
+
 }
