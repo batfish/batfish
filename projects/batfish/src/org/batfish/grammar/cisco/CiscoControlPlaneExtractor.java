@@ -3558,7 +3558,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setSwitchportTrunkEncapsulation(type);
       }
-   }
+   };
 
    @Override
    public void exitSwitchport_trunk_native_if_stanza(
@@ -3573,7 +3573,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitTemplate_peer_address_family(
          Template_peer_address_familyContext ctx) {
       popPeer();
-   };
+   }
 
    @Override
    public void exitTemplate_peer_policy_rb_stanza(
