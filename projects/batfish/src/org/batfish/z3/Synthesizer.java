@@ -882,7 +882,7 @@ public class Synthesizer {
       for (String hostname : _fibs.keySet()) {
          TreeSet<FibRow> fibSet = new TreeSet<>(_fibs.get(hostname));
          if (fibSet.isEmpty()
-               || fibSet.first().getPrefix().equals(Prefix.ZERO)) {
+               || !fibSet.first().getPrefix().equals(Prefix.ZERO)) {
             // no default route, so add one that drops traffic
             FibRow dropDefaultRow = new FibRow(Prefix.ZERO,
                   FibRow.DROP_INTERFACE, "", "");
