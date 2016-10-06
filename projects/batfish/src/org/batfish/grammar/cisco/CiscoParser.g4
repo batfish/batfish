@@ -1309,6 +1309,16 @@ s_management_tail
    | mgmt_null
 ;
 
+s_no_access_list_extended
+:
+   NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
+;
+
+s_no_access_list_standard
+:
+   NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
+;
+
 s_ntp
 :
    NTP s_ntp_tail
@@ -1410,6 +1420,8 @@ stanza
    | s_line
    | s_management
    | s_mac_access_list
+   | s_no_access_list_extended
+   | s_no_access_list_standard
    | s_ntp
    | s_object
    | s_object_group

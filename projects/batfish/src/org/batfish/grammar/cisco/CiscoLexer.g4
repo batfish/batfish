@@ -1182,6 +1182,11 @@ CONFIGURATION
    'configuration'
 ;
 
+CONFIGURE
+:
+   'configure'
+;
+
 CONFLICT_POLICY
 :
    'conflict-policy'
@@ -1370,6 +1375,11 @@ CTL_FILE
 CTS
 :
    'cts'
+;
+
+CWR
+:
+   'cwr'
 ;
 
 DAEMON
@@ -1837,6 +1847,11 @@ EBGP_MULTIHOP
    'ebgp-multihop'
 ;
 
+ECE
+:
+   'ece'
+;
+
 ECHO
 :
    'echo'
@@ -2245,6 +2260,11 @@ FIREWALL
    'firewall'
    { enableIPV6_ADDRESS = false; }
 
+;
+
+FIN
+:
+   'fin'
 ;
 
 FINGER
@@ -4780,6 +4800,11 @@ PSEUDOWIRE_CLASS
    'pseudowire-class'
 ;
 
+PSH
+:
+   'psh'
+;
+
 PTP
 :
    'ptp'
@@ -5977,6 +6002,11 @@ SWITCHPORT
    'switchport'
 ;
 
+SYN
+:
+   'syn'
+;
+
 SYNC
 :
    'sync'
@@ -6465,6 +6495,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+URG
+:
+   'urg'
 ;
 
 USE

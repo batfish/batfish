@@ -47,7 +47,7 @@
               "node2" : "as2dist1",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.34.101.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2dist1",
@@ -55,7 +55,7 @@
               "node2" : "as2core2",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.23.21.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core2",
@@ -63,7 +63,7 @@
               "node2" : "as2border1",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.12.12.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border1",
@@ -71,7 +71,7 @@
               "node2" : "as1border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<10.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         }, {
@@ -91,7 +91,7 @@
               "node2" : "as2dist1",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.34.101.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2dist1",
@@ -99,7 +99,7 @@
               "node2" : "as2core1",
               "node2interface" : "FastEthernet2/0"
             },
-            "routes" : [ "ConnectedRoute<2.23.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core1",
@@ -107,7 +107,7 @@
               "node2" : "as2border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<2.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border1",
@@ -115,7 +115,7 @@
               "node2" : "as1border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<10.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         }, {
@@ -135,7 +135,7 @@
               "node2" : "as2dist2",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.34.201.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2dist2",
@@ -143,7 +143,7 @@
               "node2" : "as2core2",
               "node2interface" : "FastEthernet2/0"
             },
-            "routes" : [ "ConnectedRoute<2.23.22.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core2",
@@ -151,7 +151,7 @@
               "node2" : "as2border1",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.12.12.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border1",
@@ -159,7 +159,7 @@
               "node2" : "as1border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<10.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         }, {
@@ -179,7 +179,7 @@
               "node2" : "as2dist2",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.34.201.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2dist2",
@@ -187,7 +187,7 @@
               "node2" : "as2core1",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "ConnectedRoute<2.23.12.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core1",
@@ -195,7 +195,7 @@
               "node2" : "as2border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<2.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border1",
@@ -203,7 +203,7 @@
               "node2" : "as1border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "ConnectedRoute<10.12.11.0/24>" ]
+            "routes" : [ "BgpRoute<1.0.1.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         } ]

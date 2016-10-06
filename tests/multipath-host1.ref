@@ -1,0 +1,38 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.datamodel.FlowHistory",
+    "flows" : [ ],
+    "flowsByText" : { },
+    "traces" : { }
+  } ],
+  "question" : {
+    "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "actions" : [ "accept" ],
+    "differential" : false,
+    "dstIps" : [ "3.0.1.2" ],
+    "dstPorts" : [ "0-0" ],
+    "finalNodeRegex" : ".*",
+    "fragmentOffsets" : [ ],
+    "icmpCodes" : [ ],
+    "icmpTypes" : [ ],
+    "ingressNodeRegex" : "host1",
+    "ipProtocols" : [ "TCP" ],
+    "negateHeader" : false,
+    "notDstIps" : [ ],
+    "notDstPors" : [ ],
+    "notFinalNodeRegex" : "",
+    "notFragmentOffsets" : [ ],
+    "notIcmpCodes" : [ ],
+    "notIcmpTypes" : [ ],
+    "notIngressNodeRegex" : "",
+    "notIpProtocols" : [ ],
+    "notSrcIps" : [ ],
+    "notSrcPorts" : [ ],
+    "srcIps" : [ "2.128.0.0" ],
+    "srcOrDstIps" : [ ],
+    "srcOrDstPorts" : [ ],
+    "srcPorts" : [ "0-0" ],
+    "type" : "multipath"
+  },
+  "status" : "SUCCESS"
+}

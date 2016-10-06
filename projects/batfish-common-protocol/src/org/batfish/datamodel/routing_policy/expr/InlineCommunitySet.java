@@ -16,9 +16,9 @@ public class InlineCommunitySet implements CommunitySetExpr {
     */
    private static final long serialVersionUID = 1L;
 
-   private Set<CommunitySetElem> _communities;
-
    private transient CommunitySet _cachedCommunities;
+
+   private Set<CommunitySetElem> _communities;
 
    @JsonCreator
    public InlineCommunitySet() {
@@ -41,6 +41,10 @@ public class InlineCommunitySet implements CommunitySetExpr {
       return _cachedCommunities;
    }
 
+   public Set<CommunitySetElem> getCommunities() {
+      return _communities;
+   }
+
    private synchronized CommunitySet initCommunities(Environment environment) {
       CommunitySet out = new CommunitySet();
       for (CommunitySetElem elem : _communities) {
@@ -48,10 +52,6 @@ public class InlineCommunitySet implements CommunitySetExpr {
          out.add(c);
       }
       return out;
-   }
-
-   public Set<CommunitySetElem> getCommunities() {
-      return _communities;
    }
 
    @Override

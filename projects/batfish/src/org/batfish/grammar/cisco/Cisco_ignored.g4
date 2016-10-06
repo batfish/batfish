@@ -32,8 +32,10 @@ null_block_stanza
       | CLI
       | CLNS
       | CLOCK
+      | COMMIT
       | CONFDCONFIG
       | CONFIGURATION
+      | CONFIGURE
       | CONTROLLER
       | COPP
       | COPY

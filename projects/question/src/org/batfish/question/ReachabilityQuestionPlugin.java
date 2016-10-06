@@ -501,16 +501,16 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                               new TypeReference<Set<ForwardingAction>>() {
                               }));
                   break;
-               case DST_PORTS_VAR:
-                  setDstPorts(new ObjectMapper().<Set<SubRange>> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<Set<SubRange>>() {
-                        }));
-                  break;
                case DST_IPS_VAR:
                   setDstIps(new ObjectMapper().<Set<IpWildcard>> readValue(
                         parameters.getString(paramKey),
                         new TypeReference<Set<IpWildcard>>() {
+                        }));
+                  break;
+               case DST_PORTS_VAR:
+                  setDstPorts(new ObjectMapper().<Set<SubRange>> readValue(
+                        parameters.getString(paramKey),
+                        new TypeReference<Set<SubRange>>() {
                         }));
                   break;
                case FINAL_NODE_REGEX_VAR:
@@ -544,6 +544,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                   setReachabilityType(ReachabilityType
                         .fromName(parameters.getString(paramKey)));
                   break;
+               case SRC_IPS_VAR:
+                  setSrcIps(new ObjectMapper().<Set<IpWildcard>> readValue(
+                        parameters.getString(paramKey),
+                        new TypeReference<Set<IpWildcard>>() {
+                        }));
+                  break;
                case SRC_OR_DST_IPS_VAR:
                   setSrcOrDstIps(new ObjectMapper().<Set<IpWildcard>> readValue(
                         parameters.getString(paramKey),
@@ -562,8 +568,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                         new TypeReference<Set<SubRange>>() {
                         }));
                   break;
-               case SRC_IPS_VAR:
-                  setSrcIps(new ObjectMapper().<Set<IpWildcard>> readValue(
+               case NOT_DST_IPS_VAR:
+                  setNotDstIps(new ObjectMapper().<Set<IpWildcard>> readValue(
                         parameters.getString(paramKey),
                         new TypeReference<Set<IpWildcard>>() {
                         }));
@@ -572,12 +578,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                   setNotDstPorts(new ObjectMapper().<Set<SubRange>> readValue(
                         parameters.getString(paramKey),
                         new TypeReference<Set<SubRange>>() {
-                        }));
-                  break;
-               case NOT_DST_IPS_VAR:
-                  setNotDstIps(new ObjectMapper().<Set<IpWildcard>> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<Set<IpWildcard>>() {
                         }));
                   break;
                case NOT_FINAL_NODE_REGEX_VAR:
@@ -606,18 +606,18 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
                               new TypeReference<Set<IpProtocol>>() {
                               }));
                   break;
+               case NOT_SRC_IPS_VAR:
+                  setNotSrcIps(new ObjectMapper().<Set<IpWildcard>> readValue(
+                        parameters.getString(paramKey),
+                        new TypeReference<Set<IpWildcard>>() {
+                        }));
+                  break;
                case NOT_SRC_PORTS_VAR:
                   setNotSrcPortRange(
                         new ObjectMapper().<Set<SubRange>> readValue(
                               parameters.getString(paramKey),
                               new TypeReference<Set<SubRange>>() {
                               }));
-                  break;
-               case NOT_SRC_IPS_VAR:
-                  setNotSrcIps(new ObjectMapper().<Set<IpWildcard>> readValue(
-                        parameters.getString(paramKey),
-                        new TypeReference<Set<IpWildcard>>() {
-                        }));
                   break;
                default:
                   throw new BatfishException(

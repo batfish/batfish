@@ -97,6 +97,7 @@ extended_access_list_additional_feature
    ACK
    | BEYOND_SCOPE
    | COUNT
+   | CWR
    |
    (
       DSCP dscp_type
@@ -105,6 +106,7 @@ extended_access_list_additional_feature
    (
       icmpv6_message_type = DEC icmpv6_message_code = DEC?
    )
+   | ECE
    | ECHO
    | ECHO_REPLY
    | ECHO_REQUEST
@@ -113,6 +115,7 @@ extended_access_list_additional_feature
       ECN ecn = DEC
    )
    | ESTABLISHED
+   | FIN
    | FRAGMENTS
    | HOP_LIMIT
    | HOST_UNKNOWN
@@ -131,18 +134,21 @@ extended_access_list_additional_feature
    | PACKET_TOO_BIG
    | PARAMETER_PROBLEM
    | PORT_UNREACHABLE
+   | PSH
    | REDIRECT
    | ROUTER
    | ROUTER_ADVERTISEMENT
    | ROUTER_SOLICITATION
    | RST
    | SOURCE_QUENCH
+   | SYN
    | TIME_EXCEEDED
    | TRACEROUTE
    | TRACKED
    | TTL_EXCEEDED
    | TTL EQ DEC
    | UNREACHABLE
+   | URG
 ;
 
 extended_access_list_null_tail

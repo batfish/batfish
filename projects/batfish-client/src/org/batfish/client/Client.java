@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,15 +32,13 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.plugin.AbstractClient;
 import org.batfish.common.plugin.IClient;
-import org.batfish.common.plugin.PluginClientType;
-import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
-import org.batfish.datamodel.questions.Question;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 
-public class Client extends PluginConsumer implements IClient {
+public class Client extends AbstractClient implements IClient {
 
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
@@ -71,8 +68,6 @@ public class Client extends PluginConsumer implements IClient {
    @SuppressWarnings("unused")
    private BfCoordPoolHelper _poolHelper;
 
-   private final Map<String, Supplier<Question>> _questions;
-
    private ConsoleReader _reader;
 
    private Settings _settings;
@@ -82,7 +77,6 @@ public class Client extends PluginConsumer implements IClient {
    public Client(Settings settings) {
       super(false, settings.getPluginDirs());
       _settings = settings;
-      _questions = new HashMap<>();
 
       switch (_settings.getRunMode()) {
       case batch:
@@ -442,11 +436,6 @@ public class Client extends PluginConsumer implements IClient {
 
    public Settings getSettings() {
       return _settings;
-   }
-
-   @Override
-   public PluginClientType getType() {
-      return PluginClientType.CLIENT;
    }
 
    private void initHelpers() {
@@ -1317,12 +1306,6 @@ public class Client extends PluginConsumer implements IClient {
          }
       }
       return true;
-   }
-
-   @Override
-   public void registerQuestion(String questionName,
-         Supplier<Question> questionCreator) {
-      _questions.put(questionName, questionCreator);
    }
 
    public void run(List<String> initialCommands) {
