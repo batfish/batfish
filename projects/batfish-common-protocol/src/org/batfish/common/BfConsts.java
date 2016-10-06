@@ -23,6 +23,7 @@ public class BfConsts {
    public static final String ARG_DELTA_TESTRIG = "deltatestrig";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
    public static final String ARG_ENVIRONMENT_NAME = "env";
+   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
    public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
    public static final String ARG_OUTPUT_ENV = "outputenv";

@@ -93,12 +93,29 @@ public class ParseVendorConfigurationJob
       ConfigurationFormat format = _format;
       _logger.info("Processing: '" + currentPath + "'\n");
 
+      for (String s : _settings.ignoreFilesWithStrings()) {
+         if (_fileText.contains(s)) {
+            format = ConfigurationFormat.IGNORED;
+            break;
+         }
+      }
+
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
-
+      boolean empty = false;
       switch (format) {
       case EMPTY:
+         empty = true;
+      case IGNORED:
+         String emptyOrIgnoredError = "Empty or ignored file: '" + currentPath
+               + "'\n";
+         if (empty) {
+            _warnings.redFlag(emptyOrIgnoredError);
+         }
+         else {
+            _warnings.pedantic(emptyOrIgnoredError);
+         }
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
                _logger.getHistory(), _file, _warnings);

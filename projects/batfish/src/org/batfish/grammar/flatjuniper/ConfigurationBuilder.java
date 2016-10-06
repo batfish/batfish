@@ -1174,6 +1174,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       else if (ctx.PARAMETER_PROBLEM() != null) {
          return IcmpType.PARAMETER_PROBLEM;
       }
+      else if (ctx.SOURCE_QUENCH() != null) {
+         return IcmpType.SOURCE_QUENCH;
+      }
       else if (ctx.TIME_EXCEEDED() != null) {
          return IcmpType.TIME_EXCEEDED;
       }

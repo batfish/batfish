@@ -105,18 +105,12 @@ boolean_simple_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
    | boolean_rib_has_route_rp_stanza
-   | boolean_tag_eq_rp_stanza
    | boolean_tag_is_rp_stanza
-;
-
-boolean_tag_eq_rp_stanza
-:
-   TAG EQ name = variable
 ;
 
 boolean_tag_is_rp_stanza
 :
-   TAG IS DEC
+   TAG int_comp int_expr
 ;
 
 delete_rp_stanza
@@ -155,6 +149,14 @@ if_rp_stanza
       ENDIF
       | EXIT
    ) NEWLINE
+;
+
+int_comp
+:
+   EQ
+   | IS
+   | GE
+   | LE
 ;
 
 ip_policy_list_stanza
@@ -558,7 +560,7 @@ set_tag_rm_stanza
 
 set_tag_rp_stanza
 :
-   SET TAG tag = DEC NEWLINE
+   SET TAG tag = int_expr NEWLINE
 ;
 
 set_weight_rm_stanza

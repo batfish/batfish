@@ -403,6 +403,8 @@ public final class Settings extends BaseSettings {
 
    private static final String ARGNAME_ROLE = "role";
 
+   private static final String ARGNAME_STRINGS = "string..";
+
    private static final String EXECUTABLE_NAME = "batfish";
 
    private TestrigSettings _activeTestrigSettings;
@@ -466,6 +468,8 @@ public final class Settings extends BaseSettings {
    private List<String> _helpPredicates;
 
    private boolean _histogram;
+
+   private List<String> _ignoreFilesWithStrings;
 
    private boolean _ignoreUnknown;
 
@@ -925,6 +929,10 @@ public final class Settings extends BaseSettings {
       return _writeRoutes;
    }
 
+   public List<String> ignoreFilesWithStrings() {
+      return _ignoreFilesWithStrings;
+   }
+
    public boolean ignoreUnknown() {
       return _ignoreUnknown;
    }
@@ -1090,6 +1098,10 @@ public final class Settings extends BaseSettings {
             "autonomous system number of stubs to be generated", ARGNAME_AS);
 
       addBooleanOption(ARG_HELP, "print this message");
+
+      addOption(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS,
+            "ignore configuration files containing these strings",
+            ARGNAME_STRINGS);
 
       addBooleanOption(ARG_IGNORE_UNKNOWN,
             "ignore configuration files with unknown format instead of crashing");
@@ -1290,6 +1302,8 @@ public final class Settings extends BaseSettings {
             ARG_GENERATE_STUBS_REMOTE_AS);
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
+      _ignoreFilesWithStrings = getStringListOptionValue(
+            BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
       _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
       _jobs = getIntOptionValue(ARG_JOBS);

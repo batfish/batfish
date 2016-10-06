@@ -10,6 +10,8 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
 
    protected Ip _nextHopIp;
 
+   protected int _tag;
+
    public abstract T build();
 
    public final Integer getAdmin() {
@@ -42,6 +44,10 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
 
    public final void setNextHopIp(Ip nextHopIp) {
       _nextHopIp = nextHopIp;
+   }
+
+   public final void setTag(int tag) {
+      _tag = tag;
    }
 
 }

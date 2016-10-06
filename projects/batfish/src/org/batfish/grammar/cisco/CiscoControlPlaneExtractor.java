@@ -61,6 +61,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -132,6 +133,7 @@ import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco.RoutePolicyBooleanNot;
 import org.batfish.representation.cisco.RoutePolicyBooleanOr;
 import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
+import org.batfish.representation.cisco.RoutePolicyBooleanTagIs;
 import org.batfish.representation.cisco.RoutePolicyCommunitySet;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
 import org.batfish.representation.cisco.RoutePolicyCommunitySetInline;
@@ -158,6 +160,7 @@ import org.batfish.representation.cisco.RoutePolicySetLocalPref;
 import org.batfish.representation.cisco.RoutePolicySetMed;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
 import org.batfish.representation.cisco.RoutePolicySetOspfMetricType;
+import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
@@ -3793,6 +3796,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _unimplementedFeatures.add("Cisco: " + feature);
    }
 
+   private IntComparator toIntComparator(Int_compContext ctx) {
+      if (ctx.EQ() != null || ctx.IS() != null) {
+         return IntComparator.EQ;
+      }
+      else if (ctx.GE() != null) {
+         return IntComparator.GE;
+      }
+      else if (ctx.LE() != null) {
+         return IntComparator.LE;
+      }
+      else {
+         throw convError(IntComparator.class, ctx);
+      }
+   }
+
    private IntExpr toIntExpr(Int_exprContext ctx) {
       if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
          int val = toInteger(ctx.DEC());
@@ -3943,6 +3961,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .boolean_as_path_in_rp_stanza();
       if (actxt != null) {
          return new RoutePolicyBooleanAsPathIn(toAsPathSetExpr(actxt.expr));
+      }
+
+      Boolean_tag_is_rp_stanzaContext tagctxt = ctx.boolean_tag_is_rp_stanza();
+      if (tagctxt != null) {
+         return new RoutePolicyBooleanTagIs(toIntComparator(tagctxt.int_comp()),
+               toTagIntExpr(tagctxt.int_expr()));
       }
 
       Boolean_as_path_originates_from_rp_stanzaContext aotxt = ctx
@@ -4242,7 +4266,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyStatement(hctxt);
       }
 
+      Set_tag_rp_stanzaContext tctxt = ctx.set_tag_rp_stanza();
+      if (tctxt != null) {
+         return toRoutePolicyStatement(tctxt);
+      }
+
       throw convError(RoutePolicyStatement.class, ctx);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_tag_rp_stanzaContext ctx) {
+      return new RoutePolicySetTag(toTagIntExpr(ctx.tag));
    }
 
    private List<RoutePolicyStatement> toRoutePolicyStatementList(
@@ -4255,6 +4289,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       return stmts;
+   }
+
+   private IntExpr toTagIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null && ctx.DASH() == null && ctx.PLUS() == null) {
+         int val = toInteger(ctx.DEC());
+         return new LiteralInt(val);
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         String var = ctx.RP_VARIABLE().getText();
+         return new VarInt(var);
+      }
+      else {
+         throw convError(IntExpr.class, ctx);
+      }
    }
 
 }

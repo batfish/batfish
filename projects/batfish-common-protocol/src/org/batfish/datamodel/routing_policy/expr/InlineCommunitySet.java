@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public class InlineCommunitySet implements CommunitySetExpr {
    }
 
    public InlineCommunitySet(Set<CommunitySetElem> communities) {
+      _communities = new HashSet<>();
       _communities.addAll(communities);
    }
 
