@@ -47,7 +47,7 @@ address_family_multicast_tail
 
 address_family_vrfd_stanza
 :
-   ADDRESS_FAMILY
+   ADDRESS_FAMILY (MAX_ROUTE DEC)?
    (
       IPV4
       | IPV6
