@@ -47,7 +47,7 @@ address_family_multicast_tail
 
 address_family_vrfd_stanza
 :
-   ADDRESS_FAMILY (MAX_ROUTE DEC)?
+   ADDRESS_FAMILY
    (
       IPV4
       | IPV6
@@ -55,6 +55,9 @@ address_family_vrfd_stanza
    (
       MULTICAST
       | UNICAST
+   )?
+   (
+      MAX_ROUTE DEC
    )? NEWLINE afvrfd_stanza*
    (
       EXIT_ADDRESS_FAMILY NEWLINE
@@ -83,7 +86,10 @@ asa_comment_stanza
 
 as_path_set_stanza
 :
-   AS_PATH_SET name = variable NEWLINE (elems+=as_path_set_elem NEWLINE)* END_SET NEWLINE
+   AS_PATH_SET name = variable NEWLINE
+   (
+      elems += as_path_set_elem NEWLINE
+   )* END_SET NEWLINE
 ;
 
 banner_stanza
