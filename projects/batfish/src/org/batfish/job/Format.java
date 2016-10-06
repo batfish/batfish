@@ -28,6 +28,12 @@ public final class Format {
       Matcher flatJuniperHostnameDeclarationMatcher = Pattern
             .compile("(?m)^set (groups [^ ][^ ]* )?system host-name ")
             .matcher(fileText);
+      Matcher juniperAclMatcher = Pattern.compile("(?m)^firewall *\\{")
+            .matcher(fileText);
+      Matcher juniperPolicyOptionsMatcher = Pattern
+            .compile("(?m)^policy-options *\\{").matcher(fileText);
+      Matcher juniperSnmpMatcher = Pattern.compile("(?m)^snmp *\\{")
+            .matcher(fileText);
       Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
             .matcher(fileText);
       Matcher bladeNetworkMatcher = Pattern.compile("(?m)^switch-type")
@@ -35,9 +41,13 @@ public final class Format {
       Matcher ciscoLike = Pattern
             .compile("(?m)(^boot system flash.*$)|(^interface .*$)")
             .matcher(fileText);
+      Matcher ciscoStyleAcl = Pattern.compile("(?m)(^(ip )?access-list.*$)")
+            .matcher(fileText);
       Matcher alcatelAosMatcher = Pattern.compile("(?m)^system name")
             .matcher(fileText);
       Matcher mssMatcher = Pattern.compile("(?m)^set system name")
+            .matcher(fileText);
+      Matcher nexusCommitLine = Pattern.compile("(?m)^ *commit *$")
             .matcher(fileText);
       if (fileText.contains("edit interface")) {
          return ConfigurationFormat.UNKNOWN;
@@ -75,23 +85,27 @@ public final class Format {
             || (fileText.contains("apply-groups") && setMatcher.find(0))) {
          return ConfigurationFormat.FLAT_JUNIPER;
       }
-      else if (firstChar == '#' || (fileText.contains("version")
-            && fileText.contains("system") && fileText.contains("{")
-            && fileText.contains("}") && fileText.contains("host-name")
-            && fileText.contains("interfaces"))) {
+      else if (firstChar == '#'
+            || (fileText.contains("version") && fileText.contains("system")
+                  && fileText.contains("{") && fileText.contains("}")
+                  && fileText.contains("host-name")
+                  && fileText.contains("interfaces"))
+            || juniperAclMatcher.find() || juniperPolicyOptionsMatcher.find()
+            || juniperSnmpMatcher.find()) {
          return ConfigurationFormat.JUNIPER;
       }
       else if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
-      }
-      else if (ciscoLike.find() || firstChar == '!') {
-         return ConfigurationFormat.CISCO;
       }
       else if (alcatelAosMatcher.find()) {
          return ConfigurationFormat.ALCATEL_AOS;
       }
       else if (mssMatcher.find()) {
          return ConfigurationFormat.MSS;
+      }
+      else if (ciscoLike.find() || firstChar == '!' || ciscoStyleAcl.find()
+            || nexusCommitLine.find()) {
+         return ConfigurationFormat.CISCO;
       }
       return ConfigurationFormat.UNKNOWN;
    }

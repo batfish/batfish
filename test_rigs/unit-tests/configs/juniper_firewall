@@ -1,0 +1,6 @@
+#
+set system host-name juniper_firewall
+#
+set firewall family inet filter blah term blorp from destination-address 1.2.3.4
+set firewall family inet filter blah term blorp from destination-address 1.2.3.5/32
+#

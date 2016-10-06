@@ -19,7 +19,9 @@ fwfromt_destination_address
 :
    DESTINATION_ADDRESS
    (
-      IP_PREFIX
+      IP_ADDRESS
+      | IP_PREFIX
+      | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
 ;
@@ -150,7 +152,9 @@ fwfromt_source_address
 :
    SOURCE_ADDRESS
    (
-      IP_PREFIX
+      IP_ADDRESS
+      | IP_PREFIX
+      | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
 ;
@@ -413,9 +417,13 @@ tcp_flags_alternative
 tcp_flags_atom
 :
    ACK
+   | CWR
+   | ECE
    | FIN
+   | PSH
    | RST
    | SYN
+   | URG
 ;
 
 tcp_flags_literal

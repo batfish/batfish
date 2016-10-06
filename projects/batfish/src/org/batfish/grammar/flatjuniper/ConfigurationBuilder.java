@@ -1381,9 +1381,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             tcpFlags.setUseAck(true);
             tcpFlags.setAck(value);
          }
+         else if (atom.CWR() != null) {
+            tcpFlags.setUseCwr(true);
+            tcpFlags.setCwr(value);
+         }
+         else if (atom.ECE() != null) {
+            tcpFlags.setUseEce(true);
+            tcpFlags.setEce(value);
+         }
          else if (atom.FIN() != null) {
             tcpFlags.setUseFin(true);
             tcpFlags.setFin(value);
+         }
+         else if (atom.PSH() != null) {
+            tcpFlags.setUsePsh(true);
+            tcpFlags.setPsh(value);
          }
          else if (atom.RST() != null) {
             tcpFlags.setUseRst(true);
@@ -1392,6 +1404,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          else if (atom.SYN() != null) {
             tcpFlags.setUseSyn(true);
             tcpFlags.setSyn(value);
+         }
+         else if (atom.URG() != null) {
+            tcpFlags.setUseUrg(true);
+            tcpFlags.setUrg(value);
+         }
+         else {
+            throw new BatfishException(
+                  "Invalid tcp-flags atom: " + atom.getText());
          }
       }
       return tcpFlags;
@@ -2579,8 +2599,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFwfromt_destination_address(
          Fwfromt_destination_addressContext ctx) {
-      if (ctx.IP_PREFIX() != null) {
-         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+         Prefix prefix;
+         if (ctx.IP_PREFIX() != null) {
+            prefix = new Prefix(ctx.IP_PREFIX().getText());
+         }
+         else {
+            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+                  Prefix.MAX_PREFIX_LENGTH);
+         }
          FwFrom from;
          if (ctx.EXCEPT() != null) {
             from = new FwFromDestinationAddressExcept(prefix);
@@ -2736,8 +2763,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitFwfromt_source_address(Fwfromt_source_addressContext ctx) {
-      if (ctx.IP_PREFIX() != null) {
-         Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+         Prefix prefix;
+         if (ctx.IP_PREFIX() != null) {
+            prefix = new Prefix(ctx.IP_PREFIX().getText());
+         }
+         else {
+            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+                  Prefix.MAX_PREFIX_LENGTH);
+         }
          FwFrom from;
          if (ctx.EXCEPT() != null) {
             from = new FwFromSourceAddressExcept(prefix);

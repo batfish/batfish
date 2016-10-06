@@ -511,6 +511,11 @@ CVSPSERVER
    'cvspserver'
 ;
 
+CWR
+:
+   'cwr'
+;
+
 DAMPING
 :
    'damping'
@@ -719,6 +724,11 @@ DVMRP
 DYNAMIC
 :
    'dynamic'
+;
+
+ECE
+:
+   'ece'
 ;
 
 ECHO_REPLY
@@ -3541,6 +3551,11 @@ PROXY_IDENTITY
    'proxy-identity'
 ;
 
+PSH
+:
+   'psh'
+;
+
 Q931
 :
    'q931'
@@ -4351,6 +4366,11 @@ UPTO
    'upto'
 ;
 
+URG
+:
+   'urg'
+;
+
 URPF_LOGGING
 :
    'urpf-logging'
@@ -4611,8 +4631,7 @@ DASH
 
 DEC
 :
-   '0'
-   | F_PositiveDigit F_Digit*
+   F_Digit+
 ;
 
 DOLLAR
@@ -4652,11 +4671,6 @@ FORWARD_SLASH
 GREATER_THAN
 :
    '>'
-;
-
-HEX
-:
-   '0x' F_HexDigit+
 ;
 
 IP_ADDRESS
@@ -4956,7 +4970,7 @@ mode M_AsPathPath;
 
 M_AsPathPath_DEC
 :
-   [0-9]+ -> type ( DEC ) , popMode
+   F_Digit+ -> type ( DEC ) , popMode
 ;
 
 M_AsPathPath_DOUBLE_QUOTE
@@ -4973,7 +4987,7 @@ mode M_AsPathExpr;
 
 M_AsPathExpr_DEC
 :
-   [0-9]+ -> type ( DEC )
+   F_Digit+ -> type ( DEC )
 ;
 
 M_AsPathExpr_OPEN_BRACKET
@@ -5343,9 +5357,49 @@ M_PrefixListName_WS
 
 mode M_TcpFlags;
 
+M_TcpFlags_ACK
+:
+   'ack' -> type ( ACK )
+;
+
+M_TcpFlags_CWR
+:
+   'cwr' -> type ( CWR )
+;
+
 M_TcpFlags_DOUBLE_QUOTE
 :
    '"' -> channel ( HIDDEN ) , pushMode ( M_TcpFlags2 )
+;
+
+M_TcpFlags_ECE
+:
+   'ece' -> type ( ECE )
+;
+
+M_TcpFlags_FIN
+:
+   'fin' -> type ( FIN )
+;
+
+M_TcpFlags_NEWLINE
+:
+   F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_TcpFlags_RST
+:
+   'rst' -> type ( RST )
+;
+
+M_TcpFlags_SYN
+:
+   'syn' -> type ( SYN )
+;
+
+M_TcpFlags_URG
+:
+   'urg' -> type ( URG )
 ;
 
 M_TcpFlags_WS
@@ -5375,6 +5429,16 @@ M_TcpFlags2_CLOSE_PAREN
    ')' -> type ( CLOSE_PAREN )
 ;
 
+M_TcpFlags2_CWR
+:
+   'cwr' -> type ( CWR )
+;
+
+M_TcpFlags2_ECE
+:
+   'ece' -> type ( ECE )
+;
+
 M_TcpFlags2_FIN
 :
    'fin' -> type ( FIN )
@@ -5398,6 +5462,11 @@ M_TcpFlags2_RST
 M_TcpFlags2_SYN
 :
    'syn' -> type ( SYN )
+;
+
+M_TcpFlags2_URG
+:
+   'urg' -> type ( URG )
 ;
 
 M_TcpFlags2_DOUBLE_QUOTE
