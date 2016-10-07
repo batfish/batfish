@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.Set;
 import java.util.SortedSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,7 +34,7 @@ public final class FlowTraceHop implements Serializable {
    }
 
    @JsonProperty(ROUTES_VAR)
-   public Set<String> getRoutes() {
+   public SortedSet<String> getRoutes() {
       return _routes;
    }
 

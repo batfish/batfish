@@ -411,8 +411,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    }
 
    private boolean flowTraceDeniedHelper(Set<FlowTrace> flowTraces, Flow flow,
-         List<FlowTraceHop> newEdges, IpAccessList filter,
+         List<FlowTraceHop> newHops, IpAccessList filter,
          FlowDisposition disposition) {
+      boolean out = disposition == FlowDisposition.DENIED_OUT;
       FilterResult outResult = filter.filter(flow);
       boolean denied = outResult.getAction() == LineAction.REJECT;
       if (denied) {
@@ -430,7 +431,18 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          }
          String notes = disposition.toString() + "{" + outFilterName + "}{"
                + lineDesc + "}";
-         FlowTrace trace = new FlowTrace(disposition, newEdges, notes);
+         if (out) {
+            FlowTraceHop lastHop = newHops.get(newHops.size() - 1);
+            newHops.remove(newHops.size() - 1);
+            Edge lastEdge = lastHop.getEdge();
+            Edge deniedOutEdge = new Edge(lastEdge.getFirst(),
+                  new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+                        Interface.NULL_INTERFACE_NAME));
+            FlowTraceHop deniedOutHop = new FlowTraceHop(deniedOutEdge,
+                  lastHop.getRoutes());
+            newHops.add(deniedOutHop);
+         }
+         FlowTrace trace = new FlowTrace(disposition, newHops, notes);
          flowTraces.add(trace);
       }
       return denied;
