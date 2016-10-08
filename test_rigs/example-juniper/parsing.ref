@@ -8,7 +8,7 @@
         "1" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:121)\r",
         "2" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:943)\r",
         "3" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1411)\r",
-        "4" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2932)\r",
+        "4" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2933)\r",
         "5" : "   at org.batfish.main.Batfish.run(Batfish.java:2752)\r",
         "6" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r"
       }
@@ -23,7 +23,7 @@
         "4" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:90)\r",
         "5" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:943)\r",
         "6" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1411)\r",
-        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2932)\r",
+        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2933)\r",
         "8" : "   at org.batfish.main.Batfish.run(Batfish.java:2752)\r",
         "9" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r",
         "10" : "Caused by: org.batfish.common.BatfishException: Conversion error for node with hostname 'as1border2'\r",
@@ -49,7 +49,7 @@
         "4" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:90)\r",
         "5" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:943)\r",
         "6" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1411)\r",
-        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2932)\r",
+        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2933)\r",
         "8" : "   at org.batfish.main.Batfish.run(Batfish.java:2752)\r",
         "9" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r",
         "10" : "Caused by: org.batfish.common.BatfishException: Conversion error for node with hostname 'as1border1'\r",

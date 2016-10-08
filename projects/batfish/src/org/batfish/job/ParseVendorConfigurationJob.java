@@ -21,9 +21,8 @@ import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -72,7 +71,7 @@ public class ParseVendorConfigurationJob
 
    private ConfigurationFormat _format;
 
-   private String _parseTree;
+   private ParseTreeSentences _ptSentences;
    
    private Warnings _warnings;
 
@@ -82,6 +81,7 @@ public class ParseVendorConfigurationJob
       super(settings);
       _fileText = fileText;
       _file = file;
+      _ptSentences = new ParseTreeSentences();
       _warnings = warnings;
       _format = configurationFormat;
    }
@@ -105,6 +105,8 @@ public class ParseVendorConfigurationJob
          }
       }
 
+      Path relativePath = _settings.getTestrigSettings().getTestRigPath().relativize(_file);
+      
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
@@ -156,7 +158,7 @@ public class ParseVendorConfigurationJob
          vc = HostConfiguration.fromJson(_fileText, _warnings);
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, vc, _warnings, _parseTree);
+               _logger.getHistory(), _file, vc, _warnings, _ptSentences);
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
@@ -237,7 +239,7 @@ public class ParseVendorConfigurationJob
                _fileText, _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText,
-               iptablesParser, _warnings, _file.toString());
+               iptablesParser, _warnings, relativePath.toString());
          break;
 
       case MRV:
@@ -291,7 +293,7 @@ public class ParseVendorConfigurationJob
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
          if (_settings.printParseTree()) {
-            _parseTree = ParseTreePrettyPrinter.print(tree, combinedParser);
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree, combinedParser);
          }
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
@@ -336,7 +338,7 @@ public class ParseVendorConfigurationJob
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
-            _logger.getHistory(), _file, vc, _warnings, _parseTree);
+            _logger.getHistory(), _file, vc, _warnings, _ptSentences);
    }
 
    private boolean checkNonNexus(String fileText) {

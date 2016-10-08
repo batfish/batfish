@@ -2880,12 +2880,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            if (!iptablesConfigurations.containsKey(path.toString())) {
+            Path relativePath = testRigPath.relativize(path);
+            if (!iptablesConfigurations.containsKey(relativePath.toString())) {
                throw new BatfishException("Key not found for iptables!");
             }
             hostConfig.setIptablesConfig(
                   (IptablesVendorConfiguration) iptablesConfigurations
-                        .get(path.toString()));
+                        .get(relativePath.toString()));
          }
       }
 

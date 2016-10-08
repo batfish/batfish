@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -18,7 +19,7 @@ public class ParseVendorConfigurationAnswerElement
     */
    private static final long serialVersionUID = 1L;
 
-   private SortedMap<String, String> _parseTrees;
+   private SortedMap<String, ParseTreeSentences> _parseTrees;
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
@@ -26,7 +27,7 @@ public class ParseVendorConfigurationAnswerElement
       _warnings = new TreeMap<>();
    }
 
-   public SortedMap<String, String> getParseTrees() {
+   public SortedMap<String, ParseTreeSentences> getParseTrees() {
       return _parseTrees;
    }
 
@@ -41,7 +42,7 @@ public class ParseVendorConfigurationAnswerElement
       return mapper.writeValueAsString(this);
    }
 
-   public void setParseTrees(SortedMap<String, String> parseTrees) {
+   public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
       _parseTrees = parseTrees;
    }
 

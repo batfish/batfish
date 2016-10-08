@@ -6,6 +6,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -15,7 +16,7 @@ public class ParseVendorConfigurationResult extends
 
    private final Path _file;
 
-   private String _parseTree;
+   private ParseTreeSentences _parseTree;
    
    private VendorConfiguration _vc;
 
@@ -29,7 +30,7 @@ public class ParseVendorConfigurationResult extends
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path file, VendorConfiguration vc,
-         Warnings warnings, String parseTree) {
+         Warnings warnings, ParseTreeSentences parseTree) {
       super(elapsedTime, history);
       _file = file;
       _parseTree = parseTree;
