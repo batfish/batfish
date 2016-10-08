@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
@@ -21,6 +22,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -69,6 +72,8 @@ public class ParseVendorConfigurationJob
 
    private ConfigurationFormat _format;
 
+   private String _parseTree;
+   
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
@@ -151,7 +156,7 @@ public class ParseVendorConfigurationJob
          vc = HostConfiguration.fromJson(_fileText, _warnings);
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, vc, _warnings);
+               _logger.getHistory(), _file, vc, _warnings, _parseTree);
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
@@ -285,6 +290,9 @@ public class ParseVendorConfigurationJob
       try {
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
+         if (_settings.printParseTree()) {
+            _parseTree = ParseTreePrettyPrinter.print(tree, combinedParser);
+         }
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
          _logger.info("OK\n");
@@ -328,7 +336,7 @@ public class ParseVendorConfigurationJob
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
-            _logger.getHistory(), _file, vc, _warnings);
+            _logger.getHistory(), _file, vc, _warnings, _parseTree);
    }
 
    private boolean checkNonNexus(String fileText) {

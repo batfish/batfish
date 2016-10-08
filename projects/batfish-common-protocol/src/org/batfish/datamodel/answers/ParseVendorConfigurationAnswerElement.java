@@ -18,10 +18,16 @@ public class ParseVendorConfigurationAnswerElement
     */
    private static final long serialVersionUID = 1L;
 
+   private SortedMap<String, String> _parseTrees;
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
+      _parseTrees = new TreeMap<>();
       _warnings = new TreeMap<>();
+   }
+
+   public SortedMap<String, String> getParseTrees() {
+      return _parseTrees;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -33,6 +39,10 @@ public class ParseVendorConfigurationAnswerElement
       // TODO: change this function to pretty print the answer
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
+   }
+
+   public void setParseTrees(SortedMap<String, String> parseTrees) {
+      _parseTrees = parseTrees;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

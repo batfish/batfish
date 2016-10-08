@@ -57,6 +57,8 @@ public class Client extends AbstractClient implements IClient {
    private static final String FLAG_FAILING_TEST = "-error";
    private static final String FLAG_NO_DATAPLANE = "-nodataplane";
 
+   private Map<String,String> _additionalBatfishOptions;
+   
    private String _currContainerName = null;
    private String _currDeltaEnv = null;
    private String _currDeltaTestrig;
@@ -76,6 +78,7 @@ public class Client extends AbstractClient implements IClient {
 
    public Client(Settings settings) {
       super(false, settings.getPluginDirs());
+      _additionalBatfishOptions = new HashMap<String, String>();
       _settings = settings;
 
       switch (_settings.getRunMode()) {
@@ -233,10 +236,15 @@ public class Client extends AbstractClient implements IClient {
    private boolean execute(WorkItem wItem, FileWriter outWriter)
          throws Exception {
 
-      wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
-            _settings.getBatfishLogLevel());
       _logger.info("work-id is " + wItem.getId() + "\n");
 
+      wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL,
+            _settings.getBatfishLogLevel());
+
+      for (String option : _additionalBatfishOptions.keySet()) {
+         wItem.addRequestParam(option, _additionalBatfishOptions.get(option));
+      }
+      
       boolean queueWorkResult = _workHelper.queueWork(wItem);
       _logger.info("Queuing result: " + queueWorkResult + "\n");
 
@@ -578,7 +586,14 @@ public class Client extends AbstractClient implements IClient {
          List<String> options = getCommandOptions(words);
          List<String> parameters = getCommandParameters(words, options.size());
 
-         Command command = Command.fromName(words[0]);
+         Command command;
+         try {
+           command = Command.fromName(words[0]);
+         }
+         catch (BatfishException e) {
+            _logger.errorf("Command failed: %s\n", e.getMessage());
+            return false;
+         }
 
          switch (command) {
          // this is a hidden command for testing
@@ -588,6 +603,13 @@ public class Client extends AbstractClient implements IClient {
          // _logger.output("Result: " + result + "\n");
          // return true;
          // }
+         case ADD_BATFISH_OPTION: {
+            String optionKey = parameters.get(0);
+            String optionValue = CommonUtil.joinStrings(" ",
+                  Arrays.copyOfRange(words, 2 + options.size(), words.length));
+            _additionalBatfishOptions.put(optionKey, optionValue);      
+            return true;
+         }
          case ANSWER: {
             if (!isSetTestrig() || !isSetContainer(true)) {
                return false;
@@ -624,9 +646,21 @@ public class Client extends AbstractClient implements IClient {
 
             return true;
          }
-         case CLEAR_SCREEN:
+         case CLEAR_SCREEN: {
             // this should have taken care of before coming in here
             return false;
+         }
+         case DEL_BATFISH_OPTION: {
+            String optionKey = parameters.get(0);
+
+            if (!_additionalBatfishOptions.containsKey(optionKey)) {
+               _logger.outputf("Batfish option %s does not exist\n", optionKey);
+               return false;
+            }            
+            _additionalBatfishOptions.remove(optionKey);      
+            return true;
+         }
+
          case DEL_CONTAINER: {
             String containerName = parameters.get(0);
             boolean result = _workHelper.delContainer(containerName);
@@ -1137,6 +1171,13 @@ public class Client extends AbstractClient implements IClient {
                   _settings.getBatfishLogLevel());
             return true;
          }
+         case SHOW_BATFISH_OPTIONS: {
+            _logger.outputf("There are %d additional batfish options\n", _additionalBatfishOptions.size());
+            for (String option : _additionalBatfishOptions.keySet()) {
+               _logger.outputf("    %s : %s \n", option, _additionalBatfishOptions.get(option));
+            }
+            return true;
+         }
          case SHOW_CONTAINER: {
             _logger.outputf("Current container is %s\n", _currContainerName);
             return true;
@@ -1169,6 +1210,8 @@ public class Client extends AbstractClient implements IClient {
          }
          case TEST: {
             boolean failingTest = false;
+            boolean missingReferenceFile = false;
+            boolean testPassed = false;
             int testCommandIndex = 1;
             if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
                testCommandIndex++;
@@ -1190,7 +1233,7 @@ public class Client extends AbstractClient implements IClient {
             if (!referenceFile.exists()) {
                _logger.errorf("Reference file does not exist: %s\n",
                      referenceFileName);
-               return false;
+               missingReferenceFile = true;
             }
 
             File testoutFile = Files.createTempFile("test", "out").toFile();
@@ -1202,43 +1245,46 @@ public class Client extends AbstractClient implements IClient {
                   testoutWriter);
             testoutWriter.close();
 
-            boolean testPassed = false;
 
             if (!failingTest && testCommandSucceeded) {
                try {
-                  String referenceOutput = CommonUtil
-                        .readFile(Paths.get(referenceFileName));
-                  String testOutput = CommonUtil
-                        .readFile(Paths.get(testoutFile.getAbsolutePath()));
-
+                  
                   ObjectMapper mapper = new BatfishObjectMapper(
                         getCurrentClassLoader());
 
-                  // first rewrite reference string using local implementation
-                  Answer referenceAnswer;
-                  try {
-                     referenceAnswer = mapper.readValue(referenceOutput,
-                           Answer.class);
-                  }
-                  catch (Exception e) {
-                     throw new BatfishException(
-                           "Error reading reference output using current schema (reference output is likely obsolete)",
-                           e);
-                  }
-                  String referenceAnswerString = mapper
-                        .writeValueAsString(referenceAnswer);
+                  // rewrite new answer string using local implementation
+                  String testOutput = CommonUtil
+                        .readFile(Paths.get(testoutFile.getAbsolutePath()));
 
-                  // then rewrite new answer string using local implementation
                   Answer testAnswer = mapper.readValue(testOutput,
                         Answer.class);
                   String testAnswerString = mapper
                         .writeValueAsString(testAnswer);
 
-                  // due to options chosen in BatfishObjectMapper, if json
-                  // outputs were equal, then strings should be equal
+                  if (!missingReferenceFile) {
+                     String referenceOutput = CommonUtil
+                           .readFile(Paths.get(referenceFileName));
 
-                  if (referenceAnswerString.equals(testAnswerString)) {
-                     testPassed = true;
+                     // rewrite reference string using local implementation
+                     Answer referenceAnswer;
+                     try {
+                        referenceAnswer = mapper.readValue(referenceOutput,
+                              Answer.class);
+                     }
+                     catch (Exception e) {
+                        throw new BatfishException(
+                              "Error reading reference output using current schema (reference output is likely obsolete)",
+                              e);
+                     }
+                     String referenceAnswerString = mapper
+                           .writeValueAsString(referenceAnswer);
+
+                     // due to options chosen in BatfishObjectMapper, if json
+                     // outputs were equal, then strings should be equal
+
+                     if (referenceAnswerString.equals(testAnswerString)) {
+                        testPassed = true;
+                     }
                   }
                }
                catch (Exception e) {
