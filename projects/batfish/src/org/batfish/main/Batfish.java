@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -2972,8 +2973,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       CommonUtil.createDirectories(outputPath);
       Map<Path, VendorConfiguration> output = new TreeMap<>();
       vendorConfigurations.forEach((name, vc) -> {
-         Path currentOutputPath = outputPath.resolve(name);
-         output.put(currentOutputPath, vc);
+         if (name.contains(File.separator)) {
+            //iptables will get a hostname like configs/iptables-save if they are not 
+            //set up correctly using host files
+            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+            answerElement.addRedFlagWarning(name, 
+                  new Warning("Cannot serialize network config. Bad hostname " + name, "MISCELLANEOUS"));
+         }
+         else {
+            Path currentOutputPath = outputPath.resolve(name);
+            output.put(currentOutputPath, vc);
+         }
       });
       serializeObjects(output);
       // serialize warnings

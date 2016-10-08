@@ -105,7 +105,7 @@ public class ParseVendorConfigurationJob
          }
       }
 
-      Path relativePath = _settings.getTestrigSettings().getTestRigPath().relativize(_file);
+      Path fileRelativeToTestrig = _settings.getTestrigSettings().getTestRigPath().relativize(_file);
       
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
@@ -181,7 +181,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Vyos configurations must be flattened prior to this stage: '"
-                              + _file.toString() + "'"));
+                              + fileRelativeToTestrig.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_VYOS:
@@ -223,7 +223,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Juniper configurations must be flattened prior to this stage: '"
-                              + _file.toString() + "'"));
+                              + fileRelativeToTestrig.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
@@ -239,7 +239,7 @@ public class ParseVendorConfigurationJob
                _fileText, _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText,
-               iptablesParser, _warnings, relativePath.toString());
+               iptablesParser, _warnings, fileRelativeToTestrig.toString());
          break;
 
       case MRV:
@@ -321,7 +321,7 @@ public class ParseVendorConfigurationJob
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: '" + _file + "'\n";
+         String error = "No hostname set in file: '" + fileRelativeToTestrig + "'\n";
          try {
             _warnings.redFlag(error);
          }

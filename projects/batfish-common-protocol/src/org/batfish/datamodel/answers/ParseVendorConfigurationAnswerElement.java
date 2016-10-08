@@ -5,6 +5,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -25,6 +26,13 @@ public class ParseVendorConfigurationAnswerElement
    public ParseVendorConfigurationAnswerElement() {
       _parseTrees = new TreeMap<>();
       _warnings = new TreeMap<>();
+   }
+
+   public void addRedFlagWarning(String name, Warning warning) {
+      if (!_warnings.containsKey(name)) {
+         _warnings.put(name, new Warnings());
+      }
+      _warnings.get(name).getRedFlagWarnings().add(warning);      
    }
 
    public SortedMap<String, ParseTreeSentences> getParseTrees() {
@@ -49,5 +57,4 @@ public class ParseVendorConfigurationAnswerElement
    public void setWarnings(SortedMap<String, Warnings> warnings) {
       _warnings = warnings;
    }
-
 }
