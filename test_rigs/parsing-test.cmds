@@ -1,0 +1,42 @@
+#this file assumes that we are running from top-level source directory
+
+add-batfish-option ppt
+
+#disable-as-suppression
+test test_rigs/disable-as-suppression/parsing.ref init-testrig -nodataplane test_rigs/disable-as-suppression
+
+#example
+test test_rigs/example/parsing.ref init-testrig -nodataplane test_rigs/example
+
+#example-isp-switchover-1
+test test_rigs/example-isp-switchover-1/parsing.ref init-testrig -nodataplane test_rigs/example-isp-switchover-1
+
+#example-isp-switchover-2
+test test_rigs/example-isp-switchover-2/parsing.ref init-testrig -nodataplane test_rigs/example-isp-switchover-2
+
+#example-juniper
+test test_rigs/example-juniper/parsing.ref init-testrig -nodataplane test_rigs/example-juniper
+
+#example-nsdi
+test test_rigs/example-nsdi/parsing.ref init-testrig -nodataplane test_rigs/example-nsdi
+
+#example-with-delta
+#test test_rigs/example-with-delta/parsing.ref init-testrig -nodataplane test_rigs/example-with-delta
+
+#indirection
+test test_rigs/indirection/parsing.ref init-testrig -nodataplane test_rigs/indirection
+
+#isis
+test test_rigs/isis/parsing.ref init-testrig -nodataplane test_rigs/isis
+
+#large-testing
+#test test_rigs/large-testing/parsing.ref init-testrig -nodataplane test_rigs/large-testing
+
+#policy-routing
+test test_rigs/policy-routing/parsing.ref init-testrig -nodataplane test_rigs/policy-routing
+
+#srx-testbed
+test test_rigs/srx-testbed/parsing.ref init-testrig -nodataplane test_rigs/srx-testbed
+
+#unit-tests
+test test_rigs/unit-tests/parsing.ref init-testrig -nodataplane test_rigs/unit-tests
