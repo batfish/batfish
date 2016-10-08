@@ -29,9 +29,6 @@ test test_rigs/indirection/parsing.ref init-testrig -nodataplane test_rigs/indir
 #isis
 test test_rigs/isis/parsing.ref init-testrig -nodataplane test_rigs/isis
 
-#large-testing
-#test test_rigs/large-testing/parsing.ref init-testrig -nodataplane test_rigs/large-testing
-
 #policy-routing
 test test_rigs/policy-routing/parsing.ref init-testrig -nodataplane test_rigs/policy-routing
 
