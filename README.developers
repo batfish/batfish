@@ -6,6 +6,8 @@ When you run batfish, allinone, batfish_client, or coordinator using the corresp
    - Eclipse:
       1. Add every project from the 'projects' dir
       2. Go to Window->Preferences->Java->Installed JREs->Edit: set 'Default VM arguments' to (without quotes): '-DbatfishQuestionPluginDir=${workspace_loc:question}/out'
+      3. You may want to add questions plugin sources to enahnce your debugging experience. To do this, setup your debug configuration, and then do:
+         <debug configuration>->Source->Add->Java Project->(select questions)
    - Other IDE:
       Make sure you add (without quotes, and replacing <batfish-repo-root> appropriately) '-DbatfishQuestinPluginDir=<batfish-repo-root>/projects/question/out' to your java flags when running.
 

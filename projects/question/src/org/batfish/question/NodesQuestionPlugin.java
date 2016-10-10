@@ -17,11 +17,13 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.JsonDiff;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.JsonDiffAnswerElement;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
@@ -323,6 +325,47 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   public static class NodesDiffAnswerElement implements AnswerElement {
+
+      private final NodesAnswerElement _before;
+      private final NodesAnswerElement _after;
+
+      private static final String COMMON_NODES_VAR = "_commonNodes";
+      private Set<String> _commonNodes;
+      
+
+      public NodesDiffAnswerElement(NodesAnswerElement before, NodesAnswerElement after) 
+      {
+         _before = before;
+         _after = after;
+         _commonNodes = findCommonNodes();
+      }
+
+      private Set<String> findCommonNodes()
+      {
+         Set<String> common = new TreeSet<String>();
+         common.addAll(_before._nodes.keySet());
+         common.retainAll(_after._nodes.keySet());
+         return common;
+      }
+      
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         // TODO Auto-generated method stub
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
+
+      /**
+       * @return the _commonNodes
+       */
+      @JsonProperty(COMMON_NODES_VAR)
+      public Set<String> getCommonNodes() {
+         return _commonNodes;
+      }
+
+   }
+   
    public static class NodesAnswerer extends Answerer {
 
       public NodesAnswerer(Question question, IBatfish batfish) {
@@ -365,7 +408,23 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
          return new NodesAnswerElement(answerNodes, question.getSummary());
       }
-
+      
+      @Override
+      public AnswerElement answerDiff() {
+         _batfish.pushBaseEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushBaseEnvironment();
+         NodesAnswerElement before = (NodesAnswerElement)create(_question, _batfish).answer();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         NodesAnswerElement after = (NodesAnswerElement)create(_question, _batfish).answer();
+         _batfish.popEnvironment();
+         return new NodesDiffAnswerElement(before, after);
+      }
    }
 
    public static class NodesQuestion extends Question {
