@@ -54,6 +54,7 @@ tokens {
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PIPE,
+   RAW_TEXT,
    SELF_SIGNED
 }
 
@@ -209,6 +210,11 @@ ADDRESS_FAMILY
 ADDRESS_POOL
 :
    'address-pool'
+;
+
+ADDRESS_POOLS
+:
+   'address-pools'
 ;
 
 ADDRGROUP
@@ -401,9 +407,19 @@ ALWAYS_COMPARE_MED
    'always-compare-med'
 ;
 
+ALWAYS_ON_VPN
+:
+   'always-on-vpn'
+;
+
 AND
 :
    'and'
+;
+
+ANTENNA
+:
+   'antenna'
 ;
 
 ANY
@@ -436,6 +452,11 @@ API
    'api'
 ;
 
+APPLETALK
+:
+   'appletalk'
+;
+
 APPLICATION
 :
    'application'
@@ -449,6 +470,11 @@ APPLY
 AQM_REGISTER_FNF
 :
    'aqm-register-fnf'
+;
+
+ARAP
+:
+   'arap'
 ;
 
 ARCHIVE
@@ -508,6 +534,11 @@ ASA
    'ASA'
 ;
 
+ASCII_AUTHENTICATION
+:
+   'ascii-authentication'
+;
+
 ASDM
 :
    'asdm'
@@ -521,6 +552,11 @@ ASN
 ASSEMBLER
 :
    'assembler'
+;
+
+ASSOC_RETRANSMIT
+:
+   'assoc-retransmit'
 ;
 
 ASSOCIATE
@@ -546,6 +582,11 @@ ASYNC_BOOTP
 ATM
 :
    'atm'
+;
+
+ATTEMPTS
+:
+   'attempts'
 ;
 
 ATTRIBUTE_DOWNLOAD
@@ -585,7 +626,7 @@ AUTHENTICATE
 
 AUTHENTICATION
 :
-   'authentication'
+   'authentication' -> pushMode ( M_Authentication )
 ;
 
 AUTHENTICATION_KEY
@@ -705,7 +746,7 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
-   'banner' -> pushMode ( M_DESCRIPTION )
+   'banner' -> pushMode ( M_Description )
 ;
 
 BANNER_COMPLEX
@@ -838,6 +879,11 @@ BRIDGE
    'bridge'
 ;
 
+BRIDGE_GROUP
+:
+   'bridge-group'
+;
+
 BRIDGE_PRIORITY
 :
    'bridge-priority'
@@ -851,6 +897,11 @@ BROADCAST
 BROADCAST_ADDRESS
 :
    'broadcast-address'
+;
+
+BSD_CLIENT
+:
+   'bsd-client'
 ;
 
 BSD_USERNAME
@@ -911,6 +962,11 @@ CALL_HOME
 CALLER_ID
 :
    'caller-id'
+;
+
+CALLHOME
+:
+   'callhome'
 ;
 
 CAM_ACL
@@ -1006,6 +1062,11 @@ CHANNEL_PROTOCOL
 CHANNELIZED
 :
    'channelized'
+;
+
+CHAP
+:
+   'chap'
 ;
 
 CHARGEN
@@ -1135,9 +1196,19 @@ COMMANDER_ADDRESS
 
 ;
 
+COMMANDS
+:
+   'commands'
+;
+
 COMMIT
 :
    'commit'
+;
+
+COMMON
+:
+   'common'
 ;
 
 COMMUNITY
@@ -1165,11 +1236,17 @@ COMMUNITY_SET
       inCommunitySet = true;
       enableIPV6_ADDRESS = false;
    }
+
 ;
 
 CONFDCONFIG
 :
    'confdConfig'
+;
+
+CONFIG_COMMANDS
+:
+   'config-commands'
 ;
 
 CONFIG_REGISTER
@@ -1202,14 +1279,19 @@ CONGESTION_CONTROL
    'congestion-control'
 ;
 
+CONNECT_SOURCE
+:
+   'connect-source'
+;
+
 CONNECTED
 :
    'connected'
 ;
 
-CONNECT_SOURCE
+CONNECTION
 :
-   'connect-source'
+   'connection'
 ;
 
 CONSOLE
@@ -1220,6 +1302,11 @@ CONSOLE
 CONTACT_EMAIL_ADDR
 :
    'contact-email-addr'
+;
+
+CONTACT_NAME
+:
+   'contact-name' -> pushMode ( M_Description )
 ;
 
 CONTEXT
@@ -1357,6 +1444,11 @@ CS7
    'cs7'
 ;
 
+CSD
+:
+   'csd'
+;
+
 CSNP_INTERVAL
 :
    'csnp-interval'
@@ -1375,6 +1467,11 @@ CTL_FILE
 CTS
 :
    'cts'
+;
+
+CUSTOMER_ID
+:
+   'customer-id'
 ;
 
 CWR
@@ -1512,6 +1609,11 @@ DEFAULT_ORIGINATE
    'default-originate'
 ;
 
+DEFAULT_ROLE
+:
+   'default-role'
+;
+
 DEFAULT_ROUTER
 :
    'default-router'
@@ -1537,6 +1639,11 @@ DELAY
    'delay'
 ;
 
+DELAY_START
+:
+   'delay-start'
+;
+
 DELETE
 :
    'delete'
@@ -1559,7 +1666,7 @@ DES_SHA1
 
 DESCRIPTION
 :
-   'description' -> pushMode ( M_DESCRIPTION )
+   'description' -> pushMode ( M_Description )
 ;
 
 DESIRABLE
@@ -1575,6 +1682,11 @@ DESTINATION
 DESTINATION_PATTERN
 :
    'destination-pattern'
+;
+
+DESTINATION_PROFILE
+:
+   'destination-profile'
 ;
 
 DESTINATION_VRF
@@ -1625,6 +1737,11 @@ DHCP
 DHCPD
 :
    'dhcpd'
+;
+
+DHCPRELAY
+:
+   'dhcprelay'
 ;
 
 DIAGNOSTIC
@@ -1685,6 +1802,11 @@ DISTRIBUTE
 DISTRIBUTE_LIST
 :
    'distribute-list'
+;
+
+DISTRIBUTION
+:
+   'distribution'
 ;
 
 DM_FALLBACK
@@ -1765,6 +1887,11 @@ DOT1Q
 DOT1Q_TUNNEL
 :
    'dot1q-tunnel'
+;
+
+DOT1X
+:
+   'dot1x'
 ;
 
 DROP
@@ -1922,6 +2049,21 @@ ELSEIF
    'elseif'
 ;
 
+EMAIL
+:
+   'email'
+;
+
+EMAIL_ADDR
+:
+   'email-addr' -> pushMode ( M_Description )
+;
+
+EMAIL_CONTACT
+:
+   'email-contact' -> pushMode ( M_Description )
+;
+
 EMPTY
 :
    'empty'
@@ -1976,6 +2118,7 @@ END_SET
 :
    'end-set'
    { inCommunitySet = false; }
+
 ;
 
 ENFORCE_FIRST_AS
@@ -2003,6 +2146,11 @@ EOF_LITERAL
    'EOF'
 ;
 
+EOU
+:
+   'eou'
+;
+
 EQ
 :
    'eq'
@@ -2011,6 +2159,21 @@ EQ
 ERRDISABLE
 :
    'errdisable'
+;
+
+ERROR
+:
+   'error'
+;
+
+ERROR_ENABLE
+:
+   'error-enable'
+;
+
+ERROR_RECOVERY
+:
+   'error-recovery'
 ;
 
 ERSPAN_ID
@@ -2031,6 +2194,11 @@ ESP
 ESTABLISHED
 :
    'established'
+;
+
+ETHERNET
+:
+   'ethernet'
 ;
 
 EVALUATE
@@ -2066,6 +2234,11 @@ EXCEED_ACTION
 EXCEPTION
 :
    'exception'
+;
+
+EXCEPTION_SLAVE
+:
+   'exception-slave'
 ;
 
 EXCLUDE
@@ -2165,6 +2338,11 @@ EXTENDED_COUNTERS
    'extended-counters'
 ;
 
+EXTENDED_DELAY
+:
+   'extended-delay'
+;
+
 EXTERNAL
 :
    'external'
@@ -2178,6 +2356,11 @@ FABRIC
 FACILITY_ALARM
 :
    'facility-alarm'
+;
+
+FAIL_MESSAGE
+:
+   'fail-message'
 ;
 
 FAILED
@@ -2200,6 +2383,11 @@ FALL_OVER
    'fall-over'
 ;
 
+FALLBACK
+:
+   'fallback'
+;
+
 FALLBACK_DN
 :
    'fallback-dn'
@@ -2220,6 +2408,11 @@ FEATURE
    'feature'
 ;
 
+FEATURE_SET
+:
+   'feature-set'
+;
+
 FEX
 :
    'fex'
@@ -2228,6 +2421,11 @@ FEX
 FEX_FABRIC
 :
    'fex-fabric'
+;
+
+FIELDS
+:
+   'fields'
 ;
 
 FILE
@@ -2332,6 +2530,11 @@ FORCE
    'force'
 ;
 
+FORMAT
+:
+   'format'
+;
+
 FORWARD_DIGITS
 :
    'forward-digits'
@@ -2382,6 +2585,11 @@ FREQUENCY
    'frequency'
 ;
 
+FROM
+:
+   'from'
+;
+
 FT
 :
    'ft'
@@ -2405,6 +2613,11 @@ FTP_SERVER
 FULL_DUPLEX
 :
    'full-duplex'
+;
+
+FULL_TXT
+:
+   'full-txt'
 ;
 
 GATEKEEPER
@@ -2480,6 +2693,11 @@ GROUP_ALIAS
 GROUP_LIST
 :
    'group-list'
+;
+
+GROUP_LOCK
+:
+   'group-lock'
 ;
 
 GROUP_OBJECT
@@ -2657,6 +2875,11 @@ HOSTNAME
    'hostname'
 ;
 
+HPM
+:
+   'hpm'
+;
+
 HSRP
 :
    'hsrp'
@@ -2722,6 +2945,16 @@ ICMPV6
    'icmpv6'
 ;
 
+ID_MISMATCH
+:
+   'id-mismatch'
+;
+
+ID_RANDOMIZATION
+:
+   'id-randomization'
+;
+
 IDENT
 :
    'ident'
@@ -2745,6 +2978,11 @@ IDLE_TIMEOUT
 IF
 :
    'if'
+;
+
+IF_NEEDED
+:
+   'if-needed'
 ;
 
 IGMP
@@ -2812,6 +3050,11 @@ INBOUND
    'inbound'
 ;
 
+INCLUDE
+:
+   'include'
+;
+
 INCOMING
 :
    'incoming'
@@ -2862,6 +3105,11 @@ INSPECT
    'inspect'
 ;
 
+INSTALL
+:
+   'install'
+;
+
 INSTANCE
 :
    'instance'
@@ -2898,6 +3146,11 @@ INTERVAL
 INVALID_SPI_RECOVERY
 :
    'invalid-spi-recovery'
+;
+
+INVALID_USERNAME_LOG
+:
+   'invalid-username-log'
 ;
 
 IOS_REGEX
@@ -3073,6 +3326,11 @@ KRON
 KSHELL
 :
    'kshell'
+;
+
+L2_FILTER
+:
+   'l2-filter'
 ;
 
 L2TP
@@ -3265,6 +3523,11 @@ LLDP
    'lldp'
 ;
 
+LOAD_BALANCE
+:
+   'load-balance'
+;
+
 LOAD_BALANCING
 :
    'load-balancing'
@@ -3288,6 +3551,11 @@ LOCAL
 LOCAL_AS
 :
    'local-as'
+;
+
+LOCAL_ASA
+:
+   'LOCAL'
 ;
 
 LOCAL_INTERFACE
@@ -3433,6 +3701,11 @@ MAIN_CPU
 MANAGEMENT
 :
    'management'
+;
+
+MANAGEMENT_ACCESS
+:
+   'management-access'
 ;
 
 MANAGEMENT_ONLY
@@ -3630,6 +3903,11 @@ MESSAGE_LENGTH
    'message-length'
 ;
 
+MESSAGE_LEVEL
+:
+   'message-level'
+;
+
 METRIC
 :
    'metric'
@@ -3740,6 +4018,11 @@ MONITOR
    'monitor'
 ;
 
+MONITOR_INTERFACE
+:
+   'monitor-interface'
+;
+
 MONITORING
 :
    'monitoring'
@@ -3778,6 +4061,21 @@ MROUTE_CACHE
 MSDP
 :
    'msdp'
+;
+
+MSCHAP
+:
+   'mschap'
+;
+
+MSCHAPV2
+:
+   'mschapv2'
+;
+
+MSIE_PROXY
+:
+   'msie-proxy'
 ;
 
 MSRPC
@@ -3950,6 +4248,11 @@ NEQ
    'neq'
 ;
 
+NESTED
+:
+   'nested'
+;
+
 NET
 :
    'net' -> pushMode ( M_ISO_Address )
@@ -4008,6 +4311,16 @@ NETWORK_OBJECT
 NETWORK_UNKNOWN
 :
    'network-unknown'
+;
+
+NEW_MODEL
+:
+   'new-model'
+;
+
+NEWINFO
+:
+   'newinfo'
 ;
 
 NEXT_HOP
@@ -4205,6 +4518,11 @@ ONE
    'one'
 ;
 
+ONEP
+:
+   'onep'
+;
+
 OPEN
 :
    'open'
@@ -4385,6 +4703,16 @@ PASSWORD
    'password' -> pushMode ( M_COMMENT )
 ;
 
+PASSWORD_POLICY
+:
+   'password-policy'
+;
+
+PASSWORD_PROMPT
+:
+   'password-prompt'
+;
+
 PASSWORD_STORAGE
 :
    'password-storage'
@@ -4398,6 +4726,11 @@ PATH_JITTER
 PATH_OPTION
 :
    'path-option'
+;
+
+PATH_RETRANSMIT
+:
+   'path-retransmit'
 ;
 
 PAUSE
@@ -4440,6 +4773,11 @@ PEER_GATEWAY
    'peer-gateway'
 ;
 
+PEER_ID_VALIDATE
+:
+   'peer-id-validate'
+;
+
 PEER_KEEPALIVE
 :
    'peer-keepalive'
@@ -4460,6 +4798,16 @@ PEER_SESSION
    'peer-session'
 ;
 
+PEER_SWITCH
+:
+   'peer-switch'
+;
+
+PERIODIC
+:
+   'periodic'
+;
+
 PERMANENT
 :
    'permanent'
@@ -4478,6 +4826,11 @@ PERSISTENT
 PFC
 :
    'pfc'
+;
+
+PHONE_CONTACT
+:
+   'phone-contact' -> pushMode ( M_Description )
 ;
 
 PHONE_NUMBER
@@ -4610,6 +4963,11 @@ PORT_OBJECT
    'port-object'
 ;
 
+PORT_PROFILE
+:
+   'port-profile'
+;
+
 PORT_SECURITY
 :
    'port-security'
@@ -4700,6 +5058,11 @@ PREPEND
    'prepend'
 ;
 
+PRF
+:
+   'prf'
+;
+
 PRI_GROUP
 :
    'pri-group'
@@ -4745,6 +5108,11 @@ PRIVILEGE
    'privilege'
 ;
 
+PRIVILEGE_MODE
+:
+   'privilege-mode'
+;
+
 PROBE
 :
    'probe'
@@ -4778,6 +5146,11 @@ PROTOCOL
 PROTOCOL_OBJECT
 :
    'protocol-object'
+;
+
+PROTOCOL_VIOLATION
+:
+   'protocol-violation'
 ;
 
 PROVISION
@@ -5085,6 +5458,11 @@ REPLACE_AS
    'replace-as'
 ;
 
+REPLY_TO
+:
+   'reply-to'
+;
+
 REOPTIMIZE
 :
    'reoptimize'
@@ -5118,6 +5496,11 @@ RESOURCES
 RETRANSMIT
 :
    'retransmit'
+;
+
+RETRANSMIT_TIMEOUT
+:
+   'retransmit-timeout'
 ;
 
 RETRIES
@@ -5178,6 +5561,11 @@ RMON
 ROLE
 :
    'role'
+;
+
+ROOT
+:
+   'root'
 ;
 
 ROTARY
@@ -5520,6 +5908,11 @@ SERVICE_MODULE
    'service-module'
 ;
 
+SERVICE_OBJECT
+:
+   'service-object'
+;
+
 SERVICE_POLICY
 :
    'service-policy'
@@ -5538,6 +5931,11 @@ SERVICE_TYPE
 SESSION_DISCONNECT_WARNING
 :
    'session-disconnect-warning' -> pushMode ( M_COMMENT )
+;
+
+SESSION_ID
+:
+   'session-id'
 ;
 
 SESSION_LIMIT
@@ -5585,6 +5983,11 @@ SFLOW
    'sflow'
 ;
 
+SGBP
+:
+   'sgbp'
+;
+
 SHA1
 :
    'sha1' -> pushMode ( M_SHA1 )
@@ -5598,6 +6001,11 @@ SHAPE
 SHELL
 :
    'shell'
+;
+
+SHORT_TXT
+:
+   'short-txt'
 ;
 
 SHUT
@@ -5688,6 +6096,11 @@ SNOOPING
 SNP
 :
    'snp'
+;
+
+SNTP
+:
+   'sntp'
 ;
 
 SORT_BY
@@ -5795,9 +6208,24 @@ SSH
    'ssh'
 ;
 
+SSH_CERTIFICATE
+:
+   'ssh-certificate'
+;
+
 SSH_KEYDIR
 :
    'ssh_keydir'
+;
+
+SSH_PUBLICKEY
+:
+   'ssh-publickey'
+;
+
+SSID
+:
+   'ssid'
 ;
 
 SSL
@@ -5837,6 +6265,11 @@ STANDBY
    'standby'
 ;
 
+START_STOP
+:
+   'start-stop'
+;
+
 START_TIME
 :
    'start-time'
@@ -5850,6 +6283,11 @@ STATE_REFRESH
 STATIC
 :
    'static'
+;
+
+STATION_ROLE
+:
+   'station-role'
 ;
 
 STATISTICS
@@ -5872,6 +6310,11 @@ STOP
    'stop'
 ;
 
+STOP_ONLY
+:
+   'stop-only'
+;
+
 STOPBITS
 :
    'stopbits'
@@ -5890,6 +6333,11 @@ STP
 STREET_ADDRESS
 :
    'street-address'
+;
+
+STREETADDRESS
+:
+   'streetaddress' -> pushMode ( M_Description )
 ;
 
 STRING
@@ -5957,9 +6405,19 @@ SUPPLEMENTARY_SERVICES
    'supplementary-services'
 ;
 
+SUPPRESS
+:
+   'suppress'
+;
+
 SUPPRESS_FIB_PENDING
 :
    'suppress-fib-pending'
+;
+
+SVC
+:
+   'svc'
 ;
 
 SVCLC
@@ -6070,6 +6528,11 @@ TACACS_DS
 TACACS_PLUS
 :
    'tacacs+'
+;
+
+TACACS_PLUS_ASA
+:
+   'TACACS+'
 ;
 
 TACACS_SERVER
@@ -6210,6 +6673,11 @@ TIME
 TIME_EXCEEDED
 :
    'time-exceeded'
+;
+
+TIME_RANGE
+:
+   'time-range'
 ;
 
 TIMEOUT
@@ -6452,6 +6920,11 @@ UNICAST_ROUTING
    'unicast-routing'
 ;
 
+UNIQUE
+:
+   'unique'
+;
+
 UNIT
 :
    'unit'
@@ -6482,6 +6955,11 @@ UNTAGGED
    'untagged'
 ;
 
+UPDATE
+:
+   'update'
+;
+
 UPDATE_CALENDAR
 :
    'update-calendar'
@@ -6500,6 +6978,11 @@ UPGRADE
 URG
 :
    'urg'
+;
+
+URL_LIST
+:
+   'url-list'
 ;
 
 USE
@@ -6522,6 +7005,16 @@ USER_IDENTITY
    'user-identity'
 ;
 
+USER_MESSAGE
+:
+   'user-message' -> pushMode ( M_Description )
+;
+
+USER_STATISTICS
+:
+   'user-statistics'
+;
+
 USERGROUP
 :
    'usergroup'
@@ -6530,6 +7023,11 @@ USERGROUP
 USERNAME
 :
    'username'
+;
+
+USERNAME_PROMPT
+:
+   'username-prompt'
 ;
 
 USERS
@@ -6702,9 +7200,24 @@ VPN_FILTER
    'vpn-filter'
 ;
 
+VPN_GROUP_POLICY
+:
+   'vpn-group-policy'
+;
+
 VPN_IDLE_TIMEOUT
 :
    'vpn-idle-timeout'
+;
+
+VPN_SESSION_TIMEOUT
+:
+   'vpn-session-timeout'
+;
+
+VPN_SIMULTANEOUS_LOGINS
+:
+   'vpn-simultaneous-logins'
 ;
 
 VPN_TUNNEL_PROTOCOL
@@ -6747,6 +7260,11 @@ VTP
 VTY_POOL
 :
    'vty-pool'
+;
+
+WAIT_START
+:
+   'wait-start'
 ;
 
 WEBVPN
@@ -6847,6 +7365,11 @@ XCONNECT
 XDMCP
 :
    'xdmcp'
+;
+
+XDR
+:
+   'xdr'
 ;
 
 XLATE
@@ -7410,6 +7933,12 @@ F_Variable_RequiredVarChar
 ;
 
 fragment
+F_Variable
+:
+   F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
+;
+
+fragment
 F_Variable_VarChar
 :
    ~( [ \t\n\r(),!+$'*] | '[' | ']' )
@@ -7616,6 +8145,123 @@ M_AsPathRegex_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Authentication;
+
+M_Authentication_BANNER
+:
+   'banner' -> type ( BANNER ) , mode ( M_BANNER )
+;
+
+M_Authentication_ARAP
+:
+   'arap' -> type ( ARAP ) , popMode
+;
+
+M_Authentication_ATTEMPTS
+:
+   'attempts' -> type ( ATTEMPTS ) , popMode
+;
+
+M_Authentication_DOT1X
+:
+   'dot1x' -> type ( DOT1X ) , popMode
+;
+
+M_Authentication_ENABLE
+:
+   'enable' -> type ( ENABLE ) , popMode
+;
+
+M_Authentication_EOU
+:
+   'eou' -> type ( EOU ) , popMode
+;
+
+M_Authentication_FAIL_MESSAGE
+:
+   'fail-message' -> type ( FAIL_MESSAGE ) , popMode
+;
+
+M_Authentication_HTTP
+:
+   'http' -> type ( HTTP ) , popMode
+;
+
+M_Authentication_INCLUDE
+:
+   'include' -> type ( INCLUDE ) , popMode
+;
+
+M_Authentication_LOGIN
+:
+   'login' -> type ( LOGIN ) , popMode
+;
+
+M_Authentication_MESSAGE_DIGEST
+:
+   'message-digest' -> type ( MESSAGE_DIGEST ) , popMode
+;
+
+M_Authentication_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Authentication_ONEP
+:
+   'onep' -> type ( ONEP ) , popMode
+;
+
+M_Authentication_PASSWORD_PROMPT
+:
+   'password-prompt' -> type ( PASSWORD_PROMPT ) , popMode
+;
+
+M_Authentication_PPP
+:
+   'ppp' -> type ( PPP ) , popMode
+;
+
+M_Authentication_SGBP
+:
+   'sgbp' -> type ( SGBP ) , popMode
+;
+
+M_Authentication_SERIAL
+:
+   'serial' -> type ( SERIAL ) , popMode
+;
+
+M_Authentication_SSH
+:
+   'ssh' -> type ( SSH ) , popMode
+;
+
+M_Authentication_SUPPRESS
+:
+   'suppress' -> type ( SUPPRESS ) , popMode
+;
+
+M_Authentication_TELNET
+:
+   'telnet' -> type ( TELNET ) , popMode
+;
+
+M_Authentication_USERNAME_PROMPT
+:
+   'username-prompt' -> type ( USERNAME_PROMPT ) , popMode
+;
+
+M_Authentication_VARIABLE
+:
+   F_Variable -> type ( VARIABLE ) , popMode
+;
+
+M_Authentication_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
 mode M_BANNER;
 
 M_BANNER_WS
@@ -7726,16 +8372,16 @@ M_DES_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-mode M_DESCRIPTION;
+mode M_Description;
 
-M_DESCRIPTION_NEWLINE
+M_Description_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
-M_DESCRIPTION_NON_NEWLINE
+M_Description_NON_NEWLINE
 :
-   F_NonNewline+
+   F_NonNewline+ -> type ( RAW_TEXT )
 ;
 
 mode M_Execute;

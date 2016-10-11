@@ -26,6 +26,13 @@ crypto ca certificate chain blahblah
    56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC 56789ABC
   quit
 !
+crypto ikev2 policy 10
+ encryption aes-256
+ integrity sha512
+ group 21
+ prf sha512                                                                                                                                
+ lifetime seconds none
+!
 crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
 !
 crypto isakmp profile UPM

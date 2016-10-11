@@ -353,7 +353,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       RoutingPolicy ospfExportPolicy = new RoutingPolicy(
             OSPF_EXPORT_POLICY_NAME);
       _c.getRoutingPolicies().put(OSPF_EXPORT_POLICY_NAME, ospfExportPolicy);
-      _c.getOspfProcess().setExportPolicy(OSPF_EXPORT_POLICY_NAME);
+      newProc.setExportPolicy(OSPF_EXPORT_POLICY_NAME);
       If ospfExportPolicyConditional = new If();
       // TODO: set default metric-type based on ospf process setttings
       ospfExportPolicy.getStatements().add(ospfExportPolicyConditional);

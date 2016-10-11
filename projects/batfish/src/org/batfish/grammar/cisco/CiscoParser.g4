@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_acl, Cisco_bgp, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -94,22 +94,7 @@ as_path_set_stanza
 
 banner_stanza
 :
-   BANNER
-   (
-      (
-         (
-            ESCAPE_C ~ESCAPE_C* ESCAPE_C
-         )
-         |
-         (
-            POUND ~POUND* POUND
-         )
-         |
-         (
-            NEWLINE ~EOF_LITERAL* EOF_LITERAL
-         )
-      )
-   ) NEWLINE?
+   BANNER banner
 ;
 
 certificate_stanza
@@ -952,8 +937,11 @@ ogs_group_object
 
 ogs_service_object
 :
+   SERVICE_OBJECT
    (
-      protocol
+      (
+         protocol ~NEWLINE*
+      )
       |
       (
          OBJECT name = variable
@@ -1419,6 +1407,8 @@ stanza
    | router_rip_stanza
    | router_static_stanza
    | rsvp_stanza
+   | s_aaa
+   | s_callhome
    | s_class_map
    | s_control_plane
    | s_failover

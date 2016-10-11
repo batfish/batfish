@@ -269,6 +269,7 @@ null_block_if_stanza
    NO?
    (
       AFFINITY
+      | ANTENNA
       | ARP
       | ASYNC
       | ATM
@@ -278,6 +279,7 @@ null_block_if_stanza
       | BANDWIDTH
       | BEACON
       | BFD
+      | BRIDGE_GROUP
       | BUNDLE
       | CABLELENGTH
       | CARRIER_DELAY
@@ -414,6 +416,7 @@ null_block_if_stanza
          )
       )
       | KEEPALIVE
+      | L2_FILTER
       | LANE
       | LAPB
       | LACP
@@ -487,8 +490,10 @@ null_block_if_stanza
       | SPEED
       | SNMP
       | SRR_QUEUE
+      | SSID
       | STACK_MIB
       | STANDBY
+      | STATION_ROLE
       | STORM_CONTROL
       |
       (

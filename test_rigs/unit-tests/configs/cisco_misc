@@ -1,0 +1,136 @@
+!
+hostname cisco_misc
+!
+appletalk routing
+port-profile default max-ports 512
+policy-map type inspect dns preset_dns_map
+ parameters
+  message-length maximum client auto
+  message-length maximum 512
+  id-randomization
+  id-mismatch action log
+policy-map type inspect http ucla_http_inspect
+ parameters
+  protocol-violation action drop-connection log
+ethernet lmi ce
+tunnel-group 1.2.3.4 ipsec-attributes
+ peer-id-validate nocheck
+bsd-client server url https://cloudsso.cisco.com/as/token.oauth2
+username rancid attributes
+ vpn-group-policy GroupPolicy_NOC-VPN
+ group-lock value NOC-VPN
+transceiver qsfp default-mode 4x10G
+load-balance policies
+ load-balance fm6000 profile LoadBalance_Profile1_5tuple
+    no fields mac
+    fields ip protocol dst-ip dst-port src-ip src-port
+    distribution symmetric-hash mac-ip
+no lldp run
+sntp server 1.2.3.4
+time-range ACCTIME-247
+ periodic daily 0:00 to 23:59
+object-group service SVCGRP-ICMP                                                                                                           
+ service-object icmp echo
+xdr multicast-group mode individual
+xdr multicast-group internal issu-slots-split
+dynamic-access-policy-record vvvvvv
+ user-message "DISCONNECTED"
+ action terminate
+ webvpn
+  url-list none
+dynamic-access-policy-record DAP-incoming_generic
+ webvpn
+  url-list none
+  svc ask enable default svc
+  always-on-vpn profile-setting
+no monitor-interface service-module
+hpm topN enable
+policy-map global_policy
+ class inspection_default
+  inspect dns preset_dns_map
+  inspect ftp
+  inspect h323 h225
+  inspect h323 ras
+  inspect esmtp
+  inspect netbios
+  inspect ip-options
+  inspect http ucla_http_inspect
+  inspect snmp
+  inspect tftp
+ class ICMP-cmap
+  inspect icmp
+ class TCP-cmap
+  set connection advanced-options tcp-state-bypass
+ class class-default
+  user-statistics accounting                                                                                                               
+service-policy global_policy global
+wsma agent filesys
+ profile httplistener
+ profile httpslistener
+group-policy GroupPolicy_NOC-VPN attributes
+ banner value ** AUTHORIZED ACCESS ONLY **
+ wins-server none
+ dns-server value 1.2.3.4 2.3.4.5
+ vpn-simultaneous-logins 2
+ vpn-idle-timeout 30
+ vpn-session-timeout 240
+ vpn-tunnel-protocol ssl-client ssl-clientless
+ group-lock value NOC-VPN
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value ACL-NET-stunnel
+ default-domain none
+ msie-proxy method no-proxy
+ msie-proxy lockdown enable
+ address-pools value LOCAL-VPN-POOL                                                                                                        
+ webvpn
+  anyconnect profiles value NOC-VPN_client_profile type user
+password-policy minimum-length 7
+webvpn
+ enable outside
+ csd image disk0:/csd_3.6.6234-k9.pkg
+ csd hostscan image disk0:/hostscan_3.1.04063-k9.pkg
+ csd enable
+ anyconnect image disk0:/anyconnect-win-4.2.03013-k9.pkg 1
+ anyconnect image disk0:/anyconnect-macosx-i386-4.2.03013-k9.pkg 2
+ anyconnect image disk0:/anyconnect-linux-64-4.2.03013-k9.pkg 3
+ anyconnect image disk0:/anyconnect-linux-3.1.14018-k9.pkg 4
+ anyconnect profiles bac disk0:/eeeeeeee.xml
+ anyconnect profiles defe disk0:/ddddddd.xml
+ anyconnect profiles htefegr disk0:/cccccccccc.xml
+ anyconnect profiles gg456h5tg disk0:/bbbbb.xml
+ anyconnect profiles efregth56yh5gr disk0:/aaaa.xml
+ anyconnect enable
+ keepout "Clientless Service Not Available"
+ cache
+  disable
+ error-recovery disable       
+exception-slave core-file C2960-WM3-core
+exception memory ignore overflow processor
+exception memory ignore overflow io
+dhcprelay server 1.2.3.4 outside
+dhcprelay server 1.2.3.5 outside
+dhcprelay enable inside
+dhcprelay timeout 60
+management-access inside
+vpc domain 32
+  peer-switch
+  role priority 8192
+  system-priority 4096
+  peer-keepalive destination 1.2.3.4 source 1.2.3.5
+  delay restore 150
+  peer-gateway
+  ip arp synchronize
+ipc zone default
+ association 1
+  no shutdown
+  protocol sctp
+   local-port 5000
+    local-ip 1.2.3.4
+    retransmit-timeout 300 10000
+    path-retransmit 5
+    assoc-retransmit 5
+   remote-port 5000
+    remote-ip 5.6.7.8
+aaa new-model
+!
+

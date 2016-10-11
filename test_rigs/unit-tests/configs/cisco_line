@@ -1,0 +1,10 @@
+!
+hostname cisco_line
+!
+line bty 0 15
+ session-timeout 15
+ access-class 40 in
+ exec-timeout 15 0
+ login authentication blah
+!
+
