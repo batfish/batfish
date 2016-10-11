@@ -20,13 +20,13 @@ public class AsPathAccessListsDiff extends ConfigDiffElement {
    public AsPathAccessListsDiff(NavigableMap<String, AsPathAccessList> a,
          NavigableMap<String, AsPathAccessList> b) {
       super(a.keySet(), b.keySet());
-      _diff = new HashMap<String, Map<String, AsPathAccessList>>();
+      _diff = new HashMap<>();
       for (String name : _common) {
          if (a.get(name).equals(b.get(name))) {
             _identical.add(name);
          }
          else {
-            Map<String, AsPathAccessList> info = new HashMap<String, AsPathAccessList>();
+            Map<String, AsPathAccessList> info = new HashMap<>();
             info.put("a", a.get(name));
             info.put("b", b.get(name));
             _diff.put(name, info);
@@ -34,15 +34,12 @@ public class AsPathAccessListsDiff extends ConfigDiffElement {
       }
    }
 
-   /**
-    * @return the _diff
-    */
    @JsonProperty(DIFF)
-   public Map<String, Map<String, AsPathAccessList>> get_diff() {
+   public Map<String, Map<String, AsPathAccessList>> getDiff() {
       return _diff;
    }
 
-   public void set_diff(Map<String, Map<String, AsPathAccessList>> d) {
+   public void setDiff(Map<String, Map<String, AsPathAccessList>> d) {
       this._diff = d;
    }
 

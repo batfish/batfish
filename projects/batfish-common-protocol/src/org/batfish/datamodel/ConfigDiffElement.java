@@ -15,12 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ConfigDiffElement implements AnswerElement {
 
    protected static final String COMMON = "common";
-   protected static final String UNIQUE = "unique";
    protected static final String IDENTICAL = "identical";
+   protected static final String UNIQUE = "unique";
 
    protected Set<String> _common;
-   protected Set<String> _unique;
    protected Set<String> _identical;
+   protected Set<String> _unique;
 
    @JsonCreator
    public ConfigDiffElement() {
@@ -30,50 +30,40 @@ public class ConfigDiffElement implements AnswerElement {
    public ConfigDiffElement(Set<String> a, Set<String> b) {
       _common = CommonUtil.intersection(a, b);
       _unique = CommonUtil.diff(a, b);
-      _identical = new HashSet<String>();
+      _identical = new HashSet<>();
    }
 
-   /**
-    * @return the _identicalAsPathAccessLists
-    */
-   @JsonProperty(IDENTICAL)
-   public Set<String> get_identical() {
-      return _identical;
-   }
-
-   public void set_identical(Set<String> i) {
-      _identical = i;
-   }
-
-   /**
-    * @return the _unique
-    */
-   @JsonProperty(UNIQUE)
-   public Set<String> get_unique() {
-      return _unique;
-   }
-
-   public void set_unique(Set<String> u) {
-      this._unique = u;
-   }
-
-   /**
-    * @return the _common
-    */
    @JsonProperty(COMMON)
-   public Set<String> get_common() {
+   public Set<String> getCommon() {
       return _common;
    }
 
-   public void set_common(Set<String> c) {
-      _common = c;
+   @JsonProperty(IDENTICAL)
+   public Set<String> getIdentical() {
+      return _identical;
+   }
+
+   @JsonProperty(UNIQUE)
+   public Set<String> getUnique() {
+      return _unique;
    }
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      // TODO Auto-generated method stub
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
+   }
+
+   public void setCommon(Set<String> c) {
+      _common = c;
+   }
+
+   public void setIdentical(Set<String> i) {
+      _identical = i;
+   }
+
+   public void setUnique(Set<String> u) {
+      this._unique = u;
    }
 
 }

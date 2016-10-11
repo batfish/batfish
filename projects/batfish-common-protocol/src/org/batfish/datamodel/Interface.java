@@ -248,6 +248,30 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
+   private static boolean bothNullOrEqual(Object a, Object b) {
+      if (a == null && b == null) {
+         return true;
+      }
+      else if (a != null && b != null) {
+         return a.equals(b);
+      }
+      else {
+         return false;
+      }
+   }
+   
+   private static boolean bothNullOrUnorderedEqual(IpAccessList a, IpAccessList b) {
+      if (a == null && b == null) {
+         return true;
+      }
+      else if (a != null && b != null) {
+         return a.unorderedEqual(b);
+      }
+      else {
+         return false;
+      }
+   }
+   
    private int _accessVlan;
 
    private boolean _active;
@@ -321,6 +345,68 @@ public final class Interface extends ComparableStructure<String> {
 
    private InterfaceType computeInterfaceType() {
       return computeInterfaceType(_key, _owner.getConfigurationFormat());
+   }
+
+   @Override
+   public boolean equals(Object object) {
+      
+      if (this == object) {
+         return true;
+      }
+      Interface other = (Interface) object;
+      if (this._accessVlan != other._accessVlan) {
+         return false;
+      }
+      if (this._active != other._active) {
+         return false;
+      }
+      if (!this._allowedVlans.equals(other._allowedVlans)) {
+         return false;
+      }
+      if (!this._allPrefixes.equals(other._allPrefixes)) {
+         return false;
+      }
+      if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+         return false;
+      }
+    
+      if (!bothNullOrUnorderedEqual(this._inboundFilter, other._inboundFilter)) {
+            return false;
+      }
+    
+      if (!bothNullOrUnorderedEqual(this._incomingFilter, other._incomingFilter)) {
+         return false;
+      }
+
+      // TODO: check ISIS settings for equality. 
+      if (this._mtu != other._mtu) {
+         return false;
+      }
+      if (this._nativeVlan != other._nativeVlan) {
+         return false;
+      }
+      // TODO: check OSPF settings for equality.
+      
+      if (!bothNullOrUnorderedEqual(this._outgoingFilter, other._outgoingFilter)) {
+         return false;
+      }
+      
+      if (!bothNullOrEqual(this._prefix, other._prefix)) {
+         return false;
+      }
+      
+      if (!bothNullOrEqual(this._routingPolicy, other._routingPolicy)) {
+         return false;
+      }
+      
+      if (!bothNullOrEqual(this._switchportMode, other._switchportMode)) {
+         return false;
+      }
+      
+      if (!bothNullOrEqual(this._zone, other._zone)) {
+         return false;
+      }
+      return true;
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)

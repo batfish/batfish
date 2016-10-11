@@ -34,7 +34,7 @@ import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
-   
+
    private static class TrustAllHostNameVerifier implements HostnameVerifier {
       @Override
       public boolean verify(String hostname, SSLSession session) {
@@ -93,15 +93,15 @@ public class CommonUtil {
                e);
       }
    }
-   
+
    public static Set<String> diff(Set<String> a, Set<String> b) {
-      Set<String> d = new TreeSet<String>();
+      Set<String> d = new TreeSet<>();
       d.addAll(a);
       d.addAll(b);
       d.removeAll(intersection(a, b));
       return d;
    }
-   
+
    public static String escape(String offendingTokenText) {
       return offendingTokenText.replace("\n", "\\n").replace("\t", "\\t")
             .replace("\r", "\\r");
@@ -262,6 +262,13 @@ public class CommonUtil {
       return time;
    }
 
+   public static Set<String> intersection(Set<String> a, Set<String> b) {
+      Set<String> i = new TreeSet<>();
+      i.addAll(a);
+      i.retainAll(b);
+      return i;
+   }
+
    public static int intWidth(int n) {
       if (n == 0) {
          return 1;
@@ -271,13 +278,6 @@ public class CommonUtil {
       }
    }
 
-   public static Set<String> intersection(Set<String> a, Set<String> b) {
-      Set<String> i = new TreeSet<String>();
-      i.addAll(a);
-      i.retainAll(b);
-      return i;
-   }
-   
    public static boolean isLoopback(String interfaceName) {
       return (interfaceName.startsWith("Loopback")
             || interfaceName.startsWith("lo"));
@@ -348,6 +348,18 @@ public class CommonUtil {
       }
       String md5 = sb.toString();
       return md5;
+   }
+
+   public static int nullChecker(Object a, Object b) {
+      if (a == null && b == null) {
+         return 0;
+      }
+      else if (a != null && b != null) {
+         return 1;
+      }
+      else {
+         return -1;
+      }
    }
 
    public static String readFile(Path file) {

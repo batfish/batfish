@@ -7,18 +7,17 @@ import java.util.NavigableMap;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CommunityListsDiff extends ConfigDiffElement {
-
+public class InterfaceListsDiff extends ConfigDiffElement {
    private static final String DIFF = "diff";
-   private Map<String, Map<String, CommunityList>> _diff;
+   private Map<String, Map<String, String>> _diff;
 
    @JsonCreator()
-   public CommunityListsDiff() {
+   public InterfaceListsDiff() {
 
    }
 
-   public CommunityListsDiff(NavigableMap<String, CommunityList> a,
-         NavigableMap<String, CommunityList> b) {
+   public InterfaceListsDiff(NavigableMap<String, Interface> a,
+         NavigableMap<String, Interface> b) {
       super(a.keySet(), b.keySet());
       _diff = new HashMap<>();
       for (String name : _common) {
@@ -26,20 +25,20 @@ public class CommunityListsDiff extends ConfigDiffElement {
             _identical.add(name);
          }
          else {
-            Map<String, CommunityList> info = new HashMap<>();
-            info.put("a", a.get(name));
-            info.put("b", b.get(name));
+            Map<String, String> info = new HashMap<>();
+            info.put("a", a.get(name).getName());
+            info.put("b", b.get(name).getName());
             _diff.put(name, info);
          }
       }
    }
 
    @JsonProperty(DIFF)
-   public Map<String, Map<String, CommunityList>> getDiff() {
+   public Map<String, Map<String, String>> getDiff() {
       return _diff;
    }
 
-   public void setDiff(Map<String, Map<String, CommunityList>> d) {
+   public void setDiff(Map<String, Map<String, String>> d) {
       this._diff = d;
    }
 }

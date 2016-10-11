@@ -33,7 +33,7 @@ public class IpAccessList extends ComparableStructure<String> {
       IpAccessList other = (IpAccessList) obj;
       return other._lines.equals(_lines);
    }
-   
+
    public FilterResult filter(Flow flow) {
       for (int i = 0; i < _lines.size(); i++) {
          IpAccessListLine line = _lines.get(i);
@@ -49,6 +49,18 @@ public class IpAccessList extends ComparableStructure<String> {
       return _lines;
    }
 
+   private boolean noDenyOrLastDeny(IpAccessList acl) {
+      int count = 0;
+      for (IpAccessListLine line : acl.getLines()) {
+         if (line.getAction() == LineAction.REJECT
+               && count < acl.getLines().size() - 1) {
+            return false;
+         }
+         count++;
+      }
+      return true;
+   }
+
    @JsonProperty(LINES_VAR)
    public void setLines(List<IpAccessListLine> lines) {
       _lines = lines;
@@ -61,5 +73,31 @@ public class IpAccessList extends ComparableStructure<String> {
          output += "\n" + line;
       }
       return output;
+   }
+
+   public boolean unorderedEqual(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (this.equals(obj)) {
+         return true;
+      }
+      IpAccessList other = (IpAccessList) obj;
+      int x = this.getLines().size();
+      int y = other.getLines().size();
+      if (x != y) {
+         return false;
+      }
+      // Unordered check is valid only if there is no deny (or only one, at the
+      // end) in both lists.
+      if (!noDenyOrLastDeny(this) || !noDenyOrLastDeny(other)) {
+         return false;
+      }
+      for (IpAccessListLine line : this.getLines()) {
+         if (!other.getLines().contains(line)) {
+            return false;
+         }
+      }
+      return true;
    }
 }
