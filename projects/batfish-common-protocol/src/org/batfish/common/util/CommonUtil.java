@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,6 +34,7 @@ import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
+   
    private static class TrustAllHostNameVerifier implements HostnameVerifier {
       @Override
       public boolean verify(String hostname, SSLSession session) {
@@ -91,7 +93,15 @@ public class CommonUtil {
                e);
       }
    }
-
+   
+   public static Set<String> diff(Set<String> a, Set<String> b) {
+      Set<String> d = new TreeSet<String>();
+      d.addAll(a);
+      d.addAll(b);
+      d.removeAll(intersection(a, b));
+      return d;
+   }
+   
    public static String escape(String offendingTokenText) {
       return offendingTokenText.replace("\n", "\\n").replace("\t", "\\t")
             .replace("\r", "\\r");
@@ -261,6 +271,13 @@ public class CommonUtil {
       }
    }
 
+   public static Set<String> intersection(Set<String> a, Set<String> b) {
+      Set<String> i = new TreeSet<String>();
+      i.addAll(a);
+      i.retainAll(b);
+      return i;
+   }
+   
    public static boolean isLoopback(String interfaceName) {
       return (interfaceName.startsWith("Loopback")
             || interfaceName.startsWith("lo"));

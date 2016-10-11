@@ -2,14 +2,15 @@ package org.batfish.question;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -17,13 +18,13 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.JsonDiff;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.JsonDiffAnswerElement;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
@@ -31,8 +32,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -330,25 +331,44 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       private final NodesAnswerElement _before;
       private final NodesAnswerElement _after;
 
-      private static final String COMMON_NODES_VAR = "_commonNodes";
+      private static final String COMMON_NODES_VAR = "commonNodes";
       private Set<String> _commonNodes;
-      
 
-      public NodesDiffAnswerElement(NodesAnswerElement before, NodesAnswerElement after) 
-      {
+      private static final String NODES_IN_ONLY_ONE_CONFIG_VAR = "nodesInOnlyOneConfig";
+      private Set<String> _nodesInOnlyOneConfig;
+
+      private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
+      private Map<String, ConfigurationDiff> _configDiff;
+
+      public NodesDiffAnswerElement(NodesAnswerElement before,
+            NodesAnswerElement after) {
          _before = before;
          _after = after;
-         _commonNodes = findCommonNodes();
+         _configDiff = new HashMap<String, ConfigurationDiff>();
+         GenerateDiff();
       }
 
-      private Set<String> findCommonNodes()
-      {
-         Set<String> common = new TreeSet<String>();
-         common.addAll(_before._nodes.keySet());
-         common.retainAll(_after._nodes.keySet());
-         return common;
+      @JsonCreator
+      public NodesDiffAnswerElement() {
+         _before = null;
+         _after = null;
       }
-      
+
+      private void GenerateDiff() {
+         DiffNodeNames();
+         for (String node : _commonNodes) {
+            _configDiff.put(node, new ConfigurationDiff(
+                  _before._nodes.get(node), _after._nodes.get(node)));
+         }
+      }
+
+      private void DiffNodeNames() {
+         _commonNodes = CommonUtil.intersection(_before._nodes.keySet(),
+               _after._nodes.keySet());
+         _nodesInOnlyOneConfig = CommonUtil.diff(_before._nodes.keySet(),
+               _after._nodes.keySet());
+      }
+
       @Override
       public String prettyPrint() throws JsonProcessingException {
          // TODO Auto-generated method stub
@@ -360,12 +380,40 @@ public class NodesQuestionPlugin extends QuestionPlugin {
        * @return the _commonNodes
        */
       @JsonProperty(COMMON_NODES_VAR)
-      public Set<String> getCommonNodes() {
+      public Set<String> get_commonNodes() {
          return _commonNodes;
       }
 
+      public void set_commonNodes(Set<String> c) {
+         _commonNodes = c;
+      }
+
+      /**
+       * @return the _nodesInOnlyOneConfig
+       */
+      @JsonProperty(NODES_IN_ONLY_ONE_CONFIG_VAR)
+      public Set<String> get_nodesInOnlyOneConfig() {
+         return _nodesInOnlyOneConfig;
+      }
+
+      public void set_NodesInOnlyOneConfig(Set<String> c) {
+         _nodesInOnlyOneConfig = c;
+      }
+
+      /**
+       * @return the _configDiff
+       */
+      @JsonProperty(CONFIG_DIFF_MAP_VAR)
+      public Map<String, ConfigurationDiff> get_configDiff() {
+         return _configDiff;
+      }
+
+      public void set_configDiff(Map<String, ConfigurationDiff> c) {
+         _configDiff = c;
+      }
+
    }
-   
+
    public static class NodesAnswerer extends Answerer {
 
       public NodesAnswerer(Question question, IBatfish batfish) {
@@ -408,7 +456,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
          return new NodesAnswerElement(answerNodes, question.getSummary());
       }
-      
+
       @Override
       public AnswerElement answerDiff() {
          _batfish.pushBaseEnvironment();
@@ -418,10 +466,12 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          _batfish.checkEnvironmentExists();
          _batfish.popEnvironment();
          _batfish.pushBaseEnvironment();
-         NodesAnswerElement before = (NodesAnswerElement)create(_question, _batfish).answer();
+         NodesAnswerElement before = (NodesAnswerElement) create(_question,
+               _batfish).answer();
          _batfish.popEnvironment();
          _batfish.pushDeltaEnvironment();
-         NodesAnswerElement after = (NodesAnswerElement)create(_question, _batfish).answer();
+         NodesAnswerElement after = (NodesAnswerElement) create(_question,
+               _batfish).answer();
          _batfish.popEnvironment();
          return new NodesDiffAnswerElement(before, after);
       }

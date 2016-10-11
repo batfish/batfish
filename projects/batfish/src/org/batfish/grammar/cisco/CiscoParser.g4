@@ -556,8 +556,9 @@ mgmt_egress_iface_stanza
          | APPLICATION TACACS
          | APPLICATION SYSLOG
          | APPLICATION SSH
+         | APPLICATION 
       ) NEWLINE
-   )+ EXIT NEWLINE
+   )+ (EXIT NEWLINE)?
 ;
 
 mgmt_ip_access_group

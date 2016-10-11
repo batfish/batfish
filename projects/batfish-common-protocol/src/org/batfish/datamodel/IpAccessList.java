@@ -25,6 +25,15 @@ public class IpAccessList extends ComparableStructure<String> {
       _lines = lines;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      IpAccessList other = (IpAccessList) obj;
+      return other._lines.equals(_lines);
+   }
+   
    public FilterResult filter(Flow flow) {
       for (int i = 0; i < _lines.size(); i++) {
          IpAccessListLine line = _lines.get(i);
@@ -53,5 +62,4 @@ public class IpAccessList extends ComparableStructure<String> {
       }
       return output;
    }
-
 }

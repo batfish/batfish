@@ -112,6 +112,39 @@ public class HeaderSpace implements Serializable {
       _notSrcPorts = new TreeSet<>();
    }
 
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj) {
+         return true;
+      }
+      HeaderSpace other = (HeaderSpace) obj;
+      if (!_dscps.equals(other._dscps)) {
+         return false;
+      }
+      if (_dstIps.equals(other._dstIps)) {
+         return false;
+      }
+      if (!_dstPorts.equals(other._dstPorts)) {
+         return false;
+      }
+      if (!_ecns.equals(other._ecns)) {
+         return false;
+      }
+      if (!_fragmentOffsets.equals(other._fragmentOffsets)) {
+         return false;
+      }
+      if (!_icmpCodes.equals(other._icmpCodes)) {
+         return false;
+      }
+      if (!_icmpTypes.equals(other._icmpTypes)) {
+         return false;
+      }
+      if (!_ipProtocols.equals(other._ipProtocols)) {
+         return false;
+      }
+      return true;
+   }
    public SortedSet<Integer> getDscps() {
       return _dscps;
    }

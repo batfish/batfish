@@ -98,6 +98,20 @@ public class IpWildcard extends Pair<Ip, Ip> {
       return maskedIpAsLong == maskedWildcard;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      IpWildcard other = (IpWildcard)obj;
+      if (other.getFirst().equals(this.getFirst()) && other.getSecond().equals(this.getSecond())) {
+         return true;
+      }
+      else {
+         return false;
+      }
+   }
+   
    public Ip getIp() {
       return _first;
    }
