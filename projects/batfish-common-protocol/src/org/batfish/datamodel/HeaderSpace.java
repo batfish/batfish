@@ -122,7 +122,7 @@ public class HeaderSpace implements Serializable {
       if (!_dscps.equals(other._dscps)) {
          return false;
       }
-      if (_dstIps.equals(other._dstIps)) {
+      if (!_dstIps.equals(other._dstIps)) {
          return false;
       }
       if (!_dstPorts.equals(other._dstPorts)) {
@@ -141,6 +141,57 @@ public class HeaderSpace implements Serializable {
          return false;
       }
       if (!_ipProtocols.equals(other._ipProtocols)) {
+         return false;
+      }
+      if (_negate != other._negate) {
+         return false;
+      }
+      if (!_notDscps.equals(other._notDscps)) {
+         return false;
+      }
+      if (!_notDstIps.equals(other._notDstIps)) {
+         return false;
+      }
+      if (!_notDstPorts.equals(other._notDstPorts)) {
+         return false;
+      }
+      if (!_notEcns.equals(other._notEcns)) {
+         return false;
+      }
+      if (!_notFragmentOffsets.equals(other._notFragmentOffsets)) {
+         return false;
+      }
+      if (!_notIcmpCodes.equals(other._notIcmpCodes)) {
+         return false;
+      }
+      if (!_notIcmpTypes.equals(other._notIcmpTypes)) {
+         return false;
+      }
+      if (!_notIpProtocols.equals(other._notIpProtocols)) {
+         return false;
+      }
+      if (!_notSrcIps.equals(other._notSrcIps)) {
+         return false;
+      }
+      if (!_notSrcPorts.equals(other._notSrcPorts)) {
+         return false;
+      }
+      if (!_srcIps.equals(other._srcIps)) {
+         return false;
+      }
+      if (!_srcOrDstIps.equals(other._srcOrDstIps)) {
+         return false;
+      }
+      if (!_srcOrDstPorts.equals(other._srcOrDstPorts)) {
+         return false;
+      }
+      if (!_srcPorts.equals(other._srcPorts)) {
+         return false;
+      }
+      if (!_states.equals(other._states)) {
+         return false;
+      }
+      if (!_tcpFlags.equals(other._tcpFlags)) {
          return false;
       }
       return true;

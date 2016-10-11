@@ -10,14 +10,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConfigurationDiff implements AnswerElement {
 
-   private static final String AS_PATH_ACCESS_LIST_DIFF_VAR = "asPathAccessListDiff";
-   private AsPathAccessListDiff _asPathAccessListDiff;
+   private static final String AS_PATH_ACCESS_LISTS_DIFF_VAR = "asPathAccessListsDiff";
+   private AsPathAccessListsDiff _asPathAccessListsDiff;
    
-   private static final String COMMUNITY_LIST_DIFF_VAR = "comunityListDiff";
-   private CommunityListDiff _communityListDiff;
+   private static final String COMMUNITY_LISTS_DIFF_VAR = "comunityListsDiff";
+   private CommunityListsDiff _communityListsDiff;
    
-   private static final String IP_ACCESS_LIST_DIFF_VAR = "ipAccessListDiff";
-   private IpAccessListDiff _ipAccessListListDiff;
+   private static final String IP_ACCESS_LIST_DSIFF_VAR = "ipAccessListstDiff";
+   private IpAccessListsDiff _ipAccessListsDiff;
    
    @JsonCreator()
    public ConfigurationDiff()
@@ -27,9 +27,9 @@ public class ConfigurationDiff implements AnswerElement {
    
    public ConfigurationDiff(Configuration a, Configuration b)
    {
-      _asPathAccessListDiff = new AsPathAccessListDiff(a.getAsPathAccessLists(), b.getAsPathAccessLists());
-      _communityListDiff = new CommunityListDiff(a.getCommunityLists(), b.getCommunityLists());
-      _ipAccessListListDiff = new IpAccessListDiff(a.getIpAccessLists(), b.getIpAccessLists());
+      _asPathAccessListsDiff = new AsPathAccessListsDiff(a.getAsPathAccessLists(), b.getAsPathAccessLists());
+      _communityListsDiff = new CommunityListsDiff(a.getCommunityLists(), b.getCommunityLists());
+      _ipAccessListsDiff = new IpAccessListsDiff(a.getIpAccessLists(), b.getIpAccessLists());
    }
 
    @Override
@@ -40,42 +40,42 @@ public class ConfigurationDiff implements AnswerElement {
    }
 
    
-   @JsonProperty(AS_PATH_ACCESS_LIST_DIFF_VAR)
-   public AsPathAccessListDiff get_asPathAccessListDiff() {
-      return _asPathAccessListDiff;
+   @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
+   public AsPathAccessListsDiff get_asPathAccessListDiff() {
+      return _asPathAccessListsDiff;
    }
    
-   public void set_asPathAccessListDiff(AsPathAccessListDiff d) {
-      _asPathAccessListDiff = d;  
+   public void set_asPathAccessListDiff(AsPathAccessListsDiff d) {
+      _asPathAccessListsDiff = d;  
    }
    
    /**
     * @return the _communityListDiff
     */
-   @JsonProperty(COMMUNITY_LIST_DIFF_VAR)
-   public CommunityListDiff get_communityListDiff() {
-      return _communityListDiff;
+   @JsonProperty(COMMUNITY_LISTS_DIFF_VAR)
+   public CommunityListsDiff get_communityListDiff() {
+      return _communityListsDiff;
    }
 
    /**
     * @param _communityListDiff the _communityListDiff to set
     */
-   public void set_communityListDiff(CommunityListDiff _communityListDiff) {
-      this._communityListDiff = _communityListDiff;
+   public void set_communityListDiff(CommunityListsDiff _communityListsDiff) {
+      this._communityListsDiff = _communityListsDiff;
    }
 
    /**
     * @return the _ipAccessListListDiff
     */
-   @JsonProperty(IP_ACCESS_LIST_DIFF_VAR)
-   public IpAccessListDiff get_ipAccessListListDiff() {
-      return _ipAccessListListDiff;
+   @JsonProperty(IP_ACCESS_LIST_DSIFF_VAR)
+   public IpAccessListsDiff get_ipAccessListListDiff() {
+      return _ipAccessListsDiff;
    }
 
    /**
     * @param _ipAccessListListDiff the _ipAccessListListDiff to set
     */
-   public void set_ipAccessListListDiff(IpAccessListDiff _ipAccessListListDiff) {
-      this._ipAccessListListDiff = _ipAccessListListDiff;
+   public void set_ipAccessListListDiff(IpAccessListsDiff _ipAccessListsDiff) {
+      this._ipAccessListsDiff = _ipAccessListsDiff;
    }
 }

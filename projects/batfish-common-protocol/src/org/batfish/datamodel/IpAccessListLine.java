@@ -21,9 +21,6 @@ public final class IpAccessListLine extends HeaderSpace {
       if (_action != other._action) {
          return false;
       }
-      if (!_name.equals(other._name)) {
-         return false;
-      }
       return true;
    }
    
