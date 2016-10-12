@@ -390,6 +390,7 @@ public final class Node extends ComparableStructure<String> {
       case JUNIPER:
       case JUNIPER_SWITCH:
          return;
+         //$CASES-OMITTED$
       default:
          break;
       }

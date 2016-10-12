@@ -9,11 +9,13 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
 public enum Command {
+   ADD_BATFISH_OPTION("add-batfish-option"),
    ANSWER("answer"),
    ANSWER_DELTA("answer-delta"),
    CAT("cat"),
    CHECK_API_KEY("checkapikey"),
    CLEAR_SCREEN("cls"),
+   DEL_BATFISH_OPTION("del-batfish-option"),
    DEL_CONTAINER("del-container"),
    DEL_ENVIRONMENT("del-environment"),
    DEL_QUESTION("del-question"),
@@ -51,6 +53,7 @@ public enum Command {
    SET_TESTRIG("set-testrig"),
    SHOW_API_KEY("show-api-key"),
    SHOW_BATFISH_LOGLEVEL("show-batfish-loglevel"),
+   SHOW_BATFISH_OPTIONS("show-batfish-options"),
    SHOW_CONTAINER("show-container"),
    SHOW_COORDINATOR_HOST("show-coordinator-host"),
    SHOW_DELTA_TESTRIG("show-delta-testrig"),
@@ -74,9 +77,15 @@ public enum Command {
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
+      descs.put(ADD_BATFISH_OPTION,
+            new Pair<>("<option-key> <option-value>",
+                  "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
             "<question-file> [param1=value1 [param2=value2] ...]",
             "Answer the question in the file for the default environment"));
+      descs.put(ADD_BATFISH_OPTION,
+            new Pair<>("<option-key> [<option-value>]",
+                  "Additional options to pass to Batfish"));
       descs.put(ANSWER_DELTA,
             new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
                   "Answer the question in the file for the delta environment"));
@@ -87,6 +96,9 @@ public enum Command {
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
+      descs.put(ADD_BATFISH_OPTION,
+            new Pair<>("<option-key>",
+                  "Stop passing this option to Batfish"));
       descs.put(DEL_CONTAINER,
             new Pair<>("<container-name>", "Delete the specified container"));
       descs.put(DEL_ENVIRONMENT, new Pair<>("<environment-name>",
@@ -163,6 +175,8 @@ public enum Command {
       descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
       descs.put(SHOW_BATFISH_LOGLEVEL,
             new Pair<>("", "Show current batfish loglevel"));
+      descs.put(SHOW_BATFISH_OPTIONS,
+            new Pair<>("", "Show the additional options that will be sent to batfish"));
       descs.put(SHOW_CONTAINER, new Pair<>("", "Show active container"));
       descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
       descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));
