@@ -2322,7 +2322,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-      if (ctx.vrf != null) {
+      if (ctx.vrf != null || ctx.MANAGEMENT() != null) {
          _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
       }
    }

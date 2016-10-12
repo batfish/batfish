@@ -22,6 +22,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -285,6 +286,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       public NodesAnswerElement(SortedMap<String, Configuration> nodes,
             boolean summary) {
+               
          if (summary) {
             _summary = new TreeMap<>();
             for (Entry<String, Configuration> e : nodes.entrySet()) {
@@ -416,10 +418,23 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
    public static class NodesAnswerer extends Answerer {
 
+      private boolean _remoteBgpNeighborsInitialized;
+      
       public NodesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
+         
       }
 
+      private void initRemoteBgpNeighbors(IBatfish batfish,
+            Map<String, Configuration> configurations) {
+         if (!_remoteBgpNeighborsInitialized) {
+            Map<Ip, Set<String>> ipOwners = _batfish
+                  .computeIpOwners(configurations);
+            batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+            _remoteBgpNeighborsInitialized = true;
+         }
+      }
+      
       @Override
       public AnswerElement answer() {
          NodesQuestion question = (NodesQuestion) _question;
@@ -428,6 +443,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
 
+         //initRemoteBgpNeighbors(_batfish, configurations);
+         
          // collect nodes nodes
          Pattern nodeRegex;
 

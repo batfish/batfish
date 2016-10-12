@@ -12,11 +12,15 @@ public class ConfigurationDiff implements AnswerElement {
 
    private static final String AS_PATH_ACCESS_LISTS_DIFF_VAR = "asPathAccessListsDiff";
    private static final String COMMUNITY_LISTS_DIFF_VAR = "comunityListsDiff";
-   private static final String IP_ACCESS_LIST_DSIFF_VAR = "ipAccessListstDiff";
+   private static final String INTERFACE_LISTS_DIFF_VAR = "interfaceListstDiff";
+   private static final String IP_ACCESS_LISTS_DSIFF_VAR = "ipAccessListstDiff";
+   private static final String NEIGHBOR_LISTS_DIFF_VAR = "neighborListstDiff";
+
    private AsPathAccessListsDiff _asPathAccessListsDiff;
    private CommunityListsDiff _communityListsDiff;
    private InterfaceListsDiff _interfaceListsDiff;
    private IpAccessListsDiff _ipAccessListsDiff;
+   private NeighborListsDiff _neighborListsDiff;
 
    @JsonCreator()
    public ConfigurationDiff() {
@@ -34,19 +38,6 @@ public class ConfigurationDiff implements AnswerElement {
             b.getIpAccessLists());
    }
 
-   public InterfaceListsDiff getInterfaceListsDiff() {
-      return _interfaceListsDiff;
-   }
-
-   public void setInterfaceListsDiff(InterfaceListsDiff interfaceListsDiff) {
-      _interfaceListsDiff = interfaceListsDiff;
-   }
-
-   @JsonProperty(IP_ACCESS_LIST_DSIFF_VAR)
-   public IpAccessListsDiff get_ipAccessListListDiff() {
-      return _ipAccessListsDiff;
-   }
-
    @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
    public AsPathAccessListsDiff getAsPathAccessListDiff() {
       return _asPathAccessListsDiff;
@@ -57,14 +48,25 @@ public class ConfigurationDiff implements AnswerElement {
       return _communityListsDiff;
    }
 
+   @JsonProperty(INTERFACE_LISTS_DIFF_VAR)
+   public InterfaceListsDiff getInterfaceListsDiff() {
+      return _interfaceListsDiff;
+   }
+
+   @JsonProperty(IP_ACCESS_LISTS_DSIFF_VAR)
+   public IpAccessListsDiff getIpAccessListListDiff() {
+      return _ipAccessListsDiff;
+   }
+
+   @JsonProperty(NEIGHBOR_LISTS_DIFF_VAR)
+   public NeighborListsDiff getNeighborListsDiff() {
+      return _neighborListsDiff;
+   }
+
    @Override
    public String prettyPrint() throws JsonProcessingException {
       ObjectMapper mapper = new BatfishObjectMapper();
       return mapper.writeValueAsString(this);
-   }
-
-   public void set_ipAccessListListDiff(IpAccessListsDiff _ipAccessListsDiff) {
-      this._ipAccessListsDiff = _ipAccessListsDiff;
    }
 
    public void setAsPathAccessListDiff(AsPathAccessListsDiff d) {
@@ -73,5 +75,17 @@ public class ConfigurationDiff implements AnswerElement {
 
    public void setCommunityListDiff(CommunityListsDiff _communityListsDiff) {
       this._communityListsDiff = _communityListsDiff;
+   }
+
+   public void setInterfaceListsDiff(InterfaceListsDiff interfaceListsDiff) {
+      _interfaceListsDiff = interfaceListsDiff;
+   }
+
+   public void setIpAccessListListDiff(IpAccessListsDiff _ipAccessListsDiff) {
+      this._ipAccessListsDiff = _ipAccessListsDiff;
+   }
+
+   public void setNeighborListsDiff(NeighborListsDiff neighborListsDiff) {
+      _neighborListsDiff = neighborListsDiff;
    }
 }
