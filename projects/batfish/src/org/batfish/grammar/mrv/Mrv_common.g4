@@ -6,57 +6,62 @@ options {
 
 nbdecl
 :
-   PERIOD DEC TYPE BOOL VALUE quoted_string
+   PERIOD DEC TYPE T_BOOL VALUE quoted_string
 ;
 
 nfdecl
 :
-   PERIOD DEC TYPE FACILITY VALUE quoted_string
+   PERIOD DEC TYPE T_FACILITY VALUE quoted_string
 ;
 
 nidecl
 :
-   PERIOD DEC TYPE INTEGER VALUE quoted_string
+   PERIOD DEC TYPE T_INTEGER VALUE quoted_string
 ;
 
 nipdecl
 :
-   PERIOD DEC TYPE IPADDR VALUE quoted_string
+   PERIOD DEC TYPE T_IPADDR VALUE quoted_string
 ;
 
 nodecl
 :
-   PERIOD DEC TYPE OCTET VALUE quoted_string
+   PERIOD DEC TYPE T_OCTET VALUE quoted_string
 ;
 
 nosdecl
 :
-   PERIOD DEC TYPE OCTETSTRING VALUE quoted_string
+   PERIOD DEC TYPE T_OCTETSTRING VALUE quoted_string
 ;
 
 npdecl
 :
-   PERIOD DEC TYPE PASSWORD VALUE quoted_string
+   PERIOD DEC TYPE T_PASSWORD VALUE quoted_string
 ;
 
 nprdecl
 :
-   PERIOD DEC TYPE PRIORITY VALUE quoted_string
+   PERIOD DEC TYPE T_PRIORITY VALUE quoted_string
 ;
 
 nsdecl
 :
-   PERIOD DEC TYPE STRING VALUE quoted_string
+   PERIOD DEC TYPE T_STRING VALUE quoted_string
 ;
 
 nshdecl
 :
-   PERIOD DEC TYPE SHORT VALUE quoted_string
+   PERIOD DEC TYPE T_SHORT VALUE quoted_string
+;
+
+nspdecl
+:
+   PERIOD DEC TYPE T_SPEED VALUE quoted_string
 ;
 
 nssdecl
 :
-   PERIOD DEC TYPE SHORTSTRING VALUE quoted_string
+   PERIOD DEC TYPE T_SHORTSTRING VALUE quoted_string
 ;
 
 quoted_string
@@ -66,7 +71,7 @@ quoted_string
 
 type
 :
-   BOOL
+   T_BOOL
 ;
 
 type_declaration

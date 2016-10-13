@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvParser.*;
@@ -37,13 +36,19 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
    public void enterMrv_configuration(Mrv_configurationContext ctx) {
       _configuration = new MrvConfiguration();
    }
-   
+
    @Override
    public void exitA_system_systemname(A_system_systemnameContext ctx) {
-      Token text = ctx.nsdecl().quoted_string().text;
-      if (text != null) {
-         String hostname = text.getText();
-         _configuration.setHostname(hostname);
+      String hostname = toString(ctx.nsdecl());
+      _configuration.setHostname(hostname);
+   }
+
+   private String getText(Quoted_stringContext ctx) {
+      if (ctx.text != null) {
+         return ctx.text.getText();
+      }
+      else {
+         return "";
       }
    }
 
@@ -67,6 +72,11 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
       _unimplementedFeatures.add("Cisco: " + feature);
+   }
+
+   private String toString(NsdeclContext ctx) {
+      String text = getText(ctx.quoted_string());
+      return text;
    }
 
 }

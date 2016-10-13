@@ -54,11 +54,6 @@ BONDMODE
    'BondMode'
 ;
 
-BOOL
-:
-   'BOOL'
-;
-
 CONFIGVERSION
 :
    'ConfigVersion'
@@ -89,9 +84,9 @@ DSRWAIT
    'DSRWait'
 ;
 
-FACILITY
+FLOWCONT
 :
-   'FACILITY'
+   'FlowCont'
 ;
 
 GATEWAY1
@@ -119,19 +114,9 @@ IFNAME
    'ifName'
 ;
 
-INTEGER
-:
-   'INTEGER'
-;
-
 INTERFACE
 :
    'Interface'
-;
-
-IPADDR
-:
-   'IPADDR'
 ;
 
 IPADDRESS
@@ -224,29 +209,9 @@ NTPSOURCEINTERFACE
    'NtpSourceInterface'
 ;
 
-OCTET
-:
-   'OCTET'
-;
-
-OCTETSTRING
-:
-   'OCTETSTRING'
-;
-
 OUTAUTHTYPE
 :
    'OutAuthType'
-;
-
-PASSWORD
-:
-   'PASSWORD'
-;
-
-PRIORITY
-:
-   'PRIORITY'
 ;
 
 PROMPT
@@ -267,16 +232,6 @@ SECURITYV3
 SHAPASSWORD
 :
    'ShaPassword'
-;
-
-SHORT
-:
-   'SHORT'
-;
-
-SHORTSTRING
-:
-   'SHORTSTRING'
 ;
 
 SIGNATURE
@@ -314,6 +269,11 @@ SNMPTRAPCOMMUNITY
    'SnmpTrapCommunity'
 ;
 
+SPEED
+:
+   'Speed'
+;
+
 SSH
 :
    'SSH'
@@ -327,11 +287,6 @@ SSHPORTLIST
 STAT
 :
    'Stat'
-;
-
-STRING
-:
-   'STRING'
 ;
 
 SUBSCRIBER
@@ -362,6 +317,66 @@ SYSTEM
 SYSTEMNAME
 :
    'SystemName'
+;
+
+T_BOOL
+:
+   'BOOL'
+;
+
+T_FACILITY
+:
+   'FACILITY'
+;
+
+T_INTEGER
+:
+   'INTEGER'
+;
+
+T_IPADDR
+:
+   'IPADDR'
+;
+
+T_OCTET
+:
+   'OCTET'
+;
+
+T_OCTETSTRING
+:
+   'OCTETSTRING'
+;
+
+T_PASSWORD
+:
+   'PASSWORD'
+;
+
+T_PRIORITY
+:
+   'PRIORITY'
+;
+
+T_SHORT
+:
+   'SHORT'
+;
+
+T_SHORTSTRING
+:
+   'SHORTSTRING'
+;
+
+T_SPEED
+:
+   'SPEED'
+;
+
+T_STRING
+:
+   'STRING'
 ;
 
 TACPLUSPRIMADDR
