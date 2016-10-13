@@ -4,18 +4,17 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
+import org.batfish.grammar.mrv.MrvParser.*;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.mrv.MrvConfiguration;
-import org.batfish.representation.mrv.MrvVendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
       implements ControlPlaneExtractor {
 
-   @SuppressWarnings("unused")
    private MrvConfiguration _configuration;
 
    private MrvCombinedParser _parser;
@@ -23,8 +22,6 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
    private String _text;
 
    private final Set<String> _unimplementedFeatures;
-
-   private MrvVendorConfiguration _vendorConfiguration;
 
    private Warnings _w;
 
@@ -38,8 +35,16 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
    @Override
    public void enterMrv_configuration(Mrv_configurationContext ctx) {
-      _vendorConfiguration = new MrvVendorConfiguration();
-      _configuration = _vendorConfiguration;
+      _configuration = new MrvConfiguration();
+   }
+   
+   @Override
+   public void exitA_system_systemname(A_system_systemnameContext ctx) {
+      Token text = ctx.nsdecl().quoted_string().text;
+      if (text != null) {
+         String hostname = text.getText();
+         _configuration.setHostname(hostname);
+      }
    }
 
    @Override
@@ -49,7 +54,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
    @Override
    public VendorConfiguration getVendorConfiguration() {
-      return _vendorConfiguration;
+      return _configuration;
    }
 
    @Override
