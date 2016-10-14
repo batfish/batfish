@@ -1,7 +1,8 @@
 package org.batfish.datamodel;
 
-import java.util.HashSet;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -14,38 +15,55 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConfigDiffElement implements AnswerElement {
 
-   protected static final String COMMON = "common";
-   protected static final String IDENTICAL = "identical";
-   protected static final String UNIQUE = "unique";
+   protected static final String DIFF_VAR = "diff";
+   protected static final String IDENTICAL_VAR = "identical";
+   protected static final String IN_A_ONLY_VAR = "inAOnly";
+   protected static final String IN_B_ONLY_VAR = "inBOnly";
 
-   protected Set<String> _common;
+   private Set<String> _a;
+   private Set<String> _b;
+   protected Set<String> _diff;
    protected Set<String> _identical;
-   protected Set<String> _unique;
+
+   protected Set<String> _inAOnly;
+   protected Set<String> _inBOnly;
 
    @JsonCreator
    public ConfigDiffElement() {
-
    }
 
    public ConfigDiffElement(Set<String> a, Set<String> b) {
-      _common = CommonUtil.intersection(a, b);
-      _unique = CommonUtil.diff(a, b);
-      _identical = new HashSet<>();
+      _a = a;
+      _b = b;
+      _identical = new TreeSet<>();
+      _diff = new TreeSet<>();
+      _inAOnly = CommonUtil.inAOnly(a, b);
+      _inBOnly = CommonUtil.inBOnly(a, b);
    }
 
-   @JsonProperty(COMMON)
-   public Set<String> getCommon() {
-      return _common;
+   public Set<String> common()
+   {
+      return CommonUtil.intersection(_a, _b);
+   }
+   
+   @JsonProperty(DIFF_VAR)
+   public Set<String> getDiff() {
+      return _diff;
    }
 
-   @JsonProperty(IDENTICAL)
+   @JsonProperty(IDENTICAL_VAR)
    public Set<String> getIdentical() {
       return _identical;
    }
 
-   @JsonProperty(UNIQUE)
-   public Set<String> getUnique() {
-      return _unique;
+   @JsonProperty(IN_A_ONLY_VAR)
+   public Set<String> getInAOnly() {
+      return _inAOnly;
+   }
+
+   @JsonProperty(IN_B_ONLY_VAR)
+   public Set<String> getInBOnly() {
+      return _inBOnly;
    }
 
    @Override
@@ -54,16 +72,20 @@ public class ConfigDiffElement implements AnswerElement {
       return mapper.writeValueAsString(this);
    }
 
-   public void setCommon(Set<String> c) {
-      _common = c;
+   public void setDiff(Set<String> diff) {
+      _diff = diff;
    }
 
-   public void setIdentical(Set<String> i) {
-      _identical = i;
+   public void setIdentical(Set<String> identical) {
+      _identical = identical;
    }
 
-   public void setUnique(Set<String> u) {
-      this._unique = u;
+   public void setInAOnly(Set<String> inAOnly) {
+      _inAOnly = inAOnly;
+   }
+
+   public void setInBOnly(Set<String> inBOnly) {
+      _inBOnly = inBOnly;
    }
 
 }

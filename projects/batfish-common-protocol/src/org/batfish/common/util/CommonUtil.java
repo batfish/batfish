@@ -262,6 +262,22 @@ public class CommonUtil {
       return time;
    }
 
+   public static Set<String> inAOnly(Set<String> a, Set<String> b) {
+      Set<String> i = intersection(a, b);
+      Set<String> inAOnly = new TreeSet<>();
+      inAOnly.addAll(a);
+      inAOnly.removeAll(i);
+      return inAOnly;
+   }
+
+   public static Set<String> inBOnly(Set<String> a, Set<String> b) {
+      Set<String> i = intersection(a, b);
+      Set<String> inBOnly = new TreeSet<>();
+      inBOnly.addAll(b);
+      inBOnly.removeAll(i);
+      return inBOnly;
+   }
+
    public static Set<String> intersection(Set<String> a, Set<String> b) {
       Set<String> i = new TreeSet<>();
       i.addAll(a);

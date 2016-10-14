@@ -22,7 +22,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -286,7 +285,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       public NodesAnswerElement(SortedMap<String, Configuration> nodes,
             boolean summary) {
-               
+
          if (summary) {
             _summary = new TreeMap<>();
             for (Entry<String, Configuration> e : nodes.entrySet()) {
@@ -328,113 +327,13 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   public static class NodesDiffAnswerElement implements AnswerElement {
-
-      private final NodesAnswerElement _before;
-      private final NodesAnswerElement _after;
-
-      private static final String COMMON_NODES_VAR = "commonNodes";
-      private Set<String> _commonNodes;
-
-      private static final String NODES_IN_ONLY_ONE_CONFIG_VAR = "nodesInOnlyOneConfig";
-      private Set<String> _nodesInOnlyOneConfig;
-
-      private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
-      private Map<String, ConfigurationDiff> _configDiff;
-
-      public NodesDiffAnswerElement(NodesAnswerElement before,
-            NodesAnswerElement after) {
-         _before = before;
-         _after = after;
-         _configDiff = new HashMap<String, ConfigurationDiff>();
-         GenerateDiff();
-      }
-
-      @JsonCreator
-      public NodesDiffAnswerElement() {
-         _before = null;
-         _after = null;
-      }
-
-      private void GenerateDiff() {
-         DiffNodeNames();
-         for (String node : _commonNodes) {
-            _configDiff.put(node, new ConfigurationDiff(
-                  _before._nodes.get(node), _after._nodes.get(node)));
-         }
-      }
-
-      private void DiffNodeNames() {
-         _commonNodes = CommonUtil.intersection(_before._nodes.keySet(),
-               _after._nodes.keySet());
-         _nodesInOnlyOneConfig = CommonUtil.diff(_before._nodes.keySet(),
-               _after._nodes.keySet());
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO Auto-generated method stub
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
-      }
-
-      /**
-       * @return the _commonNodes
-       */
-      @JsonProperty(COMMON_NODES_VAR)
-      public Set<String> get_commonNodes() {
-         return _commonNodes;
-      }
-
-      public void set_commonNodes(Set<String> c) {
-         _commonNodes = c;
-      }
-
-      /**
-       * @return the _nodesInOnlyOneConfig
-       */
-      @JsonProperty(NODES_IN_ONLY_ONE_CONFIG_VAR)
-      public Set<String> get_nodesInOnlyOneConfig() {
-         return _nodesInOnlyOneConfig;
-      }
-
-      public void set_NodesInOnlyOneConfig(Set<String> c) {
-         _nodesInOnlyOneConfig = c;
-      }
-
-      /**
-       * @return the _configDiff
-       */
-      @JsonProperty(CONFIG_DIFF_MAP_VAR)
-      public Map<String, ConfigurationDiff> get_configDiff() {
-         return _configDiff;
-      }
-
-      public void set_configDiff(Map<String, ConfigurationDiff> c) {
-         _configDiff = c;
-      }
-
-   }
-
    public static class NodesAnswerer extends Answerer {
 
-      private boolean _remoteBgpNeighborsInitialized;
-      
       public NodesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
-         
+
       }
 
-      private void initRemoteBgpNeighbors(IBatfish batfish,
-            Map<String, Configuration> configurations) {
-         if (!_remoteBgpNeighborsInitialized) {
-            Map<Ip, Set<String>> ipOwners = _batfish
-                  .computeIpOwners(configurations);
-            batfish.initRemoteBgpNeighbors(configurations, ipOwners);
-            _remoteBgpNeighborsInitialized = true;
-         }
-      }
-      
       @Override
       public AnswerElement answer() {
          NodesQuestion question = (NodesQuestion) _question;
@@ -443,8 +342,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
 
-         //initRemoteBgpNeighbors(_batfish, configurations);
-         
+         // initRemoteBgpNeighbors(_batfish, configurations);
+
          // collect nodes nodes
          Pattern nodeRegex;
 
@@ -492,6 +391,94 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          _batfish.popEnvironment();
          return new NodesDiffAnswerElement(before, after);
       }
+   }
+
+   public static class NodesDiffAnswerElement implements AnswerElement {
+
+      private static final String COMMON_NODES_VAR = "commonNodes";
+      private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
+
+      private static final String NODES_IN_ONLY_ONE_CONFIG_VAR = "nodesInOnlyOneConfig";
+      private final NodesAnswerElement _after;
+
+      private final NodesAnswerElement _before;
+      private Set<String> _commonNodes;
+
+      private Map<String, ConfigurationDiff> _configDiff;
+      private Set<String> _nodesInOnlyOneConfig;
+
+      @JsonCreator
+      public NodesDiffAnswerElement() {
+         _before = null;
+         _after = null;
+      }
+
+      public NodesDiffAnswerElement(NodesAnswerElement before,
+            NodesAnswerElement after) {
+         _before = before;
+         _after = after;
+         _configDiff = new HashMap<>();
+         GenerateDiff();
+      }
+
+      private void DiffNodeNames() {
+         _commonNodes = CommonUtil.intersection(_before._nodes.keySet(),
+               _after._nodes.keySet());
+         _nodesInOnlyOneConfig = CommonUtil.diff(_before._nodes.keySet(),
+               _after._nodes.keySet());
+      }
+
+      private void GenerateDiff() {
+         DiffNodeNames();
+         for (String node : _commonNodes) {
+            _configDiff.put(node, new ConfigurationDiff(
+                  _before._nodes.get(node), _after._nodes.get(node)));
+         }
+      }
+
+      /**
+       * @return the _commonNodes
+       */
+      @JsonProperty(COMMON_NODES_VAR)
+      public Set<String> get_commonNodes() {
+         return _commonNodes;
+      }
+
+      /**
+       * @return the _configDiff
+       */
+      @JsonProperty(CONFIG_DIFF_MAP_VAR)
+      public Map<String, ConfigurationDiff> get_configDiff() {
+         return _configDiff;
+      }
+
+      /**
+       * @return the _nodesInOnlyOneConfig
+       */
+      @JsonProperty(NODES_IN_ONLY_ONE_CONFIG_VAR)
+      public Set<String> get_nodesInOnlyOneConfig() {
+         return _nodesInOnlyOneConfig;
+      }
+
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         // TODO Auto-generated method stub
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
+
+      public void set_commonNodes(Set<String> c) {
+         _commonNodes = c;
+      }
+
+      public void set_configDiff(Map<String, ConfigurationDiff> c) {
+         _configDiff = c;
+      }
+
+      public void set_NodesInOnlyOneConfig(Set<String> c) {
+         _nodesInOnlyOneConfig = c;
+      }
+
    }
 
    public static class NodesQuestion extends Question {
