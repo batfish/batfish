@@ -10,6 +10,7 @@ aaa accounting exec default start-stop group tacacs+
 aaa accounting exec default wait-start group radius
 aaa accounting nested
 aaa accounting network default start-stop group tacacs+
+aaa accounting send stop-record authentication failure
 aaa accounting system default start-stop group tacacs+
 aaa accounting update newinfo
 aaa authentication banner ^CUnauthorized access prohibited by law - disconnect now!^C
@@ -29,6 +30,7 @@ aaa authorization commands 0 default group tacacs+ local none
 aaa authorization commands 1 default group tacacs+ local none 
 aaa authorization commands 15 default group tacacs+ local none 
 aaa authorization config-commands
+aaa authorization console
 aaa authorization exec default group tacacs+ local none 
 aaa authorization exec ffffff none
 aaa authorization include telnet outside 1.2.3.4 255.255.255.255 0.0.0.0 0.0.0.0 User_Telnet

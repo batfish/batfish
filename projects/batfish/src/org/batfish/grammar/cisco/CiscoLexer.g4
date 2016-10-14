@@ -1374,6 +1374,11 @@ COUNTER
    'counter'
 ;
 
+COUNTERS
+:
+   'counters'
+;
+
 CPD
 :
    'cpd'
@@ -2371,6 +2376,11 @@ FAILED
 FAILOVER
 :
    'failover'
+;
+
+FAILURE
+:
+   'failure'
 ;
 
 FAIR_QUEUE
@@ -5443,6 +5453,11 @@ REMOVE_PRIVATE_CAP_A_CAP_S
    'remove-private-AS'
 ;
 
+REMOTE_SERVER
+:
+   'remote-server'
+;
+
 REMOTE_SPAN
 :
    'remote-span'
@@ -5801,6 +5816,11 @@ SECURITY_LEVEL
 SELF
 :
    'self'
+;
+
+SEND
+:
+   'send'
 ;
 
 SEND_COMMUNITY
@@ -6315,6 +6335,11 @@ STOP_ONLY
    'stop-only'
 ;
 
+STOP_RECORD
+:
+   'stop-record'
+;
+
 STOPBITS
 :
    'stopbits'
@@ -6383,6 +6408,11 @@ SUBSCRIBE_TO_ALERT_GROUP
 SUBSCRIBER
 :
    'subscriber'
+;
+
+SUCCESS
+:
+   'success'
 ;
 
 SUMMARY_ADDRESS
@@ -8182,6 +8212,11 @@ M_Authentication_FAIL_MESSAGE
    'fail-message' -> type ( FAIL_MESSAGE ) , popMode
 ;
 
+M_Authentication_FAILURE
+:
+   'failure' -> type ( FAILURE ) , popMode
+;
+
 M_Authentication_HTTP
 :
    'http' -> type ( HTTP ) , popMode
@@ -8235,6 +8270,11 @@ M_Authentication_SERIAL
 M_Authentication_SSH
 :
    'ssh' -> type ( SSH ) , popMode
+;
+
+M_Authentication_SUCCESS
+:
+   'success' -> type ( SUCCESS ) , popMode
 ;
 
 M_Authentication_SUPPRESS
