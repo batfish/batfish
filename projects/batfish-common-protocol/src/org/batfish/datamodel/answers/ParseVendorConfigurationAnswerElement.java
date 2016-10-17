@@ -21,6 +21,7 @@ public class ParseVendorConfigurationAnswerElement
    private static final long serialVersionUID = 1L;
 
    private SortedMap<String, ParseTreeSentences> _parseTrees;
+
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
@@ -32,7 +33,7 @@ public class ParseVendorConfigurationAnswerElement
       if (!_warnings.containsKey(name)) {
          _warnings.put(name, new Warnings());
       }
-      _warnings.get(name).getRedFlagWarnings().add(warning);      
+      _warnings.get(name).getRedFlagWarnings().add(warning);
    }
 
    public SortedMap<String, ParseTreeSentences> getParseTrees() {

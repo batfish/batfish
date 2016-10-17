@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="test/bin" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava/guava-15.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.8.0.rc2-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.8.0.rc2-SNAPSHOT-sources.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.8.0.rc2-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.8.0.rc2-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jettison/jettison-1.3.jar" sourcepath="lib/jettison/jettison-1.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-io-2.4.jar"/>
@@ -15,5 +13,9 @@
 	<classpathentry kind="lib" path="lib/java-json/java-json.jar"/>
 	<classpathentry kind="lib" path="lib/jsonassert/jsonassert-1.2.3.jar" sourcepath="lib/jsonassert/jsonassert-1.2.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.7.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

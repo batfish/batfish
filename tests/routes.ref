@@ -3,9 +3,6 @@
     "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
     "routesByHostname" : {
       "as1border1" : [ {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.0.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -14,7 +11,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "1.0.2.0/24",
@@ -25,9 +21,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.1.1.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -36,7 +29,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "1.2.2.2/32",
@@ -47,7 +39,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "1.10.1.1/32",
@@ -58,7 +49,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -69,7 +59,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -80,7 +69,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -91,9 +79,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.12.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -102,7 +87,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.13.22.0/24",
@@ -113,7 +97,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.14.22.0/24",
@@ -125,7 +108,6 @@
         "tag" : -1
       } ],
       "as1border2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "1.0.1.0/24",
@@ -136,9 +118,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.0.2.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -147,7 +126,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "1.1.1.1/32",
@@ -158,9 +136,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.2.2.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -169,7 +144,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "1.10.1.1/32",
@@ -180,7 +154,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -191,7 +164,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -202,7 +174,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -213,7 +184,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -224,9 +194,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.13.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -235,9 +202,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.14.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/2",
@@ -247,9 +211,6 @@
         "tag" : -1
       } ],
       "as1core1" : [ {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.0.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -258,9 +219,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.0.2.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -269,7 +227,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "1.1.1.1/32",
@@ -280,7 +237,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "1.2.2.2/32",
@@ -291,9 +247,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "1.10.1.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -302,7 +255,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -313,7 +265,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -324,7 +275,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -335,7 +285,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -346,7 +295,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.13.22.0/24",
@@ -357,7 +305,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.14.22.0/24",
@@ -369,7 +316,6 @@
         "tag" : -1
       } ],
       "as2border1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -380,7 +326,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -391,9 +336,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.1.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -402,7 +344,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -413,7 +354,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -424,7 +364,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.1/32",
@@ -435,7 +374,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.2/32",
@@ -446,7 +384,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -457,7 +394,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -468,7 +404,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -479,7 +414,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -490,9 +424,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -501,9 +432,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.12.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -512,7 +440,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.21.0/24",
@@ -523,7 +450,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.22.0/24",
@@ -534,7 +460,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.11.0/24",
@@ -545,7 +470,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.12.0/24",
@@ -556,7 +480,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.21.0/24",
@@ -567,7 +490,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.22.0/24",
@@ -578,7 +500,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -589,7 +510,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -600,7 +520,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -611,7 +530,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -622,9 +540,7 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(none)",
         "nextHopInterface" : "null_interface",
@@ -633,7 +549,6 @@
         "protocol" : "aggregate",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -644,7 +559,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -655,7 +569,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -666,7 +579,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -677,7 +589,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -688,7 +599,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -699,9 +609,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.12.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -710,7 +617,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -721,7 +627,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -733,7 +638,6 @@
         "tag" : -1
       } ],
       "as2border2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -744,7 +648,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -755,7 +658,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -766,7 +668,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -777,9 +678,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.1.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -788,7 +686,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.1/32",
@@ -799,7 +696,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.2/32",
@@ -810,7 +706,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -821,7 +716,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -832,7 +726,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -843,7 +736,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -854,7 +746,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.11.0/24",
@@ -865,7 +756,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.12.0/24",
@@ -876,9 +766,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -887,9 +774,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -898,7 +782,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.11.0/24",
@@ -909,7 +792,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.12.0/24",
@@ -920,7 +802,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.21.0/24",
@@ -931,7 +812,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.22.0/24",
@@ -942,7 +822,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -953,7 +832,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -964,7 +842,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -975,7 +852,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -986,9 +862,7 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(none)",
         "nextHopInterface" : "null_interface",
@@ -997,7 +871,6 @@
         "protocol" : "aggregate",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1008,7 +881,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1019,7 +891,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1030,7 +901,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1041,7 +911,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -1052,7 +921,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -1063,7 +931,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -1074,7 +941,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -1085,9 +951,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.23.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -1097,7 +960,6 @@
         "tag" : -1
       } ],
       "as2core1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -1108,7 +970,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -1119,7 +980,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.1.1/32",
@@ -1130,7 +990,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.1.2/32",
@@ -1141,9 +1000,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.2.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -1152,7 +1008,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.2/32",
@@ -1163,7 +1018,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.2/32",
@@ -1174,7 +1028,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.2/32",
@@ -1185,7 +1038,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.2/32",
@@ -1196,7 +1048,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.3.1/32",
@@ -1207,7 +1058,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.3.2/32",
@@ -1218,9 +1068,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -1229,7 +1076,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.12.0/24",
@@ -1240,9 +1086,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -1251,7 +1094,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.22.0/24",
@@ -1262,9 +1104,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet2/0",
@@ -1273,9 +1112,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.12.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -1284,7 +1120,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.21.0/24",
@@ -1295,7 +1130,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.22.0/24",
@@ -1306,7 +1140,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -1317,7 +1150,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -1328,9 +1160,7 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "as2border1",
         "nextHopInterface" : "dynamic",
@@ -1339,9 +1169,7 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(ambiguous)",
         "nextHopInterface" : "dynamic",
@@ -1350,7 +1178,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1361,7 +1188,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1372,7 +1198,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1383,7 +1208,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1394,7 +1218,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -1405,7 +1228,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -1416,7 +1238,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -1427,7 +1248,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -1439,7 +1259,6 @@
         "tag" : -1
       } ],
       "as2core2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -1450,7 +1269,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -1461,7 +1279,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.1.1/32",
@@ -1472,7 +1289,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.1.2/32",
@@ -1483,7 +1299,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.1/32",
@@ -1494,7 +1309,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.1/32",
@@ -1505,7 +1319,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.1/32",
@@ -1516,7 +1329,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.2.1/32",
@@ -1527,9 +1339,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.2.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -1538,7 +1347,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.3.1/32",
@@ -1549,7 +1357,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.3.2/32",
@@ -1560,7 +1367,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.11.0/24",
@@ -1571,9 +1377,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.12.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -1582,7 +1385,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.21.0/24",
@@ -1593,9 +1395,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.12.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -1604,7 +1403,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.11.0/24",
@@ -1615,7 +1413,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.12.0/24",
@@ -1626,9 +1423,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -1637,9 +1431,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet2/0",
@@ -1648,7 +1439,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -1659,7 +1449,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -1670,9 +1459,7 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "as2border1",
         "nextHopInterface" : "dynamic",
@@ -1681,9 +1468,7 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(ambiguous)",
         "nextHopInterface" : "dynamic",
@@ -1692,7 +1477,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1703,7 +1487,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -1714,7 +1497,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1725,7 +1507,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -1736,7 +1517,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -1747,7 +1527,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -1758,7 +1537,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -1769,7 +1547,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -1781,7 +1558,6 @@
         "tag" : -1
       } ],
       "as2dept1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -1792,7 +1568,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -1803,7 +1578,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -1814,7 +1588,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -1825,9 +1598,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.1.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -1836,9 +1606,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.34.101.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -1847,9 +1614,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.34.201.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -1858,9 +1622,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.128.0.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -1869,9 +1630,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.128.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/1",
@@ -1880,7 +1638,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -1891,7 +1648,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -1902,7 +1658,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -1913,7 +1668,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -1925,7 +1679,6 @@
         "tag" : -1
       } ],
       "as2dist1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -1936,7 +1689,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -1947,7 +1699,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -1958,7 +1709,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -1969,7 +1719,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -1980,7 +1729,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -1991,7 +1739,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.1/32",
@@ -2002,7 +1749,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.2/32",
@@ -2013,9 +1759,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.3.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -2024,7 +1767,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -2035,7 +1777,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.2/32",
@@ -2046,7 +1787,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.11.0/24",
@@ -2057,7 +1797,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.12.0/24",
@@ -2068,7 +1807,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.21.0/24",
@@ -2079,7 +1817,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.22.0/24",
@@ -2090,9 +1827,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.11.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -2101,7 +1835,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.12.0/24",
@@ -2112,9 +1845,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -2123,7 +1853,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.22.0/24",
@@ -2134,9 +1863,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.34.101.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -2145,7 +1871,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -2156,7 +1881,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.201.0/24",
@@ -2167,9 +1891,7 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "as2border1",
         "nextHopInterface" : "dynamic",
@@ -2178,9 +1900,7 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(ambiguous)",
         "nextHopInterface" : "dynamic",
@@ -2189,7 +1909,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -2200,7 +1919,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -2211,7 +1929,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -2222,7 +1939,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -2233,7 +1949,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -2244,7 +1959,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -2255,7 +1969,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2266,7 +1979,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2278,7 +1990,6 @@
         "tag" : -1
       } ],
       "as2dist2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -2289,7 +2000,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -2300,7 +2010,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -2311,7 +2020,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.1/32",
@@ -2322,7 +2030,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -2333,7 +2040,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.1.2/32",
@@ -2344,7 +2050,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.1/32",
@@ -2355,7 +2060,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "2.1.2.2/32",
@@ -2366,7 +2070,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -2377,7 +2080,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "2.1.3.1/32",
@@ -2388,9 +2090,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.1.3.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -2399,7 +2098,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.11.0/24",
@@ -2410,7 +2108,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.12.0/24",
@@ -2421,7 +2118,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.21.0/24",
@@ -2432,7 +2128,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.12.22.0/24",
@@ -2443,7 +2138,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.11.0/24",
@@ -2454,9 +2148,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.12.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -2465,7 +2156,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.23.21.0/24",
@@ -2476,9 +2166,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.23.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -2487,7 +2174,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -2498,7 +2184,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "2.34.101.0/24",
@@ -2509,9 +2194,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.34.201.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -2520,9 +2202,7 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "as2border1",
         "nextHopInterface" : "dynamic",
@@ -2531,9 +2211,7 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
-        "metric" : 0,
         "network" : "2.128.0.0/16",
         "nextHop" : "(ambiguous)",
         "nextHopInterface" : "dynamic",
@@ -2542,7 +2220,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.0.0/24",
@@ -2553,7 +2230,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.1.0/24",
@@ -2564,7 +2240,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.1.0/24",
@@ -2575,7 +2250,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "3.0.2.0/24",
@@ -2586,7 +2260,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -2597,7 +2270,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.12.11.0/24",
@@ -2608,7 +2280,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2619,7 +2290,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2631,7 +2301,6 @@
         "tag" : -1
       } ],
       "as3border1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -2642,7 +2311,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -2653,7 +2321,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -2664,9 +2331,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.0.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -2675,7 +2339,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "3.0.2.0/24",
@@ -2686,9 +2349,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.1.1.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -2697,7 +2357,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "3.2.2.2/32",
@@ -2708,7 +2367,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "3.10.1.1/32",
@@ -2719,7 +2377,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.13.22.0/24",
@@ -2730,9 +2387,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.23.21.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -2742,7 +2396,6 @@
         "tag" : -1
       } ],
       "as3border2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -2753,7 +2406,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 20,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -2764,7 +2416,6 @@
         "protocol" : "bgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -2775,7 +2426,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "3.0.1.0/24",
@@ -2786,9 +2436,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.0.2.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -2797,7 +2444,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 21,
         "network" : "3.1.1.1/32",
@@ -2808,9 +2454,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.2.2.2/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -2819,7 +2462,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "3.10.1.1/32",
@@ -2830,9 +2472,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "10.13.22.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -2841,7 +2480,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2853,7 +2491,6 @@
         "tag" : -1
       } ],
       "as3core1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.1.0/24",
@@ -2864,7 +2501,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "1.0.2.0/24",
@@ -2875,7 +2511,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 200,
         "metric" : 50,
         "network" : "2.128.0.0/16",
@@ -2886,9 +2521,6 @@
         "protocol" : "ibgp",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.0.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/1",
@@ -2897,9 +2529,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.0.2.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet0/0",
@@ -2908,7 +2537,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "3.1.1.1/32",
@@ -2919,7 +2547,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 11,
         "network" : "3.2.2.2/32",
@@ -2930,9 +2557,6 @@
         "protocol" : "ospf",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "3.10.1.1/32",
         "nextHop" : "(none)",
         "nextHopInterface" : "Loopback0",
@@ -2941,7 +2565,6 @@
         "protocol" : "connected",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.13.22.0/24",
@@ -2952,7 +2575,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
         "administrativeCost" : 110,
         "metric" : 20,
         "network" : "10.23.21.0/24",
@@ -2963,9 +2585,6 @@
         "protocol" : "ospfE2",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "90.90.90.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "FastEthernet1/0",
@@ -2975,9 +2594,7 @@
         "tag" : -1
       } ],
       "host1" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 1,
-        "metric" : 0,
         "network" : "0.0.0.0/0",
         "nextHop" : "(none)",
         "nextHopInterface" : "eth0",
@@ -2986,9 +2603,6 @@
         "protocol" : "static",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.128.0.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "eth0",
@@ -2998,9 +2612,7 @@
         "tag" : -1
       } ],
       "host2" : [ {
-        "diffSymbol" : null,
         "administrativeCost" : 1,
-        "metric" : 0,
         "network" : "0.0.0.0/0",
         "nextHop" : "(none)",
         "nextHopInterface" : "eth0",
@@ -3009,9 +2621,6 @@
         "protocol" : "static",
         "tag" : -1
       }, {
-        "diffSymbol" : null,
-        "administrativeCost" : 0,
-        "metric" : 0,
         "network" : "2.128.1.0/24",
         "nextHop" : "(none)",
         "nextHopInterface" : "eth0",
@@ -3023,9 +2632,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion"
   },
   "status" : "SUCCESS"
 }

@@ -127,11 +127,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*",
-    "nodeType" : [ ],
-    "summary" : true
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion"
   },
   "status" : "SUCCESS"
 }

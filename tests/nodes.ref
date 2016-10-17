@@ -5,92 +5,58 @@
       "as1border1" : {
         "@id" : 1,
         "name" : "as1border1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "3.2.2.2/32" : {
               "@id" : 2,
               "name" : "3.2.2.2/32",
               "address" : "3.2.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16843009,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "bad-ebgp",
               "localAs" : 1,
               "owner" : 1,
               "remoteAs" : 666,
               "remotePrefix" : "3.2.2.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : false
             },
             "5.6.7.8/32" : {
               "@id" : 3,
               "name" : "5.6.7.8/32",
               "address" : "5.6.7.8",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16843009,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:5.6.7.8~",
-              "generatedRoutes" : [ ],
               "group" : "xanadu",
               "localAs" : 1,
               "owner" : 1,
               "remoteAs" : 555,
               "remotePrefix" : "5.6.7.8/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : false
             },
             "1.10.1.1/32" : {
               "@id" : 4,
               "name" : "1.10.1.1/32",
               "address" : "1.10.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16843009,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "localAs" : 1,
               "localIp" : "1.1.1.1",
               "owner" : 1,
               "remoteAs" : 1,
               "remotePrefix" : "1.10.1.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "10.12.11.2/32" : {
               "@id" : 5,
               "name" : "10.12.11.2/32",
               "address" : "10.12.11.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16843009,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.12.11.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "importPolicy" : "as2_to_as1",
               "localAs" : 1,
@@ -98,13 +64,11 @@
               "owner" : 1,
               "remoteAs" : 2,
               "remotePrefix" : "10.12.11.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "1.1.1.1"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 6,
@@ -112,8 +76,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 7,
@@ -121,8 +84,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 8,
@@ -130,34 +92,25 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 9,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.0.1.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 10,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 1,
             "prefix" : "1.0.1.1/24",
             "switchportMode" : "NONE",
@@ -166,19 +119,13 @@
           "FastEthernet0/1" : {
             "@id" : 11,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.12.11.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 1,
             "prefix" : "10.12.11.1/24",
             "switchportMode" : "NONE",
@@ -187,20 +134,15 @@
           "Loopback0" : {
             "@id" : 12,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.1.1.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 10,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 1,
             "prefix" : "1.1.1.1/32",
             "switchportMode" : "NONE",
@@ -392,9 +334,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -408,7 +347,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "1.1.1.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 16,
@@ -473,8 +411,7 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 21,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 22,
@@ -496,7 +433,6 @@
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -531,7 +467,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -566,7 +501,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -609,7 +543,6 @@
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -644,7 +577,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -687,7 +619,6 @@
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -715,7 +646,6 @@
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -743,7 +673,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -897,7 +826,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -911,55 +839,35 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as1border2" : {
         "@id" : 33,
         "name" : "as1border2",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "1.10.1.1/32" : {
               "@id" : 34,
               "name" : "1.10.1.1/32",
               "address" : "1.10.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16908802,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "localAs" : 1,
               "localIp" : "1.2.2.2",
               "owner" : 33,
               "remoteAs" : 1,
               "remotePrefix" : "1.10.1.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "10.14.22.4/32" : {
               "@id" : 35,
               "name" : "10.14.22.4/32",
               "address" : "10.14.22.4",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16908802,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.14.22.4~",
-              "generatedRoutes" : [ ],
               "group" : "as4",
               "importPolicy" : "as4_to_as1",
               "localAs" : 1,
@@ -967,23 +875,15 @@
               "owner" : 33,
               "remoteAs" : 4,
               "remotePrefix" : "10.14.22.4/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : false
             },
             "10.13.22.3/32" : {
               "@id" : 36,
               "name" : "10.13.22.3/32",
               "address" : "10.13.22.3",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 16908802,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.13.22.3~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "importPolicy" : "as3_to_as1",
               "localAs" : 1,
@@ -991,13 +891,11 @@
               "owner" : 33,
               "remoteAs" : 3,
               "remotePrefix" : "10.13.22.3/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "1.2.2.2"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 37,
@@ -1005,8 +903,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 38,
@@ -1014,8 +911,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 39,
@@ -1023,8 +919,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           },
           "as4_community" : {
             "@id" : 40,
@@ -1032,34 +927,25 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )4:"
             } ],
-            "name" : "as4_community",
-            "invertMatch" : false
+            "name" : "as4_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 41,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.0.2.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 42,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 33,
             "prefix" : "1.0.2.1/24",
             "switchportMode" : "NONE",
@@ -1068,19 +954,13 @@
           "FastEthernet0/1" : {
             "@id" : 43,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.13.22.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 33,
             "prefix" : "10.13.22.1/24",
             "switchportMode" : "NONE",
@@ -1089,19 +969,13 @@
           "FastEthernet0/2" : {
             "@id" : 44,
             "name" : "FastEthernet0/2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.14.22.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 33,
             "prefix" : "10.14.22.1/24",
             "switchportMode" : "NONE",
@@ -1110,20 +984,15 @@
           "Loopback0" : {
             "@id" : 45,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.2.2.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 42,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 33,
             "prefix" : "1.2.2.2/32",
             "switchportMode" : "NONE",
@@ -1315,9 +1184,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -1331,7 +1197,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "1.2.2.2"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 49,
@@ -1396,8 +1261,7 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 54,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 55,
@@ -1419,7 +1283,6 @@
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -1454,7 +1317,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -1497,7 +1359,6 @@
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -1532,7 +1393,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -1607,7 +1467,6 @@
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -1635,7 +1494,6 @@
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -1663,7 +1521,6 @@
             "name" : "as4_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                 "conjuncts" : [ {
@@ -1700,7 +1557,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -1834,7 +1690,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -1848,32 +1703,20 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as1core1" : {
         "@id" : 67,
         "name" : "as1core1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "1.2.2.2/32" : {
               "@id" : 68,
               "name" : "1.2.2.2/32",
               "address" : "1.2.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 17432833,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "localAs" : 1,
               "localIp" : "1.10.1.1",
@@ -1887,16 +1730,9 @@
               "@id" : 69,
               "name" : "1.1.1.1/32",
               "address" : "1.1.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 17432833,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "localAs" : 1,
               "localIp" : "1.10.1.1",
@@ -1909,32 +1745,22 @@
           },
           "routerId" : "1.10.1.1"
         },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 70,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.0.1.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 71,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 67,
             "prefix" : "1.0.1.2/24",
             "switchportMode" : "NONE",
@@ -1943,20 +1769,15 @@
           "FastEthernet0/1" : {
             "@id" : 72,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.0.2.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 71,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 67,
             "prefix" : "1.0.2.2/24",
             "switchportMode" : "NONE",
@@ -1965,30 +1786,21 @@
           "Loopback0" : {
             "@id" : 73,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "1.10.1.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 71,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 67,
             "prefix" : "1.10.1.1/32",
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q"
           }
         },
-        "ipAccessLists" : { },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -2002,17 +1814,14 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "1.10.1.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 74,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 75,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
@@ -2021,7 +1830,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -2101,12 +1909,9 @@
           },
           "~OSPF_EXPORT_POLICY~" : {
             "@id" : 79,
-            "name" : "~OSPF_EXPORT_POLICY~",
-            "statements" : [ ]
+            "name" : "~OSPF_EXPORT_POLICY~"
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2border1" : {
         "@id" : 80,
@@ -2118,47 +1923,30 @@
           "discard" : true,
           "generationPolicy" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~"
         } ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.2.2/32" : {
               "@id" : 81,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620225,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.1",
               "owner" : 80,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "10.12.11.1/32" : {
               "@id" : 82,
               "name" : "10.12.11.1/32",
               "address" : "10.12.11.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620225,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "importPolicy" : "as1_to_as2",
               "localAs" : 2,
@@ -2166,36 +1954,26 @@
               "owner" : 80,
               "remoteAs" : 1,
               "remotePrefix" : "10.12.11.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
               "@id" : 83,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620225,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.1",
               "owner" : 80,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "2.1.1.1"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 84,
@@ -2203,8 +1981,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 85,
@@ -2212,8 +1989,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 86,
@@ -2221,34 +1997,24 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 87,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.12.11.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 88,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "outgoingFilter" : 89,
             "owner" : 80,
             "prefix" : "10.12.11.2/24",
@@ -2258,20 +2024,15 @@
           "FastEthernet0/1" : {
             "@id" : 90,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.11.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 91,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 80,
             "prefix" : "2.12.11.1/24",
             "switchportMode" : "NONE",
@@ -2280,20 +2041,15 @@
           "FastEthernet1/0" : {
             "@id" : 92,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.12.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 91,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 80,
             "prefix" : "2.12.12.1/24",
             "switchportMode" : "NONE",
@@ -2302,20 +2058,15 @@
           "Loopback0" : {
             "@id" : 93,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.1.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 91,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 80,
             "prefix" : "2.1.1.1/32",
             "switchportMode" : "NONE",
@@ -2596,9 +2347,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -2612,7 +2360,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.1.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 96,
@@ -2673,8 +2420,7 @@
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 101,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
             "@id" : 102,
@@ -2692,7 +2438,6 @@
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -2720,7 +2465,6 @@
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2755,7 +2499,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2798,7 +2541,6 @@
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2833,7 +2575,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2876,7 +2617,6 @@
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -2904,7 +2644,6 @@
             "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2924,7 +2663,6 @@
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "Suppress summarized of summary-only aggregate-address networks",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -2938,7 +2676,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -3066,7 +2803,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -3080,9 +2816,7 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2border2" : {
         "@id" : 113,
@@ -3094,47 +2828,30 @@
           "discard" : true,
           "generationPolicy" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~"
         } ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.2.2/32" : {
               "@id" : 114,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620226,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.2",
               "owner" : 113,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "10.23.21.3/32" : {
               "@id" : 115,
               "name" : "10.23.21.3/32",
               "address" : "10.23.21.3",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620226,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.23.21.3~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "importPolicy" : "as3_to_as2",
               "localAs" : 2,
@@ -3142,36 +2859,26 @@
               "owner" : 113,
               "remoteAs" : 3,
               "remotePrefix" : "10.23.21.3/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
               "@id" : 116,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620226,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.2",
               "owner" : 113,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "2.1.1.2"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 117,
@@ -3179,8 +2886,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 118,
@@ -3188,8 +2894,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 119,
@@ -3197,34 +2902,24 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 120,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.23.21.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 121,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "outgoingFilter" : 122,
             "owner" : 113,
             "prefix" : "10.23.21.2/24",
@@ -3234,20 +2929,15 @@
           "FastEthernet0/1" : {
             "@id" : 123,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.21.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 124,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 113,
             "prefix" : "2.12.21.1/24",
             "switchportMode" : "NONE",
@@ -3256,20 +2946,15 @@
           "FastEthernet1/0" : {
             "@id" : 125,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.22.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 124,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 113,
             "prefix" : "2.12.22.1/24",
             "switchportMode" : "NONE",
@@ -3278,20 +2963,15 @@
           "Loopback0" : {
             "@id" : 126,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.1.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 124,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 113,
             "prefix" : "2.1.1.2/32",
             "switchportMode" : "NONE",
@@ -3544,9 +3224,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -3560,7 +3237,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.1.2"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 129,
@@ -3621,8 +3297,7 @@
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 134,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
             "@id" : 135,
@@ -3640,7 +3315,6 @@
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -3683,7 +3357,6 @@
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3718,7 +3391,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3761,7 +3433,6 @@
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3796,7 +3467,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3839,7 +3509,6 @@
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -3882,7 +3551,6 @@
             "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3902,7 +3570,6 @@
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "Suppress summarized of summary-only aggregate-address networks",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -3916,7 +3583,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -4044,7 +3710,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -4058,32 +3723,20 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2core1" : {
         "@id" : 146,
         "name" : "as2core1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.1.2/32" : {
               "@id" : 147,
               "name" : "2.1.1.2/32",
               "address" : "2.1.1.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620481,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
@@ -4097,16 +3750,9 @@
               "@id" : 148,
               "name" : "2.1.3.2/32",
               "address" : "2.1.3.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620481,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
@@ -4120,16 +3766,9 @@
               "@id" : 149,
               "name" : "2.1.1.1/32",
               "address" : "2.1.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620481,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
@@ -4143,16 +3782,9 @@
               "@id" : 150,
               "name" : "2.1.3.1/32",
               "address" : "2.1.3.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620481,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
@@ -4165,32 +3797,22 @@
           },
           "routerId" : "2.1.2.1"
         },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 151,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.11.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 152,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 146,
             "prefix" : "2.12.11.2/24",
             "switchportMode" : "NONE",
@@ -4199,20 +3821,15 @@
           "FastEthernet0/1" : {
             "@id" : 153,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.21.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 152,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 146,
             "prefix" : "2.12.21.2/24",
             "switchportMode" : "NONE",
@@ -4221,10 +3838,8 @@
           "FastEthernet1/0" : {
             "@id" : 154,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.12.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 155,
             "isisL1InterfaceMode" : "unset",
@@ -4232,10 +3847,7 @@
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 152,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 146,
             "prefix" : "2.23.12.2/24",
             "switchportMode" : "NONE",
@@ -4244,10 +3856,8 @@
           "FastEthernet2/0" : {
             "@id" : 156,
             "name" : "FastEthernet2/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.11.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 155,
             "isisL1InterfaceMode" : "unset",
@@ -4255,10 +3865,7 @@
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 152,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 146,
             "prefix" : "2.23.11.2/24",
             "switchportMode" : "NONE",
@@ -4267,20 +3874,15 @@
           "Loopback0" : {
             "@id" : 157,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.2.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 152,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 146,
             "prefix" : "2.1.2.1/32",
             "switchportMode" : "NONE",
@@ -4350,9 +3952,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -4366,17 +3965,14 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.2.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 158,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 159,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
@@ -4385,7 +3981,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -4517,35 +4112,22 @@
           },
           "~OSPF_EXPORT_POLICY~" : {
             "@id" : 165,
-            "name" : "~OSPF_EXPORT_POLICY~",
-            "statements" : [ ]
+            "name" : "~OSPF_EXPORT_POLICY~"
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2core2" : {
         "@id" : 166,
         "name" : "as2core2",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.1.2/32" : {
               "@id" : 167,
               "name" : "2.1.1.2/32",
               "address" : "2.1.1.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620482,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
@@ -4559,16 +4141,9 @@
               "@id" : 168,
               "name" : "2.1.3.2/32",
               "address" : "2.1.3.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620482,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
@@ -4582,16 +4157,9 @@
               "@id" : 169,
               "name" : "2.1.1.1/32",
               "address" : "2.1.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620482,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
@@ -4605,16 +4173,9 @@
               "@id" : 170,
               "name" : "2.1.3.1/32",
               "address" : "2.1.3.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620482,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
@@ -4627,32 +4188,22 @@
           },
           "routerId" : "2.1.2.2"
         },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 171,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.22.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 172,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 166,
             "prefix" : "2.12.22.2/24",
             "switchportMode" : "NONE",
@@ -4661,20 +4212,15 @@
           "FastEthernet0/1" : {
             "@id" : 173,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.12.12.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 172,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 166,
             "prefix" : "2.12.12.2/24",
             "switchportMode" : "NONE",
@@ -4683,20 +4229,15 @@
           "FastEthernet1/0" : {
             "@id" : 174,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.21.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 172,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 166,
             "prefix" : "2.23.21.2/24",
             "switchportMode" : "NONE",
@@ -4705,20 +4246,15 @@
           "FastEthernet2/0" : {
             "@id" : 175,
             "name" : "FastEthernet2/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.22.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 172,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 166,
             "prefix" : "2.23.22.2/24",
             "switchportMode" : "NONE",
@@ -4727,30 +4263,21 @@
           "Loopback0" : {
             "@id" : 176,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.2.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 172,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 166,
             "prefix" : "2.1.2.2/32",
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q"
           }
         },
-        "ipAccessLists" : { },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -4764,17 +4291,14 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.2.2"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 177,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 178,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
@@ -4783,7 +4307,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -4915,35 +4438,22 @@
           },
           "~OSPF_EXPORT_POLICY~" : {
             "@id" : 184,
-            "name" : "~OSPF_EXPORT_POLICY~",
-            "statements" : [ ]
+            "name" : "~OSPF_EXPORT_POLICY~"
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2dept1" : {
         "@id" : 185,
         "name" : "as2dept1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.34.101.3/32" : {
               "@id" : 186,
               "name" : "2.34.101.3/32",
               "address" : "2.34.101.3",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620993,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.101.3~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "importPolicy" : "as2_to_dept",
               "localAs" : 65001,
@@ -4951,23 +4461,15 @@
               "owner" : 185,
               "remoteAs" : 2,
               "remotePrefix" : "2.34.101.3/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.34.201.3/32" : {
               "@id" : 187,
               "name" : "2.34.201.3/32",
               "address" : "2.34.201.3",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620993,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.201.3~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "importPolicy" : "as2_to_dept",
               "localAs" : 65001,
@@ -4975,13 +4477,11 @@
               "owner" : 185,
               "remoteAs" : 2,
               "remotePrefix" : "2.34.201.3/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "2.1.4.1"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as2_community" : {
             "@id" : 188,
@@ -4989,33 +4489,23 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 189,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.34.101.4/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 185,
             "prefix" : "2.34.101.4/24",
             "switchportMode" : "NONE",
@@ -5024,19 +4514,13 @@
           "FastEthernet0/1" : {
             "@id" : 190,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.34.201.4/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 185,
             "prefix" : "2.34.201.4/24",
             "switchportMode" : "NONE",
@@ -5045,20 +4529,14 @@
           "FastEthernet1/0" : {
             "@id" : 191,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.128.0.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 192,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 185,
             "prefix" : "2.128.0.1/24",
             "switchportMode" : "NONE",
@@ -5067,20 +4545,14 @@
           "FastEthernet1/1" : {
             "@id" : 193,
             "name" : "FastEthernet1/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.128.1.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "incomingFilter" : 192,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 185,
             "prefix" : "2.128.1.1/24",
             "switchportMode" : "NONE",
@@ -5089,19 +4561,13 @@
           "Loopback0" : {
             "@id" : 194,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.1.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 185,
             "prefix" : "2.1.1.2/32",
             "switchportMode" : "NONE",
@@ -5466,10 +4932,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
-        "roles" : [ ],
         "routeFilterLists" : {
           "102" : {
             "@id" : 198,
@@ -5486,8 +4948,7 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 199,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 200,
@@ -5509,7 +4970,6 @@
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -5537,7 +4997,6 @@
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -5580,7 +5039,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -5670,55 +5128,35 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2dist1" : {
         "@id" : 206,
         "name" : "as2dist1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.2.2/32" : {
               "@id" : 207,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620737,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.1",
               "owner" : 206,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.34.101.4/32" : {
               "@id" : 208,
               "name" : "2.34.101.4/32",
               "address" : "2.34.101.4",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620737,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.101.4~",
-              "generatedRoutes" : [ ],
               "group" : "dept",
               "importPolicy" : "dept_to_as2",
               "localAs" : 2,
@@ -5726,36 +5164,26 @@
               "owner" : 206,
               "remoteAs" : 65001,
               "remotePrefix" : "2.34.101.4/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
               "@id" : 209,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620737,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.1",
               "owner" : 206,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "2.1.3.1"
         },
-        "communities" : [ ],
         "communityLists" : {
           "dept_community" : {
             "@id" : 210,
@@ -5763,34 +5191,25 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )65001:"
             } ],
-            "name" : "dept_community",
-            "invertMatch" : false
+            "name" : "dept_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 211,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.21.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 212,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 206,
             "prefix" : "2.23.21.3/24",
             "switchportMode" : "NONE",
@@ -5799,20 +5218,15 @@
           "FastEthernet0/1" : {
             "@id" : 213,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.11.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 212,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 206,
             "prefix" : "2.23.11.3/24",
             "switchportMode" : "NONE",
@@ -5821,19 +5235,13 @@
           "FastEthernet1/0" : {
             "@id" : 214,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.34.101.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 206,
             "prefix" : "2.34.101.3/24",
             "switchportMode" : "NONE",
@@ -5842,20 +5250,15 @@
           "Loopback0" : {
             "@id" : 215,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.3.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 212,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 206,
             "prefix" : "2.1.3.1/32",
             "switchportMode" : "NONE",
@@ -6014,9 +5417,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -6030,7 +5430,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.3.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "105" : {
             "@id" : 218,
@@ -6055,13 +5454,11 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 219,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 220,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
@@ -6070,7 +5467,6 @@
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -6113,7 +5509,6 @@
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -6141,7 +5536,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -6263,7 +5657,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -6277,55 +5670,35 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as2dist2" : {
         "@id" : 228,
         "name" : "as2dist2",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "2.1.2.2/32" : {
               "@id" : 229,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620738,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.2",
               "owner" : 228,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.34.201.4/32" : {
               "@id" : 230,
               "name" : "2.34.201.4/32",
               "address" : "2.34.201.4",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620738,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.201.4~",
-              "generatedRoutes" : [ ],
               "group" : "dept",
               "importPolicy" : "dept_to_as2",
               "localAs" : 2,
@@ -6333,36 +5706,26 @@
               "owner" : 228,
               "remoteAs" : 65001,
               "remotePrefix" : "2.34.201.4/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
               "@id" : 231,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 33620738,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.2",
               "owner" : 228,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "2.1.3.2"
         },
-        "communities" : [ ],
         "communityLists" : {
           "dept_community" : {
             "@id" : 232,
@@ -6370,34 +5733,25 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )65001:"
             } ],
-            "name" : "dept_community",
-            "invertMatch" : false
+            "name" : "dept_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 233,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.22.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 234,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 228,
             "prefix" : "2.23.22.3/24",
             "switchportMode" : "NONE",
@@ -6406,20 +5760,15 @@
           "FastEthernet0/1" : {
             "@id" : 235,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.23.12.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 234,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 228,
             "prefix" : "2.23.12.3/24",
             "switchportMode" : "NONE",
@@ -6428,19 +5777,13 @@
           "FastEthernet1/0" : {
             "@id" : 236,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.34.201.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 228,
             "prefix" : "2.34.201.3/24",
             "switchportMode" : "NONE",
@@ -6449,20 +5792,15 @@
           "Loopback0" : {
             "@id" : 237,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.1.3.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 234,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 228,
             "prefix" : "2.1.3.2/32",
             "switchportMode" : "NONE",
@@ -6621,9 +5959,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -6637,7 +5972,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "2.1.3.2"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "105" : {
             "@id" : 240,
@@ -6662,13 +5996,11 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 241,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 242,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
-            "lines" : [ ]
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
@@ -6677,7 +6009,6 @@
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -6720,7 +6051,6 @@
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -6748,7 +6078,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -6870,7 +6199,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -6884,32 +6212,20 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as3border1" : {
         "@id" : 250,
         "name" : "as3border1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "10.23.21.2/32" : {
               "@id" : 251,
               "name" : "10.23.21.2/32",
               "address" : "10.23.21.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50397441,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.23.21.2~",
-              "generatedRoutes" : [ ],
               "group" : "as2",
               "importPolicy" : "as2_to_as3",
               "localAs" : 3,
@@ -6917,36 +6233,26 @@
               "owner" : 250,
               "remoteAs" : 2,
               "remotePrefix" : "10.23.21.2/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "3.10.1.1/32" : {
               "@id" : 252,
               "name" : "3.10.1.1/32",
               "address" : "3.10.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50397441,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.1.1.1",
               "owner" : 250,
               "remoteAs" : 3,
               "remotePrefix" : "3.10.1.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "3.1.1.1"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 253,
@@ -6954,8 +6260,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 254,
@@ -6963,8 +6268,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 255,
@@ -6972,33 +6276,23 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 256,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.23.21.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 250,
             "prefix" : "10.23.21.3/24",
             "switchportMode" : "NONE",
@@ -7007,20 +6301,15 @@
           "FastEthernet0/1" : {
             "@id" : 257,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.0.1.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 258,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 250,
             "prefix" : "3.0.1.1/24",
             "switchportMode" : "NONE",
@@ -7029,20 +6318,15 @@
           "Loopback0" : {
             "@id" : 259,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.1.1.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 258,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 250,
             "prefix" : "3.1.1.1/32",
             "switchportMode" : "NONE",
@@ -7234,9 +6518,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -7250,7 +6531,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "3.1.1.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 263,
@@ -7315,8 +6595,7 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 268,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 269,
@@ -7338,7 +6617,6 @@
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -7366,7 +6644,6 @@
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -7394,7 +6671,6 @@
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -7429,7 +6705,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -7472,7 +6747,6 @@
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -7507,7 +6781,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -7542,7 +6815,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -7585,7 +6857,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -7687,7 +6958,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -7701,32 +6971,20 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as3border2" : {
         "@id" : 278,
         "name" : "as3border2",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "10.13.22.1/32" : {
               "@id" : 279,
               "name" : "10.13.22.1/32",
               "address" : "10.13.22.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50463234,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.13.22.1~",
-              "generatedRoutes" : [ ],
               "group" : "as1",
               "importPolicy" : "as1_to_as3",
               "localAs" : 3,
@@ -7734,36 +6992,26 @@
               "owner" : 278,
               "remoteAs" : 1,
               "remotePrefix" : "10.13.22.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             },
             "3.10.1.1/32" : {
               "@id" : 280,
               "name" : "3.10.1.1/32",
               "address" : "3.10.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50463234,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.2.2.2",
               "owner" : 278,
               "remoteAs" : 3,
               "remotePrefix" : "3.10.1.1/32",
-              "routeReflectorClient" : false,
               "sendCommunity" : true
             }
           },
           "routerId" : "3.2.2.2"
         },
-        "communities" : [ ],
         "communityLists" : {
           "as1_community" : {
             "@id" : 281,
@@ -7771,8 +7019,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
             } ],
-            "name" : "as1_community",
-            "invertMatch" : false
+            "name" : "as1_community"
           },
           "as2_community" : {
             "@id" : 282,
@@ -7780,8 +7027,7 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
             } ],
-            "name" : "as2_community",
-            "invertMatch" : false
+            "name" : "as2_community"
           },
           "as3_community" : {
             "@id" : 283,
@@ -7789,34 +7035,25 @@
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
             } ],
-            "name" : "as3_community",
-            "invertMatch" : false
+            "name" : "as3_community"
           }
         },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 284,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.0.2.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 285,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 278,
             "prefix" : "3.0.2.1/24",
             "switchportMode" : "NONE",
@@ -7825,19 +7062,13 @@
           "FastEthernet0/1" : {
             "@id" : 286,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "10.13.22.3/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 278,
             "prefix" : "10.13.22.3/24",
             "switchportMode" : "NONE",
@@ -7846,20 +7077,15 @@
           "Loopback0" : {
             "@id" : 287,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.2.2.2/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 285,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 278,
             "prefix" : "3.2.2.2/32",
             "switchportMode" : "NONE",
@@ -8051,9 +7277,6 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -8067,7 +7290,6 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "3.2.2.2"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "101" : {
             "@id" : 291,
@@ -8123,8 +7345,7 @@
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 295,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 296,
@@ -8146,7 +7367,6 @@
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -8174,7 +7394,6 @@
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                 "expr" : {
@@ -8202,7 +7421,6 @@
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -8237,7 +7455,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -8280,7 +7497,6 @@
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -8315,7 +7531,6 @@
               } ]
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "expr" : {
@@ -8358,7 +7573,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -8460,7 +7674,6 @@
             }, {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
               "comment" : "OSPF export connected routes",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                 "protocol" : "connected"
@@ -8474,32 +7687,20 @@
               } ]
             } ]
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "as3core1" : {
         "@id" : 305,
         "name" : "as3core1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
         "bgpProcess" : {
-          "generatedRoutes" : [ ],
           "neighbors" : {
             "3.2.2.2/32" : {
               "@id" : 306,
               "name" : "3.2.2.2/32",
               "address" : "3.2.2.2",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50987265,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.10.1.1",
@@ -8513,16 +7714,9 @@
               "@id" : 307,
               "name" : "3.1.1.1/32",
               "address" : "3.1.1.1",
-              "advertiseExternal" : false,
-              "advertiseInactive" : false,
-              "allowLocalAsIn" : false,
-              "allowRemoteAsOut" : false,
               "clusterId" : 50987265,
               "defaultMetric" : 0,
-              "dynamic" : false,
-              "ebgpMultihop" : false,
               "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.1.1.1~",
-              "generatedRoutes" : [ ],
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.10.1.1",
@@ -8535,32 +7729,22 @@
           },
           "routerId" : "3.10.1.1"
         },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "CISCO",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "FastEthernet0/0" : {
             "@id" : 308,
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.0.2.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 309,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 305,
             "prefix" : "3.0.2.2/24",
             "switchportMode" : "NONE",
@@ -8569,20 +7753,15 @@
           "FastEthernet0/1" : {
             "@id" : 310,
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.0.1.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 309,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 305,
             "prefix" : "3.0.1.2/24",
             "switchportMode" : "NONE",
@@ -8591,19 +7770,13 @@
           "FastEthernet1/0" : {
             "@id" : 311,
             "name" : "FastEthernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "90.90.90.1/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 305,
             "prefix" : "90.90.90.1/24",
             "switchportMode" : "NONE",
@@ -8612,19 +7785,13 @@
           "FastEthernet1/1" : {
             "@id" : 312,
             "name" : "FastEthernet1/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "90.90.90.2/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E8,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 305,
             "prefix" : "90.90.90.2/24",
             "switchportMode" : "NONE",
@@ -8633,30 +7800,21 @@
           "Loopback0" : {
             "@id" : 313,
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "3.10.1.1/32" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E12,
             "isisL1InterfaceMode" : "unset",
             "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 309,
-            "ospfDeadInterval" : 0,
             "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "owner" : 305,
             "prefix" : "3.10.1.1/32",
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q"
           }
         },
-        "ipAccessLists" : { },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -8670,12 +7828,10 @@
           "referenceBandwidth" : 1.0E9,
           "routerId" : "3.10.1.1"
         },
-        "roles" : [ ],
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
             "@id" : 314,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "lines" : [ ]
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
             "@id" : 315,
@@ -8697,7 +7853,6 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "falseStatements" : [ ],
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                 "disjuncts" : [ {
@@ -8777,42 +7932,25 @@
           },
           "~OSPF_EXPORT_POLICY~" : {
             "@id" : 319,
-            "name" : "~OSPF_EXPORT_POLICY~",
-            "statements" : [ ]
+            "name" : "~OSPF_EXPORT_POLICY~"
           }
-        },
-        "staticRoutes" : [ ],
-        "zones" : { }
+        }
       },
       "host1" : {
         "@id" : 320,
         "name" : "host1",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "HOST",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "eth0" : {
             "@id" : 321,
             "name" : "eth0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.128.0.101/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E9,
             "incomingFilter" : 322,
-            "mtu" : 0,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "outgoingFilter" : 323,
             "owner" : 320,
             "prefix" : "2.128.0.101/24",
@@ -9240,50 +8378,29 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
-        "roles" : [ ],
-        "routeFilterLists" : { },
-        "routingPolicies" : { },
         "staticRoutes" : [ {
           "class" : "org.batfish.datamodel.StaticRoute",
           "network" : "0.0.0.0/0",
           "nextHopInterface" : "eth0",
           "tag" : -1,
           "administrativeCost" : 1
-        } ],
-        "zones" : { }
+        } ]
       },
       "host2" : {
         "@id" : 333,
         "name" : "host2",
-        "aggregateRoutes" : [ ],
-        "asPathAccessLists" : { },
-        "communities" : [ ],
-        "communityLists" : { },
         "configurationFormat" : "HOST",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "ikeGateways" : { },
-        "ikePolicies" : { },
-        "ikeProposals" : { },
         "interfaces" : {
           "eth0" : {
             "@id" : 334,
             "name" : "eth0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [ "2.128.1.101/24" ],
-            "allowedVlans" : [ ],
             "bandwidth" : 1.0E9,
             "incomingFilter" : 335,
-            "mtu" : 0,
             "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
             "outgoingFilter" : 336,
             "owner" : 333,
             "prefix" : "2.128.1.101/24",
@@ -9711,28 +8828,18 @@
             } ]
           }
         },
-        "ipsecPolicies" : { },
-        "ipsecProposals" : { },
-        "ipsecVpns" : { },
-        "roles" : [ ],
-        "routeFilterLists" : { },
-        "routingPolicies" : { },
         "staticRoutes" : [ {
           "class" : "org.batfish.datamodel.StaticRoute",
           "network" : "0.0.0.0/0",
           "nextHopInterface" : "eth0",
           "tag" : -1,
           "administrativeCost" : 1
-        } ],
-        "zones" : { }
+        } ]
       }
     }
   } ],
   "question" : {
     "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*",
-    "nodeType" : [ ],
     "summary" : false
   },
   "status" : "SUCCESS"

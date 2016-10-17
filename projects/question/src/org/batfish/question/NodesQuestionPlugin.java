@@ -39,7 +39,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
    public static class NodesAnswerElement implements AnswerElement {
 
-      @JsonInclude(Include.NON_NULL)
+      @JsonInclude(Include.NON_DEFAULT)
       public static class NodeSummary {
 
          private SortedSet<String> _asPathAccessLists;

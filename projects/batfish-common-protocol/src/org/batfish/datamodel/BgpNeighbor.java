@@ -258,6 +258,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonCreator
    public BgpNeighbor(@JsonProperty(NAME_VAR) Prefix prefix) {
       super(prefix);
+      _generatedRoutes = new LinkedHashSet<>();
    }
 
    /**
@@ -268,8 +269,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     */
    public BgpNeighbor(Prefix prefix, Configuration owner) {
       this(prefix);
-      _generatedRoutes = new LinkedHashSet<>();
       _owner = owner;
+   }
+
+   @SuppressWarnings("unused")
+   private BgpNeighbor() {
+      this(null);
    }
 
    /**
@@ -277,7 +282,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     */
    @JsonProperty(ADDRESS_VAR)
    public Ip getAddress() {
-      if (_key.getPrefixLength() == 32) {
+      if (_key != null && _key.getPrefixLength() == 32) {
          return _key.getAddress();
       }
       else {
@@ -333,7 +338,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    @JsonProperty(DYNAMIC_VAR)
    public boolean getDynamic() {
-      return _key.getPrefixLength() < 32;
+      return _key != null && _key.getPrefixLength() < 32;
    }
 
    @JsonProperty(EBGP_MULTIHOP_VAR)

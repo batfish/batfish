@@ -14,9 +14,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.SelfAdjacenciesQuestionPlugin$SelfAdjacenciesQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.SelfAdjacenciesQuestionPlugin$SelfAdjacenciesQuestion"
   },
   "status" : "SUCCESS"
 }
