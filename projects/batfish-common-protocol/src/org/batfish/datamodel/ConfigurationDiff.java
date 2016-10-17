@@ -15,12 +15,16 @@ public class ConfigurationDiff implements AnswerElement {
    private static final String INTERFACE_LISTS_DIFF_VAR = "interfaceListstDiff";
    private static final String IP_ACCESS_LISTS_DSIFF_VAR = "ipAccessListstDiff";
    private static final String NEIGHBOR_LISTS_DIFF_VAR = "neighborListstDiff";
+   private static final String ROUTE_FILTER_LISTS_DIFF_VAR = "routeFilterListsDiff";
+   private static final String ROUTING_POLICY_LISTS_DIFF_VAR = "routingPolicyListsDiff";
 
    private AsPathAccessListsDiff _asPathAccessListsDiff;
    private CommunityListsDiff _communityListsDiff;
    private InterfaceListsDiff _interfaceListsDiff;
    private IpAccessListsDiff _ipAccessListsDiff;
    private NeighborListsDiff _neighborListsDiff;
+   private RouteFilterListsDiff _routeFilterListsDiff;
+   private RoutingPolicyListsDiff _routingPolicyListsDiff;
 
    @JsonCreator()
    public ConfigurationDiff() {
@@ -36,6 +40,12 @@ public class ConfigurationDiff implements AnswerElement {
             b.getInterfaces());
       _ipAccessListsDiff = new IpAccessListsDiff(a.getIpAccessLists(),
             b.getIpAccessLists());
+      _neighborListsDiff = new NeighborListsDiff(
+            a.getBgpProcess().getNeighbors(), b.getBgpProcess().getNeighbors());
+      _routeFilterListsDiff = new RouteFilterListsDiff(a.getRouteFilterLists(),
+            b.getRouteFilterLists());
+      _routingPolicyListsDiff = new RoutingPolicyListsDiff(
+            a.getRoutingPolicies(), b.getRoutingPolicies());
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
@@ -63,6 +73,15 @@ public class ConfigurationDiff implements AnswerElement {
       return _neighborListsDiff;
    }
 
+   @JsonProperty(ROUTE_FILTER_LISTS_DIFF_VAR)
+   public RouteFilterListsDiff getRouteFilterListsDiff() {
+      return _routeFilterListsDiff;
+   }
+
+   public RoutingPolicyListsDiff getRoutingPolicyListsDiff() {
+      return _routingPolicyListsDiff;
+   }
+
    @Override
    public String prettyPrint() throws JsonProcessingException {
       ObjectMapper mapper = new BatfishObjectMapper();
@@ -87,5 +106,15 @@ public class ConfigurationDiff implements AnswerElement {
 
    public void setNeighborListsDiff(NeighborListsDiff neighborListsDiff) {
       _neighborListsDiff = neighborListsDiff;
+   }
+
+   public void setRouteFilterListsDiff(
+         RouteFilterListsDiff routeFilterListsDiff) {
+      _routeFilterListsDiff = routeFilterListsDiff;
+   }
+
+   public void setRoutingPolicyListsDiff(
+         RoutingPolicyListsDiff routingPolicyListsDiff) {
+      _routingPolicyListsDiff = routingPolicyListsDiff;
    }
 }

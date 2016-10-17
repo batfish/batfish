@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
@@ -248,30 +249,6 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
-   private static boolean bothNullOrEqual(Object a, Object b) {
-      if (a == null && b == null) {
-         return true;
-      }
-      else if (a != null && b != null) {
-         return a.equals(b);
-      }
-      else {
-         return false;
-      }
-   }
-   
-   private static boolean bothNullOrUnorderedEqual(IpAccessList a, IpAccessList b) {
-      if (a == null && b == null) {
-         return true;
-      }
-      else if (a != null && b != null) {
-         return a.unorderedEqual(b);
-      }
-      else {
-         return false;
-      }
-   }
-   
    private int _accessVlan;
 
    private boolean _active;
@@ -349,7 +326,7 @@ public final class Interface extends ComparableStructure<String> {
 
    @Override
    public boolean equals(Object object) {
-      
+
       if (this == object) {
          return true;
       }
@@ -369,16 +346,18 @@ public final class Interface extends ComparableStructure<String> {
       if (this._bandwidth.compareTo(other._bandwidth) != 0) {
          return false;
       }
-    
-      if (!bothNullOrUnorderedEqual(this._inboundFilter, other._inboundFilter)) {
-            return false;
-      }
-    
-      if (!bothNullOrUnorderedEqual(this._incomingFilter, other._incomingFilter)) {
+
+      if (!IpAccessList.bothNullOrUnorderedEqual(this._inboundFilter,
+            other._inboundFilter)) {
          return false;
       }
 
-      // TODO: check ISIS settings for equality. 
+      if (!IpAccessList.bothNullOrUnorderedEqual(this._incomingFilter,
+            other._incomingFilter)) {
+         return false;
+      }
+
+      // TODO: check ISIS settings for equality.
       if (this._mtu != other._mtu) {
          return false;
       }
@@ -386,24 +365,27 @@ public final class Interface extends ComparableStructure<String> {
          return false;
       }
       // TODO: check OSPF settings for equality.
-      
-      if (!bothNullOrUnorderedEqual(this._outgoingFilter, other._outgoingFilter)) {
+
+      if (!IpAccessList.bothNullOrUnorderedEqual(this._outgoingFilter,
+            other._outgoingFilter)) {
          return false;
       }
-      
-      if (!bothNullOrEqual(this._prefix, other._prefix)) {
+
+      if (!CommonUtil.bothNullOrEqual(this._prefix, other._prefix)) {
          return false;
       }
-      
-      if (!bothNullOrEqual(this._routingPolicy, other._routingPolicy)) {
+
+      if (!CommonUtil.bothNullOrEqual(this._routingPolicy,
+            other._routingPolicy)) {
          return false;
       }
-      
-      if (!bothNullOrEqual(this._switchportMode, other._switchportMode)) {
+
+      if (!CommonUtil.bothNullOrEqual(this._switchportMode,
+            other._switchportMode)) {
          return false;
       }
-      
-      if (!bothNullOrEqual(this._zone, other._zone)) {
+
+      if (!CommonUtil.bothNullOrEqual(this._zone, other._zone)) {
          return false;
       }
       return true;

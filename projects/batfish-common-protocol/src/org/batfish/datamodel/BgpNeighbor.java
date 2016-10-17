@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -270,6 +271,69 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       this(prefix);
       _generatedRoutes = new LinkedHashSet<>();
       _owner = owner;
+   }
+   
+   @Override
+   public boolean equals(Object o) {
+      if (this == o) {
+         return true;
+      }
+      BgpNeighbor other = (BgpNeighbor) o;
+      if (this._advertiseExternal != other._advertiseExternal) {
+         return false;
+      }
+      if (this._advertiseInactive != other._advertiseInactive) {
+         return false;
+      }
+      if (this._allowLocalAsIn != other._allowLocalAsIn) {
+         return false;
+      }
+      if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
+         return false;
+      }
+      if (!CommonUtil.bothNullOrEqual(this._candidateRemoteBgpNeighbors, other._candidateRemoteBgpNeighbors)) {
+         return false;
+      }
+      if (!this._clusterId.equals(other._clusterId)) {
+         return false;
+      }
+      if (!this._defaultMetric.equals(other._defaultMetric)) {
+         return false;
+      }
+      // we will skip description
+      if (this._ebgpMultihop != other._ebgpMultihop) {
+         return false;
+      }
+      if (!this._exportPolicy.equals(other._exportPolicy)) {
+         return false;
+      }
+      // we will skip generated routes. 
+      if (!CommonUtil.bothNullOrEqual(this._group, other._group)) {
+         return false;
+      }
+      if (!CommonUtil.bothNullOrEqual(this._importPolicy, other._importPolicy)) {
+         return false;
+      }
+      if (!this._localAs.equals(other._localAs)) {
+         return false;
+      }
+      if (!CommonUtil.bothNullOrEqual(this._localIp, other._localIp)) {
+         return false;
+      }
+      //we will skip owner.
+      if (!this._remoteAs.equals(other._remoteAs)) {
+         return false;
+      }
+      if (!CommonUtil.bothNullOrEqual(this._remoteBgpNeighbor, other._remoteBgpNeighbor)) {
+         return false;
+      }
+      if (this._routeReflectorClient != other._routeReflectorClient) {
+         return false;
+      }
+      if (!this._sendCommunity.equals(other._sendCommunity)) {
+         return false;
+      }
+      return true;
    }
 
    /**

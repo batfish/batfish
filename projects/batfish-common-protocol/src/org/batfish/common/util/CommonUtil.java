@@ -54,6 +54,18 @@ public class CommonUtil {
       return sb.toString();
    }
 
+   public static boolean bothNullOrEqual(Object a, Object b) {
+      if (a == null && b == null) {
+         return true;
+      }
+      else if (a != null && b != null) {
+         return a.equals(b);
+      }
+      else {
+         return false;
+      }
+   }
+
    public static boolean checkJsonEqual(Object a, Object b) {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
 
