@@ -13,9 +13,13 @@
 	<classpathentry kind="lib" path="lib/java-json/java-json.jar"/>
 	<classpathentry kind="lib" path="lib/jsonassert/jsonassert-1.2.3.jar" sourcepath="lib/jsonassert/jsonassert-1.2.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.7.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.9.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.9.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/jsonpath/json-path-2.2.0.jar" sourcepath="lib/jsonpath/json-path-2.2.0-sources.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="lib/json-smart/json-smart-2.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
