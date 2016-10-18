@@ -78,6 +78,7 @@ public class ConfigurationDiff implements AnswerElement {
       return _routeFilterListsDiff;
    }
 
+   @JsonProperty(ROUTING_POLICY_LISTS_DIFF_VAR)
    public RoutingPolicyListsDiff getRoutingPolicyListsDiff() {
       return _routingPolicyListsDiff;
    }

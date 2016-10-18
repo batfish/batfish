@@ -395,17 +395,10 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
    public static class NodesDiffAnswerElement implements AnswerElement {
 
-      private static final String COMMON_NODES_VAR = "commonNodes";
       private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
-
-      private static final String NODES_IN_ONLY_ONE_CONFIG_VAR = "nodesInOnlyOneConfig";
       private final NodesAnswerElement _after;
-
       private final NodesAnswerElement _before;
-      private Set<String> _commonNodes;
-
       private Map<String, ConfigurationDiff> _configDiff;
-      private Set<String> _nodesInOnlyOneConfig;
 
       @JsonCreator
       public NodesDiffAnswerElement() {
@@ -421,27 +414,12 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          GenerateDiff();
       }
 
-      private void DiffNodeNames() {
-         _commonNodes = CommonUtil.intersection(_before._nodes.keySet(),
-               _after._nodes.keySet());
-         _nodesInOnlyOneConfig = CommonUtil.diff(_before._nodes.keySet(),
-               _after._nodes.keySet());
-      }
-
       private void GenerateDiff() {
-         DiffNodeNames();
-         for (String node : _commonNodes) {
+         for (String node : CommonUtil.intersection(_before._nodes.keySet(),
+               _after._nodes.keySet())) {
             _configDiff.put(node, new ConfigurationDiff(
                   _before._nodes.get(node), _after._nodes.get(node)));
          }
-      }
-
-      /**
-       * @return the _commonNodes
-       */
-      @JsonProperty(COMMON_NODES_VAR)
-      public Set<String> get_commonNodes() {
-         return _commonNodes;
       }
 
       /**
@@ -452,33 +430,12 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          return _configDiff;
       }
 
-      /**
-       * @return the _nodesInOnlyOneConfig
-       */
-      @JsonProperty(NODES_IN_ONLY_ONE_CONFIG_VAR)
-      public Set<String> get_nodesInOnlyOneConfig() {
-         return _nodesInOnlyOneConfig;
-      }
-
       @Override
       public String prettyPrint() throws JsonProcessingException {
          // TODO Auto-generated method stub
          ObjectMapper mapper = new BatfishObjectMapper();
          return mapper.writeValueAsString(this);
       }
-
-      public void set_commonNodes(Set<String> c) {
-         _commonNodes = c;
-      }
-
-      public void set_configDiff(Map<String, ConfigurationDiff> c) {
-         _configDiff = c;
-      }
-
-      public void set_NodesInOnlyOneConfig(Set<String> c) {
-         _nodesInOnlyOneConfig = c;
-      }
-
    }
 
    public static class NodesQuestion extends Question {

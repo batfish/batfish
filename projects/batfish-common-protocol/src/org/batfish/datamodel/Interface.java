@@ -346,13 +346,13 @@ public final class Interface extends ComparableStructure<String> {
       if (this._bandwidth.compareTo(other._bandwidth) != 0) {
          return false;
       }
-
-      if (!IpAccessList.bothNullOrUnorderedEqual(this._inboundFilter,
+      // we check ACLs for name match only -- full ACL diff can be done elsewhere.
+      if (!IpAccessList.bothNullOrSameName(this._inboundFilter,
             other._inboundFilter)) {
          return false;
       }
 
-      if (!IpAccessList.bothNullOrUnorderedEqual(this._incomingFilter,
+      if (!IpAccessList.bothNullOrSameName(this._incomingFilter,
             other._incomingFilter)) {
          return false;
       }
@@ -366,7 +366,7 @@ public final class Interface extends ComparableStructure<String> {
       }
       // TODO: check OSPF settings for equality.
 
-      if (!IpAccessList.bothNullOrUnorderedEqual(this._outgoingFilter,
+      if (!IpAccessList.bothNullOrSameName(this._outgoingFilter,
             other._outgoingFilter)) {
          return false;
       }

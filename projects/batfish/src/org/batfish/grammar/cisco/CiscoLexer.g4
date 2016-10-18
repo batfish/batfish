@@ -3100,6 +3100,11 @@ LABEL
    'label'
 ;
 
+LABELED_UNICAST
+:
+	'labeled-unicast'
+;
+
 LACP
 :
    'lacp'

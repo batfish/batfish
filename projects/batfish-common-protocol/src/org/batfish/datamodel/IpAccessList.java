@@ -13,8 +13,19 @@ public class IpAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
-   static boolean bothNullOrUnorderedEqual(IpAccessList a,
-         IpAccessList b) {
+   static boolean bothNullOrSameName(IpAccessList a, IpAccessList b) {
+      if (a == null && b == null) {
+         return true;
+      }
+      else if (a != null && b != null) {
+         return a.getName().equals(b.getName());
+      }
+      else {
+         return false;
+      }
+   }
+
+   static boolean bothNullOrUnorderedEqual(IpAccessList a, IpAccessList b) {
       if (a == null && b == null) {
          return true;
       }
@@ -99,7 +110,8 @@ public class IpAccessList extends ComparableStructure<String> {
       if (this.getLines().size() != other.getLines().size()) {
          return false;
       }
-      // Unordered check is valid only if there is no deny OR if there is only one, at the
+      // Unordered check is valid only if there is no deny OR if there is only
+      // one, at the
       // end, in both lists.
       if (!noDenyOrLastDeny(this) || !noDenyOrLastDeny(other)) {
          return false;
