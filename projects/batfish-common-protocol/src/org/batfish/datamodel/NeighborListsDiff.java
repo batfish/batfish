@@ -37,7 +37,7 @@ public class NeighborListsDiff extends ConfigDiffElement {
 
       for (Prefix bPrefix : b.keySet()) {
          if (!a.containsKey(bPrefix)) {
-            super._inBOnly.add(a.get(bPrefix).getDescription());
+            super._inBOnly.add(b.get(bPrefix).getDescription());
          }
       }
    }
