@@ -594,6 +594,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       c.getRouteFilterLists().put(aggregateFilter.getName(), aggregateFilter);
       preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
             new NamedPrefixSet(BGP_AGGREGATE_NETWORKS_FILTER_NAME)));
+      MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
+      MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
+      preFilterConditions.getDisjuncts().add(isEbgp);
+      preFilterConditions.getDisjuncts().add(isIbgp);
 
       Set<RouteFilterList> aggregateRfLists = new LinkedHashSet<>();
       aggregateRfLists.add(aggregateFilter);
@@ -679,10 +683,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          peerExportConditional.getFalseStatements()
                .add(Statements.ExitReject.toStaticStatement());
          Disjunction localOrCommonOrigination = new Disjunction();
-         MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
-         MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
-         preFilterConditions.getDisjuncts().add(isEbgp);
-         preFilterConditions.getDisjuncts().add(isIbgp);
          peerExportConditions.getConjuncts().add(localOrCommonOrigination);
          localOrCommonOrigination.getDisjuncts()
                .add(new CallExpr(BGP_COMMON_EXPORT_POLICY_NAME));

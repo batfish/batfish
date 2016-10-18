@@ -14,7 +14,7 @@ public class TestSerialization {
    @Test
    public void test() throws JsonProcessingException, JSONException {
       ObjectMapper mapper = new ObjectMapper();
-      BgpNeighbor neighbor = new BgpNeighbor((Prefix)null, null);
+      BgpNeighbor neighbor = new BgpNeighbor((Prefix) null, null);
       String val = mapper.writeValueAsString(neighbor);
       JSONObject obj = new JSONObject(val);
       assert obj.length() == 1; // just id

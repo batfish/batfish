@@ -34,6 +34,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -781,8 +782,11 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       newIface.setAccessVlan(iface.getAccessVlan());
       newIface.setNativeVlan(iface.getNativeVlan());
       newIface.setSwitchportMode(iface.getSwitchportMode());
-      newIface.setSwitchportTrunkEncapsulation(
-            iface.getSwitchportTrunkEncapsulation());
+      SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
+      if (swe == null) {
+         swe = SwitchportEncapsulationType.DOT1Q;
+      }
+      newIface.setSwitchportTrunkEncapsulation(swe);
       newIface.setBandwidth(iface.getBandwidth());
       // isis settings
       IsisInterfaceSettings isisSettings = iface.getIsisSettings();

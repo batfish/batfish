@@ -6,6 +6,10 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_DEFAULT)
 public class OspfProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;
@@ -22,8 +26,6 @@ public class OspfProcess implements Serializable {
 
    public OspfProcess() {
       _generatedRoutes = new LinkedHashSet<>();
-      _referenceBandwidth = null;
-      _routerId = null;
       _areas = new HashMap<>();
    }
 
@@ -39,7 +41,7 @@ public class OspfProcess implements Serializable {
       return _generatedRoutes;
    }
 
-   public double getReferenceBandwidth() {
+   public Double getReferenceBandwidth() {
       return _referenceBandwidth;
    }
 
@@ -57,10 +59,6 @@ public class OspfProcess implements Serializable {
 
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
-   }
-
-   public void setReferenceBandwidth(double referenceBandwidth) {
-      _referenceBandwidth = referenceBandwidth;
    }
 
    public void setReferenceBandwidth(Double referenceBandwidth) {

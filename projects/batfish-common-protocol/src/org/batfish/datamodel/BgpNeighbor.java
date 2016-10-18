@@ -192,7 +192,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    /**
     * The default metric associated with routes sent to this peer
     */
-   private Integer _defaultMetric;
+   private int _defaultMetric;
 
    private String _description;
 
@@ -243,7 +243,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * Flag governing whether to include community numbers in outgoing route
     * advertisements to this peer
     */
-   private Boolean _sendCommunity;
+   private boolean _sendCommunity;
+
+   @SuppressWarnings("unused")
+   private BgpNeighbor() {
+      this(null);
+   }
 
    /**
     * Constructs a BgpNeighbor with the given peer ip address for
@@ -270,11 +275,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    public BgpNeighbor(Prefix prefix, Configuration owner) {
       this(prefix);
       _owner = owner;
-   }
-
-   @SuppressWarnings("unused")
-   private BgpNeighbor() {
-      this(null);
    }
 
    /**
@@ -327,7 +327,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_defaultMetric}
     */
    @JsonProperty(DEFAULT_METRIC_VAR)
-   public Integer getDefaultMetric() {
+   public int getDefaultMetric() {
       return _defaultMetric;
    }
 
@@ -421,7 +421,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @return {@link #_sendCommunity}
     */
    @JsonProperty(SEND_COMMUNITY_VAR)
-   public Boolean getSendCommunity() {
+   public boolean getSendCommunity() {
       return _sendCommunity;
    }
 
@@ -470,7 +470,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @param defaultMetric
     */
    @JsonProperty(DEFAULT_METRIC_VAR)
-   public void setDefaultMetric(Integer defaultMetric) {
+   public void setDefaultMetric(int defaultMetric) {
       _defaultMetric = defaultMetric;
    }
 
@@ -566,7 +566,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * @param sendCommunity
     */
    @JsonProperty(SEND_COMMUNITY_VAR)
-   public void setSendCommunity(Boolean sendCommunity) {
+   public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
    }
 

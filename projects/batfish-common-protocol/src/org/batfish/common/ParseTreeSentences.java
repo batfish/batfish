@@ -23,10 +23,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(using = ParseTreeSentences.Deserializer.class)
 public class ParseTreeSentences implements Serializable {
 
-   public static class Deserializer extends JsonDeserializer<ParseTreeSentences> {
+   public static class Deserializer
+         extends JsonDeserializer<ParseTreeSentences> {
 
       @Override
-      public ParseTreeSentences deserialize(JsonParser parser, DeserializationContext ctx)
+      public ParseTreeSentences deserialize(JsonParser parser,
+            DeserializationContext ctx)
             throws IOException, JsonProcessingException {
          JsonNode node = parser.getCodec().readTree(parser);
          ParseTreeSentences tree = new ParseTreeSentences();
@@ -70,12 +72,12 @@ public class ParseTreeSentences implements Serializable {
       }
    }
 
+   private static final String SENTENCES_VAR = "Parse tree";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
-
-   private static final String SENTENCES_VAR = "Parse tree";
 
    protected final List<String> _sentences;
 
@@ -83,9 +85,9 @@ public class ParseTreeSentences implements Serializable {
       _sentences = new ArrayList<>();
    }
 
-   public void appendToLastSentence(String appendStr) {    
+   public void appendToLastSentence(String appendStr) {
       if (_sentences.size() == 0) {
-       _sentences.add(appendStr);           
+         _sentences.add(appendStr);
       }
       else {
          String finalStr = _sentences.get(_sentences.size() - 1) + appendStr;
@@ -93,11 +95,11 @@ public class ParseTreeSentences implements Serializable {
          _sentences.add(finalStr);
       }
    }
-      
+
    public List<String> getSentences() {
       return _sentences;
    }
-   
+
    @JsonIgnore
    public boolean isEmpty() {
       return _sentences.isEmpty();
