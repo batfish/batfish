@@ -44,9 +44,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion"
   },
   "status" : "SUCCESS"
 }

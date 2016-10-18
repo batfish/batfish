@@ -14,6 +14,7 @@ a_async
       | a_async_autohang
       | a_async_dsrwait
       | a_async_flowcont
+      | a_async_maxconnections
       | a_async_name
       | a_async_outauthtype
       | a_async_speed
@@ -38,6 +39,11 @@ a_async_dsrwait
 a_async_flowcont
 :
    FLOWCONT nbdecl
+;
+
+a_async_maxconnections
+:
+   MAXCONNECTIONS nodecl
 ;
 
 a_async_name

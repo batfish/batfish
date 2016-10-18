@@ -88,7 +88,7 @@ public enum RoutingProtocol {
          case UNKNOWN:
          case VXWORKS:
             break;
-            //$CASES-OMITTED$
+         // $CASES-OMITTED$
          default:
             break;
 

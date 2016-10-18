@@ -17,6 +17,7 @@ aaa_accounting
       | aaa_accounting_exec
       | aaa_accounting_nested
       | aaa_accounting_network
+      | aaa_accounting_send
       | aaa_accounting_system
       | aaa_accounting_update
    )
@@ -136,6 +137,44 @@ aaa_accounting_network
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_send
+:
+   SEND
+   (
+      aaa_accounting_send_counters
+      | aaa_accounting_send_stop_record
+   )
+;
+
+aaa_accounting_send_counters
+:
+   COUNTERS IPV6 NEWLINE
+;
+
+aaa_accounting_send_stop_record
+:
+   STOP_RECORD
+   (
+      ALWAYS
+      |
+      (
+         AUTHENTICATION
+         (
+            (
+               FAILURE
+               |
+               (
+                  SUCCESS REMOTE_SERVER
+               )
+            )
+            (
+               VRF name = variable
+            )?
+         )
+      )
+   ) NEWLINE
 ;
 
 aaa_accounting_system
@@ -362,6 +401,7 @@ aaa_authorization
    (
       aaa_authorization_commands
       | aaa_authorization_config_commands
+      | aaa_authorization_console
       | aaa_authorization_exec
       | aaa_authorization_include
       | aaa_authorization_network
@@ -392,6 +432,11 @@ aaa_authorization_config_commands
       )
       | NEWLINE
    )
+;
+
+aaa_authorization_console
+:
+   CONSOLE NEWLINE
 ;
 
 aaa_authorization_exec

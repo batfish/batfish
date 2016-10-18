@@ -27,6 +27,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private static final String BANDWIDTH_VAR = "bandwidth";
 
+   private static final int DEFAULT_MTU = 1500;
+
    private static final String DESCRIPTION_VAR = "description";
 
    public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
@@ -214,7 +216,7 @@ public final class Interface extends ComparableStructure<String> {
       case IPTABLES:
       case UNKNOWN:
       case VXWORKS:
-         //$CASES-OMITTED$
+         // $CASES-OMITTED$
       default:
          throw new BatfishException(
                "Cannot compute interface type for unsupported configuration format: "
@@ -301,9 +303,14 @@ public final class Interface extends ComparableStructure<String> {
 
    private Zone _zone;
 
+   @SuppressWarnings("unused")
+   private Interface() {
+      this(null, null);
+   }
+
    @JsonCreator
    public Interface(@JsonProperty(NAME_VAR) String name) {
-      super(name);
+      this(name, null);
    }
 
    public Interface(String name, Configuration owner) {
@@ -311,9 +318,13 @@ public final class Interface extends ComparableStructure<String> {
       _active = true;
       _allowedVlans = new ArrayList<>();
       _allPrefixes = new TreeSet<>();
+      _mtu = DEFAULT_MTU;
       _nativeVlan = 1;
       _owner = owner;
       _switchportMode = SwitchportMode.NONE;
+      _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
+      _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
+      _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {

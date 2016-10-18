@@ -178,10 +178,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
-    "differential" : false,
-    "namedStructType" : [ ],
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"
   },
   "status" : "SUCCESS"
 }

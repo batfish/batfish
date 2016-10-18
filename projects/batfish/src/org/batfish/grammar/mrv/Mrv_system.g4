@@ -19,6 +19,7 @@ a_system
       | a_system_notifpriority
       | a_system_notifyaddressname
       | a_system_notifyaddressservice
+      | a_system_notifyaddressstate
       | a_system_notifyservicename
       | a_system_notifyserviceprotocol
       | a_system_notifyserviceraw
@@ -26,6 +27,10 @@ a_system
       | a_system_ntpaddress
       | a_system_ntpaltaddress
       | a_system_ntpsourceinterface
+      | a_system_radprimacctsecret
+      | a_system_radprimsecret
+      | a_system_radsecacctsecret
+      | a_system_radsecsecret
       | a_system_snmp
       | a_system_snmpgetclient
       | a_system_snmpgetcommunity
@@ -35,8 +40,12 @@ a_system
       | a_system_ssh
       | a_system_systemname
       | a_system_tacplusprimaddr
+      | a_system_tacplusprimacctsecret
+      | a_system_tacplusprimauthorsecret
       | a_system_tacplusprimsecret
       | a_system_tacplussecaddr
+      | a_system_tacplussecacctsecret
+      | a_system_tacplussecauthorsecret
       | a_system_tacplussecsecret
       | a_system_tacplususesub
       | a_system_telnet
@@ -89,6 +98,11 @@ a_system_notifyaddressservice
    NOTIFYADDRESSSERVICE nidecl
 ;
 
+a_system_notifyaddressstate
+:
+   NOTIFYADDRESSSTATE nbdecl
+;
+
 a_system_notifyservicename
 :
    NOTIFYSERVICENAME nsdecl
@@ -122,6 +136,26 @@ a_system_ntpaltaddress
 a_system_ntpsourceinterface
 :
    NTPSOURCEINTERFACE nidecl
+;
+
+a_system_radprimacctsecret
+:
+   RADPRIMACCTSECRET npdecl
+;
+
+a_system_radprimsecret
+:
+   RADPRIMSECRET npdecl
+;
+
+a_system_radsecacctsecret
+:
+   RADSECACCTSECRET npdecl
+;
+
+a_system_radsecsecret
+:
+   RADSECSECRET npdecl
 ;
 
 a_system_snmp
@@ -169,6 +203,16 @@ a_system_tacplusprimaddr
    TACPLUSPRIMADDR nipdecl
 ;
 
+a_system_tacplusprimacctsecret
+:
+   TACPLUSPRIMACCTSECRET npdecl
+;
+
+a_system_tacplusprimauthorsecret
+:
+   TACPLUSPRIMAUTHORSECRET npdecl
+;
+
 a_system_tacplusprimsecret
 :
    TACPLUSPRIMSECRET npdecl
@@ -177,6 +221,16 @@ a_system_tacplusprimsecret
 a_system_tacplussecaddr
 :
    TACPLUSSECADDR nipdecl
+;
+
+a_system_tacplussecacctsecret
+:
+   TACPLUSSECACCTSECRET npdecl
+;
+
+a_system_tacplussecauthorsecret
+:
+   TACPLUSSECAUTHORSECRET npdecl
 ;
 
 a_system_tacplussecsecret
