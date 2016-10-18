@@ -57,8 +57,8 @@ public class Client extends AbstractClient implements IClient {
    private static final String FLAG_FAILING_TEST = "-error";
    private static final String FLAG_NO_DATAPLANE = "-nodataplane";
 
-   private Map<String,String> _additionalBatfishOptions;
-   
+   private Map<String, String> _additionalBatfishOptions;
+
    private String _currContainerName = null;
    private String _currDeltaEnv = null;
    private String _currDeltaTestrig;
@@ -78,7 +78,7 @@ public class Client extends AbstractClient implements IClient {
 
    public Client(Settings settings) {
       super(false, settings.getPluginDirs());
-      _additionalBatfishOptions = new HashMap<String, String>();
+      _additionalBatfishOptions = new HashMap<>();
       _settings = settings;
 
       switch (_settings.getRunMode()) {
@@ -244,7 +244,7 @@ public class Client extends AbstractClient implements IClient {
       for (String option : _additionalBatfishOptions.keySet()) {
          wItem.addRequestParam(option, _additionalBatfishOptions.get(option));
       }
-      
+
       boolean queueWorkResult = _workHelper.queueWork(wItem);
       _logger.info("Queuing result: " + queueWorkResult + "\n");
 
@@ -588,7 +588,7 @@ public class Client extends AbstractClient implements IClient {
 
          Command command;
          try {
-           command = Command.fromName(words[0]);
+            command = Command.fromName(words[0]);
          }
          catch (BatfishException e) {
             _logger.errorf("Command failed: %s\n", e.getMessage());
@@ -607,7 +607,7 @@ public class Client extends AbstractClient implements IClient {
             String optionKey = parameters.get(0);
             String optionValue = CommonUtil.joinStrings(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
-            _additionalBatfishOptions.put(optionKey, optionValue);      
+            _additionalBatfishOptions.put(optionKey, optionValue);
             return true;
          }
          case ANSWER: {
@@ -656,8 +656,8 @@ public class Client extends AbstractClient implements IClient {
             if (!_additionalBatfishOptions.containsKey(optionKey)) {
                _logger.outputf("Batfish option %s does not exist\n", optionKey);
                return false;
-            }            
-            _additionalBatfishOptions.remove(optionKey);      
+            }
+            _additionalBatfishOptions.remove(optionKey);
             return true;
          }
 
@@ -1172,9 +1172,11 @@ public class Client extends AbstractClient implements IClient {
             return true;
          }
          case SHOW_BATFISH_OPTIONS: {
-            _logger.outputf("There are %d additional batfish options\n", _additionalBatfishOptions.size());
+            _logger.outputf("There are %d additional batfish options\n",
+                  _additionalBatfishOptions.size());
             for (String option : _additionalBatfishOptions.keySet()) {
-               _logger.outputf("    %s : %s \n", option, _additionalBatfishOptions.get(option));
+               _logger.outputf("    %s : %s \n", option,
+                     _additionalBatfishOptions.get(option));
             }
             return true;
          }
@@ -1245,10 +1247,9 @@ public class Client extends AbstractClient implements IClient {
                   testoutWriter);
             testoutWriter.close();
 
-
             if (!failingTest && testCommandSucceeded) {
                try {
-                  
+
                   ObjectMapper mapper = new BatfishObjectMapper(
                         getCurrentClassLoader());
 
@@ -1368,8 +1369,8 @@ public class Client extends AbstractClient implements IClient {
 
       // set container if specified
       if (_settings.getContainerId() != null) {
-         if (!processCommand(
-               Command.SET_CONTAINER + "  " + _settings.getContainerId())) {
+         if (!processCommand(Command.SET_CONTAINER.commandName() + "  "
+               + _settings.getContainerId())) {
             return;
          }
       }
@@ -1387,8 +1388,8 @@ public class Client extends AbstractClient implements IClient {
          }
       }
       if (_settings.getTestrigId() != null) {
-         if (!processCommand(
-               Command.SET_TESTRIG + "  " + _settings.getTestrigId())) {
+         if (!processCommand(Command.SET_TESTRIG.commandName() + "  "
+               + _settings.getTestrigId())) {
             return;
          }
       }
