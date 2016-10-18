@@ -419,7 +419,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       else {
          // failure
          answer.setStatus(AnswerStatus.FAILURE);
-         answer.addAnswerElement(exception);
+         answer.addAnswerElement(exception.getBatfishStackTrace());
       }
       return answer;
    }
@@ -1995,7 +1995,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
          Answer failureAnswer = Answer.failureAnswer(e.getMessage());
-         failureAnswer.addAnswerElement(be);
+         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
          try {
             String failureJsonString = mapper.writeValueAsString(failureAnswer);
             _logger.error(failureJsonString);

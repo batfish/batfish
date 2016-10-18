@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.QuestionException;
 import org.batfish.datamodel.questions.Question;
 
@@ -38,8 +39,9 @@ public class Answer {
       _answerElements.addAll(answer._answerElements);
       _status = answer._status;
       for (AnswerElement answerElement : answer._answerElements) {
-         if (answerElement instanceof BatfishException) {
-            BatfishException e = (BatfishException) answerElement;
+         if (answerElement instanceof BatfishStackTrace) {
+            BatfishException e = ((BatfishStackTrace) answerElement)
+                  .getException();
             throw new QuestionException("Exception answering question", e,
                   this);
          }

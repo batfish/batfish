@@ -300,7 +300,8 @@ public class Driver {
                   answer = new Answer();
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(
-                        new BatfishException("Batfish job failed", e));
+                        new BatfishException("Batfish job failed", e)
+                              .getBatfishStackTrace());
                   batfish.setTerminatedWithException(true);
                }
                finally {
