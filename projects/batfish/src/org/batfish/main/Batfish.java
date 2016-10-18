@@ -1083,8 +1083,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private boolean environmentExists(TestrigSettings testrigSettings) {
       checkBaseDirExists();
-      return Files
-            .exists(testrigSettings.getEnvironmentSettings().getEnvPath());
+      Path envPath = testrigSettings.getEnvironmentSettings().getEnvPath();
+      if (envPath == null) {
+         throw new BatfishException("No environment specified for testrig: "
+               + testrigSettings.getName());
+      }
+      return Files.exists(envPath);
    }
 
    private void flatten(Path inputPath, Path outputPath) {
