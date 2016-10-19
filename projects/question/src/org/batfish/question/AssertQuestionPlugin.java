@@ -1,7 +1,13 @@
 package org.batfish.question;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -13,22 +19,32 @@ import org.batfish.question.NodesQuestionPlugin.NodesAnswerer;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 public class AssertQuestionPlugin extends QuestionPlugin {
 
    public static class AssertAnswerElement implements AnswerElement {
 
-      private Object _answer;
+      private boolean _fail;
+      private SortedMap<Integer, Boolean> _results;
 
       public AssertAnswerElement() {
+         _results = new TreeMap<>();
       }
 
-      public Object getAnswer() {
-         return _answer;
+      public boolean getFail() {
+         return _fail;
+      }
+
+      public SortedMap<Integer, Boolean> getResults() {
+         return _results;
       }
 
       @Override
@@ -38,8 +54,12 @@ public class AssertQuestionPlugin extends QuestionPlugin {
          return mapper.writeValueAsString(this);
       }
 
-      public void setAnswer(Object answer) {
-         _answer = answer;
+      public void setFail(boolean fail) {
+         _fail = fail;
+      }
+
+      public void setResults(SortedMap<Integer, Boolean> results) {
+         _results = results;
       }
 
    }
@@ -54,7 +74,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       public AnswerElement answer() {
 
          AssertQuestion question = (AssertQuestion) _question;
-         String query = question.getQuery();
+         List<Assertion> assertions = question.getAssertions();
 
          _batfish.checkConfigurations();
 
@@ -72,20 +92,95 @@ public class AssertQuestionPlugin extends QuestionPlugin {
             throw new BatfishException(
                   "Could not get JSON string from nodes answer", e);
          }
-         Object answer = JsonPath.read(nodesAnswerStr, query);
+         Object jsonObject = JsonPath.parse(nodesAnswerStr).json();
+
+         Map<Integer, Boolean> results = new ConcurrentHashMap<>();
+         List<Integer> indices = new ArrayList<>();
+         for (int i = 0; i < assertions.size(); i++) {
+            indices.add(i);
+         }
+         final boolean[] fail = new boolean[1];
+         indices.parallelStream().forEach(i -> {
+            Assertion assertion = assertions.get(i);
+            String path = assertion.getPath();
+            Check check = assertion.getCheck();
+            List<Object> args = assertion.getArgs();
+            Object pathResult = null;
+
+            try {
+               pathResult = JsonPath.read(jsonObject, path);
+            }
+            catch (PathNotFoundException e) {
+               pathResult = PathResult.EMPTY;
+            }
+            catch (Exception e) {
+               throw new BatfishException("Error reading JSON path: " + path,
+                     e);
+            }
+            Matcher<?> matcher = check.matcher(args);
+            if (matcher.matches(pathResult)) {
+               results.put(i, true);
+            }
+            else {
+               results.put(i, false);
+               synchronized (fail) {
+                  fail[0] = true;
+               }
+            }
+         });
          AssertAnswerElement answerElement = new AssertAnswerElement();
-         answerElement.setAnswer(answer);
+         answerElement.getResults().putAll(results);
+         answerElement.setFail(fail[0]);
          return answerElement;
       }
    }
 
+   public static class Assertion {
+
+      private List<Object> _args;
+
+      private Check _check;
+
+      private String _path;
+
+      public List<Object> getArgs() {
+         return _args;
+      }
+
+      public Check getCheck() {
+         return _check;
+      }
+
+      public String getPath() {
+         return _path;
+      }
+
+      public void setArgs(List<Object> args) {
+         _args = args;
+      }
+
+      public void setCheck(Check check) {
+         _check = check;
+      }
+
+      public void setPath(String path) {
+         _path = path;
+      }
+
+   }
+
    public static class AssertQuestion extends Question {
 
-      private static final String QUERY_VAR = "query";
+      private static final String ASSERTIONS_VAR = "assertions";
 
-      private String _query;
+      private List<Assertion> _assertions;
 
       public AssertQuestion() {
+         _assertions = new ArrayList<>();
+      }
+
+      public List<Assertion> getAssertions() {
+         return _assertions;
       }
 
       @Override
@@ -98,10 +193,6 @@ public class AssertQuestionPlugin extends QuestionPlugin {
          return "assert";
       }
 
-      public String getQuery() {
-         return _query;
-      }
-
       @Override
       public boolean getTraffic() {
          return false;
@@ -109,9 +200,13 @@ public class AssertQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() {
-         String retString = String.format("assert %squery=\"%s\"",
-               prettyPrintBase(), _query);
+         String retString = String.format("assert %sassertions=\"%s\"",
+               prettyPrintBase(), _assertions.toString());
          return retString;
+      }
+
+      public void setAssertions(List<Assertion> assertions) {
+         _assertions = assertions;
       }
 
       @Override
@@ -125,24 +220,84 @@ public class AssertQuestionPlugin extends QuestionPlugin {
             }
             try {
                switch (paramKey) {
-               case QUERY_VAR:
-                  setQuery(parameters.getString(paramKey));
+               case ASSERTIONS_VAR:
+                  setAssertions(new ObjectMapper().<List<Assertion>> readValue(
+                        parameters.getString(paramKey),
+                        new TypeReference<List<Assertion>>() {
+                        }));
                   break;
                default:
                   throw new BatfishException("Unknown key in "
                         + getClass().getSimpleName() + ": " + paramKey);
                }
             }
-            catch (JSONException e) {
+            catch (JSONException | IOException e) {
                throw new BatfishException("JSONException in parameters", e);
             }
          }
       }
 
-      public void setQuery(String query) {
-         _query = query;
-      }
+   }
 
+   public static enum Check {
+      ABSENT,
+      EQ,
+      EXISTS,
+      GE,
+      GT,
+      LE,
+      LT,
+      SIZE_EQ,
+      SIZE_GE,
+      SIZE_GT,
+      SIZE_LE,
+      SIZE_LT;
+
+      public Matcher<?> matcher(List<Object> args) {
+         switch (this) {
+         case ABSENT: {
+            return Matchers.equalTo(PathResult.EMPTY);
+         }
+
+         case EQ: {
+            if (args.size() != 1) {
+               throw new BatfishException("Expected only 1 arg");
+            }
+            Object arg = args.get(0);
+            return Matchers.equalTo(arg);
+         }
+
+         case EXISTS: {
+            return Matchers.not(Matchers.equalTo(PathResult.EMPTY));
+         }
+
+         case GE:
+            break;
+         case GT:
+            break;
+         case LE:
+            break;
+         case LT:
+            break;
+         case SIZE_EQ:
+            break;
+         case SIZE_GE:
+            break;
+         case SIZE_GT:
+            break;
+         case SIZE_LE:
+            break;
+         case SIZE_LT:
+            break;
+         default:
+            break;
+         }
+         throw new BatfishException("Unimplemented check: '" + name() + "'");
+      }
+   }
+
+   private static enum PathResult {
+      EMPTY
    }
 
    @Override
