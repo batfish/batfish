@@ -77,8 +77,7 @@ USAGE
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument('-c', '--cmdfile', dest="cmdFile", help="path to command file", default=None, type=file)
-        parser.add_argument('-m', '--runmode', dest='runMode', default='batch', help="mode to run the client in", required=True, choices=['interactive', 'batch'])
+        parser.add_argument('-c', '--cmdfile', dest="cmdFile", help="path to command file", default=None, type=file, metavar="CommandFile", required=True)
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
 
@@ -87,14 +86,11 @@ USAGE
 
         options = Options()
         options.cmdFile = args.cmdFile
-        options.runMode = args.runMode
         options.verbose = args.verbose
 
-        if options.runMode == 'batch' and options.cmdFile is None:
-            raise BatfishException("No command file specified while running in batch mode.\nUse '--runmode interactive' if you want interactive mode"), None, sys.exc_info()[2]
 
     except BatfishException as e:
-        raise BatfishException("error running batfish_scrubber", e), None, sys.exc_info()[2]
+        raise BatfishException("error running client", e), None, sys.exc_info()[2]
 
 if __name__ == "__main__":
     sys.exit(main())
