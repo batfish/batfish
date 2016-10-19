@@ -212,7 +212,6 @@
   } ],
   "question" : {
     "class" : "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion",
-    "differential" : false,
     "dstIp" : "1.0.1.1",
     "ingressNode" : "host2"
   },

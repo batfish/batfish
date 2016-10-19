@@ -15,6 +15,5 @@
     "ospfInternalIterations" : 3,
     "totalRoutes" : 301
   } ],
-  "question" : null,
   "status" : "SUCCESS"
 }

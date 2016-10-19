@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -418,7 +419,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       else {
          // failure
          answer.setStatus(AnswerStatus.FAILURE);
-         answer.addAnswerElement(exception);
+         answer.addAnswerElement(exception.getBatfishStackTrace());
       }
       return answer;
    }
@@ -1082,8 +1083,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private boolean environmentExists(TestrigSettings testrigSettings) {
       checkBaseDirExists();
-      return Files
-            .exists(testrigSettings.getEnvironmentSettings().getEnvPath());
+      Path envPath = testrigSettings.getEnvironmentSettings().getEnvPath();
+      if (envPath == null) {
+         throw new BatfishException("No environment specified for testrig: "
+               + testrigSettings.getName());
+      }
+      return Files.exists(envPath);
    }
 
    private void flatten(Path inputPath, Path outputPath) {
@@ -1994,7 +1999,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
          Answer failureAnswer = Answer.failureAnswer(e.getMessage());
-         failureAnswer.addAnswerElement(be);
+         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
          try {
             String failureJsonString = mapper.writeValueAsString(failureAnswer);
             _logger.error(failureJsonString);
@@ -2810,13 +2815,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
    }
 
-   private Answer serializeHostConfigs(Path testRigPath, Path outputPath) {
-      Answer answer = new Answer();
+   private void serializeHostConfigs(Path testRigPath, Path outputPath,
+         ParseVendorConfigurationAnswerElement answerElement) {
       Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
             BfConsts.RELPATH_HOST_CONFIGS_DIR);
-      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
-
       // read the host files
       Map<String, VendorConfiguration> hostConfigurations = parseVendorConfigurations(
             configurationData, answerElement, ConfigurationFormat.HOST);
@@ -2880,12 +2882,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            if (!iptablesConfigurations.containsKey(path.toString())) {
+            Path relativePath = testRigPath.relativize(path);
+            if (!iptablesConfigurations.containsKey(relativePath.toString())) {
                throw new BatfishException("Key not found for iptables!");
             }
             hostConfig.setIptablesConfig(
                   (IptablesVendorConfiguration) iptablesConfigurations
-                        .get(path.toString()));
+                        .get(relativePath.toString()));
          }
       }
 
@@ -2903,7 +2906,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // serialize warnings
       serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
       printElapsedTime();
-      return answer;
    }
 
    private void serializeIndependentConfigs(
@@ -2936,12 +2938,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answer;
    }
 
-   private Answer serializeNetworkConfigs(Path testRigPath, Path outputPath) {
-      Answer answer = new Answer();
+   private void serializeNetworkConfigs(Path testRigPath, Path outputPath,
+         ParseVendorConfigurationAnswerElement answerElement) {
       Map<Path, String> configurationData = readConfigurationFiles(testRigPath,
             BfConsts.RELPATH_CONFIGURATIONS_DIR);
-      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
       Map<String, VendorConfiguration> vendorConfigurations = parseVendorConfigurations(
             configurationData, answerElement, ConfigurationFormat.UNKNOWN);
       if (vendorConfigurations == null) {
@@ -2971,14 +2971,24 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       CommonUtil.createDirectories(outputPath);
       Map<Path, VendorConfiguration> output = new TreeMap<>();
       vendorConfigurations.forEach((name, vc) -> {
-         Path currentOutputPath = outputPath.resolve(name);
-         output.put(currentOutputPath, vc);
+         if (name.contains(File.separator)) {
+            // iptables will get a hostname like configs/iptables-save if they
+            // are not
+            // set up correctly using host files
+            _logger.errorf("Cannot serialize configuration with hostname %s\n",
+                  name);
+            answerElement.addRedFlagWarning(name,
+                  new Warning(
+                        "Cannot serialize network config. Bad hostname " + name,
+                        "MISCELLANEOUS"));
+         }
+         else {
+            Path currentOutputPath = outputPath.resolve(name);
+            output.put(currentOutputPath, vc);
+         }
       });
       serializeObjects(output);
-      // serialize warnings
-      serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
       printElapsedTime();
-      return answer;
    }
 
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
@@ -2988,8 +2998,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // look for network configs
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answer.addAnswerElement(answerElement);
       if (Files.exists(networkConfigsPath)) {
-         answer.append(serializeNetworkConfigs(testRigPath, outputPath));
+         serializeNetworkConfigs(testRigPath, outputPath, answerElement);
          configsFound = true;
       }
 
@@ -3005,13 +3017,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path hostConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
       if (Files.exists(hostConfigsPath)) {
-         answer.append(serializeHostConfigs(testRigPath, outputPath));
+         serializeHostConfigs(testRigPath, outputPath, answerElement);
          configsFound = true;
       }
 
       if (!configsFound) {
          throw new BatfishException("No valid configurations found");
       }
+
+      // serialize warnings
+      serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+
       return answer;
    }
 

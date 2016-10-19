@@ -1000,8 +1000,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
       setDefaultProperty(BfConsts.ARG_SYNTHESIZE_TOPOLOGY, false);
       setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
-      setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, false);
-      setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, false);
+      setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
+      setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
       setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);

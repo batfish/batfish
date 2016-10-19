@@ -25,6 +25,25 @@ as_path_set_elem
    IOS_REGEX SINGLE_QUOTE ~SINGLE_QUOTE* SINGLE_QUOTE
 ;
 
+banner
+:
+   (
+      (
+         (
+            ESCAPE_C ~ESCAPE_C* ESCAPE_C
+         )
+         |
+         (
+            POUND ~POUND* POUND
+         )
+         |
+         (
+            NEWLINE ~EOF_LITERAL* EOF_LITERAL
+         )
+      )
+   ) NEWLINE?
+;
+
 community
 :
    com = COMMUNITY_NUMBER
@@ -38,7 +57,7 @@ community
 
 description_line
 :
-   DESCRIPTION text = M_DESCRIPTION_NON_NEWLINE? NEWLINE
+   DESCRIPTION text = RAW_TEXT? NEWLINE
 ;
 
 dscp_type

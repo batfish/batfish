@@ -1,0 +1,71 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.common.CompositeBatfishException$CompositeBatfishExceptionAnswerElement",
+    "cause" : {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "contents" : {
+        "0" : "org.batfish.common.BatfishException: Fatal exception due to failure of at least one nod job\r",
+        "1" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:121)\r",
+        "2" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:944)\r",
+        "3" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1412)\r",
+        "4" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2934)\r",
+        "5" : "   at org.batfish.main.Batfish.run(Batfish.java:2753)\r",
+        "6" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r"
+      }
+    },
+    "contributingCauses" : [ {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "contents" : {
+        "0" : "org.batfish.common.BatfishException: Failure running job after elapsed time: 00:00:00.00",
+        "1" : "-----BEGIN JOB LOG-----",
+        "2" : "",
+        "3" : "-----END JOB LOG-----\r",
+        "4" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:90)\r",
+        "5" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:944)\r",
+        "6" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1412)\r",
+        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2934)\r",
+        "8" : "   at org.batfish.main.Batfish.run(Batfish.java:2753)\r",
+        "9" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r",
+        "10" : "Caused by: org.batfish.common.BatfishException: Conversion error for node with hostname 'as1border1'\r",
+        "11" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:70)\r",
+        "12" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:1)\r",
+        "13" : "   at java.util.concurrent.FutureTask.run(Unknown Source)\r",
+        "14" : "   at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)\r",
+        "15" : "   at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)\r",
+        "16" : "   at java.lang.Thread.run(Unknown Source)\r",
+        "17" : "Caused by: java.lang.NullPointerException\r",
+        "18" : "   at org.batfish.representation.juniper.JuniperVendorConfiguration.createOspfProcess(JuniperVendorConfiguration.java:356)\r",
+        "19" : "   at org.batfish.representation.juniper.JuniperVendorConfiguration.toVendorIndependentConfiguration(JuniperVendorConfiguration.java:1385)\r",
+        "20" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:45)\r",
+        "21" : "   ... 5 more\r"
+      }
+    }, {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "contents" : {
+        "0" : "org.batfish.common.BatfishException: Failure running job after elapsed time: 00:00:00.00",
+        "1" : "-----BEGIN JOB LOG-----",
+        "2" : "",
+        "3" : "-----END JOB LOG-----\r",
+        "4" : "   at org.batfish.job.BatfishJobExecutor.executeJobs(BatfishJobExecutor.java:90)\r",
+        "5" : "   at org.batfish.main.Batfish.convertConfigurations(Batfish.java:944)\r",
+        "6" : "   at org.batfish.main.Batfish.getConfigurations(Batfish.java:1412)\r",
+        "7" : "   at org.batfish.main.Batfish.serializeIndependentConfigs(Batfish.java:2934)\r",
+        "8" : "   at org.batfish.main.Batfish.run(Batfish.java:2753)\r",
+        "9" : "   at org.batfish.main.Driver$1.run(Driver.java:270)\r",
+        "10" : "Caused by: org.batfish.common.BatfishException: Conversion error for node with hostname 'as1border2'\r",
+        "11" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:70)\r",
+        "12" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:1)\r",
+        "13" : "   at java.util.concurrent.FutureTask.run(Unknown Source)\r",
+        "14" : "   at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)\r",
+        "15" : "   at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)\r",
+        "16" : "   at java.lang.Thread.run(Unknown Source)\r",
+        "17" : "Caused by: java.lang.NullPointerException\r",
+        "18" : "   at org.batfish.representation.juniper.JuniperVendorConfiguration.createOspfProcess(JuniperVendorConfiguration.java:356)\r",
+        "19" : "   at org.batfish.representation.juniper.JuniperVendorConfiguration.toVendorIndependentConfiguration(JuniperVendorConfiguration.java:1385)\r",
+        "20" : "   at org.batfish.job.ConvertConfigurationJob.call(ConvertConfigurationJob.java:45)\r",
+        "21" : "   ... 5 more\r"
+      }
+    } ]
+  } ],
+  "status" : "FAILURE"
+}

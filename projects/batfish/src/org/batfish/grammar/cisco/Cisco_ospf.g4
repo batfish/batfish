@@ -44,19 +44,36 @@ area_xr_ro_stanza
       | area_ip = IP_ADDRESS
    ) NEWLINE
    (
-      AUTHENTICATION MESSAGE_DIGEST? NEWLINE
-      | NSSA NO_REDISTRIBUTION?
+      authentication_xr_ro_stanza
+      | nssa_xr_ro_stanza
+      | interface_xr_ro_stanza
+   )*
+;
+
+authentication_xr_ro_stanza
+:
+   AUTHENTICATION MESSAGE_DIGEST? NEWLINE
+;
+
+nssa_xr_ro_stanza
+:
+   NSSA
+   (
       (
          DEFAULT_INFORMATION_ORIGINATE
          (
-            METRIC DEC
-         )?
-         (
-            METRIC_TYPE DIGIT
-         )?
-      )? NO_SUMMARY? NEWLINE
-      | interface_xr_ro_stanza
-   )*
+            (
+               METRIC DEC
+            )
+            |
+            (
+               METRIC_TYPE DIGIT
+            )
+         )*
+      )
+      | NO_REDISTRIBUTION
+      | NO_SUMMARY
+   )* NEWLINE
 ;
 
 auto_cost_ipv6_ro_stanza

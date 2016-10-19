@@ -1,0 +1,24 @@
+!
+hostname cisco_interface
+!
+interface Dot11Radio0
+ no ip address
+ no ip route-cache
+ !
+ encryption mode ciphers aes-ccm tkip 
+ !
+ ssid blah
+ !
+ speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
+ channel 2462
+ station-role root access-point
+ antenna gain 6
+ l2-filter bridge-group-acl
+ bridge-group 1
+ bridge-group 1 subscriber-loop-control
+ bridge-group 1 block-unknown-source
+ no bridge-group 1 source-learning
+ no bridge-group 1 unicast-flooding
+ bridge-group 1 spanning-disabledinterface Ethernet0/0
+!
+

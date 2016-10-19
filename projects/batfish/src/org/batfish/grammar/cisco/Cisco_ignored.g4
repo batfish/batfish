@@ -10,18 +10,20 @@ null_block_stanza
 :
    NO?
    (
-      AAA
+      AAA_SERVER
       | ACCESS_GROUP
       | ACCESS
       | ACLLOG
       | ADMIN
       | ALLOW
+      | APPLETALK
       | ARCHIVE
       | AS_PATH_SET
       | ATM
       | BASH
       | BFD
       | BGP DISABLE_ADVERTISEMENT
+      | BSD_CLIENT
       | BSD_USERNAME
       | CALL_HOME
       | CAM_ACL
@@ -49,15 +51,21 @@ null_block_stanza
       | DEBUG
       | DEFAULT_MAX_FRAME_SIZE
       | DEFAULT_VALUE
+      | DHCPRELAY
       | DIAL_PEER
       | DO STOP
       | DOMAIN
       | DOT11
+      | DOT1X
+      | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
       | END
+      | ETHERNET
       | EVENT
       | EVENT_HANDLER
+      | EXCEPTION_SLAVE
       | EXIT
+      | FEATURE_SET
       | FEX
       | FLOW
       | FPD
@@ -66,8 +74,10 @@ null_block_stanza
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | HPM
       | HSRP
       | HW_SWITCH
+      | INSTALL
       | INTERFACE BREAKOUT
       |
       (
@@ -141,11 +151,13 @@ null_block_stanza
       | L2TP_CLASS
       | LACP
       | LINECARD
+      | LOAD_BALANCE
       | LOGGING
       | LOGIN
       | MAC
       | MAC_LEARN
       | MACRO
+      | MANAGEMENT_ACCESS
       | MAP_CLASS
       | MAP_LIST
       | MAXIMUM_PATHS
@@ -153,6 +165,7 @@ null_block_stanza
       | MLAG
       | MODULE
       | MONITOR
+      | MONITOR_INTERFACE
       |
       (
          MPLS
@@ -171,7 +184,18 @@ null_block_stanza
       (
          NO
          (
-            CLASS_MAP
+            (
+               AAA
+               (
+                  NEW_MODEL
+                  | ROOT
+                  |
+                  (
+                     USER DEFAULT_ROLE
+                  )
+               )
+            )
+            | CLASS_MAP
             |
             (
                IP
@@ -186,11 +210,13 @@ null_block_stanza
       | NSR
       | ONE
       | OPENFLOW
+      | PASSWORD_POLICY
       | PLAT
       | PLATFORM
       | POLICY_MAP
       | POLICY_MAP_INPUT
       | POLICY_MAP_OUTPUT
+      | PORT_PROFILE
       | POWEROFF
       | PRIORITY_FLOW_CONTROL
       | PROTOCOL
@@ -215,6 +241,7 @@ null_block_stanza
       | SERVICE_CLASS
       | SFLOW
       | SLOT
+      | SNTP
       | SPANNING_TREE
       | STACK_MAC
       | STACK_UNIT
@@ -235,6 +262,7 @@ null_block_stanza
       | TCP
       | TEMPLATE
       | TERMINAL
+      | TIME_RANGE
       | TIMEOUT
       | TFTP
       | TRACE
@@ -262,6 +290,8 @@ null_block_stanza
       | WEBVPN
       | WISM
       | WRED_PROFILE
+      | WSMA
+      | XDR
    ) ~NEWLINE* NEWLINE
    (
       description_line
@@ -283,17 +313,21 @@ null_block_substanza
          | ACCOUNTING_SERVER_GROUP
          | ACTION
          | ACTIVATION_CHARACTER
+         | ACTIVE
          | ADDRESS
          | ADDRESS_POOL
+         | ADDRESS_POOLS
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
          | ALERT_GROUP
+         | ALWAYS_ON_VPN
          | ANYCONNECT
          | ANYCONNECT_ESSENTIALS
          | APPLICATION
          | ARCHIVE_LENGTH
          | ARCHIVE_SIZE
+         | ASSOC_RETRANSMIT
          | ASSOCIATE
          | ASSOCIATION
          | AUTHENTICATION
@@ -334,11 +368,14 @@ null_block_substanza
          | CONNECT_SOURCE
          | CONTEXT
          | CONTACT_EMAIL_ADDR
+         | CONTACT_NAME
          | CONTRACT_ID
          | CPTONE
          | CREDENTIALS
          | CRL
          | CRYPTOGRAPHIC_ALGORITHM
+         | CSD
+         | CUSTOMER_ID
          | DATABITS
          | DBL
          | DEADTIME
@@ -355,6 +392,7 @@ null_block_substanza
          | DEVICE
          | DIAGNOSTIC
          | DISABLE
+         | DISTRIBUTION
          | DNS_SERVER
          | DOMAIN_ID
          | DOMAIN_NAME
@@ -371,6 +409,7 @@ null_block_substanza
          | ENCRYPTION
          | END_POLICY_MAP
          | ENROLLMENT
+         | ERROR_RECOVERY
          | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
@@ -386,6 +425,7 @@ null_block_substanza
          | FAILED
          | FAIR_QUEUE
          | FALLBACK_DN
+         | FIELDS
          | FILE_BROWSING
          | FILE_ENTRY
          | FILE_SIZE
@@ -399,6 +439,7 @@ null_block_substanza
          | GID
          | GROUP
          | GROUP_ALIAS
+         | GROUP_LOCK
          | GROUP_POLICY
          | GROUP_URL
          | HEARTBEAT_INTERVAL
@@ -411,6 +452,8 @@ null_block_substanza
          | HISTORY
          | HOMEDIR
          | ICMP_ECHO
+         | ID_MISMATCH
+         | ID_RANDOMIZATION
          | IDLE
          | IDLE_TIMEOUT
          | IMPORT
@@ -435,6 +478,7 @@ null_block_substanza
                ACCESS_CLASS
                | ACCESS_GROUP
                | ADDRESS
+               | ARP
                | FLOW
             )
          )
@@ -466,6 +510,7 @@ null_block_substanza
          | LOGIN
          | LPTS
          | MAC_ADDRESS
+         | MAIL_SERVER
          | MAIN_CPU
          | MAP
          | MATCH
@@ -477,6 +522,7 @@ null_block_substanza
          | MODE
          | MODEM
          | MONITORING
+         | MSIE_PROXY
          | MTU
          | NAME
          | NAMESPACE
@@ -501,12 +547,16 @@ null_block_substanza
          | PASSWORD
          | PASSWORD_STORAGE
          | PATH_JITTER
+         | PATH_RETRANSMIT
          | PAUSE
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
+         | PEER_ID_VALIDATE
          | PEER_KEEPALIVE
          | PEER_LINK
+         | PEER_SWITCH
+         | PERIODIC
          | PERMIT
          | PERSISTENT
          | PHONE_NUMBER
@@ -523,6 +573,7 @@ null_block_substanza
          | PRE_SHARED_KEY
          | PREEMPT
          | PREFIX
+         | PRF
          | PRI_GROUP
          | PRIMARY_PRIORITY
          | PRIORITY
@@ -532,6 +583,7 @@ null_block_substanza
          | PROFILE
          | PROPOSAL
          | PROTOCOL
+         | PROTOCOL_VIOLATION
          | PROVISION
          | PROXY_SERVER
          | QUEUE
@@ -559,6 +611,7 @@ null_block_substanza
          | REQUEST_DATA_SIZE
          | RESOURCES
          | RETRANSMIT
+         | RETRANSMIT_TIMEOUT
          | RETRIES
          | REVERSE_ROUTE
          | REVISION
@@ -599,6 +652,8 @@ null_block_substanza
          | SMTP
          | SORT_BY
          | SOURCE
+         | SOURCE_INTERFACE
+         | SOURCE_IP_ADDRESS
          | SPANNING_TREE
          | SPEED
          | SPLIT_TUNNEL_NETWORK_LIST
@@ -611,6 +666,8 @@ null_block_substanza
          | STP
          | STREET_ADDRESS
          | SUBJECT_NAME
+         | SUBSCRIBE_TO_ALERT_GROUP
+         | SVC
          | SWITCHBACK
          | SWITCHPORT
          | SYNC
@@ -646,7 +703,10 @@ null_block_substanza
          | UDP_JITTER
          | UID
          | UNTAGGED
+         | URL_LIST
          | USE_VRF
+         | USER_MESSAGE
+         | USER_STATISTICS
          | USERS
          | VAD
          | VERSION
@@ -657,7 +717,10 @@ null_block_substanza
          | VM_CPU
          | VM_MEMORY
          | VPN_FILTER
+         | VPN_GROUP_POLICY
          | VPN_IDLE_TIMEOUT
+         | VPN_SESSION_TIMEOUT
+         | VPN_SIMULTANEOUS_LOGINS
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
          | VTY_POOL
@@ -695,8 +758,7 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       NO
    )?
    (
-      AAA_SERVER
-      | ABSOLUTE_TIMEOUT
+      ABSOLUTE_TIMEOUT
       |
       (
          ACCESS_LIST
@@ -709,7 +771,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       )
       | ACCOUNTING_PORT
       | ACTION
-      | ACTIVE
       | ALIAS
       | AP
       | AQM_REGISTER_FNF
@@ -742,7 +803,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DEC
       | DEFAULT
       | DESCRIPTION
-      | DESTINATION
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
@@ -754,7 +814,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DSP
       | DSPFARM
       | DSS
-      | DYNAMIC_ACCESS_POLICY_RECORD
       | ENCR
       | ENROLLMENT
       | ENVIRONMENT
@@ -878,7 +937,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | LLDP
       | LOCATION
       | MAC_ADDRESS_TABLE
-      | MAIL_SERVER
       | MAXIMUM
       | MEMORY_SIZE
       | MGCP
@@ -914,7 +972,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | PRIORITY_QUEUE
       | PRIVILEGE
       | PROCESS
-      | PROFILE
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
@@ -948,8 +1005,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SNMP
       | SNMP_SERVER
       | SOURCE
-      | SOURCE_INTERFACE
-      | SOURCE_IP_ADDRESS
       | SPANNING_TREE
       | SPD
       | SPE
@@ -962,7 +1017,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SUBNET
       | SUBSCRIBER
       | SUBSCRIBE_TO
-      | SUBSCRIBE_TO_ALERT_GROUP
       | SYSOPT
       | SYSTEM
       | TAG_SWITCHING
@@ -996,7 +1050,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | VTP
       | VOICE_CARD
       | WLAN
-      | WSMA
       | X25
       | X29
       | XLATE

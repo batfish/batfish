@@ -6,6 +6,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -14,6 +15,8 @@ public class ParseVendorConfigurationResult extends
       BatfishJobResult<Map<String, VendorConfiguration>, ParseVendorConfigurationAnswerElement> {
 
    private final Path _file;
+
+   private ParseTreeSentences _parseTree;
 
    private VendorConfiguration _vc;
 
@@ -27,9 +30,10 @@ public class ParseVendorConfigurationResult extends
 
    public ParseVendorConfigurationResult(long elapsedTime,
          BatfishLoggerHistory history, Path file, VendorConfiguration vc,
-         Warnings warnings) {
+         Warnings warnings, ParseTreeSentences parseTree) {
       super(elapsedTime, history);
       _file = file;
+      _parseTree = parseTree;
       _vc = vc;
       _warnings = warnings;
    }
@@ -70,6 +74,9 @@ public class ParseVendorConfigurationResult extends
             vendorConfigurations.put(hostname, _vc);
             if (!_warnings.isEmpty()) {
                answerElement.getWarnings().put(hostname, _warnings);
+            }
+            if (!_parseTree.isEmpty()) {
+               answerElement.getParseTrees().put(hostname, _parseTree);
             }
          }
       }

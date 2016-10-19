@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
@@ -20,6 +21,7 @@ import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
@@ -69,6 +71,8 @@ public class ParseVendorConfigurationJob
 
    private ConfigurationFormat _format;
 
+   private ParseTreeSentences _ptSentences;
+
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
@@ -77,6 +81,7 @@ public class ParseVendorConfigurationJob
       super(settings);
       _fileText = fileText;
       _file = file;
+      _ptSentences = new ParseTreeSentences();
       _warnings = warnings;
       _format = configurationFormat;
    }
@@ -99,6 +104,9 @@ public class ParseVendorConfigurationJob
             break;
          }
       }
+
+      Path fileRelativeToTestrig = _settings.getTestrigSettings()
+            .getTestRigPath().relativize(_file);
 
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
@@ -151,7 +159,7 @@ public class ParseVendorConfigurationJob
          vc = HostConfiguration.fromJson(_fileText, _warnings);
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, vc, _warnings);
+               _logger.getHistory(), _file, vc, _warnings, _ptSentences);
 
       case VYOS:
          if (_settings.flattenOnTheFly()) {
@@ -174,7 +182,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Vyos configurations must be flattened prior to this stage: '"
-                              + _file.toString() + "'"));
+                              + fileRelativeToTestrig.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_VYOS:
@@ -216,7 +224,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Juniper configurations must be flattened prior to this stage: '"
-                              + _file.toString() + "'"));
+                              + fileRelativeToTestrig.toString() + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
@@ -232,7 +240,7 @@ public class ParseVendorConfigurationJob
                _fileText, _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText,
-               iptablesParser, _warnings, _file.toString());
+               iptablesParser, _warnings, fileRelativeToTestrig.toString());
          break;
 
       case MRV:
@@ -285,6 +293,10 @@ public class ParseVendorConfigurationJob
       try {
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
+         if (_settings.printParseTree()) {
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree,
+                  combinedParser);
+         }
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
          _logger.info("OK\n");
@@ -311,7 +323,8 @@ public class ParseVendorConfigurationJob
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: '" + _file + "'\n";
+         String error = "No hostname set in file: '" + fileRelativeToTestrig
+               + "'\n";
          try {
             _warnings.redFlag(error);
          }
@@ -328,7 +341,7 @@ public class ParseVendorConfigurationJob
       }
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
-            _logger.getHistory(), _file, vc, _warnings);
+            _logger.getHistory(), _file, vc, _warnings, _ptSentences);
    }
 
    private boolean checkNonNexus(String fileText) {

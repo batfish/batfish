@@ -1,0 +1,43 @@
+!
+hostname cisco_callhome
+!
+callhome                                                                                                                                   
+  email-contact fake@example.com
+  phone-contact +1-555-555-5555
+  streetaddress 555 Fake St, Fakeville
+  destination-profile full_txt message-level 3
+  destination-profile mns
+  destination-profile mns format short-txt
+  destination-profile mns message-level 3
+  destination-profile short_txt message-level 3
+  destination-profile mns email-addr fake2@example.com
+  destination-profile short_txt email-addr fake3@example.com
+  destination-profile mns alert-group all
+  transport email smtp-server 1.2.3.4 port 25 use-vrf management
+  transport email from FAKE4@EXAMPLE.COM
+  transport email reply-to fake5@example.com
+  enable
+no call-home reporting anonymous
+call-home
+ contact-email-addr a@support.ccc
+ contact-name fewrgbefw
+ contract-id 12345
+ customer-id 1235
+ phone-number +123455677
+ sender from asfad@ggesg.gwf
+ sender reply-to hrteg@hrtg.fewf
+ site-id rgtrfff
+ street-address A B C D
+ mail-server a.b.c priority 1
+ profile ppppppp
+  destination address http https://a.b.c/d
+  destination address email callhome@cisco.com
+  destination transport-method http
+  subscribe-to-alert-group diagnostic
+  subscribe-to-alert-group environment
+  subscribe-to-alert-group inventory periodic monthly 27
+  subscribe-to-alert-group configuration periodic monthly 27
+  subscribe-to-alert-group telemetry periodic daily
+ntp distribute
+!
+

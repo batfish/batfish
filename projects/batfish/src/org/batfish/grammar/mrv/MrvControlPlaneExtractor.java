@@ -6,16 +6,14 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
+import org.batfish.grammar.mrv.MrvParser.*;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
 import org.batfish.representation.mrv.MrvConfiguration;
-import org.batfish.representation.mrv.MrvVendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
       implements ControlPlaneExtractor {
 
-   @SuppressWarnings("unused")
    private MrvConfiguration _configuration;
 
    private MrvCombinedParser _parser;
@@ -23,8 +21,6 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
    private String _text;
 
    private final Set<String> _unimplementedFeatures;
-
-   private MrvVendorConfiguration _vendorConfiguration;
 
    private Warnings _w;
 
@@ -38,8 +34,22 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
    @Override
    public void enterMrv_configuration(Mrv_configurationContext ctx) {
-      _vendorConfiguration = new MrvVendorConfiguration();
-      _configuration = _vendorConfiguration;
+      _configuration = new MrvConfiguration();
+   }
+
+   @Override
+   public void exitA_system_systemname(A_system_systemnameContext ctx) {
+      String hostname = toString(ctx.nsdecl());
+      _configuration.setHostname(hostname);
+   }
+
+   private String getText(Quoted_stringContext ctx) {
+      if (ctx.text != null) {
+         return ctx.text.getText();
+      }
+      else {
+         return "";
+      }
    }
 
    @Override
@@ -49,7 +59,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
    @Override
    public VendorConfiguration getVendorConfiguration() {
-      return _vendorConfiguration;
+      return _configuration;
    }
 
    @Override
@@ -62,6 +72,11 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
    private void todo(ParserRuleContext ctx, String feature) {
       _w.todo(ctx, feature, _parser, _text);
       _unimplementedFeatures.add("Cisco: " + feature);
+   }
+
+   private String toString(NsdeclContext ctx) {
+      String text = getText(ctx.quoted_string());
+      return text;
    }
 
 }
