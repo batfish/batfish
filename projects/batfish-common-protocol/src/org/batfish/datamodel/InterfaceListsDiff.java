@@ -29,6 +29,7 @@ public class InterfaceListsDiff extends ConfigDiffElement {
             _diff.add(name);
          }
       }
+      super.summarizeIdentical();
    }
    
    @JsonProperty(DIFF_VAR)

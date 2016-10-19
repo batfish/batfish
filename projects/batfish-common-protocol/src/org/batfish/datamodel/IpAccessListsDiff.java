@@ -68,10 +68,7 @@ public class IpAccessListsDiff extends ConfigDiffElement {
          }
       }
       
-      int numIdentical = di._identical.size();
-      di.setIdentical(new TreeSet<>());
-      di._identical.add(numIdentical + " identical lines (not shown for readability.)");
-      _diffInfo.put(name, di);
+      di.summarizeIdentical();
    }
 
    private String getAclLineWithoutSequence(String line) {
