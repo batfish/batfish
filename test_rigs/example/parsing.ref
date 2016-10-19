@@ -57,7 +57,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -1045,7 +1045,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -2093,7 +2093,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -2537,7 +2537,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -3543,7 +3543,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -4556,7 +4556,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -5164,7 +5164,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -5735,7 +5735,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -6485,7 +6485,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -7180,7 +7180,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -7875,7 +7875,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -8807,7 +8807,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -9688,7 +9688,7 @@
           "51" : "      (null_block_stanza",
           "52" : "        NO:'no'  <== mode:DEFAULT_MODE",
           "53" : "        AAA:'aaa'  <== mode:DEFAULT_MODE",
-          "54" : "        VARIABLE:'new-model'  <== mode:DEFAULT_MODE",
+          "54" : "        NEW_MODEL:'new-model'  <== mode:DEFAULT_MODE",
           "55" : "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
           "56" : "  (stanza",
           "57" : "    (null_stanza",
@@ -10123,15 +10123,8 @@
           "486" : "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
           "487" : "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
         }
-      }
-    },
-    "warnings" : { }
-  }, {
-    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
-    "parseTrees" : {
-      "host1" : { },
-      "host2" : { },
-      "iptables\\host1.iptables" : {
+      },
+      "testrig\\iptables\\host1.iptables" : {
         "Parse tree" : {
           "1" : "(iptables_configuration",
           "2" : "  (declaration_table",
@@ -10305,7 +10298,7 @@
           "170" : "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)"
         }
       },
-      "iptables\\host2.iptables" : {
+      "testrig\\iptables\\host2.iptables" : {
         "Parse tree" : {
           "1" : "(iptables_configuration",
           "2" : "  (declaration_table",
@@ -10476,8 +10469,7 @@
           "167" : "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)"
         }
       }
-    },
-    "warnings" : { }
+    }
   }, {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "undefinedReferences" : {

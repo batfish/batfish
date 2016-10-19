@@ -7,4 +7,4 @@ class Session:
 
     def __init__(self, coordtarget):
         self.coordtarget = coordtarget
-        self.
+        

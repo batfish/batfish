@@ -21,8 +21,8 @@
 	<classpathentry kind="lib" path="lib/jsonpath/json-path-2.2.0.jar" sourcepath="lib/jsonpath/json-path-2.2.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j/slf4j-api-1.7.21.jar"/>
 	<classpathentry kind="lib" path="lib/json-smart/json-smart-2.2.1.jar"/>
-	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jsonpath/json-path-assert-2.2.0.jar" sourcepath="lib/jsonpath/json-path-assert-2.2.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j/slf4j-simple-1.7.21.jar"/>
+	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -106,7 +106,7 @@ public class ParseVendorConfigurationJob
       }
 
       Path fileRelativeToTestrig = _settings.getTestrigSettings()
-            .getTestRigPath().relativize(_file);
+            .getBasePath().relativize(_file);
 
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
