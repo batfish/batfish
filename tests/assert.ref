@@ -1,0 +1,27 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.question.AssertQuestionPlugin$AssertAnswerElement",
+    "results" : {
+      "0" : true,
+      "1" : true,
+      "2" : true
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.question.AssertQuestionPlugin$AssertQuestion",
+    "assertions" : [ {
+      "args" : [ 15 ],
+      "check" : "EQ",
+      "path" : "$.nodes.length()"
+    }, {
+      "args" : null,
+      "check" : "ABSENT",
+      "path" : "$.nodes['as1border']"
+    }, {
+      "args" : null,
+      "check" : "EXISTS",
+      "path" : "$.nodes['as1border1']"
+    } ]
+  },
+  "status" : "SUCCESS"
+}
