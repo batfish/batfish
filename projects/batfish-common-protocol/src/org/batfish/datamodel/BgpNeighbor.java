@@ -302,7 +302,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (!this._clusterId.equals(other._clusterId)) {
          return false;
       }
-      if (!this._defaultMetric.equals(other._defaultMetric)) {
+      if (this._defaultMetric!= other._defaultMetric) {
          return false;
       }
       // we will skip description
@@ -335,7 +335,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (this._routeReflectorClient != other._routeReflectorClient) {
          return false;
       }
-      if (!this._sendCommunity.equals(other._sendCommunity)) {
+      if (this._sendCommunity != other._sendCommunity) {
          return false;
       }
       return true;
