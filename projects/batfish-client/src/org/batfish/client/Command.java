@@ -96,7 +96,7 @@ public enum Command {
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
-      descs.put(ADD_BATFISH_OPTION,
+      descs.put(DEL_BATFISH_OPTION,
             new Pair<>("<option-key>",
                   "Stop passing this option to Batfish"));
       descs.put(DEL_CONTAINER,
@@ -116,7 +116,7 @@ public enum Command {
             new Pair<>("", "Generate dataplane for the default environment"));
       descs.put(GET,
             new Pair<>("<question-type>  [param1=value1 [param2=value2] ...]",
-                  "Answer the question by type for the delta environment"));
+                  "Answer the question by type for the base environment"));
       descs.put(GET_ANSWER, new Pair<>("[-html] <question-name>",
             "Get the answer for a previously answered question"));
       descs.put(GET_DELTA,
