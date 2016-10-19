@@ -549,7 +549,7 @@ aaa_group_server_private
 
 aaa_group_source_interface
 :
-   SOURCE_INTERFACE interface_name NEWLINE
+   SOURCE_INTERFACE interface_name DEC? NEWLINE
 ;
 
 aaa_group_use_vrf

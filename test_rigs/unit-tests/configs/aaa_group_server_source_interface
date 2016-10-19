@@ -1,0 +1,5 @@
+!
+hostname aaa_group_server_source_interface 
+!
+aaa group server tacacs+ tacacs
+      source-interface FOO 0 
