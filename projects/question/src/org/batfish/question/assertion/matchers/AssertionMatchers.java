@@ -8,18 +8,18 @@ import com.fasterxml.jackson.databind.node.ContainerNode;
 
 public class AssertionMatchers {
 
-   public static <T> Matcher<? super ContainerNode<? extends T>> hasSize(
+   public static <A extends Comparable<A>> Matcher<A> compare(Object arg,
+         Function<A, Matcher<A>> matcherFunction) {
+      return new ComparableMatcher<>(arg, matcherFunction);
+   }
+
+   public static <T extends ContainerNode<T>> Matcher<? super ContainerNode<? extends T>> hasSize(
          Matcher<? super Integer> sizeMatcher) {
-      return new IsContainerNodeWithSize<T>(sizeMatcher);
+      return new IsContainerNodeWithSize<>(sizeMatcher);
    }
 
    private AssertionMatchers() {
       throw new AssertionError("Attempt to instantiate");
-   }
-
-   public static <A extends Comparable<A>> Matcher<A> compare(Object arg,
-         Function<A, Matcher<A>> matcherFunction) {
-      return new ComparableMatcher<A>(arg, matcherFunction);
    }
 
 }

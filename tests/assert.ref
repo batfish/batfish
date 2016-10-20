@@ -1,24 +1,33 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.question.AssertQuestionPlugin$AssertAnswerElement",
-    "results" : {
-      "0" : true,
-      "1" : true,
-      "2" : true
+    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
+    "fail" : false,
+    "passing" : {
+      "0" : {
+        "args" : [ 15 ],
+        "check" : "EQ",
+        "path" : "$.nodes.length()"
+      },
+      "1" : {
+        "check" : "ABSENT",
+        "path" : "$.nodes['as1border']"
+      },
+      "2" : {
+        "check" : "EXISTS",
+        "path" : "$.nodes['as1border1']"
+      }
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.AssertQuestionPlugin$AssertQuestion",
+    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
     "assertions" : [ {
       "args" : [ 15 ],
       "check" : "EQ",
       "path" : "$.nodes.length()"
     }, {
-      "args" : null,
       "check" : "ABSENT",
       "path" : "$.nodes['as1border']"
     }, {
-      "args" : null,
       "check" : "EXISTS",
       "path" : "$.nodes['as1border1']"
     } ]
