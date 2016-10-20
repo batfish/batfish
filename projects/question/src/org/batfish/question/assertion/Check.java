@@ -1,25 +1,63 @@
 package org.batfish.question.assertion;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.question.assertion.matchers.AssertionMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum Check {
-   ABSENT,
-   EQ,
-   EXISTS,
-   GE,
-   GT,
-   LE,
-   LT,
-   SIZE_EQ,
-   SIZE_GE,
-   SIZE_GT,
-   SIZE_LE,
-   SIZE_LT;
+   ABSENT("absent"),
+   EQ("eq"),
+   EXISTS("exists"),
+   GE("ge"),
+   GT("gt"),
+   LE("le"),
+   LT("lt"),
+   SIZE_EQ("sizeeq"),
+   SIZE_GE("sizege"),
+   SIZE_GT("sizegt"),
+   SIZE_LE("sizele"),
+   SIZE_LT("sizelt");
+
+   private final static Map<String, Check> _map = buildMap();
+
+   private synchronized static Map<String, Check> buildMap() {
+      Map<String, Check> map = new HashMap<>();
+      for (Check value : Check.values()) {
+         String name = value._name;
+         map.put(name, value);
+      }
+      return Collections.unmodifiableMap(map);
+   }
+
+   @JsonCreator
+   public static Check fromName(String name) {
+      Check instance = _map.get(name.toLowerCase());
+      if (instance == null) {
+         throw new BatfishException("No " + Check.class.getSimpleName()
+               + " with name: '" + name + "'");
+      }
+      return instance;
+   }
+
+   private final String _name;
+
+   private Check(String name) {
+      _name = name;
+   }
+
+   @JsonValue
+   public String checkName() {
+      return _name;
+   }
 
    public Matcher<?> matcher(List<Object> args) {
       switch (this) {

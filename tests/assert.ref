@@ -5,15 +5,15 @@
     "passing" : {
       "0" : {
         "args" : [ 15 ],
-        "check" : "EQ",
+        "check" : "eq",
         "path" : "$.nodes.length()"
       },
       "1" : {
-        "check" : "ABSENT",
+        "check" : "absent",
         "path" : "$.nodes['as1border']"
       },
       "2" : {
-        "check" : "EXISTS",
+        "check" : "exists",
         "path" : "$.nodes['as1border1']"
       }
     }
@@ -22,13 +22,13 @@
     "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
     "assertions" : [ {
       "args" : [ 15 ],
-      "check" : "EQ",
+      "check" : "eq",
       "path" : "$.nodes.length()"
     }, {
-      "check" : "ABSENT",
+      "check" : "absent",
       "path" : "$.nodes['as1border']"
     }, {
-      "check" : "EXISTS",
+      "check" : "exists",
       "path" : "$.nodes['as1border1']"
     } ]
   },
