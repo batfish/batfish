@@ -90,7 +90,7 @@ USAGE
 
 
     except BatfishException as e:
-        raise BatfishException("error running client", e), None, sys.exc_info()[2]
+        raise BatfishException("error running", program_name, e), None, sys.exc_info()[2]
 
 if __name__ == "__main__":
     sys.exit(main())
