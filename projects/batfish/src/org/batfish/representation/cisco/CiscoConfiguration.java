@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.datamodel.AaaSettings;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.VendorConfiguration;
 
@@ -16,6 +17,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
    public static final String MASTER_VRF_NAME = "__MASTER_VRF__";
 
    private static final long serialVersionUID = 1L;
+
+   protected AaaSettings _aaaSettings;
 
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
@@ -108,6 +111,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _standardAccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
       _staticRoutes = new HashSet<>();
+   }
+
+   public AaaSettings getAaaSettings() {
+      return _aaaSettings;
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -241,6 +248,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public final Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
+   }
+
+   public void setAaaSettings(AaaSettings aaaSettings) {
+      _aaaSettings = aaaSettings;
    }
 
    public void setFailover(boolean failover) {

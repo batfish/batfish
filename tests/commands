@@ -1,11 +1,11 @@
 #this file assumes that we are running from top-level source directory
 
 test tests/init.ref init-testrig -nodataplane test_rigs/example
-test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
-test tests/genDp.ref generate-dataplane
-test tests/genDp-delta.ref generate-delta-dataplane
-test tests/aclReachability.ref get aclReachability
-test tests/assert.ref get assert assertions=[{"path":"$.nodes.length()", "check":"EQ", "args":[15]},{"path":"$.nodes['as1border']", "check":"ABSENT"},{"path":"$.nodes['as1border1']", "check":"EXISTS"}]
+#test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
+#test tests/genDp.ref generate-dataplane
+#test tests/genDp-delta.ref generate-delta-dataplane
+#test tests/aclReachability.ref get aclReachability
+test tests/assert.ref get assert assertions=[{"path":"$.nodes.length()", "check":"EQ", "args":[15]},{"path":"$.nodes['as1border']", "check":"ABSENT"},{"path":"$.nodes['as1border1']", "check":"EXISTS"},{"path":"$.nodes[*].aaaSettings.newModel","check":"elemseq","args":[true]}]
 test tests/bgpSessionCheck.ref get bgpSessionCheck
 test tests/compareSameName.ref get compareSameName
 test tests/error.ref -error get error

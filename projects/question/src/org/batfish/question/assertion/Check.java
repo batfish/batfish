@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.batfish.common.BatfishException;
 import org.batfish.question.assertion.matchers.AssertionMatchers;
+import org.batfish.question.assertion.matchers.JsonValueMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Check {
    ABSENT("absent"),
+   ELEMS_EQ("elemseq"),
    EQ("eq"),
    EXISTS("exists"),
    GE("ge"),
@@ -63,6 +65,15 @@ public enum Check {
       switch (this) {
       case ABSENT: {
          return Matchers.equalTo(PathResult.EMPTY);
+      }
+
+      case ELEMS_EQ: {
+         if (args.size() != 1) {
+            throw new BatfishException("Expected only 1 arg");
+         }
+         Object arg = args.get(0);
+         return AssertionMatchers
+               .elems(new JsonValueMatcher(Matchers.equalTo(arg)));
       }
 
       case EQ: {
