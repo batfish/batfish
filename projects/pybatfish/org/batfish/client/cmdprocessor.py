@@ -67,46 +67,48 @@ def bf_init_testrig(dirOrZipfile, testrigName=None):
 
     answer = workhelper.execute(workItem, bf_session)
 
-    print(answer)
-#             if (command == Command.INIT_TESTRIG) {
-#                _currTestrig = testrigName;
-#                _currEnv = DEFAULT_ENV_NAME;
-#                _logger.outputf("Base testrig is now %s\n", _currTestrig);
-#             }
-#             else {
-#                _currDeltaTestrig = testrigName;
-#                _currDeltaEnv = DEFAULT_ENV_NAME;
-#                _logger.outputf("Delta testrig is now %s\n", _currDeltaTestrig);
-#             }
-# 
-#             if (generateDataplane) {
-#                _logger.output("Generating dataplane now\n");
-# 
-#                if (command == Command.INIT_TESTRIG) {
-#                   if (!generateDataplane(outWriter)) {
-#                      return false;
-#                   }
-#                }
-#                else if (!generateDeltaDataplane(outWriter)) {
-#                   return false;
-#                }
-# 
-#                _logger.output("Generated dataplane\n");
-#             }
-        
-def bf_answer():
+    return answer
+
+def bf_answer(questionJson, parameters="", isDelta=False):
     '''
     Answer a question
     '''
     _check_container();
     _check_base_testrig();
-    
+    if (isDelta):
+        _check_delta_testrig();
+
+    questionName = Options.default_question_prefix + "_" + batfishutils.get_uuid()
+
+    jsonData = {}
+    jsonData[CoordConsts.SVC_API_KEY] = bf_session.apiKey
+    jsonData[CoordConsts.SVC_CONTAINER_NAME_KEY] = bf_session.container
+    jsonData[CoordConsts.SVC_TESTRIG_NAME_KEY] = bf_session.baseTestrig
+    jsonData[CoordConsts.SVC_QUESTION_NAME_KEY] = questionName
+    jsonData[CoordConsts.SVC_FILE_KEY] =  ('question', questionJson)
+    jsonData[CoordConsts.SVC_FILE2_KEY] = ('parameters', parameters)
+
+    resthelper.post_data(bf_session, CoordConsts.SVC_UPLOAD_QUESTION_RSC, jsonData)
+
+    workItem = workhelper.get_workitem_answer_question(bf_session, questionName, isDelta)
+
+    answer = workhelper.execute(workItem, bf_session)
+
+    return answer
+        
 def _check_base_testrig():
     if (bf_session.baseTestrig is None):
         raise BatfishException("Base testrig is not set")
 
     if (bf_session.baseEnvironment is None):
         raise BatfishException("Base environment is not set")
+
+def _check_delta_testrig():
+    if (bf_session.deltaTestrig is None):
+        raise BatfishException("Delta testrig is not set")
+
+    if (bf_session.deltaEnvironment is None):
+        raise BatfishException("Delta environment is not set")
 
 def _check_container():
     if (bf_session.container is None):

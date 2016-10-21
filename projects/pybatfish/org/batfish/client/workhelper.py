@@ -39,6 +39,19 @@ def execute(wItem, session):
 
     return answerString
 
+def get_workitem_answer_question(session, questionName, isDelta):
+    wItem = WorkItem(session)
+    wItem.requestParams[BfConsts.COMMAND_ANSWER] = ""
+    wItem.requestParams[BfConsts.ARG_QUESTION_NAME] = questionName
+    wItem.requestParams[BfConsts.ARG_ENVIRONMENT_NAME] = session.baseEnvironment
+    if (session.deltaEnvironment is not None): 
+        wItem.requestParams[BfConsts.ARG_DELTA_ENVIRONMENT_NAME] = session.deltaEnvironment
+    if (session.deltaTestrig is not None):
+        wItem.requestParams[BfConsts.ARG_DELTA_TESTRIG] = session.deltaTestrig;
+    if (isDelta):
+        wItem.requestParams[BfConsts.ARG_DIFF_ACTIVE] = ""
+    return wItem
+
 def get_workitem_parse(session):
     wItem = WorkItem(session)
     wItem.requestParams[BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT] = ""
