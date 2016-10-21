@@ -71,6 +71,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String ZONES_VAR = "zones";
 
+   private AaaSettings _aaaSettings;
+
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
    private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
@@ -159,6 +161,10 @@ public final class Configuration extends ComparableStructure<String> {
       _routingPolicies = new TreeMap<>();
       _staticRoutes = new TreeSet<>();
       _zones = new TreeMap<>();
+   }
+
+   public AaaSettings getAaaSettings() {
+      return _aaaSettings;
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
@@ -351,6 +357,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void initRoutes() {
       _routes = new TreeSet<>();
+   }
+
+   public void setAaaSettings(AaaSettings aaaSettings) {
+      _aaaSettings = aaaSettings;
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
