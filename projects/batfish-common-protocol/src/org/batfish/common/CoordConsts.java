@@ -1,19 +1,26 @@
 package org.batfish.common;
 
+// IMPORTANT:
+// If you change the values of any of these constants,
+// make sure that the javascript, python clients is updated too
+
 public class CoordConsts {
 
-   // IMPORTANT:
-   // If you change the values of any of these constants,
-   // make sure that the javascript code is updated too
-
    public enum WorkStatusCode {
-      ASSIGNED,
-      ASSIGNMENTERROR,
-      CHECKINGSTATUS,
-      TERMINATEDABNORMALLY,
-      TERMINATEDNORMALLY,
-      TRYINGTOASSIGN,
-      UNASSIGNED
+      ASSIGNED (0),
+      ASSIGNMENTERROR (1),
+      CHECKINGSTATUS (2),
+      TERMINATEDABNORMALLY (3),
+      TERMINATEDNORMALLY (4),
+      TRYINGTOASSIGN (5),
+      UNASSIGNED (6);
+      
+      @SuppressWarnings("unused")
+      private int code; 
+      
+      private WorkStatusCode(int code) { 
+         this.code = code; 
+      }
    }
 
    public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
