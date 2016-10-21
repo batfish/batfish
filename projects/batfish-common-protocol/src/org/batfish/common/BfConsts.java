@@ -9,19 +9,12 @@ package org.batfish.common;
 public class BfConsts {
 
    public enum TaskStatus {
-      InProgress (0),
-      TerminatedAbnormally (1),
-      TerminatedNormally (2),
-      Unknown (3),
-      UnreachableOrBadResponse (4),
-      Unscheduled (5);
-      
-      @SuppressWarnings("unused")
-      private int statusCode; 
-      
-      private TaskStatus(int statusCode) { 
-         this.statusCode = statusCode; 
-      }
+      InProgress,
+      TerminatedAbnormally,
+      TerminatedNormally,
+      Unknown,
+      UnreachableOrBadResponse,
+      Unscheduled;      
    }
 
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";

@@ -7,20 +7,13 @@ package org.batfish.common;
 public class CoordConsts {
 
    public enum WorkStatusCode {
-      ASSIGNED (0),
-      ASSIGNMENTERROR (1),
-      CHECKINGSTATUS (2),
-      TERMINATEDABNORMALLY (3),
-      TERMINATEDNORMALLY (4),
-      TRYINGTOASSIGN (5),
-      UNASSIGNED (6);
-      
-      @SuppressWarnings("unused")
-      private int code; 
-      
-      private WorkStatusCode(int code) { 
-         this.code = code; 
-      }
+      ASSIGNED,
+      ASSIGNMENTERROR,
+      CHECKINGSTATUS,
+      TERMINATEDABNORMALLY,
+      TERMINATEDNORMALLY,
+      TRYINGTOASSIGN,
+      UNASSIGNED;      
    }
 
    public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
