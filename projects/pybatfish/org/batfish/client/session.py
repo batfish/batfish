@@ -18,6 +18,8 @@ class Session:
         self.baseEnvironment = None
         self.deltaTestrig = None
         self.deltaEnvironment = None
+
+        self.additionalArgs = {}
         
     def get_base_url(self):
         if (self.useSsl): 
