@@ -415,16 +415,12 @@
         "10.14.22.4/32" : 7
       }
     },
-    "ebgpHalfOpen" : { },
-    "ebgpLocalIpOnLoopback" : { },
-    "ebgpLocalIpUnknown" : { },
     "ebgpMissingLocalIp" : {
       "as1border1" : {
         "3.2.2.2/32" : 2,
         "5.6.7.8/32" : 3
       }
     },
-    "ebgpNonUniqueEndpoint" : { },
     "ebgpRemoteIpOnLoopback" : {
       "as1border1" : {
         "3.2.2.2/32" : 2
@@ -438,24 +434,12 @@
         "10.14.22.4/32" : 7
       }
     },
-    "halfOpen" : { },
-    "ibgpBroken" : { },
-    "ibgpHalfOpen" : { },
-    "ibgpLocalIpOnNonLoopback" : { },
-    "ibgpLocalIpUnknown" : { },
-    "ibgpMissingLocalIp" : { },
-    "ibgpNonUniqueEndpoint" : { },
-    "ibgpRemoteIpOnNonLoopback" : { },
-    "ibgpRemoteIpUnknown" : { },
-    "ignoredForeignEndpoints" : { },
-    "localIpUnknown" : { },
     "missingLocalIp" : {
       "as1border1" : {
         "3.2.2.2/32" : 2,
         "5.6.7.8/32" : 3
       }
     },
-    "nonUniqueEndpoint" : { },
     "remoteIpUnknown" : {
       "as1border1" : {
         "5.6.7.8/32" : 3
@@ -466,11 +450,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion",
-    "differential" : false,
-    "foreignBgpGroups" : [ ],
-    "node1Regex" : ".*",
-    "node2Regex" : ".*"
+    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion"
   },
   "status" : "SUCCESS"
 }

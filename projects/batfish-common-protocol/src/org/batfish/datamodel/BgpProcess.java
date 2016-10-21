@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Represents a bgp process on a router
  */
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_DEFAULT)
 public class BgpProcess implements Serializable {
 
    private static final String GENERATED_ROUTES_VAR = "generatedRoutes";

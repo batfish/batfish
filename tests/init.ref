@@ -1,10 +1,6 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
-    "warnings" : { }
-  }, {
-    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
-    "warnings" : { }
+    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement"
   }, {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "undefinedReferences" : {
@@ -124,6 +120,5 @@
       }
     }
   } ],
-  "question" : null,
   "status" : "SUCCESS"
 }

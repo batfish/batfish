@@ -27,7 +27,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    public static String print(ParserRuleContext ctx,
          BatfishCombinedParser<?, ?> combinedParser) {
-      return String.join("\n", 
+      return String.join("\n",
             getParseTreeSentences(ctx, combinedParser).getSentences());
    }
 
@@ -37,9 +37,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
    private int _indent;
 
-   private List<String> _ruleNames;
-
    private ParseTreeSentences _ptSentences;
+
+   private List<String> _ruleNames;
 
    private Vocabulary _vocabulary;
 
@@ -58,22 +58,22 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
    @Override
    public void enterEveryRule(ParserRuleContext ctx) {
       if (ctx != _ctx) {
-         //_sb.append("\n");
+         // _sb.append("\n");
          _ptSentences.getSentences().add("");
       }
       for (int i = 0; i < _indent; i++) {
-         //_sb.append("  ");
+         // _sb.append(" ");
          _ptSentences.appendToLastSentence("  ");
       }
       _indent++;
       String ruleName = _ruleNames.get(ctx.getRuleIndex());
-      //_sb.append("(" + ruleName);
+      // _sb.append("(" + ruleName);
       _ptSentences.appendToLastSentence("(" + ruleName);
    }
 
    @Override
    public void exitEveryRule(ParserRuleContext ctx) {
-      //_sb.append(")");
+      // _sb.append(")");
       _ptSentences.appendToLastSentence(")");
       _indent--;
    }
@@ -81,33 +81,34 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
    @Override
    public void visitErrorNode(ErrorNode ctx) {
       String nodeText = CommonUtil.escape(ctx.getText());
-      //_sb.append("\n");
+      // _sb.append("\n");
       _ptSentences.getSentences().add("");
       for (int i = 0; i < _indent; i++) {
-         //_sb.append("  ");
+         // _sb.append(" ");
          _ptSentences.appendToLastSentence("  ");
       }
       int tokenType = ctx.getSymbol().getType();
       String tokenName;
       if (tokenType == -1) {
          tokenName = "EOF";
-         //_sb.append(tokenName + ":" + nodeText);
+         // _sb.append(tokenName + ":" + nodeText);
          _ptSentences.appendToLastSentence(tokenName + ":" + nodeText);
       }
       else {
          tokenName = _vocabulary.getSymbolicName(tokenType);
-         //_sb.append("<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
-         _ptSentences.appendToLastSentence("<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
+         // _sb.append("<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
+         _ptSentences.appendToLastSentence(
+               "<ErrorNode>:" + tokenName + ":'" + nodeText + "'");
       }
    }
 
    @Override
    public void visitTerminal(TerminalNode ctx) {
       String nodeText = CommonUtil.escape(ctx.getText());
-      //_sb.append("\n");
+      // _sb.append("\n");
       _ptSentences.getSentences().add("");
       for (int i = 0; i < _indent; i++) {
-         //_sb.append("  ");
+         // _sb.append(" ");
          _ptSentences.appendToLastSentence("  ");
       }
       Token t = ctx.getSymbol();
@@ -123,15 +124,15 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       String tokenName;
       if (tokenType == -1) {
          tokenName = "EOF";
-         //_sb.append(tokenName + ":" + nodeText);
+         // _sb.append(tokenName + ":" + nodeText);
          _ptSentences.appendToLastSentence(tokenName + ":" + nodeText);
       }
       else {
          tokenName = _vocabulary.getSymbolicName(tokenType);
-         //_sb.append(tokenName + ":'" + nodeText + "'");
+         // _sb.append(tokenName + ":'" + nodeText + "'");
          _ptSentences.appendToLastSentence(tokenName + ":'" + nodeText + "'");
       }
-      //_sb.append("  <== mode:" + mode);
+      // _sb.append(" <== mode:" + mode);
       _ptSentences.appendToLastSentence("  <== mode:" + mode);
    }
 }

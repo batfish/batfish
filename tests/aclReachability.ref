@@ -869,14 +869,10 @@
           "earliestMoreGeneralLineName" : null
         } ]
       }
-    },
-    "unreachableLines" : { }
+    }
   } ],
   "question" : {
-    "class" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",
-    "aclNameRegex" : ".*",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion"
   },
   "status" : "SUCCESS"
 }

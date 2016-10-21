@@ -15,19 +15,10 @@
       "as3border1" : [ "Loopback0" ],
       "as3border2" : [ "Loopback0" ],
       "as3core1" : [ "Loopback0" ]
-    },
-    "l1" : { },
-    "l1Active" : { },
-    "l1Passive" : { },
-    "l2" : { },
-    "l2Active" : { },
-    "l2Passive" : { },
-    "running" : { }
+    }
   } ],
   "question" : {
-    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion"
   },
   "status" : "SUCCESS"
 }

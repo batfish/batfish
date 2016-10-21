@@ -72,7 +72,7 @@ public class ParseVendorConfigurationJob
    private ConfigurationFormat _format;
 
    private ParseTreeSentences _ptSentences;
-   
+
    private Warnings _warnings;
 
    public ParseVendorConfigurationJob(Settings settings, String fileText,
@@ -105,8 +105,9 @@ public class ParseVendorConfigurationJob
          }
       }
 
-      Path fileRelativeToTestrig = _settings.getTestrigSettings().getTestRigPath().relativize(_file);
-      
+      Path fileRelativeToTestrig = _settings.getTestrigSettings()
+            .getBasePath().relativize(_file);
+
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
@@ -293,7 +294,8 @@ public class ParseVendorConfigurationJob
          _logger.info("\tParsing...");
          tree = Batfish.parse(combinedParser, _logger, _settings);
          if (_settings.printParseTree()) {
-            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree, combinedParser);
+            _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree,
+                  combinedParser);
          }
          _logger.info("\tPost-processing...");
          extractor.processParseTree(tree);
@@ -321,7 +323,8 @@ public class ParseVendorConfigurationJob
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: '" + fileRelativeToTestrig + "'\n";
+         String error = "No hostname set in file: '" + fileRelativeToTestrig
+               + "'\n";
          try {
             _warnings.redFlag(error);
          }

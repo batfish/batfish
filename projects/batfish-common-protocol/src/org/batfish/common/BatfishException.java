@@ -8,6 +8,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,12 +19,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * necessary cleanup and terminate gracefully with a non-zero exit status. A
  * BatfishException should always contain a detail message.
  */
-public class BatfishException extends RuntimeException
-      implements AnswerElement {
+public class BatfishException extends RuntimeException {
 
    public static class BatfishStackTrace implements AnswerElement {
 
       private static final String LINE_MAP_VAR = "contents";
+
+      private final BatfishException _exception;
 
       private final SortedMap<Integer, String> _lineMap;
 
@@ -31,12 +33,19 @@ public class BatfishException extends RuntimeException
          String stackTrace = ExceptionUtils.getFullStackTrace(exception)
                .replace("\t", "   ");
          _lineMap = CommonUtil.toLineMap(stackTrace);
+         _exception = exception;
       }
 
       @JsonCreator
       public BatfishStackTrace(
             @JsonProperty(LINE_MAP_VAR) SortedMap<Integer, String> lineMap) {
          _lineMap = lineMap;
+         _exception = null;
+      }
+
+      @JsonIgnore
+      public BatfishException getException() {
+         return _exception;
       }
 
       @JsonProperty(LINE_MAP_VAR)
@@ -81,10 +90,4 @@ public class BatfishException extends RuntimeException
       return new BatfishStackTrace(this);
    }
 
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      // TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
-   }
 }

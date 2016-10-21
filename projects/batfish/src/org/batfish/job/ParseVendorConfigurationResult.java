@@ -17,7 +17,7 @@ public class ParseVendorConfigurationResult extends
    private final Path _file;
 
    private ParseTreeSentences _parseTree;
-   
+
    private VendorConfiguration _vc;
 
    private Warnings _warnings;
@@ -34,7 +34,7 @@ public class ParseVendorConfigurationResult extends
       super(elapsedTime, history);
       _file = file;
       _parseTree = parseTree;
-      _vc = vc;      
+      _vc = vc;
       _warnings = warnings;
    }
 
@@ -75,7 +75,9 @@ public class ParseVendorConfigurationResult extends
             if (!_warnings.isEmpty()) {
                answerElement.getWarnings().put(hostname, _warnings);
             }
-            answerElement.getParseTrees().put(hostname, _parseTree);
+            if (!_parseTree.isEmpty()) {
+               answerElement.getParseTrees().put(hostname, _parseTree);
+            }
          }
       }
    }

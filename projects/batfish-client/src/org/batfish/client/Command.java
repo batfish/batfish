@@ -77,15 +77,13 @@ public enum Command {
 
    private static Map<Command, Pair<String, String>> buildUsageMap() {
       Map<Command, Pair<String, String>> descs = new TreeMap<>();
-      descs.put(ADD_BATFISH_OPTION,
-            new Pair<>("<option-key> <option-value>",
-                  "Additional options to pass to Batfish"));
+      descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> <option-value>",
+            "Additional options to pass to Batfish"));
       descs.put(ANSWER, new Pair<>(
             "<question-file> [param1=value1 [param2=value2] ...]",
             "Answer the question in the file for the default environment"));
-      descs.put(ADD_BATFISH_OPTION,
-            new Pair<>("<option-key> [<option-value>]",
-                  "Additional options to pass to Batfish"));
+      descs.put(ADD_BATFISH_OPTION, new Pair<>("<option-key> [<option-value>]",
+            "Additional options to pass to Batfish"));
       descs.put(ANSWER_DELTA,
             new Pair<>("<question-file>  [param1=value1 [param2=value2] ...]",
                   "Answer the question in the file for the delta environment"));
@@ -96,9 +94,14 @@ public enum Command {
       // + " <dirname>\n"
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
+<<<<<<< HEAD
       descs.put(DEL_BATFISH_OPTION,
             new Pair<>("<option-key>",
                   "Stop passing this option to Batfish"));
+=======
+      descs.put(ADD_BATFISH_OPTION,
+            new Pair<>("<option-key>", "Stop passing this option to Batfish"));
+>>>>>>> 5c948471cf835174da5c6b2afd96cd52bcc3455f
       descs.put(DEL_CONTAINER,
             new Pair<>("<container-name>", "Delete the specified container"));
       descs.put(DEL_ENVIRONMENT, new Pair<>("<environment-name>",
@@ -175,8 +178,8 @@ public enum Command {
       descs.put(SHOW_API_KEY, new Pair<>("", "Show API Key"));
       descs.put(SHOW_BATFISH_LOGLEVEL,
             new Pair<>("", "Show current batfish loglevel"));
-      descs.put(SHOW_BATFISH_OPTIONS,
-            new Pair<>("", "Show the additional options that will be sent to batfish"));
+      descs.put(SHOW_BATFISH_OPTIONS, new Pair<>("",
+            "Show the additional options that will be sent to batfish"));
       descs.put(SHOW_CONTAINER, new Pair<>("", "Show active container"));
       descs.put(SHOW_COORDINATOR_HOST, new Pair<>("", "Show coordinator host"));
       descs.put(SHOW_LOGLEVEL, new Pair<>("", "Show current client loglevel"));

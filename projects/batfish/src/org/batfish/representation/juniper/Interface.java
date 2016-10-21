@@ -77,6 +77,11 @@ public class Interface extends ComparableStructure<String> {
 
    private final Map<String, Interface> _units;
 
+   @SuppressWarnings("unused")
+   private Interface() {
+      this(null);
+   }
+
    public Interface(String name) {
       super(name);
       _active = true;
@@ -86,6 +91,7 @@ public class Interface extends ComparableStructure<String> {
       _isisSettings = new IsisInterfaceSettings();
       _nativeVlan = 1;
       _switchportMode = SwitchportMode.NONE;
+      _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
       _allowedVlans = new ArrayList<>();
       _ospfCost = null;
       _ospfPassiveAreas = new HashSet<>();

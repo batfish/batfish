@@ -8,9 +8,7 @@
     }
   } ],
   "question" : {
-    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion"
   },
   "status" : "SUCCESS"
 }

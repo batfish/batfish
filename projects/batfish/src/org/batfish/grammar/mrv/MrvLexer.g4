@@ -139,6 +139,11 @@ LX
    'LX' F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
+MAXCONNECTIONS
+:
+   'MaxConnections'
+;
+
 MAXSUBS
 :
    'MaxSubs'
@@ -172,6 +177,11 @@ NOTIFYADDRESSNAME
 NOTIFYADDRESSSERVICE
 :
    'NotifyAddressService'
+;
+
+NOTIFYADDRESSSTATE
+:
+   'NotifyAddressState'
 ;
 
 NOTIFYSERVICENAME
@@ -217,6 +227,26 @@ OUTAUTHTYPE
 PROMPT
 :
    'Prompt'
+;
+
+RADPRIMACCTSECRET
+:
+   'RadPrimAcctSecret'
+;
+
+RADPRIMSECRET
+:
+   'RadPrimSecret'
+;
+
+RADSECACCTSECRET
+:
+   'RadSecAcctSecret'
+;
+
+RADSECSECRET
+:
+   'RadSecSecret'
 ;
 
 REMOTEACCESSLIST
@@ -384,6 +414,16 @@ TACPLUSPRIMADDR
    'TacPlusPrimAddr'
 ;
 
+TACPLUSPRIMACCTSECRET
+:
+   'TacPlusPrimAcctSecret'
+;
+
+TACPLUSPRIMAUTHORSECRET
+:
+   'TacPlusPrimAuthorSecret'
+;
+
 TACPLUSPRIMSECRET
 :
    'TacPlusPrimSecret'
@@ -392,6 +432,16 @@ TACPLUSPRIMSECRET
 TACPLUSSECADDR
 :
    'TacPlusSecAddr'
+;
+
+TACPLUSSECACCTSECRET
+:
+   'TacPlusSecAcctSecret'
+;
+
+TACPLUSSECAUTHORSECRET
+:
+   'TacPlusSecAuthorSecret'
 ;
 
 TACPLUSSECSECRET

@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
-   @JsonInclude(Include.NON_NULL)
+   @JsonInclude(Include.NON_DEFAULT)
    @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
    public static class BgpAdvertisementsAnswerElement implements AnswerElement {
 

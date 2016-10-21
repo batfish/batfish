@@ -1,15 +1,9 @@
 {
   "answerElements" : [ {
-    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityAnswerElement",
-    "connectedNeighbors" : { },
-    "ipsecVpnNodes" : [ ],
-    "missingNeighbors" : { }
+    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityAnswerElement"
   } ],
   "question" : {
-    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion",
-    "differential" : false,
-    "node1Regex" : ".*",
-    "node2Regex" : ".*"
+    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion"
   },
   "status" : "SUCCESS"
 }

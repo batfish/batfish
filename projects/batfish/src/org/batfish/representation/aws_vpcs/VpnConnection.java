@@ -54,7 +54,7 @@ import org.xml.sax.SAXException;
 
 public class VpnConnection implements AwsVpcEntity, Serializable {
 
-   private static final Integer BGP_NEIGHBOR_DEFAULT_METRIC = 0;
+   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
 
    private static final long serialVersionUID = 1L;
 
