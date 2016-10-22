@@ -13,10 +13,21 @@ import resthelper
 from session import Session
 import workhelper
 
+#: Holds the state of the current session with the service (e.g., container, testrig, ..) 
 bf_session = Session()
 
 def bf_help():
-    print "In the future, we'll list all commands here"
+    '''
+    Prints all available functions
+    '''
+    print """
+    Available function calls
+        bf_init_container   Initializes a new container
+        bf_init_testrig     Initializes a new testrig
+        bf_answer           Answer a question about base or delta testrig
+
+    Type 'help(func_name)' to get help on a specific function
+    """
 
 def bf_init_container(containerPrefix=Options.default_container_prefix):
     '''
