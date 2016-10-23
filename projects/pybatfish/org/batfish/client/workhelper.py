@@ -39,7 +39,38 @@ def execute(wItem, session):
 
     return answerString
 
-def get_workitem_answer_question(session, questionName, isDelta):
+def get_data_answer(session, questionName, questionJson, parameters):
+    jsonData = {}
+    jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
+    jsonData[CoordConsts.SVC_CONTAINER_NAME_KEY] = session.container
+    jsonData[CoordConsts.SVC_TESTRIG_NAME_KEY] = session.baseTestrig
+    jsonData[CoordConsts.SVC_QUESTION_NAME_KEY] = questionName
+    jsonData[CoordConsts.SVC_FILE_KEY] =  ('question', questionJson)
+    jsonData[CoordConsts.SVC_FILE2_KEY] = ('parameters', parameters)
+    return jsonData
+
+def get_data_init_container(session, containerPrefix):
+    jsonData = {}
+    jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
+    jsonData[CoordConsts.SVC_CONTAINER_PREFIX_KEY] = containerPrefix
+    return jsonData
+
+def get_data_list_testrigs(session, containerName):
+    jsonData = {}
+    jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
+    if (containerName is not None):
+        jsonData[CoordConsts.SVC_CONTAINER_NAME_KEY] = containerName
+    return jsonData
+
+def get_data_upload_testrig(session, testrigName, fileToSend):
+    jsonData = {}
+    jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
+    jsonData[CoordConsts.SVC_CONTAINER_NAME_KEY] = session.container
+    jsonData[CoordConsts.SVC_TESTRIG_NAME_KEY] = testrigName
+    jsonData[CoordConsts.SVC_ZIPFILE_KEY] = ('filename', open(fileToSend, 'rb'), 'application/octet-stream')
+    return jsonData
+
+def get_workitem_answer(session, questionName, doDelta):
     wItem = WorkItem(session)
     wItem.requestParams[BfConsts.COMMAND_ANSWER] = ""
     wItem.requestParams[BfConsts.ARG_QUESTION_NAME] = questionName
@@ -48,12 +79,24 @@ def get_workitem_answer_question(session, questionName, isDelta):
         wItem.requestParams[BfConsts.ARG_DELTA_ENVIRONMENT_NAME] = session.deltaEnvironment
     if (session.deltaTestrig is not None):
         wItem.requestParams[BfConsts.ARG_DELTA_TESTRIG] = session.deltaTestrig;
-    if (isDelta):
+    if (doDelta):
         wItem.requestParams[BfConsts.ARG_DIFF_ACTIVE] = ""
     return wItem
 
-def get_workitem_parse(session):
+def get_workitem_generate_dataplane(session, doDelta):
     wItem = WorkItem(session)
+    wItem.requestParams[BfConsts.COMMAND_DUMP_DP] = ""
+    wItem.requestParams[BfConsts.ARG_ENVIRONMENT_NAME] = session.baseEnvironment
+    if (doDelta):
+        wItem.requestParams[BfConsts.ARG_DELTA_TESTRIG] = session.deltaTestrig
+        wItem.requestParams[BfConsts.ARG_DELTA_ENVIRONMENT_NAME] = session.deltaEnvironment
+        wItem.requestParams[BfConsts.ARG_DIFF_ACTIVE] = ""
+    return wItem;
+
+def get_workitem_parse(session, doDelta):
+    wItem = WorkItem(session)
+    if (doDelta):
+        wItem.testrig = session.deltaTestrig
     wItem.requestParams[BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT] = ""
     wItem.requestParams[BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC] = ""
     wItem.requestParams[BfConsts.ARG_UNIMPLEMENTED_SUPPRESS] = ""
