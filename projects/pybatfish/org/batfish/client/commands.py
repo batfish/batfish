@@ -2,6 +2,7 @@
 # Copyright 2016 Intentionet
 
 import os
+import logging
 import tempfile
 
 from org.batfish.util.batfish_exception import BatfishException
@@ -13,8 +14,16 @@ import resthelper
 from session import Session
 import workhelper
 
-#: Holds the state of the current session with the service (e.g., container, testrig, ..) 
-bf_session = Session()
+DEBUG = True;
+
+bf_logger = logging.getLogger("org.batfish.client")
+if (DEBUG):
+    bf_logger.setLevel(logging.INFO)
+    bf_logger.addHandler(logging.StreamHandler())
+else:
+    bf_logger.addHandler(logging.NullHandler())
+
+bf_session = Session(bf_logger)
 
 def bf_answer(questionJson, parameters="", doDelta=False):
     '''
@@ -87,6 +96,7 @@ def bf_init_container(containerPrefix=Options.default_container_prefix):
     
     if (jsonResponse[CoordConsts.SVC_CONTAINER_NAME_KEY]):
         bf_session.container = jsonResponse[CoordConsts.SVC_CONTAINER_NAME_KEY]
+        bf_logger.info("Container is now set to " + bf_session.container)
     else:
         raise BatfishException("Bad json response in init_container; missing expected key: " + CoordConsts.SVC_CONTAINER_NAME_KEY, jsonResponse);
                        
@@ -114,9 +124,11 @@ def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
     if (not doDelta):
         bf_session.baseTestrig = testrigName
         bf_session.baseEnvironment = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME
+        bf_logger.info("Base testrig/environment is now set to %s/%s", bf_session.baseTestrig, bf_session.baseEnvironment)
     else:
         bf_session.deltaTestrig = testrigName
         bf_session.deltaEnvironment = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME        
+        bf_logger.info("Delta testrig/environment is now set to %s/%s", bf_session.deltaTestrig, bf_session.deltaEnvironment)
     
     workItem = workhelper.get_workitem_parse(bf_session, doDelta)
     answer = workhelper.execute(workItem, bf_session)

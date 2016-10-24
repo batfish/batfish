@@ -6,7 +6,7 @@ from coordconsts import CoordConsts
 
 class Session:
 
-    def __init__(self):
+    def __init__(self, logger):
         self.useSsl = Options.use_ssl
         self.coordinatorHost = Options.coordinator_host
         self.coordinatorPort = Options.coordinator_work_port
@@ -20,6 +20,8 @@ class Session:
         self.deltaEnvironment = None
 
         self.additionalArgs = {}
+        
+        self.logger = logger
         
     def get_base_url(self):
         if (self.useSsl): 
