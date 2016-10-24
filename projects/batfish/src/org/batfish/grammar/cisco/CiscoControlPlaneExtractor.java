@@ -23,6 +23,9 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AaaAuthenticationLoginSettings;
+import org.batfish.datamodel.AaaAuthenticationSettings;
+import org.batfish.datamodel.AaaSettings;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -1032,6 +1035,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterAaa_authentication(Aaa_authenticationContext ctx) {
+      if (_configuration.getAaaSettings().getAuthenticationSettings() == null) {
+         _configuration.getAaaSettings()
+               .setAuthenticationSettings(new AaaAuthenticationSettings());
+      }
+   }
+
+   @Override
+   public void enterAaa_authentication_login(
+         Aaa_authentication_loginContext ctx) {
+      if (_configuration.getAaaSettings().getAuthenticationSettings()
+            .getLoginSettings() == null) {
+         _configuration.getAaaSettings().getAuthenticationSettings()
+               .setLoginSettings(new AaaAuthenticationLoginSettings());
+      }
+   }
+
+   @Override
    public void enterAddress_family_header(Address_family_headerContext ctx) {
       String addressFamilyStr = ctx.addressFamilyStr;
       if (_inNexusNeighbor) {
@@ -1480,11 +1501,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          _configuration.setOspfProcess(_currentOspfProcess);
       }
-   };
+   }
 
    @Override
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
       todo(ctx, F_RIP);
+   }
+
+   @Override
+   public void enterS_aaa(S_aaaContext ctx) {
+      if (_configuration.getAaaSettings() == null) {
+         _configuration.setAaaSettings(new AaaSettings());
+      }
    }
 
    @Override
@@ -1553,6 +1581,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterVrf_context_stanza(Vrf_context_stanzaContext ctx) {
       _currentVrf = ctx.name.getText();
+   }
+
+   @Override
+   public void exitAaa_authentication_login_privilege_mode(
+         Aaa_authentication_login_privilege_modeContext ctx) {
+      _configuration.getAaaSettings().getAuthenticationSettings()
+            .getLoginSettings().setPrivilegeMode(true);
+   }
+
+   @Override
+   public void exitAaa_new_model(Aaa_new_modelContext ctx) {
+      _configuration.getAaaSettings().setNewModel(true);
    }
 
    @Override
@@ -1997,7 +2037,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.getFailoverInterfaces().put(alias, ifaceName);
       _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
       _configuration.setFailoverStatefulSignalingInterface(ifaceName);
-   };
+   }
 
    @Override
    public void exitFlan_interface(Flan_interfaceContext ctx) {
@@ -3561,7 +3601,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setSwitchportTrunkEncapsulation(type);
       }
-   };
+   }
 
    @Override
    public void exitSwitchport_trunk_native_if_stanza(

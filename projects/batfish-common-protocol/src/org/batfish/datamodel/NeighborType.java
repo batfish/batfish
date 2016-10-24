@@ -16,7 +16,7 @@ public enum NeighborType {
 
    private final static Map<String, NeighborType> _map = buildMap();
 
-   private static Map<String, NeighborType> buildMap() {
+   private synchronized static Map<String, NeighborType> buildMap() {
       Map<String, NeighborType> map = new HashMap<>();
       for (NeighborType value : NeighborType.values()) {
          String name = value._name;
@@ -29,8 +29,8 @@ public enum NeighborType {
    public static NeighborType fromName(String name) {
       NeighborType instance = _map.get(name.toLowerCase());
       if (instance == null) {
-         throw new BatfishException(
-               "No NeighborType with name: \"" + name + "\"");
+         throw new BatfishException("No " + NeighborType.class.getSimpleName()
+               + " with name: '" + name + "'");
       }
       return instance;
    }
