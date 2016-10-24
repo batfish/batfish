@@ -305,6 +305,7 @@ del_stanza
    DEL ~NEWLINE* NEWLINE
 ;
 
+
 dhcp_stanza
 :
    DHCP IPV4 NEWLINE dhcp_substanza+
@@ -588,6 +589,11 @@ multicast_routing_stanza
    )*
 ;
 
+no_aaa_group_server_stanza
+:
+	NO AAA GROUP SERVER ~NEWLINE* NEWLINE
+;
+
 no_failover
 :
    NO FAILOVER NEWLINE
@@ -729,7 +735,8 @@ null_af_multicast_tail
 
 null_stanza
 :
-   asa_comment_stanza
+   no_aaa_group_server_stanza
+   | asa_comment_stanza
    | as_path_set_stanza
    | banner_stanza
    | certificate_stanza

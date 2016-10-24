@@ -1624,6 +1624,11 @@ DEFAULT_ROUTER
    'default-router'
 ;
 
+DEFAULT_TASKGROUP
+:
+	'default-taskgroup'
+;
+
 DEFAULT_VALUE
 :
    'default-value'
@@ -6575,6 +6580,11 @@ TACACS_SERVER
    'tacacs-server'
 ;
 
+TAC_PLUS
+:
+	'tac_plus'
+;
+
 TAG
 :
    'tag'
@@ -7295,6 +7305,11 @@ VTP
 VTY_POOL
 :
    'vty-pool'
+;
+
+VXLAN
+:
+	'vxlan'
 ;
 
 WAIT_START
