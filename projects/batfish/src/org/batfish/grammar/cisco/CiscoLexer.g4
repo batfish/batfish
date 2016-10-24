@@ -1314,6 +1314,11 @@ CONTEXT
    'context'
 ;
 
+CONTINUE
+:
+	('continue') | ('Continue')
+;
+
 CONTRACT_ID
 :
    'contract-id'
@@ -3215,8 +3220,9 @@ IPV4
 
 IPV6
 :
-   'ipv6'
+   ('ipv6') | ('IPV6')
 ;
+
 
 IPV6_ADDRESS_POOL
 :
@@ -6403,6 +6409,11 @@ SUBNETS
 SUBNET_ZERO
 :
    'subnet-zero'
+;
+
+SUB_ROUTE_MAP
+:
+	'sub-route-map'
 ;
 
 SUBSCRIBE_TO
