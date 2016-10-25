@@ -3,6 +3,8 @@
 /cygwin-symlink-restore-data
 /doc
 /out
+AssertionLexer*.java
+AssertionParser*.java
 BatfishTopologyLexer*.java
 BatfishTopologyParser*.java
 CiscoLexer*.java

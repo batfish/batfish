@@ -4,32 +4,29 @@
     "fail" : false,
     "passing" : {
       "0" : {
-        "args" : [ 15 ],
-        "check" : "eq",
-        "path" : "$.nodes.length()"
+        "text" : "(eq 15 (pathsize '$.nodes[*]'))"
       },
       "1" : {
-        "check" : "absent",
-        "path" : "$.nodes['as1border']"
+        "text" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))"
       },
       "2" : {
-        "check" : "exists",
-        "path" : "$.nodes['as1border1']"
+        "text" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"
+      },
+      "3" : {
+        "text" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"
       }
     }
   } ],
   "question" : {
     "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
     "assertions" : [ {
-      "args" : [ 15 ],
-      "check" : "eq",
-      "path" : "$.nodes.length()"
+      "text" : "(eq 15 (pathsize '$.nodes[*]'))"
     }, {
-      "check" : "absent",
-      "path" : "$.nodes['as1border']"
+      "text" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))"
     }, {
-      "check" : "exists",
-      "path" : "$.nodes['as1border1']"
+      "text" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"
+    }, {
+      "text" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"
     } ]
   },
   "status" : "SUCCESS"

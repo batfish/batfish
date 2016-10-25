@@ -511,6 +511,43 @@ l_access_class
    ) VRF_ALSO? NEWLINE
 ;
 
+l_null
+:
+   NO?
+   (
+      ABSOLUTE_TIMEOUT
+      | ACTIVATION_CHARACTER
+      | AUTHORIZATION
+      | AUTOSELECT
+      | DATABITS
+      | EXEC
+      | EXEC_TIMEOUT
+      | FLOWCONTROL
+      | HISTORY
+      | IPV6
+      | LOCATION
+      | LOGIN
+      | MODEM
+      | ROTARY
+      | SESSION_DISCONNECT_WARNING
+      | SESSION_LIMIT
+      | SESSION_TIMEOUT
+      | STOPBITS
+      | TERMINAL_TYPE
+      | TIMESTAMP
+   ) ~NEWLINE* NEWLINE
+;
+
+l_transport
+:
+   TRANSPORT
+   (
+      INPUT
+      | OUTPUT
+      | PREFERRED
+   ) prot = variable NEWLINE
+;
+
 l2vpn_stanza
 :
    L2VPN NEWLINE xconnect_stanza*
@@ -1277,13 +1314,28 @@ s_ip_tail
 
 s_line
 :
-   LINE ~NEWLINE* NEWLINE
+   LINE line_type
+   (
+      (
+         slot1 = DEC FORWARD_SLASH
+         (
+            port1 = DEC FORWARD_SLASH
+         )?
+      )? first = DEC
+      (
+         (
+            slot2 = DEC FORWARD_SLASH
+            (
+               port2 = DEC FORWARD_SLASH
+            )?
+         )? last = DEC
+      )?
+   )? NEWLINE
    (
       l_access_class
+      | l_null
+      | l_transport
       | description_line
-      | null_block_substanza
-      | null_block_substanza_full
-      | unrecognized_line
    )*
 ;
 

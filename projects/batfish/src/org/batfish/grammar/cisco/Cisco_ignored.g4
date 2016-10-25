@@ -287,6 +287,7 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      | VTY_POOL
       | WEBVPN
       | WISM
       | WRED_PROFILE
@@ -306,13 +307,11 @@ null_block_substanza
    (
       NO?
       (
-         ABSOLUTE_TIMEOUT
-         | ACCEPT_DIALIN
+         ACCEPT_DIALIN
          | ACCEPT_LIFETIME
          | ACCOUNTING
          | ACCOUNTING_SERVER_GROUP
          | ACTION
-         | ACTIVATION_CHARACTER
          | ACTIVE
          | ADDRESS
          | ADDRESS_POOL
@@ -332,12 +331,10 @@ null_block_substanza
          | ASSOCIATION
          | AUTHENTICATION
          | AUTHENTICATION_SERVER_GROUP
-         | AUTHORIZATION
          | AUTHORIZATION_REQUIRED
          | AUTHORIZATION_SERVER_GROUP
          | AUTO_RECOVERY
          | AUTO_SYNC
-         | AUTOSELECT
          | BACK_UP
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
@@ -376,7 +373,6 @@ null_block_substanza
          | CRYPTOGRAPHIC_ALGORITHM
          | CSD
          | CUSTOMER_ID
-         | DATABITS
          | DBL
          | DEADTIME
          | DEFAULT
@@ -413,8 +409,6 @@ null_block_substanza
          | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
-         | EXEC
-         | EXEC_TIMEOUT
          | EXIT
          | EXPECT
          | EXPORT
@@ -449,7 +443,6 @@ null_block_substanza
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY
-         | HISTORY
          | HOMEDIR
          | ICMP_ECHO
          | ID_MISMATCH
@@ -475,8 +468,7 @@ null_block_substanza
                | IPV6
             )
             (
-               ACCESS_CLASS
-               | ACCESS_GROUP
+               ACCESS_GROUP
                | ADDRESS
                | ARP
                | FLOW
@@ -504,10 +496,8 @@ null_block_substanza
          | LOCAL_INTERFACE
          | LOCAL_IP
          | LOCAL_PORT
-         | LOCATION
          | LOG
          | LOGGING
-         | LOGIN
          | LPTS
          | MAC_ADDRESS
          | MAIL_SERVER
@@ -520,7 +510,6 @@ null_block_substanza
          | MESH_GROUP
          | MESSAGE_LENGTH
          | MODE
-         | MODEM
          | MONITORING
          | MSIE_PROXY
          | MTU
@@ -617,7 +606,6 @@ null_block_substanza
          | REVISION
          | RING
          | ROLE
-         | ROTARY
          | ROUTE
          | ROUTE_TARGET
          | ROUTER_INTERFACE
@@ -636,9 +624,6 @@ null_block_substanza
          | SERVICE_POLICY
          | SERVICE_QUEUE
          | SERVICE_TYPE
-         | SESSION_DISCONNECT_WARNING
-         | SESSION_LIMIT
-         | SESSION_TIMEOUT
          | SET
          | SEVERITY
          | SHAPE
@@ -662,7 +647,6 @@ null_block_substanza
          | START_TIME
          | STATISTICS
          | STICKY
-         | STOPBITS
          | STP
          | STREET_ADDRESS
          | SUBJECT_NAME
@@ -680,12 +664,10 @@ null_block_substanza
          | TB_VLAN1
          | TB_VLAN2
          | TCP_CONNECT
-         | TERMINAL_TYPE
          | THRESHOLD
          | TIMEOUT
          | TIMEOUTS
          | TIMER
-         | TIMESTAMP
          | TIMING
          | TM_VOQ_COLLECTION
          | TOP
@@ -723,7 +705,6 @@ null_block_substanza
          | VPN_SIMULTANEOUS_LOGINS
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
-         | VTY_POOL
          | WINS_SERVER
          | WITHOUT_CSD
          | WRED

@@ -8,28 +8,30 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 import org.batfish.question.NodesQuestionPlugin.NodesAnswerer;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.hamcrest.Matcher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.Option;
 
 public class AssertQuestionPlugin extends QuestionPlugin {
 
@@ -89,6 +91,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       public AnswerElement answer() {
          ConfigurationBuilder b = new ConfigurationBuilder();
          b.jsonProvider(new JacksonJsonNodeJsonProvider());
+         b.options(Option.ALWAYS_RETURN_LIST);
          Configuration c = b.build();
 
          AssertQuestion question = (AssertQuestion) _question;
@@ -118,30 +121,12 @@ public class AssertQuestionPlugin extends QuestionPlugin {
             indices.add(i);
          }
          final boolean[] fail = new boolean[1];
+         ConcurrentMap<String, ArrayNode> pathCache = new ConcurrentHashMap<>();
          indices.parallelStream().forEach(i -> {
             Assertion assertion = assertions.get(i);
-            String path = assertion.getPath();
-            Check check = assertion.getCheck();
-            if (check == null) {
-               throw new BatfishException(
-                     "Must supply check for each assertion");
-            }
-            List<Object> args = assertion.getArgs();
-            Object pathResult = null;
-            JsonPath jsonPath = JsonPath.compile(path);
-
-            try {
-               pathResult = jsonPath.read(jsonObject, c);
-            }
-            catch (PathNotFoundException e) {
-               pathResult = PathResult.EMPTY;
-            }
-            catch (Exception e) {
-               throw new BatfishException("Error reading JSON path: " + path,
-                     e);
-            }
-            Matcher<?> matcher = check.matcher(args);
-            if (matcher.matches(pathResult)) {
+            String assertionText = assertion.getText();
+            AssertionAst ast = _batfish.parseAssertion(assertionText);
+            if (ast.execute(_batfish, jsonObject, pathCache, c)) {
                passing.put(i, assertion);
             }
             else {
