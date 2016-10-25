@@ -49,7 +49,7 @@ function bfGetObject(containerName, testrigName, objectName, cbSuccess, cbFailur
         data: data,
 
         success: function (responseObject) {
-            //bfUpdateDebugInfo("Fetched " + objectName);
+            bfUpdateDebugInfo("Fetched " + objectName);
             if (cbSuccess != undefined)
                 cbSuccess(responseObject, entryPoint, remainingCalls);
         }

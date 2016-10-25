@@ -1,0 +1,9 @@
+{
+  "class" : "org.batfish.datamodel.questions.BgpSessionCheckQuestion",
+  "differential" : false,
+  "foreignBgpGroups" : [ ],
+  "interfaceBlacklist" : [ ],
+  "node1Regex" : ".*",
+  "node2Regex" : ".*",
+  "nodeBlacklist" : [ ]
+}
