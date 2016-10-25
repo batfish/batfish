@@ -128,7 +128,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
       private static final String NOT_DST_IPS_VAR = "notDstIps";
 
-      private static final String NOT_DST_PORTS_VAR = "notDstPors";
+      private static final String NOT_DST_PORTS_VAR = "notDstPorts";
 
       private static final String NOT_FINAL_NODE_REGEX_VAR = "notFinalNodeRegex";
 

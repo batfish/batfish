@@ -1,10 +1,10 @@
 package org.batfish.common;
 
-public class CoordConsts {
+// IMPORTANT:
+// If you change the values of any of these constants,
+// make sure that the javascript, python clients is updated too
 
-   // IMPORTANT:
-   // If you change the values of any of these constants,
-   // make sure that the javascript code is updated too
+public class CoordConsts {
 
    public enum WorkStatusCode {
       ASSIGNED,
@@ -13,7 +13,7 @@ public class CoordConsts {
       TERMINATEDABNORMALLY,
       TERMINATEDNORMALLY,
       TRYINGTOASSIGN,
-      UNASSIGNED
+      UNASSIGNED;      
    }
 
    public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";

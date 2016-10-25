@@ -1,5 +1,11 @@
 package org.batfish.common;
 
+//
+// IMPORTANT
+// if you change the value of these constants,
+// ensure that the clients (javascript, python, ... ) are up to date
+//
+
 public class BfConsts {
 
    public enum TaskStatus {
@@ -8,14 +14,9 @@ public class BfConsts {
       TerminatedNormally,
       Unknown,
       UnreachableOrBadResponse,
-      Unscheduled
+      Unscheduled;      
    }
 
-   //
-   // IMPORTANT
-   // if you change the value of these constants,
-   // ensure that the clients (including the javascript client) are up to date
-   //
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
    public static final String ARG_BLOCK_NAMES = "blocknames";
    public static final String ARG_CONTAINER_DIR = "containerdir";

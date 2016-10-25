@@ -980,7 +980,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       // write node blacklist from question
-      if (!nodeBlacklist.isEmpty()) {
+      if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
          StringBuilder nodeBlacklistSb = new StringBuilder();
          for (String node : nodeBlacklist) {
             nodeBlacklistSb.append(node + "\n");
@@ -990,7 +990,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                nodeBlacklistStr);
       }
       // write interface blacklist from question
-      if (!interfaceBlacklist.isEmpty()) {
+      if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
          StringBuilder interfaceBlacklistSb = new StringBuilder();
          for (NodeInterfacePair pair : interfaceBlacklist) {
             interfaceBlacklistSb.append(
@@ -2900,9 +2900,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            Path relativePath = testRigPath.relativize(path);
+            Path relativePath = _settings.getTestrigSettings().getBasePath().relativize(path);
             if (!iptablesConfigurations.containsKey(relativePath.toString())) {
-               throw new BatfishException("Key not found for iptables!");
+               for (String key : iptablesConfigurations.keySet()) {
+                  _logger.errorf("key : %s\n", key);
+               }
+               throw new BatfishException("Key not found for iptables: " + relativePath.toString());
             }
             hostConfig.setIptablesConfig(
                   (IptablesVendorConfiguration) iptablesConfigurations
