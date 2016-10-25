@@ -1,5 +1,4 @@
-#!/usr/local/bin/python2.7
-# encoding: utf-8
+#!/usr/bin/env python
 '''
 org.batfish.client.main -- shortdesc
 
@@ -14,35 +13,22 @@ It defines classes_and_methods
 @license:    Apache 2.0
 
 @contact:    info@intentionet.com
-@deffield    updated: Updated
 '''
 
 import sys
+import logging
 import os
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from os import listdir
-from os.path import isfile, join
-
 from org.batfish.util.batfish_exception import BatfishException
 from options import Options
+from commands import *
 
-__all__ = []
-__version__ = 0.1
-__date__ = '2016-10-18'
-__updated__ = '2016-10-18'
+__version__=1.0
 
-class CLIError(Exception):
-    '''Generic exception to raise and log different fatal errors.'''
-    def __init__(self, msg):
-        super(CLIError).__init__(type(self))
-        self.msg = "E: %s" % msg
-    def __str__(self):
-        return self.msg
-    def __unicode__(self):
-        return self.msg
+SERVER="localhost"
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -52,45 +38,60 @@ def main(argv=None): # IGNORE:C0111
     else:
         sys.argv.extend(argv)
 
-    program_name = os.path.basename(sys.argv[0])
-    program_version = "v%s" % __version__
-    program_build_date = str(__updated__)
-    program_version_message = '%%(prog)s %s (%s)' % (program_version, program_build_date)
-    if __name__ == '__main__':
-        program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
-    else:
-        program_shortdesc = __doc__.split("\n")[1]
-    program_license = '''%s
-
-  Created by Ratul Mahajan on %s.
-  Copyright 2016 Intentionet. All rights reserved.
-
-  Licensed under the Apache License 2.0
-  http://www.apache.org/licenses/LICENSE-2.0
-
-  Distributed on an "AS IS" basis without warranties
-  or conditions of any kind, either express or implied.
-
-USAGE
-''' % (program_shortdesc, str(__date__))
-
     try:
         # Setup argument parser
-        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(description="Batfish client", formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument('-c', '--cmdfile', dest="cmdFile", help="path to command file", default=None, type=file, metavar="CommandFile", required=True)
+        parser.add_argument('-s', '--server', dest="server", help="location of the service", default=SERVER, metavar="HostName")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
-        parser.add_argument('-V', '--version', action='version', version=program_version_message)
+        parser.add_argument('-V', '--version', action='version', version="version " + str(__version__))
 
         # Process arguments
         args = parser.parse_args()
 
         options = Options()
         options.cmdFile = args.cmdFile
+        options.server = args.server
         options.verbose = args.verbose
 
+        print "verbose = " + str(options.verbose) + " server = " + options.server
+        exit
+        
+        bf_session.coordinatorHost = options.server
 
+        if (options.verbose is not None):
+            bf_session.logger.addHandler(logging.StreamHandler())
+            if (options.verbose == 1):
+                bf_session.logger.setLevel(logging.INFO)
+            else:
+                bf_session.logger.setLevel(logging.DEBUG)
+    
     except BatfishException as e:
-        raise BatfishException("error running", program_name, e), None, sys.exc_info()[2]
+        raise BatfishException("error running batfish client", e), None, sys.exc_info()[2]
+
+    work(options)
 
 if __name__ == "__main__":
     sys.exit(main())
+    
+def work(options):
+    
+    for line in options.cmdFile:
+        if (line.startswith("#") or line.isspace()):
+            continue
+        
+        words = line.split()    
+        
+        if (len(words) <= 1):
+            raise "Illegal command line: " + line
+
+        command = words[0]
+        restOfLine = " ".join(words[1:])            
+        
+        if (command == "echo"):
+            print restOfLine
+        elif (command == "command"):
+            print eval(restOfLine)
+        else:
+            raise "Unknown command " + command + " in line " + line    
+            

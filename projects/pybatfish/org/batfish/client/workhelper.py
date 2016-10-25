@@ -28,7 +28,7 @@ def execute(wItem, session):
         time.sleep(1);
         status = get_work_status(wItem, session)
 
-    if (status != CoordConsts.WorkStatusCode.TERMINATEDNORMALLY):
+    if (status == CoordConsts.WorkStatusCode.ASSIGNMENTERROR):
         raise BatfishException("Work finished with status " + status, wItem.to_json())
 
     # get the answer
@@ -39,14 +39,14 @@ def execute(wItem, session):
 
     return answerString
 
-def get_data_answer(session, questionName, questionJson, parameters):
+def get_data_answer(session, questionName, questionJson, parametersJson):
     jsonData = {}
     jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
     jsonData[CoordConsts.SVC_CONTAINER_NAME_KEY] = session.container
     jsonData[CoordConsts.SVC_TESTRIG_NAME_KEY] = session.baseTestrig
     jsonData[CoordConsts.SVC_QUESTION_NAME_KEY] = questionName
     jsonData[CoordConsts.SVC_FILE_KEY] =  ('question', questionJson)
-    jsonData[CoordConsts.SVC_FILE2_KEY] = ('parameters', parameters)
+    jsonData[CoordConsts.SVC_FILE2_KEY] = ('parameters', parametersJson)
     return jsonData
 
 def get_data_init_container(session, containerPrefix):
@@ -96,7 +96,9 @@ def get_workitem_generate_dataplane(session, doDelta):
 def get_workitem_parse(session, doDelta):
     wItem = WorkItem(session)
     if (doDelta):
-        wItem.testrig = session.deltaTestrig
+        wItem.requestParams[BfConsts.ARG_DELTA_TESTRIG] = session.deltaTestrig
+        wItem.requestParams[BfConsts.ARG_DELTA_ENVIRONMENT_NAME] = session.deltaEnvironment
+        wItem.requestParams[BfConsts.ARG_DIFF_ACTIVE] = ""
     wItem.requestParams[BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT] = ""
     wItem.requestParams[BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC] = ""
     wItem.requestParams[BfConsts.ARG_UNIMPLEMENTED_SUPPRESS] = ""

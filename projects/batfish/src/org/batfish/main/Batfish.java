@@ -976,7 +976,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
 
       // write node blacklist from question
-      if (!nodeBlacklist.isEmpty()) {
+      if (nodeBlacklist != null && !nodeBlacklist.isEmpty()) {
          StringBuilder nodeBlacklistSb = new StringBuilder();
          for (String node : nodeBlacklist) {
             nodeBlacklistSb.append(node + "\n");
@@ -986,7 +986,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                nodeBlacklistStr);
       }
       // write interface blacklist from question
-      if (!interfaceBlacklist.isEmpty()) {
+      if (interfaceBlacklist != null && !interfaceBlacklist.isEmpty()) {
          StringBuilder interfaceBlacklistSb = new StringBuilder();
          for (NodeInterfacePair pair : interfaceBlacklist) {
             interfaceBlacklistSb.append(

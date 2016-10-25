@@ -2,6 +2,7 @@
 # Copyright 2016 Intentionet
 
 import os
+import json
 import logging
 import tempfile
 
@@ -12,31 +13,41 @@ from bfconsts import BfConsts
 from options import Options
 import resthelper 
 from session import Session
+from questionhelper import *
 import workhelper
 
-DEBUG = True;
+#suppress the urllib3 warnings due to old version of urllib3 (inside requests)
+import requests.packages.urllib3
+requests.packages.urllib3.disable_warnings()
+
+_bfDebug = True;
 
 bf_logger = logging.getLogger("org.batfish.client")
-if (DEBUG):
+bf_session = Session(bf_logger)
+
+if (_bfDebug):
     bf_logger.setLevel(logging.INFO)
     bf_logger.addHandler(logging.StreamHandler())
 else:
     bf_logger.addHandler(logging.NullHandler())
 
-bf_session = Session(bf_logger)
 
-def bf_answer(questionJson, parameters="", doDelta=False):
+
+def bf_answer(questionStr, parametersStr="{}", doDelta=False):
     '''
-    Answer a question
+    Answer a question based on json strings for question and parametersJsonStr
     '''
-    _check_container();
     _check_base_testrig();
     if (doDelta):
         _check_delta_testrig();
 
+    #these conversions verify that the strings are proper json
+    questionJson = json.loads(questionStr)
+    parametersJson = json.loads(parametersStr)
+ 
     questionName = Options.default_question_prefix + "_" + batfishutils.get_uuid()
 
-    jsonData = workhelper.get_data_answer(bf_session, questionName, questionJson, parameters)
+    jsonData = workhelper.get_data_answer(bf_session, questionName, questionStr, parametersStr)
     resthelper.post_data(bf_session, CoordConsts.SVC_UPLOAD_QUESTION_RSC, jsonData)
 
     workItem = workhelper.get_workitem_answer(bf_session, questionName, doDelta)
@@ -44,11 +55,22 @@ def bf_answer(questionJson, parameters="", doDelta=False):
 
     return answer
 
+def bf_answer_type(questionType, doDelta=False, **parameters):
+    '''
+    Answer a question based on question type
+    '''
+    questionJson = bf_get_question_json(questionType)    
+    for param in parameters.keys():
+        questionJson[param] = parameters[param]
+
+    bf_logger.info("Question: %s", json.dumps(questionJson))
+     
+    return bf_answer(json.dumps(questionJson), doDelta=doDelta)
+
 def bf_generate_dataplane(doDelta=False):
     '''
     Generate the data plane for base or delta testrig
     '''
-    _check_container();
     _check_base_testrig();
     if (doDelta):
         _check_delta_testrig();
@@ -64,7 +86,8 @@ def bf_help():
     '''
     print """
     Basic function calls
-        bf_answer           Answer a question about base or delta testrig
+        bf_answer           Answer a question based on question json
+        bf_answer_file      Answer a question based on question file
         bf_init_container   Initializes a new container
         bf_init_testrig     Initializes a new testrig
         bf_list_testrigs    Lists all the testrigs
@@ -99,7 +122,20 @@ def bf_init_container(containerPrefix=Options.default_container_prefix):
         bf_logger.info("Container is now set to " + bf_session.container)
     else:
         raise BatfishException("Bad json response in init_container; missing expected key: " + CoordConsts.SVC_CONTAINER_NAME_KEY, jsonResponse);
-                       
+             
+def bf_init_environment(environmentName=None, interfaceBlacklist=None, nodeBlacklist=None):
+    
+    _check_base_testrig()
+    
+    if (environmentName is None):
+        environmentName = Options.default_delta_env_prefix + batfishutils.get_uuid()
+        
+    bf_session.deltaTestrig = bf_session.baseTestrig
+    bf_session.deltaEnvironment = environmentName
+    bf_logger.info("Delta testrig/environment is now set to %s/%s", bf_session.deltaTestrig, bf_session.deltaEnvironment)
+    
+    return bf_answer_type("environmentcreation", environmentName=environmentName, interfaceBlacklist=interfaceBlacklist, nodeBlacklist=nodeBlacklist)
+          
 def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
     '''
     Initialize a new testrig
@@ -150,10 +186,9 @@ def bf_list_testrigs(currentContainerOnly=False):
 
 def bf_reinit_testrig(doDelta=False):
     '''
-    Re-initialize the current base (or delta) testrig
+    Re-initialize the current base or delta testrig
     '''
 
-    _check_container();
     _check_base_testrig();
     if (doDelta):
         _check_delta_testrig();
@@ -164,6 +199,7 @@ def bf_reinit_testrig(doDelta=False):
     return answer
 
 def _check_base_testrig():
+    _check_container()
     if (bf_session.baseTestrig is None):
         raise BatfishException("Base testrig is not set")
 
@@ -171,6 +207,7 @@ def _check_base_testrig():
         raise BatfishException("Base environment is not set")
 
 def _check_delta_testrig():
+    _check_container()
     if (bf_session.deltaTestrig is None):
         raise BatfishException("Delta testrig is not set")
 
