@@ -15,6 +15,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -74,6 +75,8 @@ public interface IBatfish extends IPluginConsumer {
    DataPlane loadDataPlane();
 
    AnswerElement multipath(HeaderSpace headerSpace);
+
+   AssertionAst parseAssertion(String text);
 
    AnswerElement pathDiff(HeaderSpace headerSpace);
 

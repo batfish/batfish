@@ -1,0 +1,7 @@
+{
+  "class" : "org.batfish.datamodel.questions.UndefinedReferencesQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "nodeBlacklist" : [ ],
+  "nodeRegex" : ".*"
+}

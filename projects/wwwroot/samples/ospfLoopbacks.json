@@ -1,0 +1,7 @@
+{
+  "class" : "org.batfish.datamodel.questions.OspfLoopbacksQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "nodeBlacklist" : [ ],
+  "nodeRegex" : ".*"
+}

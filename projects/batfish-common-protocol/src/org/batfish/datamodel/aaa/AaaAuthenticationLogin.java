@@ -1,8 +1,8 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.aaa;
 
 import java.io.Serializable;
 
-public class AaaAuthenticationLoginSettings implements Serializable {
+public class AaaAuthenticationLogin implements Serializable {
 
    /**
     *

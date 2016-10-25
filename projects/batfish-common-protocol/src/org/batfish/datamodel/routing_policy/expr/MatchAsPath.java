@@ -3,6 +3,8 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class MatchAsPath extends AbstractBooleanExpr {
 
    /**
@@ -11,6 +13,10 @@ public class MatchAsPath extends AbstractBooleanExpr {
    private static final long serialVersionUID = 1L;
 
    private AsPathSetExpr _expr;
+
+   @JsonCreator
+   public MatchAsPath() {
+   }
 
    public MatchAsPath(AsPathSetExpr expr) {
       _expr = expr;

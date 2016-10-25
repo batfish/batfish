@@ -16,8 +16,12 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 
 public class NodesPathQuestionPlugin extends QuestionPlugin {
 
@@ -50,9 +54,15 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-
          NodesPathQuestion question = (NodesPathQuestion) _question;
          String path = question.getPath();
+
+         ConfigurationBuilder b = new ConfigurationBuilder();
+         b.jsonProvider(new JacksonJsonNodeJsonProvider());
+         if (question.getAsPathList()) {
+            b.options(Option.AS_PATH_LIST);
+         }
+         Configuration c = b.build();
 
          _batfish.checkConfigurations();
 
@@ -70,11 +80,12 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             throw new BatfishException(
                   "Could not get JSON string from nodes answer", e);
          }
-         Object jsonObject = JsonPath.parse(nodesAnswerStr).json();
+         Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
          Object pathResult = null;
+         JsonPath jsonPath = JsonPath.compile(path);
 
          try {
-            pathResult = JsonPath.read(jsonObject, path);
+            pathResult = jsonPath.read(jsonObject, c);
          }
          catch (PathNotFoundException e) {
             pathResult = "[]";
@@ -90,9 +101,17 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
    public static class NodesPathQuestion extends Question {
 
+      private static final String AS_PATH_LIST_VAR = "asPathList";
+
       private static final String PATH_VAR = "path";
 
+      private boolean _asPathList;
+
       private String _path;
+
+      public boolean getAsPathList() {
+         return _asPathList;
+      }
 
       @Override
       public boolean getDataPlane() {
@@ -120,6 +139,10 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          return retString;
       }
 
+      public void setAsPathList(boolean asPathList) {
+         _asPathList = asPathList;
+      }
+
       @Override
       public void setJsonParameters(JSONObject parameters) {
          super.setJsonParameters(parameters);
@@ -131,6 +154,9 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             }
             try {
                switch (paramKey) {
+               case AS_PATH_LIST_VAR:
+                  setAsPathList(parameters.getBoolean(paramKey));
+                  break;
                case PATH_VAR:
                   setPath(parameters.getString(paramKey));
                   break;

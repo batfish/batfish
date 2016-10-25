@@ -12,6 +12,7 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.aaa.Aaa;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -71,7 +72,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String ZONES_VAR = "zones";
 
-   private AaaSettings _aaaSettings;
+   private Aaa _aaa;
 
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
@@ -163,8 +164,8 @@ public final class Configuration extends ComparableStructure<String> {
       _zones = new TreeMap<>();
    }
 
-   public AaaSettings getAaaSettings() {
-      return _aaaSettings;
+   public Aaa getAaa() {
+      return _aaa;
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
@@ -359,8 +360,8 @@ public final class Configuration extends ComparableStructure<String> {
       _routes = new TreeSet<>();
    }
 
-   public void setAaaSettings(AaaSettings aaaSettings) {
-      _aaaSettings = aaaSettings;
+   public void setAaa(Aaa aaa) {
+      _aaa = aaa;
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)

@@ -6,42 +6,32 @@ public class Assertion {
 
    private List<Object> _args;
 
-   private Check _check;
-
    private String _description;
 
-   private String _path;
+   private String _text;
 
    public List<Object> getArgs() {
       return _args;
-   }
-
-   public Check getCheck() {
-      return _check;
    }
 
    public String getDescription() {
       return _description;
    }
 
-   public String getPath() {
-      return _path;
+   public String getText() {
+      return _text;
    }
 
    public void setArgs(List<Object> args) {
       _args = args;
    }
 
-   public void setCheck(Check check) {
-      _check = check;
-   }
-
    public void setDescription(String description) {
       _description = description;
    }
 
-   public void setPath(String path) {
-      _path = path;
+   public void setText(String text) {
+      _text = text;
    }
 
 }

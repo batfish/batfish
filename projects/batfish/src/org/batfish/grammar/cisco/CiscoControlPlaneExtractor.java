@@ -23,9 +23,6 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AaaAuthenticationLoginSettings;
-import org.batfish.datamodel.AaaAuthenticationSettings;
-import org.batfish.datamodel.AaaSettings;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -53,6 +50,11 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.aaa.AaaAccountingCommands;
+import org.batfish.datamodel.aaa.AaaAccounting;
+import org.batfish.datamodel.aaa.AaaAuthenticationLogin;
+import org.batfish.datamodel.aaa.AaaAuthentication;
+import org.batfish.datamodel.aaa.Aaa;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
@@ -935,6 +937,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private CiscoConfiguration _configuration;
 
+   private AaaAccountingCommands _currentAaaAccountingCommands;
+
    private IpAsPathAccessList _currentAsPathAcl;
 
    private DynamicBgpPeerGroup _currentDynamicPeerGroup;
@@ -1035,20 +1039,40 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterAaa_accounting(Aaa_accountingContext ctx) {
+      if (_configuration.getAaaSettings().getAccounting() == null) {
+         _configuration.getAaaSettings().setAccounting(new AaaAccounting());
+      }
+   }
+
+   @Override
+   public void enterAaa_accounting_commands(
+         Aaa_accounting_commandsContext ctx) {
+      int level = toInteger(ctx.level);
+      Map<Integer, AaaAccountingCommands> commands = _configuration
+            .getAaaSettings().getAccounting().getCommands();
+      _currentAaaAccountingCommands = commands.get(level);
+      if (_currentAaaAccountingCommands == null) {
+         _currentAaaAccountingCommands = new AaaAccountingCommands();
+         commands.put(level, _currentAaaAccountingCommands);
+      }
+   }
+
+   @Override
    public void enterAaa_authentication(Aaa_authenticationContext ctx) {
-      if (_configuration.getAaaSettings().getAuthenticationSettings() == null) {
+      if (_configuration.getAaaSettings().getAuthentication() == null) {
          _configuration.getAaaSettings()
-               .setAuthenticationSettings(new AaaAuthenticationSettings());
+               .setAuthentication(new AaaAuthentication());
       }
    }
 
    @Override
    public void enterAaa_authentication_login(
          Aaa_authentication_loginContext ctx) {
-      if (_configuration.getAaaSettings().getAuthenticationSettings()
-            .getLoginSettings() == null) {
-         _configuration.getAaaSettings().getAuthenticationSettings()
-               .setLoginSettings(new AaaAuthenticationLoginSettings());
+      if (_configuration.getAaaSettings().getAuthentication()
+            .getLogin() == null) {
+         _configuration.getAaaSettings().getAuthentication()
+               .setLogin(new AaaAuthenticationLogin());
       }
    }
 
@@ -1511,7 +1535,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterS_aaa(S_aaaContext ctx) {
       if (_configuration.getAaaSettings() == null) {
-         _configuration.setAaaSettings(new AaaSettings());
+         _configuration.setAaaSettings(new Aaa());
       }
    }
 
@@ -1584,10 +1608,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitAaa_accounting_commands(Aaa_accounting_commandsContext ctx) {
+      _currentAaaAccountingCommands = null;
+   }
+
+   @Override
    public void exitAaa_authentication_login_privilege_mode(
          Aaa_authentication_login_privilege_modeContext ctx) {
-      _configuration.getAaaSettings().getAuthenticationSettings()
-            .getLoginSettings().setPrivilegeMode(true);
+      _configuration.getAaaSettings().getAuthentication().getLogin()
+            .setPrivilegeMode(true);
    }
 
    @Override
