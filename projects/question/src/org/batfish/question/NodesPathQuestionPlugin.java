@@ -35,9 +35,27 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
          ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder();
+         if (_result instanceof Iterable<?>) {
+            sb.append("Result: \n[");
+            Iterable<?> results = (Iterable<?>) _result;
+            Iterator<?> i = results.iterator();
+            while (i.hasNext()) {
+               Object result = i.next();
+               sb.append(mapper.writeValueAsString(result));
+               if (i.hasNext()) {
+                  sb.append(",");
+               }
+               sb.append("\n");
+            }
+            sb.append("]\n");
+         }
+         else {
+            sb.append(mapper.writeValueAsString(this));
+         }
+         String output = sb.toString();
+         return output;
       }
 
       public void setResult(Object result) {

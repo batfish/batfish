@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.aaa.Aaa;
 import org.batfish.representation.VendorConfiguration;
@@ -60,6 +61,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _lineAccessClassLists;
 
+   protected final Map<String, Line> _lines;
+
    protected final Set<String> _managementAccessGroups;
 
    protected final Set<String> _msdpPeerSaLists;
@@ -99,6 +102,7 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _interfaces = new TreeMap<>();
       _ipv6PeerGroups = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
+      _lines = new TreeMap<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
       _ntpAccessGroups = new TreeSet<>();
@@ -196,6 +200,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getLineAccessClassLists() {
       return _lineAccessClassLists;
+   }
+
+   public Map<String, Line> getLines() {
+      return _lines;
    }
 
    public Set<String> getManagementAccessGroups() {
