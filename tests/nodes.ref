@@ -1507,6 +1507,14 @@
       "as2border1" : {
         "@id" : 80,
         "name" : "as2border1",
+        "aaa" : {
+          "authentication" : {
+            "login" : {
+              "privilegeMode" : true
+            }
+          },
+          "newModel" : true
+        },
         "aggregateRoutes" : [ {
           "class" : "org.batfish.datamodel.GeneratedRoute",
           "network" : "2.128.0.0/16",

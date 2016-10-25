@@ -1,0 +1,12 @@
+{
+  "class" : "org.batfish.datamodel.questions.BgpAdvertisementsQuestion",
+  "differential" : false,
+  "ebgp" : true,
+  "ibgp" : true,
+  "interfaceBlacklist" : [ ],
+  "nodeBlacklist" : [ ],
+  "nodeRegex" : ".*",
+  "prefixSpace" : [ ],
+  "received" : true,
+  "sent" : true
+}

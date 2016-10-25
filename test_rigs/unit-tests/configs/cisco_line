@@ -1,10 +1,42 @@
 !
 hostname cisco_line
 !
-line bty 0 15
+line vty 0 15
  session-timeout 15
  access-class 40 in
  exec-timeout 15 0
  login authentication blah
 !
-
+line console
+ exec-timeout 15
+line vty
+ session-limit 64
+ access-class vty-acl in
+!
+line 0/0/0 0/0/15
+ session-timeout 60 
+ access-class 40 in
+ login authentication SecurID
+ no exec
+ transport preferred none
+ transport input telnet
+ transport output none
+line 35 48
+ session-timeout 540 
+ location Covel Opt81 Network
+ absolute-timeout 540
+ session-disconnect-warning 30 message You will be disconnected in 30 seconds
+ modem Host
+ terminal-type vt100
+ no exec
+ transport input all
+ databits 7
+ stopbits 1
+ flowcontrol hardware
+line 2
+ no activation-character
+ no exec
+ exec-timeout 0 15
+ exec-timeout 1
+ location The end of the world
+!

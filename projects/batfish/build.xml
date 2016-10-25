@@ -198,6 +198,8 @@
    <target name="grammarclean" description="Delete generated antlr files">
       <delete>
          <fileset dir="src" includes="**/*.tokens"/>
+         <fileset dir="src" includes="org/batfish/grammar/assertion/AssertionLexer*.java"/>
+         <fileset dir="src" includes="org/batfish/grammar/assertion/AssertionParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoLexer*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/cisco/CiscoParser*.java"/>
          <fileset dir="src" includes="org/batfish/grammar/flatjuniper/FlatJuniperLexer*.java"/>
@@ -247,6 +249,7 @@
    <target name="lexers"
      description="Compile antlr4 lexer grammars">
       <parallel>
+         <antlr4lexer grammar.name="AssertionLexer" grammar.packagedir="org/batfish/grammar/assertion"/>
          <antlr4lexer grammar.name="BatfishTopologyLexer" grammar.packagedir="org/batfish/grammar/topology"/>
          <antlr4lexer grammar.name="CiscoLexer" grammar.packagedir="org/batfish/grammar/cisco"/>
          <antlr4lexer grammar.name="FlatJuniperLexer" grammar.packagedir="org/batfish/grammar/flatjuniper"/>
@@ -264,6 +267,13 @@
    <target name="parsers" depends="lexers"
      description="Compile antlr4 parser grammars">
       <parallel>
+         <antlr4parser grammar.name="AssertionParser" grammar.packagedir="org/batfish/grammar/assertion">
+            <dependencies>
+               <fileset dir="src/org/batfish/grammar/assertion" includes="AssertionParser.g4"/>
+               <fileset dir="src/org/batfish/grammar/assertion" includes="AssertionLexer.g4"/>
+               <fileset dir="src/org/batfish/grammar/assertion" includes="AssertionLexer.tokens"/>
+            </dependencies>
+         </antlr4parser>
          <antlr4parser grammar.name="BatfishTopologyParser" grammar.packagedir="org/batfish/grammar/topology">
             <dependencies>
                <fileset dir="src/org/batfish/grammar/topology" includes="BatfishTopologyParser.g4"/>

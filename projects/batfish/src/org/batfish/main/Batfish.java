@@ -84,6 +84,7 @@ import org.batfish.datamodel.answers.NodSatAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.CommunitySet;
@@ -102,6 +103,9 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.assertion.AssertionCombinedParser;
+import org.batfish.grammar.assertion.AssertionExtractor;
+import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.topology.BatfishTopologyCombinedParser;
@@ -1431,7 +1435,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private Map<String, Configuration> getDeltaConfigurations() {
       EnvironmentSettings envSettings = _testrigSettings
             .getEnvironmentSettings();
-      if (Files.exists(envSettings.getDeltaConfigurationsDir())) {
+      Path deltaDir = envSettings.getDeltaConfigurationsDir();
+      if (deltaDir != null && Files.exists(deltaDir)) {
          if (Files.exists(envSettings.getDeltaCompiledConfigurationsDir())) {
             return deserializeConfigurations(
                   envSettings.getDeltaCompiledConfigurationsDir());
@@ -2023,6 +2028,19 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String filename) {
       _logger.info("Parsing: \"" + filename + "\"...");
       return parse(parser);
+   }
+
+   @Override
+   public AssertionAst parseAssertion(String text) {
+      AssertionCombinedParser parser = new AssertionCombinedParser(text,
+            _settings);
+      AssertionContext tree = (AssertionContext) parse(parser);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      AssertionExtractor extractor = new AssertionExtractor(text,
+            parser.getParser());
+      walker.walk(extractor, tree);
+      AssertionAst ast = extractor.getAst();
+      return ast;
    }
 
    private AwsVpcConfiguration parseAwsVpcConfigurations(

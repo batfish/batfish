@@ -5,7 +5,7 @@ var ARG_ANSWER_JSON_PATH = "answerjsonpath";
 var ARG_AUTO_BASE_DIR = "autobasedir";
 var ARG_BLOCK_NAMES = "blocknames";
 var ARG_DIFF_ACTIVE = "diffactive";
-var ARG_DIFF_ENVIRONMENT_NAME = "diffenv";
+var ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
 var ARG_ENVIRONMENT_NAME = "env";
 var ARG_LOG_FILE = "logfile";
 var ARG_LOG_LEVEL = "loglevel";
@@ -74,7 +74,7 @@ var RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
 var RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 var RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
-var SUFFIX_ANSWER_JSON_FILE = ".ans";
+var SUFFIX_ANSWER_JSON_FILE = ".json";
 var SUFFIX_LOG_FILE = ".log";
 
 var SVC_BASE_RSC = "/batfishservice";

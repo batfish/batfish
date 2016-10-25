@@ -719,6 +719,11 @@ AUTOSTATE
    'autostate'
 ;
 
+AUX
+:
+   'aux'
+;
+
 BACK_UP
 :
    'back-up'
@@ -1237,6 +1242,11 @@ COMMUNITY_SET
       enableIPV6_ADDRESS = false;
    }
 
+;
+
+CON
+:
+   'con'
 ;
 
 CONFDCONFIG
@@ -5064,6 +5074,11 @@ PREEMPT
    'preempt'
 ;
 
+PREFERRED
+:
+   'preferred'
+;
+
 PREFIX
 :
    'prefix'
@@ -6896,6 +6911,11 @@ TTL_THRESHOLD
    'ttl-threshold'
 ;
 
+TTY
+:
+   'tty'
+;
+
 TUNNEL
 :
    'tunnel'
@@ -7311,6 +7331,11 @@ VSERVER
 VTP
 :
    'vtp'
+;
+
+VTY
+:
+   'vty'
 ;
 
 VTY_POOL
@@ -7818,6 +7843,8 @@ NEWLINE
    	  enableIPV6_ADDRESS = true;
    	}
    	enableIP_ADDRESS = true;
+      enableDEC = true;
+      enableACL_NUM = false;
   }
 
 ;

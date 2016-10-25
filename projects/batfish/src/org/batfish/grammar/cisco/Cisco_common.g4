@@ -175,6 +175,22 @@ interface_name
    )
 ;
 
+line_type
+:
+// intentional blank
+
+   | AUX
+   | CON
+   | CONSOLE
+   | DEFAULT
+   |
+   (
+      TEMPLATE name = variable
+   )
+   | TTY
+   | VTY
+;
+
 ospf_route_type
 :
    (

@@ -166,9 +166,9 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
 
     var srcUrl = jQuery(dropDownId).val();
 
-    //check if the source URL corresponds to a zip file, which can only happen for configs (not questions)
     var match = srcUrl.match(/^.+(\.[^\.]+)$/);
 
+    //check if the source URL corresponds to a zip file, which can only happen for configs (not questions)
     if (match && match[1] == ".zip") {
 
         // loading a zip file
@@ -189,10 +189,14 @@ function loadText(dropDownId, dstTextBox, elementLocalFile) {
             }
         });
     }
+    // check if the source URL corresponds to a JSON file
     else {
+        var isJSON = match && match[1] == ".json";
         jQuery.ajax({
             url: srcUrl,
             success: function (data) {
+                if (isJSON)
+                    data = JSON.stringify(data, null, 2);
                 jQuery(dstTextBox).val(data);
             }
         }).fail(function () {

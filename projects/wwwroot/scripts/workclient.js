@@ -152,7 +152,13 @@ function getAnsJson_cb(responseObject, entryPoint, remainingCalls) {
 	if (defined(fnSaveQuestion)) {
 		fnSaveQuestion(entryPoint, null, responseObject);
 	}
-	if (fnShowHighlights != undefined) {
+
+    if (remainingCalls[0] == "answerquestion" || remainingCalls[0] == "answerdiffquestion") {
+        epOutput[entryPoint] += responseObject;
+        makeNextCall(entryPoint, remainingCalls);
+    }
+
+	if (remainingCalls[0] == "drawanswer" && fnShowHighlights != undefined) {
 		if (!fnShowHighlights(responseObject)) {
 			finishEntryPoint(entryPoint, remainingCalls);
 		}
@@ -182,7 +188,7 @@ function getLog_cb(responseObject, entryPoint, remainingCalls) {
         	if (defined(fnSaveQuestion)) {
 				fnSaveQuestion(entryPoint, responseObject, null);
 			}
-			epOutput[entryPoint] += responseObject;
+			bfUpdateDebugInfo(responseObject);
 			break;
         default:
             epOutput[entryPoint] += responseObject;
@@ -355,7 +361,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             reqParams[COMMAND_DUMP_DP] = "";
             reqParams[COMMAND_NLS_DATA_PLANE] = "";
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
-            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_DELTA_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_DIFF_ACTIVE] = "";
         case "getdataplane":
             reqParams[COMMAND_DUMP_DP] = "";
@@ -363,7 +369,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             break;
         case "getdiffdataplane":
             reqParams[COMMAND_DUMP_DP] = "";
-            reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+            reqParams[ARG_DELTA_ENVIRONMENT_NAME] = diffEnvName;
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             reqParams[ARG_DIFF_ACTIVE] = "";
             break;
@@ -377,7 +383,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
             reqParams[ARG_QUESTION_NAME] = epQuestionName[entryPoint];
             reqParams[ARG_ENVIRONMENT_NAME] = envName;
             if (! bfIsInvalidStr(diffEnvName)) {
-                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+                reqParams[ARG_DELTA_ENVIRONMENT_NAME] = diffEnvName;
             }
             reqParams[COMMAND_NLS_TRAFFIC] = "";
             reqParams[COMMAND_GET_HISTORY] = "";
@@ -386,7 +392,7 @@ function queueWork(worktype, entryPoint, remainingCalls) {
                 if (errorCheck(bfIsInvalidStr(diffEnvName), "Diff environment is not set", entryPoint))
                     return;
 
-                reqParams[ARG_DIFF_ENVIRONMENT_NAME] = diffEnvName;
+                reqParams[ARG_DELTA_ENVIRONMENT_NAME] = diffEnvName;
                 reqParams[ARG_DIFF_ACTIVE] = "";
             }
 
@@ -446,7 +452,7 @@ function txtToConfigBlob(entryPoint, elementText) {
     return content;
 }
 
-function uploadDifEnvFile(entryPoint, remainingCalls) {
+function uploadDiffEnvFile(entryPoint, remainingCalls) {
 
     if (errorCheck((typeof elementDiffEnvFile === 'undefined' || bfIsInvalidElement(elementDiffEnvFile)),
                     "Diff environment file selector (elementDiffEnvFile) is not configured in the HTML header",

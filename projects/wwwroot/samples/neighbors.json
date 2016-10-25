@@ -1,0 +1,9 @@
+{
+  "class" : "org.batfish.datamodel.questions.NeighborsQuestion",
+  "differential" : false,
+  "interfaceBlacklist" : [ ],
+  "neighborType" : [ ],
+  "node1Regex" : ".*",
+  "node2Regex" : ".*",
+  "nodeBlacklist" : [ ]
+}
