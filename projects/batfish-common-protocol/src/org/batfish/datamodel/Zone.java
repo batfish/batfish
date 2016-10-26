@@ -45,14 +45,15 @@ public final class Zone extends ComparableStructure<String> {
       if (this == object) {
          return true;
       }
-      Zone other = (Zone)object;
+      Zone other = (Zone) object;
       if (!this._fromHostFilter.equals(other._fromHostFilter)) {
          return false;
       }
       if (!this._inboundFilter.equals(other._inboundFilter)) {
          return false;
       }
-      if (!this._inboundInterfaceFilters.equals(other._inboundInterfaceFilters)) {
+      if (!this._inboundInterfaceFilters
+            .equals(other._inboundInterfaceFilters)) {
          return false;
       }
       if (!this._toHostFilter.equals(other._toHostFilter)) {
@@ -63,45 +64,7 @@ public final class Zone extends ComparableStructure<String> {
       }
       return true;
    }
-   
-   public boolean unorderedEqual(Object object) {
-      if (this == object) {
-         return true;
-      }
-      Zone other = (Zone)object;
-      if (this.equals(other)) {
-         return true;
-      }
-      if (!this._fromHostFilter.unorderedEqual(other._fromHostFilter)) {
-         return false;
-      }
-      if (!this._inboundFilter.unorderedEqual(other._inboundFilter)) {
-         return false;
-      }
-      if (unorderedEqualSortedMap(this._inboundInterfaceFilters, other._inboundInterfaceFilters)) {
-         return false;
-      }
-      if (!this._toHostFilter.unorderedEqual(other._toHostFilter)) {
-         return false;
-      }
-      if (unorderedEqualSortedMap(this._toZonePolicies, other._toZonePolicies)) {
-         return false;
-      }
-      return true;
-   }
-   
-   private boolean unorderedEqualSortedMap (SortedMap<String, IpAccessList> a, SortedMap <String, IpAccessList> b) {
-      if (!a.keySet().equals(b.keySet())) {
-         return false;
-      }
-      for (String s: a.keySet()) {
-         if (!a.get(s).unorderedEqual(b.get(s))) {
-            return false;
-         }
-      }
-      return true;
-   }
-   
+
    public IpAccessList getFromHostFilter() {
       return _fromHostFilter;
    }
@@ -142,6 +105,47 @@ public final class Zone extends ComparableStructure<String> {
    public void setToZonePolicies(
          SortedMap<String, IpAccessList> toZonePolicies) {
       _toZonePolicies = toZonePolicies;
+   }
+
+   public boolean unorderedEqual(Object object) {
+      if (this == object) {
+         return true;
+      }
+      Zone other = (Zone) object;
+      if (this.equals(other)) {
+         return true;
+      }
+      if (!this._fromHostFilter.unorderedEqual(other._fromHostFilter)) {
+         return false;
+      }
+      if (!this._inboundFilter.unorderedEqual(other._inboundFilter)) {
+         return false;
+      }
+      if (unorderedEqualSortedMap(this._inboundInterfaceFilters,
+            other._inboundInterfaceFilters)) {
+         return false;
+      }
+      if (!this._toHostFilter.unorderedEqual(other._toHostFilter)) {
+         return false;
+      }
+      if (unorderedEqualSortedMap(this._toZonePolicies,
+            other._toZonePolicies)) {
+         return false;
+      }
+      return true;
+   }
+
+   private boolean unorderedEqualSortedMap(SortedMap<String, IpAccessList> a,
+         SortedMap<String, IpAccessList> b) {
+      if (!a.keySet().equals(b.keySet())) {
+         return false;
+      }
+      for (String s : a.keySet()) {
+         if (!a.get(s).unorderedEqual(b.get(s))) {
+            return false;
+         }
+      }
+      return true;
    }
 
 }

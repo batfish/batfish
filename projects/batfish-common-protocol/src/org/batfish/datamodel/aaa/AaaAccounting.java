@@ -13,6 +13,8 @@ public class AaaAccounting implements Serializable {
 
    private SortedMap<Integer, AaaAccountingCommands> _commands;
 
+   private AaaAccountingCommands _defaultCommands;
+
    public AaaAccounting() {
       _commands = new TreeMap<>();
    }
@@ -21,8 +23,16 @@ public class AaaAccounting implements Serializable {
       return _commands;
    }
 
+   public AaaAccountingCommands getDefaultCommands() {
+      return _defaultCommands;
+   }
+
    public void setCommands(SortedMap<Integer, AaaAccountingCommands> commands) {
       _commands = commands;
+   }
+
+   public void setDefaultCommands(AaaAccountingCommands defaultCommands) {
+      _defaultCommands = defaultCommands;
    }
 
 }

@@ -18,7 +18,7 @@ public class BatfishObjectMapper extends ObjectMapper {
 
    private static class Factory extends JsonFactory {
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = 1L;
 
@@ -35,7 +35,7 @@ public class BatfishObjectMapper extends ObjectMapper {
       public static final PrettyPrinter instance = new PrettyPrinter();
 
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = 1L;
 

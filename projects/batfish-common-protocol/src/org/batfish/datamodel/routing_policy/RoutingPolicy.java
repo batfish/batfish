@@ -55,14 +55,14 @@ public class RoutingPolicy extends ComparableStructure<String> {
          return true;
       }
       RoutingPolicy other = (RoutingPolicy) o;
-      if (this.getStatements().equals(other.getStatements())){
+      if (this.getStatements().equals(other.getStatements())) {
          return true;
       }
       else {
          return false;
       }
    }
-   
+
    @JsonIgnore
    public Configuration getOwner() {
       return _owner;

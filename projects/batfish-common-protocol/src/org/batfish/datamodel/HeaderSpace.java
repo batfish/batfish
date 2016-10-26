@@ -117,8 +117,7 @@ public class HeaderSpace implements Serializable {
    }
 
    @Override
-   public boolean equals(Object obj)
-   {
+   public boolean equals(Object obj) {
       if (this == obj) {
          return true;
       }
@@ -200,6 +199,7 @@ public class HeaderSpace implements Serializable {
       }
       return true;
    }
+
    public SortedSet<Integer> getDscps() {
       return _dscps;
    }

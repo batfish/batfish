@@ -14,8 +14,7 @@ public final class IpAccessListLine extends HeaderSpace {
          return true;
       }
       IpAccessListLine other = (IpAccessListLine) obj;
-      if (!super.equals(obj))
-      {
+      if (!super.equals(obj)) {
          return false;
       }
       if (_action != other._action) {
@@ -23,7 +22,7 @@ public final class IpAccessListLine extends HeaderSpace {
       }
       return true;
    }
-   
+
    public LineAction getAction() {
       return _action;
    }

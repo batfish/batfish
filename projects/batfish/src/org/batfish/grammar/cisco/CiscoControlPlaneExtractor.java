@@ -1052,13 +1052,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterAaa_accounting_commands(
          Aaa_accounting_commandsContext ctx) {
-      int level = toInteger(ctx.level);
-      Map<Integer, AaaAccountingCommands> commands = _configuration
-            .getAaaSettings().getAccounting().getCommands();
-      _currentAaaAccountingCommands = commands.get(level);
-      if (_currentAaaAccountingCommands == null) {
-         _currentAaaAccountingCommands = new AaaAccountingCommands();
-         commands.put(level, _currentAaaAccountingCommands);
+      AaaAccounting aaaAccounting = _configuration.getAaaSettings()
+            .getAccounting();
+      if (ctx.level != null) {
+         int level = toInteger(ctx.level);
+         Map<Integer, AaaAccountingCommands> commands = aaaAccounting
+               .getCommands();
+         _currentAaaAccountingCommands = commands.get(level);
+         if (_currentAaaAccountingCommands == null) {
+            _currentAaaAccountingCommands = new AaaAccountingCommands();
+            commands.put(level, _currentAaaAccountingCommands);
+         }
+      }
+      else {
+         _currentAaaAccountingCommands = aaaAccounting.getDefaultCommands();
+         if (_currentAaaAccountingCommands == null) {
+            _currentAaaAccountingCommands = new AaaAccountingCommands();
+            aaaAccounting.setDefaultCommands(_currentAaaAccountingCommands);
+         }
       }
    }
 

@@ -38,14 +38,6 @@ public class ConfigDiffElement implements AnswerElement {
       _inBOnly = CommonUtil.inBOnly(a, b);
    }
 
-   public void summarizeIdentical()
-   {
-      int numIdentical = _identical.size();
-      _identical = new TreeSet<>();
-      _identical.add(numIdentical + " identical elements not shown for readability.");
-   }
-
-   
    public Set<String> common() {
       return CommonUtil.intersection(_a, _b);
    }
@@ -81,6 +73,13 @@ public class ConfigDiffElement implements AnswerElement {
 
    public void setInBOnly(Set<String> inBOnly) {
       _inBOnly = inBOnly;
+   }
+
+   public void summarizeIdentical() {
+      int numIdentical = _identical.size();
+      _identical = new TreeSet<>();
+      _identical.add(
+            numIdentical + " identical elements not shown for readability.");
    }
 
 }

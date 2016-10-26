@@ -40,7 +40,7 @@ public class NeighborListsDiff extends ConfigDiffElement {
             super._inBOnly.add(b.get(bPrefix).getDescription());
          }
       }
-      
+
       super.summarizeIdentical();
    }
 

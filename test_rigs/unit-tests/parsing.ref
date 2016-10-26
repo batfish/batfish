@@ -428,6 +428,114 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "aaa_accounting" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'aaa_accounting'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        (aaa_accounting_exec",
+            "          EXEC:'exec'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'ABC'  <== mode:DEFAULT_MODE)",
+            "          (aaa_accounting_method",
+            "            (aaa_accounting_method_start_stop",
+            "              START_STOP:'start-stop'  <== mode:DEFAULT_MODE",
+            "              (aaa_accounting_method_target",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                TAC_PLUS:'tac_plus'  <== mode:DEFAULT_MODE",
+            "                NONE:'none'  <== mode:DEFAULT_MODE)))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        (aaa_accounting_commands",
+            "          COMMANDS:'commands'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'XYZ'  <== mode:DEFAULT_MODE)",
+            "          (aaa_accounting_method",
+            "            (aaa_accounting_method_start_stop",
+            "              START_STOP:'start-stop'  <== mode:DEFAULT_MODE",
+            "              (aaa_accounting_method_target",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                TAC_PLUS:'tac_plus'  <== mode:DEFAULT_MODE",
+            "                NONE:'none'  <== mode:DEFAULT_MODE)))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (null_aaa_substanza",
+            "        (aaa_default_taskgroup",
+            "          DEFAULT_TASKGROUP:'default-taskgroup'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'ASDF'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "aaa_authentication_login_default_tacacs_local" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'aaa_authentication_login_default_tacacs_local'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_authentication",
+            "        AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
+            "        (aaa_authentication_login",
+            "          LOGIN:'login'  <== mode:M_Authentication",
+            "          (aaa_authentication_login_list",
+            "            DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "            (aaa_authentication_list_method",
+            "              (aaa_authentication_list_method_tacacs_local",
+            "                TACACS:'tacacs'  <== mode:DEFAULT_MODE",
+            "                LOCAL:'local'  <== mode:DEFAULT_MODE))",
+            "            NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "aaa_group_server_source_interface" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'aaa_group_server_source_interface'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_group",
+            "        GROUP:'group'  <== mode:DEFAULT_MODE",
+            "        SERVER:'server'  <== mode:DEFAULT_MODE",
+            "        TACACS_PLUS:'tacacs+'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          TACACS:'tacacs'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (aaa_group_source_interface",
+            "          SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
+            "          (interface_name",
+            "            VARIABLE:'FOO'  <== mode:DEFAULT_MODE)",
+            "          DEC:'0'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "access_list" : {
           "sentences" : [
             "(cisco_configuration",
@@ -7264,6 +7372,28 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "no_aaa_group_server" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'no_aaa_group_server'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (null_stanza",
+            "      (no_aaa_group_server_stanza",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "        GROUP:'group'  <== mode:DEFAULT_MODE",
+            "        SERVER:'server'  <== mode:DEFAULT_MODE",
+            "        TACACS_PLUS:'tacacs+'  <== mode:DEFAULT_MODE",
+            "        TACACS:'tacacs'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "non_nexus_neighbor_af" : {
           "sentences" : [
             "(cisco_configuration",
@@ -8336,6 +8466,36 @@
             "              PLUS:'+'  <== mode:DEFAULT_MODE",
             "              DEC:'5'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "route_map_sub" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'route_map_sub'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'ABC'  <== mode:DEFAULT_MODE)",
+            "      (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      DEC:'1234'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (rm_stanza",
+            "        (null_rm_stanza",
+            "          SUB_ROUTE_MAP:'sub-route-map'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'XYZ'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (rm_stanza",
+            "        (null_rm_stanza",
+            "          CONTINUE:'Continue'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -10831,6 +10991,25 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "vxlan" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VXLAN:'vxlan'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (null_stanza",
+            "      (null_block_stanza",
+            "        VXLAN:'vxlan'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'dummy-l2-tunnel-udp-port'  <== mode:DEFAULT_MODE",
+            "        DEC:'1234'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "xrBGP_Neighbor_Group" : {
           "sentences" : [
             "(cisco_configuration",
@@ -11951,6 +12130,11 @@
             "to_svl-hub-router"
           ]
         },
+        "route_map_sub" : {
+          "route-map" : [
+            "ABC"
+          ]
+        },
         "tcpflags" : {
           "ip acl" : [
             "100"
@@ -12160,6 +12344,11 @@
             "1" : "UNDEFINED: Reference to undefined prefix-list: hpr-connector-subnets",
             "2" : "UNUSED: Unused route-map: 'connected-to-bgp'",
             "3" : "UNUSED: Unused route-map: 'to_svl-hub-router'"
+          }
+        },
+        "route_map_sub" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused route-map: 'ABC'"
           }
         },
         "route_maps_in_two_address_families" : {

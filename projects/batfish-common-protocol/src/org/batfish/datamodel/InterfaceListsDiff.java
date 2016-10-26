@@ -11,7 +11,7 @@ public class InterfaceListsDiff extends ConfigDiffElement {
 
    protected static final String DIFF_VAR = "diff";
    protected Set<String> _diff;
-   
+
    @JsonCreator()
    public InterfaceListsDiff() {
 
@@ -31,7 +31,7 @@ public class InterfaceListsDiff extends ConfigDiffElement {
       }
       super.summarizeIdentical();
    }
-   
+
    @JsonProperty(DIFF_VAR)
    public Set<String> getDiff() {
       return _diff;

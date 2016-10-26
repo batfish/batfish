@@ -116,6 +116,24 @@ fromt_level
    LEVEL DEC
 ;
 
+fromt_local_preference
+:
+   LOCAL_PREFERENCE
+   (
+      localpref = DEC
+      | s_apply_groups
+   )
+;
+
+fromt_metric
+:
+   METRIC
+   (
+      metric = DEC
+      | s_apply_groups
+   )
+;
+
 fromt_neighbor
 :
    NEIGHBOR
@@ -595,6 +613,8 @@ tt_from_tail
    | fromt_instance
    | fromt_interface
    | fromt_level
+   | fromt_local_preference
+   | fromt_metric
    | fromt_neighbor
    | fromt_origin
    | fromt_policy

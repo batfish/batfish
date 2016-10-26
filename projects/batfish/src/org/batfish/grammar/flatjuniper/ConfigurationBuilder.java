@@ -106,6 +106,8 @@ import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.PsFromInterface;
+import org.batfish.representation.juniper.PsFromLocalPreference;
+import org.batfish.representation.juniper.PsFromMetric;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
 import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
 import org.batfish.representation.juniper.PsFromPrefixList;
@@ -2543,6 +2545,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          from = new PsFromInterface(name);
       }
       _currentPsTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFromt_local_preference(Fromt_local_preferenceContext ctx) {
+      int localPreference = toInt(ctx.localpref);
+      PsFromLocalPreference fromLocalPreference = new PsFromLocalPreference(
+            localPreference);
+      _currentPsTerm.getFroms().add(fromLocalPreference);
+   }
+
+   @Override
+   public void exitFromt_metric(Fromt_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      PsFromMetric fromMetric = new PsFromMetric(metric);
+      _currentPsTerm.getFroms().add(fromMetric);
    }
 
    @Override

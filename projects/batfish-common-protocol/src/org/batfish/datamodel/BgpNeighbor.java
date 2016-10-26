@@ -277,7 +277,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       this(prefix);
       _owner = owner;
    }
-   
+
    @Override
    public boolean equals(Object o) {
       if (this == o) {
@@ -296,13 +296,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (this._allowRemoteAsOut != other._allowRemoteAsOut) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._candidateRemoteBgpNeighbors, other._candidateRemoteBgpNeighbors)) {
+      if (!CommonUtil.bothNullOrEqual(this._candidateRemoteBgpNeighbors,
+            other._candidateRemoteBgpNeighbors)) {
          return false;
       }
       if (!this._clusterId.equals(other._clusterId)) {
          return false;
       }
-      if (this._defaultMetric!= other._defaultMetric) {
+      if (this._defaultMetric != other._defaultMetric) {
          return false;
       }
       // we will skip description
@@ -312,11 +313,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (!this._exportPolicy.equals(other._exportPolicy)) {
          return false;
       }
-      // we will skip generated routes. 
+      // we will skip generated routes.
       if (!CommonUtil.bothNullOrEqual(this._group, other._group)) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._importPolicy, other._importPolicy)) {
+      if (!CommonUtil.bothNullOrEqual(this._importPolicy,
+            other._importPolicy)) {
          return false;
       }
       if (!this._localAs.equals(other._localAs)) {
@@ -325,11 +327,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (!CommonUtil.bothNullOrEqual(this._localIp, other._localIp)) {
          return false;
       }
-      //we will skip owner.
+      // we will skip owner.
       if (!this._remoteAs.equals(other._remoteAs)) {
          return false;
       }
-      if (!CommonUtil.bothNullOrEqual(this._remoteBgpNeighbor, other._remoteBgpNeighbor)) {
+      if (!CommonUtil.bothNullOrEqual(this._remoteBgpNeighbor,
+            other._remoteBgpNeighbor)) {
          return false;
       }
       if (this._routeReflectorClient != other._routeReflectorClient) {

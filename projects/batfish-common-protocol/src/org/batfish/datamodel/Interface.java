@@ -358,7 +358,8 @@ public final class Interface extends ComparableStructure<String> {
       if (this._bandwidth.compareTo(other._bandwidth) != 0) {
          return false;
       }
-      // we check ACLs for name match only -- full ACL diff can be done elsewhere.
+      // we check ACLs for name match only -- full ACL diff can be done
+      // elsewhere.
       if (!IpAccessList.bothNullOrSameName(this._inboundFilter,
             other._inboundFilter)) {
          return false;
