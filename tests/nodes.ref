@@ -169,6 +169,36 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 16,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 17,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 18,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 19,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 20,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 21,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 22,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
@@ -183,7 +213,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 16,
+            "@id" : 23,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -196,7 +226,7 @@
             } ]
           },
           "102" : {
-            "@id" : 17,
+            "@id" : 24,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -209,7 +239,7 @@
             } ]
           },
           "103" : {
-            "@id" : 18,
+            "@id" : 25,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -222,7 +252,7 @@
             } ]
           },
           "default_list" : {
-            "@id" : 19,
+            "@id" : 26,
             "name" : "default_list",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -231,7 +261,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 20,
+            "@id" : 27,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -244,11 +274,11 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 21,
+            "@id" : 28,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 22,
+            "@id" : 29,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -263,7 +293,7 @@
         },
         "routingPolicies" : {
           "as1_to_as2" : {
-            "@id" : 23,
+            "@id" : 30,
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -373,7 +403,7 @@
             } ]
           },
           "as1_to_as3" : {
-            "@id" : 24,
+            "@id" : 31,
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -449,7 +479,7 @@
             } ]
           },
           "as2_to_as1" : {
-            "@id" : 25,
+            "@id" : 32,
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -476,7 +506,7 @@
             } ]
           },
           "as3_to_as1" : {
-            "@id" : 26,
+            "@id" : 33,
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -503,7 +533,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 27,
+            "@id" : 34,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -539,7 +569,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:1.10.1.1~" : {
-            "@id" : 28,
+            "@id" : 35,
             "name" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -559,7 +589,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:10.12.11.2~" : {
-            "@id" : 29,
+            "@id" : 36,
             "name" : "~BGP_PEER_EXPORT_POLICY:10.12.11.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -585,7 +615,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:3.2.2.2~" : {
-            "@id" : 30,
+            "@id" : 37,
             "name" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -605,7 +635,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:5.6.7.8~" : {
-            "@id" : 31,
+            "@id" : 38,
             "name" : "~BGP_PEER_EXPORT_POLICY:5.6.7.8~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -625,7 +655,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 32,
+            "@id" : 39,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -652,12 +682,12 @@
         }
       },
       "as1border2" : {
-        "@id" : 33,
+        "@id" : 40,
         "name" : "as1border2",
         "bgpProcess" : {
           "neighbors" : {
             "1.10.1.1/32" : {
-              "@id" : 34,
+              "@id" : 41,
               "name" : "1.10.1.1/32",
               "address" : "1.10.1.1",
               "clusterId" : 16908802,
@@ -665,13 +695,13 @@
               "group" : "as1",
               "localAs" : 1,
               "localIp" : "1.2.2.2",
-              "owner" : 33,
+              "owner" : 40,
               "remoteAs" : 1,
               "remotePrefix" : "1.10.1.1/32",
               "sendCommunity" : true
             },
             "10.14.22.4/32" : {
-              "@id" : 35,
+              "@id" : 42,
               "name" : "10.14.22.4/32",
               "address" : "10.14.22.4",
               "clusterId" : 16908802,
@@ -680,12 +710,12 @@
               "importPolicy" : "as4_to_as1",
               "localAs" : 1,
               "localIp" : "10.14.22.1",
-              "owner" : 33,
+              "owner" : 40,
               "remoteAs" : 4,
               "remotePrefix" : "10.14.22.4/32"
             },
             "10.13.22.3/32" : {
-              "@id" : 36,
+              "@id" : 43,
               "name" : "10.13.22.3/32",
               "address" : "10.13.22.3",
               "clusterId" : 16908802,
@@ -694,7 +724,7 @@
               "importPolicy" : "as3_to_as1",
               "localAs" : 1,
               "localIp" : "10.13.22.1",
-              "owner" : 33,
+              "owner" : 40,
               "remoteAs" : 3,
               "remotePrefix" : "10.13.22.3/32",
               "sendCommunity" : true
@@ -704,7 +734,7 @@
         },
         "communityLists" : {
           "as1_community" : {
-            "@id" : 37,
+            "@id" : 44,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -712,7 +742,7 @@
             "name" : "as1_community"
           },
           "as2_community" : {
-            "@id" : 38,
+            "@id" : 45,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -720,7 +750,7 @@
             "name" : "as2_community"
           },
           "as3_community" : {
-            "@id" : 39,
+            "@id" : 46,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -728,7 +758,7 @@
             "name" : "as3_community"
           },
           "as4_community" : {
-            "@id" : 40,
+            "@id" : 47,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )4:"
@@ -741,45 +771,45 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 41,
+            "@id" : 48,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "1.0.2.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 42,
+            "ospfArea" : 49,
             "ospfEnabled" : true,
-            "owner" : 33,
+            "owner" : 40,
             "prefix" : "1.0.2.1/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 43,
+            "@id" : 50,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "10.13.22.1/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 33,
+            "owner" : 40,
             "prefix" : "10.13.22.1/24"
           },
           "FastEthernet0/2" : {
-            "@id" : 44,
+            "@id" : 51,
             "name" : "FastEthernet0/2",
             "allPrefixes" : [ "10.14.22.1/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 33,
+            "owner" : 40,
             "prefix" : "10.14.22.1/24"
           },
           "Loopback0" : {
-            "@id" : 45,
+            "@id" : 52,
             "name" : "Loopback0",
             "allPrefixes" : [ "1.2.2.2/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 42,
+            "ospfArea" : 49,
             "ospfEnabled" : true,
-            "owner" : 33,
+            "owner" : 40,
             "prefix" : "1.2.2.2/32"
           }
         },
         "ipAccessLists" : {
           "101" : {
-            "@id" : 46,
+            "@id" : 53,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -794,7 +824,7 @@
             } ]
           },
           "102" : {
-            "@id" : 47,
+            "@id" : 54,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -809,7 +839,7 @@
             } ]
           },
           "103" : {
-            "@id" : 48,
+            "@id" : 55,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -824,12 +854,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 56,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 57,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 58,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 59,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 60,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 61,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 62,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 42,
+              "@id" : 49,
               "name" : 1,
-              "interfaces" : [ 41, 45 ]
+              "interfaces" : [ 48, 52 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -838,7 +898,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 49,
+            "@id" : 63,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -851,7 +911,7 @@
             } ]
           },
           "102" : {
-            "@id" : 50,
+            "@id" : 64,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -864,7 +924,7 @@
             } ]
           },
           "103" : {
-            "@id" : 51,
+            "@id" : 65,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -877,7 +937,7 @@
             } ]
           },
           "as4-prefixes" : {
-            "@id" : 52,
+            "@id" : 66,
             "name" : "as4-prefixes",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -886,7 +946,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 53,
+            "@id" : 67,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -899,11 +959,11 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 54,
+            "@id" : 68,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 55,
+            "@id" : 69,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -918,7 +978,7 @@
         },
         "routingPolicies" : {
           "as1_to_as2" : {
-            "@id" : 56,
+            "@id" : 70,
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -994,7 +1054,7 @@
             } ]
           },
           "as1_to_as3" : {
-            "@id" : 57,
+            "@id" : 71,
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1070,7 +1130,7 @@
             } ]
           },
           "as1_to_as4" : {
-            "@id" : 58,
+            "@id" : 72,
             "name" : "as1_to_as4",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -1102,7 +1162,7 @@
             } ]
           },
           "as2_to_as1" : {
-            "@id" : 59,
+            "@id" : 73,
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1129,7 +1189,7 @@
             } ]
           },
           "as3_to_as1" : {
-            "@id" : 60,
+            "@id" : 74,
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1156,7 +1216,7 @@
             } ]
           },
           "as4_to_as1" : {
-            "@id" : 61,
+            "@id" : 75,
             "name" : "as4_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1191,237 +1251,6 @@
               "type" : "ExitReject"
             } ]
           },
-          "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 62,
-            "name" : "~BGP_COMMON_EXPORT_POLICY~",
-            "statements" : [ {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                "disjuncts" : [ {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
-                  }
-                }, {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
-                  }
-                }, {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "bgp"
-                }, {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "ibgp"
-                } ]
-              },
-              "trueStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnTrue"
-              } ]
-            }, {
-              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-              "type" : "ReturnFalse"
-            } ]
-          },
-          "~BGP_PEER_EXPORT_POLICY:1.10.1.1~" : {
-            "@id" : 63,
-            "name" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
-            "statements" : [ {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
-              "falseStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitReject"
-              } ],
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
-              },
-              "trueStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitAccept"
-              } ]
-            } ]
-          },
-          "~BGP_PEER_EXPORT_POLICY:10.13.22.3~" : {
-            "@id" : 64,
-            "name" : "~BGP_PEER_EXPORT_POLICY:10.13.22.3~",
-            "statements" : [ {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
-              "falseStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitReject"
-              } ],
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [ {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
-                }, {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "as1_to_as3"
-                } ]
-              },
-              "trueStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitAccept"
-              } ]
-            } ]
-          },
-          "~BGP_PEER_EXPORT_POLICY:10.14.22.4~" : {
-            "@id" : 65,
-            "name" : "~BGP_PEER_EXPORT_POLICY:10.14.22.4~",
-            "statements" : [ {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
-              "falseStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitReject"
-              } ],
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [ {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
-                }, {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "as1_to_as4"
-                } ]
-              },
-              "trueStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitAccept"
-              } ]
-            } ]
-          },
-          "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 66,
-            "name" : "~OSPF_EXPORT_POLICY~",
-            "statements" : [ {
-              "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-              "metric" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                "value" : 20
-              }
-            }, {
-              "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "OSPF export connected routes",
-              "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                "protocol" : "connected"
-              },
-              "trueStatements" : [ {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
-                "metricType" : "E2"
-              }, {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ExitAccept"
-              } ]
-            } ]
-          }
-        }
-      },
-      "as1core1" : {
-        "@id" : 67,
-        "name" : "as1core1",
-        "bgpProcess" : {
-          "neighbors" : {
-            "1.2.2.2/32" : {
-              "@id" : 68,
-              "name" : "1.2.2.2/32",
-              "address" : "1.2.2.2",
-              "clusterId" : 17432833,
-              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
-              "group" : "as1",
-              "localAs" : 1,
-              "localIp" : "1.10.1.1",
-              "owner" : 67,
-              "remoteAs" : 1,
-              "remotePrefix" : "1.2.2.2/32",
-              "routeReflectorClient" : true,
-              "sendCommunity" : true
-            },
-            "1.1.1.1/32" : {
-              "@id" : 69,
-              "name" : "1.1.1.1/32",
-              "address" : "1.1.1.1",
-              "clusterId" : 17432833,
-              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
-              "group" : "as1",
-              "localAs" : 1,
-              "localIp" : "1.10.1.1",
-              "owner" : 67,
-              "remoteAs" : 1,
-              "remotePrefix" : "1.1.1.1/32",
-              "routeReflectorClient" : true,
-              "sendCommunity" : true
-            }
-          },
-          "routerId" : "1.10.1.1"
-        },
-        "configurationFormat" : "CISCO",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
-        "interfaces" : {
-          "FastEthernet0/0" : {
-            "@id" : 70,
-            "name" : "FastEthernet0/0",
-            "allPrefixes" : [ "1.0.1.2/24" ],
-            "bandwidth" : 1.0E8,
-            "ospfArea" : 71,
-            "ospfEnabled" : true,
-            "owner" : 67,
-            "prefix" : "1.0.1.2/24"
-          },
-          "FastEthernet0/1" : {
-            "@id" : 72,
-            "name" : "FastEthernet0/1",
-            "allPrefixes" : [ "1.0.2.2/24" ],
-            "bandwidth" : 1.0E8,
-            "ospfArea" : 71,
-            "ospfEnabled" : true,
-            "owner" : 67,
-            "prefix" : "1.0.2.2/24"
-          },
-          "Loopback0" : {
-            "@id" : 73,
-            "name" : "Loopback0",
-            "allPrefixes" : [ "1.10.1.1/32" ],
-            "bandwidth" : 1.0E12,
-            "ospfArea" : 71,
-            "ospfEnabled" : true,
-            "owner" : 67,
-            "prefix" : "1.10.1.1/32"
-          }
-        },
-        "ospfProcess" : {
-          "areas" : {
-            "1" : {
-              "@id" : 71,
-              "name" : 1,
-              "interfaces" : [ 70, 72, 73 ]
-            }
-          },
-          "exportPolicy" : "~OSPF_EXPORT_POLICY~",
-          "referenceBandwidth" : 1.0E9,
-          "routerId" : "1.10.1.1"
-        },
-        "routeFilterLists" : {
-          "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 74,
-            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
-          },
-          "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 75,
-            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
-          }
-        },
-        "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY~" : {
             "@id" : 76,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
@@ -1458,8 +1287,269 @@
               "type" : "ReturnFalse"
             } ]
           },
-          "~BGP_PEER_EXPORT_POLICY:1.1.1.1~" : {
+          "~BGP_PEER_EXPORT_POLICY:1.10.1.1~" : {
             "@id" : 77,
+            "name" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
+            "statements" : [ {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+              "falseStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              } ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+              },
+              "trueStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitAccept"
+              } ]
+            } ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:10.13.22.3~" : {
+            "@id" : 78,
+            "name" : "~BGP_PEER_EXPORT_POLICY:10.13.22.3~",
+            "statements" : [ {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+              "falseStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              } ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                "conjuncts" : [ {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+                }, {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "as1_to_as3"
+                } ]
+              },
+              "trueStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitAccept"
+              } ]
+            } ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:10.14.22.4~" : {
+            "@id" : 79,
+            "name" : "~BGP_PEER_EXPORT_POLICY:10.14.22.4~",
+            "statements" : [ {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+              "falseStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              } ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                "conjuncts" : [ {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY~"
+                }, {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "as1_to_as4"
+                } ]
+              },
+              "trueStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitAccept"
+              } ]
+            } ]
+          },
+          "~OSPF_EXPORT_POLICY~" : {
+            "@id" : 80,
+            "name" : "~OSPF_EXPORT_POLICY~",
+            "statements" : [ {
+              "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+              "metric" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                "value" : 20
+              }
+            }, {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "OSPF export connected routes",
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                "protocol" : "connected"
+              },
+              "trueStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              }, {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitAccept"
+              } ]
+            } ]
+          }
+        }
+      },
+      "as1core1" : {
+        "@id" : 81,
+        "name" : "as1core1",
+        "bgpProcess" : {
+          "neighbors" : {
+            "1.2.2.2/32" : {
+              "@id" : 82,
+              "name" : "1.2.2.2/32",
+              "address" : "1.2.2.2",
+              "clusterId" : 17432833,
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
+              "group" : "as1",
+              "localAs" : 1,
+              "localIp" : "1.10.1.1",
+              "owner" : 81,
+              "remoteAs" : 1,
+              "remotePrefix" : "1.2.2.2/32",
+              "routeReflectorClient" : true,
+              "sendCommunity" : true
+            },
+            "1.1.1.1/32" : {
+              "@id" : 83,
+              "name" : "1.1.1.1/32",
+              "address" : "1.1.1.1",
+              "clusterId" : 17432833,
+              "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
+              "group" : "as1",
+              "localAs" : 1,
+              "localIp" : "1.10.1.1",
+              "owner" : 81,
+              "remoteAs" : 1,
+              "remotePrefix" : "1.1.1.1/32",
+              "routeReflectorClient" : true,
+              "sendCommunity" : true
+            }
+          },
+          "routerId" : "1.10.1.1"
+        },
+        "configurationFormat" : "CISCO",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "interfaces" : {
+          "FastEthernet0/0" : {
+            "@id" : 84,
+            "name" : "FastEthernet0/0",
+            "allPrefixes" : [ "1.0.1.2/24" ],
+            "bandwidth" : 1.0E8,
+            "ospfArea" : 85,
+            "ospfEnabled" : true,
+            "owner" : 81,
+            "prefix" : "1.0.1.2/24"
+          },
+          "FastEthernet0/1" : {
+            "@id" : 86,
+            "name" : "FastEthernet0/1",
+            "allPrefixes" : [ "1.0.2.2/24" ],
+            "bandwidth" : 1.0E8,
+            "ospfArea" : 85,
+            "ospfEnabled" : true,
+            "owner" : 81,
+            "prefix" : "1.0.2.2/24"
+          },
+          "Loopback0" : {
+            "@id" : 87,
+            "name" : "Loopback0",
+            "allPrefixes" : [ "1.10.1.1/32" ],
+            "bandwidth" : 1.0E12,
+            "ospfArea" : 85,
+            "ospfEnabled" : true,
+            "owner" : 81,
+            "prefix" : "1.10.1.1/32"
+          }
+        },
+        "lines" : {
+          "aux0" : {
+            "@id" : 88,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 89,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 90,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 91,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 92,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 93,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 94,
+            "name" : "vty4"
+          }
+        },
+        "ospfProcess" : {
+          "areas" : {
+            "1" : {
+              "@id" : 85,
+              "name" : 1,
+              "interfaces" : [ 84, 86, 87 ]
+            }
+          },
+          "exportPolicy" : "~OSPF_EXPORT_POLICY~",
+          "referenceBandwidth" : 1.0E9,
+          "routerId" : "1.10.1.1"
+        },
+        "routeFilterLists" : {
+          "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
+            "@id" : 95,
+            "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
+          },
+          "~BGP_NETWORK_NETWORKS_FILTER~" : {
+            "@id" : 96,
+            "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
+          }
+        },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY~" : {
+            "@id" : 97,
+            "name" : "~BGP_COMMON_EXPORT_POLICY~",
+            "statements" : [ {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                "disjuncts" : [ {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
+                  }
+                }, {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
+                  }
+                }, {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "bgp"
+                }, {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "ibgp"
+                } ]
+              },
+              "trueStatements" : [ {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnTrue"
+              } ]
+            }, {
+              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+              "type" : "ReturnFalse"
+            } ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:1.1.1.1~" : {
+            "@id" : 98,
             "name" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1479,7 +1569,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:1.2.2.2~" : {
-            "@id" : 78,
+            "@id" : 99,
             "name" : "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1499,13 +1589,13 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 79,
+            "@id" : 100,
             "name" : "~OSPF_EXPORT_POLICY~"
           }
         }
       },
       "as2border1" : {
-        "@id" : 80,
+        "@id" : 101,
         "name" : "as2border1",
         "aaa" : {
           "authentication" : {
@@ -1525,7 +1615,7 @@
         "bgpProcess" : {
           "neighbors" : {
             "2.1.2.2/32" : {
-              "@id" : 81,
+              "@id" : 102,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
               "clusterId" : 33620225,
@@ -1533,13 +1623,13 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.1",
-              "owner" : 80,
+              "owner" : 101,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
               "sendCommunity" : true
             },
             "10.12.11.1/32" : {
-              "@id" : 82,
+              "@id" : 103,
               "name" : "10.12.11.1/32",
               "address" : "10.12.11.1",
               "clusterId" : 33620225,
@@ -1548,13 +1638,13 @@
               "importPolicy" : "as1_to_as2",
               "localAs" : 2,
               "localIp" : "10.12.11.2",
-              "owner" : 80,
+              "owner" : 101,
               "remoteAs" : 1,
               "remotePrefix" : "10.12.11.1/32",
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
-              "@id" : 83,
+              "@id" : 104,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
               "clusterId" : 33620225,
@@ -1562,7 +1652,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.1",
-              "owner" : 80,
+              "owner" : 101,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
               "sendCommunity" : true
@@ -1572,7 +1662,7 @@
         },
         "communityLists" : {
           "as1_community" : {
-            "@id" : 84,
+            "@id" : 105,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -1580,7 +1670,7 @@
             "name" : "as1_community"
           },
           "as2_community" : {
-            "@id" : 85,
+            "@id" : 106,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -1588,7 +1678,7 @@
             "name" : "as2_community"
           },
           "as3_community" : {
-            "@id" : 86,
+            "@id" : 107,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -1601,49 +1691,49 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 87,
+            "@id" : 108,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "10.12.11.2/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 88,
-            "outgoingFilter" : 89,
-            "owner" : 80,
+            "incomingFilter" : 109,
+            "outgoingFilter" : 110,
+            "owner" : 101,
             "prefix" : "10.12.11.2/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 90,
+            "@id" : 111,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.12.11.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 91,
+            "ospfArea" : 112,
             "ospfEnabled" : true,
-            "owner" : 80,
+            "owner" : 101,
             "prefix" : "2.12.11.1/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 92,
+            "@id" : 113,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.12.12.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 91,
+            "ospfArea" : 112,
             "ospfEnabled" : true,
-            "owner" : 80,
+            "owner" : 101,
             "prefix" : "2.12.12.1/24"
           },
           "Loopback0" : {
-            "@id" : 93,
+            "@id" : 114,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.1.1/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 91,
+            "ospfArea" : 112,
             "ospfEnabled" : true,
-            "owner" : 80,
+            "owner" : 101,
             "prefix" : "2.1.1.1/32"
           }
         },
         "ipAccessLists" : {
           "101" : {
-            "@id" : 94,
+            "@id" : 115,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1658,7 +1748,7 @@
             } ]
           },
           "103" : {
-            "@id" : 95,
+            "@id" : 116,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1673,7 +1763,7 @@
             } ]
           },
           "INSIDE_TO_OUTSIDE" : {
-            "@id" : 89,
+            "@id" : 110,
             "name" : "INSIDE_TO_OUTSIDE",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1688,7 +1778,7 @@
             } ]
           },
           "OUTSIDE_TO_INSIDE" : {
-            "@id" : 88,
+            "@id" : 109,
             "name" : "OUTSIDE_TO_INSIDE",
             "lines" : [ {
               "action" : "REJECT",
@@ -1708,12 +1798,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 117,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 118,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 119,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 120,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 121,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 122,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 123,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 91,
+              "@id" : 112,
               "name" : 1,
-              "interfaces" : [ 90, 92, 93 ]
+              "interfaces" : [ 111, 113, 114 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -1722,7 +1842,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 96,
+            "@id" : 124,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1735,7 +1855,7 @@
             } ]
           },
           "103" : {
-            "@id" : 97,
+            "@id" : 125,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1748,7 +1868,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 98,
+            "@id" : 126,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -1761,7 +1881,7 @@
             } ]
           },
           "outbound_routes" : {
-            "@id" : 99,
+            "@id" : 127,
             "name" : "outbound_routes",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1770,7 +1890,7 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 100,
+            "@id" : 128,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1779,11 +1899,11 @@
             } ]
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 101,
+            "@id" : 129,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
-            "@id" : 102,
+            "@id" : 130,
             "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -1794,7 +1914,7 @@
         },
         "routingPolicies" : {
           "as1_to_as2" : {
-            "@id" : 103,
+            "@id" : 131,
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1821,7 +1941,7 @@
             } ]
           },
           "as2_to_as1" : {
-            "@id" : 104,
+            "@id" : 132,
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1897,7 +2017,7 @@
             } ]
           },
           "as2_to_as3" : {
-            "@id" : 105,
+            "@id" : 133,
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1973,7 +2093,7 @@
             } ]
           },
           "as3_to_as2" : {
-            "@id" : 106,
+            "@id" : 134,
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2000,7 +2120,7 @@
             } ]
           },
           "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~" : {
-            "@id" : 107,
+            "@id" : 135,
             "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2018,7 +2138,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 108,
+            "@id" : 136,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2068,7 +2188,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:10.12.11.1~" : {
-            "@id" : 109,
+            "@id" : 137,
             "name" : "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2094,7 +2214,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-            "@id" : 110,
+            "@id" : 138,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2114,7 +2234,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-            "@id" : 111,
+            "@id" : 139,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2134,7 +2254,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 112,
+            "@id" : 140,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -2161,7 +2281,7 @@
         }
       },
       "as2border2" : {
-        "@id" : 113,
+        "@id" : 141,
         "name" : "as2border2",
         "aggregateRoutes" : [ {
           "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -2173,7 +2293,7 @@
         "bgpProcess" : {
           "neighbors" : {
             "2.1.2.2/32" : {
-              "@id" : 114,
+              "@id" : 142,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
               "clusterId" : 33620226,
@@ -2181,13 +2301,13 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.2",
-              "owner" : 113,
+              "owner" : 141,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
               "sendCommunity" : true
             },
             "10.23.21.3/32" : {
-              "@id" : 115,
+              "@id" : 143,
               "name" : "10.23.21.3/32",
               "address" : "10.23.21.3",
               "clusterId" : 33620226,
@@ -2196,13 +2316,13 @@
               "importPolicy" : "as3_to_as2",
               "localAs" : 2,
               "localIp" : "10.23.21.2",
-              "owner" : 113,
+              "owner" : 141,
               "remoteAs" : 3,
               "remotePrefix" : "10.23.21.3/32",
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
-              "@id" : 116,
+              "@id" : 144,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
               "clusterId" : 33620226,
@@ -2210,7 +2330,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.1.2",
-              "owner" : 113,
+              "owner" : 141,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
               "sendCommunity" : true
@@ -2220,7 +2340,7 @@
         },
         "communityLists" : {
           "as1_community" : {
-            "@id" : 117,
+            "@id" : 145,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -2228,7 +2348,7 @@
             "name" : "as1_community"
           },
           "as2_community" : {
-            "@id" : 118,
+            "@id" : 146,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -2236,7 +2356,7 @@
             "name" : "as2_community"
           },
           "as3_community" : {
-            "@id" : 119,
+            "@id" : 147,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -2249,49 +2369,49 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 120,
+            "@id" : 148,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "10.23.21.2/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 121,
-            "outgoingFilter" : 122,
-            "owner" : 113,
+            "incomingFilter" : 149,
+            "outgoingFilter" : 150,
+            "owner" : 141,
             "prefix" : "10.23.21.2/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 123,
+            "@id" : 151,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.12.21.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 124,
+            "ospfArea" : 152,
             "ospfEnabled" : true,
-            "owner" : 113,
+            "owner" : 141,
             "prefix" : "2.12.21.1/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 125,
+            "@id" : 153,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.12.22.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 124,
+            "ospfArea" : 152,
             "ospfEnabled" : true,
-            "owner" : 113,
+            "owner" : 141,
             "prefix" : "2.12.22.1/24"
           },
           "Loopback0" : {
-            "@id" : 126,
+            "@id" : 154,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.1.2/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 124,
+            "ospfArea" : 152,
             "ospfEnabled" : true,
-            "owner" : 113,
+            "owner" : 141,
             "prefix" : "2.1.1.2/32"
           }
         },
         "ipAccessLists" : {
           "101" : {
-            "@id" : 127,
+            "@id" : 155,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2306,7 +2426,7 @@
             } ]
           },
           "103" : {
-            "@id" : 128,
+            "@id" : 156,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2321,7 +2441,7 @@
             } ]
           },
           "INSIDE_TO_OUTSIDE" : {
-            "@id" : 122,
+            "@id" : 150,
             "name" : "INSIDE_TO_OUTSIDE",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2336,7 +2456,7 @@
             } ]
           },
           "OUTSIDE_TO_INSIDE" : {
-            "@id" : 121,
+            "@id" : 149,
             "name" : "OUTSIDE_TO_INSIDE",
             "lines" : [ {
               "action" : "REJECT",
@@ -2351,12 +2471,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 157,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 158,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 159,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 160,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 161,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 162,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 163,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 124,
+              "@id" : 152,
               "name" : 1,
-              "interfaces" : [ 123, 125, 126 ]
+              "interfaces" : [ 151, 153, 154 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -2365,7 +2515,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 129,
+            "@id" : 164,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2378,7 +2528,7 @@
             } ]
           },
           "103" : {
-            "@id" : 130,
+            "@id" : 165,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2391,7 +2541,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 131,
+            "@id" : 166,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -2404,7 +2554,7 @@
             } ]
           },
           "outbound_routes" : {
-            "@id" : 132,
+            "@id" : 167,
             "name" : "outbound_routes",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2413,7 +2563,7 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 133,
+            "@id" : 168,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2422,11 +2572,11 @@
             } ]
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 134,
+            "@id" : 169,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
-            "@id" : 135,
+            "@id" : 170,
             "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -2437,7 +2587,7 @@
         },
         "routingPolicies" : {
           "as1_to_as2" : {
-            "@id" : 136,
+            "@id" : 171,
             "name" : "as1_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2479,7 +2629,7 @@
             } ]
           },
           "as2_to_as1" : {
-            "@id" : 137,
+            "@id" : 172,
             "name" : "as2_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2555,7 +2705,7 @@
             } ]
           },
           "as2_to_as3" : {
-            "@id" : 138,
+            "@id" : 173,
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2631,7 +2781,7 @@
             } ]
           },
           "as3_to_as2" : {
-            "@id" : 139,
+            "@id" : 174,
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2673,7 +2823,7 @@
             } ]
           },
           "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~" : {
-            "@id" : 140,
+            "@id" : 175,
             "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2691,7 +2841,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 141,
+            "@id" : 176,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2741,7 +2891,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:10.23.21.3~" : {
-            "@id" : 142,
+            "@id" : 177,
             "name" : "~BGP_PEER_EXPORT_POLICY:10.23.21.3~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2767,7 +2917,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-            "@id" : 143,
+            "@id" : 178,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2787,7 +2937,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-            "@id" : 144,
+            "@id" : 179,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -2807,7 +2957,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 145,
+            "@id" : 180,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -2834,12 +2984,12 @@
         }
       },
       "as2core1" : {
-        "@id" : 146,
+        "@id" : 181,
         "name" : "as2core1",
         "bgpProcess" : {
           "neighbors" : {
             "2.1.1.2/32" : {
-              "@id" : 147,
+              "@id" : 182,
               "name" : "2.1.1.2/32",
               "address" : "2.1.1.2",
               "clusterId" : 33620481,
@@ -2847,14 +2997,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
-              "owner" : 146,
+              "owner" : 181,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.1.2/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.3.2/32" : {
-              "@id" : 148,
+              "@id" : 183,
               "name" : "2.1.3.2/32",
               "address" : "2.1.3.2",
               "clusterId" : 33620481,
@@ -2862,14 +3012,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
-              "owner" : 146,
+              "owner" : 181,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.3.2/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.1.1/32" : {
-              "@id" : 149,
+              "@id" : 184,
               "name" : "2.1.1.1/32",
               "address" : "2.1.1.1",
               "clusterId" : 33620481,
@@ -2877,14 +3027,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
-              "owner" : 146,
+              "owner" : 181,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.1.1/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.3.1/32" : {
-              "@id" : 150,
+              "@id" : 185,
               "name" : "2.1.3.1/32",
               "address" : "2.1.3.1",
               "clusterId" : 33620481,
@@ -2892,7 +3042,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.1",
-              "owner" : 146,
+              "owner" : 181,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.3.1/32",
               "routeReflectorClient" : true,
@@ -2906,61 +3056,61 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 151,
+            "@id" : 186,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "2.12.11.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 152,
+            "ospfArea" : 187,
             "ospfEnabled" : true,
-            "owner" : 146,
+            "owner" : 181,
             "prefix" : "2.12.11.2/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 153,
+            "@id" : 188,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.12.21.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 152,
+            "ospfArea" : 187,
             "ospfEnabled" : true,
-            "owner" : 146,
+            "owner" : 181,
             "prefix" : "2.12.21.2/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 154,
+            "@id" : 189,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.23.12.2/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 155,
-            "ospfArea" : 152,
+            "incomingFilter" : 190,
+            "ospfArea" : 187,
             "ospfEnabled" : true,
-            "owner" : 146,
+            "owner" : 181,
             "prefix" : "2.23.12.2/24"
           },
           "FastEthernet2/0" : {
-            "@id" : 156,
+            "@id" : 191,
             "name" : "FastEthernet2/0",
             "allPrefixes" : [ "2.23.11.2/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 155,
-            "ospfArea" : 152,
+            "incomingFilter" : 190,
+            "ospfArea" : 187,
             "ospfEnabled" : true,
-            "owner" : 146,
+            "owner" : 181,
             "prefix" : "2.23.11.2/24"
           },
           "Loopback0" : {
-            "@id" : 157,
+            "@id" : 192,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.2.1/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 152,
+            "ospfArea" : 187,
             "ospfEnabled" : true,
-            "owner" : 146,
+            "owner" : 181,
             "prefix" : "2.1.2.1/32"
           }
         },
         "ipAccessLists" : {
           "blocktelnet" : {
-            "@id" : 155,
+            "@id" : 190,
             "name" : "blocktelnet",
             "lines" : [ {
               "action" : "REJECT",
@@ -2977,12 +3127,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 193,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 194,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 195,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 196,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 197,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 198,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 199,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 152,
+              "@id" : 187,
               "name" : 1,
-              "interfaces" : [ 151, 153, 154, 156, 157 ]
+              "interfaces" : [ 186, 188, 189, 191, 192 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -2991,17 +3171,17 @@
         },
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 158,
+            "@id" : 200,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 159,
+            "@id" : 201,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 160,
+            "@id" : 202,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3037,7 +3217,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.1.1~" : {
-            "@id" : 161,
+            "@id" : 203,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3057,7 +3237,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.1.2~" : {
-            "@id" : 162,
+            "@id" : 204,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3077,7 +3257,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.3.1~" : {
-            "@id" : 163,
+            "@id" : 205,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3097,7 +3277,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.3.2~" : {
-            "@id" : 164,
+            "@id" : 206,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3117,18 +3297,18 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 165,
+            "@id" : 207,
             "name" : "~OSPF_EXPORT_POLICY~"
           }
         }
       },
       "as2core2" : {
-        "@id" : 166,
+        "@id" : 208,
         "name" : "as2core2",
         "bgpProcess" : {
           "neighbors" : {
             "2.1.1.2/32" : {
-              "@id" : 167,
+              "@id" : 209,
               "name" : "2.1.1.2/32",
               "address" : "2.1.1.2",
               "clusterId" : 33620482,
@@ -3136,14 +3316,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
-              "owner" : 166,
+              "owner" : 208,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.1.2/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.3.2/32" : {
-              "@id" : 168,
+              "@id" : 210,
               "name" : "2.1.3.2/32",
               "address" : "2.1.3.2",
               "clusterId" : 33620482,
@@ -3151,14 +3331,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
-              "owner" : 166,
+              "owner" : 208,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.3.2/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.1.1/32" : {
-              "@id" : 169,
+              "@id" : 211,
               "name" : "2.1.1.1/32",
               "address" : "2.1.1.1",
               "clusterId" : 33620482,
@@ -3166,14 +3346,14 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
-              "owner" : 166,
+              "owner" : 208,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.1.1/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "2.1.3.1/32" : {
-              "@id" : 170,
+              "@id" : 212,
               "name" : "2.1.3.1/32",
               "address" : "2.1.3.1",
               "clusterId" : 33620482,
@@ -3181,7 +3361,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.2.2",
-              "owner" : 166,
+              "owner" : 208,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.3.1/32",
               "routeReflectorClient" : true,
@@ -3195,62 +3375,92 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 171,
+            "@id" : 213,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "2.12.22.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 172,
+            "ospfArea" : 214,
             "ospfEnabled" : true,
-            "owner" : 166,
+            "owner" : 208,
             "prefix" : "2.12.22.2/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 173,
+            "@id" : 215,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.12.12.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 172,
+            "ospfArea" : 214,
             "ospfEnabled" : true,
-            "owner" : 166,
+            "owner" : 208,
             "prefix" : "2.12.12.2/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 174,
+            "@id" : 216,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.23.21.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 172,
+            "ospfArea" : 214,
             "ospfEnabled" : true,
-            "owner" : 166,
+            "owner" : 208,
             "prefix" : "2.23.21.2/24"
           },
           "FastEthernet2/0" : {
-            "@id" : 175,
+            "@id" : 217,
             "name" : "FastEthernet2/0",
             "allPrefixes" : [ "2.23.22.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 172,
+            "ospfArea" : 214,
             "ospfEnabled" : true,
-            "owner" : 166,
+            "owner" : 208,
             "prefix" : "2.23.22.2/24"
           },
           "Loopback0" : {
-            "@id" : 176,
+            "@id" : 218,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.2.2/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 172,
+            "ospfArea" : 214,
             "ospfEnabled" : true,
-            "owner" : 166,
+            "owner" : 208,
             "prefix" : "2.1.2.2/32"
+          }
+        },
+        "lines" : {
+          "aux0" : {
+            "@id" : 219,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 220,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 221,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 222,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 223,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 224,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 225,
+            "name" : "vty4"
           }
         },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 172,
+              "@id" : 214,
               "name" : 1,
-              "interfaces" : [ 171, 173, 174, 175, 176 ]
+              "interfaces" : [ 213, 215, 216, 217, 218 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -3259,17 +3469,17 @@
         },
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 177,
+            "@id" : 226,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 178,
+            "@id" : 227,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 179,
+            "@id" : 228,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3305,7 +3515,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.1.1~" : {
-            "@id" : 180,
+            "@id" : 229,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3325,7 +3535,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.1.2~" : {
-            "@id" : 181,
+            "@id" : 230,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3345,7 +3555,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.3.1~" : {
-            "@id" : 182,
+            "@id" : 231,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3365,7 +3575,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.3.2~" : {
-            "@id" : 183,
+            "@id" : 232,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3385,18 +3595,18 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 184,
+            "@id" : 233,
             "name" : "~OSPF_EXPORT_POLICY~"
           }
         }
       },
       "as2dept1" : {
-        "@id" : 185,
+        "@id" : 234,
         "name" : "as2dept1",
         "bgpProcess" : {
           "neighbors" : {
             "2.34.101.3/32" : {
-              "@id" : 186,
+              "@id" : 235,
               "name" : "2.34.101.3/32",
               "address" : "2.34.101.3",
               "clusterId" : 33620993,
@@ -3405,13 +3615,13 @@
               "importPolicy" : "as2_to_dept",
               "localAs" : 65001,
               "localIp" : "2.34.101.4",
-              "owner" : 185,
+              "owner" : 234,
               "remoteAs" : 2,
               "remotePrefix" : "2.34.101.3/32",
               "sendCommunity" : true
             },
             "2.34.201.3/32" : {
-              "@id" : 187,
+              "@id" : 236,
               "name" : "2.34.201.3/32",
               "address" : "2.34.201.3",
               "clusterId" : 33620993,
@@ -3420,7 +3630,7 @@
               "importPolicy" : "as2_to_dept",
               "localAs" : 65001,
               "localIp" : "2.34.201.4",
-              "owner" : 185,
+              "owner" : 234,
               "remoteAs" : 2,
               "remotePrefix" : "2.34.201.3/32",
               "sendCommunity" : true
@@ -3430,7 +3640,7 @@
         },
         "communityLists" : {
           "as2_community" : {
-            "@id" : 188,
+            "@id" : 237,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -3443,51 +3653,51 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 189,
+            "@id" : 238,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "2.34.101.4/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 185,
+            "owner" : 234,
             "prefix" : "2.34.101.4/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 190,
+            "@id" : 239,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.34.201.4/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 185,
+            "owner" : 234,
             "prefix" : "2.34.201.4/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 191,
+            "@id" : 240,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.128.0.1/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 192,
-            "owner" : 185,
+            "incomingFilter" : 241,
+            "owner" : 234,
             "prefix" : "2.128.0.1/24"
           },
           "FastEthernet1/1" : {
-            "@id" : 193,
+            "@id" : 242,
             "name" : "FastEthernet1/1",
             "allPrefixes" : [ "2.128.1.1/24" ],
             "bandwidth" : 1.0E8,
-            "incomingFilter" : 192,
-            "owner" : 185,
+            "incomingFilter" : 241,
+            "owner" : 234,
             "prefix" : "2.128.1.1/24"
           },
           "Loopback0" : {
-            "@id" : 194,
+            "@id" : 243,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.1.2/32" ],
             "bandwidth" : 1.0E12,
-            "owner" : 185,
+            "owner" : 234,
             "prefix" : "2.1.1.2/32"
           }
         },
         "ipAccessLists" : {
           "102" : {
-            "@id" : 195,
+            "@id" : 244,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3502,7 +3712,7 @@
             } ]
           },
           "105" : {
-            "@id" : 196,
+            "@id" : 245,
             "name" : "105",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3527,7 +3737,7 @@
             } ]
           },
           "RESTRICT_HOST_TRAFFIC_IN" : {
-            "@id" : 192,
+            "@id" : 241,
             "name" : "RESTRICT_HOST_TRAFFIC_IN",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3548,7 +3758,7 @@
             } ]
           },
           "RESTRICT_HOST_TRAFFIC_OUT" : {
-            "@id" : 197,
+            "@id" : 246,
             "name" : "RESTRICT_HOST_TRAFFIC_OUT",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3569,9 +3779,39 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 247,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 248,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 249,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 250,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 251,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 252,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 253,
+            "name" : "vty4"
+          }
+        },
         "routeFilterLists" : {
           "102" : {
-            "@id" : 198,
+            "@id" : 254,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3584,11 +3824,11 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 199,
+            "@id" : 255,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 200,
+            "@id" : 256,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3603,7 +3843,7 @@
         },
         "routingPolicies" : {
           "as2_to_dept" : {
-            "@id" : 201,
+            "@id" : 257,
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3630,7 +3870,7 @@
             } ]
           },
           "dept_to_as2" : {
-            "@id" : 202,
+            "@id" : 258,
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3672,7 +3912,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 203,
+            "@id" : 259,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3708,7 +3948,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.34.101.3~" : {
-            "@id" : 204,
+            "@id" : 260,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.34.101.3~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3734,7 +3974,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.34.201.3~" : {
-            "@id" : 205,
+            "@id" : 261,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.34.201.3~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3762,12 +4002,12 @@
         }
       },
       "as2dist1" : {
-        "@id" : 206,
+        "@id" : 262,
         "name" : "as2dist1",
         "bgpProcess" : {
           "neighbors" : {
             "2.1.2.2/32" : {
-              "@id" : 207,
+              "@id" : 263,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
               "clusterId" : 33620737,
@@ -3775,13 +4015,13 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.1",
-              "owner" : 206,
+              "owner" : 262,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
               "sendCommunity" : true
             },
             "2.34.101.4/32" : {
-              "@id" : 208,
+              "@id" : 264,
               "name" : "2.34.101.4/32",
               "address" : "2.34.101.4",
               "clusterId" : 33620737,
@@ -3790,13 +4030,13 @@
               "importPolicy" : "dept_to_as2",
               "localAs" : 2,
               "localIp" : "2.34.101.3",
-              "owner" : 206,
+              "owner" : 262,
               "remoteAs" : 65001,
               "remotePrefix" : "2.34.101.4/32",
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
-              "@id" : 209,
+              "@id" : 265,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
               "clusterId" : 33620737,
@@ -3804,7 +4044,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.1",
-              "owner" : 206,
+              "owner" : 262,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
               "sendCommunity" : true
@@ -3814,7 +4054,7 @@
         },
         "communityLists" : {
           "dept_community" : {
-            "@id" : 210,
+            "@id" : 266,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )65001:"
@@ -3827,47 +4067,47 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 211,
+            "@id" : 267,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "2.23.21.3/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 212,
+            "ospfArea" : 268,
             "ospfEnabled" : true,
-            "owner" : 206,
+            "owner" : 262,
             "prefix" : "2.23.21.3/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 213,
+            "@id" : 269,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.23.11.3/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 212,
+            "ospfArea" : 268,
             "ospfEnabled" : true,
-            "owner" : 206,
+            "owner" : 262,
             "prefix" : "2.23.11.3/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 214,
+            "@id" : 270,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.34.101.3/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 206,
+            "owner" : 262,
             "prefix" : "2.34.101.3/24"
           },
           "Loopback0" : {
-            "@id" : 215,
+            "@id" : 271,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.3.1/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 212,
+            "ospfArea" : 268,
             "ospfEnabled" : true,
-            "owner" : 206,
+            "owner" : 262,
             "prefix" : "2.1.3.1/32"
           }
         },
         "ipAccessLists" : {
           "102" : {
-            "@id" : 216,
+            "@id" : 272,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3877,7 +4117,7 @@
             } ]
           },
           "105" : {
-            "@id" : 217,
+            "@id" : 273,
             "name" : "105",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3902,12 +4142,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 274,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 275,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 276,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 277,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 278,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 279,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 280,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 212,
+              "@id" : 268,
               "name" : 1,
-              "interfaces" : [ 211, 213, 215 ]
+              "interfaces" : [ 267, 269, 271 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -3916,7 +4186,7 @@
         },
         "routeFilterLists" : {
           "105" : {
-            "@id" : 218,
+            "@id" : 281,
             "name" : "105",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -3937,17 +4207,17 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 219,
+            "@id" : 282,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 220,
+            "@id" : 283,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
           "as2_to_dept" : {
-            "@id" : 221,
+            "@id" : 284,
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -3989,7 +4259,7 @@
             } ]
           },
           "dept_to_as2" : {
-            "@id" : 222,
+            "@id" : 285,
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4016,7 +4286,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 223,
+            "@id" : 286,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4052,7 +4322,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-            "@id" : 224,
+            "@id" : 287,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4072,7 +4342,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-            "@id" : 225,
+            "@id" : 288,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4092,7 +4362,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.34.101.4~" : {
-            "@id" : 226,
+            "@id" : 289,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.34.101.4~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4118,7 +4388,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 227,
+            "@id" : 290,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -4145,12 +4415,12 @@
         }
       },
       "as2dist2" : {
-        "@id" : 228,
+        "@id" : 291,
         "name" : "as2dist2",
         "bgpProcess" : {
           "neighbors" : {
             "2.1.2.2/32" : {
-              "@id" : 229,
+              "@id" : 292,
               "name" : "2.1.2.2/32",
               "address" : "2.1.2.2",
               "clusterId" : 33620738,
@@ -4158,13 +4428,13 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.2",
-              "owner" : 228,
+              "owner" : 291,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.2/32",
               "sendCommunity" : true
             },
             "2.34.201.4/32" : {
-              "@id" : 230,
+              "@id" : 293,
               "name" : "2.34.201.4/32",
               "address" : "2.34.201.4",
               "clusterId" : 33620738,
@@ -4173,13 +4443,13 @@
               "importPolicy" : "dept_to_as2",
               "localAs" : 2,
               "localIp" : "2.34.201.3",
-              "owner" : 228,
+              "owner" : 291,
               "remoteAs" : 65001,
               "remotePrefix" : "2.34.201.4/32",
               "sendCommunity" : true
             },
             "2.1.2.1/32" : {
-              "@id" : 231,
+              "@id" : 294,
               "name" : "2.1.2.1/32",
               "address" : "2.1.2.1",
               "clusterId" : 33620738,
@@ -4187,7 +4457,7 @@
               "group" : "as2",
               "localAs" : 2,
               "localIp" : "2.1.3.2",
-              "owner" : 228,
+              "owner" : 291,
               "remoteAs" : 2,
               "remotePrefix" : "2.1.2.1/32",
               "sendCommunity" : true
@@ -4197,7 +4467,7 @@
         },
         "communityLists" : {
           "dept_community" : {
-            "@id" : 232,
+            "@id" : 295,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )65001:"
@@ -4210,47 +4480,47 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 233,
+            "@id" : 296,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "2.23.22.3/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 234,
+            "ospfArea" : 297,
             "ospfEnabled" : true,
-            "owner" : 228,
+            "owner" : 291,
             "prefix" : "2.23.22.3/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 235,
+            "@id" : 298,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "2.23.12.3/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 234,
+            "ospfArea" : 297,
             "ospfEnabled" : true,
-            "owner" : 228,
+            "owner" : 291,
             "prefix" : "2.23.12.3/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 236,
+            "@id" : 299,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "2.34.201.3/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 228,
+            "owner" : 291,
             "prefix" : "2.34.201.3/24"
           },
           "Loopback0" : {
-            "@id" : 237,
+            "@id" : 300,
             "name" : "Loopback0",
             "allPrefixes" : [ "2.1.3.2/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 234,
+            "ospfArea" : 297,
             "ospfEnabled" : true,
-            "owner" : 228,
+            "owner" : 291,
             "prefix" : "2.1.3.2/32"
           }
         },
         "ipAccessLists" : {
           "102" : {
-            "@id" : 238,
+            "@id" : 301,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4260,7 +4530,7 @@
             } ]
           },
           "105" : {
-            "@id" : 239,
+            "@id" : 302,
             "name" : "105",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4285,12 +4555,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 303,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 304,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 305,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 306,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 307,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 308,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 309,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 234,
+              "@id" : 297,
               "name" : 1,
-              "interfaces" : [ 233, 235, 237 ]
+              "interfaces" : [ 296, 298, 300 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -4299,7 +4599,7 @@
         },
         "routeFilterLists" : {
           "105" : {
-            "@id" : 240,
+            "@id" : 310,
             "name" : "105",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4320,17 +4620,17 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 241,
+            "@id" : 311,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 242,
+            "@id" : 312,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
           }
         },
         "routingPolicies" : {
           "as2_to_dept" : {
-            "@id" : 243,
+            "@id" : 313,
             "name" : "as2_to_dept",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4372,7 +4672,7 @@
             } ]
           },
           "dept_to_as2" : {
-            "@id" : 244,
+            "@id" : 314,
             "name" : "dept_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4399,7 +4699,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 245,
+            "@id" : 315,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4435,7 +4735,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-            "@id" : 246,
+            "@id" : 316,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4455,7 +4755,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-            "@id" : 247,
+            "@id" : 317,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4475,7 +4775,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:2.34.201.4~" : {
-            "@id" : 248,
+            "@id" : 318,
             "name" : "~BGP_PEER_EXPORT_POLICY:2.34.201.4~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4501,7 +4801,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 249,
+            "@id" : 319,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -4528,12 +4828,12 @@
         }
       },
       "as3border1" : {
-        "@id" : 250,
+        "@id" : 320,
         "name" : "as3border1",
         "bgpProcess" : {
           "neighbors" : {
             "10.23.21.2/32" : {
-              "@id" : 251,
+              "@id" : 321,
               "name" : "10.23.21.2/32",
               "address" : "10.23.21.2",
               "clusterId" : 50397441,
@@ -4542,13 +4842,13 @@
               "importPolicy" : "as2_to_as3",
               "localAs" : 3,
               "localIp" : "10.23.21.3",
-              "owner" : 250,
+              "owner" : 320,
               "remoteAs" : 2,
               "remotePrefix" : "10.23.21.2/32",
               "sendCommunity" : true
             },
             "3.10.1.1/32" : {
-              "@id" : 252,
+              "@id" : 322,
               "name" : "3.10.1.1/32",
               "address" : "3.10.1.1",
               "clusterId" : 50397441,
@@ -4556,7 +4856,7 @@
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.1.1.1",
-              "owner" : 250,
+              "owner" : 320,
               "remoteAs" : 3,
               "remotePrefix" : "3.10.1.1/32",
               "sendCommunity" : true
@@ -4566,7 +4866,7 @@
         },
         "communityLists" : {
           "as1_community" : {
-            "@id" : 253,
+            "@id" : 323,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -4574,7 +4874,7 @@
             "name" : "as1_community"
           },
           "as2_community" : {
-            "@id" : 254,
+            "@id" : 324,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -4582,7 +4882,7 @@
             "name" : "as2_community"
           },
           "as3_community" : {
-            "@id" : 255,
+            "@id" : 325,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -4595,37 +4895,37 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 256,
+            "@id" : 326,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "10.23.21.3/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 250,
+            "owner" : 320,
             "prefix" : "10.23.21.3/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 257,
+            "@id" : 327,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "3.0.1.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 258,
+            "ospfArea" : 328,
             "ospfEnabled" : true,
-            "owner" : 250,
+            "owner" : 320,
             "prefix" : "3.0.1.1/24"
           },
           "Loopback0" : {
-            "@id" : 259,
+            "@id" : 329,
             "name" : "Loopback0",
             "allPrefixes" : [ "3.1.1.1/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 258,
+            "ospfArea" : 328,
             "ospfEnabled" : true,
-            "owner" : 250,
+            "owner" : 320,
             "prefix" : "3.1.1.1/32"
           }
         },
         "ipAccessLists" : {
           "101" : {
-            "@id" : 260,
+            "@id" : 330,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4640,7 +4940,7 @@
             } ]
           },
           "102" : {
-            "@id" : 261,
+            "@id" : 331,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4655,7 +4955,7 @@
             } ]
           },
           "103" : {
-            "@id" : 262,
+            "@id" : 332,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4670,12 +4970,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 333,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 334,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 335,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 336,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 337,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 338,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 339,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 258,
+              "@id" : 328,
               "name" : 1,
-              "interfaces" : [ 257, 259 ]
+              "interfaces" : [ 327, 329 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -4684,7 +5014,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 263,
+            "@id" : 340,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4697,7 +5027,7 @@
             } ]
           },
           "102" : {
-            "@id" : 264,
+            "@id" : 341,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4710,7 +5040,7 @@
             } ]
           },
           "103" : {
-            "@id" : 265,
+            "@id" : 342,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4723,7 +5053,7 @@
             } ]
           },
           "default_list" : {
-            "@id" : 266,
+            "@id" : 343,
             "name" : "default_list",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4732,7 +5062,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 267,
+            "@id" : 344,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -4745,11 +5075,11 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 268,
+            "@id" : 345,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 269,
+            "@id" : 346,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -4764,7 +5094,7 @@
         },
         "routingPolicies" : {
           "as1_to_as3" : {
-            "@id" : 270,
+            "@id" : 347,
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4791,7 +5121,7 @@
             } ]
           },
           "as2_to_as3" : {
-            "@id" : 271,
+            "@id" : 348,
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4818,7 +5148,7 @@
             } ]
           },
           "as3_to_as1" : {
-            "@id" : 272,
+            "@id" : 349,
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -4894,7 +5224,7 @@
             } ]
           },
           "as3_to_as2" : {
-            "@id" : 273,
+            "@id" : 350,
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5004,7 +5334,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 274,
+            "@id" : 351,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5040,7 +5370,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:10.23.21.2~" : {
-            "@id" : 275,
+            "@id" : 352,
             "name" : "~BGP_PEER_EXPORT_POLICY:10.23.21.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5066,7 +5396,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:3.10.1.1~" : {
-            "@id" : 276,
+            "@id" : 353,
             "name" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5086,7 +5416,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 277,
+            "@id" : 354,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -5113,12 +5443,12 @@
         }
       },
       "as3border2" : {
-        "@id" : 278,
+        "@id" : 355,
         "name" : "as3border2",
         "bgpProcess" : {
           "neighbors" : {
             "10.13.22.1/32" : {
-              "@id" : 279,
+              "@id" : 356,
               "name" : "10.13.22.1/32",
               "address" : "10.13.22.1",
               "clusterId" : 50463234,
@@ -5127,13 +5457,13 @@
               "importPolicy" : "as1_to_as3",
               "localAs" : 3,
               "localIp" : "10.13.22.3",
-              "owner" : 278,
+              "owner" : 355,
               "remoteAs" : 1,
               "remotePrefix" : "10.13.22.1/32",
               "sendCommunity" : true
             },
             "3.10.1.1/32" : {
-              "@id" : 280,
+              "@id" : 357,
               "name" : "3.10.1.1/32",
               "address" : "3.10.1.1",
               "clusterId" : 50463234,
@@ -5141,7 +5471,7 @@
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.2.2.2",
-              "owner" : 278,
+              "owner" : 355,
               "remoteAs" : 3,
               "remotePrefix" : "3.10.1.1/32",
               "sendCommunity" : true
@@ -5151,7 +5481,7 @@
         },
         "communityLists" : {
           "as1_community" : {
-            "@id" : 281,
+            "@id" : 358,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )1:"
@@ -5159,7 +5489,7 @@
             "name" : "as1_community"
           },
           "as2_community" : {
-            "@id" : 282,
+            "@id" : 359,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )2:"
@@ -5167,7 +5497,7 @@
             "name" : "as2_community"
           },
           "as3_community" : {
-            "@id" : 283,
+            "@id" : 360,
             "lines" : [ {
               "action" : "ACCEPT",
               "regex" : "(,|\\{|\\}|^|$| )3:"
@@ -5180,37 +5510,37 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 284,
+            "@id" : 361,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "3.0.2.1/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 285,
+            "ospfArea" : 362,
             "ospfEnabled" : true,
-            "owner" : 278,
+            "owner" : 355,
             "prefix" : "3.0.2.1/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 286,
+            "@id" : 363,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "10.13.22.3/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 278,
+            "owner" : 355,
             "prefix" : "10.13.22.3/24"
           },
           "Loopback0" : {
-            "@id" : 287,
+            "@id" : 364,
             "name" : "Loopback0",
             "allPrefixes" : [ "3.2.2.2/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 285,
+            "ospfArea" : 362,
             "ospfEnabled" : true,
-            "owner" : 278,
+            "owner" : 355,
             "prefix" : "3.2.2.2/32"
           }
         },
         "ipAccessLists" : {
           "101" : {
-            "@id" : 288,
+            "@id" : 365,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5225,7 +5555,7 @@
             } ]
           },
           "102" : {
-            "@id" : 289,
+            "@id" : 366,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5240,7 +5570,7 @@
             } ]
           },
           "103" : {
-            "@id" : 290,
+            "@id" : 367,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5255,12 +5585,42 @@
             } ]
           }
         },
+        "lines" : {
+          "aux0" : {
+            "@id" : 368,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 369,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 370,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 371,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 372,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 373,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 374,
+            "name" : "vty4"
+          }
+        },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 285,
+              "@id" : 362,
               "name" : 1,
-              "interfaces" : [ 284, 287 ]
+              "interfaces" : [ 361, 364 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -5269,7 +5629,7 @@
         },
         "routeFilterLists" : {
           "101" : {
-            "@id" : 291,
+            "@id" : 375,
             "name" : "101",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5282,7 +5642,7 @@
             } ]
           },
           "102" : {
-            "@id" : 292,
+            "@id" : 376,
             "name" : "102",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5295,7 +5655,7 @@
             } ]
           },
           "103" : {
-            "@id" : 293,
+            "@id" : 377,
             "name" : "103",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5308,7 +5668,7 @@
             } ]
           },
           "inbound_route_filter" : {
-            "@id" : 294,
+            "@id" : 378,
             "name" : "inbound_route_filter",
             "lines" : [ {
               "action" : "REJECT",
@@ -5321,11 +5681,11 @@
             } ]
           },
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 295,
+            "@id" : 379,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 296,
+            "@id" : 380,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5340,7 +5700,7 @@
         },
         "routingPolicies" : {
           "as1_to_as3" : {
-            "@id" : 297,
+            "@id" : 381,
             "name" : "as1_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5367,7 +5727,7 @@
             } ]
           },
           "as2_to_as3" : {
-            "@id" : 298,
+            "@id" : 382,
             "name" : "as2_to_as3",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5394,7 +5754,7 @@
             } ]
           },
           "as3_to_as1" : {
-            "@id" : 299,
+            "@id" : 383,
             "name" : "as3_to_as1",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5470,7 +5830,7 @@
             } ]
           },
           "as3_to_as2" : {
-            "@id" : 300,
+            "@id" : 384,
             "name" : "as3_to_as2",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5546,7 +5906,7 @@
             } ]
           },
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 301,
+            "@id" : 385,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5582,7 +5942,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:10.13.22.1~" : {
-            "@id" : 302,
+            "@id" : 386,
             "name" : "~BGP_PEER_EXPORT_POLICY:10.13.22.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5608,7 +5968,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:3.10.1.1~" : {
-            "@id" : 303,
+            "@id" : 387,
             "name" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5628,7 +5988,7 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 304,
+            "@id" : 388,
             "name" : "~OSPF_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
@@ -5655,12 +6015,12 @@
         }
       },
       "as3core1" : {
-        "@id" : 305,
+        "@id" : 389,
         "name" : "as3core1",
         "bgpProcess" : {
           "neighbors" : {
             "3.2.2.2/32" : {
-              "@id" : 306,
+              "@id" : 390,
               "name" : "3.2.2.2/32",
               "address" : "3.2.2.2",
               "clusterId" : 50987265,
@@ -5668,14 +6028,14 @@
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.10.1.1",
-              "owner" : 305,
+              "owner" : 389,
               "remoteAs" : 3,
               "remotePrefix" : "3.2.2.2/32",
               "routeReflectorClient" : true,
               "sendCommunity" : true
             },
             "3.1.1.1/32" : {
-              "@id" : 307,
+              "@id" : 391,
               "name" : "3.1.1.1/32",
               "address" : "3.1.1.1",
               "clusterId" : 50987265,
@@ -5683,7 +6043,7 @@
               "group" : "as3",
               "localAs" : 3,
               "localIp" : "3.10.1.1",
-              "owner" : 305,
+              "owner" : 389,
               "remoteAs" : 3,
               "remotePrefix" : "3.1.1.1/32",
               "routeReflectorClient" : true,
@@ -5697,58 +6057,88 @@
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "FastEthernet0/0" : {
-            "@id" : 308,
+            "@id" : 392,
             "name" : "FastEthernet0/0",
             "allPrefixes" : [ "3.0.2.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 309,
+            "ospfArea" : 393,
             "ospfEnabled" : true,
-            "owner" : 305,
+            "owner" : 389,
             "prefix" : "3.0.2.2/24"
           },
           "FastEthernet0/1" : {
-            "@id" : 310,
+            "@id" : 394,
             "name" : "FastEthernet0/1",
             "allPrefixes" : [ "3.0.1.2/24" ],
             "bandwidth" : 1.0E8,
-            "ospfArea" : 309,
+            "ospfArea" : 393,
             "ospfEnabled" : true,
-            "owner" : 305,
+            "owner" : 389,
             "prefix" : "3.0.1.2/24"
           },
           "FastEthernet1/0" : {
-            "@id" : 311,
+            "@id" : 395,
             "name" : "FastEthernet1/0",
             "allPrefixes" : [ "90.90.90.1/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 305,
+            "owner" : 389,
             "prefix" : "90.90.90.1/24"
           },
           "FastEthernet1/1" : {
-            "@id" : 312,
+            "@id" : 396,
             "name" : "FastEthernet1/1",
             "allPrefixes" : [ "90.90.90.2/24" ],
             "bandwidth" : 1.0E8,
-            "owner" : 305,
+            "owner" : 389,
             "prefix" : "90.90.90.2/24"
           },
           "Loopback0" : {
-            "@id" : 313,
+            "@id" : 397,
             "name" : "Loopback0",
             "allPrefixes" : [ "3.10.1.1/32" ],
             "bandwidth" : 1.0E12,
-            "ospfArea" : 309,
+            "ospfArea" : 393,
             "ospfEnabled" : true,
-            "owner" : 305,
+            "owner" : 389,
             "prefix" : "3.10.1.1/32"
+          }
+        },
+        "lines" : {
+          "aux0" : {
+            "@id" : 398,
+            "name" : "aux0"
+          },
+          "con0" : {
+            "@id" : 399,
+            "name" : "con0"
+          },
+          "vty0" : {
+            "@id" : 400,
+            "name" : "vty0"
+          },
+          "vty1" : {
+            "@id" : 401,
+            "name" : "vty1"
+          },
+          "vty2" : {
+            "@id" : 402,
+            "name" : "vty2"
+          },
+          "vty3" : {
+            "@id" : 403,
+            "name" : "vty3"
+          },
+          "vty4" : {
+            "@id" : 404,
+            "name" : "vty4"
           }
         },
         "ospfProcess" : {
           "areas" : {
             "1" : {
-              "@id" : 309,
+              "@id" : 393,
               "name" : 1,
-              "interfaces" : [ 308, 310, 313 ]
+              "interfaces" : [ 392, 394, 397 ]
             }
           },
           "exportPolicy" : "~OSPF_EXPORT_POLICY~",
@@ -5757,11 +6147,11 @@
         },
         "routeFilterLists" : {
           "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-            "@id" : 314,
+            "@id" : 405,
             "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
           },
           "~BGP_NETWORK_NETWORKS_FILTER~" : {
-            "@id" : 315,
+            "@id" : 406,
             "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5776,7 +6166,7 @@
         },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY~" : {
-            "@id" : 316,
+            "@id" : 407,
             "name" : "~BGP_COMMON_EXPORT_POLICY~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5812,7 +6202,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:3.1.1.1~" : {
-            "@id" : 317,
+            "@id" : 408,
             "name" : "~BGP_PEER_EXPORT_POLICY:3.1.1.1~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5832,7 +6222,7 @@
             } ]
           },
           "~BGP_PEER_EXPORT_POLICY:3.2.2.2~" : {
-            "@id" : 318,
+            "@id" : 409,
             "name" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
             "statements" : [ {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -5852,39 +6242,39 @@
             } ]
           },
           "~OSPF_EXPORT_POLICY~" : {
-            "@id" : 319,
+            "@id" : 410,
             "name" : "~OSPF_EXPORT_POLICY~"
           }
         }
       },
       "host1" : {
-        "@id" : 320,
+        "@id" : 411,
         "name" : "host1",
         "configurationFormat" : "HOST",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "eth0" : {
-            "@id" : 321,
+            "@id" : 412,
             "name" : "eth0",
             "allPrefixes" : [ "2.128.0.101/24" ],
             "bandwidth" : 1.0E9,
-            "incomingFilter" : 322,
-            "outgoingFilter" : 323,
-            "owner" : 320,
+            "incomingFilter" : 413,
+            "outgoingFilter" : 414,
+            "owner" : 411,
             "prefix" : "2.128.0.101/24"
           }
         },
         "ipAccessLists" : {
           "filter::FORWARD" : {
-            "@id" : 324,
+            "@id" : 415,
             "name" : "filter::FORWARD",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "filter::INPUT" : {
-            "@id" : 322,
+            "@id" : 413,
             "name" : "filter::INPUT",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -5899,63 +6289,63 @@
             } ]
           },
           "filter::OUTPUT" : {
-            "@id" : 323,
+            "@id" : 414,
             "name" : "filter::OUTPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::FORWARD" : {
-            "@id" : 325,
+            "@id" : 416,
             "name" : "mangle::FORWARD",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::INPUT" : {
-            "@id" : 326,
+            "@id" : 417,
             "name" : "mangle::INPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::OUTPUT" : {
-            "@id" : 327,
+            "@id" : 418,
             "name" : "mangle::OUTPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::POSTROUTING" : {
-            "@id" : 328,
+            "@id" : 419,
             "name" : "mangle::POSTROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::PREROUTING" : {
-            "@id" : 329,
+            "@id" : 420,
             "name" : "mangle::PREROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::OUTPUT" : {
-            "@id" : 330,
+            "@id" : 421,
             "name" : "nat::OUTPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::POSTROUTING" : {
-            "@id" : 331,
+            "@id" : 422,
             "name" : "nat::POSTROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::PREROUTING" : {
-            "@id" : 332,
+            "@id" : 423,
             "name" : "nat::PREROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
@@ -5971,33 +6361,33 @@
         } ]
       },
       "host2" : {
-        "@id" : 333,
+        "@id" : 424,
         "name" : "host2",
         "configurationFormat" : "HOST",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "interfaces" : {
           "eth0" : {
-            "@id" : 334,
+            "@id" : 425,
             "name" : "eth0",
             "allPrefixes" : [ "2.128.1.101/24" ],
             "bandwidth" : 1.0E9,
-            "incomingFilter" : 335,
-            "outgoingFilter" : 336,
-            "owner" : 333,
+            "incomingFilter" : 426,
+            "outgoingFilter" : 427,
+            "owner" : 424,
             "prefix" : "2.128.1.101/24"
           }
         },
         "ipAccessLists" : {
           "filter::FORWARD" : {
-            "@id" : 337,
+            "@id" : 428,
             "name" : "filter::FORWARD",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "filter::INPUT" : {
-            "@id" : 335,
+            "@id" : 426,
             "name" : "filter::INPUT",
             "lines" : [ {
               "action" : "ACCEPT",
@@ -6008,7 +6398,7 @@
             } ]
           },
           "filter::OUTPUT" : {
-            "@id" : 336,
+            "@id" : 427,
             "name" : "filter::OUTPUT",
             "lines" : [ {
               "action" : "REJECT",
@@ -6018,56 +6408,56 @@
             } ]
           },
           "mangle::FORWARD" : {
-            "@id" : 338,
+            "@id" : 429,
             "name" : "mangle::FORWARD",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::INPUT" : {
-            "@id" : 339,
+            "@id" : 430,
             "name" : "mangle::INPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::OUTPUT" : {
-            "@id" : 340,
+            "@id" : 431,
             "name" : "mangle::OUTPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::POSTROUTING" : {
-            "@id" : 341,
+            "@id" : 432,
             "name" : "mangle::POSTROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "mangle::PREROUTING" : {
-            "@id" : 342,
+            "@id" : 433,
             "name" : "mangle::PREROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::OUTPUT" : {
-            "@id" : 343,
+            "@id" : 434,
             "name" : "nat::OUTPUT",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::POSTROUTING" : {
-            "@id" : 344,
+            "@id" : 435,
             "name" : "nat::POSTROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
             } ]
           },
           "nat::PREROUTING" : {
-            "@id" : 345,
+            "@id" : 436,
             "name" : "nat::PREROUTING",
             "lines" : [ {
               "action" : "ACCEPT"
