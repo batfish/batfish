@@ -14,7 +14,7 @@ public class BfConsts {
       TerminatedNormally,
       Unknown,
       UnreachableOrBadResponse,
-      Unscheduled;      
+      Unscheduled;
    }
 
    public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
