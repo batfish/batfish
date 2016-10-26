@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +35,7 @@ import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.IsoAddress;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -957,6 +959,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private IsisProcess _currentIsisProcess;
 
+   private List<String> _currentLineNames;
+
    private NamedBgpPeerGroup _currentNamedPeerGroup;
 
    private final Set<String> _currentNexusNeighborAddressFamilies;
@@ -1537,6 +1541,70 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_configuration.getAaaSettings() == null) {
          _configuration.setAaaSettings(new Aaa());
       }
+   }
+
+   @Override
+   public void enterS_line(S_lineContext ctx) {
+      String lineType = ctx.line_type().getText();
+      if (lineType.equals("")) {
+         lineType = "<UNNAMED>";
+      }
+      String nameBase = lineType;
+      Integer slot1 = null;
+      Integer slot2 = null;
+      Integer port1 = null;
+      Integer port2 = null;
+      List<String> names = new ArrayList<>();
+      if (ctx.first != null) {
+         if (ctx.slot1 != null) {
+            slot1 = toInteger(ctx.slot1);
+            nameBase += slot1 + "/";
+            if (ctx.port1 != null) {
+               port1 = toInteger(ctx.port1);
+               nameBase += port1 + "/";
+            }
+         }
+         int first = toInteger(ctx.first);
+         int last;
+         if (ctx.last != null) {
+            if (ctx.slot2 != null) {
+               slot2 = toInteger(ctx.slot2);
+               if (!slot2.equals(slot1)) {
+                  throw new BatfishException(
+                        "Do not support changing slot number in line declaration");
+               }
+               if (ctx.port2 != null) {
+                  port2 = toInteger(ctx.port2);
+                  if (!port2.equals(port1)) {
+                     throw new BatfishException(
+                           "Do not support changing port number in line declaration");
+                  }
+               }
+            }
+            last = toInteger(ctx.last);
+         }
+         else {
+            last = first;
+         }
+         if (last < first) {
+            throw new BatfishException("Do not support decreasing line range: "
+                  + first + " " + last);
+         }
+         for (int i = first; i <= last; i++) {
+            String name = nameBase + i;
+            names.add(name);
+         }
+      }
+      else {
+         names.add(nameBase);
+      }
+      for (String name : names) {
+         if (_configuration.getLines().get(name) == null) {
+            Line line = new Line(name);
+            _configuration.getLines().put(name, line);
+         }
+      }
+      _currentLineNames = names;
    }
 
    @Override
@@ -2469,6 +2537,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitL_transport(L_transportContext ctx) {
+      String protocol = ctx.prot.getText();
+      BiConsumer<Line, String> setter;
+      if (ctx.INPUT() != null) {
+         setter = Line::setTransportInput;
+      }
+      else if (ctx.OUTPUT() != null) {
+         setter = Line::setTransportOutput;
+      }
+      else if (ctx.PREFERRED() != null) {
+         setter = Line::setTransportPreferred;
+      }
+      else {
+         throw new BatfishException(
+               "Invalid or unsupported line transport type");
+      }
+      for (String currentName : _currentLineNames) {
+         Line line = _configuration.getLines().get(currentName);
+         setter.accept(line, protocol);
+      }
+   }
+
+   @Override
    public void exitMatch_as_path_access_list_rm_stanza(
          Match_as_path_access_list_rm_stanzaContext ctx) {
       Set<String> names = new TreeSet<>();
@@ -3286,6 +3377,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentOspfProcess
             .computeNetworks(_configuration.getInterfaces().values());
       _currentOspfProcess = null;
+   }
+
+   @Override
+   public void exitS_line(S_lineContext ctx) {
+      _currentLineNames = null;
    }
 
    @Override

@@ -1725,6 +1725,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       c.setAaa(_aaaSettings);
+      c.getLines().putAll(_lines);
 
       processFailoverSettings();
 

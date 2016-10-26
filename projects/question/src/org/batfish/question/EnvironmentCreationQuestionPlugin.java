@@ -16,6 +16,7 @@ import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,6 +55,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
       private Set<NodeInterfacePair> _interfaceBlacklist;
       private NodeSet _nodeBlacklist;
 
+      @JsonCreator
       public EnvironmentCreationQuestion() {
          _nodeBlacklist = new NodeSet();
          _interfaceBlacklist = new TreeSet<>();
