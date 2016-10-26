@@ -1,5 +1,8 @@
-verbose = None server = localhost
-# load the testing
+/usr/lib/python2.7/dist-packages/urllib3/connectionpool.py:794: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.org/en/latest/security.html
+  InsecureRequestWarning)
+Container is now set to pcp_acfd9edc-4db1-4d8e-b125-d58b20a894ab
+Base testrig/environment is now set to tr_e7da5365-291a-4f41-bccd-92e90b440ade/env_default
+load the testrig
 {
   "answerElements" : [ {
     "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement"
@@ -110,7 +113,8 @@ verbose = None server = localhost
         "Red flags" : {
           "1" : "UNUSED: Unused bgp peer-group/template: 'as1'",
           "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
-          "3" : "UNUSED: Unused expanded community-list: 'as3_community'"
+          "3" : "UNUSED: Unused expanded cQuestion: {"class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
+ommunity-list: 'as3_community'"
         }
       },
       "as3border2" : {
@@ -238,7 +242,8 @@ verbose = None server = localhost
     }, {
       "node1" : "as2dept1",
       "node1interface" : "FastEthernet0/1",
-      "node2" : "as2dist2",
+      "node2" : "as2dist2"Question: {"neighborType": ["ebgp"], "class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
+,
       "node2interface" : "FastEthernet1/0"
     }, {
       "node1" : "as2dept1",
@@ -381,7 +386,10 @@ verbose = None server = localhost
       "ip2" : "2.34.201.4",
       "node1" : "as2dist2",
       "node2" : "as2dept1"
-    }, {
+  Question: {"class": "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion"}
+Question: {"class": "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion"}
+Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion", "ingressNode": "host1"}
+  }, {
       "ip1" : "10.23.21.3",
       "ip2" : "10.23.21.2",
       "node1" : "as3border1",
@@ -472,7 +480,7 @@ verbose = None server = localhost
 }
 ################
 # going deeper, we can ask questions about data flow, i.e., the end-to-end impact of all configuration snippets
-# E.g., we can see how host1 reaches a given IP address
+# E.g., we can see how host1 reaches a given IP address 
 # this query will take time if the dataplane has not been comptued before
 {
   "answerElements" : [ {
@@ -635,7 +643,8 @@ verbose = None server = localhost
               "node2" : "as2core2",
               "node2interface" : "FastEthernet2/0"
             },
-            "routes" : [ "BgpRoute<1.0.2.0/24>" ]
+            "routes" : [ "BQuestion: {"ipProtocol": "UDP", "dstPort": 53, "dstIp": "2.128.0.101", "class": "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion", "ingressNode": "as2border1"}
+gpRoute<1.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core2",
@@ -879,7 +888,8 @@ verbose = None server = localhost
             "routes" : [ "BgpRoute<2.128.0.0/24>" ]
           }, {
             "edge" : {
-              "node1" : "as2core2",
+              "nQuestion: {"ipProtocols": ["UDP"], "dstIps": ["2.128.0.101"], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion", "actions": ["drop"], "dstPorts": [53]}
+ode1" : "as2core2",
               "node1interface" : "FastEthernet2/0",
               "node2" : "as2dist2",
               "node2interface" : "FastEthernet0/0"
@@ -917,7 +927,7 @@ verbose = None server = localhost
   "status" : "SUCCESS"
 }
 ################
-# while testing/emulation can do the above, we alone can be comprehensive
+# while testing/emulation can do the above, we alone can be comprehensive 
 # E.g., we can find *all* (starting node, packet header) combinations for which the DNS server is unreachable
 {
   "answerElements" : [ {
@@ -1239,7 +1249,9 @@ verbose = None server = localhost
             "edge" : {
               "node1" : "host2",
               "node1interface" : "eth0",
-              "node2" : "(none)",
+ Question: {"notIpProtocols": ["TCP"], "notDstPorts": [22], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion", "actions": ["ACCEPT"], "dstIps": ["2.128.1.101"]}
+Question: {"ipProtocols": ["TCP"], "dstIps": ["2.128.1.101"], "ingressNodeRegex": "as(1|3)border1", "actions": ["ACCEPT"], "dstPorts": [22], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
+             "node2" : "(none)",
               "node2interface" : "null_interface"
             },
             "routes" : [ "StaticRoute<0.0.0.0/0>" ]
@@ -1261,7 +1273,7 @@ verbose = None server = localhost
 # --> the output shows outsiders with spoofed source addresses cannot reach the DNS server (good)
 # --> it also shows that a bad ACL on host2 is blocking access (bad)
 # we can run a similar query to ensure that the SSH server on host2 is accessible
-# But suppose we want to ensure that *only* ssh traffic can reach host2
+# But suppose we want to ensure that *only* ssh traffic can reach host2 
 {
   "answerElements" : [ {
     "class" : "org.batfish.datamodel.FlowHistory",
@@ -1482,7 +1494,8 @@ verbose = None server = localhost
           "hops" : [ {
             "edge" : {
               "node1" : "as3border1",
-              "node1interface" : "FastEthernet0/0",
+              "node1interfDelta testrig/environment is now set to tr_d71654e7-245f-4dea-a388-f67247bd831f/env_default
+ace" : "FastEthernet0/0",
               "node2" : "as2border2",
               "node2interface" : "FastEthernet0/0"
             },
@@ -1607,7 +1620,9 @@ verbose = None server = localhost
         }
       },
       "as2border1" : {
-        "Red flags" : {
+    Question: {"differential": true, "class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
+Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
+    "Red flags" : {
           "1" : "UNUSED: Unused bgp peer-group/template: 'as3'",
           "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
           "3" : "UNUSED: Unused expanded community-list: 'as2_community'"
@@ -1757,7 +1772,7 @@ verbose = None server = localhost
       "icmpVar" : 255,
       "ingressNode" : "as2border1",
       "ipProtocol" : "TCP",
-      "srcIp" : "253.123.0.0",
+      "srcIp" : "253.127.0.0",
       "srcPort" : 0,
       "state" : "NEW",
       "tag" : "DIFFERENTIAL",
@@ -1803,7 +1818,7 @@ verbose = None server = localhost
       "icmpVar" : 255,
       "ingressNode" : "as2core1",
       "ipProtocol" : "TCP",
-      "srcIp" : "253.123.0.0",
+      "srcIp" : "253.127.0.0",
       "srcPort" : 0,
       "state" : "NEW",
       "tag" : "DIFFERENTIAL",
@@ -1849,7 +1864,7 @@ verbose = None server = localhost
       "icmpVar" : 255,
       "ingressNode" : "as2dept1",
       "ipProtocol" : "UDP",
-      "srcIp" : "253.63.0.0",
+      "srcIp" : "253.59.0.0",
       "srcPort" : 0,
       "state" : "NEW",
       "tag" : "DIFFERENTIAL",
@@ -1981,11 +1996,11 @@ verbose = None server = localhost
       "Flow<ingressNode:as1border1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 1,
       "Flow<ingressNode:as1border2 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 2,
       "Flow<ingressNode:as1core1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 3,
-      "Flow<ingressNode:as2border1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 4,
+      "Flow<ingressNode:as2border1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 4,
       "Flow<ingressNode:as2border2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 5,
-      "Flow<ingressNode:as2core1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 6,
+      "Flow<ingressNode:as2core1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 6,
       "Flow<ingressNode:as2core2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 7,
-      "Flow<ingressNode:as2dept1 srcIp:253.63.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 8,
+      "Flow<ingressNode:as2dept1 srcIp:253.59.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 8,
       "Flow<ingressNode:as2dist1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 9,
       "Flow<ingressNode:as2dist2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 10,
       "Flow<ingressNode:as3border1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 11,
@@ -3253,7 +3268,7 @@ verbose = None server = localhost
           "notes" : "DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}"
         } ]
       },
-      "Flow<ingressNode:as2border1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
+      "Flow<ingressNode:as2border1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
         "BASE" : [ {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -3837,7 +3852,7 @@ verbose = None server = localhost
           "notes" : "DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}"
         } ]
       },
-      "Flow<ingressNode:as2core1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
+      "Flow<ingressNode:as2core1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
         "BASE" : [ {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -4069,7 +4084,7 @@ verbose = None server = localhost
           "notes" : "DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny ip any any}"
         } ]
       },
-      "Flow<ingressNode:as2dept1 srcIp:253.63.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+      "Flow<ingressNode:as2dept1 srcIp:253.59.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
         "BASE" : [ {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -5368,7 +5383,10 @@ verbose = None server = localhost
           }, {
             "edge" : {
               "node1" : "as2core2",
-              "node1interface" : "FastEthernet1/0",
+              "node1Delta testrig/environment is now set to tr_e7da5365-291a-4f41-bccd-92e90b440ade/env_cb18d8c6-5345-4bab-95d2-dace5c3b96b1
+Question: {"interfaceBlacklist": [{"interface": "FastEthernet0/0", "hostname": "as2border2"}], "environmentName": "env_cb18d8c6-5345-4bab-95d2-dace5c3b96b1", "nodeBlacklist": null, "class": "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion"}
+Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
+interface" : "FastEthernet1/0",
               "node2" : "as2dist1",
               "node2interface" : "FastEthernet0/0"
             },
@@ -5461,12 +5479,12 @@ verbose = None server = localhost
 {
   "answerElements" : [ {
     "class" : "org.batfish.datamodel.answers.EnvironmentCreationAnswerElement",
-    "newEnvironmentName" : "env_74f8be72-0f81-4a3a-800e-94ac169e5b34",
+    "newEnvironmentName" : "env_cb18d8c6-5345-4bab-95d2-dace5c3b96b1",
     "oldEnvironmentName" : "env_default"
   } ],
   "question" : {
     "class" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
-    "environmentName" : "env_74f8be72-0f81-4a3a-800e-94ac169e5b34",
+    "environmentName" : "env_cb18d8c6-5345-4bab-95d2-dace5c3b96b1",
     "interfaceBlacklist" : [ {
       "hostname" : "as2border2",
       "interface" : "FastEthernet0/0"
@@ -5482,7 +5500,7 @@ verbose = None server = localhost
     "flows" : [ {
       "@id" : 1,
       "dscp" : 0,
-      "dstIp" : "3.0.1.1",
+      "dstIp" : "3.0.2.1",
       "dstPort" : 0,
       "ecn" : 0,
       "fragmentOffset" : 0,
@@ -5528,7 +5546,7 @@ verbose = None server = localhost
     }, {
       "@id" : 3,
       "dscp" : 0,
-      "dstIp" : "3.0.1.1",
+      "dstIp" : "3.0.2.1",
       "dstPort" : 0,
       "ecn" : 0,
       "fragmentOffset" : 0,
@@ -5757,9 +5775,9 @@ verbose = None server = localhost
       "tcpFlagsUrg" : 0
     } ],
     "flowsByText" : {
-      "Flow<ingressNode:as2border1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 1,
+      "Flow<ingressNode:as2border1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 1,
       "Flow<ingressNode:as2border2 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 2,
-      "Flow<ingressNode:as2core1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 3,
+      "Flow<ingressNode:as2core1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 3,
       "Flow<ingressNode:as2core2 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 4,
       "Flow<ingressNode:as2dept1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:65484 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 5,
       "Flow<ingressNode:as2dist1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 6,
@@ -5771,7 +5789,7 @@ verbose = None server = localhost
       "Flow<ingressNode:host2 srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 state:NEW tag:DIFFERENTIAL>" : 12
     },
     "traces" : {
-      "Flow<ingressNode:as2border1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+      "Flow<ingressNode:as2border1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
         "BASE" : [ {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -5781,7 +5799,7 @@ verbose = None server = localhost
               "node2" : "as2core1",
               "node2interface" : "FastEthernet0/0"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core1",
@@ -5789,7 +5807,7 @@ verbose = None server = localhost
               "node2" : "as2border2",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border2",
@@ -5797,7 +5815,23 @@ verbose = None server = localhost
               "node2" : "as3border1",
               "node2interface" : "FastEthernet0/0"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3border1",
+              "node1interface" : "FastEthernet0/1",
+              "node2" : "as3core1",
+              "node2interface" : "FastEthernet0/1"
+            },
+            "routes" : [ "OspfIntraAreaRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3core1",
+              "node1interface" : "FastEthernet0/0",
+              "node2" : "as3border2",
+              "node2interface" : "FastEthernet0/0"
+            },
+            "routes" : [ "ConnectedRoute<3.0.2.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         }, {
@@ -5809,7 +5843,7 @@ verbose = None server = localhost
               "node2" : "as2core2",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2core2",
@@ -5817,7 +5851,7 @@ verbose = None server = localhost
               "node2" : "as2border2",
               "node2interface" : "FastEthernet1/0"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border2",
@@ -5825,7 +5859,23 @@ verbose = None server = localhost
               "node2" : "as3border1",
               "node2interface" : "FastEthernet0/0"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3border1",
+              "node1interface" : "FastEthernet0/1",
+              "node2" : "as3core1",
+              "node2interface" : "FastEthernet0/1"
+            },
+            "routes" : [ "OspfIntraAreaRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3core1",
+              "node1interface" : "FastEthernet0/0",
+              "node2" : "as3border2",
+              "node2interface" : "FastEthernet0/0"
+            },
+            "routes" : [ "ConnectedRoute<3.0.2.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         } ],
@@ -5838,7 +5888,7 @@ verbose = None server = localhost
               "node2" : "(none)",
               "node2interface" : "null_interface"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           } ],
           "notes" : "DENIED_OUT{INSIDE_TO_OUTSIDE}{deny ip any any}"
         } ]
@@ -5915,7 +5965,7 @@ verbose = None server = localhost
           "notes" : "DENIED_OUT{INSIDE_TO_OUTSIDE}{deny ip any any}"
         } ]
       },
-      "Flow<ingressNode:as2core1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+      "Flow<ingressNode:as2core1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
         "BASE" : [ {
           "disposition" : "ACCEPTED",
           "hops" : [ {
@@ -5925,7 +5975,7 @@ verbose = None server = localhost
               "node2" : "as2border2",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border2",
@@ -5933,7 +5983,23 @@ verbose = None server = localhost
               "node2" : "as3border1",
               "node2interface" : "FastEthernet0/0"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3border1",
+              "node1interface" : "FastEthernet0/1",
+              "node2" : "as3core1",
+              "node2interface" : "FastEthernet0/1"
+            },
+            "routes" : [ "OspfIntraAreaRoute<3.0.2.0/24>" ]
+          }, {
+            "edge" : {
+              "node1" : "as3core1",
+              "node1interface" : "FastEthernet0/0",
+              "node2" : "as3border2",
+              "node2interface" : "FastEthernet0/0"
+            },
+            "routes" : [ "ConnectedRoute<3.0.2.0/24>" ]
           } ],
           "notes" : "ACCEPTED"
         } ],
@@ -5946,7 +6012,7 @@ verbose = None server = localhost
               "node2" : "as2border1",
               "node2interface" : "FastEthernet0/1"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           }, {
             "edge" : {
               "node1" : "as2border1",
@@ -5954,7 +6020,7 @@ verbose = None server = localhost
               "node2" : "(none)",
               "node2interface" : "null_interface"
             },
-            "routes" : [ "BgpRoute<3.0.1.0/24>" ]
+            "routes" : [ "BgpRoute<3.0.2.0/24>" ]
           } ],
           "notes" : "DENIED_OUT{INSIDE_TO_OUTSIDE}{deny ip any any}"
         } ]
@@ -8060,7 +8126,8 @@ verbose = None server = localhost
             },
             "routes" : [ "BgpRoute<3.0.1.0/24>" ]
           } ],
-          "notes" : "DENIED_OUT{INSIDE_TO_OUTSIDE}{deny ip any any}"
+          "notes" : "DENIQuestion: {"type": "multipath", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
+ED_OUT{INSIDE_TO_OUTSIDE}{deny ip any any}"
         }, {
           "disposition" : "DENIED_OUT",
           "hops" : [ {
@@ -8163,7 +8230,7 @@ verbose = None server = localhost
 # --> any lack of fault tolerance is easy to see
 ##############
 # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
-# a powerful query: multipath consistency.
+# a powerful query: multipath consistency. 
 {
   "answerElements" : [ {
     "class" : "org.batfish.datamodel.FlowHistory",
