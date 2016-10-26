@@ -1,7 +1,7 @@
 import json
 
+import commands
 from org.batfish.util.batfish_exception import BatfishException
-from commands import bf_answer
 
 questionTypeToClass = {
     "aclreachability" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",
@@ -49,6 +49,6 @@ def bf_get_question_json(questionType):
 def _get_answer(questionJson, parametersJson, doDelta, differential):
     #add the correct value of differential if one does not already exist
     parametersJson["differential"] = str(differential)
-    return bf_answer(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
+    return commands.bf_answer(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
     
     
