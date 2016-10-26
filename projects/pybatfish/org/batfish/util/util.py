@@ -22,11 +22,11 @@ def zip_dir(dirpath, outFile):
     zipWriter = zipfile.ZipFile(outFile, 'w', zipfile.ZIP_DEFLATED)
     relroot = os.path.abspath(os.path.join(dirpath, os.pardir))
  
-    for root, dirs, files in os.walk(dirpath):
+    for root, _dirs, files in os.walk(dirpath):
         zipWriter.write(root, os.path.relpath(root, relroot), zipfile.ZIP_STORED)
-        for file in files:
-            filename = os.path.join(root, file)
-            arcname = os.path.join(os.path.relpath(root, relroot), file)
+        for f in files:
+            filename = os.path.join(root, f)
+            arcname = os.path.join(os.path.relpath(root, relroot), f)
             zipWriter.write(filename, arcname)
 
     zipWriter.close()

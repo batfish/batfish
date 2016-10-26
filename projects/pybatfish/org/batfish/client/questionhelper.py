@@ -1,5 +1,7 @@
+import json
+
 from org.batfish.util.batfish_exception import BatfishException
-from commands import *
+from commands import bf_answer
 
 questionTypeToClass = {
     "aclreachability" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",

@@ -13,7 +13,7 @@ from bfconsts import BfConsts
 from options import Options
 import resthelper 
 from session import Session
-from questionhelper import *
+from questionhelper import bf_get_question_json
 import workhelper
 
 #suppress the urllib3 warnings due to old version of urllib3 (inside requests)
@@ -42,8 +42,8 @@ def bf_answer(questionStr, parametersStr="{}", doDelta=False):
         _check_delta_testrig();
 
     #these conversions verify that the strings are proper json
-    questionJson = json.loads(questionStr)
-    parametersJson = json.loads(parametersStr)
+    _questionJson = json.loads(questionStr)
+    _parametersJson = json.loads(parametersStr)
  
     questionName = Options.default_question_prefix + "_" + batfishutils.get_uuid()
 
