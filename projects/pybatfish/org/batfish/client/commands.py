@@ -122,7 +122,7 @@ def bf_init_container(containerPrefix=Options.default_container_prefix):
         bf_logger.info("Container is now set to " + bf_session.container)
     else:
         raise BatfishException("Bad json response in init_container; missing expected key: " + CoordConsts.SVC_CONTAINER_NAME_KEY, jsonResponse);
-             
+
 def bf_init_environment(environmentName=None, interfaceBlacklist=None, nodeBlacklist=None):
     
     _check_base_testrig()
@@ -197,6 +197,15 @@ def bf_reinit_testrig(doDelta=False):
     answer = workhelper.execute(workItem, bf_session)
 
     return answer
+
+def bf_set_container(containerName):
+    bf_session.container = containerName
+    bf_logger.info("Container is now set to " + bf_session.container)
+
+def bf_set_testrig(testrigName):
+    bf_session.baseTestrig = testrigName
+    bf_session.baseEnvironment = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME
+    bf_logger.info("Base testrig/environment is now set to %s/%s", bf_session.baseTestrig, bf_session.baseEnvironment)
 
 def _check_base_testrig():
     _check_container()

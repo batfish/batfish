@@ -712,7 +712,7 @@ pybatfish() {
 export -f pybatfish
 
 _pybatfish() {
-   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" python "$@" || return 1
+   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" python2.7 "$@" || return 1
 }
 export -f _pybatfish
 

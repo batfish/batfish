@@ -5,7 +5,7 @@ from org.batfish.util.batfish_exception import BatfishException
 
 questionTypeToClass = {
     "aclreachability" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",
-    "assert" : "org.batfish.question.AssertQuestionPlugin$AssertQuestion",
+    "assert" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
     "bgpadvertisement" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsQuestion",
     "bgpsessioncheck" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion",
     "comparesamename" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
@@ -15,6 +15,7 @@ questionTypeToClass = {
     "isisloopback" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
     "neighbors" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "nodes" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "nodespath" : "org.batfish.question.NodesPathQuestionPlugin$NodesPathQuestion",
     "ospfloopbacks" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
     "pairwisevpnconnectivity" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion",
     "reachability" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
