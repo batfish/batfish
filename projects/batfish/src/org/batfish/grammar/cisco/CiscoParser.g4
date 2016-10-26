@@ -305,6 +305,7 @@ del_stanza
    DEL ~NEWLINE* NEWLINE
 ;
 
+
 dhcp_stanza
 :
    DHCP IPV4 NEWLINE dhcp_substanza+
@@ -578,8 +579,9 @@ mgmt_egress_iface_stanza
          | APPLICATION TACACS
          | APPLICATION SYSLOG
          | APPLICATION SSH
+         | APPLICATION 
       ) NEWLINE
-   )+ EXIT NEWLINE
+   )+ (EXIT NEWLINE)?
 ;
 
 mgmt_ip_access_group
@@ -622,6 +624,11 @@ multicast_routing_stanza
    (
       address_family_multicast_stanza
    )*
+;
+
+no_aaa_group_server_stanza
+:
+	NO AAA GROUP SERVER ~NEWLINE* NEWLINE
 ;
 
 no_failover
@@ -765,7 +772,8 @@ null_af_multicast_tail
 
 null_stanza
 :
-   asa_comment_stanza
+   no_aaa_group_server_stanza
+   | asa_comment_stanza
    | as_path_set_stanza
    | banner_stanza
    | certificate_stanza

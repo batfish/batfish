@@ -1324,6 +1324,11 @@ CONTEXT
    'context'
 ;
 
+CONTINUE
+:
+	('continue') | ('Continue')
+;
+
 CONTRACT_ID
 :
    'contract-id'
@@ -1632,6 +1637,11 @@ DEFAULT_ROLE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_TASKGROUP
+:
+	'default-taskgroup'
 ;
 
 DEFAULT_VALUE
@@ -3220,8 +3230,9 @@ IPV4
 
 IPV6
 :
-   'ipv6'
+   ('ipv6') | ('IPV6')
 ;
+
 
 IPV6_ADDRESS_POOL
 :
@@ -3376,6 +3387,11 @@ L2VPN
 LABEL
 :
    'label'
+;
+
+LABELED_UNICAST
+:
+	'labeled-unicast'
 ;
 
 LACP
@@ -6410,6 +6426,11 @@ SUBNET_ZERO
    'subnet-zero'
 ;
 
+SUB_ROUTE_MAP
+:
+	'sub-route-map'
+;
+
 SUBSCRIBE_TO
 :
    'subscribe-to'
@@ -6583,6 +6604,11 @@ TACACS_PLUS_ASA
 TACACS_SERVER
 :
    'tacacs-server'
+;
+
+TAC_PLUS
+:
+	'tac_plus'
 ;
 
 TAG
@@ -7315,6 +7341,11 @@ VTY
 VTY_POOL
 :
    'vty-pool'
+;
+
+VXLAN
+:
+	'vxlan'
 ;
 
 WAIT_START

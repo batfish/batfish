@@ -10,7 +10,7 @@ null_block_stanza
 :
    NO?
    (
-      AAA_SERVER
+	  AAA_SERVER
       | ACCESS_GROUP
       | ACCESS
       | ACLLOG
@@ -287,6 +287,7 @@ null_block_stanza
       | VOICE_PORT
       | VPC
       | VPDN_GROUP
+      | VXLAN
       | VTY_POOL
       | WEBVPN
       | WISM

@@ -57,6 +57,20 @@ public final class TcpFlags implements Serializable {
 
    private boolean _useUrg;
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      TcpFlags other = (TcpFlags) obj;
+      if (other.toString().equals(this.toString())) {
+         return true;
+      }
+      else {
+         return false;
+      }
+   }
+
    public boolean getAck() {
       return _ack;
    }

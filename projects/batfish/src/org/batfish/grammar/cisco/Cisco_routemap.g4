@@ -273,6 +273,8 @@ null_rm_stanza
    NO?
    (
       DESCRIPTION
+      | SUB_ROUTE_MAP
+      | CONTINUE
    ) ~NEWLINE* NEWLINE
 ;
 
