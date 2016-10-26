@@ -110,6 +110,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private IsisProcess _isisProcess;
 
+   private NavigableMap<String, Line> _lines;
+
    private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
 
    private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
@@ -157,6 +159,7 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
+      _lines = new TreeMap<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
@@ -261,6 +264,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(ISIS_PROCESS_VAR)
    public IsisProcess getIsisProcess() {
       return _isisProcess;
+   }
+
+   public NavigableMap<String, Line> getLines() {
+      return _lines;
    }
 
    @JsonIgnore

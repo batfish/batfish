@@ -13,7 +13,7 @@ public class CoordConsts {
       TERMINATEDABNORMALLY,
       TERMINATEDNORMALLY,
       TRYINGTOASSIGN,
-      UNASSIGNED;      
+      UNASSIGNED;
    }
 
    public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";

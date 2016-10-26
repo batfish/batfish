@@ -1,9 +1,11 @@
+import json
+
+import commands
 from org.batfish.util.batfish_exception import BatfishException
-from commands import *
 
 questionTypeToClass = {
     "aclreachability" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion",
-    "assert" : "org.batfish.question.AssertQuestionPlugin$AssertQuestion",
+    "assert" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
     "bgpadvertisement" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsQuestion",
     "bgpsessioncheck" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion",
     "comparesamename" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
@@ -13,6 +15,7 @@ questionTypeToClass = {
     "isisloopback" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
     "neighbors" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "nodes" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "nodespath" : "org.batfish.question.NodesPathQuestionPlugin$NodesPathQuestion",
     "ospfloopbacks" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
     "pairwisevpnconnectivity" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion",
     "reachability" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
@@ -47,6 +50,6 @@ def bf_get_question_json(questionType):
 def _get_answer(questionJson, parametersJson, doDelta, differential):
     #add the correct value of differential if one does not already exist
     parametersJson["differential"] = str(differential)
-    return bf_answer(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
+    return commands.bf_answer(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
     
     

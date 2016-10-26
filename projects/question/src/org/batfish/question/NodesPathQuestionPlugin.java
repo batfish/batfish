@@ -16,6 +16,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -27,20 +29,48 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
    public static class NodesPathAnswerElement implements AnswerElement {
 
-      private Object _result;
+      private Integer _numResults;
 
-      public Object getResult() {
+      private ArrayNode _result;
+
+      public Integer getNumResults() {
+         return _numResults;
+      }
+
+      public ArrayNode getResult() {
          return _result;
       }
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
          ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder();
+         if (_result instanceof Iterable<?>) {
+            sb.append("Result: \n[");
+            Iterable<?> results = _result;
+            Iterator<?> i = results.iterator();
+            while (i.hasNext()) {
+               Object result = i.next();
+               sb.append(mapper.writeValueAsString(result));
+               if (i.hasNext()) {
+                  sb.append(",");
+               }
+               sb.append("\n");
+            }
+            sb.append("]\n");
+         }
+         else {
+            sb.append(mapper.writeValueAsString(this));
+         }
+         String output = sb.toString();
+         return output;
       }
 
-      public void setResult(Object result) {
+      public void setNumResults(Integer numResults) {
+         _numResults = numResults;
+      }
+
+      public void setResult(ArrayNode result) {
          _result = result;
       }
 
@@ -59,6 +89,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
          ConfigurationBuilder b = new ConfigurationBuilder();
          b.jsonProvider(new JacksonJsonNodeJsonProvider());
+         b.options(Option.ALWAYS_RETURN_LIST);
          if (question.getAsPathList()) {
             b.options(Option.AS_PATH_LIST);
          }
@@ -81,20 +112,24 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   "Could not get JSON string from nodes answer", e);
          }
          Object jsonObject = JsonPath.parse(nodesAnswerStr, c).json();
-         Object pathResult = null;
+         ArrayNode pathResult = null;
          JsonPath jsonPath = JsonPath.compile(path);
 
          try {
             pathResult = jsonPath.read(jsonObject, c);
          }
          catch (PathNotFoundException e) {
-            pathResult = "[]";
+            pathResult = JsonNodeFactory.instance.arrayNode();
          }
          catch (Exception e) {
             throw new BatfishException("Error reading JSON path: " + path, e);
          }
+         int numResults = pathResult.size();
          NodesPathAnswerElement answerElement = new NodesPathAnswerElement();
-         answerElement.setResult(pathResult);
+         answerElement.setNumResults(numResults);
+         if (!question.getSummary()) {
+            answerElement.setResult(pathResult);
+         }
          return answerElement;
       }
    }
@@ -105,9 +140,13 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       private static final String PATH_VAR = "path";
 
+      private static final String SUMMARY_VAR = "summary";
+
       private boolean _asPathList;
 
       private String _path;
+
+      private boolean _summary;
 
       public boolean getAsPathList() {
          return _asPathList;
@@ -125,6 +164,10 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       public String getPath() {
          return _path;
+      }
+
+      public boolean getSummary() {
+         return _summary;
       }
 
       @Override
@@ -160,6 +203,9 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                case PATH_VAR:
                   setPath(parameters.getString(paramKey));
                   break;
+               case SUMMARY_VAR:
+                  setSummary(parameters.getBoolean(paramKey));
+                  break;
                default:
                   throw new BatfishException("Unknown key in "
                         + getClass().getSimpleName() + ": " + paramKey);
@@ -173,6 +219,10 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       public void setPath(String path) {
          _path = path;
+      }
+
+      public void setSummary(boolean summary) {
+         _summary = summary;
       }
 
    }

@@ -13,7 +13,7 @@ from bfconsts import BfConsts
 from options import Options
 import resthelper 
 from session import Session
-from questionhelper import *
+from questionhelper import bf_get_question_json
 import workhelper
 
 #suppress the urllib3 warnings due to old version of urllib3 (inside requests)
@@ -42,8 +42,8 @@ def bf_answer(questionStr, parametersStr="{}", doDelta=False):
         _check_delta_testrig();
 
     #these conversions verify that the strings are proper json
-    questionJson = json.loads(questionStr)
-    parametersJson = json.loads(parametersStr)
+    _questionJson = json.loads(questionStr)
+    _parametersJson = json.loads(parametersStr)
  
     questionName = Options.default_question_prefix + "_" + batfishutils.get_uuid()
 
@@ -122,7 +122,7 @@ def bf_init_container(containerPrefix=Options.default_container_prefix):
         bf_logger.info("Container is now set to " + bf_session.container)
     else:
         raise BatfishException("Bad json response in init_container; missing expected key: " + CoordConsts.SVC_CONTAINER_NAME_KEY, jsonResponse);
-             
+
 def bf_init_environment(environmentName=None, interfaceBlacklist=None, nodeBlacklist=None):
     
     _check_base_testrig()
@@ -197,6 +197,15 @@ def bf_reinit_testrig(doDelta=False):
     answer = workhelper.execute(workItem, bf_session)
 
     return answer
+
+def bf_set_container(containerName):
+    bf_session.container = containerName
+    bf_logger.info("Container is now set to " + bf_session.container)
+
+def bf_set_testrig(testrigName):
+    bf_session.baseTestrig = testrigName
+    bf_session.baseEnvironment = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME
+    bf_logger.info("Base testrig/environment is now set to %s/%s", bf_session.baseTestrig, bf_session.baseEnvironment)
 
 def _check_base_testrig():
     _check_container()

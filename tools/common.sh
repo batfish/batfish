@@ -25,6 +25,8 @@ export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 export QUESTION_PATH="$BATFISH_ROOT/projects/question"
 export BATFISH_QUESTION_PLUGIN_DIR="$BATFISH_ROOT/projects/question/out"
 
+export PYBATFISH_PATH="$BATFISH_ROOT/projects/pybatfish"
+
 batfish() {
    # if cygwin, shift and replace each parameter
    if batfish_cygwin; then
@@ -703,6 +705,16 @@ _client_build() {
    ant "$@" || return 1
 }
 export -f _client_build
+
+pybatfish() {
+   bash -c '_pybatfish "$@"' _pybatfish "$@" || return 1
+}
+export -f pybatfish
+
+_pybatfish() {
+   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" python2.7 "$@" || return 1
+}
+export -f _pybatfish
 
 allinone() {
    # if cygwin, shift and replace each parameter

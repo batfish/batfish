@@ -95,8 +95,7 @@ public enum Command {
       // + "\t Change the working directory");
       descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
       descs.put(DEL_BATFISH_OPTION,
-            new Pair<>("<option-key>",
-                  "Stop passing this option to Batfish"));
+            new Pair<>("<option-key>", "Stop passing this option to Batfish"));
       descs.put(DEL_CONTAINER,
             new Pair<>("<container-name>", "Delete the specified container"));
       descs.put(DEL_ENVIRONMENT, new Pair<>("<environment-name>",
