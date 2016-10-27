@@ -105,6 +105,7 @@ public enum RoutingProtocol {
             return 20;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 20;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -139,6 +140,7 @@ public enum RoutingProtocol {
             return 200;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 200;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -170,6 +172,7 @@ public enum RoutingProtocol {
             return 115;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -201,6 +204,7 @@ public enum RoutingProtocol {
             return 115;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -232,6 +236,7 @@ public enum RoutingProtocol {
             return 115;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -263,6 +268,7 @@ public enum RoutingProtocol {
             return 115;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -294,6 +300,7 @@ public enum RoutingProtocol {
             return 110;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -325,6 +332,7 @@ public enum RoutingProtocol {
             return 110;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -356,6 +364,7 @@ public enum RoutingProtocol {
             return 110;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -387,6 +396,7 @@ public enum RoutingProtocol {
             return 110;
          case CISCO:
          case CISCO_IOS_XR:
+         case CISCO_NX:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:

@@ -7,6 +7,7 @@ public enum ConfigurationFormat {
    BLADENETWORK("bladenetwork"),
    CISCO("cisco"),
    CISCO_IOS_XR("cisco"),
+   CISCO_NX("cisco"),
    EMPTY("empty"),
    FLAT_JUNIPER("juniper"),
    FLAT_VYOS("vyos"),
