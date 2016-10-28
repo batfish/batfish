@@ -421,7 +421,7 @@ aaa_authorization_commands
    COMMANDS level = DEC?
    (
       CONSOLE
-      | DEFAULT
+      | (ALL)? DEFAULT
       | list = variable
    ) aaa_authorization_method
 ;

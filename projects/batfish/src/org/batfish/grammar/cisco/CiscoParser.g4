@@ -530,6 +530,7 @@ l_null
    NO?
    (
       ABSOLUTE_TIMEOUT
+      | ACCOUNTING
       | ACTIVATION_CHARACTER
       | AUTHORIZATION
       | AUTOSELECT
@@ -547,6 +548,7 @@ l_null
       | STOPBITS
       | TERMINAL_TYPE
       | TIMESTAMP
+      | USERS
    ) ~NEWLINE* NEWLINE
 ;
 

@@ -411,6 +411,7 @@ null_block_substanza
          | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXCEED_ACTION
+         | EXEC
          | EXIT
          | EXPECT
          | EXPORT
