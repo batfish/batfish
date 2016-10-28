@@ -23,6 +23,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
+   protected final Map<String, String> _banners;
+
    protected final Map<String, BgpProcess> _bgpProcesses;
 
    protected final Set<String> _classMapAccessGroups;
@@ -91,6 +93,7 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public CiscoConfiguration() {
       _asPathAccessLists = new TreeMap<>();
+      _banners = new TreeMap<>();
       _bgpProcesses = new TreeMap<>();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
@@ -123,6 +126,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   public Map<String, String> getBanners() {
+      return _banners;
    }
 
    public final Map<String, BgpProcess> getBgpProcesses() {

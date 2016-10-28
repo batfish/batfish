@@ -73,6 +73,15 @@ public class RouteFilterLine implements Serializable {
       return result;
    }
 
+   public String toCompactString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(_action.toString() + " ");
+      sb.append(_prefix.toString() + " ");
+      sb.append(_lengthRange.toString() + " ");
+      return sb.toString();
+
+   }
+
    @Override
    public String toString() {
       StringBuilder sb = new StringBuilder();

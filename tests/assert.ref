@@ -1,33 +1,56 @@
 {
-  "answerElements" : [ {
-    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
-    "fail" : false,
-    "passing" : {
-      "0" : {
-        "text" : "(eq 15 (pathsize '$.nodes[*]'))"
-      },
-      "1" : {
-        "text" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))"
-      },
-      "2" : {
-        "text" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"
-      },
-      "3" : {
-        "text" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
+      "fail" : false,
+      "passing" : {
+        "0" : {
+          "asPathList" : false,
+          "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
+          "summary" : false
+        },
+        "1" : {
+          "asPathList" : false,
+          "assertion" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))",
+          "summary" : false
+        },
+        "2" : {
+          "asPathList" : false,
+          "assertion" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))",
+          "summary" : false
+        },
+        "3" : {
+          "asPathList" : false,
+          "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
+          "summary" : false
+        }
       }
     }
-  } ],
+  ],
   "question" : {
     "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
-    "assertions" : [ {
-      "text" : "(eq 15 (pathsize '$.nodes[*]'))"
-    }, {
-      "text" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))"
-    }, {
-      "text" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"
-    }, {
-      "text" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"
-    } ]
+    "assertions" : [
+      {
+        "asPathList" : false,
+        "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
+        "summary" : false
+      },
+      {
+        "asPathList" : false,
+        "assertion" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))",
+        "summary" : false
+      },
+      {
+        "asPathList" : false,
+        "assertion" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))",
+        "summary" : false
+      },
+      {
+        "asPathList" : false,
+        "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
+        "summary" : false
+      }
+    ]
   },
   "status" : "SUCCESS"
 }

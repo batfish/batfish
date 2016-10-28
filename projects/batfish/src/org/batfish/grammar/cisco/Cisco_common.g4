@@ -44,6 +44,17 @@ banner
    ) NEWLINE?
 ;
 
+banner_type
+:
+   CONFIG_SAVE
+   | EXEC
+   | INCOMING
+   | LOGIN
+   | MOTD
+   | PROMPT_TIMEOUT
+   | SLIP_PPP
+;
+
 community
 :
    com = COMMUNITY_NUMBER

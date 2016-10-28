@@ -94,7 +94,7 @@ as_path_set_stanza
 
 banner_stanza
 :
-   BANNER banner
+   BANNER banner_type banner
 ;
 
 certificate_stanza
@@ -511,6 +511,20 @@ l_access_class
    ) VRF_ALSO? NEWLINE
 ;
 
+l_exec_timeout
+:
+   EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
+;
+
+l_login
+:
+   LOGIN AUTHENTICATION
+   (
+      DEFAULT
+      | name = variable
+   ) NEWLINE
+;
+
 l_null
 :
    NO?
@@ -521,12 +535,10 @@ l_null
       | AUTOSELECT
       | DATABITS
       | EXEC
-      | EXEC_TIMEOUT
       | FLOWCONTROL
       | HISTORY
       | IPV6
       | LOCATION
-      | LOGIN
       | MODEM
       | ROTARY
       | SESSION_DISCONNECT_WARNING
@@ -578,8 +590,12 @@ mgmt_egress_iface_stanza
          | APPLICATION TACACS
          | APPLICATION SYSLOG
          | APPLICATION SSH
+         | APPLICATION
       ) NEWLINE
-   )+ EXIT NEWLINE
+   )+
+   (
+      EXIT NEWLINE
+   )?
 ;
 
 mgmt_ip_access_group
@@ -622,6 +638,11 @@ multicast_routing_stanza
    (
       address_family_multicast_stanza
    )*
+;
+
+no_aaa_group_server_stanza
+:
+   NO AAA GROUP SERVER ~NEWLINE* NEWLINE
 ;
 
 no_failover
@@ -765,9 +786,9 @@ null_af_multicast_tail
 
 null_stanza
 :
-   asa_comment_stanza
+   no_aaa_group_server_stanza
+   | asa_comment_stanza
    | as_path_set_stanza
-   | banner_stanza
    | certificate_stanza
    | del_stanza
    | no_failover
@@ -1333,6 +1354,8 @@ s_line
    )? NEWLINE
    (
       l_access_class
+      | l_exec_timeout
+      | l_login
       | l_null
       | l_transport
       | description_line
@@ -1423,6 +1446,7 @@ srlg_stanza
 stanza
 :
    appletalk_access_list_stanza
+   | banner_stanza
    | community_set_stanza
    | dhcp_stanza
    | extended_access_list_stanza

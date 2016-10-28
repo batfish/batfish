@@ -49,13 +49,17 @@ tokens {
    CHAIN,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
+   CONFIG_SAVE,
    HEX_FRAGMENT,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PIPE,
+   PROMPT_TIMEOUT,
    RAW_TEXT,
-   SELF_SIGNED
+   SELF_SIGNED,
+   SLIP_PPP,
+   VALUE
 }
 
 // Cisco Keywords
@@ -751,17 +755,7 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
-   'banner' -> pushMode ( M_Description )
-;
-
-BANNER_COMPLEX
-:
-   'banner' ' '+
-   (
-      'exec'
-      | 'login'
-      | 'motd'
-   ) -> type ( BANNER ) , pushMode ( M_BANNER )
+   'banner'  -> pushMode ( M_Banner )
 ;
 
 BASH
@@ -1324,6 +1318,11 @@ CONTEXT
    'context'
 ;
 
+CONTINUE
+:
+	('continue') | ('Continue')
+;
+
 CONTRACT_ID
 :
    'contract-id'
@@ -1632,6 +1631,11 @@ DEFAULT_ROLE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_TASKGROUP
+:
+	'default-taskgroup'
 ;
 
 DEFAULT_VALUE
@@ -3220,8 +3224,9 @@ IPV4
 
 IPV6
 :
-   'ipv6'
+   ('ipv6') | ('IPV6')
 ;
+
 
 IPV6_ADDRESS_POOL
 :
@@ -3376,6 +3381,11 @@ L2VPN
 LABEL
 :
    'label'
+;
+
+LABELED_UNICAST
+:
+	'labeled-unicast'
 ;
 
 LACP
@@ -6410,6 +6420,11 @@ SUBNET_ZERO
    'subnet-zero'
 ;
 
+SUB_ROUTE_MAP
+:
+	'sub-route-map'
+;
+
 SUBSCRIBE_TO
 :
    'subscribe-to'
@@ -6583,6 +6598,11 @@ TACACS_PLUS_ASA
 TACACS_SERVER
 :
    'tacacs-server'
+;
+
+TAC_PLUS
+:
+	'tac_plus'
 ;
 
 TAG
@@ -7315,6 +7335,11 @@ VTY
 VTY_POOL
 :
    'vty-pool'
+;
+
+VXLAN
+:
+	'vxlan'
 ;
 
 WAIT_START
@@ -8206,7 +8231,7 @@ mode M_Authentication;
 
 M_Authentication_BANNER
 :
-   'banner' -> type ( BANNER ) , mode ( M_BANNER )
+   'banner' -> type ( BANNER ) , mode ( M_BannerText )
 ;
 
 M_Authentication_ARAP
@@ -8329,14 +8354,72 @@ M_Authentication_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-mode M_BANNER;
+mode M_Banner;
 
-M_BANNER_WS
+M_Banner_CONFIG_SAVE
+:
+   'config-save' -> type(CONFIG_SAVE), mode(M_BannerText)
+;
+
+M_Banner_EXEC
+:
+   'exec' -> type(EXEC), mode(M_BannerText)
+
+;
+
+M_Banner_INCOMING
+:
+   'incoming' -> type(INCOMING), mode(M_BannerText)
+
+;
+
+M_Banner_LOGIN
+:
+   'login' -> type(LOGIN), mode(M_BannerText)
+
+;
+
+M_Banner_MOTD
+:
+   'motd' -> type(MOTD), mode(M_BannerText)
+
+;
+
+M_Banner_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Banner_PROMPT_TIMEOUT
+:
+   'prompt-timeout' -> type(PROMPT_TIMEOUT), mode(M_BannerText)
+
+;
+
+M_Banner_SLIP_PPP
+:
+   'slip-ppp' -> type(SLIP_PPP), mode(M_BannerText)
+
+;
+
+M_Banner_VALUE
+:
+   'value' -> type(VALUE), mode(M_Description)
+;
+
+M_Banner_WS
+:
+   F_Whitespace+ -> channel (HIDDEN)
+;
+
+mode M_BannerText;
+
+M_BannerText_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-M_BANNER_ESCAPE_C
+M_BannerText_ESCAPE_C
 :
    (
       '^C'
@@ -8348,12 +8431,12 @@ M_BANNER_ESCAPE_C
    ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
 
-M_BANNER_HASH
+M_BannerText_HASH
 :
    '#' -> type ( POUND ) , mode ( M_MOTD_HASH )
 ;
 
-M_BANNER_NEWLINE
+M_BannerText_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
 ;

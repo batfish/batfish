@@ -8,6 +8,21 @@ public final class IpAccessListLine extends HeaderSpace {
 
    private String _name;
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      IpAccessListLine other = (IpAccessListLine) obj;
+      if (!super.equals(obj)) {
+         return false;
+      }
+      if (_action != other._action) {
+         return false;
+      }
+      return true;
+   }
+
    public LineAction getAction() {
       return _action;
    }

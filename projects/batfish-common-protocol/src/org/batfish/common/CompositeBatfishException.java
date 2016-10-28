@@ -8,7 +8,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -73,7 +72,6 @@ public class CompositeBatfishException extends RuntimeException
             contributingCauses);
    }
 
-   @JsonValue
    public CompositeBatfishExceptionAnswerElement getAnswerElement() {
       return _answerElement;
    }

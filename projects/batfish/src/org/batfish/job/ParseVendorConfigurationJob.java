@@ -129,9 +129,11 @@ public class ParseVendorConfigurationJob
                _logger.getHistory(), _file, _warnings);
 
       case ARISTA:
-      case CISCO:
+      case CISCO_IOS:
       case CISCO_IOS_XR:
-         boolean nonNexus = checkNonNexus(_fileText);
+      case CISCO_NX:
+      case FORCE10:
+         boolean nonNexus = format != ConfigurationFormat.CISCO_NX;
          String newFileText = _fileText;
          String fileText;
          _logger.info("\tPreprocessing...");
@@ -342,15 +344,6 @@ public class ParseVendorConfigurationJob
       elapsedTime = System.currentTimeMillis() - startTime;
       return new ParseVendorConfigurationResult(elapsedTime,
             _logger.getHistory(), _file, vc, _warnings, _ptSentences);
-   }
-
-   private boolean checkNonNexus(String fileText) {
-      Matcher neighborActivateMatcher = Pattern
-            .compile("(?m)^neighbor.*activate$")
-
-            .matcher(fileText);
-      return fileText.contains("exit-address-family")
-            || neighborActivateMatcher.find();
    }
 
 }

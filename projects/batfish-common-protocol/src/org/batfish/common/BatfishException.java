@@ -1,10 +1,10 @@
 package org.batfish.common;
 
-import java.util.SortedMap;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,23 +23,22 @@ public class BatfishException extends RuntimeException {
 
    public static class BatfishStackTrace implements AnswerElement {
 
-      private static final String LINE_MAP_VAR = "contents";
+      private static final String LINES_VAR = "contents";
 
       private final BatfishException _exception;
 
-      private final SortedMap<Integer, String> _lineMap;
+      private final List<String> _lines;
 
       public BatfishStackTrace(BatfishException exception) {
          String stackTrace = ExceptionUtils.getFullStackTrace(exception)
                .replace("\t", "   ");
-         _lineMap = CommonUtil.toLineMap(stackTrace);
+         _lines = Arrays.asList(stackTrace.split("\\n"));
          _exception = exception;
       }
 
       @JsonCreator
-      public BatfishStackTrace(
-            @JsonProperty(LINE_MAP_VAR) SortedMap<Integer, String> lineMap) {
-         _lineMap = lineMap;
+      public BatfishStackTrace(@JsonProperty(LINES_VAR) List<String> lines) {
+         _lines = lines;
          _exception = null;
       }
 
@@ -48,9 +47,9 @@ public class BatfishException extends RuntimeException {
          return _exception;
       }
 
-      @JsonProperty(LINE_MAP_VAR)
-      public SortedMap<Integer, String> getLineMap() {
-         return _lineMap;
+      @JsonProperty(LINES_VAR)
+      public List<String> getLineMap() {
+         return _lines;
       }
 
       @Override

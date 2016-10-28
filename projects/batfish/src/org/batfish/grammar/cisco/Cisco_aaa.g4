@@ -25,7 +25,7 @@ aaa_accounting
 
 aaa_accounting_commands
 :
-   COMMANDS level = DEC
+   COMMANDS (level = DEC)?
    (
       DEFAULT
       | list = variable
@@ -119,6 +119,7 @@ aaa_accounting_method_target
       GROUP
       (
          RADIUS
+         | TAC_PLUS (NONE)?
          | TACACS_PLUS
          | groups += variable
       )
@@ -264,6 +265,7 @@ aaa_authentication_list_method
       | aaa_authentication_list_method_line
       | aaa_authentication_list_method_local
       | aaa_authentication_list_method_none
+      | aaa_authentication_list_method_tacacs_local
       | aaa_authentication_list_method_tacacs_plus
    )
 ;
@@ -305,6 +307,11 @@ aaa_authentication_list_method_local
 aaa_authentication_list_method_none
 :
    NONE
+;
+
+aaa_authentication_list_method_tacacs_local
+:
+   TACACS LOCAL
 ;
 
 aaa_authentication_list_method_tacacs_plus
@@ -350,8 +357,7 @@ aaa_authentication_login_invalid_username_log
 aaa_authentication_login_list
 :
    (
-      CONSOLE
-      | DEFAULT
+      DEFAULT
       | name = variable
    ) aaa_authentication_list_method+ NEWLINE
 ;
@@ -492,6 +498,13 @@ aaa_authorization_ssh_publickey
    SSH_PUBLICKEY DEFAULT aaa_authorization_method
 ;
 
+
+aaa_default_taskgroup
+:
+	DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
+;
+
+
 aaa_group
 :
    GROUP SERVER
@@ -549,7 +562,7 @@ aaa_group_server_private
 
 aaa_group_source_interface
 :
-   SOURCE_INTERFACE interface_name NEWLINE
+   SOURCE_INTERFACE interface_name DEC? NEWLINE
 ;
 
 aaa_group_use_vrf
@@ -591,6 +604,11 @@ aaa_user
    USER DEFAULT_ROLE NEWLINE
 ;
 
+null_aaa_substanza
+:
+	aaa_default_taskgroup
+;
+
 s_aaa
 :
    AAA
@@ -602,6 +620,7 @@ s_aaa
       | aaa_new_model
       | aaa_session_id
       | aaa_user
+      | null_aaa_substanza
    )
 ;
 

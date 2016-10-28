@@ -291,7 +291,7 @@ public class Driver {
                   logger.error(stackTrace);
                   answer = new Answer();
                   answer.setStatus(AnswerStatus.FAILURE);
-                  answer.addAnswerElement(e);
+                  answer.addAnswerElement(e.getAnswerElement());
                   batfish.setTerminatedWithException(true);
                }
                catch (Exception e) {

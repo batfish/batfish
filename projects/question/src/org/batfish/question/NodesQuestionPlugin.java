@@ -2,14 +2,15 @@ package org.batfish.question;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -17,7 +18,9 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
@@ -29,8 +32,8 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -282,6 +285,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       public NodesAnswerElement(SortedMap<String, Configuration> nodes,
             boolean summary) {
+
          if (summary) {
             _summary = new TreeMap<>();
             for (Entry<String, Configuration> e : nodes.entrySet()) {
@@ -327,6 +331,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       public NodesAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
+
       }
 
       @Override
@@ -336,6 +341,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          _batfish.checkConfigurations();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
+
+         // initRemoteBgpNeighbors(_batfish, configurations);
 
          // collect nodes nodes
          Pattern nodeRegex;
@@ -366,6 +373,69 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          return new NodesAnswerElement(answerNodes, question.getSummary());
       }
 
+      @Override
+      public AnswerElement answerDiff() {
+         _batfish.pushBaseEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushBaseEnvironment();
+         NodesAnswerElement before = (NodesAnswerElement) create(_question,
+               _batfish).answer();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         NodesAnswerElement after = (NodesAnswerElement) create(_question,
+               _batfish).answer();
+         _batfish.popEnvironment();
+         return new NodesDiffAnswerElement(before, after);
+      }
+   }
+
+   public static class NodesDiffAnswerElement implements AnswerElement {
+
+      private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
+      private final NodesAnswerElement _after;
+      private final NodesAnswerElement _before;
+      private Map<String, ConfigurationDiff> _configDiff;
+
+      @JsonCreator
+      public NodesDiffAnswerElement() {
+         _before = null;
+         _after = null;
+      }
+
+      public NodesDiffAnswerElement(NodesAnswerElement before,
+            NodesAnswerElement after) {
+         _before = before;
+         _after = after;
+         _configDiff = new HashMap<>();
+         GenerateDiff();
+      }
+
+      private void GenerateDiff() {
+         for (String node : CommonUtil.intersection(_before._nodes.keySet(),
+               _after._nodes.keySet())) {
+            _configDiff.put(node, new ConfigurationDiff(
+                  _before._nodes.get(node), _after._nodes.get(node)));
+         }
+      }
+
+      /**
+       * @return the _configDiff
+       */
+      @JsonProperty(CONFIG_DIFF_MAP_VAR)
+      public Map<String, ConfigurationDiff> get_configDiff() {
+         return _configDiff;
+      }
+
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         // TODO Auto-generated method stub
+         ObjectMapper mapper = new BatfishObjectMapper();
+         return mapper.writeValueAsString(this);
+      }
    }
 
    public static class NodesQuestion extends Question {

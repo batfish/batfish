@@ -1216,7 +1216,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       for (Configuration config : configs.values()) {
          // use cisco arbitrarily
-         config.setConfigurationFormat(ConfigurationFormat.CISCO);
+         config.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
          OspfProcess proc = new OspfProcess();
          config.setOspfProcess(proc);
          proc.setReferenceBandwidth(

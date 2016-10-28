@@ -53,8 +53,10 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.aaa.AaaAccountingCommands;
+import org.batfish.datamodel.aaa.AaaAccountingDefault;
 import org.batfish.datamodel.aaa.AaaAccounting;
 import org.batfish.datamodel.aaa.AaaAuthenticationLogin;
+import org.batfish.datamodel.aaa.AaaAuthenticationLoginList;
 import org.batfish.datamodel.aaa.AaaAuthentication;
 import org.batfish.datamodel.aaa.Aaa;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
@@ -941,6 +943,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private AaaAccountingCommands _currentAaaAccountingCommands;
 
+   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
+
    private IpAsPathAccessList _currentAsPathAcl;
 
    private DynamicBgpPeerGroup _currentDynamicPeerGroup;
@@ -1052,13 +1056,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterAaa_accounting_commands(
          Aaa_accounting_commandsContext ctx) {
-      int level = toInteger(ctx.level);
-      Map<Integer, AaaAccountingCommands> commands = _configuration
+      Map<String, AaaAccountingCommands> commands = _configuration
             .getAaaSettings().getAccounting().getCommands();
-      _currentAaaAccountingCommands = commands.get(level);
-      if (_currentAaaAccountingCommands == null) {
-         _currentAaaAccountingCommands = new AaaAccountingCommands();
+      String level;
+      if (ctx.level != null) {
+         level = ctx.level.getText();
+      }
+      else {
+         level = AaaAccounting.DEFAULT_COMMANDS;
+      }
+      AaaAccountingCommands c = commands.get(level);
+      if (c == null) {
+         c = new AaaAccountingCommands();
          commands.put(level, _currentAaaAccountingCommands);
+      }
+      _currentAaaAccountingCommands = c;
+   }
+
+   @Override
+   public void enterAaa_accounting_default(Aaa_accounting_defaultContext ctx) {
+      AaaAccounting accounting = _configuration.getAaaSettings()
+            .getAccounting();
+      if (accounting.getDefault() == null) {
+         accounting.setDefault(new AaaAccountingDefault());
       }
    }
 
@@ -1077,6 +1097,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getLogin() == null) {
          _configuration.getAaaSettings().getAuthentication()
                .setLogin(new AaaAuthenticationLogin());
+      }
+   }
+
+   @Override
+   public void enterAaa_authentication_login_list(
+         Aaa_authentication_login_listContext ctx) {
+      AaaAuthenticationLogin login = _configuration.getAaaSettings()
+            .getAuthentication().getLogin();
+      String name;
+      if (ctx.DEFAULT() != null) {
+         name = AaaAuthenticationLogin.DEFAULT_LIST_NAME;
+      }
+      else if (ctx.variable() != null) {
+         name = ctx.variable().getText();
+      }
+      else {
+         throw new BatfishException("Unsupported mode");
+      }
+      _currentAaaAuthenticationLoginList = login.getLists().get(name);
+      if (_currentAaaAuthenticationLoginList == null) {
+         _currentAaaAuthenticationLoginList = new AaaAuthenticationLoginList();
+         login.getLists().put(name, _currentAaaAuthenticationLoginList);
       }
    }
 
@@ -1681,6 +1723,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitAaa_accounting_default_group(
+         Aaa_accounting_default_groupContext ctx) {
+      List<String> groups = ctx.groups.stream().map(g -> g.getText())
+            .collect(Collectors.toList());
+      _configuration.getAaaSettings().getAccounting().getDefault()
+            .setGroups(groups);
+   }
+
+   @Override
+   public void exitAaa_accounting_default_local(
+         Aaa_accounting_default_localContext ctx) {
+      _configuration.getAaaSettings().getAccounting().getDefault()
+            .setLocal(true);
+   }
+
+   @Override
+   public void exitAaa_authentication_login_list(
+         Aaa_authentication_login_listContext ctx) {
+      _currentAaaAuthenticationLoginList = null;
+   }
+
+   @Override
    public void exitAaa_authentication_login_privilege_mode(
          Aaa_authentication_login_privilege_modeContext ctx) {
       _configuration.getAaaSettings().getAuthentication().getLogin()
@@ -1789,6 +1853,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx, F_BGP_AUTO_SUMMARY);
+   }
+
+   @Override
+   public void exitBanner_stanza(Banner_stanzaContext ctx) {
+      String bannerType = ctx.banner_type().getText();
+      String message = ctx.banner().getText();
+      _configuration.getBanners().put(bannerType, message);
    }
 
    @Override
@@ -2459,7 +2530,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-      if (ctx.vrf != null) {
+      if (ctx.vrf != null || ctx.MANAGEMENT() != null) {
          _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
       }
    }
@@ -2533,7 +2604,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitL_access_class(L_access_classContext ctx) {
       String name = ctx.name.getText();
+      BiConsumer<Line, String> setter;
+      if (ctx.OUT() != null || ctx.EGRESS() != null) {
+         setter = Line::setOutputAccessList;
+      }
+      else {
+         setter = Line::setInputAccessList;
+      }
+      for (String currentName : _currentLineNames) {
+         Line line = _configuration.getLines().get(currentName);
+         setter.accept(line, name);
+      }
       _configuration.getLineAccessClassLists().add(name);
+   }
+
+   @Override
+   public void exitL_exec_timeout(L_exec_timeoutContext ctx) {
+      int minutes = toInteger(ctx.minutes);
+      int seconds = ctx.seconds != null ? toInteger(ctx.seconds) : 0;
+      for (String lineName : _currentLineNames) {
+         Line line = _configuration.getLines().get(lineName);
+         line.setExecTimeoutMinutes(minutes);
+         line.setExecTimeoutSeconds(seconds);
+      }
+   }
+
+   @Override
+   public void exitL_login(L_loginContext ctx) {
+      String list;
+      if (ctx.DEFAULT() != null) {
+         list = ctx.DEFAULT().getText();
+      }
+      else if (ctx.name != null) {
+         list = ctx.name.getText();
+      }
+      else {
+         throw new BatfishException("Invalid list name");
+      }
+      for (String line : _currentLineNames) {
+         _configuration.getLines().get(line).setLoginAuthentication(list);
+      }
    }
 
    @Override

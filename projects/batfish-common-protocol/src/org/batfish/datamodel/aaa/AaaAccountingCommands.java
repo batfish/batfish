@@ -9,14 +9,5 @@ public class AaaAccountingCommands implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   private Object _blech;
-
-   public Object getBlech() {
-      return _blech;
-   }
-
-   public void setBlech(Object blech) {
-      _blech = blech;
-   }
-
+   public Object _placeholder_REMOVE_ME;
 }

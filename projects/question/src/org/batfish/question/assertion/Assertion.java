@@ -1,37 +1,45 @@
 package org.batfish.question.assertion;
 
-import java.util.List;
-
 public class Assertion {
 
-   private List<Object> _args;
+   private boolean _asPathList;
+
+   private String _assertion;
 
    private String _description;
 
-   private String _text;
+   private boolean _summary;
 
-   public List<Object> getArgs() {
-      return _args;
+   public boolean getAsPathList() {
+      return _asPathList;
+   }
+
+   public String getAssertion() {
+      return _assertion;
    }
 
    public String getDescription() {
       return _description;
    }
 
-   public String getText() {
-      return _text;
+   public boolean getSummary() {
+      return _summary;
    }
 
-   public void setArgs(List<Object> args) {
-      _args = args;
+   public void setAsPathList(boolean asPathList) {
+      _asPathList = asPathList;
+   }
+
+   public void setAssertion(String assertion) {
+      _assertion = assertion;
    }
 
    public void setDescription(String description) {
       _description = description;
    }
 
-   public void setText(String text) {
-      _text = text;
+   public void setSummary(boolean summary) {
+      _summary = summary;
    }
 
 }

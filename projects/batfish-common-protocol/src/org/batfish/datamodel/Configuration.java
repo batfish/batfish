@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -76,6 +77,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
+   private SortedMap<String, String> _banners;
+
    private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
    private BgpProcess _bgpProcess;
@@ -148,6 +151,7 @@ public final class Configuration extends ComparableStructure<String> {
    public Configuration(@JsonProperty(NAME_VAR) String hostname) {
       super(hostname);
       _asPathAccessLists = new TreeMap<>();
+      _banners = new TreeMap<>();
       _communities = new TreeSet<>();
       _communityLists = new TreeMap<>();
       _generatedRoutes = new TreeSet<>();
@@ -174,6 +178,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   public SortedMap<String, String> getBanners() {
+      return _banners;
    }
 
    @JsonIgnore
@@ -375,6 +383,10 @@ public final class Configuration extends ComparableStructure<String> {
    public void setAsPathAccessLists(
          NavigableMap<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = asPathAccessLists;
+   }
+
+   public void setBanners(SortedMap<String, String> banners) {
+      _banners = banners;
    }
 
    @JsonProperty(BGP_PROCESS_VAR)

@@ -69,8 +69,9 @@ public enum RoutingProtocol {
             break;
          case AWS_VPC:
             break;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case FORCE10:
             break;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -88,7 +89,6 @@ public enum RoutingProtocol {
          case UNKNOWN:
          case VXWORKS:
             break;
-         // $CASES-OMITTED$
          default:
             break;
 
@@ -103,8 +103,10 @@ public enum RoutingProtocol {
             return 200;
          case AWS_VPC:
             return 20;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 20;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -137,8 +139,10 @@ public enum RoutingProtocol {
             return 200;
          case AWS_VPC:
             return 200;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 200;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -168,8 +172,10 @@ public enum RoutingProtocol {
             break;
          case AWS_VPC:
             return 115;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -199,8 +205,10 @@ public enum RoutingProtocol {
             break;
          case AWS_VPC:
             return 115;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -230,8 +238,10 @@ public enum RoutingProtocol {
             break;
          case AWS_VPC:
             return 115;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -261,8 +271,10 @@ public enum RoutingProtocol {
             break;
          case AWS_VPC:
             return 115;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -292,8 +304,10 @@ public enum RoutingProtocol {
             return 110;
          case AWS_VPC:
             return 110;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -323,8 +337,10 @@ public enum RoutingProtocol {
             return 110;
          case AWS_VPC:
             return 110;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -354,8 +370,10 @@ public enum RoutingProtocol {
             return 110;
          case AWS_VPC:
             return 110;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -385,8 +403,10 @@ public enum RoutingProtocol {
             return 110;
          case AWS_VPC:
             return 110;
-         case CISCO:
+         case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:

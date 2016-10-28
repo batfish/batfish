@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -33,6 +34,7 @@ import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
+
    private static class TrustAllHostNameVerifier implements HostnameVerifier {
       @Override
       public boolean verify(String hostname, SSLSession session) {
@@ -50,6 +52,18 @@ public class CommonUtil {
          sb.append(prefix + line + "\n");
       }
       return sb.toString();
+   }
+
+   public static boolean bothNullOrEqual(Object a, Object b) {
+      if (a == null && b == null) {
+         return true;
+      }
+      else if (a != null && b != null) {
+         return a.equals(b);
+      }
+      else {
+         return false;
+      }
    }
 
    public static boolean checkJsonEqual(Object a, Object b) {
@@ -90,6 +104,14 @@ public class CommonUtil {
                      + path.toString() + "'",
                e);
       }
+   }
+
+   public static Set<String> diff(Set<String> a, Set<String> b) {
+      Set<String> d = new TreeSet<>();
+      d.addAll(a);
+      d.addAll(b);
+      d.removeAll(intersection(a, b));
+      return d;
    }
 
    public static String escape(String offendingTokenText) {
@@ -252,6 +274,29 @@ public class CommonUtil {
       return time;
    }
 
+   public static Set<String> inAOnly(Set<String> a, Set<String> b) {
+      Set<String> i = intersection(a, b);
+      Set<String> inAOnly = new TreeSet<>();
+      inAOnly.addAll(a);
+      inAOnly.removeAll(i);
+      return inAOnly;
+   }
+
+   public static Set<String> inBOnly(Set<String> a, Set<String> b) {
+      Set<String> i = intersection(a, b);
+      Set<String> inBOnly = new TreeSet<>();
+      inBOnly.addAll(b);
+      inBOnly.removeAll(i);
+      return inBOnly;
+   }
+
+   public static Set<String> intersection(Set<String> a, Set<String> b) {
+      Set<String> i = new TreeSet<>();
+      i.addAll(a);
+      i.retainAll(b);
+      return i;
+   }
+
    public static int intWidth(int n) {
       if (n == 0) {
          return 1;
@@ -331,6 +376,18 @@ public class CommonUtil {
       }
       String md5 = sb.toString();
       return md5;
+   }
+
+   public static int nullChecker(Object a, Object b) {
+      if (a == null && b == null) {
+         return 0;
+      }
+      else if (a != null && b != null) {
+         return 1;
+      }
+      else {
+         return -1;
+      }
    }
 
    public static String readFile(Path file) {

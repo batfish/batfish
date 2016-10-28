@@ -7,8 +7,7 @@ hostname n3
 !!! either only last transformation for a given attribute is applied, or cumulative transformation can occur for attributes that are not single-valued (e.g. as-path, list of communities)
 ! Default action is to drop, unless a transformation is applied or a pass is encountered
 !!! when drop is encountered, stop immediately and drop advertisement
-!!! when done is encountered, stop immediately, apply queue of transformations, and accept
-advertisement
+!!! when done is encountered, stop immediately, apply queue of transformations, and accept advertisement
 !!! if end of policy is reached, and no transformation has been queued nor has 'pass' been encountered, then drop
 !!! if end of policy is reached, and a transformation has been queued or a 'pass' has been encountered, then apply queue of transformations and accept advertisement
 route-policy bgp_import_policy

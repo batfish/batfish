@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.codehaus.jettison.json.JSONException;
@@ -191,7 +192,7 @@ public final class Interface extends ComparableStructure<String> {
       case AWS_VPC:
          return computeAwsInterfaceType(name);
       case ARISTA:
-      case CISCO:
+      case CISCO_IOS:
       case CISCO_IOS_XR:
          return computeCiscoInterfaceType(name);
 
@@ -333,6 +334,74 @@ public final class Interface extends ComparableStructure<String> {
 
    private InterfaceType computeInterfaceType() {
       return computeInterfaceType(_key, _owner.getConfigurationFormat());
+   }
+
+   @Override
+   public boolean equals(Object object) {
+
+      if (this == object) {
+         return true;
+      }
+      Interface other = (Interface) object;
+      if (this._accessVlan != other._accessVlan) {
+         return false;
+      }
+      if (this._active != other._active) {
+         return false;
+      }
+      if (!this._allowedVlans.equals(other._allowedVlans)) {
+         return false;
+      }
+      if (!this._allPrefixes.equals(other._allPrefixes)) {
+         return false;
+      }
+      if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+         return false;
+      }
+      // we check ACLs for name match only -- full ACL diff can be done
+      // elsewhere.
+      if (!IpAccessList.bothNullOrSameName(this._inboundFilter,
+            other._inboundFilter)) {
+         return false;
+      }
+
+      if (!IpAccessList.bothNullOrSameName(this._incomingFilter,
+            other._incomingFilter)) {
+         return false;
+      }
+
+      // TODO: check ISIS settings for equality.
+      if (this._mtu != other._mtu) {
+         return false;
+      }
+      if (this._nativeVlan != other._nativeVlan) {
+         return false;
+      }
+      // TODO: check OSPF settings for equality.
+
+      if (!IpAccessList.bothNullOrSameName(this._outgoingFilter,
+            other._outgoingFilter)) {
+         return false;
+      }
+
+      if (!CommonUtil.bothNullOrEqual(this._prefix, other._prefix)) {
+         return false;
+      }
+
+      if (!CommonUtil.bothNullOrEqual(this._routingPolicy,
+            other._routingPolicy)) {
+         return false;
+      }
+
+      if (!CommonUtil.bothNullOrEqual(this._switchportMode,
+            other._switchportMode)) {
+         return false;
+      }
+
+      if (!CommonUtil.bothNullOrEqual(this._zone, other._zone)) {
+         return false;
+      }
+      return true;
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)
