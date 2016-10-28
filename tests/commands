@@ -5,7 +5,7 @@ test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with
 test tests/genDp.ref generate-dataplane
 test tests/genDp-delta.ref generate-delta-dataplane
 test tests/aclReachability.ref get aclReachability
-test tests/assert.ref get assert assertions=[{"text":"(eq 15 (pathsize '$.nodes[*]'))"},{"text":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"text":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"text":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
+test tests/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
 test tests/bgpSessionCheck.ref get bgpSessionCheck
 test tests/compareSameName.ref get compareSameName
 test tests/error.ref -error get error
