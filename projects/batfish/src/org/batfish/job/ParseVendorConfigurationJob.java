@@ -129,9 +129,10 @@ public class ParseVendorConfigurationJob
                _logger.getHistory(), _file, _warnings);
 
       case ARISTA:
-      case CISCO:
+      case CISCO_IOS:
       case CISCO_IOS_XR:
       case CISCO_NX:
+      case FORCE10:
          boolean nonNexus = format != ConfigurationFormat.CISCO_NX;
          String newFileText = _fileText;
          String fileText;

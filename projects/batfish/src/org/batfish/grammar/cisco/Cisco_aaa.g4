@@ -357,8 +357,7 @@ aaa_authentication_login_invalid_username_log
 aaa_authentication_login_list
 :
    (
-      CONSOLE
-      | DEFAULT
+      DEFAULT
       | name = variable
    ) aaa_authentication_list_method+ NEWLINE
 ;

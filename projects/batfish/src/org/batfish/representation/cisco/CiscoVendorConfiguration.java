@@ -28,6 +28,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -41,6 +42,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.aaa.AaaAuthenticationLogin;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -324,6 +326,22 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          commIface.setActive(true);
          sigIface.setPrefix(sigPrefix);
          sigIface.setActive(true);
+      }
+   }
+
+   private void processLines() {
+      // nxos does not have 'login authentication' for lines, so just have it
+      // use default list if one exists
+      if (_vendor == ConfigurationFormat.CISCO_NX) {
+         if (_aaaSettings != null && _aaaSettings.getAuthentication() != null
+               && _aaaSettings.getAuthentication().getLogin() != null
+               && _aaaSettings.getAuthentication().getLogin().getLists()
+                     .get(AaaAuthenticationLogin.DEFAULT_LIST_NAME) != null) {
+            for (Line line : _lines.values()) {
+               line.setLoginAuthentication(
+                     AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+            }
+         }
       }
    }
 
@@ -1726,7 +1744,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       c.setAaa(_aaaSettings);
       c.getLines().putAll(_lines);
+      c.getBanners().putAll(_banners);
 
+      processLines();
       processFailoverSettings();
 
       // convert Interface MTUs

@@ -192,7 +192,7 @@ public final class Interface extends ComparableStructure<String> {
       case AWS_VPC:
          return computeAwsInterfaceType(name);
       case ARISTA:
-      case CISCO:
+      case CISCO_IOS:
       case CISCO_IOS_XR:
          return computeCiscoInterfaceType(name);
 

@@ -15,7 +15,7 @@ questionTypeToClass = {
     "isisloopback" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
     "neighbors" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "nodes" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
-    "nodespath" : "org.batfish.question.NodesPathQuestionPlugin$NodesPathQuestion",
+    "nodespath" : "org.batfish.question.nodespath.NodesPathQuestionPlugin$NodesPathQuestion",
     "ospfloopbacks" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
     "pairwisevpnconnectivity" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion",
     "reachability" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",

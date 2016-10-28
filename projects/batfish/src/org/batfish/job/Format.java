@@ -64,7 +64,7 @@ public final class Format {
       if (ciscoLike.find() || _firstChar == '!' || ciscoStyleAcl.find()) {
          if (_fileText.contains("exit-address-family")
                || neighborActivateMatcher.find()) {
-            return ConfigurationFormat.CISCO;
+            return ConfigurationFormat.CISCO_IOS;
          }
          else {
             return ConfigurationFormat.CISCO_NX;
@@ -162,15 +162,20 @@ public final class Format {
             .matcher(_fileText);
       Matcher rancidCiscoNx = Pattern
             .compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$").matcher(_fileText);
+      Matcher rancidForce10 = Pattern
+            .compile("(?m)^!RANCID-CONTENT-TYPE: force10$").matcher(_fileText);
       Matcher rancidJuniper = Pattern
             .compile("(?m)^!RANCID-CONTENT-TYPE: juniper$").matcher(_fileText);
       Matcher rancidMrv = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$")
             .matcher(_fileText);
       if (rancidCisco.find()) {
-         return ConfigurationFormat.CISCO;
+         return ConfigurationFormat.CISCO_IOS;
       }
       else if (rancidCiscoNx.find()) {
          return ConfigurationFormat.CISCO_NX;
+      }
+      else if (rancidForce10.find()) {
+         return ConfigurationFormat.FORCE10;
       }
       else if (rancidJuniper.find()) {
          return checkJuniper();

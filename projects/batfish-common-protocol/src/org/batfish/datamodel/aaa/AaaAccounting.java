@@ -6,33 +6,35 @@ import java.util.TreeMap;
 
 public class AaaAccounting implements Serializable {
 
+   public static final String DEFAULT_COMMANDS = "default";
+
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private SortedMap<Integer, AaaAccountingCommands> _commands;
+   private SortedMap<String, AaaAccountingCommands> _commands;
 
-   private AaaAccountingCommands _defaultCommands;
+   private AaaAccountingDefault _default;
 
    public AaaAccounting() {
       _commands = new TreeMap<>();
    }
 
-   public SortedMap<Integer, AaaAccountingCommands> getCommands() {
+   public SortedMap<String, AaaAccountingCommands> getCommands() {
       return _commands;
    }
 
-   public AaaAccountingCommands getDefaultCommands() {
-      return _defaultCommands;
+   public AaaAccountingDefault getDefault() {
+      return _default;
    }
 
-   public void setCommands(SortedMap<Integer, AaaAccountingCommands> commands) {
+   public void setCommands(SortedMap<String, AaaAccountingCommands> commands) {
       _commands = commands;
    }
 
-   public void setDefaultCommands(AaaAccountingCommands defaultCommands) {
-      _defaultCommands = defaultCommands;
+   public void setDefault(AaaAccountingDefault default1) {
+      _default = default1;
    }
 
 }

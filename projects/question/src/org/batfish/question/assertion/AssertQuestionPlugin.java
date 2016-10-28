@@ -124,7 +124,7 @@ public class AssertQuestionPlugin extends QuestionPlugin {
          ConcurrentMap<String, ArrayNode> pathCache = new ConcurrentHashMap<>();
          indices.parallelStream().forEach(i -> {
             Assertion assertion = assertions.get(i);
-            String assertionText = assertion.getText();
+            String assertionText = assertion.getAssertion();
             AssertionAst ast = _batfish.parseAssertion(assertionText);
             if (ast.execute(_batfish, jsonObject, pathCache, c)) {
                passing.put(i, assertion);

@@ -24,6 +24,11 @@ FALSE
    'false'
 ;
 
+EMPTYPATH
+:
+   'emptypath'
+;
+
 EQ
 :
    'eq'
