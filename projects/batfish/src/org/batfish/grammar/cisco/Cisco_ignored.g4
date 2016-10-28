@@ -249,6 +249,7 @@ null_block_stanza
       | STCAPP
       | SVCLC
       | SWITCH
+      | SWITCHPORT
       | SWITCH_PROFILE
       | SWITCH_TYPE
       | SYSLOGD
