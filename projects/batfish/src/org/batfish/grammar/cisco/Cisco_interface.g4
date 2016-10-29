@@ -36,10 +36,16 @@ hsrpc_stanza
    | track_hsrpc_stanza
 ;
 
+if_ip_proxy_arp
+:
+   NO? IP PROXY_ARP NEWLINE
+;
+
 if_stanza
 :
    default_gw_if_stanza
    | description_if_stanza
+   | if_ip_proxy_arp
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_dhcp_if_stanza
@@ -377,7 +383,6 @@ null_block_if_stanza
             | PIM
             | PIM_SPARSE
             | PORT_UNREACHABLE
-            | PROXY_ARP
             | REDIRECTS
             | RIP
             | ROUTE_CACHE

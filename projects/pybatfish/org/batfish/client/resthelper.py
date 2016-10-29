@@ -3,18 +3,22 @@ import tempfile
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from coordconsts import CoordConsts
 from org.batfish.util.batfish_exception import BatfishException
+from requests.exceptions import ConnectionError
 
 def post_data(session, resource, jsonData):
     multipart_data = MultipartEncoder(jsonData)
-    response = requests.post(
-        session.get_url(resource), 
-        data=multipart_data, 
-        verify=False, 
-        headers={'Content-Type': multipart_data.content_type},
-        #uncomment line below if you want http capture by fiddler
-        #proxies = {'http': 'http://127.0.0.1:8888', 'https': 'http://127.0.0.1:8888'}
-    )
-
+    try:
+        response = requests.post(
+            session.get_url(resource), 
+            data=multipart_data, 
+            verify=False, 
+            headers={'Content-Type': multipart_data.content_type},
+            #uncomment line below if you want http capture by fiddler
+            #proxies = {'http': 'http://127.0.0.1:8888', 'https': 'http://127.0.0.1:8888'}
+        )
+    except ConnectionError, e:
+        raise BatfishException("Failed to connect to Coordinator", cause=BatfishException(e))
+        
     response.raise_for_status();
     
     jsonResponse = response.json()

@@ -1,0 +1,59 @@
+!
+hostname cisco_snmp
+!
+snmp-server community dummycommunity group network-operator
+snmp-server community dummycommunity RO snmp-acl
+snmp-server community dummycommunity use-acl snmp-acl
+snmp-server community dummycommunity use-acl snmp-arpa-acl
+snmp-server enable traps aaa server-state-change
+snmp-server enable traps bgp
+snmp-server enable traps bridge newroot
+snmp-server enable traps bridge newroot topologychange
+snmp-server enable traps bridge topologychange
+snmp-server enable traps callhome event-notify
+snmp-server enable traps callhome smtp-send-fail
+snmp-server enable traps cfs merge-failure
+snmp-server enable traps cfs state-change-notif
+snmp-server enable traps config
+snmp-server enable traps config ccmCLIRunningConfigChanged
+snmp-server enable traps cpu threshold
+snmp-server enable traps entity
+snmp-server enable traps envmon fan shutdown supply temperature status
+snmp-server enable traps feature-control ciscoFeatOpStatusChange
+snmp-server enable traps feature-control FeatureOpStatusChange
+snmp-server enable traps flash insertion removal
+snmp-server enable traps fru-ctrl
+snmp-server enable traps ipsla
+snmp-server enable traps link cisco-xcvr-mon-status-chg
+snmp-server enable traps poe police
+snmp-server enable traps poe portonoff
+snmp-server enable traps poe pwrusageoff
+snmp-server enable traps poe pwrusageon
+snmp-server enable traps rf
+snmp-server enable traps snmp authentication
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps stpx inconsistency
+snmp-server enable traps stpx inconsistency root-inconsistency loop-inconsistency
+snmp-server enable traps stpx loop-inconsistency
+snmp-server enable traps stpx root-inconsistency
+snmp-server enable traps syslog
+snmp-server enable traps sysmgr cseFailSwCoreNotifyExtended
+snmp-server enable traps tty
+snmp-server enable traps upgrade UpgradeJobStatusNotify
+snmp-server enable traps upgrade UpgradeOpNotifyOnCompletion
+snmp-server enable traps vlancreate
+snmp-server enable traps vlandelete
+snmp-server enable traps vlan-membership
+snmp-server enable traps vtp
+snmp-server enable traps vtp notifs
+snmp-server enable traps vtp vlancreate
+snmp-server enable traps vtp vlandelete
+snmp-server host 10.1.2.3 use-vrf management
+snmp-server host 10.1.2.3 version 2c dummycommunity 
+snmp-server source-interface trap loopback0
+snmp-server source-interface trap mgmt0
+snmp-server source-interface trap Vlan1
+snmp-server trap-source Loopback0
+snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
+!
+

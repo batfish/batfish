@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -12,8 +11,8 @@ import org.batfish.common.BfJson;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.aaa.Aaa;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -73,11 +72,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String ZONES_VAR = "zones";
 
-   private Aaa _aaa;
-
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
-
-   private SortedMap<String, String> _banners;
 
    private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
@@ -113,8 +108,6 @@ public final class Configuration extends ComparableStructure<String> {
 
    private IsisProcess _isisProcess;
 
-   private NavigableMap<String, Line> _lines;
-
    private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
 
    private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
@@ -145,13 +138,14 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableSet<StaticRoute> _staticRoutes;
 
+   private VendorFamily _vendorFamily;
+
    private NavigableMap<String, Zone> _zones;
 
    @JsonCreator
    public Configuration(@JsonProperty(NAME_VAR) String hostname) {
       super(hostname);
       _asPathAccessLists = new TreeMap<>();
-      _banners = new TreeMap<>();
       _communities = new TreeSet<>();
       _communityLists = new TreeMap<>();
       _generatedRoutes = new TreeSet<>();
@@ -163,25 +157,17 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
-      _lines = new TreeMap<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
       _staticRoutes = new TreeSet<>();
+      _vendorFamily = new VendorFamily();
       _zones = new TreeMap<>();
-   }
-
-   public Aaa getAaa() {
-      return _aaa;
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
-   }
-
-   public SortedMap<String, String> getBanners() {
-      return _banners;
    }
 
    @JsonIgnore
@@ -274,10 +260,6 @@ public final class Configuration extends ComparableStructure<String> {
       return _isisProcess;
    }
 
-   public NavigableMap<String, Line> getLines() {
-      return _lines;
-   }
-
    @JsonIgnore
    public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
       return _originatedAdvertisements;
@@ -353,6 +335,10 @@ public final class Configuration extends ComparableStructure<String> {
       return _staticRoutes;
    }
 
+   public VendorFamily getVendorFamily() {
+      return _vendorFamily;
+   }
+
    @JsonProperty(ZONES_VAR)
    public NavigableMap<String, Zone> getZones() {
       return _zones;
@@ -375,18 +361,10 @@ public final class Configuration extends ComparableStructure<String> {
       _routes = new TreeSet<>();
    }
 
-   public void setAaa(Aaa aaa) {
-      _aaa = aaa;
-   }
-
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
    public void setAsPathAccessLists(
          NavigableMap<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = asPathAccessLists;
-   }
-
-   public void setBanners(SortedMap<String, String> banners) {
-      _banners = banners;
    }
 
    @JsonProperty(BGP_PROCESS_VAR)
@@ -495,6 +473,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(STATIC_ROUTES_VAR)
    public void setStaticRoutes(NavigableSet<StaticRoute> staticRoutes) {
       _staticRoutes = staticRoutes;
+   }
+
+   public void setVendorFamily(VendorFamily vendorFamily) {
+      _vendorFamily = vendorFamily;
    }
 
    @JsonProperty(ZONES_VAR)

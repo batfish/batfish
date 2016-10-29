@@ -25,7 +25,10 @@ aaa_accounting
 
 aaa_accounting_commands
 :
-   COMMANDS (level = DEC)?
+   COMMANDS
+   (
+      level = DEC
+   )?
    (
       DEFAULT
       | list = variable
@@ -119,7 +122,10 @@ aaa_accounting_method_target
       GROUP
       (
          RADIUS
-         | TAC_PLUS (NONE)?
+         | TAC_PLUS
+         (
+            NONE
+         )?
          | TACACS_PLUS
          | groups += variable
       )
@@ -498,12 +504,10 @@ aaa_authorization_ssh_publickey
    SSH_PUBLICKEY DEFAULT aaa_authorization_method
 ;
 
-
 aaa_default_taskgroup
 :
-	DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
+   DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
 ;
-
 
 aaa_group
 :
@@ -606,7 +610,7 @@ aaa_user
 
 null_aaa_substanza
 :
-	aaa_default_taskgroup
+   aaa_default_taskgroup
 ;
 
 s_aaa

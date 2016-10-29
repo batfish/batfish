@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_logging, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -421,12 +421,30 @@ ip_default_gateway_stanza
    IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
 ;
 
+ip_domain_name
+:
+   DOMAIN_NAME name = variable NEWLINE
+;
+
 ip_pim
 :
    PIM
    (
       VRF vrf = variable
    )? ip_pim_tail
+;
+
+ip_ssh
+:
+   SSH
+   (
+      ip_ssh_version
+   )
+;
+
+ip_ssh_version
+:
+   VERSION version = DEC NEWLINE
 ;
 
 ip_pim_tail
@@ -760,7 +778,7 @@ ntp_peer
 
 ntp_server
 :
-   SERVER ~NEWLINE* NEWLINE
+   SERVER hostname = variable ~NEWLINE* NEWLINE
 ;
 
 ntp_source
@@ -1327,14 +1345,27 @@ s_failover_tail
    | failover_interface
 ;
 
-s_ip
+s_feature
 :
-   IP s_ip_tail
+   NO? FEATURE
+   (
+      words += variable
+   )+ NEWLINE
 ;
 
-s_ip_tail
+s_ip
 :
-   ip_pim
+   IP
+   (
+      ip_domain_name
+      | ip_pim
+      | ip_ssh
+   )
+;
+
+s_ip_source_route
+:
+   NO? IP SOURCE_ROUTE NEWLINE
 ;
 
 s_line
@@ -1432,6 +1463,14 @@ s_object_group_tail
    | og_user
 ;
 
+s_service
+:
+   NO? SERVICE
+   (
+      words += variable
+   )+ NEWLINE
+;
+
 srlg_interface_numeric_stanza
 :
    DEC ~NEWLINE* NEWLINE
@@ -1492,8 +1531,11 @@ stanza
    | s_class_map
    | s_control_plane
    | s_failover
+   | s_feature
    | s_ip
+   | s_ip_source_route
    | s_line
+   | s_logging
    | s_management
    | s_mac_access_list
    | s_no_access_list_extended
@@ -1502,6 +1544,8 @@ stanza
    | s_object
    | s_object_group
    | s_router_eigrp
+   | s_service
+   | s_snmp_server
    | standard_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza

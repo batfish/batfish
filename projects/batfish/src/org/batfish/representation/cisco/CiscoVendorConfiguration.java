@@ -28,7 +28,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -42,7 +41,6 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.aaa.AaaAuthenticationLogin;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -61,6 +59,8 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
+import org.batfish.datamodel.vendor_family.cisco.Line;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
@@ -333,11 +333,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // nxos does not have 'login authentication' for lines, so just have it
       // use default list if one exists
       if (_vendor == ConfigurationFormat.CISCO_NX) {
-         if (_aaaSettings != null && _aaaSettings.getAuthentication() != null
-               && _aaaSettings.getAuthentication().getLogin() != null
-               && _aaaSettings.getAuthentication().getLogin().getLists()
+         if (_cf.getAaa() != null && _cf.getAaa().getAuthentication() != null
+               && _cf.getAaa().getAuthentication().getLogin() != null
+               && _cf.getAaa().getAuthentication().getLogin().getLists()
                      .get(AaaAuthenticationLogin.DEFAULT_LIST_NAME) != null) {
-            for (Line line : _lines.values()) {
+            for (Line line : _cf.getLines().values()) {
                line.setLoginAuthentication(
                      AaaAuthenticationLogin.DEFAULT_LIST_NAME);
             }
@@ -894,6 +894,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       newIface.setActive(iface.getActive());
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
+      newIface.setProxyArp(iface.getProxyArp());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
          newIface.getAllPrefixes().add(iface.getPrefix());
@@ -1739,12 +1740,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    public Configuration toVendorIndependentConfiguration() {
       final Configuration c = new Configuration(_hostname);
       c.setConfigurationFormat(_vendor);
+      c.getVendorFamily().setCisco(_cf);
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
-      c.setAaa(_aaaSettings);
-      c.getLines().putAll(_lines);
-      c.getBanners().putAll(_banners);
 
       processLines();
       processFailoverSettings();
@@ -1864,6 +1863,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       markAcls(_controlPlaneAccessGroups, "control-plane ip access-group", c);
       markAcls(_managementAccessGroups, "management ip access-group", c);
       markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
+      markAcls(_snmpAccessLists, "snmp access-list", c);
       markRouteMaps(_pimRouteMaps, "pim route-map", c);
       // warn about unreferenced data structures
       warnUnusedPeerGroups();
