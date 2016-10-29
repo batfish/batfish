@@ -535,6 +535,7 @@ null_bgp_tail
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
+      | TABLE_MAP
       | TIMERS
       | TRANSPORT
       | USE NEXTHOP_ATTRIBUTE

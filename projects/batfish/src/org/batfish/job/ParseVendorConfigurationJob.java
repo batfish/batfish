@@ -22,6 +22,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
@@ -105,8 +106,8 @@ public class ParseVendorConfigurationJob
          }
       }
 
-      Path fileRelativeToTestrig = _settings.getTestrigSettings().getBasePath()
-            .relativize(_file);
+      String relativePathStr = _settings.getTestrigSettings().getBasePath()
+            .relativize(_file).toString();
 
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
@@ -184,7 +185,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Vyos configurations must be flattened prior to this stage: '"
-                              + fileRelativeToTestrig.toString() + "'"));
+                              + relativePathStr + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_VYOS:
@@ -226,7 +227,7 @@ public class ParseVendorConfigurationJob
                   _logger.getHistory(), _file,
                   new BatfishException(
                         "Juniper configurations must be flattened prior to this stage: '"
-                              + fileRelativeToTestrig.toString() + "'"));
+                              + relativePathStr + "'"));
          }
          // MISSING BREAK IS INTENTIONAL
       case FLAT_JUNIPER:
@@ -242,7 +243,7 @@ public class ParseVendorConfigurationJob
                _fileText, _settings);
          combinedParser = iptablesParser;
          extractor = new IptablesControlPlaneExtractor(_fileText,
-               iptablesParser, _warnings, fileRelativeToTestrig.toString());
+               iptablesParser, _warnings, relativePathStr);
          break;
 
       case MRV:
@@ -325,8 +326,7 @@ public class ParseVendorConfigurationJob
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: '" + fileRelativeToTestrig
-               + "'\n";
+         String error = "No hostname set in file: '" + relativePathStr.replace("\\",  "/") + "'\n";
          try {
             _warnings.redFlag(error);
          }
