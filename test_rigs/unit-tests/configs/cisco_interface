@@ -20,5 +20,13 @@ interface Dot11Radio0
  no bridge-group 1 source-learning
  no bridge-group 1 unicast-flooding
  bridge-group 1 spanning-disabledinterface Ethernet0/0
+ peakdetect
+ stbc
+ dfs
+ channel width 80
 !
-
+interface Async1
+ no ip address
+ dialer in-band
+ dialer idle-timeout 60
+!

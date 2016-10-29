@@ -8,4 +8,9 @@ vlan 396 name UCR-HPR
  router-interface ve 396
  no spanning-tree
 !
- 
+vlan 1054 name [CENIC]sie-ucla-paix-lax 
+ tagged ethe 5/1
+ tagged ethe 15/2
+ no multicast passive
+ transparent-hw-flooding
+!

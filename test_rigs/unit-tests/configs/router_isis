@@ -55,7 +55,7 @@ router isis
   hello-padding disable
   hello-interval 3
   address-family ipv4 unicast
-   metric 99999
+   metric 99999 level 2
   !
   address-family ipv6 unicast
    metric 99999

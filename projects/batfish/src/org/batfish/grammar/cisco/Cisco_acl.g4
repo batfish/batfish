@@ -166,6 +166,7 @@ extended_access_list_null_tail
       )
       | DYNAMIC
       | EVALUATE
+      | MENU
       | REMARK
       | STATISTICS
    ) ~NEWLINE* NEWLINE

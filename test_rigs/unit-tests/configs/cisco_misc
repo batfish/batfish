@@ -133,4 +133,61 @@ ipc zone default
     remote-ip 5.6.7.8
 aaa new-model
 !
-
+ip flow-aggregation cache source-prefix
+ enabled
+!
+dot11 ssid CENIC
+ vlan 1
+ authentication open 
+ authentication key-management wpa version 2
+ guest-mode
+ mbssid guest-mode
+!
+voice service voip 
+ allow-connections h323 to h323
+ h323
+ h225 id-passthru 
+!
+coap http enable
+!
+buffers small permanent 60
+!
+! the following line seem to be added by RANCIC
+No l4r_shim subsystem is included in this platform.
+!
+event manager applet Interface_Load 
+ event timer cron name Runat4 cron-entry "*/1 20 19 5 *"
+ action 1.0 syslog msg "Interface Status Saved - Check disk1:1.txt"
+ action 2.0 cli command "enable"
+ action 3.0 cli command "show clock | append disk1:1.txt"
+ action 4.0 cli command "show interface GigabitEthernet2/15 | append disk1:1.txt"
+!
+ip sla 10
+ path-echo 162.250.60.5 source-ip 137.164.13.81
+ request-data-size 64
+ frequency 600
+ history hours-of-statistics-kept 4
+ paths-of-statistics-kept 3
+ hops-of-statistics-kept 30
+ history distributions-of-statistics-kept 5
+ history statistics-distribution-interval 10
+ history lives-kept 2
+ history buckets-kept 25
+ samples-of-history-kept 10
+ history filter failures
+!
+dial-peer voice 1 voip
+ destination-pattern .T
+ session target ras
+ codec transparent
+ translation-profile 
+ incoming from-vide
+ media flow-around
+!
+gatekeeper
+ zone local SVL-GK.cenic.net cenic.net invia SVL-GK.cenic.net outvia SVL-GK.cenic.net
+ zone remote LAX-GK.cenic.net cenic.net 137.164.29.2 1719
+ gw-type-prefix 88*
+ lrq forward-queries add-hop-count
+ no shutdown
+!

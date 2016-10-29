@@ -40,3 +40,11 @@ line 2
  exec-timeout 1
  location The end of the world
 !
+line vty 0 4
+ access-class 99 in
+ exec-timeout 60 0
+! password 
+ logging synchronous
+ ipv6 access-class ipv6-vty-acl in
+ transport preferred none
+!

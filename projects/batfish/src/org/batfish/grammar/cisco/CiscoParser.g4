@@ -489,6 +489,7 @@ ip_route_vrfc_stanza
 
 l_access_class
 :
+   IPV6?
    ACCESS_CLASS
    (
       (
@@ -532,13 +533,16 @@ l_null
       ABSOLUTE_TIMEOUT
       | ACTIVATION_CHARACTER
       | AUTHORIZATION
+      | AUTOHANGUP
       | AUTOSELECT
       | DATABITS
       | EXEC
       | FLOWCONTROL
+      | FLUSH_AT_ACTIVATION
       | HISTORY
       | IPV6
       | LOCATION
+      | LOGGING
       | MODEM
       | ROTARY
       | SESSION_DISCONNECT_WARNING

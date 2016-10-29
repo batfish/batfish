@@ -109,7 +109,11 @@ metric_iis_stanza
 
 metric_is_stanza
 :
-   METRIC DEC NEWLINE
+   METRIC DEC 
+   (
+   	 LEVEL DEC
+   )? 
+   NEWLINE
 ;
 
 metric_style_is_stanza

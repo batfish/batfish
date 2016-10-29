@@ -25,6 +25,7 @@ null_block_stanza
       | BGP DISABLE_ADVERTISEMENT
       | BSD_CLIENT
       | BSD_USERNAME
+      | BUFFERS
       | CALL_HOME
       | CAM_ACL
       | CAM_PROFILE
@@ -39,6 +40,7 @@ null_block_stanza
       | CONFIGURATION
       | CONFIGURE
       | CONTROLLER
+      | COAP
       | COPP
       | COPY
       | COS_QUEUE_GROUP
@@ -162,6 +164,7 @@ null_block_stanza
       | MAP_LIST
       | MAXIMUM_PATHS
       | MEDIA_TERMINATION
+      | MENU
       | MLAG
       | MODULE
       | MONITOR
@@ -180,6 +183,7 @@ null_block_stanza
          )
       )
       | MULTI_CONFIG
+      | MULTICAST
       |
       (
          NO
@@ -207,6 +211,7 @@ null_block_stanza
       )
       | NLS
       | NO_BANNER
+      | NO_L4R_SHIM
       | NSR
       | ONE
       | OPENFLOW
@@ -228,6 +233,7 @@ null_block_stanza
       | RELOAD_TYPE
       | RMON
       | ROLE
+      | ROUTE_ONLY
       | ROUTER
       (
          LOG
@@ -268,6 +274,7 @@ null_block_stanza
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | TRANSPARENT_HW_FLOODING
       | TUNNEL_GROUP
       | UDF
       | USERGROUP
@@ -321,6 +328,7 @@ null_block_substanza
          | ADVERTISE
          | AESA
          | ALERT_GROUP
+         | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
          | ANYCONNECT
          | ANYCONNECT_ESSENTIALS
@@ -402,6 +410,7 @@ null_block_substanza
          | ECHO_CANCEL
          | EGRESS
          | ENABLE
+         | ENABLED
          | ENCAPSULATION
          | ENCRYPTION
          | END_POLICY_MAP
@@ -437,6 +446,10 @@ null_block_substanza
          | GROUP_LOCK
          | GROUP_POLICY
          | GROUP_URL
+         | GW_TYPE_PREFIX
+         | GUEST_MODE
+         | H225
+         | H323
          | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
          | HELPER_ADDRESS
@@ -444,7 +457,9 @@ null_block_substanza
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY
+         | HISTORY
          | HOMEDIR
+         | HOPS_OF_STATISTICS_KEPT
          | ICMP_ECHO
          | ID_MISMATCH
          | ID_RANDOMIZATION
@@ -500,6 +515,7 @@ null_block_substanza
          | LOG
          | LOGGING
          | LPTS
+         | LRQ
          | MAC_ADDRESS
          | MAIL_SERVER
          | MAIN_CPU
@@ -507,6 +523,8 @@ null_block_substanza
          | MATCH
          | MAX_ASSOCIATIONS
          | MAXIMUM
+         | MBSSID
+         | MEDIA
          | MEMBER
          | MESH_GROUP
          | MESSAGE_LENGTH
@@ -536,8 +554,10 @@ null_block_substanza
          | PARITY
          | PASSWORD
          | PASSWORD_STORAGE
+         | PATH_ECHO
          | PATH_JITTER
          | PATH_RETRANSMIT
+         | PATHS_OF_STATISTICS_KEPT
          | PAUSE
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
@@ -613,6 +633,7 @@ null_block_substanza
          | RP_ADDRESS
          | RULE
          | SA_FILTER
+		 | SAMPLES_OF_HISTORY_KEPT
          | SCHEME
          | SECRET
          | SEND_LIFETIME
@@ -625,6 +646,7 @@ null_block_substanza
          | SERVICE_POLICY
          | SERVICE_QUEUE
          | SERVICE_TYPE
+         | SESSION
          | SET
          | SEVERITY
          | SHAPE
@@ -674,6 +696,7 @@ null_block_substanza
          | TOP
          | TOS
          | TRACKING_PRIORITY_INCREMENT
+         | TRANSLATION_PROFILE
          | TRANSPORT
          | TRIGGER
          | TRUNK
@@ -710,6 +733,7 @@ null_block_substanza
          | WITHOUT_CSD
          | WRED
          | XML_CONFIG
+         | ZONE
       )
       (
          remaining_tokens += ~NEWLINE

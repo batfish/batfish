@@ -381,6 +381,11 @@ ALLOCATE
    'allocate'
 ;
 
+ALLOW_CONNECTIONS
+:
+   'allow-connections'
+;
+
 ALLOW
 :
    'allow'
@@ -703,6 +708,11 @@ AUTO_TUNNEL
    'auto-tunnel'
 ;
 
+AUTOHANGUP
+:
+   'autohangup'
+;
+
 AUTOROUTE
 :
    'autoroute'
@@ -921,6 +931,11 @@ BSR_CANDIDATE
 BUNDLE
 :
    'bundle'
+;
+
+BUFFERS
+:
+	'buffers'
 ;
 
 CA
@@ -1166,6 +1181,11 @@ CMD
 CNS
 :
    'cns'
+;
+
+COAP
+:
+   'coap'
 ;
 
 CODEC
@@ -1748,6 +1768,11 @@ DFA_REGEX
    'dfa-regex'
 ;
 
+DFS
+:
+   'dfs'
+;
+
 DHCP
 :
    'dhcp'
@@ -1771,6 +1796,11 @@ DIAGNOSTIC
 DIAL_PEER
 :
    'dial-peer'
+;
+
+DIALER
+:
+   'dialer'
 ;
 
 DIALER_LIST
@@ -2091,6 +2121,11 @@ EMPTY
 ENABLE
 :
    'enable'
+;
+
+ENABLED
+:
+   'enabled'
 ;
 
 ENCAPSULATION
@@ -2754,6 +2789,21 @@ GT
    'gt'
 ;
 
+GW_TYPE_PREFIX
+:
+   'gw-type-prefix'
+;
+
+GUEST_MODE
+:
+   'guest-mode'
+;
+
+H225
+:
+   'h225'
+;
+
 H323
 :
    'h323'
@@ -2862,6 +2912,11 @@ HOMEDIR
 HOP_LIMIT
 :
    'hop-limit'
+;
+
+HOPS_OF_STATISTICS_KEPT
+:
+   'hops-of-statistics-kept'
 ;
 
 HOST
@@ -3358,6 +3413,11 @@ L2_FILTER
    'l2-filter'
 ;
 
+L2PROTOCOL_TUNNEL
+:
+   'l2protocol-tunnel'
+;
+
 L2TP
 :
    'l2tp'
@@ -3456,6 +3516,11 @@ LEVEL_2
 LEVEL_2_ONLY
 :
    'level-2-only'
+;
+
+LEVEL
+:
+   'level'
 ;
 
 LDAP_BASE_DN
@@ -3668,6 +3733,11 @@ LRE
    'lre'
 ;
 
+LRQ
+:
+   'lrq'
+;
+
 LSP_GEN_INTERVAL
 :
    'lsp-gen-interval'
@@ -3873,6 +3943,11 @@ MAXIMUM_ROUTES
    'maximum-routes'
 ;
 
+MBSSID
+:
+   'mbssid'
+;
+
 MCAST_BOUNDARY
 :
    'mcast-boundary'
@@ -3893,6 +3968,11 @@ MED
    'med'
 ;
 
+MEDIA
+:
+   'media'
+;
+
 MEDIA_TERMINATION
 :
    'media-termination'
@@ -3911,6 +3991,11 @@ MEMBER
 MEMORY_SIZE
 :
    'memory-size'
+;
+
+MENU
+:
+   'menu'
 ;
 
 MESH_GROUP
@@ -4428,6 +4513,11 @@ NO_EXPORT
    'no-export'
 ;
 
+NO_L4R_SHIM
+:
+   'No l4r_shim'
+;
+
 NO_PREPEND
 :
    'no-prepend'
@@ -4748,6 +4838,11 @@ PASSWORD_STORAGE
    'password-storage'
 ;
 
+PATH_ECHO
+:
+   'path-echo'
+;
+
 PATH_JITTER
 :
    'path-jitter'
@@ -4763,6 +4858,11 @@ PATH_RETRANSMIT
    'path-retransmit'
 ;
 
+PATHS_OF_STATISTICS_KEPT
+:
+   'paths-of-statistics-kept'
+;
+
 PAUSE
 :
    'pause'
@@ -4776,6 +4876,11 @@ PCANYWHERE_DATA
 PCANYWHERE_STATUS
 :
    'pcanywhere-status'
+;
+
+PEAKDETECT
+:
+    'peakdetect'
 ;
 
 PEER
@@ -5748,6 +5853,11 @@ SAMPLER_MAP
    'sampler-map'
 ;
 
+SAMPLES_OF_HISTORY_KEPT
+:
+	'samples-of-history-kept'
+;
+
 SAP
 :
    'sap'
@@ -5791,6 +5901,11 @@ SCOPE
 SCP
 :
    'scp'
+;
+
+SCRAMBLE
+:
+   'scramble'
 ;
 
 SCRIPTING
@@ -5971,6 +6086,11 @@ SERVICE_QUEUE
 SERVICE_TYPE
 :
    'service-type'
+;
+
+SESSION
+:
+   'session'
 ;
 
 SESSION_DISCONNECT_WARNING
@@ -6338,6 +6458,11 @@ STATION_ROLE
 STATISTICS
 :
    'statistics'
+;
+
+STBC
+:
+   'stbc'
 ;
 
 STCAPP
@@ -6850,9 +6975,19 @@ TRANSLATE
    'translate'
 ;
 
+TRANSLATION_PROFILE
+:
+   'translation-profile'
+;
+
 TRANSMIT
 :
    'transmit'
+;
+
+TRANSPARENT_HW_FLOODING
+:
+   'transparent-hw-flooding'
 ;
 
 TRANSPORT
@@ -7472,6 +7607,11 @@ YELLOW
    'yellow'
 ;
 
+ZONE
+:
+   'zone'
+;
+
 // Other Tokens
 
 MULTICONFIGPART
@@ -8050,6 +8190,11 @@ M_AsPath_ACCESS_LIST
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
+;
+
+M_AsPath_RP_VARIABLE
+:
+   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type ( RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IN
@@ -8648,6 +8793,11 @@ M_Interface_NUMBER
 M_Interface_PERIOD
 :
    '.' -> type ( PERIOD )
+;
+
+M_Interface_PIPE
+:
+   '|' -> type ( PIPE ) , popMode
 ;
 
 M_Interface_PRECFONFIGURE

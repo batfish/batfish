@@ -298,6 +298,8 @@ null_block_if_stanza
       | DCBX
       | DCB_POLICY
       | DESTINATION
+      | DIALER
+      | DFS
       |
       (
          DSU BANDWIDTH
@@ -417,6 +419,7 @@ null_block_if_stanza
       )
       | KEEPALIVE
       | L2_FILTER
+      | L2PROTOCOL_TUNNEL
       | LANE
       | LAPB
       | LACP
@@ -456,6 +459,7 @@ null_block_if_stanza
       )
       | OPENFLOW
       | PATH_OPTION
+      | PEAKDETECT
       | PEER
       | PFC PRIORITY
       | PHYSICAL_LAYER
@@ -478,6 +482,7 @@ null_block_if_stanza
       | RCV_QUEUE
       | ROUTE_CACHE
       | ROUTE_ONLY
+      | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
       | SERVICE_MODULE
@@ -494,6 +499,7 @@ null_block_if_stanza
       | STACK_MIB
       | STANDBY
       | STATION_ROLE
+      | STBC
       | STORM_CONTROL
       |
       (
