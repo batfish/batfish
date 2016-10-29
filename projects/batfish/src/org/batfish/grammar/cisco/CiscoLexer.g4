@@ -3574,11 +3574,6 @@ LEVEL_2_ONLY
    'level-2-only'
 ;
 
-LEVEL
-:
-   'level'
-;
-
 LDAP_BASE_DN
 :
    'ldap-base-dn'

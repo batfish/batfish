@@ -10323,7 +10323,7 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
-        "testrig\\iptables\\host1.iptables" : {
+        "testrig/iptables/host1.iptables" : {
           "sentences" : [
             "(iptables_configuration",
             "  (declaration_table",
@@ -10497,7 +10497,7 @@
             "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)"
           ]
         },
-        "testrig\\iptables\\host2.iptables" : {
+        "testrig/iptables/host2.iptables" : {
           "sentences" : [
             "(iptables_configuration",
             "  (declaration_table",
