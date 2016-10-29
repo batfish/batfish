@@ -8,7 +8,7 @@ import java.util.TreeMap;
 public class SnmpServer implements Serializable {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 
@@ -17,7 +17,7 @@ public class SnmpServer implements Serializable {
    private SortedMap<String, SnmpHost> _hosts;
 
    private SortedMap<String, SortedSet<String>> _traps;
-   
+
    public SnmpServer() {
       _communities = new TreeMap<>();
       _hosts = new TreeMap<>();

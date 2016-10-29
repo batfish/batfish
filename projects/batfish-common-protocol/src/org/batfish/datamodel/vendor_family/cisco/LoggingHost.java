@@ -2,16 +2,14 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import org.batfish.common.util.ComparableStructure;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class SnmpHost extends ComparableStructure<String> {
+public class LoggingHost extends ComparableStructure<String> {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public SnmpHost(@JsonProperty(NAME_VAR) String name) {
+   public LoggingHost(String name) {
       super(name);
    }
 

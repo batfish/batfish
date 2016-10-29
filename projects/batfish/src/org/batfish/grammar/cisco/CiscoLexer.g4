@@ -366,6 +366,11 @@ ALERT_GROUP
    'alert-group'
 ;
 
+ALERTS
+:
+   'alerts'
+;
+
 ALIAS
 :
    'alias'
@@ -755,7 +760,7 @@ BANDWIDTH_PERCENTAGE
 
 BANNER
 :
-   'banner'  -> pushMode ( M_Banner )
+   'banner' -> pushMode ( M_Banner )
 ;
 
 BASH
@@ -916,6 +921,11 @@ BSR_BORDER
 BSR_CANDIDATE
 :
    'bsr-candidate'
+;
+
+BUFFERED
+:
+   'buffered'
 ;
 
 BUNDLE
@@ -1320,7 +1330,13 @@ CONTEXT
 
 CONTINUE
 :
-	('continue') | ('Continue')
+   (
+      'continue'
+   )
+   |
+   (
+      'Continue'
+   )
 ;
 
 CONTRACT_ID
@@ -1406,6 +1422,11 @@ CRC
 CREDENTIALS
 :
    'credentials'
+;
+
+CRITICAL
+:
+   'critical'
 ;
 
 CRYPTO
@@ -1553,6 +1574,11 @@ DEBUG
    'debug'
 ;
 
+DEBUGGING
+:
+   'debugging'
+;
+
 DECAP_GROUP
 :
    'decap-group'
@@ -1635,7 +1661,7 @@ DEFAULT_ROUTER
 
 DEFAULT_TASKGROUP
 :
-	'default-taskgroup'
+   'default-taskgroup'
 ;
 
 DEFAULT_VALUE
@@ -2083,6 +2109,11 @@ EMAIL_CONTACT
    'email-contact' -> pushMode ( M_Description )
 ;
 
+EMERGENCIES
+:
+   'emergencies'
+;
+
 EMPTY
 :
    'empty'
@@ -2193,6 +2224,11 @@ ERROR_ENABLE
 ERROR_RECOVERY
 :
    'error-recovery'
+;
+
+ERRORS
+:
+   'errors'
 ;
 
 ERSPAN_ID
@@ -2370,6 +2406,11 @@ EXTERNAL
 FABRIC
 :
    'fabric'
+;
+
+FACILITY
+:
+   'facility'
 ;
 
 FACILITY_ALARM
@@ -3104,6 +3145,11 @@ INFORMATION_REQUEST
    'information-request'
 ;
 
+INFORMATIONAL
+:
+   'informational'
+;
+
 INGRESS
 :
    'ingress'
@@ -3224,9 +3270,14 @@ IPV4
 
 IPV6
 :
-   ('ipv6') | ('IPV6')
+   (
+      'ipv6'
+   )
+   |
+   (
+      'IPV6'
+   )
 ;
-
 
 IPV6_ADDRESS_POOL
 :
@@ -3385,7 +3436,7 @@ LABEL
 
 LABELED_UNICAST
 :
-	'labeled-unicast'
+   'labeled-unicast'
 ;
 
 LACP
@@ -3436,6 +3487,11 @@ LE
 LEASE
 :
    'lease'
+;
+
+LEVEL
+:
+   'level'
 ;
 
 LEVEL_1
@@ -3621,6 +3677,11 @@ LOCATION
 LOG
 :
    'log'
+;
+
+LOGFILE
+:
+   'logfile'
 ;
 
 LOG_ADJACENCY_CHANGES
@@ -4498,6 +4559,11 @@ NOTIFICATION_TIMER
    'notification-timer'
 ;
 
+NOTIFICATIONS
+:
+   'notifications'
+;
+
 NOTIFY
 :
    'notify'
@@ -4541,6 +4607,11 @@ OBJECT
 OBJECT_GROUP
 :
    'object-group'
+;
+
+ON
+:
+   'on'
 ;
 
 ONE
@@ -5610,7 +5681,7 @@ ROOT
 
 RO
 :
-   [rR][oO]
+   [rR] [oO]
 ;
 
 ROTARY
@@ -6195,7 +6266,7 @@ SOURCE
 
 SOURCE_INTERFACE
 :
-   'source-interface'
+   'source-interface' -> pushMode ( M_Interface )
 ;
 
 SOURCE_IP_ADDRESS
@@ -6432,7 +6503,7 @@ SUBNET_ZERO
 
 SUB_ROUTE_MAP
 :
-	'sub-route-map'
+   'sub-route-map'
 ;
 
 SUBSCRIBE_TO
@@ -6545,6 +6616,11 @@ SYNCHRONIZATION
    'synchronization'
 ;
 
+SYNCHRONOUS
+:
+   'synchronous'
+;
+
 SYSLOG
 :
    'syslog'
@@ -6612,7 +6688,7 @@ TACACS_SERVER
 
 TAC_PLUS
 :
-	'tac_plus'
+   'tac_plus'
 ;
 
 TAG
@@ -6870,9 +6946,14 @@ TRANSPORT
    'transport'
 ;
 
+TRAP
+:
+   'trap'
+;
+
 TRAP_SOURCE
 :
-   'trap-source' -> pushMode(M_Interface)
+   'trap-source' -> pushMode ( M_Interface )
 ;
 
 TRAPS
@@ -7374,12 +7455,17 @@ VTY_POOL
 
 VXLAN
 :
-	'vxlan'
+   'vxlan'
 ;
 
 WAIT_START
 :
    'wait-start'
+;
+
+WARNINGS
+:
+   'warnings'
 ;
 
 WEBVPN
@@ -8393,58 +8479,52 @@ mode M_Banner;
 
 M_Banner_CONFIG_SAVE
 :
-   'config-save' -> type(CONFIG_SAVE), mode(M_BannerText)
+   'config-save' -> type ( CONFIG_SAVE ) , mode ( M_BannerText )
 ;
 
 M_Banner_EXEC
 :
-   'exec' -> type(EXEC), mode(M_BannerText)
-
+   'exec' -> type ( EXEC ) , mode ( M_BannerText )
 ;
 
 M_Banner_INCOMING
 :
-   'incoming' -> type(INCOMING), mode(M_BannerText)
-
+   'incoming' -> type ( INCOMING ) , mode ( M_BannerText )
 ;
 
 M_Banner_LOGIN
 :
-   'login' -> type(LOGIN), mode(M_BannerText)
-
+   'login' -> type ( LOGIN ) , mode ( M_BannerText )
 ;
 
 M_Banner_MOTD
 :
-   'motd' -> type(MOTD), mode(M_BannerText)
-
+   'motd' -> type ( MOTD ) , mode ( M_BannerText )
 ;
 
 M_Banner_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
 M_Banner_PROMPT_TIMEOUT
 :
-   'prompt-timeout' -> type(PROMPT_TIMEOUT), mode(M_BannerText)
-
+   'prompt-timeout' -> type ( PROMPT_TIMEOUT ) , mode ( M_BannerText )
 ;
 
 M_Banner_SLIP_PPP
 :
-   'slip-ppp' -> type(SLIP_PPP), mode(M_BannerText)
-
+   'slip-ppp' -> type ( SLIP_PPP ) , mode ( M_BannerText )
 ;
 
 M_Banner_VALUE
 :
-   'value' -> type(VALUE), mode(M_Description)
+   'value' -> type ( VALUE ) , mode ( M_Description )
 ;
 
 M_Banner_WS
 :
-   F_Whitespace+ -> channel (HIDDEN)
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_BannerText;

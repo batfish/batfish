@@ -296,6 +296,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private Prefix _prefix;
 
+   private Boolean _proxyArp;
+
    private String _routingPolicy;
 
    private SwitchportMode _switchportMode;
@@ -519,6 +521,10 @@ public final class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
+   public Boolean getProxyArp() {
+      return _proxyArp;
+   }
+
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(ROUTING_POLICY_VAR)
    public String getRoutingPolicy() {
@@ -663,6 +669,10 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(PREFIX_VAR)
    public void setPrefix(Prefix prefix) {
       _prefix = prefix;
+   }
+
+   public void setProxyArp(Boolean proxyArp) {
+      _proxyArp = proxyArp;
    }
 
    @JsonProperty(ROUTING_POLICY_VAR)

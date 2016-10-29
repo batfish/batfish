@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -81,7 +82,14 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAccountingDefault;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
+import org.batfish.datamodel.vendor_family.cisco.Buffered;
 import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.datamodel.vendor_family.cisco.Logging;
+import org.batfish.datamodel.vendor_family.cisco.LoggingHost;
+import org.batfish.datamodel.vendor_family.cisco.LoggingType;
+import org.batfish.datamodel.vendor_family.cisco.Ntp;
+import org.batfish.datamodel.vendor_family.cisco.NtpServer;
+import org.batfish.datamodel.vendor_family.cisco.Service;
 import org.batfish.datamodel.vendor_family.cisco.SnmpCommunity;
 import org.batfish.datamodel.vendor_family.cisco.SnmpHost;
 import org.batfish.datamodel.vendor_family.cisco.SnmpServer;
@@ -1067,8 +1075,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterAaa_accounting_commands(
          Aaa_accounting_commandsContext ctx) {
-      Map<String, AaaAccountingCommands> commands = _configuration
-            .getCf().getAaa().getAccounting().getCommands();
+      Map<String, AaaAccountingCommands> commands = _configuration.getCf()
+            .getAaa().getAccounting().getCommands();
       String level;
       if (ctx.level != null) {
          level = ctx.level.getText();
@@ -1360,6 +1368,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.MANAGEMENT() != null) {
          _currentVrf = CiscoConfiguration.MANAGEMENT_VRF_NAME;
+      }
+   }
+
+   @Override
+   public void enterIp_ssh(Ip_sshContext ctx) {
+      if (_configuration.getCf().getSsh() == null) {
+         _configuration.getCf().setSsh(new SshSettings());
       }
    }
 
@@ -1661,6 +1676,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_logging(S_loggingContext ctx) {
+      if (_configuration.getCf().getLogging() == null) {
+         _configuration.getCf().setLogging(new Logging());
+      }
+   }
+
+   @Override
+   public void enterS_ntp(S_ntpContext ctx) {
+      if (_configuration.getCf().getNtp() == null) {
+         _configuration.getCf().setNtp(new Ntp());
+      }
+   }
+
+   @Override
    public void enterS_snmp_server(S_snmp_serverContext ctx) {
       if (_configuration.getCf().getSnmpServer() == null) {
          _configuration.getCf().setSnmpServer(new SnmpServer());
@@ -1670,8 +1699,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterSs_community(Ss_communityContext ctx) {
       String name = ctx.name.getText();
-      Map<String, SnmpCommunity> communities = _configuration.getCf().getSnmpServer()
-            .getCommunities();
+      Map<String, SnmpCommunity> communities = _configuration.getCf()
+            .getSnmpServer().getCommunities();
       SnmpCommunity community = communities.get(name);
       if (community == null) {
          community = new SnmpCommunity(name);
@@ -1695,7 +1724,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Invalid host");
       }
-      Map<String, SnmpHost> hosts = _configuration.getCf().getSnmpServer().getHosts();
+      Map<String, SnmpHost> hosts = _configuration.getCf().getSnmpServer()
+            .getHosts();
       SnmpHost host = hosts.get(hostname);
       if (host == null) {
          host = new SnmpHost(hostname);
@@ -2296,6 +2326,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
+      boolean enabled = ctx.NO() == null;
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setProxyArp(enabled);
+      }
+   }
+
+   @Override
    public void exitInherit_peer_policy_bgp_tail(
          Inherit_peer_policy_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
@@ -2506,6 +2544,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIp_domain_name(Ip_domain_nameContext ctx) {
+      String name = ctx.name.getText();
+      _configuration.getCf().setDomainName(name);
+   }
+
+   @Override
    public void exitIp_ospf_cost_if_stanza(Ip_ospf_cost_if_stanzaContext ctx) {
       int cost = toInteger(ctx.cost);
       for (Interface currentInterface : _currentInterfaces) {
@@ -2650,6 +2694,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
+      int version = toInteger(ctx.version);
+      if (version < 1 || version > 2) {
+         throw new BatfishException("Invalid ssh version: " + version);
+      }
+      _configuration.getCf().getSsh().setVersion(version);
+   }
+
+   @Override
    public void exitIsis_metric_if_stanza(Isis_metric_if_stanzaContext ctx) {
       int metric = toInteger(ctx.metric);
       for (Interface iface : _currentInterfaces) {
@@ -2698,7 +2751,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("Invalid list name");
       }
       for (String line : _currentLineNames) {
-         _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
+         _configuration.getCf().getLines().get(line)
+               .setLoginAuthentication(list);
       }
    }
 
@@ -2723,6 +2777,101 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Line line = _configuration.getCf().getLines().get(currentName);
          setter.accept(line, protocol);
       }
+   }
+
+   @Override
+   public void exitLogging_buffered(Logging_bufferedContext ctx) {
+      Integer size = null;
+      Integer severityNum = null;
+      String severity = null;
+      if (ctx.size != null) {
+         int sizeRawNum = toInteger(ctx.size);
+         if (ctx.logging_severity() == null) {
+            if (sizeRawNum < Logging.MIN_LOGGING_BUFFER_SIZE) {
+               severityNum = sizeRawNum;
+               severity = toLoggingSeverity(severityNum);
+            }
+            else {
+               size = sizeRawNum;
+               severityNum = toLoggingSeverityNum(ctx.logging_severity());
+               severity = toLoggingSeverity(ctx.logging_severity());
+            }
+         }
+         else {
+            size = sizeRawNum;
+         }
+      }
+      else if (ctx.logging_severity() != null) {
+         severityNum = toLoggingSeverityNum(ctx.logging_severity());
+         severity = toLoggingSeverity(ctx.logging_severity());
+      }
+      Logging logging = _configuration.getCf().getLogging();
+      Buffered buffered = logging.getBuffered();
+      if (buffered == null) {
+         buffered = new Buffered();
+         logging.setBuffered(buffered);
+      }
+      buffered.setSeverity(severity);
+      buffered.setSeverityNum(severityNum);
+      buffered.setSize(size);
+   }
+
+   @Override
+   public void exitLogging_console(Logging_consoleContext ctx) {
+      Integer severityNum = null;
+      String severity = null;
+      if (ctx.logging_severity() != null) {
+         severityNum = toLoggingSeverityNum(ctx.logging_severity());
+         severity = toLoggingSeverity(ctx.logging_severity());
+      }
+      Logging logging = _configuration.getCf().getLogging();
+      LoggingType console = logging.getConsole();
+      if (console == null) {
+         console = new LoggingType();
+         logging.setConsole(console);
+      }
+      console.setSeverity(severity);
+      console.setSeverityNum(severityNum);
+   }
+
+   @Override
+   public void exitLogging_host(Logging_hostContext ctx) {
+      Logging logging = _configuration.getCf().getLogging();
+      String hostname = ctx.hostname.getText();
+      LoggingHost host = new LoggingHost(hostname);
+      logging.getHosts().put(hostname, host);
+   }
+
+   @Override
+   public void exitLogging_on(Logging_onContext ctx) {
+      Logging logging = _configuration.getCf().getLogging();
+      logging.setOn(true);
+   }
+
+   @Override
+   public void exitLogging_source_interface(
+         Logging_source_interfaceContext ctx) {
+      Logging logging = _configuration.getCf().getLogging();
+      String sourceInterface = toInterfaceName(ctx.interface_name());
+      logging.setSourceInterface(sourceInterface);
+   }
+
+   @Override
+   public void exitLogging_trap(Logging_trapContext ctx) {
+      Integer severityNum = null;
+      String severity = null;
+      if (ctx.logging_severity() != null) {
+         severityNum = toLoggingSeverityNum(ctx.logging_severity());
+         severity = toLoggingSeverity(ctx.logging_severity());
+      }
+      Logging logging = _configuration.getCf().getLogging();
+      LoggingType trap = logging.getTrap();
+      if (trap == null) {
+         trap = new LoggingType();
+         logging.setTrap(trap);
+      }
+      trap.setSeverity(severity);
+      trap.setSeverityNum(severityNum);
    }
 
    @Override
@@ -3044,6 +3193,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNtp_access_group(Ntp_access_groupContext ctx) {
       String name = ctx.name.getText();
       _configuration.getNtpAccessGroups().add(name);
+   }
+
+   @Override
+   public void exitNtp_server(Ntp_serverContext ctx) {
+      Ntp ntp = _configuration.getCf().getNtp();
+      String hostname = ctx.hostname.getText();
+      NtpServer server = ntp.getServers().get(hostname);
+      if (server == null) {
+         server = new NtpServer();
+         ntp.getServers().put(hostname, server);
+      }
    }
 
    @Override
@@ -3555,6 +3715,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_ip_source_route(S_ip_source_routeContext ctx) {
+      boolean enabled = ctx.NO() == null;
+      _configuration.getCf().setSourceRoute(enabled);
+   }
+
+   @Override
    public void exitS_line(S_lineContext ctx) {
       _currentLineNames = null;
    }
@@ -3578,8 +3744,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       List<String> words = ctx.words.stream().map(w -> w.getText())
             .collect(Collectors.toList());
       boolean enabled = ctx.NO() == null;
-      String name = String.join(".", words);
-      _configuration.getCf().getServices().put(name, enabled);
+      Iterator<String> i = words.iterator();
+      SortedMap<String, Service> currentServices = _configuration.getCf()
+            .getServices();
+      while (i.hasNext()) {
+         String name = i.next();
+         Service s = currentServices.get(name);
+         if (s == null) {
+            s = new Service();
+            currentServices.put(name, s);
+            if (enabled) {
+               s.setEnabled(true);
+            }
+            else if (!enabled && !i.hasNext()) {
+               s.disable();
+            }
+            currentServices = s.getSubservices();
+         }
+      }
    }
 
    @Override
@@ -3712,22 +3894,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterIp_ssh(Ip_sshContext ctx) {
-      if (_configuration.getCf().getSsh() == null) {
-         _configuration.getCf().setSsh(new SshSettings());
-      }
-   }
-   
-   @Override
-   public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
-      int version = toInteger(ctx.version);
-      if (version < 1 || version > 2) {
-         throw new BatfishException("Invalid ssh version: " + version);
-      }
-      _configuration.getCf().getSsh().setVersion(version);
-   }
-   
-   @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
       OriginType originType;
       Integer asNum = null;
@@ -3776,8 +3942,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String trapName = ctx.snmp_trap_type.getText();
       SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature.stream()
             .map(s -> s.getText()).collect(Collectors.toList()));
-      SortedMap<String, SortedSet<String>> traps = _configuration
-            .getCf().getSnmpServer().getTraps();
+      SortedMap<String, SortedSet<String>> traps = _configuration.getCf()
+            .getSnmpServer().getTraps();
       SortedSet<String> subfeatures = traps.get(trapName);
       if (subfeatures == null) {
          traps.put(trapName, subfeatureNames);
@@ -4252,6 +4418,70 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          throw convError(IsisMetricType.class, ctx);
+      }
+   }
+
+   private String toLoggingSeverity(int severityNum) {
+      switch (severityNum) {
+      case 0:
+         return Logging.SEVERITY_EMERGENCIES;
+      case 1:
+         return Logging.SEVERITY_ALERTS;
+      case 2:
+         return Logging.SEVERITY_CRITICAL;
+      case 3:
+         return Logging.SEVERITY_ERRORS;
+      case 4:
+         return Logging.SEVERITY_WARNINGS;
+      case 5:
+         return Logging.SEVERITY_NOTIFICATIONS;
+      case 6:
+         return Logging.SEVERITY_INFORMATIONAL;
+      case 7:
+         return Logging.SEVERITY_DEBUGGING;
+      default:
+         throw new BatfishException("Invalid logging severity: " + severityNum);
+      }
+   }
+
+   private String toLoggingSeverity(Logging_severityContext ctx) {
+      if (ctx.DEC() != null) {
+         int severityNum = toInteger(ctx.DEC());
+         return toLoggingSeverity(severityNum);
+      }
+      else {
+         return ctx.getText();
+      }
+   }
+
+   private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
+      if (ctx.EMERGENCIES() != null) {
+         return 0;
+      }
+      else if (ctx.ALERTS() != null) {
+         return 1;
+      }
+      else if (ctx.CRITICAL() != null) {
+         return 2;
+      }
+      else if (ctx.ERRORS() != null) {
+         return 3;
+      }
+      else if (ctx.WARNINGS() != null) {
+         return 4;
+      }
+      else if (ctx.NOTIFICATIONS() != null) {
+         return 5;
+      }
+      else if (ctx.INFORMATIONAL() != null) {
+         return 6;
+      }
+      else if (ctx.DEBUGGING() != null) {
+         return 7;
+      }
+      else {
+         throw new BatfishException(
+               "Invalid logging severity: " + ctx.getText());
       }
    }
 

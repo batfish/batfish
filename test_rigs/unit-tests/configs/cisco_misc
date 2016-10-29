@@ -26,6 +26,7 @@ load-balance policies
     fields ip protocol dst-ip dst-port src-ip src-port
     distribution symmetric-hash mac-ip
 no lldp run
+ip domain-name my.domain.name
 sntp server 1.2.3.4
 time-range ACCTIME-247
  periodic daily 0:00 to 23:59

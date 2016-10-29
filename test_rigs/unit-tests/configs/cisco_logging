@@ -1,0 +1,23 @@
+!
+hostname cisco_logging
+!
+logging event link-status default
+logging facility local0
+logging host 10.246.131.130
+logging host 10.246.131.138
+logging ip access-list cache entries 5000
+logging ip access-list cache interval 5
+logging ip access-list cache threshold 50000
+logging level acllog 3
+logging level acllog 6
+logging logfile aclfile 3
+logging server 1.2.3.4 6 use-vrf default facility local0
+logging server 1.2.3.4 6 use-vrf management facility local0
+logging source-interface loopback0
+logging source-interface Loopback0
+logging source-interface mgmt0
+logging source-interface Vlan1
+logging timestamp milliseconds
+no logging console
+!
+

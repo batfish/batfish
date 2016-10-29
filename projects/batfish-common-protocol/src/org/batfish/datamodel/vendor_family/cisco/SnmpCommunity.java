@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SnmpCommunity extends ComparableStructure<String> {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 

@@ -215,36 +215,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 16,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 17,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 18,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 19,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 20,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 21,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 22,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -262,7 +232,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 23,
+              "@id" : 16,
               "name" : "101",
               "lines" : [
                 {
@@ -278,7 +248,7 @@
               ]
             },
             "102" : {
-              "@id" : 24,
+              "@id" : 17,
               "name" : "102",
               "lines" : [
                 {
@@ -294,7 +264,7 @@
               ]
             },
             "103" : {
-              "@id" : 25,
+              "@id" : 18,
               "name" : "103",
               "lines" : [
                 {
@@ -310,7 +280,7 @@
               ]
             },
             "default_list" : {
-              "@id" : 26,
+              "@id" : 19,
               "name" : "default_list",
               "lines" : [
                 {
@@ -321,7 +291,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 27,
+              "@id" : 20,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -337,11 +307,11 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 28,
+              "@id" : 21,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 29,
+              "@id" : 22,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -359,7 +329,7 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 30,
+              "@id" : 23,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -492,7 +462,7 @@
               ]
             },
             "as1_to_as3" : {
-              "@id" : 31,
+              "@id" : 24,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -584,7 +554,7 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 32,
+              "@id" : 25,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -617,7 +587,7 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 33,
+              "@id" : 26,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -650,7 +620,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 34,
+              "@id" : 27,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -696,7 +666,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:1.10.1.1~" : {
-              "@id" : 35,
+              "@id" : 28,
               "name" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
               "statements" : [
                 {
@@ -722,7 +692,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.12.11.2~" : {
-              "@id" : 36,
+              "@id" : 29,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.12.11.2~",
               "statements" : [
                 {
@@ -757,7 +727,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:3.2.2.2~" : {
-              "@id" : 37,
+              "@id" : 30,
               "name" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
               "statements" : [
                 {
@@ -783,7 +753,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:5.6.7.8~" : {
-              "@id" : 38,
+              "@id" : 31,
               "name" : "~BGP_PEER_EXPORT_POLICY:5.6.7.8~",
               "statements" : [
                 {
@@ -809,7 +779,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 39,
+              "@id" : 32,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -838,6 +808,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as1border1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 33,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 34,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 35,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 36,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 37,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 38,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 39,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -1063,36 +1112,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 56,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 57,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 58,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 59,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 60,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 61,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 62,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -1110,7 +1129,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 63,
+              "@id" : 56,
               "name" : "101",
               "lines" : [
                 {
@@ -1126,7 +1145,7 @@
               ]
             },
             "102" : {
-              "@id" : 64,
+              "@id" : 57,
               "name" : "102",
               "lines" : [
                 {
@@ -1142,7 +1161,7 @@
               ]
             },
             "103" : {
-              "@id" : 65,
+              "@id" : 58,
               "name" : "103",
               "lines" : [
                 {
@@ -1158,7 +1177,7 @@
               ]
             },
             "as4-prefixes" : {
-              "@id" : 66,
+              "@id" : 59,
               "name" : "as4-prefixes",
               "lines" : [
                 {
@@ -1169,7 +1188,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 67,
+              "@id" : 60,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -1185,11 +1204,11 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 68,
+              "@id" : 61,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 69,
+              "@id" : 62,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -1207,7 +1226,7 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 70,
+              "@id" : 63,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -1299,7 +1318,7 @@
               ]
             },
             "as1_to_as3" : {
-              "@id" : 71,
+              "@id" : 64,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -1391,7 +1410,7 @@
               ]
             },
             "as1_to_as4" : {
-              "@id" : 72,
+              "@id" : 65,
               "name" : "as1_to_as4",
               "statements" : [
                 {
@@ -1430,7 +1449,7 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 73,
+              "@id" : 66,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -1463,7 +1482,7 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 74,
+              "@id" : 67,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -1496,7 +1515,7 @@
               ]
             },
             "as4_to_as1" : {
-              "@id" : 75,
+              "@id" : 68,
               "name" : "as4_to_as1",
               "statements" : [
                 {
@@ -1541,7 +1560,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 76,
+              "@id" : 69,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -1587,7 +1606,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:1.10.1.1~" : {
-              "@id" : 77,
+              "@id" : 70,
               "name" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
               "statements" : [
                 {
@@ -1613,7 +1632,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.13.22.3~" : {
-              "@id" : 78,
+              "@id" : 71,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.13.22.3~",
               "statements" : [
                 {
@@ -1648,7 +1667,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.14.22.4~" : {
-              "@id" : 79,
+              "@id" : 72,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.14.22.4~",
               "statements" : [
                 {
@@ -1683,7 +1702,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 80,
+              "@id" : 73,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -1712,6 +1731,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as1border2",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 74,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 75,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 76,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 77,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 78,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 79,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 80,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -1794,36 +1892,6 @@
               "prefix" : "1.10.1.1/32"
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 88,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 89,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 90,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 91,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 92,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 93,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 94,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -1842,17 +1910,17 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 95,
+              "@id" : 88,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 96,
+              "@id" : 89,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 97,
+              "@id" : 90,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -1898,7 +1966,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:1.1.1.1~" : {
-              "@id" : 98,
+              "@id" : 91,
               "name" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
               "statements" : [
                 {
@@ -1924,7 +1992,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:1.2.2.2~" : {
-              "@id" : 99,
+              "@id" : 92,
               "name" : "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
               "statements" : [
                 {
@@ -1950,23 +2018,93 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 100,
+              "@id" : 93,
               "name" : "~OSPF_EXPORT_POLICY~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as1core1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 94,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 95,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 96,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 97,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 98,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 99,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 100,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
         "as2border1" : {
           "@id" : 101,
           "name" : "as2border1",
-          "aaa" : {
-            "authentication" : {
-              "login" : {
-                "lists" : { },
-                "privilegeMode" : true
-              }
-            },
-            "newModel" : true
-          },
           "aggregateRoutes" : [
             {
               "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -2225,36 +2363,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 117,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 118,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 119,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 120,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 121,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 122,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 123,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -2273,7 +2381,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 124,
+              "@id" : 117,
               "name" : "101",
               "lines" : [
                 {
@@ -2289,7 +2397,7 @@
               ]
             },
             "103" : {
-              "@id" : 125,
+              "@id" : 118,
               "name" : "103",
               "lines" : [
                 {
@@ -2305,7 +2413,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 126,
+              "@id" : 119,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -2321,7 +2429,7 @@
               ]
             },
             "outbound_routes" : {
-              "@id" : 127,
+              "@id" : 120,
               "name" : "outbound_routes",
               "lines" : [
                 {
@@ -2332,7 +2440,7 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 128,
+              "@id" : 121,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
               "lines" : [
                 {
@@ -2343,11 +2451,11 @@
               ]
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 129,
+              "@id" : 122,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             },
             "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
-              "@id" : 130,
+              "@id" : 123,
               "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~",
               "lines" : [
                 {
@@ -2360,7 +2468,7 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 131,
+              "@id" : 124,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -2393,7 +2501,7 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 132,
+              "@id" : 125,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -2485,7 +2593,7 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 133,
+              "@id" : 126,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -2577,7 +2685,7 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 134,
+              "@id" : 127,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -2610,7 +2718,7 @@
               ]
             },
             "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~" : {
-              "@id" : 135,
+              "@id" : 128,
               "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
               "statements" : [
                 {
@@ -2634,7 +2742,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 136,
+              "@id" : 129,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -2697,7 +2805,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.12.11.1~" : {
-              "@id" : 137,
+              "@id" : 130,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
               "statements" : [
                 {
@@ -2732,7 +2840,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-              "@id" : 138,
+              "@id" : 131,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
               "statements" : [
                 {
@@ -2758,7 +2866,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-              "@id" : 139,
+              "@id" : 132,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
               "statements" : [
                 {
@@ -2784,7 +2892,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 140,
+              "@id" : 133,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -2813,6 +2921,94 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "aaa" : {
+                "authentication" : {
+                  "login" : {
+                    "lists" : { },
+                    "privilegeMode" : true
+                  }
+                },
+                "newModel" : true
+              },
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2border1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 134,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 135,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 136,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 137,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 138,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 139,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 140,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -3067,36 +3263,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 157,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 158,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 159,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 160,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 161,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 162,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 163,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -3115,7 +3281,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 164,
+              "@id" : 157,
               "name" : "101",
               "lines" : [
                 {
@@ -3131,7 +3297,7 @@
               ]
             },
             "103" : {
-              "@id" : 165,
+              "@id" : 158,
               "name" : "103",
               "lines" : [
                 {
@@ -3147,7 +3313,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 166,
+              "@id" : 159,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -3163,7 +3329,7 @@
               ]
             },
             "outbound_routes" : {
-              "@id" : 167,
+              "@id" : 160,
               "name" : "outbound_routes",
               "lines" : [
                 {
@@ -3174,7 +3340,7 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 168,
+              "@id" : 161,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~",
               "lines" : [
                 {
@@ -3185,11 +3351,11 @@
               ]
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 169,
+              "@id" : 162,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             },
             "~MATCH_SUPPRESSED_SUMMARY_ONLY~" : {
-              "@id" : 170,
+              "@id" : 163,
               "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~",
               "lines" : [
                 {
@@ -3202,7 +3368,7 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 171,
+              "@id" : 164,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -3253,7 +3419,7 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 172,
+              "@id" : 165,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -3345,7 +3511,7 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 173,
+              "@id" : 166,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -3437,7 +3603,7 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 174,
+              "@id" : 167,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -3488,7 +3654,7 @@
               ]
             },
             "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~" : {
-              "@id" : 175,
+              "@id" : 168,
               "name" : "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
               "statements" : [
                 {
@@ -3512,7 +3678,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 176,
+              "@id" : 169,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -3575,7 +3741,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.23.21.3~" : {
-              "@id" : 177,
+              "@id" : 170,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.23.21.3~",
               "statements" : [
                 {
@@ -3610,7 +3776,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-              "@id" : 178,
+              "@id" : 171,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
               "statements" : [
                 {
@@ -3636,7 +3802,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-              "@id" : 179,
+              "@id" : 172,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
               "statements" : [
                 {
@@ -3662,7 +3828,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 180,
+              "@id" : 173,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -3691,6 +3857,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2border2",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 174,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 175,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 176,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 177,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 178,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 179,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 180,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -3863,36 +4108,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 193,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 194,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 195,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 196,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 197,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 198,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 199,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -3913,17 +4128,17 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 200,
+              "@id" : 193,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 201,
+              "@id" : 194,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 202,
+              "@id" : 195,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -3969,7 +4184,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.1.1~" : {
-              "@id" : 203,
+              "@id" : 196,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
               "statements" : [
                 {
@@ -3995,7 +4210,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.1.2~" : {
-              "@id" : 204,
+              "@id" : 197,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
               "statements" : [
                 {
@@ -4021,7 +4236,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.3.1~" : {
-              "@id" : 205,
+              "@id" : 198,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
               "statements" : [
                 {
@@ -4047,7 +4262,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.3.2~" : {
-              "@id" : 206,
+              "@id" : 199,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
               "statements" : [
                 {
@@ -4073,8 +4288,87 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 207,
+              "@id" : 200,
               "name" : "~OSPF_EXPORT_POLICY~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2core1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 201,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 202,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 203,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 204,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 205,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 206,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 207,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -4211,36 +4505,6 @@
               "prefix" : "2.1.2.2/32"
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 219,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 220,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 221,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 222,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 223,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 224,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 225,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -4261,17 +4525,17 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 226,
+              "@id" : 219,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 227,
+              "@id" : 220,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 228,
+              "@id" : 221,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -4317,7 +4581,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.1.1~" : {
-              "@id" : 229,
+              "@id" : 222,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
               "statements" : [
                 {
@@ -4343,7 +4607,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.1.2~" : {
-              "@id" : 230,
+              "@id" : 223,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
               "statements" : [
                 {
@@ -4369,7 +4633,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.3.1~" : {
-              "@id" : 231,
+              "@id" : 224,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
               "statements" : [
                 {
@@ -4395,7 +4659,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.3.2~" : {
-              "@id" : 232,
+              "@id" : 225,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
               "statements" : [
                 {
@@ -4421,8 +4685,87 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 233,
+              "@id" : 226,
               "name" : "~OSPF_EXPORT_POLICY~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2core2",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 227,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 228,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 229,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 230,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 231,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 232,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 233,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -4685,39 +5028,9 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 247,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 248,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 249,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 250,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 251,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 252,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 253,
-              "name" : "vty4"
-            }
-          },
           "routeFilterLists" : {
             "102" : {
-              "@id" : 254,
+              "@id" : 247,
               "name" : "102",
               "lines" : [
                 {
@@ -4733,11 +5046,11 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 255,
+              "@id" : 248,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 256,
+              "@id" : 249,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -4755,7 +5068,7 @@
           },
           "routingPolicies" : {
             "as2_to_dept" : {
-              "@id" : 257,
+              "@id" : 250,
               "name" : "as2_to_dept",
               "statements" : [
                 {
@@ -4788,7 +5101,7 @@
               ]
             },
             "dept_to_as2" : {
-              "@id" : 258,
+              "@id" : 251,
               "name" : "dept_to_as2",
               "statements" : [
                 {
@@ -4839,7 +5152,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 259,
+              "@id" : 252,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -4885,7 +5198,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.34.101.3~" : {
-              "@id" : 260,
+              "@id" : 253,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.34.101.3~",
               "statements" : [
                 {
@@ -4920,7 +5233,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.34.201.3~" : {
-              "@id" : 261,
+              "@id" : 254,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.34.201.3~",
               "statements" : [
                 {
@@ -4953,6 +5266,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2dept1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 255,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 256,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 257,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 258,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 259,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 260,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 261,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -5134,36 +5526,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 274,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 275,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 276,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 277,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 278,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 279,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 280,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -5182,7 +5544,7 @@
           },
           "routeFilterLists" : {
             "105" : {
-              "@id" : 281,
+              "@id" : 274,
               "name" : "105",
               "lines" : [
                 {
@@ -5208,17 +5570,17 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 282,
+              "@id" : 275,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 283,
+              "@id" : 276,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             }
           },
           "routingPolicies" : {
             "as2_to_dept" : {
-              "@id" : 284,
+              "@id" : 277,
               "name" : "as2_to_dept",
               "statements" : [
                 {
@@ -5269,7 +5631,7 @@
               ]
             },
             "dept_to_as2" : {
-              "@id" : 285,
+              "@id" : 278,
               "name" : "dept_to_as2",
               "statements" : [
                 {
@@ -5302,7 +5664,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 286,
+              "@id" : 279,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -5348,7 +5710,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-              "@id" : 287,
+              "@id" : 280,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
               "statements" : [
                 {
@@ -5374,7 +5736,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-              "@id" : 288,
+              "@id" : 281,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
               "statements" : [
                 {
@@ -5400,7 +5762,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.34.101.4~" : {
-              "@id" : 289,
+              "@id" : 282,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.34.101.4~",
               "statements" : [
                 {
@@ -5435,7 +5797,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 290,
+              "@id" : 283,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -5464,6 +5826,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2dist1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 284,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 285,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 286,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 287,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 288,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 289,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 290,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -5645,36 +6086,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 303,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 304,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 305,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 306,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 307,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 308,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 309,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -5693,7 +6104,7 @@
           },
           "routeFilterLists" : {
             "105" : {
-              "@id" : 310,
+              "@id" : 303,
               "name" : "105",
               "lines" : [
                 {
@@ -5719,17 +6130,17 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 311,
+              "@id" : 304,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 312,
+              "@id" : 305,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
             }
           },
           "routingPolicies" : {
             "as2_to_dept" : {
-              "@id" : 313,
+              "@id" : 306,
               "name" : "as2_to_dept",
               "statements" : [
                 {
@@ -5780,7 +6191,7 @@
               ]
             },
             "dept_to_as2" : {
-              "@id" : 314,
+              "@id" : 307,
               "name" : "dept_to_as2",
               "statements" : [
                 {
@@ -5813,7 +6224,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 315,
+              "@id" : 308,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -5859,7 +6270,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~" : {
-              "@id" : 316,
+              "@id" : 309,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
               "statements" : [
                 {
@@ -5885,7 +6296,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~" : {
-              "@id" : 317,
+              "@id" : 310,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
               "statements" : [
                 {
@@ -5911,7 +6322,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:2.34.201.4~" : {
-              "@id" : 318,
+              "@id" : 311,
               "name" : "~BGP_PEER_EXPORT_POLICY:2.34.201.4~",
               "statements" : [
                 {
@@ -5946,7 +6357,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 319,
+              "@id" : 312,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -5975,6 +6386,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as2dist2",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 313,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 314,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 315,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 316,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 317,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 318,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 319,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -6166,36 +6656,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 333,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 334,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 335,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 336,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 337,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 338,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 339,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -6213,7 +6673,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 340,
+              "@id" : 333,
               "name" : "101",
               "lines" : [
                 {
@@ -6229,7 +6689,7 @@
               ]
             },
             "102" : {
-              "@id" : 341,
+              "@id" : 334,
               "name" : "102",
               "lines" : [
                 {
@@ -6245,7 +6705,7 @@
               ]
             },
             "103" : {
-              "@id" : 342,
+              "@id" : 335,
               "name" : "103",
               "lines" : [
                 {
@@ -6261,7 +6721,7 @@
               ]
             },
             "default_list" : {
-              "@id" : 343,
+              "@id" : 336,
               "name" : "default_list",
               "lines" : [
                 {
@@ -6272,7 +6732,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 344,
+              "@id" : 337,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -6288,11 +6748,11 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 345,
+              "@id" : 338,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 346,
+              "@id" : 339,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -6310,7 +6770,7 @@
           },
           "routingPolicies" : {
             "as1_to_as3" : {
-              "@id" : 347,
+              "@id" : 340,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -6343,7 +6803,7 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 348,
+              "@id" : 341,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -6376,7 +6836,7 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 349,
+              "@id" : 342,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -6468,7 +6928,7 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 350,
+              "@id" : 343,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -6601,7 +7061,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 351,
+              "@id" : 344,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -6647,7 +7107,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.23.21.2~" : {
-              "@id" : 352,
+              "@id" : 345,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.23.21.2~",
               "statements" : [
                 {
@@ -6682,7 +7142,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:3.10.1.1~" : {
-              "@id" : 353,
+              "@id" : 346,
               "name" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
               "statements" : [
                 {
@@ -6708,7 +7168,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 354,
+              "@id" : 347,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -6737,6 +7197,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as3border1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 348,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 349,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 350,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 351,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 352,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 353,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 354,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -6928,36 +7467,6 @@
               ]
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 368,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 369,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 370,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 371,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 372,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 373,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 374,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -6975,7 +7484,7 @@
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 375,
+              "@id" : 368,
               "name" : "101",
               "lines" : [
                 {
@@ -6991,7 +7500,7 @@
               ]
             },
             "102" : {
-              "@id" : 376,
+              "@id" : 369,
               "name" : "102",
               "lines" : [
                 {
@@ -7007,7 +7516,7 @@
               ]
             },
             "103" : {
-              "@id" : 377,
+              "@id" : 370,
               "name" : "103",
               "lines" : [
                 {
@@ -7023,7 +7532,7 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 378,
+              "@id" : 371,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -7039,11 +7548,11 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 379,
+              "@id" : 372,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 380,
+              "@id" : 373,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -7061,7 +7570,7 @@
           },
           "routingPolicies" : {
             "as1_to_as3" : {
-              "@id" : 381,
+              "@id" : 374,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -7094,7 +7603,7 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 382,
+              "@id" : 375,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -7127,7 +7636,7 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 383,
+              "@id" : 376,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -7219,7 +7728,7 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 384,
+              "@id" : 377,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -7311,7 +7820,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 385,
+              "@id" : 378,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -7357,7 +7866,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:10.13.22.1~" : {
-              "@id" : 386,
+              "@id" : 379,
               "name" : "~BGP_PEER_EXPORT_POLICY:10.13.22.1~",
               "statements" : [
                 {
@@ -7392,7 +7901,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:3.10.1.1~" : {
-              "@id" : 387,
+              "@id" : 380,
               "name" : "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
               "statements" : [
                 {
@@ -7418,7 +7927,7 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 388,
+              "@id" : 381,
               "name" : "~OSPF_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -7447,6 +7956,85 @@
                   ]
                 }
               ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as3border2",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 382,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 383,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 384,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 385,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 386,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 387,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 388,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -7549,36 +8137,6 @@
               "prefix" : "3.10.1.1/32"
             }
           },
-          "lines" : {
-            "aux0" : {
-              "@id" : 398,
-              "name" : "aux0"
-            },
-            "con0" : {
-              "@id" : 399,
-              "name" : "con0"
-            },
-            "vty0" : {
-              "@id" : 400,
-              "name" : "vty0"
-            },
-            "vty1" : {
-              "@id" : 401,
-              "name" : "vty1"
-            },
-            "vty2" : {
-              "@id" : 402,
-              "name" : "vty2"
-            },
-            "vty3" : {
-              "@id" : 403,
-              "name" : "vty3"
-            },
-            "vty4" : {
-              "@id" : 404,
-              "name" : "vty4"
-            }
-          },
           "ospfProcess" : {
             "areas" : {
               "1" : {
@@ -7597,11 +8155,11 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:~" : {
-              "@id" : 405,
+              "@id" : 398,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER~" : {
-              "@id" : 406,
+              "@id" : 399,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER~",
               "lines" : [
                 {
@@ -7619,7 +8177,7 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY~" : {
-              "@id" : 407,
+              "@id" : 400,
               "name" : "~BGP_COMMON_EXPORT_POLICY~",
               "statements" : [
                 {
@@ -7665,7 +8223,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:3.1.1.1~" : {
-              "@id" : 408,
+              "@id" : 401,
               "name" : "~BGP_PEER_EXPORT_POLICY:3.1.1.1~",
               "statements" : [
                 {
@@ -7691,7 +8249,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:3.2.2.2~" : {
-              "@id" : 409,
+              "@id" : 402,
               "name" : "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
               "statements" : [
                 {
@@ -7717,8 +8275,87 @@
               ]
             },
             "~OSPF_EXPORT_POLICY~" : {
-              "@id" : 410,
+              "@id" : 403,
               "name" : "~OSPF_EXPORT_POLICY~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "banners" : { },
+              "features" : { },
+              "hostname" : "as3core1",
+              "lines" : {
+                "aux0" : {
+                  "@id" : 404,
+                  "name" : "aux0"
+                },
+                "con0" : {
+                  "@id" : 405,
+                  "name" : "con0"
+                },
+                "vty0" : {
+                  "@id" : 406,
+                  "name" : "vty0"
+                },
+                "vty1" : {
+                  "@id" : 407,
+                  "name" : "vty1"
+                },
+                "vty2" : {
+                  "@id" : 408,
+                  "name" : "vty2"
+                },
+                "vty3" : {
+                  "@id" : 409,
+                  "name" : "vty3"
+                },
+                "vty4" : {
+                  "@id" : 410,
+                  "name" : "vty4"
+                }
+              },
+              "logging" : {
+                "hosts" : { }
+              },
+              "services" : {
+                "log" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "datetime" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "msec" : {
+                          "enabled" : true,
+                          "subservices" : { }
+                        }
+                      }
+                    }
+                  }
+                },
+                "password-encryption" : {
+                  "enabled" : false,
+                  "subservices" : { }
+                },
+                "timestamps" : {
+                  "enabled" : true,
+                  "subservices" : {
+                    "debug" : {
+                      "enabled" : true,
+                      "subservices" : {
+                        "datetime" : {
+                          "enabled" : true,
+                          "subservices" : {
+                            "msec" : {
+                              "enabled" : true,
+                              "subservices" : { }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -7869,7 +8506,8 @@
               "tag" : -1,
               "administrativeCost" : 1
             }
-          ]
+          ],
+          "vendorFamily" : { }
         },
         "host2" : {
           "@id" : 424,
@@ -8015,7 +8653,8 @@
               "tag" : -1,
               "administrativeCost" : 1
             }
-          ]
+          ],
+          "vendorFamily" : { }
         }
       }
     }

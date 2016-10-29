@@ -60,7 +60,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
-import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 
 public final class CiscoVendorConfiguration extends CiscoConfiguration {
@@ -895,6 +894,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       newIface.setActive(iface.getActive());
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
+      newIface.setProxyArp(iface.getProxyArp());
       if (iface.getPrefix() != null) {
          newIface.setPrefix(iface.getPrefix());
          newIface.getAllPrefixes().add(iface.getPrefix());
@@ -1739,9 +1739,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    @Override
    public Configuration toVendorIndependentConfiguration() {
       final Configuration c = new Configuration(_hostname);
-      CiscoFamily cf = new CiscoFamily();
       c.setConfigurationFormat(_vendor);
-      c.getVendorFamily().setCisco(cf);
+      c.getVendorFamily().setCisco(_cf);
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);

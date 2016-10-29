@@ -7,7 +7,7 @@ import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 public class VendorFamily implements Serializable {
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
    private CiscoFamily _cisco;
@@ -19,5 +19,5 @@ public class VendorFamily implements Serializable {
    public void setCisco(CiscoFamily cisco) {
       _cisco = cisco;
    }
-   
+
 }

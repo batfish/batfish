@@ -19,6 +19,11 @@ public class Interface extends ComparableStructure<String> {
 
    private static final int DEFAULT_INTERFACE_MTU = 1500;
 
+   /**
+    * NX-OS Ethernet 802.3z - may not apply for non-NX-OS
+    */
+   private static final double ETHERNET_BANDWIDTH = 1E9;
+
    private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
 
    private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
@@ -36,7 +41,10 @@ public class Interface extends ComparableStructure<String> {
 
    public static double getDefaultBandwidth(String name) {
       Double bandwidth = null;
-      if (name.startsWith("FastEthernet")) {
+      if (name.startsWith("Ethernet")) {
+         bandwidth = ETHERNET_BANDWIDTH;
+      }
+      else if (name.startsWith("FastEthernet")) {
          bandwidth = FAST_ETHERNET_BANDWIDTH;
       }
       else if (name.startsWith("GigabitEthernet")) {
@@ -93,6 +101,8 @@ public class Interface extends ComparableStructure<String> {
    private String _outgoingFilter;
 
    private Prefix _prefix;
+
+   private Boolean _proxyArp;
 
    private String _routingPolicy;
 
@@ -191,6 +201,10 @@ public class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
+   public Boolean getProxyArp() {
+      return _proxyArp;
+   }
+
    public String getRoutingPolicy() {
       return _routingPolicy;
    }
@@ -273,6 +287,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setPrefix(Prefix prefix) {
       _prefix = prefix;
+   }
+
+   public void setProxyArp(Boolean proxyArp) {
+      _proxyArp = proxyArp;
    }
 
    public void setRoutingPolicy(String routingPolicy) {

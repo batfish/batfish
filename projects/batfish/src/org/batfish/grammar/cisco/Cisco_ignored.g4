@@ -152,7 +152,6 @@ null_block_stanza
       | LACP
       | LINECARD
       | LOAD_BALANCE
-      | LOGGING
       | LOGIN
       | MAC
       | MAC_LEARN
@@ -203,6 +202,7 @@ null_block_stanza
                   AS_PATH
                )
             )
+            | LOGGING
          )
       )
       | NLS
@@ -501,7 +501,6 @@ null_block_substanza
          | LOCAL_IP
          | LOCAL_PORT
          | LOG
-         | LOGGING
          | LPTS
          | MAC_ADDRESS
          | MAIL_SERVER
@@ -844,7 +843,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
-            | DOMAIN_NAME
             | DVMRP
             | EXTCOMMUNITY_LIST
             | FINGER
@@ -873,7 +871,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | SAP
             | SCP
             | SLA
-            | SOURCE_ROUTE
             | SUBNET_ZERO
             | TACACS
             | TCP
