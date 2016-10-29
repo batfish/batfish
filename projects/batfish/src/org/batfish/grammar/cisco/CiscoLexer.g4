@@ -5608,6 +5608,11 @@ ROOT
    'root'
 ;
 
+RO
+:
+   [rR][oO]
+;
+
 ROTARY
 :
    'rotary'
@@ -5731,6 +5736,11 @@ RT
 RULE
 :
    'rule' -> pushMode ( M_Rule )
+;
+
+RW
+:
+   'rw'
 ;
 
 SAME_SECURITY_TRAFFIC
@@ -6860,6 +6870,16 @@ TRANSPORT
    'transport'
 ;
 
+TRAP_SOURCE
+:
+   'trap-source' -> pushMode(M_Interface)
+;
+
+TRAPS
+:
+   'traps'
+;
+
 TRIGGER
 :
    'trigger'
@@ -7058,6 +7078,21 @@ URL_LIST
 USE
 :
    'use'
+;
+
+USE_ACL
+:
+   'use-acl'
+;
+
+USE_IPV4_ACL
+:
+   'use-ipv4-acl'
+;
+
+USE_IPV6_ACL
+:
+   'use-ipv6-acl'
 ;
 
 USE_VRF

@@ -1,0 +1,6 @@
+!
+hostname cisco_ssh
+!
+ip ssh version 2
+ip ssh version 1
+!

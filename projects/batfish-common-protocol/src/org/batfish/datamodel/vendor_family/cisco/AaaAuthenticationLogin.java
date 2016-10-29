@@ -1,4 +1,4 @@
-package org.batfish.datamodel.aaa;
+package org.batfish.datamodel.vendor_family.cisco;
 
 import java.io.Serializable;
 import java.util.SortedMap;

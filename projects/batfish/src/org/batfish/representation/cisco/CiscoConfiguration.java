@@ -6,9 +6,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.batfish.datamodel.Line;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.aaa.Aaa;
+import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.VendorConfiguration;
 
 public abstract class CiscoConfiguration extends VendorConfiguration {
@@ -19,13 +18,11 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    private static final long serialVersionUID = 1L;
 
-   protected Aaa _aaaSettings;
-
    protected final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
-   protected final Map<String, String> _banners;
-
    protected final Map<String, BgpProcess> _bgpProcesses;
+
+   protected final CiscoFamily _cf;
 
    protected final Set<String> _classMapAccessGroups;
 
@@ -63,8 +60,6 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _lineAccessClassLists;
 
-   protected final Map<String, Line> _lines;
-
    protected final Set<String> _managementAccessGroups;
 
    protected final Set<String> _msdpPeerSaLists;
@@ -85,16 +80,18 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, RoutePolicy> _routePolicies;
 
+   protected final Set<String> _snmpAccessLists;
+
    protected final Map<String, StandardAccessList> _standardAccessLists;
 
    protected final Map<String, StandardCommunityList> _standardCommunityLists;
 
-   protected final HashSet<StaticRoute> _staticRoutes;
+   protected final Set<StaticRoute> _staticRoutes;
 
    public CiscoConfiguration() {
       _asPathAccessLists = new TreeMap<>();
-      _banners = new TreeMap<>();
       _bgpProcesses = new TreeMap<>();
+      _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
       _expandedCommunityLists = new TreeMap<>();
@@ -105,7 +102,6 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _interfaces = new TreeMap<>();
       _ipv6PeerGroups = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
-      _lines = new TreeMap<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
       _ntpAccessGroups = new TreeSet<>();
@@ -115,25 +111,22 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _referencedRouteMaps = new TreeSet<>();
       _routeMaps = new TreeMap<>();
       _routePolicies = new TreeMap<>();
+      _snmpAccessLists = new TreeSet<>();
       _standardAccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
       _staticRoutes = new HashSet<>();
-   }
-
-   public Aaa getAaaSettings() {
-      return _aaaSettings;
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
    }
 
-   public Map<String, String> getBanners() {
-      return _banners;
-   }
-
    public final Map<String, BgpProcess> getBgpProcesses() {
       return _bgpProcesses;
+   }
+
+   public CiscoFamily getCf() {
+      return _cf;
    }
 
    public Set<String> getClassMapAccessGroups() {
@@ -209,10 +202,6 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _lineAccessClassLists;
    }
 
-   public Map<String, Line> getLines() {
-      return _lines;
-   }
-
    public Set<String> getManagementAccessGroups() {
       return _managementAccessGroups;
    }
@@ -253,6 +242,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _routePolicies;
    }
 
+   public Set<String> getSnmpAccessLists() {
+      return _snmpAccessLists;
+   }
+
    public final Map<String, StandardAccessList> getStandardAcls() {
       return _standardAccessLists;
    }
@@ -263,10 +256,6 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public final Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
-   }
-
-   public void setAaaSettings(Aaa aaaSettings) {
-      _aaaSettings = aaaSettings;
    }
 
    public void setFailover(boolean failover) {

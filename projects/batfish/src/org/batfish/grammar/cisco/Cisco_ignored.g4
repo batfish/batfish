@@ -10,7 +10,7 @@ null_block_stanza
 :
    NO?
    (
-	  AAA_SERVER
+      AAA_SERVER
       | ACCESS_GROUP
       | ACCESS
       | ACLLOG
@@ -341,7 +341,10 @@ null_block_substanza
          | BACKUPCRF
          | BANDWIDTH
          | BANDWIDTH_PERCENTAGE
-         | BANNER
+         |
+         (
+            BANNER VALUE
+         )
          | BIND
          | BRIDGE
          | BRIDGE_PRIORITY
@@ -621,7 +624,6 @@ null_block_substanza
          | SERVER
          | SERVERFARM
          | SERVER_PRIVATE
-         | SERVICE
          | SERVICE_POLICY
          | SERVICE_QUEUE
          | SERVICE_TYPE
@@ -805,7 +807,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | EXEC
       | FABRIC
       | FACILITY_ALARM
-      | FEATURE
       | FILE
       | FIREWALL
       | FIRMWARE
@@ -873,7 +874,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
             | SCP
             | SLA
             | SOURCE_ROUTE
-            | SSH
             | SUBNET_ZERO
             | TACACS
             | TCP
@@ -979,13 +979,11 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SERIAL_NUMBER
       | SERVER
       | SERVER_TYPE
-      | SERVICE
       | SERVICE_POLICY
       | SETUP
       | SHELL
       | SMTP_SERVER
       | SNMP
-      | SNMP_SERVER
       | SOURCE
       | SPANNING_TREE
       | SPD

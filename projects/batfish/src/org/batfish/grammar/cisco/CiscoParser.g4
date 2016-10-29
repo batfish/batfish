@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -427,6 +427,19 @@ ip_pim
    (
       VRF vrf = variable
    )? ip_pim_tail
+;
+
+ip_ssh
+:
+   SSH
+   (
+      ip_ssh_version
+   )
+;
+
+ip_ssh_version
+:
+   VERSION version = DEC NEWLINE
 ;
 
 ip_pim_tail
@@ -1323,14 +1336,21 @@ s_failover_tail
    | failover_interface
 ;
 
-s_ip
+s_feature
 :
-   IP s_ip_tail
+   NO? FEATURE
+   (
+      words += variable
+   )+ NEWLINE
 ;
 
-s_ip_tail
+s_ip
 :
-   ip_pim
+   IP
+   (
+      ip_pim
+      | ip_ssh
+   )
 ;
 
 s_line
@@ -1428,6 +1448,14 @@ s_object_group_tail
    | og_user
 ;
 
+s_service
+:
+   NO? SERVICE
+   (
+      words += variable
+   )+ NEWLINE
+;
+
 srlg_interface_numeric_stanza
 :
    DEC ~NEWLINE* NEWLINE
@@ -1488,6 +1516,7 @@ stanza
    | s_class_map
    | s_control_plane
    | s_failover
+   | s_feature
    | s_ip
    | s_line
    | s_management
@@ -1498,6 +1527,8 @@ stanza
    | s_object
    | s_object_group
    | s_router_eigrp
+   | s_service
+   | s_snmp_server
    | standard_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza

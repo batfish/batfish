@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -35,7 +37,6 @@ import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -52,13 +53,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.aaa.AaaAccountingCommands;
-import org.batfish.datamodel.aaa.AaaAccountingDefault;
-import org.batfish.datamodel.aaa.AaaAccounting;
-import org.batfish.datamodel.aaa.AaaAuthenticationLogin;
-import org.batfish.datamodel.aaa.AaaAuthenticationLoginList;
-import org.batfish.datamodel.aaa.AaaAuthentication;
-import org.batfish.datamodel.aaa.Aaa;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
@@ -80,6 +74,18 @@ import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
+import org.batfish.datamodel.vendor_family.cisco.Aaa;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
+import org.batfish.datamodel.vendor_family.cisco.AaaAccountingDefault;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLoginList;
+import org.batfish.datamodel.vendor_family.cisco.Line;
+import org.batfish.datamodel.vendor_family.cisco.SnmpCommunity;
+import org.batfish.datamodel.vendor_family.cisco.SnmpHost;
+import org.batfish.datamodel.vendor_family.cisco.SnmpServer;
+import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -987,6 +993,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private RoutePolicy _currentRoutePolicy;
 
+   private SnmpCommunity _currentSnmpCommunity;
+
+   @SuppressWarnings("unused")
+   private SnmpHost _currentSnmpHost;
+
    private StandardAccessList _currentStandardAcl;
 
    private StandardCommunityList _currentStandardCommunityList;
@@ -1048,8 +1059,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterAaa_accounting(Aaa_accountingContext ctx) {
-      if (_configuration.getAaaSettings().getAccounting() == null) {
-         _configuration.getAaaSettings().setAccounting(new AaaAccounting());
+      if (_configuration.getCf().getAaa().getAccounting() == null) {
+         _configuration.getCf().getAaa().setAccounting(new AaaAccounting());
       }
    }
 
@@ -1057,7 +1068,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterAaa_accounting_commands(
          Aaa_accounting_commandsContext ctx) {
       Map<String, AaaAccountingCommands> commands = _configuration
-            .getAaaSettings().getAccounting().getCommands();
+            .getCf().getAaa().getAccounting().getCommands();
       String level;
       if (ctx.level != null) {
          level = ctx.level.getText();
@@ -1075,7 +1086,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterAaa_accounting_default(Aaa_accounting_defaultContext ctx) {
-      AaaAccounting accounting = _configuration.getAaaSettings()
+      AaaAccounting accounting = _configuration.getCf().getAaa()
             .getAccounting();
       if (accounting.getDefault() == null) {
          accounting.setDefault(new AaaAccountingDefault());
@@ -1084,8 +1095,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterAaa_authentication(Aaa_authenticationContext ctx) {
-      if (_configuration.getAaaSettings().getAuthentication() == null) {
-         _configuration.getAaaSettings()
+      if (_configuration.getCf().getAaa().getAuthentication() == null) {
+         _configuration.getCf().getAaa()
                .setAuthentication(new AaaAuthentication());
       }
    }
@@ -1093,9 +1104,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterAaa_authentication_login(
          Aaa_authentication_loginContext ctx) {
-      if (_configuration.getAaaSettings().getAuthentication()
+      if (_configuration.getCf().getAaa().getAuthentication()
             .getLogin() == null) {
-         _configuration.getAaaSettings().getAuthentication()
+         _configuration.getCf().getAaa().getAuthentication()
                .setLogin(new AaaAuthenticationLogin());
       }
    }
@@ -1103,7 +1114,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterAaa_authentication_login_list(
          Aaa_authentication_login_listContext ctx) {
-      AaaAuthenticationLogin login = _configuration.getAaaSettings()
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa()
             .getAuthentication().getLogin();
       String name;
       if (ctx.DEFAULT() != null) {
@@ -1580,8 +1591,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterS_aaa(S_aaaContext ctx) {
-      if (_configuration.getAaaSettings() == null) {
-         _configuration.setAaaSettings(new Aaa());
+      if (_configuration.getCf().getAaa() == null) {
+         _configuration.getCf().setAaa(new Aaa());
       }
    }
 
@@ -1641,12 +1652,56 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          names.add(nameBase);
       }
       for (String name : names) {
-         if (_configuration.getLines().get(name) == null) {
+         if (_configuration.getCf().getLines().get(name) == null) {
             Line line = new Line(name);
-            _configuration.getLines().put(name, line);
+            _configuration.getCf().getLines().put(name, line);
          }
       }
       _currentLineNames = names;
+   }
+
+   @Override
+   public void enterS_snmp_server(S_snmp_serverContext ctx) {
+      if (_configuration.getCf().getSnmpServer() == null) {
+         _configuration.getCf().setSnmpServer(new SnmpServer());
+      }
+   }
+
+   @Override
+   public void enterSs_community(Ss_communityContext ctx) {
+      String name = ctx.name.getText();
+      Map<String, SnmpCommunity> communities = _configuration.getCf().getSnmpServer()
+            .getCommunities();
+      SnmpCommunity community = communities.get(name);
+      if (community == null) {
+         community = new SnmpCommunity(name);
+         communities.put(name, community);
+      }
+      _currentSnmpCommunity = community;
+   }
+
+   @Override
+   public void enterSs_host(Ss_hostContext ctx) {
+      String hostname;
+      if (ctx.ip4 != null) {
+         hostname = ctx.ip4.getText();
+      }
+      else if (ctx.ip6 != null) {
+         hostname = ctx.ip6.getText();
+      }
+      else if (ctx.host != null) {
+         hostname = ctx.host.getText();
+      }
+      else {
+         throw new BatfishException("Invalid host");
+      }
+      Map<String, SnmpHost> hosts = _configuration.getCf().getSnmpServer().getHosts();
+      SnmpHost host = hosts.get(hostname);
+      if (host == null) {
+         host = new SnmpHost(hostname);
+         hosts.put(hostname, host);
+      }
+      _currentSnmpHost = host;
    }
 
    @Override
@@ -1727,14 +1782,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Aaa_accounting_default_groupContext ctx) {
       List<String> groups = ctx.groups.stream().map(g -> g.getText())
             .collect(Collectors.toList());
-      _configuration.getAaaSettings().getAccounting().getDefault()
+      _configuration.getCf().getAaa().getAccounting().getDefault()
             .setGroups(groups);
    }
 
    @Override
    public void exitAaa_accounting_default_local(
          Aaa_accounting_default_localContext ctx) {
-      _configuration.getAaaSettings().getAccounting().getDefault()
+      _configuration.getCf().getAaa().getAccounting().getDefault()
             .setLocal(true);
    }
 
@@ -1747,13 +1802,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitAaa_authentication_login_privilege_mode(
          Aaa_authentication_login_privilege_modeContext ctx) {
-      _configuration.getAaaSettings().getAuthentication().getLogin()
+      _configuration.getCf().getAaa().getAuthentication().getLogin()
             .setPrivilegeMode(true);
    }
 
    @Override
    public void exitAaa_new_model(Aaa_new_modelContext ctx) {
-      _configuration.getAaaSettings().setNewModel(true);
+      _configuration.getCf().getAaa().setNewModel(true);
    }
 
    @Override
@@ -1859,7 +1914,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitBanner_stanza(Banner_stanzaContext ctx) {
       String bannerType = ctx.banner_type().getText();
       String message = ctx.banner().getText();
-      _configuration.getBanners().put(bannerType, message);
+      _configuration.getCf().getBanners().put(bannerType, message);
    }
 
    @Override
@@ -2237,6 +2292,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       String hostname = sb.toString();
       _configuration.setHostname(hostname);
+      _configuration.getCf().setHostname(hostname);
    }
 
    @Override
@@ -2612,7 +2668,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          setter = Line::setInputAccessList;
       }
       for (String currentName : _currentLineNames) {
-         Line line = _configuration.getLines().get(currentName);
+         Line line = _configuration.getCf().getLines().get(currentName);
          setter.accept(line, name);
       }
       _configuration.getLineAccessClassLists().add(name);
@@ -2623,7 +2679,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int minutes = toInteger(ctx.minutes);
       int seconds = ctx.seconds != null ? toInteger(ctx.seconds) : 0;
       for (String lineName : _currentLineNames) {
-         Line line = _configuration.getLines().get(lineName);
+         Line line = _configuration.getCf().getLines().get(lineName);
          line.setExecTimeoutMinutes(minutes);
          line.setExecTimeoutSeconds(seconds);
       }
@@ -2642,7 +2698,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException("Invalid list name");
       }
       for (String line : _currentLineNames) {
-         _configuration.getLines().get(line).setLoginAuthentication(list);
+         _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
       }
    }
 
@@ -2664,7 +2720,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                "Invalid or unsupported line transport type");
       }
       for (String currentName : _currentLineNames) {
-         Line line = _configuration.getLines().get(currentName);
+         Line line = _configuration.getCf().getLines().get(currentName);
          setter.accept(line, protocol);
       }
    }
@@ -3490,6 +3546,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_feature(S_featureContext ctx) {
+      List<String> words = ctx.words.stream().map(w -> w.getText())
+            .collect(Collectors.toList());
+      boolean enabled = ctx.NO() == null;
+      String name = String.join(".", words);
+      _configuration.getCf().getFeatures().put(name, enabled);
+   }
+
+   @Override
    public void exitS_line(S_lineContext ctx) {
       _currentLineNames = null;
    }
@@ -3506,6 +3571,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          S_no_access_list_standardContext ctx) {
       String name = ctx.ACL_NUM_STANDARD().getText();
       _configuration.getStandardAcls().remove(name);
+   }
+
+   @Override
+   public void exitS_service(S_serviceContext ctx) {
+      List<String> words = ctx.words.stream().map(w -> w.getText())
+            .collect(Collectors.toList());
+      boolean enabled = ctx.NO() == null;
+      String name = String.join(".", words);
+      _configuration.getCf().getServices().put(name, enabled);
    }
 
    @Override
@@ -3638,6 +3712,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterIp_ssh(Ip_sshContext ctx) {
+      if (_configuration.getCf().getSsh() == null) {
+         _configuration.getCf().setSsh(new SshSettings());
+      }
+   }
+   
+   @Override
+   public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
+      int version = toInteger(ctx.version);
+      if (version < 1 || version > 2) {
+         throw new BatfishException("Invalid ssh version: " + version);
+      }
+      _configuration.getCf().getSsh().setVersion(version);
+   }
+   
+   @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
       OriginType originType;
       Integer asNum = null;
@@ -3674,6 +3764,54 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             currentInterface.setActive(false);
          }
       }
+   }
+
+   @Override
+   public void exitSs_community(Ss_communityContext ctx) {
+      _currentSnmpCommunity = null;
+   }
+
+   @Override
+   public void exitSs_enable(Ss_enableContext ctx) {
+      String trapName = ctx.snmp_trap_type.getText();
+      SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature.stream()
+            .map(s -> s.getText()).collect(Collectors.toList()));
+      SortedMap<String, SortedSet<String>> traps = _configuration
+            .getCf().getSnmpServer().getTraps();
+      SortedSet<String> subfeatures = traps.get(trapName);
+      if (subfeatures == null) {
+         traps.put(trapName, subfeatureNames);
+      }
+      else {
+         subfeatures.addAll(subfeatureNames);
+      }
+   }
+
+   @Override
+   public void exitSs_host(Ss_hostContext ctx) {
+      _currentSnmpHost = null;
+   }
+
+   @Override
+   public void exitSsc_access_control(Ssc_access_controlContext ctx) {
+      if (ctx.name != null) {
+         String name = ctx.name.getText();
+         _configuration.getSnmpAccessLists().add(name);
+         _currentSnmpCommunity.setAccessList(name);
+      }
+      if (ctx.RO() != null) {
+         _currentSnmpCommunity.setRo(true);
+      }
+      if (ctx.RW() != null) {
+         _currentSnmpCommunity.setRw(true);
+      }
+   }
+
+   @Override
+   public void exitSsc_use_ipv4_acl(Ssc_use_ipv4_aclContext ctx) {
+      String name = ctx.name.getText();
+      _configuration.getSnmpAccessLists().add(name);
+      _currentSnmpCommunity.setAccessList(name);
    }
 
    @Override
