@@ -78,7 +78,7 @@ repi_default [boolean no]
 
 repi_interface [boolean no]
 :
-   iname = VARIABLE NEWLINE
+   iname = interface_name NEWLINE
 ;
 
 rer_static

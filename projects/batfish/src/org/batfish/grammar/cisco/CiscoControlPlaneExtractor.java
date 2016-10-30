@@ -4916,7 +4916,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyStatement(tctxt);
       }
 
+      Set_origin_rp_stanzaContext octxt = ctx.set_origin_rp_stanza();
+      if (octxt != null) {
+         return toRoutePolicyStatement(octxt);
+      }
+
+      Set_weight_rp_stanzaContext wctxt = ctx.set_weight_rp_stanza();
+      if (wctxt != null) {
+         return toRoutePolicyStatement(wctxt);
+      }
+
       throw convError(RoutePolicyStatement.class, ctx);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_origin_rp_stanzaContext ctx) {
+      todo(ctx, "Route policy statement 'set origin' not supported");
+      return null;
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_weight_rp_stanzaContext ctx) {
+      todo(ctx, "Route policy statement 'set weight' not supported");
+      return null;
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(

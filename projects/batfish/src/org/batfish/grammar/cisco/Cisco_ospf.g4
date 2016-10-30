@@ -267,7 +267,7 @@ passive_interface_default_ro_stanza
 
 passive_interface_ro_stanza
 :
-   NO? PASSIVE_INTERFACE i = VARIABLE NEWLINE
+   NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
 redistribute_bgp_ro_stanza

@@ -228,3 +228,17 @@ lag "[aa]-1X10-PNI-TO-ME" dynamic id 1
  deploy
  port-name "Peering: [aa] Me PNI CLR-6692" ethernet 1/1
 !
+controller dwdm0/0/2/3
+ admin-state in-service
+ pm 15-min fec report ec-bits enable
+!
+controller SONET 5/0
+ sts-1 1 serial t3
+ alarm-report lais
+ ais-shut
+!
+rp mgmtethernet forwarding
+xml agent tty
+sap cache-timeout 30
+ipv6 enable-acl-cam-sharing
+ipv6 global-mtu 1500

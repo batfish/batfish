@@ -184,7 +184,6 @@ interface_name
          | FORWARD_SLASH DEC COLON DEC
       )?
    )
-   | variable_permissive
 ;
 
 line_type

@@ -1283,7 +1283,7 @@ router_hsrp_tail
       | PREEMPT
       | PRIORITY DEC
       | TIMERS DEC+
-      | TRACK OBJECT DEC+
+      | TRACK OBJECT ~NEWLINE+
    ) NEWLINE
 ;
 

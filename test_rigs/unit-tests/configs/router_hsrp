@@ -7,8 +7,18 @@ router hsrp
    hsrp
     preempt
     address 137.164.220.247
+    track object 1 2
+   !
+  !
+ !
+ interface TenGigE0/0/2/2
+  address-family ipv4
+   hsrp 1
+    preempt
+    priority 105
+    address 209.129.16.1
+    track object StaticOriginationRoutes
    !
   !
  !
 !
-
