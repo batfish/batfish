@@ -47,4 +47,5 @@ line vty 0 4
  logging synchronous
  ipv6 access-class ipv6-vty-acl in
  transport preferred none
+ notify
 !

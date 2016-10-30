@@ -3,4 +3,7 @@ hostname cisco_ssh
 !
 ip ssh version 2
 ip ssh version 1
+ip ssh source-interface Vlan10
+ip ssh port 2041 rotary 1 3
+ip ssh authentication-retries 3
 !

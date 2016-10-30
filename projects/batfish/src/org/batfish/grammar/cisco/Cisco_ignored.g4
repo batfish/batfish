@@ -22,7 +22,7 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
-      | BGP DISABLE_ADVERTISEMENT
+      | BGP DISABLE_ADVERTISEMENT      	     
       | BSD_CLIENT
       | BSD_USERNAME
       | BUFFERS
@@ -59,6 +59,7 @@ null_block_stanza
       | DOMAIN
       | DOT11
       | DOT1X
+      | DUAL_MODE_DEFAULT_VLAN
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
       | END
@@ -73,6 +74,7 @@ null_block_stanza
       | FPD
       | GATEKEEPER
       | GATEWAY
+      | GLOBAL_PORT_SECURITY
       | GROUP
       | GROUP_POLICY
       | HASH_ALGORITHM
@@ -152,6 +154,7 @@ null_block_stanza
       | KRON
       | L2TP_CLASS
       | LACP
+      | LAG
       | LINECARD
       | LOAD_BALANCE
       | LOGIN
@@ -223,6 +226,7 @@ null_block_stanza
       | POLICY_MAP_OUTPUT
       | PORT_PROFILE
       | POWEROFF
+      | POWER_MGR
       | PRIORITY_FLOW_CONTROL
       | PROTOCOL
       | PSEUDOWIRE_CLASS
@@ -239,14 +243,17 @@ null_block_stanza
          LOG
          | VRRP
       )
+      | RX_COS_SLOT
       | SAMPLER
       | SAMPLER_MAP
       | SCCP
       | SCHEDULE
       | SDR
+      | SENSOR
       | SERVICE_CLASS
       | SFLOW
       | SLOT
+      | SLOT_TABLE_COS
       | SNTP
       | SPANNING_TREE
       | STACK_MAC
@@ -327,6 +334,7 @@ null_block_substanza
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
+         | AGE
          | ALERT_GROUP
          | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
@@ -393,10 +401,13 @@ null_block_substanza
          | DEFAULT_GROUP_POLICY
          | DEFAULT_ROUTER
          | DELAY
+         | DELETE_DYNAMIC_LEARN
          | DENY
+         | DEPLOY
          | DESCRIPTION
          | DESTINATION
          | DESTINATION_PATTERN
+         | DESTINATION_SLOT
          | DEVICE
          | DIAGNOSTIC
          | DISABLE
@@ -406,6 +417,7 @@ null_block_substanza
          | DOMAIN_NAME
          | DROP
          | DSCP
+         | DSCP_VALUE
          | DS0_GROUP
          | DTMF_RELAY
          | DUAL_ACTIVE
@@ -506,6 +518,7 @@ null_block_substanza
          | KEYPATH
          | KEYRING
          | L2TP
+         | LACP_TIMEOUT
          | LEASE
          | LENGTH
          | LIFE
@@ -561,6 +574,8 @@ null_block_substanza
          | PATH_RETRANSMIT
          | PATHS_OF_STATISTICS_KEPT
          | PAUSE
+         | PCP
+         | PCP_VALUE
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
          | PEER_GATEWAY
@@ -572,6 +587,7 @@ null_block_substanza
          | PERMIT
          | PERSISTENT
          | PHONE_NUMBER
+         | PHYSICAL_PORT
          | PICKUP
          | PINNING
          | POLICE
@@ -579,6 +595,7 @@ null_block_substanza
          | POLICY_LIST
          | POLICY_MAP
          | PORT
+         | PORTS
          | PORT_NAME
          | PRECEDENCE
          | PREDICTOR
@@ -587,6 +604,7 @@ null_block_substanza
          | PREFIX
          | PRF
          | PRI_GROUP
+         | PRIMARY_PORT
          | PRIMARY_PRIORITY
          | PRIORITY
          | PRIVATE_VLAN
@@ -603,6 +621,7 @@ null_block_substanza
          | QUEUE_LIMIT
          | RANDOM
          | RANDOM_DETECT
+         | RANDOM_DETECT_LABEL
          | RD
          | REACT
          | REACTION
@@ -638,6 +657,7 @@ null_block_substanza
 		 | SAMPLES_OF_HISTORY_KEPT
          | SCHEME
          | SECRET
+         | SECURE_MAC_ADDRESS
          | SEND_LIFETIME
          | SENDER
          | SEQUENCE
@@ -718,6 +738,7 @@ null_block_substanza
          | VAD
          | VERSION
          | VIOLATE_ACTION
+         | VIOLATION
          | VIRTUAL
          | VIRTUAL_ROUTER
          | VIRTUAL_TEMPLATE

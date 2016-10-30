@@ -13,12 +13,19 @@ logging_buffered
 
 logging_console
 :
-   CONSOLE logging_severity? NEWLINE
+   CONSOLE 
+   (
+   	   DISABLE
+   	   | logging_severity
+   )? 
+   (
+   	   EXCEPT ERRORS
+   )? NEWLINE
 ;
 
 logging_host
 :
-   HOST hostname = variable NEWLINE
+   HOST hostname = variable (VRF variable)? NEWLINE
 ;
 
 logging_null
@@ -26,10 +33,17 @@ logging_null
    (
       EVENT
       | FACILITY
+      | HISTORY
+      | IP_ADDRESS
       | IP
       | LEVEL
+      | LINECARD
       | LOGFILE
+      | QUEUE_LIMIT
+      | RATE_LIMIT
       | SERVER
+      | SEQUENCE_NUMS
+      | SNMP_AUTHFAIL
       | SYNCHRONOUS
       | TIMESTAMP
    ) ~NEWLINE* NEWLINE
@@ -55,7 +69,7 @@ logging_severity
 
 logging_source_interface
 :
-   SOURCE_INTERFACE interface_name NEWLINE
+   SOURCE_INTERFACE interface_name (VRF variable)? NEWLINE
 ;
 
 logging_trap

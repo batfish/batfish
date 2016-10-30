@@ -239,8 +239,9 @@ aaa_authentication_enable
    ENABLE
    (
       (
-         DEFAULT aaa_authentication_list_method+ NEWLINE
-      )
+         DEFAULT aaa_authentication_list_method+ 
+         | IMPLICIT_USER
+      ) NEWLINE
       | aaa_authentication_asa_console
    )
 ;
@@ -489,7 +490,7 @@ aaa_authorization_method
 :
    (
       (
-         GROUP
+         GROUP?
          (
             groups += variable
          )+

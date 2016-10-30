@@ -1,10 +1,14 @@
 !
 hostname cisco_snmp
 !
+snmp-server
 snmp-server community dummycommunity group network-operator
 snmp-server community dummycommunity RO snmp-acl
 snmp-server community dummycommunity use-acl snmp-acl
 snmp-server community dummycommunity use-acl snmp-arpa-acl
+snmp-server chassis-id FOC1743N1BE
+snmp-server contact CENIC Core Engineering
+snmp-server enable mib np-qos-stat
 snmp-server enable traps aaa server-state-change
 snmp-server enable traps bgp
 snmp-server enable traps bridge newroot
@@ -48,12 +52,22 @@ snmp-server enable traps vtp
 snmp-server enable traps vtp notifs
 snmp-server enable traps vtp vlancreate
 snmp-server enable traps vtp vlandelete
+snmp-server engineID local 000000090200000652D6C000
+snmp-server group cenic-nms v2c IPv4 auth
 snmp-server host 10.1.2.3 use-vrf management
 snmp-server host 10.1.2.3 version 2c dummycommunity 
+snmp-server ifindex persist
+snmp-server location UC Santa Cruz 4900M
+snmp-server logging threshold oid-processing 1000
+snmp-server manager
+snmp-server overload-control 0 0
 snmp-server source-interface trap loopback0
 snmp-server source-interface trap mgmt0
 snmp-server source-interface trap Vlan1
 snmp-server trap-source Loopback0
+snmp-server traps snmp linkup
 snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
+snmp-server view NOROUTES mib-2 included
+snmp-server view NOROUTES lsystem included
 !
 

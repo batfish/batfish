@@ -2900,18 +2900,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            Path relativePath = _settings.getTestrigSettings().getBasePath()
-                  .relativize(path);
-            if (!iptablesConfigurations.containsKey(relativePath.toString())) {
+            String relativePathStr = _settings.getTestrigSettings().getBasePath()
+                  .relativize(path).toString();
+            if (!iptablesConfigurations.containsKey(relativePathStr)) {
                for (String key : iptablesConfigurations.keySet()) {
                   _logger.errorf("key : %s\n", key);
                }
                throw new BatfishException(
-                     "Key not found for iptables: " + relativePath.toString());
+                     "Key not found for iptables: " + relativePathStr);
             }
             hostConfig.setIptablesConfig(
                   (IptablesVendorConfiguration) iptablesConfigurations
-                        .get(relativePath.toString()));
+                        .get(relativePathStr));
          }
       }
 
@@ -2996,13 +2996,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       vendorConfigurations.forEach((name, vc) -> {
          if (name.contains(File.separator)) {
             // iptables will get a hostname like configs/iptables-save if they
-            // are not
-            // set up correctly using host files
+            // are not set up correctly using host files
             _logger.errorf("Cannot serialize configuration with hostname %s\n",
                   name);
             answerElement.addRedFlagWarning(name,
                   new Warning(
-                        "Cannot serialize network config. Bad hostname " + name,
+                        "Cannot serialize network config. Bad hostname " + name.replace("\\",  "/"),
                         "MISCELLANEOUS"));
          }
          else {

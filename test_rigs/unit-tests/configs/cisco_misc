@@ -192,3 +192,39 @@ gatekeeper
  lrq forward-queries add-hop-count
  no shutdown
 !
+sensor fanspeed-control off
+!
+rx-cos-slot all queuemap-red
+!
+slot-table-cos queuemap-red
+ destination-slot all queuemap-red
+!
+cos-queue-group queuemap-red
+ precedence 0 random-detect-label 0
+ random-detect-label 0 1498 9690 1
+ queue low-latency strict-priority
+!
+power-mgr disable
+!
+global-port-security
+ age 2
+ delete-dynamic-learn
+!
+no dual-mode-default-vlan
+!
+control-plane
+control-plane slot 1
+qos-mapping
+ pcp decode-map BBone_Std
+  pcp-value 3 4 7 to priority 0
+ dscp decode-map BBone_Std
+  dscp-value 2 3 4 5 6 7 8 9 to priority 0 drop-precedence 0
+!
+lag "[aa]-1X10-PNI-TO-ME" dynamic id 1
+ ports ethernet 1/1 
+ primary-port 1/1
+ physical-port 1/4 tunable-optic sfpp channel 71
+ lacp-timeout short
+ deploy
+ port-name "Peering: [aa] Me PNI CLR-6692" ethernet 1/1
+!

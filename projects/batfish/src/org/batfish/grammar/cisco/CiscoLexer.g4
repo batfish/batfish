@@ -346,6 +346,11 @@ AFFINITY_MAP
    'affinity-map'
 ;
 
+AGE
+:
+   'age'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -651,6 +656,11 @@ AUTHENTICATION_KEY
 AUTHENTICATION_PORT
 :
    'authentication-port'
+;
+
+AUTHENTICATION_RETRIES
+:
+   'authentication-retries'
 ;
 
 AUTHENTICATION_SERVER_GROUP
@@ -1098,6 +1108,11 @@ CHARGEN
    'chargen'
 ;
 
+CHASSIS_ID
+:
+   'chassis-id'
+;
+
 CHAT_SCRIPT
 :
    'chat-script'
@@ -1331,6 +1346,11 @@ CONNECTION
 CONSOLE
 :
    'console'
+;
+
+CONTACT
+:
+   'contact'
 ;
 
 CONTACT_EMAIL_ADDR
@@ -1714,9 +1734,19 @@ DELETE
    'delete'
 ;
 
+DELETE_DYNAMIC_LEARN
+:
+   'delete-dynamic-learn'
+;
+
 DENY
 :
    'deny'
+;
+
+DEPLOY
+:
+   'deploy'
 ;
 
 DES
@@ -1752,6 +1782,11 @@ DESTINATION_PATTERN
 DESTINATION_PROFILE
 :
    'destination-profile'
+;
+
+DESTINATION_SLOT
+:
+   'destination-slot'
 ;
 
 DESTINATION_VRF
@@ -1984,6 +2019,11 @@ DSCP
    'dscp'
 ;
 
+DSCP_VALUE
+:
+   'dscp-value'
+;
+
 DSP
 :
    'dsp'
@@ -2013,6 +2053,11 @@ DUAL_ACTIVE
 :
    'dual-active'
 ;
+
+DUAL_MODE_DEFAULT_VLAN
+:
+   'dual-mode-default-vlan'
+;  
 
 DUPLEX
 :
@@ -2213,7 +2258,10 @@ ENFORCE_FIRST_AS
 
 ENGINEID
 :
-   'engineid' -> pushMode ( M_COMMENT )
+   (
+      'engineid'
+      | 'engineID' 
+   ) -> pushMode ( M_COMMENT )
 ;
 
 ENROLLMENT
@@ -2319,6 +2367,11 @@ EXACT
 EXCEED_ACTION
 :
    'exceed-action'
+;
+
+EXCEPT
+:
+   'except'
 ;
 
 EXCEPTION
@@ -2755,6 +2808,11 @@ GLOBAL_MTU
    'global-mtu'
 ;
 
+GLOBAL_PORT_SECURITY
+:
+   'global-port-security'
+;
+
 GOPHER
 :
    'gopher'
@@ -3105,6 +3163,11 @@ IF_NEEDED
    'if-needed'
 ;
 
+IFINDEX
+:
+   'ifindex'
+;
+
 IGMP
 :
    'igmp'
@@ -3143,6 +3206,11 @@ ILMI_KEEPALIVE
 IMAP4
 :
    'imap4'
+;
+
+IMPLICIT_USER
+:
+   'implicit-user'
 ;
 
 IMPORT
@@ -3502,6 +3570,16 @@ LABELED_UNICAST
 LACP
 :
    'lacp'
+;
+
+LACP_TIMEOUT
+:
+   'lacp-timeout'
+;
+
+LAG
+:
+   'lag'
 ;
 
 LAN
@@ -3874,6 +3952,11 @@ MANAGEMENT_PLANE
    'management-plane'
 ;
 
+MANAGER
+:
+   'manager'
+;
+
 MAP
 :
    'map'
@@ -4107,6 +4190,11 @@ MFIB_MODE
 MGCP
 :
    'mgcp'
+;
+
+MIB
+:
+   'mib'
 ;
 
 MICROCODE
@@ -4804,6 +4892,11 @@ OUTPUT
    'output'
 ;
 
+OVERLOAD_CONTROL
+:
+   'overload-control'
+;
+
 OVERRIDE
 :
    'override'
@@ -4944,6 +5037,16 @@ PCANYWHERE_STATUS
    'pcanywhere-status'
 ;
 
+PCP
+:
+    'pcp'
+;
+
+PCP_VALUE
+:
+    'pcp-value'
+;
+
 PEAKDETECT
 :
     'peakdetect'
@@ -5049,6 +5152,11 @@ PHYSICAL_LAYER
    'physical-layer'
 ;
 
+PHYSICAL_PORT
+:
+   'physical-port'
+;
+
 PICKUP
 :
    'pickup'
@@ -5144,6 +5252,11 @@ PORT
    'port'
 ;
 
+PORTS
+:
+   'ports'
+;
+
 PORT_CHANNEL
 :
    'port-channel'
@@ -5197,6 +5310,11 @@ POWER
 POWEROFF
 :
    'poweroff'
+;
+
+POWER_MGR
+:
+   'power-mgr'
 ;
 
 PPP
@@ -5277,6 +5395,11 @@ PRI_GROUP
 PRIMARY
 :
    'primary'
+;
+
+PRIMARY_PORT
+:
+   'primary-port'
 ;
 
 PRIMARY_PRIORITY
@@ -5467,6 +5590,11 @@ RANDOM
 RANDOM_DETECT
 :
    'random-detect'
+;
+
+RANDOM_DETECT_LABEL
+:
+   'random-detect-label'
 ;
 
 RANGE
@@ -5909,6 +6037,11 @@ RULE
    'rule' -> pushMode ( M_Rule )
 ;
 
+RX_COS_SLOT
+:
+   'rx-cos-slot'
+;
+
 RW
 :
    'rw'
@@ -6019,6 +6152,11 @@ SECUREID_UDP
    'secureid-udp'
 ;
 
+SECURE_MAC_ADDRESS
+:
+   'secure-mac-address'
+;
+
 SECURITY
 :
    'security'
@@ -6079,6 +6217,11 @@ SENDER
    'sender'
 ;
 
+SENSOR
+:
+   'sensor'
+;
+
 SEQ
 :
    'seq'
@@ -6087,6 +6230,11 @@ SEQ
 SEQUENCE
 :
    'sequence'
+;
+
+SEQUENCE_NUMS
+:
+   'sequence-nums'
 ;
 
 SERIAL
@@ -6304,6 +6452,11 @@ SLOT
    'slot'
 ;
 
+SLOT_TABLE_COS
+:
+   'slot-table-cos'
+;
+
 SMTP
 :
    'smtp'
@@ -6312,6 +6465,11 @@ SMTP
 SMTP_SERVER
 :
    'smtp-server'
+;
+
+SNMP_AUTHFAIL
+:
+   'snmp-authfail'
 ;
 
 SNMP
@@ -6951,6 +7109,11 @@ TIME_RANGE
    'time-range'
 ;
 
+TIME_OUT
+:
+   'time-out'
+;
+
 TIMEOUT
 :
    'timeout'
@@ -7401,9 +7564,19 @@ VERSION
    'version'
 ;
 
+VIEW
+:
+   'view'
+;
+
 VIOLATE_ACTION
 :
    'violate-action'
+;
+
+VIOLATION
+:
+   'violation'
 ;
 
 VIRTUAL
@@ -8873,6 +9046,11 @@ M_Interface_MODULE
 M_Interface_MULTIPOINT
 :
    'multipoint' -> type ( MULTIPOINT ) , popMode
+;
+
+M_Interface_VRF
+:
+   'vrf' -> type ( VRF ) , popMode
 ;
 
 M_Interface_COLON

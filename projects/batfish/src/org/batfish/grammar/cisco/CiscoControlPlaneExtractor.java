@@ -2785,20 +2785,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Integer severityNum = null;
       String severity = null;
       if (ctx.size != null) {
+         //something was parsed as buffer size but it could be logging severity as well
+         //it is buffer size if the value is greater than min buffer size
+         //otherwise, it is logging severity
          int sizeRawNum = toInteger(ctx.size);
-         if (ctx.logging_severity() == null) {
-            if (sizeRawNum < Logging.MIN_LOGGING_BUFFER_SIZE) {
-               severityNum = sizeRawNum;
-               severity = toLoggingSeverity(severityNum);
-            }
-            else {
-               size = sizeRawNum;
-               severityNum = toLoggingSeverityNum(ctx.logging_severity());
-               severity = toLoggingSeverity(ctx.logging_severity());
-            }
+         if (sizeRawNum >= Logging.MIN_LOGGING_BUFFER_SIZE) {
+            size = sizeRawNum;
          }
          else {
-            size = sizeRawNum;
+            if (ctx.logging_severity() != null) {
+               //if we have explicity severity as well; we've messed up
+               throw new BatfishException("Ambiguous parsing of logging buffered");
+            }
+            severityNum = sizeRawNum;
+            severity = toLoggingSeverity(severityNum);
          }
       }
       else if (ctx.logging_severity() != null) {
@@ -3938,7 +3938,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitSs_enable(Ss_enableContext ctx) {
+   public void exitSs_enable_traps(Ss_enable_trapsContext ctx) {
       String trapName = ctx.snmp_trap_type.getText();
       SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature.stream()
             .map(s -> s.getText()).collect(Collectors.toList()));

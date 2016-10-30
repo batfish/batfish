@@ -1,18 +1,35 @@
 !
 hostname cisco_logging
 !
+logging 137.164.80.152
+logging buffered 5
+logging buffered 5000 
+logging buffered 5000 5
+logging buffered 5000 alerts
+logging console warnings
+logging console disable
 logging event link-status default
 logging facility local0
+logging history informational
 logging host 10.246.131.130
 logging host 10.246.131.138
+logging host 137.164.80.152 vrf mgmtVrf
 logging ip access-list cache entries 5000
 logging ip access-list cache interval 5
 logging ip access-list cache threshold 50000
 logging level acllog 3
 logging level acllog 6
+logging linecard informational
 logging logfile aclfile 3
+logging queue-limit 100
+logging rate-limit 100
+logging rate-limit console 9
+logging rate-limit console 10 except errors
+logging sequence-nums
 logging server 1.2.3.4 6 use-vrf default facility local0
 logging server 1.2.3.4 6 use-vrf management facility local0
+logging snmp-authfail
+logging source-interface FastEthernet1 vrf mgmtVrf
 logging source-interface loopback0
 logging source-interface Loopback0
 logging source-interface mgmt0
@@ -20,4 +37,3 @@ logging source-interface Vlan1
 logging timestamp milliseconds
 no logging console
 !
-

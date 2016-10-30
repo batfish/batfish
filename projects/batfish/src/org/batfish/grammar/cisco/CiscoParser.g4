@@ -434,19 +434,6 @@ ip_pim
    )? ip_pim_tail
 ;
 
-ip_ssh
-:
-   SSH
-   (
-      ip_ssh_version
-   )
-;
-
-ip_ssh_version
-:
-   VERSION version = DEC NEWLINE
-;
-
 ip_pim_tail
 :
    pim_accept_register
@@ -503,6 +490,30 @@ ip_route_tail
 ip_route_vrfc_stanza
 :
    IP ROUTE ip_route_tail
+;
+
+ip_ssh
+:
+   SSH
+   (
+      ip_ssh_version
+      | ip_ssh_null
+   )
+;
+
+ip_ssh_null
+:
+   (
+   	  AUTHENTICATION_RETRIES
+   	  | PORT
+   	  | SOURCE_INTERFACE
+   	  | TIME_OUT 
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_ssh_version
+:
+   VERSION version = DEC NEWLINE
 ;
 
 l_access_class
@@ -562,6 +573,7 @@ l_null
       | LOCATION
       | LOGGING
       | MODEM
+      | NOTIFY
       | ROTARY
       | SESSION_DISCONNECT_WARNING
       | SESSION_LIMIT
@@ -1320,7 +1332,7 @@ s_class_map_tail
 
 s_control_plane
 :
-   CONTROL_PLANE NEWLINE s_control_plane_tail*
+   CONTROL_PLANE (SLOT DEC)? NEWLINE s_control_plane_tail*
 ;
 
 s_control_plane_tail

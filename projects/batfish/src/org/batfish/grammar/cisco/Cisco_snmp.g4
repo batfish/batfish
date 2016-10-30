@@ -10,8 +10,10 @@ s_snmp_server
 :
    SNMP_SERVER
    (
-      ss_community
-      | ss_enable
+   	  NEWLINE
+      | ss_community
+      | ss_enable_mib_null
+      | ss_enable_traps
       | ss_host
       | ss_null
       | ss_trap_source
@@ -37,7 +39,12 @@ ssc_access_control
    )? name = variable? NEWLINE
 ;
 
-ss_enable
+ss_enable_mib_null
+:
+   ENABLE MIB variable NEWLINE
+;
+
+ss_enable_traps
 :
    ENABLE TRAPS
    (
@@ -83,8 +90,19 @@ ss_host_version
 ss_null
 :
    (
-      SOURCE_INTERFACE
+      CHASSIS_ID
+      | CONTACT
+      | ENGINEID
+      | GROUP
+      | IFINDEX
+      | LOCATION
+      | LOGGING
+      | MANAGER
+      | OVERLOAD_CONTROL
+      | SOURCE_INTERFACE
+      | TRAPS
       | USER
+      | VIEW
    ) ~NEWLINE* NEWLINE
 ;
 
