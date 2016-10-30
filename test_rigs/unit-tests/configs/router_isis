@@ -69,6 +69,7 @@ router isis
  passive-interface default
  no passive-interface GigabitEthernet0/1
  no passive-interface Serial4/0
+ no passive-interface Serial5/0:0
  !
  address-family ipv6
  exit-address-family

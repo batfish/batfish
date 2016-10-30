@@ -184,6 +184,7 @@ interface_name
          | FORWARD_SLASH DEC COLON DEC
       )?
    )
+   | variable_permissive
 ;
 
 line_type
@@ -434,10 +435,14 @@ variable
    ~NEWLINE
 ;
 
+variable_permissive
+:
+	(~(WS|NEWLINE))+
+;
+
 variable_with_colon
 :
    (
-      COLON
-      | ~NEWLINE
+	  ~NEWLINE
    )+
 ;

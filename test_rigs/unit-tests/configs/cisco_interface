@@ -32,8 +32,11 @@ interface Async1
 !
 interface ethernet 1/11
  enable
+ bgp-policy accounting input
  spanning-tree protect
  gig-default neg-off
+ xconnect 137.164.16.195 649 encapsulation mpls
+  remote circuit id 649
  port security
   enable
   violation restrict

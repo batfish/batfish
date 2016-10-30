@@ -180,7 +180,7 @@ passive_iis_stanza
 
 passive_interface_is_stanza
 :
-   NO? PASSIVE_INTERFACE name = variable NEWLINE
+   NO? PASSIVE_INTERFACE name = variable_permissive NEWLINE
 ;
 
 redistribute_connected_is_stanza

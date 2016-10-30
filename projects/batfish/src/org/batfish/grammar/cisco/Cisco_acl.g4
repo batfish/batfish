@@ -176,7 +176,7 @@ extended_access_list_stanza
 :
    (
       (
-         IP ACCESS_LIST EXTENDED name = variable_with_colon
+         IP ACCESS_LIST EXTENDED name = variable_permissive
       )
       |
       (
@@ -188,7 +188,7 @@ extended_access_list_stanza
             IP
             | IPV4
             | IPV6
-         ) ACCESS_LIST name = variable_with_colon
+         ) ACCESS_LIST name = variable_permissive
       )
    )
    (

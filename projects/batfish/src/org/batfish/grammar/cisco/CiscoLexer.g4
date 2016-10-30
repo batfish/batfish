@@ -823,6 +823,11 @@ BGP_COMMUNITY
    'bgp-community'
 ;
 
+BGP_POLICY
+:
+   'bgp-policy'
+;
+
 BIDIR_ENABLE
 :
    'bidir-enable'
@@ -5752,6 +5757,11 @@ REMARK
    'remark' -> pushMode ( M_REMARK )
 ;
 
+REMOTE
+:
+   'remote'
+;
+
 REMOTE_AS
 :
    'remote-as'
@@ -8452,13 +8462,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'*] | '[' | ']' )
+   ~( [ \t\n\r(),!+$'*\/] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'*] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!+$'*\/] | '[' | ']' | ':' )
 ;
 
 fragment

@@ -2,5 +2,6 @@
 hostname ip_route_slash
 !
 ip route 1.2.3.4/32 2.3.4.5
+ip route 130.150.254.0 255.255.255.0 Serial5/1:0 tag 64706
 !
 end
