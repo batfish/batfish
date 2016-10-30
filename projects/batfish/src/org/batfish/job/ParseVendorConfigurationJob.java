@@ -22,7 +22,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
@@ -326,7 +325,8 @@ public class ParseVendorConfigurationJob
       // at this point we should have a VendorConfiguration vc
       String hostname = vc.getHostname();
       if (hostname == null) {
-         String error = "No hostname set in file: '" + relativePathStr.replace("\\",  "/") + "'\n";
+         String error = "No hostname set in file: '"
+               + relativePathStr.replace("\\", "/") + "'\n";
          try {
             _warnings.redFlag(error);
          }

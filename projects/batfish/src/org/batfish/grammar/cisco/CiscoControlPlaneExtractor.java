@@ -2785,17 +2785,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Integer severityNum = null;
       String severity = null;
       if (ctx.size != null) {
-         //something was parsed as buffer size but it could be logging severity as well
-         //it is buffer size if the value is greater than min buffer size
-         //otherwise, it is logging severity
+         // something was parsed as buffer size but it could be logging severity
+         // as well
+         // it is buffer size if the value is greater than min buffer size
+         // otherwise, it is logging severity
          int sizeRawNum = toInteger(ctx.size);
          if (sizeRawNum >= Logging.MIN_LOGGING_BUFFER_SIZE) {
             size = sizeRawNum;
          }
          else {
             if (ctx.logging_severity() != null) {
-               //if we have explicity severity as well; we've messed up
-               throw new BatfishException("Ambiguous parsing of logging buffered");
+               // if we have explicity severity as well; we've messed up
+               throw new BatfishException(
+                     "Ambiguous parsing of logging buffered");
             }
             severityNum = sizeRawNum;
             severity = toLoggingSeverity(severityNum);
