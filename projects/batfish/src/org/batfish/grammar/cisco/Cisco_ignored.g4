@@ -22,7 +22,7 @@ null_block_stanza
       | ATM
       | BASH
       | BFD
-      | BGP DISABLE_ADVERTISEMENT      	     
+      | BGP DISABLE_ADVERTISEMENT
       | BSD_CLIENT
       | BSD_USERNAME
       | BUFFERS
@@ -654,7 +654,7 @@ null_block_substanza
          | RP_ADDRESS
          | RULE
          | SA_FILTER
-		 | SAMPLES_OF_HISTORY_KEPT
+         | SAMPLES_OF_HISTORY_KEPT
          | SCHEME
          | SECRET
          | SECURE_MAC_ADDRESS

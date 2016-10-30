@@ -13,19 +13,22 @@ logging_buffered
 
 logging_console
 :
-   CONSOLE 
+   CONSOLE
    (
-   	   DISABLE
-   	   | logging_severity
-   )? 
+      DISABLE
+      | logging_severity
+   )?
    (
-   	   EXCEPT ERRORS
+      EXCEPT ERRORS
    )? NEWLINE
 ;
 
 logging_host
 :
-   HOST hostname = variable (VRF variable)? NEWLINE
+   HOST hostname = variable
+   (
+      VRF variable
+   )? NEWLINE
 ;
 
 logging_null
@@ -69,7 +72,10 @@ logging_severity
 
 logging_source_interface
 :
-   SOURCE_INTERFACE interface_name (VRF variable)? NEWLINE
+   SOURCE_INTERFACE interface_name
+   (
+      VRF variable
+   )? NEWLINE
 ;
 
 logging_trap

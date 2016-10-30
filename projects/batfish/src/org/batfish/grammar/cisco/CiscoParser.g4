@@ -504,10 +504,10 @@ ip_ssh
 ip_ssh_null
 :
    (
-   	  AUTHENTICATION_RETRIES
-   	  | PORT
-   	  | SOURCE_INTERFACE
-   	  | TIME_OUT 
+      AUTHENTICATION_RETRIES
+      | PORT
+      | SOURCE_INTERFACE
+      | TIME_OUT
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -518,8 +518,7 @@ ip_ssh_version
 
 l_access_class
 :
-   IPV6?
-   ACCESS_CLASS
+   IPV6? ACCESS_CLASS
    (
       (
          (
@@ -1332,7 +1331,10 @@ s_class_map_tail
 
 s_control_plane
 :
-   CONTROL_PLANE (SLOT DEC)? NEWLINE s_control_plane_tail*
+   CONTROL_PLANE
+   (
+      SLOT DEC
+   )? NEWLINE s_control_plane_tail*
 ;
 
 s_control_plane_tail

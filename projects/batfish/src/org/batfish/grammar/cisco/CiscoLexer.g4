@@ -960,7 +960,7 @@ BUNDLE
 
 BUFFERS
 :
-	'buffers'
+   'buffers'
 ;
 
 CA
@@ -2062,7 +2062,7 @@ DUAL_ACTIVE
 DUAL_MODE_DEFAULT_VLAN
 :
    'dual-mode-default-vlan'
-;  
+;
 
 DUPLEX
 :
@@ -2265,7 +2265,7 @@ ENGINEID
 :
    (
       'engineid'
-      | 'engineID' 
+      | 'engineID'
    ) -> pushMode ( M_COMMENT )
 ;
 
@@ -5044,17 +5044,17 @@ PCANYWHERE_STATUS
 
 PCP
 :
-    'pcp'
+   'pcp'
 ;
 
 PCP_VALUE
 :
-    'pcp-value'
+   'pcp-value'
 ;
 
 PEAKDETECT
 :
-    'peakdetect'
+   'peakdetect'
 ;
 
 PEER
@@ -6074,7 +6074,7 @@ SAMPLER_MAP
 
 SAMPLES_OF_HISTORY_KEPT
 :
-	'samples-of-history-kept'
+   'samples-of-history-kept'
 ;
 
 SAP
@@ -8493,7 +8493,8 @@ M_AsPath_DEC
 
 M_AsPath_RP_VARIABLE
 :
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type ( RP_VARIABLE ) , popMode
+   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
+   RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IN

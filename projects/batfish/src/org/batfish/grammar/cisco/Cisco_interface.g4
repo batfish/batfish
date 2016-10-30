@@ -473,9 +473,9 @@ null_block_if_stanza
       | PORT_CHANNEL_PROTOCOL
       | PORT_NAME
       | PORTMODE
-      | 
+      |
       (
-      	PORT SECURITY
+         PORT SECURITY
       )
       | POS
       | POWER

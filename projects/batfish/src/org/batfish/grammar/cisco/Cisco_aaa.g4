@@ -239,7 +239,7 @@ aaa_authentication_enable
    ENABLE
    (
       (
-         DEFAULT aaa_authentication_list_method+ 
+         DEFAULT aaa_authentication_list_method+
          | IMPLICIT_USER
       ) NEWLINE
       | aaa_authentication_asa_console
@@ -472,6 +472,20 @@ aaa_authorization_include
    )? group = variable NEWLINE
 ;
 
+aaa_authorization_method
+:
+   (
+      (
+         GROUP?
+         (
+            groups += ~( NEWLINE | LOCAL | NONE )
+         )+
+      )
+      | LOCAL
+      | NONE
+   )* NEWLINE
+;
+
 aaa_authorization_network
 :
    NETWORK
@@ -484,20 +498,6 @@ aaa_authorization_network
 aaa_authorization_ssh_certificate
 :
    SSH_CERTIFICATE DEFAULT aaa_authorization_method
-;
-
-aaa_authorization_method
-:
-   (
-      (
-         GROUP?
-         (
-            groups += variable
-         )+
-      )
-      | LOCAL
-      | NONE
-   ) NEWLINE
 ;
 
 aaa_authorization_ssh_publickey

@@ -2900,8 +2900,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            String relativePathStr = _settings.getTestrigSettings().getBasePath()
-                  .relativize(path).toString();
+            String relativePathStr = _settings.getTestrigSettings()
+                  .getBasePath().relativize(path).toString();
             if (!iptablesConfigurations.containsKey(relativePathStr)) {
                for (String key : iptablesConfigurations.keySet()) {
                   _logger.errorf("key : %s\n", key);
@@ -2999,10 +2999,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             // are not set up correctly using host files
             _logger.errorf("Cannot serialize configuration with hostname %s\n",
                   name);
-            answerElement.addRedFlagWarning(name,
-                  new Warning(
-                        "Cannot serialize network config. Bad hostname " + name.replace("\\",  "/"),
-                        "MISCELLANEOUS"));
+            answerElement
+                  .addRedFlagWarning(name,
+                        new Warning(
+                              "Cannot serialize network config. Bad hostname "
+                                    + name.replace("\\", "/"),
+                              "MISCELLANEOUS"));
          }
          else {
             Path currentOutputPath = outputPath.resolve(name);

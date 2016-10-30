@@ -10,7 +10,7 @@ s_snmp_server
 :
    SNMP_SERVER
    (
-   	  NEWLINE
+      NEWLINE
       | ss_community
       | ss_enable_mib_null
       | ss_enable_traps

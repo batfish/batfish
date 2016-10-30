@@ -30,7 +30,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.apache.commons.lang.SystemUtils;
 import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -265,7 +264,7 @@ public class CommonUtil {
       }
       return matchingStrings;
    }
-   
+
    public static String getTime(long millis) {
       long cs = (millis / 10) % 100;
       long s = (millis / 1000) % 60;
