@@ -23,9 +23,16 @@ bgp_address_family
 :
    (
       (
-         IPV4 (MDT | LABELED_UNICAST)?
+         IPV4
+         (
+            MDT
+            | LABELED_UNICAST
+         )?
       )
-      | IPV6 (LABELED_UNICAST)?
+      | IPV6
+      (
+         LABELED_UNICAST
+      )?
       | L2VPN
       | VPNV4
       | VPNV6
@@ -216,7 +223,10 @@ distribute_list_bgp_tail
 
 ebgp_multihop_bgp_tail
 :
-   EBGP_MULTIHOP (hop = DEC)? NEWLINE
+   EBGP_MULTIHOP
+   (
+      hop = DEC
+   )? NEWLINE
 ;
 
 filter_list_bgp_tail
