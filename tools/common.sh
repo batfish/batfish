@@ -783,8 +783,9 @@ export -f batfish_tests
 _batfish_tests() {
    cd $BATFISH_ROOT
    rm -f $(find -name '*.testout')
-   allinone -cmdfile tests/commands |& grep -i fail
-   allinone -cmdfile test_rigs/parsing-test.cmds |& grep -i fail
+   allinone -cmdfile tests/commands |& grep -i fail | sed 's/.* \([^ ]*.ref\).*/\1/g' | while read i; do echo "$(readlink -f "$i")"; done
+   allinone -cmdfile test_rigs/parsing-test.cmds |& grep -i fail | sed 's/.* \([^ ]*.ref\).*/\1/g' | while read i; do echo "$(readlink -f "$i")"; done
+
 }
 export -f _batfish_tests
 
