@@ -65,6 +65,7 @@ common_is_stanza
    | redistribute_connected_is_stanza
    | redistribute_eigrp_is_stanza_null
    | redistribute_static_is_stanza
+   | passive_interface_default_is_stanza
    | passive_interface_is_stanza
    | summary_address_is_stanza
 ;
