@@ -3183,6 +3183,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitPassive_interface_default_is_stanza(
+         Passive_interface_default_is_stanzaContext ctx) {
+      for (Interface iface : _configuration.getInterfaces().values()) {
+         iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+      }
+   }
+
+   @Override
    public void exitPassive_interface_default_ro_stanza(
          Passive_interface_default_ro_stanzaContext ctx) {
       _currentOspfProcess.setPassiveInterfaceDefault(true);
@@ -3192,29 +3200,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitPassive_interface_is_stanza(
          Passive_interface_is_stanzaContext ctx) {
       String ifaceName = ctx.name.getText();
-
-      if (ifaceName.equals("default")) {
-         for (Interface iface : _configuration.getInterfaces().values()) {
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+      if (iface != null) {
+         if (ctx.NO() == null) {
             iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
+         }
+         else {
+            iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
          }
       }
       else {
-         String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-         Interface iface = _configuration.getInterfaces()
-               .get(canonicalIfaceName);
-         if (iface != null) {
-            if (ctx.NO() == null) {
-               iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
-            }
-            else {
-               iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-            }
-         }
-         else {
-            throw new BatfishException(
-                  "FIXME: Reference to undefined interface: '"
-                        + canonicalIfaceName + "'");
-         }
+         throw new BatfishException("FIXME: Reference to undefined interface: '"
+               + canonicalIfaceName + "'");
       }
    }
 

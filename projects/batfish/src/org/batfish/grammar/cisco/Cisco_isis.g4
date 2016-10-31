@@ -179,9 +179,14 @@ passive_iis_stanza
    PASSIVE NEWLINE
 ;
 
+passive_interface_default_is_stanza
+:
+   NO? PASSIVE_INTERFACE DEFAULT NEWLINE
+;
+
 passive_interface_is_stanza
 :
-   NO? PASSIVE_INTERFACE name = variable_permissive NEWLINE
+   NO? PASSIVE_INTERFACE name = interface_name NEWLINE
 ;
 
 redistribute_connected_is_stanza
