@@ -285,6 +285,7 @@ null_block_if_stanza
       | BANDWIDTH
       | BEACON
       | BFD
+      | BGP_POLICY
       | BRIDGE_GROUP
       | BUNDLE
       | CABLELENGTH
@@ -489,6 +490,7 @@ null_block_if_stanza
       | RATE_LIMIT
       | RATE_MODE
       | RCV_QUEUE
+      | REMOTE
       | ROUTE_CACHE
       | ROUTE_ONLY
       | SCRAMBLE

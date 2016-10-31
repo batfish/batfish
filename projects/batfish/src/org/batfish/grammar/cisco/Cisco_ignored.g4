@@ -146,6 +146,8 @@ null_block_stanza
          IPV6
          (
             CONFLICT_POLICY
+            | GLOBAL_MTU
+            | ENABLE_ACL_CAM_SHARING
             | HARDWARE
             | MROUTE
          )
@@ -243,9 +245,11 @@ null_block_stanza
          LOG
          | VRRP
       )
+      | RP
       | RX_COS_SLOT
       | SAMPLER
       | SAMPLER_MAP
+      | SAP
       | SCCP
       | SCHEDULE
       | SDR
@@ -308,6 +312,7 @@ null_block_stanza
       | WRED_PROFILE
       | WSMA
       | XDR
+      | XML
    ) ~NEWLINE* NEWLINE
    (
       description_line
@@ -332,9 +337,12 @@ null_block_substanza
          | ADDRESS_POOL
          | ADDRESS_POOLS
          | ADMINISTRATIVE_WEIGHT
+         | ADMIN_STATE
          | ADVERTISE
          | AESA
          | AGE
+         | AIS_SHUT
+         | ALARM_REPORT
          | ALERT_GROUP
          | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
@@ -590,6 +598,7 @@ null_block_substanza
          | PHYSICAL_PORT
          | PICKUP
          | PINNING
+         | PM
          | POLICE
          | POLICY
          | POLICY_LIST
@@ -693,6 +702,7 @@ null_block_substanza
          | STICKY
          | STP
          | STREET_ADDRESS
+         | STS_1
          | SUBJECT_NAME
          | SUBSCRIBE_TO_ALERT_GROUP
          | SVC

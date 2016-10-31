@@ -13,6 +13,9 @@ router bgp 1
  neighbor 1.10.1.1 peer-group as1
  neighbor 1.10.1.1 update-source Loopback0
  neighbor 10.12.11.2 peer-group as2
+ neighbor dcp-rrs peer-group nlri unicast multicast
+ neighbor 13.16.3.16 capability orf prefix-list receive
+ neighbor as1 fail-over bfd-enable
  maximum-paths 5
  table-map traffic-types
  !
@@ -30,6 +33,7 @@ router bgp 1
   no auto-summary
   no synchronization
   bgp dampening
+  bgp redistribute-internal
   network 1.0.1.0 mask 255.255.255.0
   network 1.0.2.0 mask 255.255.255.0
  exit-address-family

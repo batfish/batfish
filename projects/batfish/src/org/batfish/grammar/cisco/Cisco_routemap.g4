@@ -214,12 +214,25 @@ match_ip_access_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_ip_next_hop_rm_stanza_null
+:
+   MATCH IP NEXT_HOP
+   (
+       NULL
+   ) NEWLINE
+;
+
 match_ip_prefix_list_rm_stanza
 :
    MATCH IP ADDRESS IP? PREFIX_LIST
    (
       name_list += variable
    )+ NEWLINE
+;
+
+match_ip_route_source_rm_stanza
+:
+   MATCH IP ROUTE_SOURCE src = DEC NEWLINE
 ;
 
 match_ipv6_rm_stanza
@@ -248,7 +261,9 @@ match_rm_stanza
    | match_extcommunity_rm_stanza
    | match_interface_rm_stanza
    | match_ip_access_list_rm_stanza
+   | match_ip_next_hop_rm_stanza_null
    | match_ip_prefix_list_rm_stanza
+   | match_ip_route_source_rm_stanza
    | match_ipv6_rm_stanza
    | match_length_rm_stanza
    | match_policy_list_rm_stanza
@@ -546,6 +561,15 @@ set_next_hop_rp_stanza
    ) DESTINATION_VRF? NEWLINE
 ;
 
+set_nlri_rm_stanza_null
+:
+   SET NLRI
+   (
+	  UNICAST
+	  | MULTICAST
+   )+ NEWLINE
+;
+
 set_origin_rm_stanza
 :
    SET ORIGIN origin_expr_literal NEWLINE
@@ -564,6 +588,11 @@ set_tag_rm_stanza
 set_tag_rp_stanza
 :
    SET TAG tag = int_expr NEWLINE
+;
+
+set_traffic_index_rm_stanza_null
+:
+   SET TRAFFIC_INDEX index = DEC NEWLINE
 ;
 
 set_weight_rm_stanza
@@ -597,8 +626,10 @@ set_rm_stanza
    | set_mpls_label_rm_stanza
    | set_next_hop_peer_address_stanza
    | set_next_hop_rm_stanza
+   | set_nlri_rm_stanza_null
    | set_origin_rm_stanza
    | set_tag_rm_stanza
+   | set_traffic_index_rm_stanza_null
    | set_weight_rm_stanza
 ;
 

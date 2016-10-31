@@ -60,6 +60,7 @@ router isis
   !
   address-family ipv6 unicast
    metric 99999
+   adjacency-check disable
   !
  !
  net 49.2152.1371.6403.9016.1371.6403.9016.00
@@ -67,6 +68,7 @@ router isis
  metric-style wide
  log-adjacency-changes all
  redistribute static clns route-map static-to-bgp
+ redistribute eigrp 1234 route-map redist-eigrp-isis level-1-2
  passive-interface default
  no passive-interface GigabitEthernet0/1
  no passive-interface Serial4/0

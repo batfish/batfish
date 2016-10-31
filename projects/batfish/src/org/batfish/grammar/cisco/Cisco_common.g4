@@ -434,10 +434,14 @@ variable
    ~NEWLINE
 ;
 
+variable_permissive
+:
+	(~(WS|NEWLINE))+
+;
+
 variable_with_colon
 :
    (
-      COLON
-      | ~NEWLINE
+	  ~NEWLINE
    )+
 ;

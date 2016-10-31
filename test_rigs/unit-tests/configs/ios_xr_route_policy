@@ -4,6 +4,8 @@ hostname rP
 route-policy hpr_blackhole
   if destination in ucla_blackhole_routes and community matches-any hpr_blackhole_community then
     set next-hop 192.0.2.1
+    set origin igp
+    set weight 0
     pass
   endif
 end-policy

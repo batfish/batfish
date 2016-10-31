@@ -241,6 +241,11 @@ ADMIN
    'admin'
 ;
 
+ADMIN_STATE
+:
+   'admin-state'
+;
+
 ADMINISTRATIVE_WEIGHT
 :
    'administrative-weight'
@@ -369,6 +374,16 @@ AGGREGATE_ADDRESS
 AHP
 :
    'ahp'
+;
+
+AIS_SHUT
+:
+   'ais-shut'
+;
+
+ALARM_REPORT
+:
+   'alarm-report'
 ;
 
 ALERT_GROUP
@@ -828,6 +843,11 @@ BGP_COMMUNITY
    'bgp-community'
 ;
 
+BGP_POLICY
+:
+   'bgp-policy'
+;
+
 BIDIR_ENABLE
 :
    'bidir-enable'
@@ -1016,6 +1036,11 @@ CAM_ACL
 CAM_PROFILE
 :
    'cam-profile'
+;
+
+CAPABILITY
+:
+   'capability'
 ;
 
 CARD
@@ -2204,6 +2229,11 @@ ENABLE
    'enable'
 ;
 
+ENABLE_ACL_CAM_SHARING
+:
+   'enable-acl-cam-sharing'
+;
+
 ENABLED
 :
    'enabled'
@@ -2529,6 +2559,11 @@ FAILOVER
 FAILURE
 :
    'failure'
+;
+
+FAIL_OVER
+:
+   'fail-over'
 ;
 
 FAIR_QUEUE
@@ -4772,6 +4807,11 @@ NTP
    'ntp'
 ;
 
+NULL
+:
+   'null'
+;
+
 OAM
 :
    'oam'
@@ -5200,6 +5240,11 @@ PLAT
 PLATFORM
 :
    'platform'
+;
+
+PM
+:
+   'pm'
 ;
 
 POINT_TO_MULTIPOINT
@@ -5757,6 +5802,11 @@ REMARK
    'remark' -> pushMode ( M_REMARK )
 ;
 
+REMOTE
+:
+   'remote'
+;
+
 REMOTE_AS
 :
    'remote-as'
@@ -5947,6 +5997,11 @@ ROUTE_POLICY
    'route-policy'
 ;
 
+ROUTE_SOURCE
+:
+   'route-source'
+;
+
 ROUTE_REFLECTOR_CLIENT
 :
    'route-reflector-client'
@@ -5985,6 +6040,11 @@ ROUTER_SOLICITATION
 ROUTING
 :
    'routing'
+;
+
+RP
+:
+   'rp'
 ;
 
 RPF_VECTOR
@@ -6759,6 +6819,11 @@ STRING
    'string'
 ;
 
+STS_1
+:
+   'sts-1'
+;
+
 STUB
 :
    'stub'
@@ -7212,6 +7277,11 @@ TRACKING_PRIORITY_INCREMENT
 TRAFFIC_ENG
 :
    'traffic-eng'
+;
+
+TRAFFIC_INDEX
+:
+   'traffic-index'
 ;
 
 TRANSCEIVER
@@ -9290,6 +9360,11 @@ M_NEIGHBOR_IPV6_PREFIX
          F_HexDigit+
       )? '/' F_DecByte
    ) -> type ( IPV6_PREFIX ) , popMode
+;
+
+M_NEIGHBOR_NLRI
+:
+   'nlri' -> type ( NLRI ) , popMode
 ;
 
 M_NEIGHBOR_PASSIVE

@@ -510,15 +510,18 @@ null_bgp_tail
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
             | NON_DETERMINISTIC_MED
+            | REDISTRIBUTE_INTERNAL
             | SCAN_TIME
          )
       )
+      | CAPABILITY
       | DAMPENING
       | DESCRIPTION
       | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
       | EVENT_HISTORY
       | EXIT
+      | FAIL_OVER
       | FALL_OVER
       | GRACEFUL_RESTART
       | LOCAL_V6_ADDR
