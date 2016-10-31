@@ -436,12 +436,7 @@ variable
 
 variable_permissive
 :
-	(~(WS|NEWLINE))+
-;
-
-variable_with_colon
-:
    (
-	  ~NEWLINE
+      ~( WS | NEWLINE )
    )+
 ;
