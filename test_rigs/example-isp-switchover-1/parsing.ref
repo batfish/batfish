@@ -4606,7 +4606,7 @@
             "      IP:'ip'  <== mode:DEFAULT_MODE",
             "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
             "      EXTENDED:'extended'  <== mode:DEFAULT_MODE",
-            "      (variable_with_colon",
+            "      (variable_permissive",
             "        VARIABLE:'DENYSTUFF'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (extended_access_list_tail",
