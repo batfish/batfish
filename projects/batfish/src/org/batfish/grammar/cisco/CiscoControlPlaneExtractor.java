@@ -69,12 +69,15 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
+import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -182,9 +185,11 @@ import org.batfish.representation.cisco.RoutePolicySetIsisMetricType;
 import org.batfish.representation.cisco.RoutePolicySetLocalPref;
 import org.batfish.representation.cisco.RoutePolicySetMed;
 import org.batfish.representation.cisco.RoutePolicySetNextHop;
+import org.batfish.representation.cisco.RoutePolicySetOrigin;
 import org.batfish.representation.cisco.RoutePolicySetOspfMetricType;
 import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
+import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -871,53 +876,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   private static IntExpr toLocalPreferenceIntExpr(Int_exprContext ctx) {
-      if (ctx.DEC() != null) {
-         int val = toInteger(ctx.DEC());
-         if (ctx.PLUS() != null) {
-            return new IncrementLocalPreference(val);
-         }
-         else if (ctx.DASH() != null) {
-            return new DecrementLocalPreference(val);
-         }
-         else {
-            return new LiteralInt(val);
-         }
-      }
-      else {
-         throw new BatfishException(
-               "Unsupported local-preference integer expression");
-      }
-   }
-
    public static long toLong(TerminalNode t) {
       return Long.parseLong(t.getText());
    }
 
    public static long toLong(Token t) {
       return Long.parseLong(t.getText());
-   }
-
-   private static IntExpr toMetricIntExpr(Int_exprContext ctx) {
-      if (ctx.DEC() != null) {
-         int val = toInteger(ctx.DEC());
-         if (ctx.PLUS() != null) {
-            return new IncrementMetric(val);
-         }
-         else if (ctx.DASH() != null) {
-            return new DecrementMetric(val);
-         }
-         else {
-            return new LiteralInt(val);
-         }
-      }
-      else if (ctx.IGP_COST() != null) {
-         return new IgpCost();
-      }
-      else {
-         throw new BatfishException(
-               "Unsupported local-preference integer expression");
-      }
    }
 
    public static List<SubRange> toRange(RangeContext ctx) {
@@ -3897,23 +3861,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
-      OriginType originType;
-      Integer asNum = null;
-      if (ctx.IGP() != null) {
-         originType = OriginType.IGP;
-      }
-      else if (ctx.INCOMPLETE() != null) {
-         originType = OriginType.INCOMPLETE;
-      }
-      else if (ctx.as != null) {
-         asNum = toInteger(ctx.as);
-         originType = OriginType.EGP;
-      }
-      else {
-         throw new BatfishException("bad origin type");
-      }
-      RouteMapSetLine line = new RouteMapSetOriginTypeLine(originType, asNum);
-
+      OriginExpr originExpr = toOriginExpr(ctx.origin_expr_literal());
+      RouteMapSetLine line = new RouteMapSetOriginTypeLine(originExpr);
       _currentRouteMapClause.addSetLine(line);
    }
 
@@ -4423,6 +4372,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private IntExpr toLocalPreferenceIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int val = toInteger(ctx.DEC());
+         if (ctx.PLUS() != null) {
+            return new IncrementLocalPreference(val);
+         }
+         else if (ctx.DASH() != null) {
+            return new DecrementLocalPreference(val);
+         }
+         else {
+            return new LiteralInt(val);
+         }
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarInt(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         /*
+          * Unsupported local-preference integer expression - do not add cases
+          * unless you know what you are doing
+          */
+         throw convError(IntExpr.class, ctx);
+      }
+   }
+
    private String toLoggingSeverity(int severityNum) {
       switch (severityNum) {
       case 0:
@@ -4517,6 +4491,67 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          throw convError(Long.class, ctx);
+      }
+   }
+
+   private IntExpr toMetricIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int val = toInteger(ctx.DEC());
+         if (ctx.PLUS() != null) {
+            return new IncrementMetric(val);
+         }
+         else if (ctx.DASH() != null) {
+            return new DecrementMetric(val);
+         }
+         else {
+            return new LiteralInt(val);
+         }
+      }
+      else if (ctx.IGP_COST() != null) {
+         return new IgpCost();
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarInt(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         /*
+          * Unsupported metric integer expression - do not add cases unless you
+          * know what you are doing
+          */
+         throw convError(IntExpr.class, ctx);
+      }
+   }
+
+   private OriginExpr toOriginExpr(Origin_expr_literalContext ctx) {
+      OriginType originType;
+      Integer asNum = null;
+      LiteralOrigin originExpr;
+      if (ctx.IGP() != null) {
+         originType = OriginType.IGP;
+      }
+      else if (ctx.INCOMPLETE() != null) {
+         originType = OriginType.INCOMPLETE;
+      }
+      else if (ctx.as != null) {
+         asNum = toInteger(ctx.as);
+         originType = OriginType.EGP;
+      }
+      else {
+         throw convError(OriginExpr.class, ctx);
+      }
+      originExpr = new LiteralOrigin(originType, asNum);
+      return originExpr;
+   }
+
+   private OriginExpr toOriginExpr(Origin_exprContext ctx) {
+      if (ctx.origin_expr_literal() != null) {
+         return toOriginExpr(ctx.origin_expr_literal());
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarOrigin(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         throw convError(OriginExpr.class, ctx);
       }
    }
 
@@ -4879,41 +4914,57 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(
+         Set_origin_rp_stanzaContext ctx) {
+      OriginExpr origin = toOriginExpr(ctx.origin_expr());
+      return new RoutePolicySetOrigin(origin);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
          Set_rp_stanzaContext ctx) {
-      Prepend_as_path_rp_stanzaContext p = ctx.prepend_as_path_rp_stanza();
-      if (p != null) {
-         return toRoutePolicyStatement(p);
+      Prepend_as_path_rp_stanzaContext pasctx = ctx.prepend_as_path_rp_stanza();
+      if (pasctx != null) {
+         return toRoutePolicyStatement(pasctx);
       }
 
-      Set_community_rp_stanzaContext cctxt = ctx.set_community_rp_stanza();
-      if (cctxt != null) {
-         return toRoutePolicyStatement(cctxt);
+      Set_community_rp_stanzaContext cctx = ctx.set_community_rp_stanza();
+      if (cctx != null) {
+         return toRoutePolicyStatement(cctx);
       }
 
-      Set_local_preference_rp_stanzaContext lpctxt = ctx
+      Set_local_preference_rp_stanzaContext lpctx = ctx
             .set_local_preference_rp_stanza();
-      if (lpctxt != null) {
-         return toRoutePolicyStatement(lpctxt);
+      if (lpctx != null) {
+         return toRoutePolicyStatement(lpctx);
       }
 
-      Set_med_rp_stanzaContext mctxt = ctx.set_med_rp_stanza();
-      if (mctxt != null) {
-         return toRoutePolicyStatement(mctxt);
+      Set_med_rp_stanzaContext medctx = ctx.set_med_rp_stanza();
+      if (medctx != null) {
+         return toRoutePolicyStatement(medctx);
       }
 
-      Set_metric_type_rp_stanzaContext mt = ctx.set_metric_type_rp_stanza();
-      if (mt != null) {
-         return toRoutePolicyStatement(mt);
+      Set_metric_type_rp_stanzaContext mctx = ctx.set_metric_type_rp_stanza();
+      if (mctx != null) {
+         return toRoutePolicyStatement(mctx);
       }
 
-      Set_next_hop_rp_stanzaContext hctxt = ctx.set_next_hop_rp_stanza();
-      if (hctxt != null) {
-         return toRoutePolicyStatement(hctxt);
+      Set_next_hop_rp_stanzaContext nhctx = ctx.set_next_hop_rp_stanza();
+      if (nhctx != null) {
+         return toRoutePolicyStatement(nhctx);
       }
 
-      Set_tag_rp_stanzaContext tctxt = ctx.set_tag_rp_stanza();
-      if (tctxt != null) {
-         return toRoutePolicyStatement(tctxt);
+      Set_origin_rp_stanzaContext octx = ctx.set_origin_rp_stanza();
+      if (octx != null) {
+         return toRoutePolicyStatement(octx);
+      }
+
+      Set_tag_rp_stanzaContext tctx = ctx.set_tag_rp_stanza();
+      if (tctx != null) {
+         return toRoutePolicyStatement(tctx);
+      }
+
+      Set_weight_rp_stanzaContext wctx = ctx.set_weight_rp_stanza();
+      if (wctx != null) {
+         return toRoutePolicyStatement(wctx);
       }
 
       throw convError(RoutePolicyStatement.class, ctx);
@@ -4922,6 +4973,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private RoutePolicyStatement toRoutePolicyStatement(
          Set_tag_rp_stanzaContext ctx) {
       return new RoutePolicySetTag(toTagIntExpr(ctx.tag));
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_weight_rp_stanzaContext wctx) {
+      IntExpr weight = toWeightIntExpr(wctx.weight);
+      return new RoutePolicySetWeight(weight);
    }
 
    private List<RoutePolicyStatement> toRoutePolicyStatementList(
@@ -4946,6 +5003,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return new VarInt(var);
       }
       else {
+         throw convError(IntExpr.class, ctx);
+      }
+   }
+
+   private IntExpr toWeightIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+         int val = toInteger(ctx.DEC());
+         return new LiteralInt(val);
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarInt(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         /*
+          * Unsupported weight integer expression - do not add cases unless you
+          * know what you are doing
+          */
          throw convError(IntExpr.class, ctx);
       }
    }

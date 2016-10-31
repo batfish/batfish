@@ -1,5 +1,5 @@
 !
-hostname router_isis
+hostname cisco_isis
 !
 interface GigabitEthernet0/1
 !
@@ -45,6 +45,7 @@ router isis
  exit-address-family
  address-family ipv6 unicast
   redistribute connected route-map connected-to-isis-v6
+  adjacency-check disable
  exit-address-family
  interface HundredGigE0/0/0/0.2302
   circuit-type level-2-only

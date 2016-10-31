@@ -133,7 +133,23 @@ public class ParseVendorConfigurationJob
       case CISCO_IOS_XR:
       case CISCO_NX:
       case FORCE10:
-         boolean nonNexus = format != ConfigurationFormat.CISCO_NX;
+         boolean multilineBgpNeighbors;
+         switch (format) {
+         case ARISTA:
+         case CISCO_IOS:
+         case FORCE10:
+            multilineBgpNeighbors = false;
+            break;
+
+         case CISCO_IOS_XR:
+         case CISCO_NX:
+            multilineBgpNeighbors = true;
+            break;
+
+         // $CASES-OMITTED$
+         default:
+            throw new BatfishException("Should not be possible");
+         }
          String newFileText = _fileText;
          String fileText;
          _logger.info("\tPreprocessing...");
@@ -151,7 +167,7 @@ public class ParseVendorConfigurationJob
          } while (newFileText != fileText);
          _logger.info("OK\n");
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText,
-               _settings, nonNexus);
+               _settings, multilineBgpNeighbors);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
                _warnings, _settings.getUnrecognizedAsRedFlag());

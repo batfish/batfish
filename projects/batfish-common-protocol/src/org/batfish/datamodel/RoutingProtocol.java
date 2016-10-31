@@ -71,6 +71,7 @@ public enum RoutingProtocol {
             break;
          case CISCO_IOS:
          case CISCO_IOS_XR:
+         case CISCO_NX:
          case FORCE10:
             break;
          case FLAT_JUNIPER:
@@ -83,6 +84,7 @@ public enum RoutingProtocol {
          case EMPTY:
          case BLADENETWORK:
          case HOST:
+         case IGNORED:
          case IPTABLES:
          case MRV:
          case MSS:

@@ -1,27 +1,27 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class SetOriginType extends AbstractStatement {
+public class SetOrigin extends AbstractStatement {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private OriginType _originType;
+   private OriginExpr _origin;
 
    @JsonCreator
-   public SetOriginType() {
+   public SetOrigin() {
    }
 
-   public SetOriginType(OriginType originType) {
-      _originType = originType;
+   public SetOrigin(OriginExpr origin) {
+      _origin = origin;
    }
 
    @Override
@@ -29,12 +29,12 @@ public class SetOriginType extends AbstractStatement {
       throw new BatfishException("unimplemented");
    }
 
-   public OriginType getOriginType() {
-      return _originType;
+   public OriginExpr getOriginType() {
+      return _origin;
    }
 
-   public void setOriginType(OriginType originType) {
-      _originType = originType;
+   public void setOriginType(OriginExpr origin) {
+      _origin = origin;
    }
 
 }

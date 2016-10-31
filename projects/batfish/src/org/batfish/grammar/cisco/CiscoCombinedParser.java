@@ -8,9 +8,9 @@ public class CiscoCombinedParser
       extends BatfishCombinedParser<CiscoParser, CiscoLexer> {
 
    public CiscoCombinedParser(String input, Settings settings,
-         boolean nonNexus) {
+         boolean multilineBgpNeighbors) {
       super(CiscoParser.class, CiscoLexer.class, input, settings);
-      _parser.setNonNexus(nonNexus);
+      _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
    }
 
    @Override

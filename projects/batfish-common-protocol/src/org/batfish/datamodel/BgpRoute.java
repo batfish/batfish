@@ -27,6 +27,8 @@ public class BgpRoute extends AbstractRoute {
 
       private RoutingProtocol _srcProtocol;
 
+      private int _weight;
+
       public Builder() {
          _asPath = new AsPath();
          _communities = new CommunitySet();
@@ -38,7 +40,7 @@ public class BgpRoute extends AbstractRoute {
          return new BgpRoute(_network, _nextHopIp, _admin, _asPath,
                _communities, _localPreference, _metric, _originatorIp,
                _clusterList, _receivedFromRouteReflectorClient, _originType,
-               _protocol, _srcProtocol);
+               _protocol, _srcProtocol, _weight);
       }
 
       public AsPath getAsPath() {
@@ -67,6 +69,10 @@ public class BgpRoute extends AbstractRoute {
 
       public RoutingProtocol getProtocol() {
          return _protocol;
+      }
+
+      public int getWeight() {
+         return _weight;
       }
 
       public void setAsPath(AsPath asPath) {
@@ -102,6 +108,10 @@ public class BgpRoute extends AbstractRoute {
          _srcProtocol = srcProtocol;
       }
 
+      public void setWeight(int weight) {
+         _weight = weight;
+      }
+
    }
 
    public static final int DEFAULT_LOCAL_PREFERENCE = 100;
@@ -133,11 +143,13 @@ public class BgpRoute extends AbstractRoute {
 
    private final RoutingProtocol _srcProtocol;
 
+   private final int _weight;
+
    public BgpRoute(Prefix network, Ip nextHopIp, int admin, AsPath asPath,
          CommunitySet communities, int localPreference, int med,
          Ip originatorIp, Set<Long> clusterList,
          boolean receivedFromRouteReflectorClient, OriginType originType,
-         RoutingProtocol protocol, RoutingProtocol srcProtocol) {
+         RoutingProtocol protocol, RoutingProtocol srcProtocol, int weight) {
       super(network, nextHopIp);
       _admin = admin;
       _asPath = asPath;
@@ -150,6 +162,7 @@ public class BgpRoute extends AbstractRoute {
       _protocol = protocol;
       _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
       _srcProtocol = srcProtocol;
+      _weight = weight;
    }
 
    @Override
@@ -199,6 +212,9 @@ public class BgpRoute extends AbstractRoute {
          return false;
       }
       if (_protocol != other._protocol) {
+         return false;
+      }
+      if (_weight != other._weight) {
          return false;
       }
       return true;
@@ -261,6 +277,10 @@ public class BgpRoute extends AbstractRoute {
       return -1;
    }
 
+   public int getWeight() {
+      return _weight;
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;
@@ -281,6 +301,7 @@ public class BgpRoute extends AbstractRoute {
             + ((_originatorIp == null) ? 0 : _originatorIp.hashCode());
       result = prime * result
             + ((_protocol == null) ? 0 : _protocol.hashCode());
+      result = prime * result + _weight;
       return result;
    }
 

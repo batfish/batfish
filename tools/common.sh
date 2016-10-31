@@ -775,6 +775,30 @@ _common_build() {
 }
 export -f _common_build
 
+batfish_tests() {
+   bash -c '_batfish_tests' _batfish_tests || return 1
+}
+export -f batfish_tests
+
+_batfish_tests() {
+   cd $BATFISH_ROOT
+   rm -f $(find -name '*.testout')
+   allinone -cmdfile tests/commands |& grep -i fail
+   allinone -cmdfile test_rigs/parsing-test.cmds |& grep -i fail
+}
+export -f _batfish_tests
+
+batfish_tests_update() {
+   bash -c '_batfish_tests_update' _batfish_tests_update || return 1
+}
+export -f batfish_tests_update
+
+_batfish_tests_update() {
+   cd $BATFISH_ROOT
+   find -name '*.testout' | while read f; do mv $f "$(dirname "$f")/$(basename "$f" .testout)"; done
+}
+export -f _batfish_tests_update
+
 batfish_questions_doc() {
    $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/doc "$@"
 }

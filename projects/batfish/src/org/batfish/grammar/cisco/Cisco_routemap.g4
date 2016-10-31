@@ -283,6 +283,21 @@ null_rp_stanza
    POUND ~NEWLINE* NEWLINE
 ;
 
+origin_expr
+:
+   origin_expr_literal
+   | RP_VARIABLE
+;
+
+origin_expr_literal
+:
+   (
+      EGP as = DEC
+   )
+   | IGP
+   | INCOMPLETE
+;
+
 prepend_as_path_rp_stanza
 :
    PREPEND AS_PATH as = as_expr
@@ -533,26 +548,12 @@ set_next_hop_rp_stanza
 
 set_origin_rm_stanza
 :
-   SET ORIGIN
-   (
-      (
-         EGP as = DEC
-      )
-      | IGP
-      | INCOMPLETE
-   ) NEWLINE
+   SET ORIGIN origin_expr_literal NEWLINE
 ;
 
 set_origin_rp_stanza
 :
-   SET ORIGIN
-   (
-      (
-         EGP as = DEC
-      )
-      | IGP
-      | INCOMPLETE
-   ) NEWLINE
+   SET ORIGIN origin_expr NEWLINE
 ;
 
 set_tag_rm_stanza
@@ -572,7 +573,7 @@ set_weight_rm_stanza
 
 set_weight_rp_stanza
 :
-   SET WEIGHT weight = DEC NEWLINE
+   SET WEIGHT weight = int_expr NEWLINE
 ;
 
 set_rm_stanza

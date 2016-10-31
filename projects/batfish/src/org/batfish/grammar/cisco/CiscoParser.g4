@@ -13,10 +13,10 @@ package org.batfish.grammar.cisco;
 }
 
 @members {
-   private boolean _nonNexus;
+   private boolean _multilineBgpNeighbors;
    
-   public void setNonNexus(boolean b) {
-      _nonNexus = b;
+   public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
+      _multilineBgpNeighbors = multilineBgpNeighbors;
    }
 }
 

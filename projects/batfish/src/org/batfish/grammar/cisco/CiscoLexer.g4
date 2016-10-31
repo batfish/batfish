@@ -231,6 +231,11 @@ ADJACENCY
    'adjacency'
 ;
 
+ADJACENCY_CHECK
+:
+   'adjacency-check'
+;
+
 ADMIN
 :
    'admin'

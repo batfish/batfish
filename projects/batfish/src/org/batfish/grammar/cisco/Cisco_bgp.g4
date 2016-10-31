@@ -54,7 +54,7 @@ address_family_rb_stanza
       aggregate_address_rb_stanza
       | bgp_tail
       |
-      {_nonNexus}?
+      {!_multilineBgpNeighbors}?
 
       neighbor_rb_stanza
       | no_neighbor_activate_rb_stanza
@@ -719,7 +719,7 @@ router_bgp_stanza_tail
    // Do not put nexus_neighbor_rb_stanza below neighbor_rb_stanza
 
    |
-   {!_nonNexus}?
+   {_multilineBgpNeighbors}?
 
    nexus_neighbor_rb_stanza
    | neighbor_rb_stanza
@@ -736,7 +736,7 @@ router_bgp_stanza_tail
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
    |
-   {!_nonNexus}?
+   {_multilineBgpNeighbors}?
 
    nexus_vrf_rb_stanza
    | unrecognized_line

@@ -145,7 +145,8 @@ null_is_stanza
 :
    NO?
    (
-      AUTHENTICATION
+      ADJACENCY_CHECK
+      | AUTHENTICATION
       | BFD
       | FAST_FLOOD
       | HELLO
