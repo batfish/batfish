@@ -218,7 +218,7 @@ match_ip_next_hop_rm_stanza_null
 :
    MATCH IP NEXT_HOP
    (
-       NULL
+      NULL
    ) NEWLINE
 ;
 
@@ -565,8 +565,8 @@ set_nlri_rm_stanza_null
 :
    SET NLRI
    (
-	  UNICAST
-	  | MULTICAST
+      UNICAST
+      | MULTICAST
    )+ NEWLINE
 ;
 
