@@ -1,6 +1,7 @@
 Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
 
 [Homepage] (http://www.batfish.org)
+
 [Sources] (http://github.com/arifogel/batfish)
 
 ##Instructions for building and running Batfish
@@ -40,7 +41,7 @@ Except where otherwise noted, everything in this repository is provided under th
 4. Compile batfish
   - batfish_build_all
 
-This command runs 'ant' in each batfish project directory with corresponding args.
+    This command runs 'ant' in each batfish project directory with corresponding args.
 
 You can clean all generated output with:
   - batfish_build_all distclean
@@ -51,10 +52,10 @@ You can clean all generated output with:
 6. Run the batfish service locally
   - allinone -runmode interactive
 
-This command also brings up an interactive prompt for the Java client.
+    This command also brings up an interactive prompt for the Java client.
 
 7. Explore using a client
    - See demo-java/commands for the Java client
    - See demo-python/commands.py for the python client
 
-These files operate on example configurations in the test_rigs folder.
+     These files operate on example configurations in the test_rigs folder.
