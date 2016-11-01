@@ -41,10 +41,7 @@ Except where otherwise noted, everything in this repository is provided under th
 4. Compile batfish
   - batfish_build_all
 
-    This command runs 'ant' in each batfish project directory with corresponding args.
-
-You can clean all generated output with:
-  - batfish_build_all distclean
+    This command runs 'ant' in each batfish project directory with corresponding args. You can clean all generated output with 'batfish_build_all distclean'.
 
 5. Run tests from the root of the batfish repository
   - allinone -cmdfile tests/commands
