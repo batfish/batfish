@@ -35,7 +35,7 @@ Except where otherwise noted, everything in this repository is provided under th
 3. Prepare your environment by adding the following to your .bashrc or equivalent
   - source <batfish-root>/tools/batfish_functions.sh
 
-Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
+    Sourcing batfish_functions.sh will give your shell access to batfish functions. You may prefer to source it manually if you do not want to clutter up your environment in every interactive bash session.
 
 4. Compile batfish
   - batfish_build_all
