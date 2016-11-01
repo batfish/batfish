@@ -1,24 +1,25 @@
+##Instructions for building and running Batfish
+
 Except where otherwise noted, everything in this repository is provided under the terms of the Apache 2.0 License.
 
-[Homepage] (http://www.batfish.org)
+[Project homepage] (http://www.batfish.org)
 
-[Sources] (http://github.com/arifogel/batfish)
+[Project sources] (http://github.com/arifogel/batfish)
 
-##Instructions for building and running Batfish
 
 ######Cygwin: Read README.CYGWIN before continuing
 ######OSX: Read README.OSX before continuing
 
-###Prerequisites:
+###Prerequisites
   - ant
   - Java 8 JDK
   - python
-  - z3
+  - z3 (instructions below)
 
-####Optional:
-   JProfiler - a Java profiler - located at http://www.ej-technologies.com/products/jprofiler/overview.html
+####Optional
+   [JProfiler - a Java profiler] (http://www.ej-technologies.com/products/jprofiler/overview.html)
 
-### Installation steps:
+### Installation steps
 
 *After any step involving modifications to .bashrc or equivalent, make sure to reload your shell or take other action to load the changes.*
 

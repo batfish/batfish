@@ -52,7 +52,7 @@ Report an issue if your device is not on the list, and we'll try to support it. 
 
 ## How do I get started?
 
-Read the INSTALL.md file.
+Read the [INSTALL.md] (https://github.com/arifogel/batfish/blob/master/INSTALL.md) file.
 
 Batfish is structured as a validation service that may be hosted on your desktop or any remote machine. The service can be accessed via RESTful APIs using any client-side language. Java and Python clients are included in this repository.
 
