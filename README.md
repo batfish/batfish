@@ -50,8 +50,9 @@ In the near future, we will host Batfish as a service in the cloud. If you'd lik
 
 ## What devices does Batfish support? 
 
-Batfish supports configurations for a large and growing set of network devices, including:
+Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
   - Arista
+  - AWS VPCs
   - Cisco (Nexus, IOS, IOS-XR, ASA)
   - Dell Force10
   - Foundry
