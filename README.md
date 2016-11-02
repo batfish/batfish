@@ -3,6 +3,10 @@
 
 Batfish is a network configuration analysis engine that enables network engineers to rapidly and safely evolve their network by guaranteeing that planned or current configurations are correct.
 
+**Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
+
+## What kinds of checks does Batfish support?
+
 Batfish supports many types of correctness checks, including
 
 1. #####Compliance and best-practices guidelines, e.g.:
@@ -42,8 +46,6 @@ Read the [INSTALL.md] (https://github.com/arifogel/batfish/blob/master/INSTALL.m
 
 Batfish is structured as a validation service that may be hosted on your desktop or any remote machine. The service can be accessed via RESTful APIs using any client-side language. Java and Python clients are included in this repository.
 
-**Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
-
 In the near future, we will host Batfish as a service in the cloud. If you'd like early access to it, drop us a line.
 
 ## What devices does Batfish support? 
@@ -60,4 +62,3 @@ Batfish supports configurations for a large and growing set of network devices, 
   - VyOS
 
 Report an issue if your device is not on the list, and we'll try to support it. Batfish does not parse all possible configuration directives. If Batfish fails to parse your files, report an issue and we'll try to fix. Or, you can :)
- 
