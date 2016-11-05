@@ -1,7 +1,7 @@
 
 ## What is Batfish?
 
-Batfish is an analysis engine that can guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
+Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
 
 **Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
 
@@ -44,9 +44,9 @@ Batfish supports many types of correctness checks, including
 
 Read the [INSTALL.md] (https://github.com/arifogel/batfish/blob/master/INSTALL.md) file.
 
-Batfish is structured as a validation service that may be hosted on your desktop or any remote machine. The service can be accessed via RESTful APIs using any client-side language. Java and Python clients are included in this repository.
+Batfish is structured as a service that may be hosted locally or on a remote machine. The service can be accessed via RESTful APIs using any client language. Java and Python clients are included in this repository.
 
-In the near future, we will host Batfish as a service in the cloud. If you'd like early access to it, drop us a line.
+Instead of DIY, if you'd prefer a cloud-hosted, configuration analysis service, drop a line to info@intentionet.com.
 
 ## What devices does Batfish support? 
 
