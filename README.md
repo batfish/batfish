@@ -1,11 +1,11 @@
 
 ## What is Batfish?
 
-Batfish is a network configuration analysis engine that enables network engineers to rapidly and safely evolve their network by guaranteeing that planned or current configurations are correct.
+Batfish is an analysis engine that can guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
 
 **Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
 
-## What kinds of checks does Batfish support?
+## What kinds of correctness checks does Batfish support?
 
 Batfish supports many types of correctness checks, including
 
