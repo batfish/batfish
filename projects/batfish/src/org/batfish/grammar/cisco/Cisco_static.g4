@@ -55,11 +55,32 @@ static_route_s_stanza
 
 static_route_s_tail
 :
-   distance = DEC
-   | DESCRIPTION ~NEWLINE*
+   (
+      BFD FAST_DETECT
+      (
+         (
+            MINIMUM_INTERVAL minimum_interval = DEC
+         )
+         |
+         (
+            MULTIPLIER multiplier = DEC
+         )
+      )*
+   )
+   | distance = DEC
+   |
+   (
+      DESCRIPTION description=RAW_TEXT
+   )
    | PERMANENT
-   | TAG DEC
-   | TRACK variable
+   |
+   (
+      TAG tag = DEC
+   )
+   |
+   (
+      TRACK track = variable
+   )
 ;
 
 vrf_s_stanza

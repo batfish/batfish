@@ -5,7 +5,7 @@ import java.util.Collections;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
-import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.main.Warnings;
 
 public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
@@ -25,7 +25,7 @@ public class RoutePolicyNextHopIp extends RoutePolicyNextHop {
    @Override
    public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new NextHopIp(Collections.singletonList(_address));
+      return new IpNextHop(Collections.singletonList(_address));
    }
 
 }

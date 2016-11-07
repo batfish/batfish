@@ -22,7 +22,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    private String _input;
 
-   private L _lexer;
+   protected L _lexer;
 
    private BatfishLexerErrorListener _lexerErrorListener;
 

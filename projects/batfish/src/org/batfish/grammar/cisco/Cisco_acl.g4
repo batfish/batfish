@@ -44,18 +44,20 @@ appletalk_access_list_stanza
    ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
-as_path_regex
+as_path_set_elem
 :
-   CARAT?
-   (
-      ranges += as_path_regex_range ASTERISK?
-   )* DOLLAR?
+   IOS_REGEX AS_PATH_SET_REGEX
 ;
 
-as_path_regex_range
+as_path_set_stanza
 :
-   DEC
-   | PERIOD
+   AS_PATH_SET name = variable NEWLINE
+   (
+      elems += as_path_set_elem NEWLINE?
+      (
+         COMMA NEWLINE? elems += as_path_set_elem NEWLINE?
+      )*
+   )? END_SET NEWLINE
 ;
 
 bandwidth_irs_stanza
@@ -75,8 +77,17 @@ community_set_elem_list
 
    |
    (
-      community_set_elem COMMA NEWLINE
-   )* community_set_elem NEWLINE
+      (
+         (
+            community_set_elem COMMA
+         )
+         | hash_comment
+      ) NEWLINE
+   )*
+   (
+      community_set_elem
+      | hash_comment
+   ) NEWLINE
 ;
 
 community_set_elem
@@ -90,6 +101,13 @@ community_set_elem
    | NO_ADVERTISE
    | NO_EXPORT
    | PRIVATE_AS
+;
+
+etype
+:
+   ANY
+   | ARP
+   | IPV4_L5
 ;
 
 extended_access_list_additional_feature
@@ -244,6 +262,9 @@ extended_access_list_tail
             )
          )
       )?
+   )?
+   (
+      SEQUENCE num = DEC
    )? NEWLINE
 ;
 
@@ -268,11 +289,7 @@ ip_as_path_access_list_tail
 :
    (
       SEQ DEC
-   )? action = access_list_action
-   (
-      as_path_regex
-      | null_as_path_regex
-   ) ANY? NEWLINE
+   )? action = access_list_action as_path_regex = RAW_TEXT NEWLINE
 ;
 
 ip_community_list_expanded_stanza
@@ -410,6 +427,7 @@ ipx_sap_access_list_stanza
 irs_stanza
 :
    bandwidth_irs_stanza
+   | null_irs_stanza
 ;
 
 no_ip_prefix_list_stanza
@@ -420,6 +438,14 @@ no_ip_prefix_list_stanza
 null_as_path_regex
 :
    ~NEWLINE*
+;
+
+null_irs_stanza
+:
+   NO?
+   (
+      SIGNALLING
+   ) ~NEWLINE* NEWLINE
 ;
 
 null_rs_stanza
@@ -440,12 +466,22 @@ prefix_set_stanza
 
 prefix_set_elem_list
 :
-   | // no elements
+// no elements
 
    |
    (
-      prefix_set_elem COMMA NEWLINE
-   )* prefix_set_elem NEWLINE
+      (
+         hash_comment
+         |
+         (
+            prefix_set_elem COMMA
+         )
+      ) NEWLINE
+   )*
+   (
+      hash_comment
+      | prefix_set_elem
+   ) NEWLINE
 ;
 
 protocol_type_code_access_list_null_tail
@@ -470,10 +506,68 @@ rsvp_stanza
    RSVP NEWLINE rs_stanza*
 ;
 
+s_ethernet_services
+:
+   ETHERNET_SERVICES ACCESS_LIST name = variable_permissive NEWLINE
+   s_ethernet_services_tail*
+;
+
+s_ethernet_services_tail
+:
+   num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
+   xr_mac_specifier NEWLINE
+;
+
+s_foundry_mac_access_list
+:
+   ACCESS_LIST num = ACL_NUM_FOUNDRY_L2 action = access_list_action
+   (
+      (
+         src_address = MAC_ADDRESS_LITERAL src_wildcard = MAC_ADDRESS_LITERAL
+      )
+      | src_any = ANY
+   )
+   (
+      (
+         dst_address = MAC_ADDRESS_LITERAL dst_wildcard = MAC_ADDRESS_LITERAL
+      )
+      | dst_any = ANY
+   )
+   (
+      vlan = DEC
+      | vlan_any = ANY
+   )
+   (
+      (
+         ETYPE etype
+      )
+      | LOG_ENABLE
+      |
+      (
+         PRIORITY priority = DEC
+      )
+      |
+      (
+         PRIORITY_FORCE priority_force = DEC
+      )
+      |
+      (
+         PRIORITY_MAPPING priority_mapping = DEC
+      )
+   )* NEWLINE
+;
+
 s_mac_access_list
 :
    ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
    MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL NEWLINE
+;
+
+s_mac_access_list_extended
+:
+   ACCESS_LIST num = ACL_NUM_EXTENDED_MAC action = access_list_action
+   src_address = MAC_ADDRESS_LITERAL src_wildcard = MAC_ADDRESS_LITERAL
+   dst_address = MAC_ADDRESS_LITERAL dst_wildcard = MAC_ADDRESS_LITERAL NEWLINE
 ;
 
 standard_access_list_additional_feature
@@ -547,3 +641,15 @@ standard_access_list_tail
    )* NEWLINE
 ;
 
+xr_mac_specifier
+:
+   ANY
+   |
+   (
+      HOST host = MAC_ADDRESS_LITERAL
+   )
+   |
+   (
+      address = MAC_ADDRESS_LITERAL mask = MAC_ADDRESS_LITERAL
+   )
+;

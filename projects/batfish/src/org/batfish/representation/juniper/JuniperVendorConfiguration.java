@@ -41,6 +41,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -532,7 +533,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
             .add(Statements.ExitReject.toStaticStatement());
       String rflName = "~AGGREGATE_" + policyNameSuffix + "_RF~";
       MatchPrefixSet isContributingRoute = new MatchPrefixSet(
-            new NamedPrefixSet(rflName));
+            new DestinationNetwork(), new NamedPrefixSet(rflName));
       routingPolicyConditional.setGuard(isContributingRoute);
       RouteFilterList rfList = new RouteFilterList(rflName);
       rfList.addLine(new org.batfish.datamodel.RouteFilterLine(
@@ -1104,6 +1105,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
                         lineSpecificIfStatement
                               .setComment(lineSpecificClauseName);
                         MatchPrefixSet mrf = new MatchPrefixSet(
+                              new DestinationNetwork(),
                               new NamedPrefixSet(lineListName));
                         lineSpecificIfStatement.setGuard(mrf);
                         lineSpecificIfStatement.getTrueStatements()

@@ -16,14 +16,14 @@ public class PassesThroughAsPath extends AbstractBooleanExpr {
 
    private boolean _exact;
 
-   private List<AsExpr> _list;
+   private List<SubRangeExpr> _range;
 
    @JsonCreator
    public PassesThroughAsPath() {
    }
 
-   public PassesThroughAsPath(List<AsExpr> list, boolean exact) {
-      _list = list;
+   public PassesThroughAsPath(List<SubRangeExpr> range, boolean exact) {
+      _range = range;
       _exact = exact;
    }
 
@@ -38,16 +38,16 @@ public class PassesThroughAsPath extends AbstractBooleanExpr {
       return _exact;
    }
 
-   public List<AsExpr> getList() {
-      return _list;
+   public List<SubRangeExpr> getRange() {
+      return _range;
    }
 
    public void setExact(boolean exact) {
       _exact = exact;
    }
 
-   public void setList(List<AsExpr> list) {
-      _list = list;
+   public void setRange(List<SubRangeExpr> range) {
+      _range = range;
    }
 
 }

@@ -196,7 +196,7 @@ default_originate_bgp_tail
 :
    DEFAULT_ORIGINATE
    (
-      ROUTE_MAP map = VARIABLE
+      ROUTE_MAP map = variable
       | ROUTE_POLICY policy = VARIABLE
    )? NEWLINE
 ;
@@ -322,7 +322,7 @@ network_bgp_tail
       | prefix = IP_PREFIX
    )?
    (
-      ROUTE_MAP mapname = VARIABLE
+      ROUTE_MAP mapname = variable
    )?
    (
       ROUTE_POLICY policyname = VARIABLE
@@ -337,7 +337,7 @@ network6_bgp_tail
       | prefix = IPV6_PREFIX
    )
    (
-      ROUTE_MAP mapname = VARIABLE
+      ROUTE_MAP mapname = variable
    )?
    (
       ROUTE_POLICY policyname = VARIABLE
@@ -479,6 +479,7 @@ null_bgp_tail
    NO?
    (
       ADVERTISEMENT_INTERVAL
+      | AUTO_SHUTDOWN_NEW_NEIGHBORS
       | AUTO_SUMMARY
       | AUTO_LOCAL_ADDR
       |
@@ -515,6 +516,7 @@ null_bgp_tail
          )
       )
       | CAPABILITY
+      | COMPARE_ROUTERID
       | DAMPENING
       | DESCRIPTION
       | DISTANCE
@@ -544,6 +546,7 @@ null_bgp_tail
       | NSR
       | PASSWORD
       | SEND_LABEL
+      | SESSION_OPEN_MODE
       | SHUTDOWN
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
@@ -655,7 +658,7 @@ redistribute_connected_bgp_tail
    )
    (
       (
-         ROUTE_MAP map = VARIABLE
+         ROUTE_MAP map = variable
       )
       |
       (
@@ -669,7 +672,7 @@ redistribute_ospf_bgp_tail
    REDISTRIBUTE OSPF procnum = DEC
    (
       (
-         ROUTE_MAP map = VARIABLE
+         ROUTE_MAP map = variable
       )
       |
       (
@@ -687,7 +690,7 @@ redistribute_static_bgp_tail
    REDISTRIBUTE STATIC
    (
       (
-         ROUTE_MAP map = VARIABLE
+         ROUTE_MAP map = variable
       )
       |
       (

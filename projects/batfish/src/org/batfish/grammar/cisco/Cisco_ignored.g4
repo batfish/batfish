@@ -13,6 +13,7 @@ null_block_stanza
       AAA_SERVER
       | ACCESS_GROUP
       | ACCESS
+      | ACL_POLICY
       | ACLLOG
       | ADMIN
       | ALLOW
@@ -59,9 +60,12 @@ null_block_stanza
       | DOMAIN
       | DOT11
       | DOT1X
+      | DOT1X_ENABLE
       | DUAL_MODE_DEFAULT_VLAN
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE
+      | ENABLE_ACL_COUNTER
+      | ENABLE_QOS_STATISTICS
       | END
       | ETHERNET
       | EVENT
@@ -150,6 +154,7 @@ null_block_stanza
             | ENABLE_ACL_CAM_SHARING
             | HARDWARE
             | MROUTE
+            | NEIGHBOR
          )
       )
       | KEY
@@ -218,8 +223,10 @@ null_block_stanza
       | NO_BANNER
       | NO_L4R_SHIM
       | NSR
+      | NV
       | ONE
       | OPENFLOW
+      | OPTICAL_MONITOR
       | PASSWORD_POLICY
       | PLAT
       | PLATFORM
@@ -234,9 +241,11 @@ null_block_stanza
       | PSEUDOWIRE_CLASS
       | PTP
       | QOS_MAPPING
+      | QOS_POLICY
       | QOS_POLICY_OUTPUT
       | REDUNDANCY
       | RELOAD_TYPE
+      | REMOVED
       | RMON
       | ROLE
       | ROUTE_ONLY
@@ -274,6 +283,7 @@ null_block_stanza
       | TABLE_MAP
       | TACACS
       | TACACS_SERVER
+      | TAG_TYPE
       | TAP
       | TASKGROUP
       | TCP
@@ -285,6 +295,7 @@ null_block_stanza
       | TRACE
       | TRACK
       | TRANSCEIVER
+      | TRANSCEIVER_TYPE_CHECK
       | TRANSPARENT_HW_FLOODING
       | TUNNEL_GROUP
       | UDF
@@ -300,6 +311,8 @@ null_block_stanza
             | ACCESS_MAP
          )
       )
+      | VLAN_GROUP
+      | VLAN_POLICY
       | VLT
       | VOICE
       | VOICE_PORT
@@ -333,6 +346,7 @@ null_block_substanza
          | ACCOUNTING_SERVER_GROUP
          | ACTION
          | ACTIVE
+         | ADD_VLAN
          | ADDRESS
          | ADDRESS_POOL
          | ADDRESS_POOLS
@@ -372,6 +386,7 @@ null_block_substanza
          | BIND
          | BRIDGE
          | BRIDGE_PRIORITY
+         | BUCKETS
          | CABLELENGTH
          | CACHE
          | CACHE_TIMEOUT
@@ -382,6 +397,7 @@ null_block_substanza
          | CERTIFICATE
          | CHANNEL_GROUP
          | CHANNELIZED
+         | CIR
          | CLASS
          | CLIENT_GROUP
          | CLOCK
@@ -462,6 +478,7 @@ null_block_substanza
          | FRAMING
          | FREQUENCY
          | FT
+         | G709
          | GATEWAY
          | GID
          | GROUP
@@ -553,6 +570,7 @@ null_block_substanza
          | MESSAGE_LENGTH
          | MODE
          | MONITORING
+         | MSDP_PEER
          | MSIE_PROXY
          | MTU
          | NAME
@@ -604,12 +622,13 @@ null_block_substanza
          | POLICY_LIST
          | POLICY_MAP
          | PORT
-         | PORTS
          | PORT_NAME
+         | PORTS
          | PRECEDENCE
          | PREDICTOR
          | PRE_SHARED_KEY
          | PREEMPT
+         | PREFERRED_PATH
          | PREFIX
          | PRF
          | PRI_GROUP
@@ -618,6 +637,7 @@ null_block_substanza
          | PRIORITY
          | PRIVATE_VLAN
          | PRIVILEGE
+         | PROACTIVE
          | PROBE
          | PROFILE
          | PROPOSAL
@@ -646,10 +666,10 @@ null_block_substanza
          | REMOTE_IP
          | REMOTE_PORT
          | REMOTE_SPAN
-         | REMOVED
          | REQUEST
          | REQUEST_DATA_SIZE
          | RESOURCES
+         | RESPONDER
          | RETRANSMIT
          | RETRANSMIT_TIMEOUT
          | RETRIES
@@ -664,12 +684,14 @@ null_block_substanza
          | RULE
          | SA_FILTER
          | SAMPLES_OF_HISTORY_KEPT
+         | SATELLITE
          | SCHEME
          | SECRET
          | SECURE_MAC_ADDRESS
          | SEND_LIFETIME
          | SENDER
          | SEQUENCE
+         | SERIAL_NUMBER
          | SERVER
          | SERVERFARM
          | SERVER_PRIVATE
@@ -731,6 +753,7 @@ null_block_substanza
          | TRANSPORT
          | TRIGGER
          | TRUNK
+         | TRUNK_THRESHOLD
          | TRUST
          | TTL_THRESHOLD
          | TUNNEL
@@ -746,6 +769,7 @@ null_block_substanza
          | USER_STATISTICS
          | USERS
          | VAD
+         | VERIFY_DATA
          | VERSION
          | VIOLATE_ACTION
          | VIOLATION
@@ -761,6 +785,7 @@ null_block_substanza
          | VPN_SIMULTANEOUS_LOGINS
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
+         | WAVELENGTH
          | WINS_SERVER
          | WITHOUT_CSD
          | WRED
@@ -1028,7 +1053,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SCRIPTING
       | SDM
       | SECURITY
-      | SERIAL_NUMBER
       | SERVER
       | SERVER_TYPE
       | SERVICE_POLICY

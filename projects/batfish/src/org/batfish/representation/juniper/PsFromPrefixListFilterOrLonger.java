@@ -8,6 +8,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
@@ -51,7 +52,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
                c.getRouteFilterLists().put(orLongerListName, orLongerList);
             }
          }
-         return new MatchPrefixSet(new NamedPrefixSet(orLongerListName));
+         return new MatchPrefixSet(new DestinationNetwork(),
+               new NamedPrefixSet(orLongerListName));
       }
       else {
          warnings.redFlag(

@@ -9,15 +9,27 @@ package org.batfish.grammar.cisco;
 }
 
 @members {
-int lastTokenType = 0;
-boolean enableIPV6_ADDRESS = true;
-boolean enableIP_ADDRESS = true;
-boolean enableDEC = true;
-boolean enableACL_NUM = false;
-boolean enableCOMMUNITY_LIST_NUM = false;
-boolean inCommunitySet = false;
+private int lastTokenType = 0;
+private boolean enableIPV6_ADDRESS = true;
+private boolean enableIP_ADDRESS = true;
+private boolean enableDEC = true;
+private boolean enableACL_NUM = false;
+private boolean enableCOMMUNITY_LIST_NUM = false;
+private boolean inCommunitySet = false;
+private boolean _foundry = false;
 
 @Override
+public void emit(Token token) {
+    super.emit(token);
+    if (token.getChannel() != HIDDEN) {
+       lastTokenType = token.getType();
+    }
+}
+
+public void setFoundry(boolean foundry) {
+   _foundry = foundry;
+}
+
 public String printStateVariables() {
    StringBuilder sb = new StringBuilder();
    sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
@@ -28,27 +40,25 @@ public String printStateVariables() {
    return sb.toString();
 }
 
-public void emit(Token token) {
-    super.emit(token);
-    if (token.getChannel() != HIDDEN) {
-       lastTokenType = token.getType();
-    }
-}
 }
 
 tokens {
    ACL_NUM_APPLETALK,
    ACL_NUM_EXTENDED,
    ACL_NUM_EXTENDED_IPX,
+   ACL_NUM_EXTENDED_MAC,
+   ACL_NUM_FOUNDRY_L2,
    ACL_NUM_IPX,
    ACL_NUM_IPX_SAP,
    ACL_NUM_MAC,
    ACL_NUM_OTHER,
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
+   AS_PATH_SET_REGEX,
    CHAIN,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
+   COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    HEX_FRAGMENT,
    ISO_ADDRESS,
@@ -166,6 +176,11 @@ ACK
    'ack'
 ;
 
+ACL_POLICY
+:
+   'acl-policy'
+;
+
 ACLLOG
 :
    'acllog'
@@ -194,6 +209,11 @@ ACTIVE
 ADD
 :
    'add'
+;
+
+ADD_VLAN
+:
+   'add-vlan'
 ;
 
 ADDITIVE
@@ -728,6 +748,11 @@ AUTO_RP
    'auto-rp'
 ;
 
+AUTO_SHUTDOWN_NEW_NEIGHBORS
+:
+   'auto-shutdown-new-neighbors'
+;
+
 AUTO_SUMMARY
 :
    'auto-summary'
@@ -928,6 +953,11 @@ BRIDGE
    'bridge'
 ;
 
+BRIDGE_DOMAIN
+:
+   'bridge-domain'
+;
+
 BRIDGE_GROUP
 :
    'bridge-group'
@@ -966,6 +996,11 @@ BSR_BORDER
 BSR_CANDIDATE
 :
    'bsr-candidate'
+;
+
+BUCKETS
+:
+   'buckets'
 ;
 
 BUFFERED
@@ -1153,6 +1188,11 @@ CIPC
    'cipc'
 ;
 
+CIR
+:
+   'cir'
+;
+
 CIRCUIT_TYPE
 :
    'circuit-type'
@@ -1311,6 +1351,11 @@ COMMUNITY_SET
       enableIPV6_ADDRESS = false;
    }
 
+;
+
+COMPARE_ROUTERID
+:
+   'compare-routerid'
 ;
 
 CON
@@ -2034,6 +2079,16 @@ DOT1X
    'dot1x'
 ;
 
+DOT1X_ENABLE
+:
+   'dot1x-enable'
+;
+
+DR_PRIORITY
+:
+   'dr-priority'
+;
+
 DROP
 :
    'drop'
@@ -2234,6 +2289,16 @@ ENABLE_ACL_CAM_SHARING
    'enable-acl-cam-sharing'
 ;
 
+ENABLE_ACL_COUNTER
+:
+   'enable-acl-counter'
+;
+
+ENABLE_QOS_STATISTICS
+:
+   'enable-qos-statistics'
+;
+
 ENABLED
 :
    'enabled'
@@ -2372,6 +2437,16 @@ ESTABLISHED
 ETHERNET
 :
    'ethernet'
+;
+
+ETHERNET_SERVICES
+:
+   'ethernet-services'
+;
+
+ETYPE
+:
+   'etype'
 ;
 
 EVALUATE
@@ -2584,6 +2659,11 @@ FALLBACK
 FALLBACK_DN
 :
    'fallback-dn'
+;
+
+FAST_DETECT
+:
+   'fast-detect'
 ;
 
 FAST_FLOOD
@@ -2813,6 +2893,11 @@ FULL_TXT
    'full-txt'
 ;
 
+G709
+:
+   'g709'
+;
+
 GATEKEEPER
 :
    'gatekeeper'
@@ -2961,6 +3046,11 @@ HALF_DUPLEX
 HARDWARE
 :
    'hardware'
+;
+
+HARDWARE_COUNT
+:
+   'hardware-count'
 ;
 
 HASH
@@ -3388,7 +3478,7 @@ INVALID_USERNAME_LOG
 
 IOS_REGEX
 :
-   'ios-regex'
+   'ios-regex' -> pushMode ( M_IosRegex )
 ;
 
 IP
@@ -3429,6 +3519,11 @@ IPSLA
 IPV4
 :
    'ipv4'
+;
+
+IPV4_L5
+:
+   'ipv4-l5'
 ;
 
 IPV6
@@ -3485,6 +3580,11 @@ IS_TYPE
 ISIS
 :
    'isis'
+;
+
+ISIS_METRIC
+:
+   'isis-metric'
 ;
 
 ISL
@@ -3857,14 +3957,14 @@ LOG
    'log'
 ;
 
-LOGFILE
-:
-   'logfile'
-;
-
 LOG_ADJACENCY_CHANGES
 :
    'log-adjacency-changes'
+;
+
+LOG_ENABLE
+:
+   'log-enable'
 ;
 
 LOG_INPUT
@@ -3877,6 +3977,11 @@ LOG_NEIGHBOR_CHANGES
    'log-neighbor-changes'
 ;
 
+LOGFILE
+:
+   'logfile'
+;
+
 LOGGING
 :
    'logging'
@@ -3885,6 +3990,11 @@ LOGGING
 LOGIN
 :
    'login'
+;
+
+LOOPBACK
+:
+   'loopback'
 ;
 
 LOTUSNOTES
@@ -4247,6 +4357,11 @@ MINIMAL
    'minimal'
 ;
 
+MINIMUM_INTERVAL
+:
+   'minimum-interval'
+;
+
 MINIMUM_LINKS
 :
    'minimum-links'
@@ -4362,6 +4477,11 @@ MSDP
    'msdp'
 ;
 
+MSDP_PEER
+:
+   'msdp-peer'
+;
+
 MSCHAP
 :
    'mschap'
@@ -4425,6 +4545,11 @@ MULTIPATH
 MULTIPATH_RELAX
 :
    'multipath-relax'
+;
+
+MULTIPLIER
+:
+   'multiplier'
 ;
 
 MULTIPOINT
@@ -4540,6 +4665,11 @@ NEIGHBOR_DOWN
 NEIGHBOR_GROUP
 :
    'neighbor-group'
+;
+
+NEIGHBOR_IS
+:
+   'neighbor-is'
 ;
 
 NEQ
@@ -4812,6 +4942,11 @@ NULL
    'null'
 ;
 
+NV
+:
+   'nv'
+;
+
 OAM
 :
    'oam'
@@ -4860,6 +4995,11 @@ OPERATION
 OPS
 :
    'ops'
+;
+
+OPTICAL_MONITOR
+:
+   'optical-monitor'
 ;
 
 OPTIMIZED
@@ -5014,7 +5154,7 @@ PASSIVE
 
 PASSIVE_INTERFACE
 :
-   'passive-interface'
+   'passive-interface' -> pushMode ( M_Interface )
 ;
 
 PASSIVE_ONLY
@@ -5412,6 +5552,11 @@ PREFERRED
    'preferred'
 ;
 
+PREFERRED_PATH
+:
+   'preferred-path'
+;
+
 PREFIX
 :
    'prefix'
@@ -5467,6 +5612,16 @@ PRIORITY_FLOW_CONTROL
    'priority-flow-control'
 ;
 
+PRIORITY_FORCE
+:
+   'priority-force'
+;
+
+PRIORITY_MAPPING
+:
+   'priority-mapping'
+;
+
 PRIORITY_QUEUE
 :
    'priority-queue'
@@ -5490,6 +5645,11 @@ PRIVILEGE
 PRIVILEGE_MODE
 :
    'privilege-mode'
+;
+
+PROACTIVE
+:
+   'proactive'
 ;
 
 PROBE
@@ -5575,6 +5735,11 @@ QOS_GROUP
 QOS_MAPPING
 :
    'qos-mapping'
+;
+
+QOS_POLICY
+:
+   'qos-policy'
 ;
 
 QOS_POLICY_OUTPUT
@@ -5822,6 +5987,11 @@ REMOTE_PORT
    'remote-port'
 ;
 
+REMOTE_PORTS
+:
+   'remote-ports'
+;
+
 REMOVE_PRIVATE_AS
 :
    'remove-private-as'
@@ -5885,6 +6055,11 @@ RESOURCE_POOL
 RESOURCES
 :
    'resources'
+;
+
+RESPONDER
+:
+   'responder'
 ;
 
 RETRANSMIT
@@ -5984,7 +6159,7 @@ ROUTE_CACHE
 
 ROUTE_MAP
 :
-   'route-map'
+   'route-map' -> pushMode ( M_RouteMap )
 ;
 
 ROUTE_ONLY
@@ -6010,6 +6185,11 @@ ROUTE_REFLECTOR_CLIENT
 ROUTE_TARGET
 :
    'route-target'
+;
+
+ROUTED
+:
+   'routed'
 ;
 
 ROUTER
@@ -6112,6 +6292,11 @@ RW
    'rw'
 ;
 
+SA_FILTER
+:
+   'sa-filter'
+;
+
 SAME_SECURITY_TRAFFIC
 :
    'same-security-traffic'
@@ -6137,9 +6322,14 @@ SAP
    'sap'
 ;
 
-SA_FILTER
+SATELLITE
 :
-   'sa-filter'
+   'satellite'
+;
+
+SATELLITE_FABRIC_LINK
+:
+   'satellite-fabric-link'
 ;
 
 SCAN_TIME
@@ -6397,6 +6587,11 @@ SESSION_LIMIT
    'session-limit'
 ;
 
+SESSION_OPEN_MODE
+:
+   'session-open-mode'
+;
+
 SESSION_PROTECTION
 :
    'session-protection'
@@ -6487,6 +6682,11 @@ SIGNALLED_NAME
    'signalled-name'
 ;
 
+SIGNALLING
+:
+   'signalling'
+;
+
 SINGLE_CONNECTION
 :
    'single-connection'
@@ -6545,6 +6745,11 @@ SNMP
 SNMP_SERVER
 :
    'snmp-server'
+;
+
+SNMP_TRAP
+:
+   'snmp-trap'
 ;
 
 SNMPTRAP
@@ -6635,6 +6840,11 @@ SPD
 SPEED
 :
    'speed'
+;
+
+SPEED_DUPLEX
+:
+   'speed-duplex'
 ;
 
 SPLIT_TUNNEL_NETWORK_LIST
@@ -7049,6 +7259,11 @@ TAG_SWITCHING
    'tag-switching'
 ;
 
+TAG_TYPE
+:
+   'tag-type'
+;
+
 TAGGED
 :
    'tagged'
@@ -7289,6 +7504,11 @@ TRANSCEIVER
    'transceiver'
 ;
 
+TRANSCEIVER_TYPE_CHECK
+:
+   'transceiver-type-check'
+;
+
 TRANSLATE
 :
    'translate'
@@ -7314,6 +7534,11 @@ TRANSPORT
    'transport'
 ;
 
+TRANSPORT_MODE
+:
+   'transport-mode'
+;
+
 TRAP
 :
    'trap'
@@ -7337,6 +7562,11 @@ TRIGGER
 TRUNK
 :
    'trunk'
+;
+
+TRUNK_THRESHOLD
+:
+   'trunk-threshold'
 ;
 
 TRUST
@@ -7377,6 +7607,11 @@ TTL_THRESHOLD
 TTY
 :
    'tty'
+;
+
+TUNABLE_OPTIC
+:
+   'tunable-optic'
 ;
 
 TUNNEL
@@ -7634,6 +7869,11 @@ VERIFY
    'verify'
 ;
 
+VERIFY_DATA
+:
+   'verify-data'
+;
+
 VERSION
 :
    'version'
@@ -7682,6 +7922,16 @@ VIRTUAL_TEMPLATE
 VLAN
 :
    'vlan'
+;
+
+VLAN_GROUP
+:
+   'vlan-group'
+;
+
+VLAN_POLICY
+:
+   'vlan-policy'
 ;
 
 VLT
@@ -7846,6 +8096,11 @@ WARNINGS
    'warnings'
 ;
 
+WAVELENGTH
+:
+   'wavelength'
+;
+
 WEBVPN
 :
    'webvpn'
@@ -7984,6 +8239,11 @@ MULTICONFIGPART
    )
 ;
 
+POUND
+:
+   '#' -> pushMode ( M_Description )
+;
+
 COMMUNITY_NUMBER
 :
    F_Digit
@@ -8065,6 +8325,9 @@ ACL_NUM
 	else if (200 <= val && val <= 299) {
 		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
 	}
+   else if (_foundry && 400 <= val && val <= 1399) {
+      _type = ACL_NUM_FOUNDRY_L2;
+   }
 	else if (600 <= val && val <= 699) {
 		_type = ACL_NUM_APPLETALK;
 	}
@@ -8079,6 +8342,9 @@ ACL_NUM
 	}
 	else if (1000 <= val && val <= 1099) {
 		_type = ACL_NUM_IPX_SAP;
+	}
+	else if (1100 <= val && val <= 1199) {
+		_type = ACL_NUM_EXTENDED_MAC;
 	}
 	else {
 		_type = ACL_NUM_OTHER;
@@ -8182,11 +8448,6 @@ COMMUNITY_LIST_NUM
 		enableDEC = true;
 	}
 
-;
-
-COMMUNITY_SET_REGEX
-:
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\''
 ;
 
 COMMENT_LINE
@@ -8372,11 +8633,6 @@ PLUS
    '+'
 ;
 
-POUND
-:
-   '#'
-;
-
 RP_VARIABLE
 :
    '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
@@ -8515,7 +8771,7 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*] | '[' | ']' | [/.] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*#] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
@@ -8527,13 +8783,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'*] | '[' | ']' )
+   ~( [ \t\n\r(),!+$'*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'*] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!+$'*#] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -8565,6 +8821,11 @@ M_AsPath_RP_VARIABLE
 M_AsPath_IN
 :
    'in' -> type ( IN ) , popMode
+;
+
+M_AsPath_NEIGHBOR_IS
+:
+   'neighbor-is' -> type ( NEIGHBOR_IS ) , popMode
 ;
 
 M_AsPath_PASSES_THROUGH
@@ -8612,7 +8873,7 @@ M_AsPathAccessList_DEC
 
 M_AsPathAccessList_DENY
 :
-   'deny' -> type ( DENY ) , mode ( M_AsPathRegex )
+   'deny' -> type ( DENY ) , mode ( M_Description )
 ;
 
 M_AsPathAccessList_NEWLINE
@@ -8622,7 +8883,7 @@ M_AsPathAccessList_NEWLINE
 
 M_AsPathAccessList_PERMIT
 :
-   'permit' -> type ( PERMIT ) , mode ( M_AsPathRegex )
+   'permit' -> type ( PERMIT ) , mode ( M_Description )
 ;
 
 M_AsPathAccessList_SEQ
@@ -8636,103 +8897,6 @@ M_AsPathAccessList_VARIABLE
 ;
 
 M_AsPathAccessList_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_AsPathRegex;
-
-M_AsPathRegex_ANY
-:
-   'any' -> type ( ANY )
-;
-
-M_AsPathRegex_ASTERISK
-:
-   '*' -> type ( ASTERISK )
-;
-
-M_AsPathRegex_BRACKET_LEFT
-:
-   '[' -> type ( BRACKET_LEFT )
-;
-
-M_AsPathRegex_BRACKET_RIGHT
-:
-   ']' -> type ( BRACKET_RIGHT )
-;
-
-M_AsPathRegex_CARAT
-:
-   '^' -> type ( CARAT )
-;
-
-M_AsPathRegex_DASH
-:
-   '-' -> type ( DASH )
-;
-
-M_AsPathRegex_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_AsPathRegex_DOLLAR
-:
-   '$' -> type ( DOLLAR )
-;
-
-M_AsPathRegex_DOUBLE_QUOTE
-:
-   '"' -> channel ( HIDDEN )
-;
-
-M_AsPathRegex_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_AsPathRegex_PAREN_LEFT
-:
-   '(' -> type ( PAREN_LEFT )
-;
-
-M_AsPathRegex_PAREN_LEFT_LITERAL
-:
-   '\\(' -> type ( PAREN_LEFT_LITERAL )
-;
-
-M_AsPathRegex_PAREN_RIGHT
-:
-   ')' -> type ( PAREN_RIGHT )
-;
-
-M_AsPathRegex_PAREN_RIGHT_LITERAL
-:
-   '\\)' -> type ( PAREN_RIGHT_LITERAL )
-;
-
-M_AsPathRegex_PERIOD
-:
-   '.' -> type ( PERIOD )
-;
-
-M_AsPathRegex_PIPE
-:
-   '|' -> type ( PIPE )
-;
-
-M_AsPathRegex_PLUS
-:
-   '+' -> type ( PLUS )
-;
-
-M_AsPathRegex_UNDERSCORE
-:
-   '_' -> channel ( HIDDEN )
-;
-
-M_AsPathRegex_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -8927,10 +9091,7 @@ M_BannerText_ESCAPE_C
 :
    (
       '^C'
-      |
-      (
-         '^' F_Newline+
-      )
+      | '^'
       | '\u0003'
    ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
@@ -8977,6 +9138,11 @@ mode M_CertificateText;
 M_CertificateText_QUIT
 :
    'quit' -> type ( QUIT ) , mode ( DEFAULT_MODE )
+;
+
+M_CertificateText_REMOVED
+:
+   '<removed>' -> type (REMOVED ) , mode ( DEFAULT_MODE )
 ;
 
 M_CertificateText_HEX_FRAGMENT
@@ -9089,6 +9255,11 @@ M_Interface_BREAKOUT
    'breakout' -> type ( BREAKOUT ) , popMode
 ;
 
+M_Interface_DEFAULT
+:
+   'default' -> type ( DEFAULT ) , popMode
+;
+
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
@@ -9193,6 +9364,23 @@ M_Interface_SLASH
 ;
 
 M_Interface_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_IosRegex;
+
+M_IosRegex_COMMUNITY_SET_REGEX
+:
+   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) , popMode
+;
+
+M_IosRegex_AS_PATH_SET_REGEX
+:
+   '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
+;
+
+M_IosRegex_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -9397,6 +9585,33 @@ M_REMARK_NEWLINE
 M_REMARK_REMARK
 :
    F_NonNewline+
+;
+
+mode M_RouteMap;
+
+M_RouteMap_IN
+:
+   'in' -> type ( IN )
+;
+
+M_RouteMap_OUT
+:
+   'out' -> type ( OUT )
+;
+
+M_RouteMap_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_RouteMap_VARIABLE
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_RouteMap_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Rule;

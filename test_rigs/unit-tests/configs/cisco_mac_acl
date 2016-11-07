@@ -1,0 +1,7 @@
+!
+hostname cisco_mac_acl
+!
+access-list 700 permit 0000.0000.0000 ffff.ffff.ffff
+access-list 1199 permit 0000.0000.0000 ffff.ffff.ffff 0000.0000.0000 ffff.ffff.ffff
+!
+

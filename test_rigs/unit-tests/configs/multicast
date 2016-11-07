@@ -11,7 +11,7 @@ multicast-routing
   !
   nsf
   multipath
-  interface all enable           <<< interface all enable
+  interface all enable
  !
  address-family ipv6
   interface Bundle-Ether3.6

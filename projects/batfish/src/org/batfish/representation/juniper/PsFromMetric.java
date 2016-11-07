@@ -2,6 +2,8 @@ package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.main.Warnings;
 
@@ -25,7 +27,7 @@ public class PsFromMetric extends PsFrom {
    @Override
    public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c,
          Warnings warnings) {
-      return new MatchMetric(_metric);
+      return new MatchMetric(IntComparator.EQ, new LiteralInt(_metric));
    }
 
 }

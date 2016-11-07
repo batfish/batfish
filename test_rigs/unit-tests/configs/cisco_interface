@@ -30,10 +30,22 @@ interface Async1
  dialer in-band
  dialer idle-timeout 60
 !
+interface Crypto-Engine1/2/3
+!
 interface ethernet 1/11
  enable
  bgp-policy accounting input
  spanning-tree protect
+ ipv4 point-to-point
+ ipv4 unnumbered Loopback100
+ ipv4 access-group 310-systems egress hardware-count
+ nv
+  satellite-fabric-link satellite 100
+   remote-ports GigabitEthernet 0/0/0-43
+  !
+ !
+ transceiver permit pid all
+ transport-mode otn bit-transparent opu2e
  gig-default neg-off
  xconnect 1.2.3.4 649 encapsulation mpls
   remote circuit id 649

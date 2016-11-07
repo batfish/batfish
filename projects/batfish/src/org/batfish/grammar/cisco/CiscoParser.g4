@@ -37,8 +37,13 @@ address_family_multicast_stanza
 address_family_multicast_tail
 :
    (
-      MULTIPATH NEWLINE
-      | INTERFACE ALL ENABLE NEWLINE
+      (
+         MULTIPATH NEWLINE
+      )
+      |
+      (
+         INTERFACE ALL ENABLE NEWLINE
+      )
       | null_af_multicast_tail
       | interface_multicast_stanza
       | ip_pim_tail
@@ -82,14 +87,6 @@ allow_iimgp_stanza
 asa_comment_stanza
 :
    COLON ~NEWLINE* NEWLINE
-;
-
-as_path_set_stanza
-:
-   AS_PATH_SET name = variable NEWLINE
-   (
-      elems += as_path_set_elem NEWLINE
-   )* END_SET NEWLINE
 ;
 
 banner_stanza
@@ -390,21 +387,19 @@ interface_imgp_stanza
 
 interface_multicast_stanza
 :
-   INTERFACE
-   (
-      ALL ~NEWLINE* NEWLINE
-      | ~NEWLINE* NEWLINE interface_multicast_tail*
-   )
+   INTERFACE interface_name NEWLINE interface_multicast_tail*
 ;
 
 interface_multicast_tail
 :
    (
-      BSR_BORDER
-      | BOUNDARY MCAST_BOUNDARY
+      BOUNDARY
+      | BSR_BORDER
       | DISABLE
+      | DR_PRIORITY
       | ENABLE
-   ) NEWLINE
+      | ROUTER
+   ) ~NEWLINE* NEWLINE
 ;
 
 ip_as_path_regex_mode_stanza
@@ -593,9 +588,38 @@ l_transport
    ) prot = variable NEWLINE
 ;
 
+l2vpn_bridge_group
+:
+   BRIDGE GROUP name = variable NEWLINE
+   (
+      lbg_bridge_domain
+   )*
+;
+
 l2vpn_stanza
 :
-   L2VPN NEWLINE xconnect_stanza*
+   L2VPN NEWLINE
+   (
+      l2vpn_bridge_group
+      | xconnect_stanza
+   )*
+;
+
+lbg_bridge_domain
+:
+   BRIDGE_DOMAIN name = variable NEWLINE
+   (
+      lbgbd_null
+   )*
+;
+
+lbgbd_null
+:
+   NO?
+   (
+      INTERFACE
+      | ROUTED
+   ) ~NEWLINE* NEWLINE
 ;
 
 mgmt_api_stanza
@@ -1302,6 +1326,10 @@ router_multicast_tail
 :
    (
       address_family_multicast_stanza
+      |
+      (
+         INTERFACE ALL ~NEWLINE* NEWLINE
+      )
       | interface_multicast_stanza
       | null_block_substanza
       | peer_stanza
@@ -1544,7 +1572,9 @@ stanza
    | s_callhome
    | s_class_map
    | s_control_plane
+   | s_ethernet_services
    | s_failover
+   | s_foundry_mac_access_list
    | s_feature
    | s_ip
    | s_ip_source_route
@@ -1552,6 +1582,7 @@ stanza
    | s_logging
    | s_management
    | s_mac_access_list
+   | s_mac_access_list_extended
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_ntp
@@ -1598,5 +1629,5 @@ vrfd_stanza
 
 xconnect_stanza
 :
-   XCONNECT GROUP VARIABLE NEWLINE p2p_stanza*
+   XCONNECT GROUP variable NEWLINE p2p_stanza*
 ;

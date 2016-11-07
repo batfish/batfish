@@ -20,11 +20,6 @@ address_family_footer
    )?
 ;
 
-as_path_set_elem
-:
-   IOS_REGEX SINGLE_QUOTE ~SINGLE_QUOTE* SINGLE_QUOTE
-;
-
 banner
 :
    (
@@ -122,6 +117,11 @@ extended_community
    ec_literal
 ;
 
+hash_comment
+:
+   POUND RAW_TEXT
+;
+
 icmp_object_type
 :
    DEC
@@ -178,12 +178,22 @@ interface_name
    )
    |
    (
-      name = VARIABLE
+      name = variable
       (
-         FORWARD_SLASH DEC
-         | FORWARD_SLASH DEC COLON DEC
-      )?
+         (
+            COLON
+            | FORWARD_SLASH
+            | PERIOD
+         ) DEC
+      )*
    )
+;
+
+isis_level
+:
+   LEVEL_1
+   | LEVEL_1_2
+   | LEVEL_2
 ;
 
 line_type
@@ -300,6 +310,7 @@ port
    | SECUREID_UDP
    | SMTP
    | SNMP
+   | SNMP_TRAP
    | SNMPTRAP
    | SQLNET
    | SSH
@@ -407,6 +418,15 @@ rp_community_set_elem_half
       BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
    )
    | ASTERISK
+;
+
+rp_subrange
+:
+   first = int_expr
+   |
+   (
+      BRACKET_LEFT first = int_expr PERIOD PERIOD last = int_expr BRACKET_RIGHT
+   )
 ;
 
 subrange

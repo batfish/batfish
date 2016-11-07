@@ -73,6 +73,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             break;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -109,6 +110,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 20;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -145,6 +147,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 200;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -178,6 +181,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -211,6 +215,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -244,6 +249,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -277,6 +283,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 115;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -310,6 +317,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -343,6 +351,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -376,6 +385,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:
@@ -409,6 +419,7 @@ public enum RoutingProtocol {
          case CISCO_IOS_XR:
          case CISCO_NX:
          case FORCE10:
+         case FOUNDRY:
             return 110;
          case FLAT_JUNIPER:
          case JUNIPER:

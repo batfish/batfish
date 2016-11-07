@@ -1,0 +1,21 @@
+!
+hostname ios_xr_isis
+!
+router isis 1234
+ interface GigabitEthernet0/2/1/6
+  point-to-point
+  csnp-interval 10 level 1
+  shutdown
+  csnp-interval 10 level 2
+  hello-interval 3
+  address-family ipv4 unicast
+   metric 9000
+   metric maximum level 1
+  !
+  address-family ipv6 unicast
+   metric 9000
+  !
+ !
+!
+!
+

@@ -37,4 +37,8 @@ end-set
 community-set ucla_to_dc_and_isp_community_ipv6
   2152:65418
 end-set
+community-set EBGP-PEER
+  # CF (Commodity Peer) All Commodity Peer routes
+  1234:65299
+end-set
 end

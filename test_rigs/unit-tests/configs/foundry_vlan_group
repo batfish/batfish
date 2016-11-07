@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: foundry
+!
+hostname foundry_vlan_group
+!
+vlan-group 1                                                                                                                               
+ add-vlan 4000 to 4049
+ tagged ethe 1/1
+ tagged ethe 3/1
+
+!
+!
+

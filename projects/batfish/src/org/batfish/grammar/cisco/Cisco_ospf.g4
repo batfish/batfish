@@ -213,6 +213,8 @@ null_standalone_ro_stanza
 :
    NO?
    (
+      ADDRESS_FAMILY
+      |
       (
          AREA
          (

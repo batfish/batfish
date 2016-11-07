@@ -16,6 +16,8 @@ banner login ^
 rsvp
  interface Bundle-Ether1
   bandwidth percentage 95
+  bandwidth 1000000
+  signalling hello graceful-restart interface-based
  !
  logging events nsr
  logging events issu

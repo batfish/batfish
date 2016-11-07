@@ -119,7 +119,11 @@ ip_access_group_if_stanza
       | IN
       | INGRESS
       | OUT
-   ) OPTIMIZED? NEWLINE
+   )
+   (
+      HARDWARE_COUNT
+      | OPTIMIZED
+   )* NEWLINE
 ;
 
 ip_address_hsrpc_stanza
@@ -384,6 +388,7 @@ null_block_if_stanza
             | PIM
             | PIM_SPARSE
             | PORT_UNREACHABLE
+            | REDIRECT
             | REDIRECTS
             | RIP
             | ROUTE_CACHE
@@ -404,6 +409,7 @@ null_block_if_stanza
          IPV4
          (
             MTU
+            | POINT_TO_POINT
             | UNNUMBERED
             | UNREACHABLES
             | VERIFY
@@ -435,6 +441,7 @@ null_block_if_stanza
       | LOAD_BALANCING
       | LOAD_INTERVAL
       | LOGGING
+      | LOOPBACK
       | LRE
       | MAC
       | MAC_ADDRESS
@@ -463,7 +470,9 @@ null_block_if_stanza
             | DISABLE
          )
       )
+      | NV
       | OPENFLOW
+      | OPTICAL_MONITOR
       | PATH_OPTION
       | PEAKDETECT
       | PEER
@@ -504,6 +513,7 @@ null_block_if_stanza
       | SONET
       | SPANNING_TREE
       | SPEED
+      | SPEED_DUPLEX
       | SNMP
       | SRR_QUEUE
       | SSID
@@ -538,7 +548,10 @@ null_block_if_stanza
       | TAGGED
       | TAP
       | TCAM
+      | TRANSCEIVER
+      | TRANSPORT_MODE
       | TRUST
+      | TUNABLE_OPTIC
       | TUNNEL
       | TX_QUEUE
       | UC_TX_QUEUE
@@ -562,6 +575,8 @@ null_block_if_substanza
       ADDRESS
       | PRIORITY
       | RECEIVE
+      | REMOTE_PORTS
+      | SATELLITE_FABRIC_LINK
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE

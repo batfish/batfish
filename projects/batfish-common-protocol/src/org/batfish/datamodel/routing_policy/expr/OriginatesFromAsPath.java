@@ -14,16 +14,16 @@ public class OriginatesFromAsPath extends AbstractBooleanExpr {
     */
    private static final long serialVersionUID = 1L;
 
-   private boolean _exact;
+   private List<SubRangeExpr> _asRange;
 
-   private List<AsExpr> _list;
+   private boolean _exact;
 
    @JsonCreator
    public OriginatesFromAsPath() {
    }
 
-   public OriginatesFromAsPath(List<AsExpr> list, boolean exact) {
-      _list = list;
+   public OriginatesFromAsPath(List<SubRangeExpr> asRange, boolean exact) {
+      _asRange = asRange;
       _exact = exact;
    }
 
@@ -34,20 +34,20 @@ public class OriginatesFromAsPath extends AbstractBooleanExpr {
                                                        // method stub
    }
 
+   public List<SubRangeExpr> getAsRange() {
+      return _asRange;
+   }
+
    public boolean getExact() {
       return _exact;
    }
 
-   public List<AsExpr> getList() {
-      return _list;
+   public void setAsRange(List<SubRangeExpr> asRange) {
+      _asRange = asRange;
    }
 
    public void setExact(boolean exact) {
       _exact = exact;
-   }
-
-   public void setList(List<AsExpr> list) {
-      _list = list;
    }
 
 }

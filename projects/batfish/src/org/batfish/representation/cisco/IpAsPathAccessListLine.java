@@ -6,7 +6,6 @@ import java.util.List;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.SubRange;
 
 public class IpAsPathAccessListLine implements Serializable {
 
@@ -14,47 +13,23 @@ public class IpAsPathAccessListLine implements Serializable {
 
    private LineAction _action;
 
-   private SubRange _as1Range;
+   private String _regex;
 
-   private SubRange _as2Range;
-
-   private boolean _atBeginning;
-
-   private boolean _matchEmpty;
-
-   public IpAsPathAccessListLine(LineAction action) {
+   public IpAsPathAccessListLine(LineAction action, String regex) {
       _action = action;
+      _regex = regex;
    }
 
    public void applyTo(AsPathAccessList newList) {
       List<AsPathAccessListLine> lines = newList.getLines();
       AsPathAccessListLine line = new AsPathAccessListLine();
       line.setAction(_action);
-      line.setMatchEmpty(_matchEmpty);
-      line.setAtBeginning(_atBeginning);
-      line.setAs1Range(_as1Range);
-      line.setAs2Range(_as2Range);
+      line.setRegex(_regex);
       lines.add(line);
    }
 
    public LineAction getAction() {
       return _action;
-   }
-
-   public void setAs1Range(SubRange as1Range) {
-      _as1Range = as1Range;
-   }
-
-   public void setAs2Range(SubRange as2Range) {
-      _as2Range = as2Range;
-   }
-
-   public void setAtBeginning(boolean atBeginning) {
-      _atBeginning = atBeginning;
-   }
-
-   public void setMatchEmpty(boolean matchEmpty) {
-      _matchEmpty = matchEmpty;
    }
 
 }

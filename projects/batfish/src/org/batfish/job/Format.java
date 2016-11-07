@@ -164,6 +164,8 @@ public final class Format {
             .compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$").matcher(_fileText);
       Matcher rancidForce10 = Pattern
             .compile("(?m)^!RANCID-CONTENT-TYPE: force10$").matcher(_fileText);
+      Matcher rancidFoundry = Pattern
+            .compile("(?m)^!RANCID-CONTENT-TYPE: foundry$").matcher(_fileText);
       Matcher rancidJuniper = Pattern
             .compile("(?m)^!RANCID-CONTENT-TYPE: juniper$").matcher(_fileText);
       Matcher rancidMrv = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$")
@@ -176,6 +178,9 @@ public final class Format {
       }
       else if (rancidForce10.find()) {
          return ConfigurationFormat.FORCE10;
+      }
+      else if (rancidFoundry.find()) {
+         return ConfigurationFormat.FOUNDRY;
       }
       else if (rancidJuniper.find()) {
          return checkJuniper();

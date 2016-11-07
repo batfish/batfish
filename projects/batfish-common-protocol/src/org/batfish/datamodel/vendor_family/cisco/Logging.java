@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 public class Logging implements Serializable {
 
-   public static final int MIN_LOGGING_BUFFER_SIZE = 4096;
+   public static final int MAX_LOGGING_SEVERITY = 7;
 
    /**
     *

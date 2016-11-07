@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.main.Warnings;
@@ -23,7 +23,7 @@ public class RouteMapSetNextHopLine extends RouteMapSetLine {
    public void applyTo(List<Statement> statements, CiscoConfiguration cc,
          Configuration c, Warnings w) {
       // TODO: something with destination-vrf
-      statements.add(new SetNextHop(new NextHopIp(_nextHops), false));
+      statements.add(new SetNextHop(new IpNextHop(_nextHops), false));
    }
 
    public List<Ip> getNextHops() {

@@ -26,6 +26,7 @@ router ospf 52
  authentication message-digest
  mtu-ignore enable
  nsf cisco
+ address-family ipv4 unicast
  default-information originate metric 10 route-policy ospf_default_ipv4
  area 0
   interface Bundle-Ether101

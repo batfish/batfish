@@ -336,7 +336,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -377,7 +380,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -418,7 +424,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "default_list"
                     }
@@ -469,7 +478,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -510,7 +522,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "102"
                     }
@@ -630,14 +645,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -1233,7 +1254,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -1274,7 +1298,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -1325,7 +1352,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -1366,7 +1396,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "102"
                     }
@@ -1525,7 +1558,10 @@
                     "conjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "as4-prefixes"
                         }
@@ -1570,14 +1606,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -1930,14 +1972,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -2508,7 +2556,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "outbound_routes"
                     }
@@ -2549,7 +2600,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -2600,7 +2654,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -2641,7 +2698,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "outbound_routes"
                     }
@@ -2725,7 +2785,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
                       "prefixSpace" : [
                         "2.128.0.0/16:17-32"
@@ -2750,7 +2813,10 @@
                   "comment" : "Suppress summarized of summary-only aggregate-address networks",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~"
                     }
@@ -2769,14 +2835,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -3426,7 +3498,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "outbound_routes"
                     }
@@ -3467,7 +3542,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -3518,7 +3596,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -3559,7 +3640,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "outbound_routes"
                     }
@@ -3661,7 +3745,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
                       "prefixSpace" : [
                         "2.128.0.0/16:17-32"
@@ -3686,7 +3773,10 @@
                   "comment" : "Suppress summarized of summary-only aggregate-address networks",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY~"
                     }
@@ -3705,14 +3795,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -4148,14 +4244,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -4545,14 +4647,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -5108,7 +5216,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "102"
                     }
@@ -5162,14 +5273,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -5587,7 +5704,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "105"
                     }
@@ -5674,14 +5794,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -6147,7 +6273,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "105"
                     }
@@ -6234,14 +6363,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -6843,7 +6978,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "102"
                     }
@@ -6884,7 +7022,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -6935,7 +7076,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -6976,7 +7120,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -7017,7 +7164,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "default_list"
                     }
@@ -7071,14 +7221,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -7643,7 +7799,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "102"
                     }
@@ -7684,7 +7843,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -7735,7 +7897,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "101"
                     }
@@ -7776,7 +7941,10 @@
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                    "expr" : {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                       "name" : "103"
                     }
@@ -7830,14 +7998,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }
@@ -8187,14 +8361,20 @@
                     "disjuncts" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_NETWORK_NETWORKS_FILTER~"
                         }
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "expr" : {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                           "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:~"
                         }

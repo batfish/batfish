@@ -28,8 +28,7 @@ public class ExplicitPrefixSet implements PrefixSetExpr {
    }
 
    @Override
-   public boolean matches(Environment environment) {
-      Prefix prefix = environment.getOriginalRoute().getNetwork();
+   public boolean matches(Prefix prefix, Environment environment) {
       boolean value = _prefixSpace.containsPrefix(prefix);
       return value;
    }

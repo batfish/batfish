@@ -9,6 +9,7 @@ router pim
   log neighbor changes
   interface Bundle-Ether5
    bsr-border
+   dr-priority 200
   !
   interface Bundle-Ether6
    bsr-border

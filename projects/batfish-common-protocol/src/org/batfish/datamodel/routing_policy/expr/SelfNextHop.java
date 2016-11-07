@@ -4,7 +4,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class NextHopSelf implements NextHopExpr {
+public class SelfNextHop implements NextHopExpr {
 
    /**
     *

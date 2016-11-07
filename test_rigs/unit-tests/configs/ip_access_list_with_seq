@@ -20,5 +20,4 @@ ip access-list BLAH-BLAH
    210 remark REMOVED
    220 permit tcp 10.0.0.0/19 any eq ssh
    260 permit tcp host 10.0.0.0 any eq ssh
-ip route 1.1.1.1 255.255.255.255 2.2.2.2
 end

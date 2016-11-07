@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: foundry
+!
+hostname foundry_access_list
+!
+access-list 400 permit any any any etype arp
+access-list 401 permit any any any etype any
+access-list 500 permit a80c.0d63.9eec ffff.ffff.ffff 6c9c.ed7b.c90b ffff.ffff.ffff 2300 etype ipv4-l5 priority 3
+ipv6 access-list RT404888-Caltech
+ permit ipv6 host 2607:f380:1::108:9a41:a6b1 any sequence 5 
+ permit ipv6 host fe80::ce4e:24ff:fe1c:7500 any sequence 6 
+ deny icmp any any 133 sequence 10 
+ deny icmp any any 134 sequence 20 
+ deny icmp any any 135 sequence 30 
+ deny icmp any any 136 sequence 40 
+ deny icmp any any 141 sequence 50 
+ deny icmp any any 142 sequence 60 
+ permit ipv6 any any sequence 80 
+!
+
+
+!
+

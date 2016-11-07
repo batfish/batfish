@@ -34,7 +34,8 @@ public class ParseVendorConfigurationJob
    private static Pattern BANNER_PATTERN = Pattern.compile(
          "(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
-   private static String preprocessBanner(String fileText) {
+   private static String preprocessBanner(String fileText,
+         ConfigurationFormat format) {
       Matcher matcher = BANNER_PATTERN.matcher(fileText);
       if (matcher.find()) {
          int delimiterIndex = matcher.start(1);
@@ -133,30 +134,14 @@ public class ParseVendorConfigurationJob
       case CISCO_IOS_XR:
       case CISCO_NX:
       case FORCE10:
-         boolean multilineBgpNeighbors;
-         switch (format) {
-         case ARISTA:
-         case CISCO_IOS:
-         case FORCE10:
-            multilineBgpNeighbors = false;
-            break;
-
-         case CISCO_IOS_XR:
-         case CISCO_NX:
-            multilineBgpNeighbors = true;
-            break;
-
-         // $CASES-OMITTED$
-         default:
-            throw new BatfishException("Should not be possible");
-         }
+      case FOUNDRY:
          String newFileText = _fileText;
          String fileText;
          _logger.info("\tPreprocessing...");
          do {
             fileText = newFileText;
             try {
-               newFileText = preprocessBanner(fileText);
+               newFileText = preprocessBanner(fileText, format);
             }
             catch (BatfishException e) {
                elapsedTime = System.currentTimeMillis() - startTime;
@@ -167,7 +152,7 @@ public class ParseVendorConfigurationJob
          } while (newFileText != fileText);
          _logger.info("OK\n");
          CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText,
-               _settings, multilineBgpNeighbors);
+               _settings, format);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
                _warnings, _settings.getUnrecognizedAsRedFlag());

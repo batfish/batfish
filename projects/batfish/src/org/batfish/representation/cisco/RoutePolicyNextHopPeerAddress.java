@@ -2,7 +2,7 @@ package org.batfish.representation.cisco;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
-import org.batfish.datamodel.routing_policy.expr.NextHopPeerAddress;
+import org.batfish.datamodel.routing_policy.expr.PeerAddressNextHop;
 import org.batfish.main.Warnings;
 
 public class RoutePolicyNextHopPeerAddress extends RoutePolicyNextHop {
@@ -12,7 +12,7 @@ public class RoutePolicyNextHopPeerAddress extends RoutePolicyNextHop {
    @Override
    public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new NextHopPeerAddress();
+      return new PeerAddressNextHop();
    }
 
 }

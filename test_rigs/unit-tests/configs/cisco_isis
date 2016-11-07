@@ -55,6 +55,7 @@ router isis
   point-to-point
   hello-padding disable
   hello-interval 3
+  hello-multiplier 6
   address-family ipv4 unicast
    metric 99999 level 2
   !

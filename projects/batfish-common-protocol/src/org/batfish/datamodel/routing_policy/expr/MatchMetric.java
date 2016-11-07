@@ -10,9 +10,12 @@ public class MatchMetric extends AbstractBooleanExpr {
     */
    private static final long serialVersionUID = 1L;
 
-   private int _metric;
+   private IntComparator _comparator;
 
-   public MatchMetric(int metric) {
+   private IntExpr _metric;
+
+   public MatchMetric(IntComparator comparator, IntExpr metric) {
+      _comparator = comparator;
       _metric = metric;
    }
 
@@ -23,11 +26,19 @@ public class MatchMetric extends AbstractBooleanExpr {
                                                        // method stub
    }
 
-   public int getMetric() {
+   public IntComparator getComparator() {
+      return _comparator;
+   }
+
+   public IntExpr getMetric() {
       return _metric;
    }
 
-   public void setMetric(int metric) {
+   public void setComparator(IntComparator comparator) {
+      _comparator = comparator;
+   }
+
+   public void setMetric(IntExpr metric) {
       _metric = metric;
    }
 

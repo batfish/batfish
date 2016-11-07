@@ -1,0 +1,27 @@
+!
+hostname ios_xr_router_static
+!
+router static
+ address-family ipv4 unicast
+  1.2.16.255/32 Null0
+  1.2.220.0/24 TenGigE0/0/2/3 1.2.220.245 tag 64666
+  6.7.165.2/32 198.188.255.22
+  4.5.0.0/16 Null0 tag 64725
+  2.3.0.0/16 Null0 tag 64725
+  1.2.0.0/16 Null0 tag 64725
+  1.2.11.251/32 Null0 tag 64725 description "Check for Default-Originate"
+  1.2.42.185/32 1.2.42.186 bfd fast-detect minimum-interval 999 multiplier 10
+  1.2.16.0/24 Null0 tag 64725
+  1.2.16.255/32 Null0
+  9.8.192.32/29 GigabitEthernet0/2/1/5.290 1.2.24.98 tag 64906 
+ !
+ address-family ipv6 unicast
+  2607:0000::/32 Null0
+  2607:0000::10:0:0/92 Null0
+  2607:0000::110:0:0/92 Null0
+  2607:0000::118:9a41:ff0/128 Null0
+  2607:0000:0:118::/64 Null0 tag 64725 track IPv6Loopback
+  2607:0000:1::/54 Null0
+ !
+!
+

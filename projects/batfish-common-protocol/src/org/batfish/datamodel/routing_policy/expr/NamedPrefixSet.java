@@ -28,8 +28,7 @@ public class NamedPrefixSet implements PrefixSetExpr {
    }
 
    @Override
-   public boolean matches(Environment environment) {
-      Prefix prefix = environment.getOriginalRoute().getNetwork();
+   public boolean matches(Prefix prefix, Environment environment) {
       RouteFilterList list = environment.getConfiguration()
             .getRouteFilterLists().get(_name);
       if (list != null) {

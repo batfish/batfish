@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.io.Serializable;
 
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,6 +13,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_DEFAULT)
 public interface PrefixSetExpr extends Serializable {
 
-   boolean matches(Environment environment);
+   boolean matches(Prefix prefix, Environment environment);
 
 }

@@ -12,6 +12,7 @@ public enum ConfigurationFormat {
    FLAT_JUNIPER("juniper"),
    FLAT_VYOS("vyos"),
    FORCE10("force10"),
+   FOUNDRY("foundry"),
    HOST("host"),
    IGNORED("ignored"),
    IPTABLES("iptables"),

@@ -47,6 +47,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -393,9 +394,10 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          If currentGeneratedRouteConditional = new If();
          currentGeneratedRoutePolicy.getStatements()
                .add(currentGeneratedRouteConditional);
-         currentGeneratedRouteConditional.setGuard(new MatchPrefixSet(
-               new ExplicitPrefixSet(new PrefixSpace(Collections
-                     .singleton(new PrefixRange(prefix, prefixRange))))));
+         currentGeneratedRouteConditional
+               .setGuard(new MatchPrefixSet(new DestinationNetwork(),
+                     new ExplicitPrefixSet(new PrefixSpace(Collections
+                           .singleton(new PrefixRange(prefix, prefixRange))))));
          currentGeneratedRouteConditional.getTrueStatements()
                .add(Statements.ReturnTrue.toStaticStatement());
          c.getRoutingPolicies().put(generationPolicyName,
@@ -454,8 +456,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                   prefix, new SubRange(prefixLength + 1, 32));
             matchSuppressedSummaryOnlyRoutes.addLine(line);
          }
-         suppressSummaryOnly.setGuard(new MatchPrefixSet(
-               new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)));
+         suppressSummaryOnly
+               .setGuard(new MatchPrefixSet(new DestinationNetwork(),
+                     new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)));
          suppressSummaryOnly.getTrueStatements()
                .add(Statements.ReturnFalse.toStaticStatement());
       }
@@ -596,8 +599,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // add prefilter policy for explicitly advertised networks
       Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
       localRfLists.add(localFilter);
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new NamedPrefixSet(BGP_NETWORK_NETWORKS_FILTER_NAME)));
+      preFilterConditions.getDisjuncts()
+            .add(new MatchPrefixSet(new DestinationNetwork(),
+                  new NamedPrefixSet(BGP_NETWORK_NETWORKS_FILTER_NAME)));
 
       // create origination prefilter from listed aggregate advertiseed
       // networks
@@ -610,8 +614,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          aggregateFilter.addLine(line);
       }
       c.getRouteFilterLists().put(aggregateFilter.getName(), aggregateFilter);
-      preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
-            new NamedPrefixSet(BGP_AGGREGATE_NETWORKS_FILTER_NAME)));
+      preFilterConditions.getDisjuncts()
+            .add(new MatchPrefixSet(new DestinationNetwork(),
+                  new NamedPrefixSet(BGP_AGGREGATE_NETWORKS_FILTER_NAME)));
       MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
       MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
       preFilterConditions.getDisjuncts().add(isEbgp);
@@ -730,6 +735,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          GeneratedRoute defaultRoute = null;
          if (lpg.getDefaultOriginate()) {
             MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
+                  new DestinationNetwork(),
                   new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                         new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
             localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
@@ -1403,6 +1409,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          List<Statement> ospfExportDefaultStatements = ospfExportDefault
                .getTrueStatements();
          ospfExportDefaultConditions.getConjuncts().add(new MatchPrefixSet(
+               new DestinationNetwork(),
                new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                      new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
          int metric = proc.getDefaultInformationMetric();
@@ -1506,10 +1513,11 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                .add(new MatchProtocol(RoutingProtocol.STATIC));
          List<Statement> ospfExportStaticStatements = ospfExportStatic
                .getTrueStatements();
-         ospfExportStaticConditions.getConjuncts().add(
-               new Not(new MatchPrefixSet(new ExplicitPrefixSet(new PrefixSpace(
-                     Collections.singleton(new PrefixRange(Prefix.ZERO,
-                           new SubRange(0, 0))))))));
+         ospfExportStaticConditions.getConjuncts()
+               .add(new Not(new MatchPrefixSet(new DestinationNetwork(),
+                     new ExplicitPrefixSet(new PrefixSpace(
+                           Collections.singleton(new PrefixRange(Prefix.ZERO,
+                                 new SubRange(0, 0))))))));
 
          Integer metric = rsp.getMetric();
          OspfMetricType metricType = rsp.getMetricType();
@@ -1553,6 +1561,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          List<Statement> ospfExportBgpStatements = ospfExportBgp
                .getTrueStatements();
          ospfExportBgpConditions.getConjuncts().add(new Not(new MatchPrefixSet(
+               new DestinationNetwork(),
                new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
                      new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
 

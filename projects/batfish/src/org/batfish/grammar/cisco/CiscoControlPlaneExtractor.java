@@ -55,6 +55,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
@@ -62,21 +63,27 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetElemHalfExpr;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
+import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
+import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
@@ -100,102 +107,7 @@ import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.cisco.BgpAggregateNetwork;
-import org.batfish.representation.cisco.BgpPeerGroup;
-import org.batfish.representation.cisco.BgpProcess;
-import org.batfish.representation.cisco.BgpRedistributionPolicy;
-import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoVendorConfiguration;
-import org.batfish.representation.cisco.DynamicBgpPeerGroup;
-import org.batfish.representation.cisco.ExpandedCommunityList;
-import org.batfish.representation.cisco.ExpandedCommunityListLine;
-import org.batfish.representation.cisco.ExtendedAccessList;
-import org.batfish.representation.cisco.ExtendedAccessListLine;
-import org.batfish.representation.cisco.Interface;
-import org.batfish.representation.cisco.IpAsPathAccessList;
-import org.batfish.representation.cisco.IpAsPathAccessListLine;
-import org.batfish.representation.cisco.IpBgpPeerGroup;
-import org.batfish.representation.cisco.Ipv6BgpPeerGroup;
-import org.batfish.representation.cisco.IsisProcess;
-import org.batfish.representation.cisco.IsisRedistributionPolicy;
-import org.batfish.representation.cisco.MasterBgpPeerGroup;
-import org.batfish.representation.cisco.NamedBgpPeerGroup;
-import org.batfish.representation.cisco.OspfNetwork;
-import org.batfish.representation.cisco.OspfProcess;
-import org.batfish.representation.cisco.OspfRedistributionPolicy;
-import org.batfish.representation.cisco.OspfWildcardNetwork;
-import org.batfish.representation.cisco.PrefixList;
-import org.batfish.representation.cisco.PrefixListLine;
-import org.batfish.representation.cisco.RouteMap;
-import org.batfish.representation.cisco.RouteMapClause;
-import org.batfish.representation.cisco.RouteMapMatchAsPathAccessListLine;
-import org.batfish.representation.cisco.RouteMapMatchCommunityListLine;
-import org.batfish.representation.cisco.RouteMapMatchIpAccessListLine;
-import org.batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
-import org.batfish.representation.cisco.RouteMapMatchTagLine;
-import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityListLine;
-import org.batfish.representation.cisco.RouteMapSetAsPathPrependLine;
-import org.batfish.representation.cisco.RouteMapSetCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetCommunityListLine;
-import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
-import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetLine;
-import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
-import org.batfish.representation.cisco.RouteMapSetMetricLine;
-import org.batfish.representation.cisco.RouteMapSetNextHopLine;
-import org.batfish.representation.cisco.RouteMapSetNextHopPeerAddress;
-import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
-import org.batfish.representation.cisco.RoutePolicy;
-import org.batfish.representation.cisco.RoutePolicyApplyStatement;
-import org.batfish.representation.cisco.RoutePolicyBoolean;
-import org.batfish.representation.cisco.RoutePolicyBooleanAsPathIn;
-import org.batfish.representation.cisco.RoutePolicyBooleanAsPathOriginatesFrom;
-import org.batfish.representation.cisco.RoutePolicyBooleanAsPathPassesThrough;
-import org.batfish.representation.cisco.RoutePolicyBooleanAnd;
-import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesAny;
-import org.batfish.representation.cisco.RoutePolicyBooleanCommunityMatchesEvery;
-import org.batfish.representation.cisco.RoutePolicyBooleanDestination;
-import org.batfish.representation.cisco.RoutePolicyBooleanNot;
-import org.batfish.representation.cisco.RoutePolicyBooleanOr;
-import org.batfish.representation.cisco.RoutePolicyBooleanRibHasRoute;
-import org.batfish.representation.cisco.RoutePolicyBooleanTagIs;
-import org.batfish.representation.cisco.RoutePolicyCommunitySet;
-import org.batfish.representation.cisco.RoutePolicyCommunitySetName;
-import org.batfish.representation.cisco.RoutePolicyCommunitySetInline;
-import org.batfish.representation.cisco.RoutePolicyDeleteAllStatement;
-import org.batfish.representation.cisco.RoutePolicyDeleteCommunityStatement;
-import org.batfish.representation.cisco.RoutePolicyDispositionStatement;
-import org.batfish.representation.cisco.RoutePolicyDispositionType;
-import org.batfish.representation.cisco.RoutePolicyElseBlock;
-import org.batfish.representation.cisco.RoutePolicyElseIfBlock;
-import org.batfish.representation.cisco.RoutePolicyIfStatement;
-import org.batfish.representation.cisco.RoutePolicyInlinePrefix6Set;
-import org.batfish.representation.cisco.RoutePolicyInlinePrefixSet;
-import org.batfish.representation.cisco.RoutePolicyNextHop;
-import org.batfish.representation.cisco.RoutePolicyNextHopIp;
-import org.batfish.representation.cisco.RoutePolicyNextHopIP6;
-import org.batfish.representation.cisco.RoutePolicyNextHopPeerAddress;
-import org.batfish.representation.cisco.RoutePolicyNextHopSelf;
-import org.batfish.representation.cisco.RoutePolicyPrefixSet;
-import org.batfish.representation.cisco.RoutePolicyPrefixSetName;
-import org.batfish.representation.cisco.RoutePolicyPrependAsPath;
-import org.batfish.representation.cisco.RoutePolicySetCommunity;
-import org.batfish.representation.cisco.RoutePolicySetIsisMetricType;
-import org.batfish.representation.cisco.RoutePolicySetLocalPref;
-import org.batfish.representation.cisco.RoutePolicySetMed;
-import org.batfish.representation.cisco.RoutePolicySetNextHop;
-import org.batfish.representation.cisco.RoutePolicySetOrigin;
-import org.batfish.representation.cisco.RoutePolicySetOspfMetricType;
-import org.batfish.representation.cisco.RoutePolicySetTag;
-import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
-import org.batfish.representation.cisco.RoutePolicySetWeight;
-import org.batfish.representation.cisco.RoutePolicyStatement;
-import org.batfish.representation.cisco.StandardAccessList;
-import org.batfish.representation.cisco.StandardAccessListLine;
-import org.batfish.representation.cisco.StandardCommunityList;
-import org.batfish.representation.cisco.StandardCommunityListLine;
-import org.batfish.representation.cisco.StaticRoute;
+import org.batfish.representation.cisco.*;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       implements ControlPlaneExtractor {
@@ -203,8 +115,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
 
    private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
-
-   private static final Interface DUMMY_INTERFACE = new Interface("dummy");
 
    private static final String DUPLICATE = "DUPLICATE";
 
@@ -254,18 +164,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
-   public static LineAction getAccessListAction(Access_list_actionContext ctx) {
-      if (ctx.PERMIT() != null) {
-         return LineAction.ACCEPT;
-      }
-      else if (ctx.DENY() != null) {
-         return LineAction.REJECT;
-      }
-      else {
-         throw new BatfishException("bad LineAction");
-      }
-   }
-
    private static String getCanonicalInterfaceName(String ifaceName) {
       Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]")
             .matcher(ifaceName);
@@ -296,6 +194,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("ATM", "ATM");
       prefixes.put("Bundle-Ether", "Bundle-Ethernet");
       prefixes.put("BVI", "BVI");
+      prefixes.put("Crypto-Engine", "Crypto-Engine");
       prefixes.put("cmp-mgmt", "cmp-mgmt");
       prefixes.put("Dialer", "Dialer");
       prefixes.put("Dot11Radio", "Dot11Radio");
@@ -334,7 +233,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return prefixes;
    }
 
-   public static Ip getIp(Access_list_ip_rangeContext ctx) {
+   private static Ip getIp(Access_list_ip_rangeContext ctx) {
       if (ctx.ip != null) {
          return toIp(ctx.ip);
       }
@@ -346,277 +245,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
-   public static NamedPort getNamedPort(PortContext ctx) {
-      if (ctx.AOL() != null) {
-         return NamedPort.AOL;
-      }
-      else if (ctx.BGP() != null) {
-         return NamedPort.BGP;
-      }
-      else if (ctx.BIFF() != null) {
-         return NamedPort.BIFFudp_OR_EXECtcp;
-      }
-      else if (ctx.BOOTPC() != null) {
-         return NamedPort.BOOTPC;
-      }
-      else if (ctx.BOOTPS() != null) {
-         return NamedPort.BOOTPS_OR_DHCP;
-      }
-      else if (ctx.CHARGEN() != null) {
-         return NamedPort.CHARGEN;
-      }
-      else if (ctx.CITRIX_ICA() != null) {
-         return NamedPort.CITRIX_ICA;
-      }
-      else if (ctx.CMD() != null) {
-         return NamedPort.CMDtcp_OR_SYSLOGudp;
-      }
-      else if (ctx.CTIQBE() != null) {
-         return NamedPort.CTIQBE;
-      }
-      else if (ctx.DAYTIME() != null) {
-         return NamedPort.DAYTIME;
-      }
-      else if (ctx.DISCARD() != null) {
-         return NamedPort.DISCARD;
-      }
-      else if (ctx.DNSIX() != null) {
-         return NamedPort.DNSIX;
-      }
-      else if (ctx.DOMAIN() != null) {
-         return NamedPort.DOMAIN;
-      }
-      else if (ctx.ECHO() != null) {
-         return NamedPort.ECHO;
-      }
-      else if (ctx.EXEC() != null) {
-         return NamedPort.BIFFudp_OR_EXECtcp;
-      }
-      else if (ctx.FINGER() != null) {
-         return NamedPort.FINGER;
-      }
-      else if (ctx.FTP() != null) {
-         return NamedPort.FTP;
-      }
-      else if (ctx.FTP_DATA() != null) {
-         return NamedPort.FTP_DATA;
-      }
-      else if (ctx.GOPHER() != null) {
-         return NamedPort.GOPHER;
-      }
-      else if (ctx.H323() != null) {
-         return NamedPort.H323;
-      }
-      else if (ctx.HTTPS() != null) {
-         return NamedPort.HTTPS;
-      }
-      else if (ctx.HOSTNAME() != null) {
-         return NamedPort.HOSTNAME;
-      }
-      else if (ctx.IDENT() != null) {
-         return NamedPort.IDENT;
-      }
-      else if (ctx.IMAP4() != null) {
-         return NamedPort.IMAP;
-      }
-      else if (ctx.IRC() != null) {
-         return NamedPort.IRC;
-      }
-      else if (ctx.ISAKMP() != null) {
-         return NamedPort.ISAKMP;
-      }
-      else if (ctx.KERBEROS() != null) {
-         return NamedPort.KERBEROS;
-      }
-      else if (ctx.KLOGIN() != null) {
-         return NamedPort.KLOGIN;
-      }
-      else if (ctx.KSHELL() != null) {
-         return NamedPort.KSHELL;
-      }
-      else if (ctx.LDAP() != null) {
-         return NamedPort.LDAP;
-      }
-      else if (ctx.LDAPS() != null) {
-         return NamedPort.LDAPS;
-      }
-      else if (ctx.LPD() != null) {
-         return NamedPort.LPD;
-      }
-      else if (ctx.LOGIN() != null) {
-         return NamedPort.LOGINtcp_OR_WHOudp;
-      }
-      else if (ctx.LOTUSNOTES() != null) {
-         return NamedPort.LOTUSNOTES;
-      }
-      else if (ctx.MLAG() != null) {
-         return NamedPort.MLAG;
-      }
-      else if (ctx.MOBILE_IP() != null) {
-         return NamedPort.MOBILE_IP_AGENT;
-      }
-      else if (ctx.MSRPC() != null) {
-         return NamedPort.MSRPC;
-      }
-      else if (ctx.NAMESERVER() != null) {
-         return NamedPort.NAMESERVER;
-      }
-      else if (ctx.NETBIOS_DGM() != null) {
-         return NamedPort.NETBIOS_DGM;
-      }
-      else if (ctx.NETBIOS_NS() != null) {
-         return NamedPort.NETBIOS_NS;
-      }
-      else if (ctx.NETBIOS_SS() != null) {
-         return NamedPort.NETBIOS_SSN;
-      }
-      else if (ctx.NETBIOS_SSN() != null) {
-         return NamedPort.NETBIOS_SSN;
-      }
-      else if (ctx.NNTP() != null) {
-         return NamedPort.NNTP;
-      }
-      else if (ctx.NON500_ISAKMP() != null) {
-         return NamedPort.NON500_ISAKMP;
-      }
-      else if (ctx.NTP() != null) {
-         return NamedPort.NTP;
-      }
-      else if (ctx.PCANYWHERE_DATA() != null) {
-         return NamedPort.PCANYWHERE_DATA;
-      }
-      else if (ctx.PCANYWHERE_STATUS() != null) {
-         return NamedPort.PCANYWHERE_STATUS;
-      }
-      else if (ctx.PIM_AUTO_RP() != null) {
-         return NamedPort.PIM_AUTO_RP;
-      }
-      else if (ctx.POP2() != null) {
-         return NamedPort.POP2;
-      }
-      else if (ctx.POP3() != null) {
-         return NamedPort.POP3;
-      }
-      else if (ctx.PPTP() != null) {
-         return NamedPort.PPTP;
-      }
-      else if (ctx.RADIUS() != null) {
-         return NamedPort.RADIUS_CISCO;
-      }
-      else if (ctx.RADIUS_ACCT() != null) {
-         return NamedPort.RADIUS_ACCT_CISCO;
-      }
-      else if (ctx.RIP() != null) {
-         return NamedPort.RIP;
-      }
-      else if (ctx.SECUREID_UDP() != null) {
-         return NamedPort.SECUREID_UDP;
-      }
-      else if (ctx.SMTP() != null) {
-         return NamedPort.SMTP;
-      }
-      else if (ctx.SNMP() != null) {
-         return NamedPort.SNMP;
-      }
-      else if (ctx.SNMPTRAP() != null) {
-         return NamedPort.SNMPTRAP;
-      }
-      else if (ctx.SQLNET() != null) {
-         return NamedPort.SQLNET;
-      }
-      else if (ctx.SSH() != null) {
-         return NamedPort.SSH;
-      }
-      else if (ctx.SUNRPC() != null) {
-         return NamedPort.SUNRPC;
-      }
-      else if (ctx.SYSLOG() != null) {
-         return NamedPort.CMDtcp_OR_SYSLOGudp;
-      }
-      else if (ctx.TACACS() != null) {
-         return NamedPort.TACACS;
-      }
-      else if (ctx.TACACS_DS() != null) {
-         return NamedPort.TACACS_DS;
-      }
-      else if (ctx.TALK() != null) {
-         return NamedPort.TALK;
-      }
-      else if (ctx.TELNET() != null) {
-         return NamedPort.TELNET;
-      }
-      else if (ctx.TFTP() != null) {
-         return NamedPort.TFTP;
-      }
-      else if (ctx.TIME() != null) {
-         return NamedPort.TIME;
-      }
-      else if (ctx.UUCP() != null) {
-         return NamedPort.UUCP;
-      }
-      else if (ctx.WHO() != null) {
-         return NamedPort.LOGINtcp_OR_WHOudp;
-      }
-      else if (ctx.WHOIS() != null) {
-         return NamedPort.WHOIS;
-      }
-      else if (ctx.WWW() != null) {
-         return NamedPort.HTTP;
-      }
-      else if (ctx.XDMCP() != null) {
-         return NamedPort.XDMCP;
-      }
-      else {
-         throw new BatfishException(
-               "missing port-number mapping for port: '" + ctx.getText() + "'");
-      }
-   }
-
-   public static int getPortNumber(PortContext ctx) {
-      if (ctx.DEC() != null) {
-         return toInteger(ctx.DEC());
-      }
-      else {
-         NamedPort namedPort = getNamedPort(ctx);
-         return namedPort.number();
-      }
-   }
-
-   private static List<SubRange> getPortRanges(Port_specifierContext ps) {
-      List<SubRange> ranges = new ArrayList<>();
-      if (ps.EQ() != null) {
-         for (PortContext pc : ps.args) {
-            int port = getPortNumber(pc);
-            ranges.add(new SubRange(port, port));
-         }
-      }
-      else if (ps.GT() != null) {
-         int port = getPortNumber(ps.arg);
-         ranges.add(new SubRange(port + 1, 65535));
-      }
-      else if (ps.NEQ() != null) {
-         int port = getPortNumber(ps.arg);
-         SubRange beforeRange = new SubRange(0, port - 1);
-         SubRange afterRange = new SubRange(port + 1, 65535);
-         ranges.add(beforeRange);
-         ranges.add(afterRange);
-      }
-      else if (ps.LT() != null) {
-         int port = getPortNumber(ps.arg);
-         ranges.add(new SubRange(0, port - 1));
-      }
-      else if (ps.RANGE() != null) {
-         int lowPort = getPortNumber(ps.arg1);
-         int highPort = getPortNumber(ps.arg2);
-         ranges.add(new SubRange(lowPort, highPort));
-      }
-      else {
-         throw new BatfishException("bad port range");
-      }
-      return ranges;
-   }
-
-   public static Ip getPrefixIp(Token ipPrefixToken) {
+   private static Ip getPrefixIp(Token ipPrefixToken) {
       if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
@@ -630,7 +259,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return prefixIp;
    }
 
-   public static int getPrefixLength(Token ipPrefixToken) {
+   private static int getPrefixLength(Token ipPrefixToken) {
       if (ipPrefixToken.getType() != CiscoLexer.IP_PREFIX) {
          throw new BatfishException(
                "attempted to get prefix length from non-IP_PREFIX token: "
@@ -643,143 +272,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return prefixLength;
    }
 
-   public static Ip getWildcard(Access_list_ip_rangeContext ctx) {
-      if (ctx.wildcard != null) {
-         return toIp(ctx.wildcard);
-      }
-      else if (ctx.ANY() != null || ctx.address_group != null) {
-         return new Ip(0xFFFFFFFFl);
-      }
-      else if (ctx.HOST() != null) {
-         return new Ip(0l);
-      }
-      else if (ctx.prefix != null) {
-         int pfxLength = getPrefixLength(ctx.prefix);
-         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
-         return new Ip(ipAsLong);
-      }
-      else if (ctx.ip != null) {
-         // basically same as host
-         return new Ip(0l);
-      }
-      else {
-         throw new BatfishException("bad extended ip access list ip range");
-      }
-   }
-
-   private static AsExpr toAsExpr(As_exprContext ctx) {
-      if (ctx.DEC() != null) {
-         int as = toInteger(ctx.DEC());
-         return new ExplicitAs(as);
-      }
-      else if (ctx.AUTO() != null) {
-         return new AutoAs();
-      }
-      else if (ctx.RP_VARIABLE() != null) {
-         return new VarAs(ctx.RP_VARIABLE().getText());
-      }
-      else {
-         throw new BatfishException("Cannot convert '" + ctx.getText() + "' to "
-               + AsExpr.class.getSimpleName());
-      }
-   }
-
-   private static int toDscpType(Dscp_typeContext ctx) {
-      int val;
-      if (ctx.DEC() != null) {
-         val = toInteger(ctx.DEC());
-      }
-      else if (ctx.AF11() != null) {
-         val = DscpType.AF11.number();
-      }
-      else if (ctx.AF12() != null) {
-         val = DscpType.AF12.number();
-      }
-      else if (ctx.AF13() != null) {
-         val = DscpType.AF13.number();
-      }
-      else if (ctx.AF21() != null) {
-         val = DscpType.AF21.number();
-      }
-      else if (ctx.AF22() != null) {
-         val = DscpType.AF22.number();
-      }
-      else if (ctx.AF23() != null) {
-         val = DscpType.AF23.number();
-      }
-      else if (ctx.AF31() != null) {
-         val = DscpType.AF31.number();
-      }
-      else if (ctx.AF32() != null) {
-         val = DscpType.AF32.number();
-      }
-      else if (ctx.AF33() != null) {
-         val = DscpType.AF33.number();
-      }
-      else if (ctx.AF41() != null) {
-         val = DscpType.AF41.number();
-      }
-      else if (ctx.AF42() != null) {
-         val = DscpType.AF42.number();
-      }
-      else if (ctx.AF43() != null) {
-         val = DscpType.AF43.number();
-      }
-      else if (ctx.CS1() != null) {
-         val = DscpType.CS1.number();
-      }
-      else if (ctx.CS2() != null) {
-         val = DscpType.CS2.number();
-      }
-      else if (ctx.CS3() != null) {
-         val = DscpType.CS3.number();
-      }
-      else if (ctx.CS4() != null) {
-         val = DscpType.CS4.number();
-      }
-      else if (ctx.CS5() != null) {
-         val = DscpType.CS5.number();
-      }
-      else if (ctx.CS6() != null) {
-         val = DscpType.CS6.number();
-      }
-      else if (ctx.CS7() != null) {
-         val = DscpType.CS7.number();
-      }
-      else if (ctx.DEFAULT() != null) {
-         val = DscpType.DEFAULT.number();
-      }
-      else if (ctx.EF() != null) {
-         val = DscpType.EF.number();
-      }
-      else {
-         throw new BatfishException(
-               "Unhandled dscp type: '" + ctx.getText() + "'");
-      }
-      return val;
-   }
-
-   private static SwitchportEncapsulationType toEncapsulation(
-         Switchport_trunk_encapsulationContext ctx) {
-      if (ctx.DOT1Q() != null) {
-         return SwitchportEncapsulationType.DOT1Q;
-      }
-      else if (ctx.ISL() != null) {
-         return SwitchportEncapsulationType.ISL;
-      }
-      else if (ctx.NEGOTIATE() != null) {
-         return SwitchportEncapsulationType.NEGOTIATE;
-      }
-      else {
-         throw new BatfishException("bad encapsulation");
-      }
-   }
-
-   public static int toInteger(TerminalNode t) {
+   private static int toInteger(TerminalNode t) {
       return Integer.parseInt(t.getText());
    }
 
-   public static int toInteger(Token t) {
+   private static int toInteger(Token t) {
       return Integer.parseInt(t.getText());
    }
 
@@ -799,92 +296,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return name;
    }
 
-   public static Ip toIp(TerminalNode t) {
+   private static Ip toIp(TerminalNode t) {
       return new Ip(t.getText());
    }
 
-   public static Ip toIp(Token t) {
+   private static Ip toIp(Token t) {
       return new Ip(t.getText());
    }
 
-   public static Ip6 toIp6(TerminalNode t) {
+   private static Ip6 toIp6(TerminalNode t) {
       return new Ip6(t.getText());
    }
 
-   public static Ip6 toIp6(Token t) {
+   private static Ip6 toIp6(Token t) {
       return new Ip6(t.getText());
    }
 
-   public static IpProtocol toIpProtocol(ProtocolContext ctx) {
-      if (ctx.DEC() != null) {
-         int num = toInteger(ctx.DEC());
-         return IpProtocol.fromNumber(num);
-      }
-      else if (ctx.AHP() != null) {
-         return IpProtocol.AHP;
-      }
-      else if (ctx.EIGRP() != null) {
-         return IpProtocol.EIGRP;
-      }
-      else if (ctx.ESP() != null) {
-         return IpProtocol.ESP;
-      }
-      else if (ctx.GRE() != null) {
-         return IpProtocol.GRE;
-      }
-      else if (ctx.ICMP() != null) {
-         return IpProtocol.ICMP;
-      }
-      else if (ctx.ICMP6() != null || ctx.ICMPV6() != null) {
-         return IpProtocol.IPV6_ICMP;
-      }
-      else if (ctx.IGMP() != null) {
-         return IpProtocol.IGMP;
-      }
-      else if (ctx.IP() != null) {
-         return IpProtocol.IP;
-      }
-      else if (ctx.IPINIP() != null) {
-         return IpProtocol.IPINIP;
-      }
-      else if (ctx.IPV4() != null) {
-         return IpProtocol.IP;
-      }
-      else if (ctx.IPV6() != null) {
-         return IpProtocol.IPV6;
-      }
-      else if (ctx.OSPF() != null) {
-         return IpProtocol.OSPF;
-      }
-      else if (ctx.PIM() != null) {
-         return IpProtocol.PIM;
-      }
-      else if (ctx.SCTP() != null) {
-         return IpProtocol.SCTP;
-      }
-      else if (ctx.TCP() != null) {
-         return IpProtocol.TCP;
-      }
-      else if (ctx.UDP() != null) {
-         return IpProtocol.UDP;
-      }
-      else if (ctx.VRRP() != null) {
-         return IpProtocol.VRRP;
-      }
-      else {
-         throw new BatfishException("missing token-protocol mapping");
-      }
-   }
-
-   public static long toLong(TerminalNode t) {
+   private static long toLong(Token t) {
       return Long.parseLong(t.getText());
    }
 
-   public static long toLong(Token t) {
-      return Long.parseLong(t.getText());
-   }
-
-   public static List<SubRange> toRange(RangeContext ctx) {
+   private static List<SubRange> toRange(RangeContext ctx) {
       List<SubRange> range = new ArrayList<>();
       for (SubrangeContext sc : ctx.range_list) {
          SubRange sr = toSubRange(sc);
@@ -893,20 +325,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return range;
    }
 
-   private static SubRange toSubrange(As_path_regex_rangeContext ctx) {
-      if (ctx.DEC() != null) {
-         int as = toInteger(ctx.DEC());
-         return new SubRange(as, as);
-      }
-      else if (ctx.PERIOD() != null) {
-         return new SubRange(0, 65535);
-      }
-      else {
-         throw new BatfishException("Invalid as path regex range");
-      }
-   }
-
-   public static SubRange toSubRange(SubrangeContext ctx) {
+   private static SubRange toSubRange(SubrangeContext ctx) {
       int low = toInteger(ctx.low);
       if (ctx.DASH() != null) {
          int high = toInteger(ctx.high);
@@ -1006,20 +425,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNexusNeighborAddressFamilies = new HashSet<>();
    }
 
-   private void addInterface(String vrf, double bandwidth, int mtu,
-         String name) {
+   private Interface addInterface(String name, Interface_nameContext ctx,
+         boolean explicit) {
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
          newInterface = new Interface(name);
          _configuration.getInterfaces().put(name, newInterface);
+         initInterface(newInterface, ctx);
       }
       else {
          _w.pedantic("Interface: '" + name + "' altered more than once");
       }
-      _currentInterfaces.add(newInterface);
-      newInterface.setBandwidth(bandwidth);
-      newInterface.setVrf(vrf);
-      newInterface.setMtu(mtu);
+      if (explicit) {
+         _currentInterfaces.add(newInterface);
+      }
+      return newInterface;
    }
 
    private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -1193,25 +613,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
       String ifaceName = ctx.iname.getText();
-      _currentIsisInterface = _configuration.getInterfaces().get(ifaceName);
-      if (_currentIsisInterface == null) {
-         _w.redFlag("IS-IS process references nonexistent interface: '"
-               + ifaceName + "'");
-         _currentIsisInterface = DUMMY_INTERFACE;
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+      if (iface == null) {
+         iface = addInterface(canonicalIfaceName, ctx.iname, false);
       }
-      _currentIsisInterface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      _currentIsisInterface = iface;
    }
 
    @Override
    public void enterInterface_stanza(Interface_stanzaContext ctx) {
       String nameAlpha = ctx.iname.name_prefix_alpha.getText();
       String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
-      String vrf = canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX)
-            ? CiscoConfiguration.MANAGEMENT_VRF_NAME
-            : CiscoConfiguration.MASTER_VRF_NAME;
-      double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
-      int mtu = Interface.getDefaultMtu();
-
       String namePrefix = canonicalNamePrefix;
       for (Token part : ctx.iname.name_middle_parts) {
          namePrefix += part.getText();
@@ -1222,13 +636,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          for (SubRange range : ranges) {
             for (int i = range.getStart(); i <= range.getEnd(); i++) {
                String name = namePrefix + i;
-               addInterface(vrf, bandwidth, mtu, name);
+               addInterface(name, ctx.iname, true);
             }
          }
       }
       else {
          String name = namePrefix;
-         addInterface(vrf, bandwidth, mtu, name);
+         addInterface(name, ctx.iname, true);
       }
       if (ctx.MULTIPOINT() != null) {
          todo(ctx, F_INTERFACE_MULTIPOINT);
@@ -1507,7 +921,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _configuration.getRouteMaps().put(name, _currentRouteMap);
       }
       int num = toInteger(ctx.num);
-      LineAction action = getAccessListAction(ctx.rmt);
+      LineAction action = toLineAction(ctx.rmt);
       _currentRouteMapClause = _currentRouteMap.getClauses().get(num);
       if (_currentRouteMapClause == null) {
          _currentRouteMapClause = new RouteMapClause(action,
@@ -2069,7 +1483,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_currentExtendedAcl.getIpv6()) {
          return;
       }
-      LineAction action = getAccessListAction(ctx.ala);
+      LineAction action = toLineAction(ctx.ala);
       IpProtocol protocol = toIpProtocol(ctx.prot);
       switch (protocol) {
       case IPV6:
@@ -2090,9 +1504,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String srcAddressGroup = getAddressGroup(ctx.srcipr);
       String dstAddressGroup = getAddressGroup(ctx.dstipr);
       List<SubRange> srcPortRanges = ctx.alps_src != null
-            ? getPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
       List<SubRange> dstPortRanges = ctx.alps_dst != null
-            ? getPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
+            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
       Integer icmpType = null;
       Integer icmpCode = null;
       List<TcpFlags> tcpFlags = new ArrayList<>();
@@ -2430,35 +1844,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_as_path_access_list_tail(
          Ip_as_path_access_list_tailContext ctx) {
-      LineAction action = getAccessListAction(ctx.action);
-      As_path_regexContext asPath = ctx.as_path_regex();
-      if (asPath == null) {
-         // not an as-path we can use right now
-         return;
-      }
-      IpAsPathAccessListLine line = new IpAsPathAccessListLine(action);
-      boolean atBeginning = asPath.CARAT() != null;
-      boolean matchEmpty = asPath.ranges.size() == asPath.ASTERISK().size();
-      line.setAtBeginning(atBeginning);
-      line.setMatchEmpty(matchEmpty);
-      switch (asPath.ranges.size()) {
-      case 0:
-         break;
-
-      case 2:
-         As_path_regex_rangeContext range2ctx = asPath.ranges.get(1);
-         SubRange asRange2 = toSubrange(range2ctx);
-         line.setAs2Range(asRange2);
-      case 1:
-         As_path_regex_rangeContext range1ctx = asPath.ranges.get(0);
-         SubRange asRange1 = toSubrange(range1ctx);
-         line.setAs1Range(asRange1);
-         break;
-
-      default:
-         _w.redFlag(
-               "Do not currently support more than two AS'es in Cisco as-path regexes");
-      }
+      LineAction action = toLineAction(ctx.action);
+      String regex = ctx.as_path_regex.getText();
+      IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
       _currentAsPathAcl.addLine(line);
    }
 
@@ -2471,7 +1859,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_community_list_expanded_tail(
          Ip_community_list_expanded_tailContext ctx) {
-      LineAction action = getAccessListAction(ctx.ala);
+      LineAction action = toLineAction(ctx.ala);
       String regex = "";
       for (Token remainder : ctx.remainder) {
          regex += remainder.getText();
@@ -2490,7 +1878,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_community_list_standard_tail(
          Ip_community_list_standard_tailContext ctx) {
-      LineAction action = getAccessListAction(ctx.ala);
+      LineAction action = toLineAction(ctx.ala);
       List<Long> communities = new ArrayList<>();
       for (CommunityContext communityCtx : ctx.communities) {
          long community = toLong(communityCtx);
@@ -2557,7 +1945,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
       boolean ipv6 = ctx.ipv6_prefix != null;
-      LineAction action = getAccessListAction(ctx.action);
+      LineAction action = toLineAction(ctx.action);
       Prefix prefix = null;
       Prefix6 prefix6 = null;
       int prefixLength;
@@ -2754,7 +2142,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          // it is buffer size if the value is greater than min buffer size
          // otherwise, it is logging severity
          int sizeRawNum = toInteger(ctx.size);
-         if (sizeRawNum >= Logging.MIN_LOGGING_BUFFER_SIZE) {
+         if (sizeRawNum > Logging.MAX_LOGGING_SEVERITY) {
             size = sizeRawNum;
          }
          else {
@@ -3202,17 +2590,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String ifaceName = ctx.name.getText();
       String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
       Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
-      if (iface != null) {
-         if (ctx.NO() == null) {
-            iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
-         }
-         else {
-            iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-         }
+      if (iface == null) {
+         iface = addInterface(canonicalIfaceName, ctx.name, false);
+      }
+      if (ctx.NO() == null) {
+         iface.setIsisInterfaceMode(IsisInterfaceMode.PASSIVE);
       }
       else {
-         throw new BatfishException("FIXME: Reference to undefined interface: '"
-               + canonicalIfaceName + "'");
+         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
       }
    }
 
@@ -3943,7 +3328,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
 
-      LineAction action = getAccessListAction(ctx.ala);
+      LineAction action = toLineAction(ctx.ala);
       Ip srcIp = getIp(ctx.ipr);
       Ip srcWildcard = getWildcard(ctx.ipr);
       Set<Integer> dscps = new TreeSet<>();
@@ -4223,6 +3608,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return text;
    }
 
+   public int getPortNumber(PortContext ctx) {
+      if (ctx.DEC() != null) {
+         return toInteger(ctx.DEC());
+      }
+      else {
+         NamedPort namedPort = toNamedPort(ctx);
+         return namedPort.number();
+      }
+   }
+
    public String getText() {
       return _text;
    }
@@ -4235,6 +3630,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public VendorConfiguration getVendorConfiguration() {
       return _vendorConfiguration;
+   }
+
+   private Ip getWildcard(Access_list_ip_rangeContext ctx) {
+      if (ctx.wildcard != null) {
+         return toIp(ctx.wildcard);
+      }
+      else if (ctx.ANY() != null || ctx.address_group != null) {
+         return new Ip(0xFFFFFFFFl);
+      }
+      else if (ctx.HOST() != null) {
+         return new Ip(0l);
+      }
+      else if (ctx.prefix != null) {
+         int pfxLength = getPrefixLength(ctx.prefix);
+         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
+         return new Ip(ipAsLong);
+      }
+      else if (ctx.ip != null) {
+         // basically same as host
+         return new Ip(0l);
+      }
+      else {
+         throw convError(Ip.class, ctx);
+      }
+   }
+
+   private void initInterface(Interface iface, Interface_nameContext ctx) {
+      String nameAlpha = ctx.name_prefix_alpha.getText();
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+      String vrf = canonicalNamePrefix.equals(NXOS_MANAGEMENT_INTERFACE_PREFIX)
+            ? CiscoConfiguration.MANAGEMENT_VRF_NAME
+            : CiscoConfiguration.MASTER_VRF_NAME;
+      double bandwidth = Interface.getDefaultBandwidth(canonicalNamePrefix);
+      int mtu = Interface.getDefaultMtu();
+      iface.setBandwidth(bandwidth);
+      iface.setVrf(vrf);
+      iface.setMtu(mtu);
    }
 
    private void popPeer() {
@@ -4254,9 +3686,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentPeerGroup = pg;
    }
 
-   private List<AsExpr> toAsExprList(List<As_exprContext> list) {
-      return list.stream().map(ctx -> toAsExpr(ctx))
-            .collect(Collectors.toList());
+   private AsExpr toAsExpr(As_exprContext ctx) {
+      if (ctx.DEC() != null) {
+         int as = toInteger(ctx.DEC());
+         return new ExplicitAs(as);
+      }
+      else if (ctx.AUTO() != null) {
+         return new AutoAs();
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarAs(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         throw convError(AsExpr.class, ctx);
+      }
+   }
+
+   private AsPathSetElem toAsPathSetElem(As_path_set_elemContext ctx) {
+      if (ctx.IOS_REGEX() != null) {
+         String withQuotes = ctx.AS_PATH_SET_REGEX().getText();
+         String iosRegex = withQuotes.substring(1, withQuotes.length() - 1);
+         String regex = toJavaRegex(iosRegex);
+         return new RegexAsPathSetElem(regex);
+      }
+      else {
+         throw convError(AsPathSetElem.class, ctx);
+      }
    }
 
    private AsPathSetExpr toAsPathSetExpr(As_path_set_exprContext ctx) {
@@ -4275,9 +3730,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
-      throw new UnsupportedOperationException(
-            "no implementation for generated method"); // TODO Auto-generated
-                                                       // method stub
+      List<AsPathSetElem> elems = ctx.elems.stream()
+            .map(e -> toAsPathSetElem(e)).collect(Collectors.toList());
+      return new ExplicitAsPathSet(elems);
+   }
+
+   private IntExpr toCommonIntExpr(Int_exprContext ctx) {
+      if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+         int val = toInteger(ctx.DEC());
+         return new LiteralInt(val);
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarInt(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         /*
+          * Unsupported static integer expression - do not add cases unless you
+          * know what you are doing
+          */
+         throw convError(IntExpr.class, ctx);
+      }
    }
 
    private CommunitySetElem toCommunitySetElemExpr(
@@ -4324,6 +3796,96 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _unimplementedFeatures.add("Cisco: " + feature);
    }
 
+   private int toDscpType(Dscp_typeContext ctx) {
+      int val;
+      if (ctx.DEC() != null) {
+         val = toInteger(ctx.DEC());
+      }
+      else if (ctx.AF11() != null) {
+         val = DscpType.AF11.number();
+      }
+      else if (ctx.AF12() != null) {
+         val = DscpType.AF12.number();
+      }
+      else if (ctx.AF13() != null) {
+         val = DscpType.AF13.number();
+      }
+      else if (ctx.AF21() != null) {
+         val = DscpType.AF21.number();
+      }
+      else if (ctx.AF22() != null) {
+         val = DscpType.AF22.number();
+      }
+      else if (ctx.AF23() != null) {
+         val = DscpType.AF23.number();
+      }
+      else if (ctx.AF31() != null) {
+         val = DscpType.AF31.number();
+      }
+      else if (ctx.AF32() != null) {
+         val = DscpType.AF32.number();
+      }
+      else if (ctx.AF33() != null) {
+         val = DscpType.AF33.number();
+      }
+      else if (ctx.AF41() != null) {
+         val = DscpType.AF41.number();
+      }
+      else if (ctx.AF42() != null) {
+         val = DscpType.AF42.number();
+      }
+      else if (ctx.AF43() != null) {
+         val = DscpType.AF43.number();
+      }
+      else if (ctx.CS1() != null) {
+         val = DscpType.CS1.number();
+      }
+      else if (ctx.CS2() != null) {
+         val = DscpType.CS2.number();
+      }
+      else if (ctx.CS3() != null) {
+         val = DscpType.CS3.number();
+      }
+      else if (ctx.CS4() != null) {
+         val = DscpType.CS4.number();
+      }
+      else if (ctx.CS5() != null) {
+         val = DscpType.CS5.number();
+      }
+      else if (ctx.CS6() != null) {
+         val = DscpType.CS6.number();
+      }
+      else if (ctx.CS7() != null) {
+         val = DscpType.CS7.number();
+      }
+      else if (ctx.DEFAULT() != null) {
+         val = DscpType.DEFAULT.number();
+      }
+      else if (ctx.EF() != null) {
+         val = DscpType.EF.number();
+      }
+      else {
+         throw convError(DscpType.class, ctx);
+      }
+      return val;
+   }
+
+   private SwitchportEncapsulationType toEncapsulation(
+         Switchport_trunk_encapsulationContext ctx) {
+      if (ctx.DOT1Q() != null) {
+         return SwitchportEncapsulationType.DOT1Q;
+      }
+      else if (ctx.ISL() != null) {
+         return SwitchportEncapsulationType.ISL;
+      }
+      else if (ctx.NEGOTIATE() != null) {
+         return SwitchportEncapsulationType.NEGOTIATE;
+      }
+      else {
+         throw convError(SwitchportEncapsulationType.class, ctx);
+      }
+   }
+
    private IntComparator toIntComparator(Int_compContext ctx) {
       if (ctx.EQ() != null || ctx.IS() != null) {
          return IntComparator.EQ;
@@ -4352,6 +3914,95 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private IpProtocol toIpProtocol(ProtocolContext ctx) {
+      if (ctx.DEC() != null) {
+         int num = toInteger(ctx.DEC());
+         return IpProtocol.fromNumber(num);
+      }
+      else if (ctx.AHP() != null) {
+         return IpProtocol.AHP;
+      }
+      else if (ctx.EIGRP() != null) {
+         return IpProtocol.EIGRP;
+      }
+      else if (ctx.ESP() != null) {
+         return IpProtocol.ESP;
+      }
+      else if (ctx.GRE() != null) {
+         return IpProtocol.GRE;
+      }
+      else if (ctx.ICMP() != null) {
+         return IpProtocol.ICMP;
+      }
+      else if (ctx.ICMP6() != null || ctx.ICMPV6() != null) {
+         return IpProtocol.IPV6_ICMP;
+      }
+      else if (ctx.IGMP() != null) {
+         return IpProtocol.IGMP;
+      }
+      else if (ctx.IP() != null) {
+         return IpProtocol.IP;
+      }
+      else if (ctx.IPINIP() != null) {
+         return IpProtocol.IPINIP;
+      }
+      else if (ctx.IPV4() != null) {
+         return IpProtocol.IP;
+      }
+      else if (ctx.IPV6() != null) {
+         return IpProtocol.IPV6;
+      }
+      else if (ctx.OSPF() != null) {
+         return IpProtocol.OSPF;
+      }
+      else if (ctx.PIM() != null) {
+         return IpProtocol.PIM;
+      }
+      else if (ctx.SCTP() != null) {
+         return IpProtocol.SCTP;
+      }
+      else if (ctx.TCP() != null) {
+         return IpProtocol.TCP;
+      }
+      else if (ctx.UDP() != null) {
+         return IpProtocol.UDP;
+      }
+      else if (ctx.VRRP() != null) {
+         return IpProtocol.VRRP;
+      }
+      else {
+         throw convError(IpProtocol.class, ctx);
+      }
+   }
+
+   private IsisLevel toIsisLevel(Isis_levelContext ctx) {
+      if (ctx.LEVEL_1() != null) {
+         return IsisLevel.LEVEL_1;
+      }
+      else if (ctx.LEVEL_1_2() != null) {
+         return IsisLevel.LEVEL_1_2;
+      }
+      else if (ctx.LEVEL_2() != null) {
+         return IsisLevel.LEVEL_2;
+      }
+      else {
+         throw convError(IsisLevel.class, ctx);
+      }
+   }
+
+   private IsisLevelExpr toIsisLevelExpr(Isis_level_exprContext ctx) {
+      if (ctx.isis_level() != null) {
+         IsisLevel level = toIsisLevel(ctx.isis_level());
+         return new LiteralIsisLevel(level);
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarIsisLevel(ctx.RP_VARIABLE().getText());
+      }
+      else {
+         throw convError(IsisLevelExpr.class, ctx);
+      }
+   }
+
    private IsisMetricType toIsisMetricType(Rp_isis_metric_typeContext ctx) {
       if (ctx.EXTERNAL() != null) {
          return IsisMetricType.EXTERNAL;
@@ -4367,6 +4018,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          throw convError(IsisMetricType.class, ctx);
+      }
+   }
+
+   private String toJavaRegex(String rawRegex) {
+      // TODO: fix so it actually works
+      return rawRegex;
+   }
+
+   private LineAction toLineAction(Access_list_actionContext ctx) {
+      if (ctx.PERMIT() != null) {
+         return LineAction.ACCEPT;
+      }
+      else if (ctx.DENY() != null) {
+         return LineAction.REJECT;
+      }
+      else {
+         throw convError(LineAction.class, ctx);
       }
    }
 
@@ -4520,6 +4188,234 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private NamedPort toNamedPort(PortContext ctx) {
+      if (ctx.AOL() != null) {
+         return NamedPort.AOL;
+      }
+      else if (ctx.BGP() != null) {
+         return NamedPort.BGP;
+      }
+      else if (ctx.BIFF() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.BOOTPC() != null) {
+         return NamedPort.BOOTPC;
+      }
+      else if (ctx.BOOTPS() != null) {
+         return NamedPort.BOOTPS_OR_DHCP;
+      }
+      else if (ctx.CHARGEN() != null) {
+         return NamedPort.CHARGEN;
+      }
+      else if (ctx.CITRIX_ICA() != null) {
+         return NamedPort.CITRIX_ICA;
+      }
+      else if (ctx.CMD() != null) {
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
+      }
+      else if (ctx.CTIQBE() != null) {
+         return NamedPort.CTIQBE;
+      }
+      else if (ctx.DAYTIME() != null) {
+         return NamedPort.DAYTIME;
+      }
+      else if (ctx.DISCARD() != null) {
+         return NamedPort.DISCARD;
+      }
+      else if (ctx.DNSIX() != null) {
+         return NamedPort.DNSIX;
+      }
+      else if (ctx.DOMAIN() != null) {
+         return NamedPort.DOMAIN;
+      }
+      else if (ctx.ECHO() != null) {
+         return NamedPort.ECHO;
+      }
+      else if (ctx.EXEC() != null) {
+         return NamedPort.BIFFudp_OR_EXECtcp;
+      }
+      else if (ctx.FINGER() != null) {
+         return NamedPort.FINGER;
+      }
+      else if (ctx.FTP() != null) {
+         return NamedPort.FTP;
+      }
+      else if (ctx.FTP_DATA() != null) {
+         return NamedPort.FTP_DATA;
+      }
+      else if (ctx.GOPHER() != null) {
+         return NamedPort.GOPHER;
+      }
+      else if (ctx.H323() != null) {
+         return NamedPort.H323;
+      }
+      else if (ctx.HTTPS() != null) {
+         return NamedPort.HTTPS;
+      }
+      else if (ctx.HOSTNAME() != null) {
+         return NamedPort.HOSTNAME;
+      }
+      else if (ctx.IDENT() != null) {
+         return NamedPort.IDENT;
+      }
+      else if (ctx.IMAP4() != null) {
+         return NamedPort.IMAP;
+      }
+      else if (ctx.IRC() != null) {
+         return NamedPort.IRC;
+      }
+      else if (ctx.ISAKMP() != null) {
+         return NamedPort.ISAKMP;
+      }
+      else if (ctx.KERBEROS() != null) {
+         return NamedPort.KERBEROS;
+      }
+      else if (ctx.KLOGIN() != null) {
+         return NamedPort.KLOGIN;
+      }
+      else if (ctx.KSHELL() != null) {
+         return NamedPort.KSHELL;
+      }
+      else if (ctx.LDAP() != null) {
+         return NamedPort.LDAP;
+      }
+      else if (ctx.LDAPS() != null) {
+         return NamedPort.LDAPS;
+      }
+      else if (ctx.LPD() != null) {
+         return NamedPort.LPD;
+      }
+      else if (ctx.LOGIN() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.LOTUSNOTES() != null) {
+         return NamedPort.LOTUSNOTES;
+      }
+      else if (ctx.MLAG() != null) {
+         return NamedPort.MLAG;
+      }
+      else if (ctx.MOBILE_IP() != null) {
+         return NamedPort.MOBILE_IP_AGENT;
+      }
+      else if (ctx.MSRPC() != null) {
+         return NamedPort.MSRPC;
+      }
+      else if (ctx.NAMESERVER() != null) {
+         return NamedPort.NAMESERVER;
+      }
+      else if (ctx.NETBIOS_DGM() != null) {
+         return NamedPort.NETBIOS_DGM;
+      }
+      else if (ctx.NETBIOS_NS() != null) {
+         return NamedPort.NETBIOS_NS;
+      }
+      else if (ctx.NETBIOS_SS() != null) {
+         return NamedPort.NETBIOS_SSN;
+      }
+      else if (ctx.NETBIOS_SSN() != null) {
+         return NamedPort.NETBIOS_SSN;
+      }
+      else if (ctx.NNTP() != null) {
+         return NamedPort.NNTP;
+      }
+      else if (ctx.NON500_ISAKMP() != null) {
+         return NamedPort.NON500_ISAKMP;
+      }
+      else if (ctx.NTP() != null) {
+         return NamedPort.NTP;
+      }
+      else if (ctx.PCANYWHERE_DATA() != null) {
+         return NamedPort.PCANYWHERE_DATA;
+      }
+      else if (ctx.PCANYWHERE_STATUS() != null) {
+         return NamedPort.PCANYWHERE_STATUS;
+      }
+      else if (ctx.PIM_AUTO_RP() != null) {
+         return NamedPort.PIM_AUTO_RP;
+      }
+      else if (ctx.POP2() != null) {
+         return NamedPort.POP2;
+      }
+      else if (ctx.POP3() != null) {
+         return NamedPort.POP3;
+      }
+      else if (ctx.PPTP() != null) {
+         return NamedPort.PPTP;
+      }
+      else if (ctx.RADIUS() != null) {
+         return NamedPort.RADIUS_CISCO;
+      }
+      else if (ctx.RADIUS_ACCT() != null) {
+         return NamedPort.RADIUS_ACCT_CISCO;
+      }
+      else if (ctx.RIP() != null) {
+         return NamedPort.RIP;
+      }
+      else if (ctx.SECUREID_UDP() != null) {
+         return NamedPort.SECUREID_UDP;
+      }
+      else if (ctx.SMTP() != null) {
+         return NamedPort.SMTP;
+      }
+      else if (ctx.SNMP() != null) {
+         return NamedPort.SNMP;
+      }
+      else if (ctx.SNMP_TRAP() != null) {
+         return NamedPort.SNMPTRAP;
+      }
+      else if (ctx.SNMPTRAP() != null) {
+         return NamedPort.SNMPTRAP;
+      }
+      else if (ctx.SQLNET() != null) {
+         return NamedPort.SQLNET;
+      }
+      else if (ctx.SSH() != null) {
+         return NamedPort.SSH;
+      }
+      else if (ctx.SUNRPC() != null) {
+         return NamedPort.SUNRPC;
+      }
+      else if (ctx.SYSLOG() != null) {
+         return NamedPort.CMDtcp_OR_SYSLOGudp;
+      }
+      else if (ctx.TACACS() != null) {
+         return NamedPort.TACACS;
+      }
+      else if (ctx.TACACS_DS() != null) {
+         return NamedPort.TACACS_DS;
+      }
+      else if (ctx.TALK() != null) {
+         return NamedPort.TALK;
+      }
+      else if (ctx.TELNET() != null) {
+         return NamedPort.TELNET;
+      }
+      else if (ctx.TFTP() != null) {
+         return NamedPort.TFTP;
+      }
+      else if (ctx.TIME() != null) {
+         return NamedPort.TIME;
+      }
+      else if (ctx.UUCP() != null) {
+         return NamedPort.UUCP;
+      }
+      else if (ctx.WHO() != null) {
+         return NamedPort.LOGINtcp_OR_WHOudp;
+      }
+      else if (ctx.WHOIS() != null) {
+         return NamedPort.WHOIS;
+      }
+      else if (ctx.WWW() != null) {
+         return NamedPort.HTTP;
+      }
+      else if (ctx.XDMCP() != null) {
+         return NamedPort.XDMCP;
+      }
+      else {
+         throw convError(NamedPort.class, ctx);
+      }
+   }
+
    private OriginExpr toOriginExpr(Origin_expr_literalContext ctx) {
       OriginType originType;
       Integer asNum = null;
@@ -4565,102 +4461,226 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private List<SubRange> toPortRanges(Port_specifierContext ps) {
+      List<SubRange> ranges = new ArrayList<>();
+      if (ps.EQ() != null) {
+         for (PortContext pc : ps.args) {
+            int port = getPortNumber(pc);
+            ranges.add(new SubRange(port, port));
+         }
+      }
+      else if (ps.GT() != null) {
+         int port = getPortNumber(ps.arg);
+         ranges.add(new SubRange(port + 1, 65535));
+      }
+      else if (ps.NEQ() != null) {
+         int port = getPortNumber(ps.arg);
+         SubRange beforeRange = new SubRange(0, port - 1);
+         SubRange afterRange = new SubRange(port + 1, 65535);
+         ranges.add(beforeRange);
+         ranges.add(afterRange);
+      }
+      else if (ps.LT() != null) {
+         int port = getPortNumber(ps.arg);
+         ranges.add(new SubRange(0, port - 1));
+      }
+      else if (ps.RANGE() != null) {
+         int lowPort = getPortNumber(ps.arg1);
+         int highPort = getPortNumber(ps.arg2);
+         ranges.add(new SubRange(lowPort, highPort));
+      }
+      else {
+         throw convError(List.class, ps);
+      }
+      return ranges;
+   }
+
    private RoutePolicyBoolean toRoutePolicyBoolean(
-         Boolean_and_rp_stanzaContext ctxt) {
-      if (ctxt.AND() == null) {
-         return toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza());
+         Boolean_and_rp_stanzaContext ctx) {
+      if (ctx.AND() == null) {
+         return toRoutePolicyBoolean(ctx.boolean_not_rp_stanza());
       }
       else {
          return new RoutePolicyBooleanAnd(
-               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()),
-               toRoutePolicyBoolean(ctxt.boolean_not_rp_stanza()));
+               toRoutePolicyBoolean(ctx.boolean_and_rp_stanza()),
+               toRoutePolicyBoolean(ctx.boolean_not_rp_stanza()));
       }
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
-         Boolean_not_rp_stanzaContext ctxt) {
-      if (ctxt.NOT() == null) {
-         return toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza());
+         Boolean_as_path_in_rp_stanzaContext ctx) {
+      AsPathSetExpr asPathSetExpr = toAsPathSetExpr(ctx.expr);
+      return new RoutePolicyBooleanAsPathIn(asPathSetExpr);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_as_path_neighbor_is_rp_stanzaContext ctx) {
+      List<SubRangeExpr> range = ctx.as_range_expr().subranges.stream()
+            .map(sr -> toSubRangeExpr(sr)).collect(Collectors.toList());
+      boolean exact = ctx.as_range_expr().EXACT() != null;
+      return new RoutePolicyBooleanAsPathNeighborIs(range, exact);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_as_path_originates_from_rp_stanzaContext ctx) {
+      List<SubRangeExpr> range = ctx.as_range_expr().subranges.stream()
+            .map(sr -> toSubRangeExpr(sr)).collect(Collectors.toList());
+      boolean exact = ctx.as_range_expr().EXACT() != null;
+      return new RoutePolicyBooleanAsPathOriginatesFrom(range, exact);
+
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_as_path_passes_through_rp_stanzaContext ctx) {
+      List<SubRangeExpr> range = ctx.as_range_expr().subranges.stream()
+            .map(sr -> toSubRangeExpr(sr)).collect(Collectors.toList());
+      boolean exact = ctx.as_range_expr().EXACT() != null;
+      return new RoutePolicyBooleanAsPathPassesThrough(range, exact);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_community_matches_any_rp_stanzaContext ctx) {
+      RoutePolicyCommunitySet communitySet = toRoutePolicyCommunitySet(
+            ctx.rp_community_set());
+      return new RoutePolicyBooleanCommunityMatchesAny(communitySet);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_community_matches_every_rp_stanzaContext ctx) {
+      RoutePolicyCommunitySet communitySet = toRoutePolicyCommunitySet(
+            ctx.rp_community_set());
+      return new RoutePolicyBooleanCommunityMatchesEvery(communitySet);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_destination_rp_stanzaContext ctx) {
+      RoutePolicyPrefixSet prefixSet = toRoutePolicyPrefixSet(
+            ctx.rp_prefix_set());
+      return new RoutePolicyBooleanDestination(prefixSet);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_med_rp_stanzaContext ctx) {
+      IntComparator cmp = toIntComparator(ctx.int_comp());
+      IntExpr rhs = toCommonIntExpr(ctx.rhs);
+      return new RoutePolicyBooleanMed(cmp, rhs);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_next_hop_in_rp_stanzaContext ctx) {
+      RoutePolicyPrefixSet prefixSet = toRoutePolicyPrefixSet(
+            ctx.rp_prefix_set());
+      return new RoutePolicyBooleanNextHopIn(prefixSet);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_not_rp_stanzaContext ctx) {
+      if (ctx.NOT() == null) {
+         return toRoutePolicyBoolean(ctx.boolean_simple_rp_stanza());
       }
       else {
          return new RoutePolicyBooleanNot(
-               toRoutePolicyBoolean(ctxt.boolean_simple_rp_stanza()));
+               toRoutePolicyBoolean(ctx.boolean_simple_rp_stanza()));
       }
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
-         Boolean_rp_stanzaContext ctxt) {
-      if (ctxt.OR() == null) {
-         return toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza());
+         Boolean_rib_has_route_rp_stanzaContext ctx) {
+      return new RoutePolicyBooleanRibHasRoute(
+            toRoutePolicyPrefixSet(ctx.rp_prefix_set()));
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_rp_stanzaContext ctx) {
+      if (ctx.OR() == null) {
+         return toRoutePolicyBoolean(ctx.boolean_and_rp_stanza());
       }
       else {
          return new RoutePolicyBooleanOr(
-               toRoutePolicyBoolean(ctxt.boolean_rp_stanza()),
-               toRoutePolicyBoolean(ctxt.boolean_and_rp_stanza()));
+               toRoutePolicyBoolean(ctx.boolean_rp_stanza()),
+               toRoutePolicyBoolean(ctx.boolean_and_rp_stanza()));
       }
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_simple_rp_stanzaContext ctx) {
-      Boolean_rp_stanzaContext bctxt = ctx.boolean_rp_stanza();
-      if (bctxt != null) {
-         return toRoutePolicyBoolean(bctxt);
+      Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
+      if (bctx != null) {
+         return toRoutePolicyBoolean(bctx);
       }
 
-      Boolean_community_matches_any_rp_stanzaContext mactxt = ctx
-            .boolean_community_matches_any_rp_stanza();
-      if (mactxt != null) {
-         return new RoutePolicyBooleanCommunityMatchesAny(
-               toRoutePolicyCommunitySet(mactxt.rp_community_set()));
-      }
-
-      Boolean_community_matches_every_rp_stanzaContext mectxt = ctx
-            .boolean_community_matches_every_rp_stanza();
-      if (mectxt != null) {
-         return new RoutePolicyBooleanCommunityMatchesEvery(
-               toRoutePolicyCommunitySet(mectxt.rp_community_set()));
-      }
-
-      Boolean_destination_rp_stanzaContext dctxt = ctx
-            .boolean_destination_rp_stanza();
-      if (dctxt != null) {
-         return new RoutePolicyBooleanDestination(
-               toRoutePolicyPrefixSet(dctxt.rp_prefix_set()));
-      }
-
-      Boolean_rib_has_route_rp_stanzaContext rctxt = ctx
-            .boolean_rib_has_route_rp_stanza();
-      if (rctxt != null) {
-         return new RoutePolicyBooleanRibHasRoute(
-               toRoutePolicyPrefixSet(rctxt.rp_prefix_set()));
-      }
-
-      Boolean_as_path_in_rp_stanzaContext actxt = ctx
+      Boolean_as_path_in_rp_stanzaContext aictx = ctx
             .boolean_as_path_in_rp_stanza();
-      if (actxt != null) {
-         return new RoutePolicyBooleanAsPathIn(toAsPathSetExpr(actxt.expr));
+      if (aictx != null) {
+         return toRoutePolicyBoolean(aictx);
       }
 
-      Boolean_tag_is_rp_stanzaContext tagctxt = ctx.boolean_tag_is_rp_stanza();
-      if (tagctxt != null) {
-         return new RoutePolicyBooleanTagIs(toIntComparator(tagctxt.int_comp()),
-               toTagIntExpr(tagctxt.int_expr()));
+      Boolean_as_path_neighbor_is_rp_stanzaContext anctx = ctx
+            .boolean_as_path_neighbor_is_rp_stanza();
+      if (anctx != null) {
+         return toRoutePolicyBoolean(anctx);
       }
 
-      Boolean_as_path_originates_from_rp_stanzaContext aotxt = ctx
+      Boolean_as_path_originates_from_rp_stanzaContext aoctx = ctx
             .boolean_as_path_originates_from_rp_stanza();
-      if (aotxt != null) {
-         return new RoutePolicyBooleanAsPathOriginatesFrom(
-               toAsExprList(aotxt.as_list), aotxt.EXACT() != null);
+      if (aoctx != null) {
+         return toRoutePolicyBoolean(aoctx);
       }
 
-      Boolean_as_path_passes_through_rp_stanzaContext aptxt = ctx
+      Boolean_as_path_passes_through_rp_stanzaContext apctx = ctx
             .boolean_as_path_passes_through_rp_stanza();
-      if (aptxt != null) {
-         return new RoutePolicyBooleanAsPathPassesThrough(
-               toAsExprList(aptxt.as_list), aptxt.EXACT() != null);
+      if (apctx != null) {
+         return toRoutePolicyBoolean(apctx);
       }
+
+      Boolean_community_matches_any_rp_stanzaContext cmactx = ctx
+            .boolean_community_matches_any_rp_stanza();
+      if (cmactx != null) {
+         return toRoutePolicyBoolean(cmactx);
+      }
+
+      Boolean_community_matches_every_rp_stanzaContext cmectx = ctx
+            .boolean_community_matches_every_rp_stanza();
+      if (cmectx != null) {
+         return toRoutePolicyBoolean(cmectx);
+      }
+
+      Boolean_destination_rp_stanzaContext dctx = ctx
+            .boolean_destination_rp_stanza();
+      if (dctx != null) {
+         return toRoutePolicyBoolean(dctx);
+      }
+
+      Boolean_med_rp_stanzaContext mctx = ctx.boolean_med_rp_stanza();
+      if (mctx != null) {
+         return toRoutePolicyBoolean(mctx);
+      }
+
+      Boolean_next_hop_in_rp_stanzaContext nctx = ctx
+            .boolean_next_hop_in_rp_stanza();
+      if (nctx != null) {
+         return toRoutePolicyBoolean(nctx);
+      }
+
+      Boolean_rib_has_route_rp_stanzaContext rctx = ctx
+            .boolean_rib_has_route_rp_stanza();
+      if (rctx != null) {
+         return toRoutePolicyBoolean(rctx);
+      }
+
+      Boolean_tag_is_rp_stanzaContext tctx = ctx.boolean_tag_is_rp_stanza();
+      if (tctx != null) {
+         return toRoutePolicyBoolean(tctx);
+      }
+
       throw convError(RoutePolicyBoolean.class, ctx);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_tag_is_rp_stanzaContext ctx) {
+      IntComparator cmp = toIntComparator(ctx.int_comp());
+      IntExpr rhs = toTagIntExpr(ctx.int_expr());
+      return new RoutePolicyBooleanTagIs(cmp, rhs);
    }
 
    private RoutePolicyCommunitySet toRoutePolicyCommunitySet(
@@ -4796,6 +4816,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new RoutePolicyDispositionStatement(t);
    }
 
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Hash_commentContext ctx) {
+      String text = ctx.RAW_TEXT().getText();
+      return new RoutePolicyComment(text);
+   }
+
    private RoutePolicyIfStatement toRoutePolicyStatement(
          If_rp_stanzaContext ctx) {
       RoutePolicyBoolean b = toRoutePolicyBoolean(ctx.boolean_rp_stanza());
@@ -4825,29 +4851,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctx) {
-      Apply_rp_stanzaContext actxt = ctx.apply_rp_stanza();
-      if (actxt != null) {
-         return toRoutePolicyStatement(actxt);
+      Apply_rp_stanzaContext actx = ctx.apply_rp_stanza();
+      if (actx != null) {
+         return toRoutePolicyStatement(actx);
       }
 
-      Delete_rp_stanzaContext dctxt = ctx.delete_rp_stanza();
-      if (dctxt != null) {
-         return toRoutePolicyStatement(dctxt);
+      Delete_rp_stanzaContext dectx = ctx.delete_rp_stanza();
+      if (dectx != null) {
+         return toRoutePolicyStatement(dectx);
       }
 
-      Disposition_rp_stanzaContext pctxt = ctx.disposition_rp_stanza();
-      if (pctxt != null) {
-         return toRoutePolicyStatement(pctxt);
+      Disposition_rp_stanzaContext dictx = ctx.disposition_rp_stanza();
+      if (dictx != null) {
+         return toRoutePolicyStatement(dictx);
       }
 
-      If_rp_stanzaContext ictxt = ctx.if_rp_stanza();
-      if (ictxt != null) {
-         return toRoutePolicyStatement(ictxt);
+      Hash_commentContext hctx = ctx.hash_comment();
+      if (hctx != null) {
+         return toRoutePolicyStatement(hctx);
       }
 
-      Set_rp_stanzaContext sctxt = ctx.set_rp_stanza();
-      if (sctxt != null) {
-         return toRoutePolicyStatement(sctxt);
+      If_rp_stanzaContext ictx = ctx.if_rp_stanza();
+      if (ictx != null) {
+         return toRoutePolicyStatement(ictx);
+      }
+
+      Set_rp_stanzaContext sctx = ctx.set_rp_stanza();
+      if (sctx != null) {
+         return toRoutePolicyStatement(sctx);
       }
 
       throw convError(RoutePolicyStatement.class, ctx);
@@ -4859,6 +4890,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ctx.rp_community_set());
       boolean additive = (ctx.ADDITIVE() != null);
       return new RoutePolicySetCommunity(cset, additive);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_isis_metric_rp_stanzaContext ctx) {
+      IntExpr metric = toCommonIntExpr(ctx.int_expr());
+      return new RoutePolicySetIsisMetric(metric);
+   }
+
+   private RoutePolicyStatement toRoutePolicyStatement(
+         Set_level_rp_stanzaContext ctx) {
+      return new RoutePolicySetLevel(toIsisLevelExpr(ctx.isis_level_expr()));
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(
@@ -4929,6 +4971,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyStatement(cctx);
       }
 
+      Set_isis_metric_rp_stanzaContext ictx = ctx.set_isis_metric_rp_stanza();
+      if (ictx != null) {
+         return toRoutePolicyStatement(ictx);
+      }
+
+      Set_level_rp_stanzaContext lctx = ctx.set_level_rp_stanza();
+      if (lctx != null) {
+         return toRoutePolicyStatement(lctx);
+      }
+
       Set_local_preference_rp_stanzaContext lpctx = ctx
             .set_local_preference_rp_stanza();
       if (lpctx != null) {
@@ -4970,12 +5022,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private RoutePolicyStatement toRoutePolicyStatement(
          Set_tag_rp_stanzaContext ctx) {
-      return new RoutePolicySetTag(toTagIntExpr(ctx.tag));
+      IntExpr tag = toTagIntExpr(ctx.tag);
+      return new RoutePolicySetTag(tag);
    }
 
    private RoutePolicyStatement toRoutePolicyStatement(
          Set_weight_rp_stanzaContext wctx) {
-      IntExpr weight = toWeightIntExpr(wctx.weight);
+      IntExpr weight = toCommonIntExpr(wctx.weight);
       return new RoutePolicySetWeight(weight);
    }
 
@@ -4991,6 +5044,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return stmts;
    }
 
+   private SubRangeExpr toSubRangeExpr(Rp_subrangeContext ctx) {
+      IntExpr first = toCommonIntExpr(ctx.first);
+      IntExpr last = first;
+      if (ctx.last != null) {
+         last = toCommonIntExpr(ctx.first);
+      }
+      return new SubRangeExpr(first, last);
+   }
+
    private IntExpr toTagIntExpr(Int_exprContext ctx) {
       if (ctx.DEC() != null && ctx.DASH() == null && ctx.PLUS() == null) {
          int val = toInteger(ctx.DEC());
@@ -5001,23 +5063,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return new VarInt(var);
       }
       else {
-         throw convError(IntExpr.class, ctx);
-      }
-   }
-
-   private IntExpr toWeightIntExpr(Int_exprContext ctx) {
-      if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-         int val = toInteger(ctx.DEC());
-         return new LiteralInt(val);
-      }
-      else if (ctx.RP_VARIABLE() != null) {
-         return new VarInt(ctx.RP_VARIABLE().getText());
-      }
-      else {
-         /*
-          * Unsupported weight integer expression - do not add cases unless you
-          * know what you are doing
-          */
          throw convError(IntExpr.class, ctx);
       }
    }

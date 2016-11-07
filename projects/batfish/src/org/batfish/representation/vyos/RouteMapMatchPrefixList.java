@@ -3,6 +3,7 @@ package org.batfish.representation.vyos;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.main.Warnings;
@@ -30,7 +31,8 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
       PrefixList pl = vc.getPrefixLists().get(_prefixList);
       if (pl != null) {
          pl.getReferers().put(vc, "used in route-map match prefix-list");
-         return new MatchPrefixSet(new NamedPrefixSet(_prefixList));
+         return new MatchPrefixSet(new DestinationNetwork(),
+               new NamedPrefixSet(_prefixList));
       }
       else {
          vc.undefined(

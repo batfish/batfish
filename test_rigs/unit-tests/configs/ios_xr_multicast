@@ -5,6 +5,16 @@ router mld
  version 1
 router igmp
  version 2
+ interface TenGigE0/7/0/19
+  router disable
+ !
+ interface Bundle-Ether3.99
+  router disable
+ !
+!
+router igmp
+ interface all router disable                                                                                                              
+!
 router msdp
  peer 169.232.1.3
   connect-source Loopback0

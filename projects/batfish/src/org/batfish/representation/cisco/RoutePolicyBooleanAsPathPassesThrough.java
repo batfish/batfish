@@ -3,9 +3,9 @@ package org.batfish.representation.cisco;
 import java.util.List;
 
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
+import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.main.Warnings;
 
 public class RoutePolicyBooleanAsPathPassesThrough extends RoutePolicyBoolean {
@@ -17,18 +17,18 @@ public class RoutePolicyBooleanAsPathPassesThrough extends RoutePolicyBoolean {
 
    private boolean _exact;
 
-   private List<AsExpr> _list;
+   private List<SubRangeExpr> _range;
 
-   public RoutePolicyBooleanAsPathPassesThrough(List<AsExpr> list,
+   public RoutePolicyBooleanAsPathPassesThrough(List<SubRangeExpr> range,
          boolean exact) {
-      _list = list;
+      _range = range;
       _exact = exact;
    }
 
    @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new PassesThroughAsPath(_list, _exact);
+      return new PassesThroughAsPath(_range, _exact);
    }
 
 }

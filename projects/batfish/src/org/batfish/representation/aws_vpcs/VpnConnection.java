@@ -37,6 +37,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -330,7 +331,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             Conjunction conj = new Conjunction();
             originationIf.setGuard(conj);
             conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-            conj.getConjuncts().add(new MatchPrefixSet(
+            conj.getConjuncts().add(new MatchPrefixSet(new DestinationNetwork(),
                   new NamedPrefixSet(originationPolicyName)));
          }
 

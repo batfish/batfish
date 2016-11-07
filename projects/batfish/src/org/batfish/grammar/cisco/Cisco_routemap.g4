@@ -21,6 +21,11 @@ as_expr
    | RP_VARIABLE
 ;
 
+as_path_set_elem
+:
+   IOS_REGEX AS_PATH_SET_REGEX
+;
+
 as_path_set_expr
 :
    inline = as_path_set_inline
@@ -36,6 +41,14 @@ as_path_set_inline
    )* PAREN_RIGHT
 ;
 
+as_range_expr
+:
+   SINGLE_QUOTE
+   (
+      subranges += rp_subrange
+   )+ SINGLE_QUOTE EXACT?
+;
+
 boolean_and_rp_stanza
 :
    boolean_not_rp_stanza
@@ -47,20 +60,19 @@ boolean_as_path_in_rp_stanza
    AS_PATH IN expr = as_path_set_expr
 ;
 
+boolean_as_path_neighbor_is_rp_stanza
+:
+   AS_PATH NEIGHBOR_IS as_range_expr
+;
+
 boolean_as_path_originates_from_rp_stanza
 :
-   AS_PATH ORIGINATES_FROM SINGLE_QUOTE
-   (
-      as_list += as_expr
-   )+ SINGLE_QUOTE EXACT?
+   AS_PATH ORIGINATES_FROM as_range_expr
 ;
 
 boolean_as_path_passes_through_rp_stanza
 :
-   AS_PATH PASSES_THROUGH SINGLE_QUOTE
-   (
-      as_list += as_expr
-   )+ SINGLE_QUOTE EXACT?
+   AS_PATH PASSES_THROUGH as_range_expr
 ;
 
 boolean_community_matches_any_rp_stanza
@@ -76,6 +88,16 @@ boolean_community_matches_every_rp_stanza
 boolean_destination_rp_stanza
 :
    DESTINATION IN rp_prefix_set
+;
+
+boolean_med_rp_stanza
+:
+   MED int_comp rhs = int_expr
+;
+
+boolean_next_hop_in_rp_stanza
+:
+   NEXT_HOP IN rp_prefix_set
 ;
 
 boolean_not_rp_stanza
@@ -99,11 +121,14 @@ boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
    | boolean_as_path_in_rp_stanza
+   | boolean_as_path_neighbor_is_rp_stanza
    | boolean_as_path_originates_from_rp_stanza
    | boolean_as_path_passes_through_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
+   | boolean_med_rp_stanza
+   | boolean_next_hop_in_rp_stanza
    | boolean_rib_has_route_rp_stanza
    | boolean_tag_is_rp_stanza
 ;
@@ -162,6 +187,12 @@ int_comp
 ip_policy_list_stanza
 :
    IP POLICY_LIST name = variable access_list_action NEWLINE match_rm_stanza*
+;
+
+isis_level_expr
+:
+   isis_level
+   | RP_VARIABLE
 ;
 
 match_as_path_access_list_rm_stanza
@@ -293,11 +324,6 @@ null_rm_stanza
    ) ~NEWLINE* NEWLINE
 ;
 
-null_rp_stanza
-:
-   POUND ~NEWLINE* NEWLINE
-;
-
 origin_expr
 :
    origin_expr_literal
@@ -401,8 +427,11 @@ rp_stanza
    apply_rp_stanza
    | delete_rp_stanza
    | disposition_rp_stanza
+   |
+   (
+      hash_comment NEWLINE
+   )
    | if_rp_stanza
-   | null_rp_stanza
    | set_rp_stanza
 ;
 
@@ -500,6 +529,16 @@ set_ip_df_rm_stanza
 set_ipv6_rm_stanza
 :
    SET IPV6 ~NEWLINE* NEWLINE
+;
+
+set_isis_metric_rp_stanza
+:
+   SET ISIS_METRIC int_expr NEWLINE
+;
+
+set_level_rp_stanza
+:
+   SET LEVEL isis_level_expr NEWLINE
 ;
 
 set_local_preference_rm_stanza
@@ -637,6 +676,8 @@ set_rp_stanza
 :
    prepend_as_path_rp_stanza
    | set_community_rp_stanza
+   | set_isis_metric_rp_stanza
+   | set_level_rp_stanza
    | set_local_preference_rp_stanza
    | set_med_rp_stanza
    | set_metric_type_rp_stanza

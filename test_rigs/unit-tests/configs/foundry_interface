@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: foundry
+!
+hostname foundry_interface
+!
+interface ethernet 1/15
+ port-name fguijbhojre
+ enable
+ tunable-optic sfpp channel 75
+ speed-duplex 1000-full
+ no ip redirect
+ optical-monitor
+ spanning-tree protect
+ gig-default neg-off
+ port security
+  enable
+  violation restrict
+  maximum 100
+  age 2
+  secure-mac-address 001b.0de5.7300 vlan 777 auto
+  secure-mac-address 001b.0de5.7300 vlan 703 auto
+!
+

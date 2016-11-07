@@ -2,6 +2,13 @@
 hostname L2VPN
 !
 l2vpn
+ bridge group TEST-GROUP-1
+  bridge-domain TEST-DOMAIN-1
+   interface Bundle-Ether9.1
+   !
+   routed interface BVI1
+  !
+ !
  xconnect group scidmz_155
   p2p HGE_0-1_155
    interface HundredGigE0/2/0/0.155

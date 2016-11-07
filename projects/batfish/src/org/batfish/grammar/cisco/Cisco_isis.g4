@@ -52,6 +52,7 @@ common_iis_stanza
    | metric_iis_stanza
    | null_iis_stanza
    | passive_iis_stanza
+   | shutdown_iis_stanza
 ;
 
 common_is_stanza
@@ -106,7 +107,14 @@ isaf_stanza
 
 metric_iis_stanza
 :
-   METRIC DEC NEWLINE
+   METRIC
+   (
+      DEC
+      | MAXIMUM
+   )
+   (
+      LEVEL DEC
+   )? NEWLINE
 ;
 
 metric_is_stanza
@@ -136,7 +144,9 @@ null_iis_stanza
    NO?
    (
       BFD
+      | CSNP_INTERVAL
       | HELLO_INTERVAL
+      | HELLO_MULTIPLIER
       | HELLO_PADDING
       | HELLO_PASSWORD
       | POINT_TO_POINT
@@ -267,6 +277,11 @@ router_isis_stanza
    (
       name = variable
    )? NEWLINE is_stanza*
+;
+
+shutdown_iis_stanza
+:
+   SHUTDOWN NEWLINE
 ;
 
 summary_address_is_stanza
