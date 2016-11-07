@@ -16,4 +16,13 @@ public class AsPath extends ArrayList<AsSet> {
       }
    }
 
+   public boolean containsAs(int as) {
+      for (AsSet asSet : this) {
+         if (asSet.contains(as)) {
+            return true;
+         }
+      }
+      return false;
+   }
+
 }

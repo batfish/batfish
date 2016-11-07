@@ -597,7 +597,7 @@ public final class Node extends ComparableStructure<String> {
                      BgpRoute bgpRemoteRoute = (BgpRoute) remoteRoute;
                      if (ebgp
                            && bgpRemoteRoute.getAsPath()
-                                 .contains(remoteBgpNeighbor.getRemoteAs())
+                                 .containsAs(remoteBgpNeighbor.getRemoteAs())
                            && !remoteBgpNeighbor.getAllowRemoteAsOut()) {
                         // skip routes containing peer's AS unless
                         // disable-peer-as-check (getAllowRemoteAsOut) is set
@@ -783,7 +783,7 @@ public final class Node extends ComparableStructure<String> {
 
                      if (ebgp
                            && transformedOutgoingRoute.getAsPath()
-                                 .contains(neighbor.getLocalAs())
+                                 .containsAs(neighbor.getLocalAs())
                            && !neighbor.getAllowLocalAsIn()) {
                         // skip routes containing peer's AS unless
                         // disable-peer-as-check (getAllowRemoteAsOut) is set
