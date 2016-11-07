@@ -114,27 +114,7 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "pod_0_leaf_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.0.0",
-            "node" : "plane_0_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.1.0.1/32",
-            "nextHop" : "pod_1_leaf_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.0.0",
-            "node" : "plane_0_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
             "nextHop" : "pod_1_leaf_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.1.0.0",
@@ -149,26 +129,6 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "plane_0_spine_0",
             "protocol" : "connected",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_0_leaf_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.0.0",
-            "node" : "plane_0_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_1_leaf_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.0.0",
-            "node" : "plane_0_spine_0",
-            "protocol" : "bgp",
             "tag" : -1
           }
         ],
@@ -273,16 +233,6 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "pod_0_leaf_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.1.0",
-            "node" : "plane_1_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.0.1.1/32",
             "nextHop" : "pod_0_leaf_1",
             "nextHopInterface" : "dynamic",
@@ -293,37 +243,7 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "pod_1_leaf_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.1.0",
-            "node" : "plane_1_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.1.1.1/32",
-            "nextHop" : "pod_1_leaf_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.1.0",
-            "node" : "plane_1_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
-            "nextHop" : "pod_0_leaf_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.1.0",
-            "node" : "plane_1_spine_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
             "nextHop" : "pod_1_leaf_1",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.1.1.0",
@@ -460,57 +380,7 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.0",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.0",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.1.0.1/32",
-            "nextHop" : "plane_0_spine_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.0.1",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.0",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.0",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
             "nextHop" : "plane_0_spine_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.0.0.1",
@@ -524,26 +394,6 @@
             "nextHop" : "plane_0_spine_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.0.0.1",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.0",
-            "node" : "pod_0_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.0",
             "node" : "pod_0_leaf_0",
             "protocol" : "bgp",
             "tag" : -1
@@ -658,26 +508,6 @@
             "tag" : -1
           },
           {
-            "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.2",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.2",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
             "network" : "5.0.1.1/32",
             "nextHop" : "(none)",
             "nextHopInterface" : "Loopback0",
@@ -688,60 +518,10 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.2",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.2",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "plane_1_spine_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.0.1.1",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.1.1.1/32",
             "nextHop" : "plane_1_spine_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.0.1.1",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
-            "nextHop" : "pod_0_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.0.2",
-            "node" : "pod_0_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
-            "nextHop" : "pod_0_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.0.1.2",
             "node" : "pod_0_leaf_1",
             "protocol" : "bgp",
             "tag" : -1
@@ -1312,36 +1092,6 @@
             "tag" : -1
           },
           {
-            "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.0",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.0",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.1.1/32",
-            "nextHop" : "plane_0_spine_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.0.1",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
             "network" : "5.1.0.1/32",
             "nextHop" : "(none)",
             "nextHopInterface" : "Loopback0",
@@ -1352,50 +1102,10 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.0",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.1.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.0",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "6.0.0.1/32",
             "nextHop" : "plane_0_spine_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.1.0.1",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.0",
-            "node" : "pod_1_leaf_0",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.1.0.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.0",
             "node" : "pod_1_leaf_0",
             "protocol" : "bgp",
             "tag" : -1
@@ -1511,60 +1221,10 @@
           },
           {
             "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.2",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.2",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.0.0.1/32",
-            "nextHop" : "plane_1_spine_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "2.1.1.1",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
             "network" : "5.0.1.1/32",
             "nextHop" : "plane_1_spine_0",
             "nextHopInterface" : "dynamic",
             "nextHopIp" : "2.1.1.1",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.2",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "5.1.0.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.2",
             "node" : "pod_1_leaf_1",
             "protocol" : "bgp",
             "tag" : -1
@@ -1576,26 +1236,6 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "pod_1_leaf_1",
             "protocol" : "connected",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
-            "nextHop" : "pod_1_tor_0",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.0.2",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
-            "tag" : -1
-          },
-          {
-            "administrativeCost" : 20,
-            "network" : "6.0.0.1/32",
-            "nextHop" : "pod_1_tor_1",
-            "nextHopInterface" : "dynamic",
-            "nextHopIp" : "1.1.1.2",
-            "node" : "pod_1_leaf_1",
-            "protocol" : "bgp",
             "tag" : -1
           },
           {
