@@ -1,0 +1,103 @@
+!
+!
+!
+!
+switchport default mode routed
+!
+management console  
+  idle-timeout 600
+  exit
+!
+management ssh
+  idle-timeout 600
+  authentication mode password
+  no shutdown
+  exit
+!
+spanning-tree mode mstp
+!
+hostname pod_1_leaf_0
+!
+!
+vrf definition MGMT
+  rd 100:100
+!
+lldp management-address vrf MGMT
+no service config verification qos
+!
+switch forwarding-mode store-and-forward
+!
+interface Ethernet1
+ ip address 1.1.0.1 255.255.255.254
+ speed forced 10000full
+ no switchport
+ no shutdown
+ mtu 1400
+!
+interface Ethernet2
+ ip address 1.1.1.1 255.255.255.254
+ speed forced 10000full
+ no switchport
+ no shutdown
+ mtu 1400
+!
+interface Ethernet3
+ ip address 2.1.0.0 255.255.255.254
+ speed forced 10000full
+ no switchport
+ no shutdown
+ mtu 1400
+!
+
+!
+interface Loopback0
+ ip address 5.1.0.1 255.255.255.255
+ no shutdown
+!
+!
+ip as-path regex-mode string
+ip community-list standard LEAK_COMMUNITY permit 12345:54321
+!
+ip prefix-list DEFAULT_IPV4 seq 5 permit 0.0.0.0/0
+ip prefix-list IPV4_18_OR_LONGER seq 5 permit 0.0.0.0/0 ge 18
+!
+router bgp 50001
+ router-id 5.1.0.1
+ bgp bestpath as-path multipath-relax
+ bgp log-neighbor-changes
+ maximum-paths 64 ecmp 64
+ neighbor 1.1.0.0 remote-as 10100
+ neighbor 1.1.0.0 soft-reconfiguration inbound
+ neighbor 1.1.0.0 send-community
+ neighbor 1.1.1.0 remote-as 10101
+ neighbor 1.1.1.0 soft-reconfiguration inbound
+ neighbor 1.1.1.0 send-community
+ neighbor 2.1.0.1 remote-as 60000
+ neighbor 2.1.0.1 soft-reconfiguration inbound
+ neighbor 2.1.0.1 send-community
+ !
+ address-family ipv4
+  neighbor 1.1.0.0 activate
+  neighbor 1.1.1.0 activate
+  neighbor 2.1.0.1 activate
+  network 5.1.0.1 mask 255.255.255.255
+ !
+!
+no logging console
+logging buffered 65535 informational
+logging trap informational
+logging format timestamp high-resolution
+logging facility local1
+!
+!
+ip routing
+!
+no ip routing vrf MGMT
+!
+ipv6 unicast-routing
+!
+ip icmp source-interface loopback0
+!
+!
+end
+

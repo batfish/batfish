@@ -1129,6 +1129,45 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "arista_logging" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'arista_logging'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_logging",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_format",
+            "        FORMAT:'format'  <== mode:DEFAULT_MODE",
+            "        TIMESTAMP:'timestamp'  <== mode:DEFAULT_MODE",
+            "        HIGH_RESOLUTION:'high-resolution'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "arista_misc" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "  (stanza",
+            "    (hostname_stanza",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'arista_misc'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_switchport",
+            "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
+            "      DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "      MODE:'mode'  <== mode:DEFAULT_MODE",
+            "      ROUTED:'routed'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "as_path_prepend" : {
           "sentences" : [
             "(cisco_configuration",

@@ -1513,6 +1513,15 @@ s_service
    )+ NEWLINE
 ;
 
+s_switchport
+:
+   SWITCHPORT DEFAULT MODE
+   (
+      ACCESS
+      | ROUTED
+   ) NEWLINE
+;
+
 srlg_interface_numeric_stanza
 :
    DEC ~NEWLINE* NEWLINE
@@ -1591,6 +1600,7 @@ stanza
    | s_router_eigrp
    | s_service
    | s_snmp_server
+   | s_switchport
    | standard_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza

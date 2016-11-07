@@ -1,29 +1,34 @@
 #this file assumes that we are running from top-level source directory
 
+# example testrig
 test tests/init.ref init-testrig -nodataplane test_rigs/example
-test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
-test tests/genDp.ref generate-dataplane
-test tests/genDp-delta.ref generate-delta-dataplane
-test tests/aclReachability.ref get aclReachability
-test tests/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
-test tests/bgpSessionCheck.ref get bgpSessionCheck
-test tests/compareSameName.ref get compareSameName
-test tests/error.ref -error get error
-test tests/ipsecVpnCheck.ref get ipsecVpnCheck
-test tests/isisLoopbacks.ref get isisLoopbacks
-test tests/neighbors.ref get neighbors
-test tests/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
-test tests/nodes-summary.ref get nodes summary=true
-test tests/nodes.ref get nodes summary=false
-test tests/ospfLoopbacks.ref get ospfLoopbacks
-test tests/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
-test tests/routes.ref get routes
-test tests/routes-diff.ref get routes differential=true
-test tests/selfAdjacencies.ref get selfAdjacencies
-test tests/traceroute-1-2.ref get traceroute ingressNode="as1core1" | dstIp="2.128.0.101"
-test tests/traceroute-2-1.ref get traceroute ingressNode="host2" | dstIp="1.0.1.1"
-test tests/multipath-host1.ref get reachability type="multipath" | ingressNodeRegex="host1" | srcIps=["2.128.0.0"] | dstIps=["3.0.1.2"] | ipProtocols=["TCP"] | srcPorts=[0] | dstPorts=[0]
-test tests/multipath-host2.ref get reachability type="multipath" | ingressNodeRegex="host2" | srcIps=["2.128.0.0"] | dstIps=["1.0.1.1"] | ipProtocols=["UDP"] | srcPorts=[0] | dstPorts=[0]
-test tests/undefinedReferences.ref get undefinedReferences
-test tests/uniqueIpAssignments.ref get uniqueIpAssignments
-test tests/unusedStructures.ref get unusedStructures
+#test tests/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
+#test tests/genDp.ref generate-dataplane
+#test tests/genDp-delta.ref generate-delta-dataplane
+#test tests/aclReachability.ref get aclReachability
+#test tests/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
+#test tests/bgpSessionCheck.ref get bgpSessionCheck
+#test tests/compareSameName.ref get compareSameName
+#test tests/error.ref -error get error
+#test tests/ipsecVpnCheck.ref get ipsecVpnCheck
+#test tests/isisLoopbacks.ref get isisLoopbacks
+#test tests/neighbors.ref get neighbors
+#test tests/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
+#test tests/nodes-summary.ref get nodes summary=true
+#test tests/nodes.ref get nodes summary=false
+#test tests/ospfLoopbacks.ref get ospfLoopbacks
+#test tests/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
+#test tests/routes.ref get routes
+#test tests/routes-diff.ref get routes differential=true
+#test tests/selfAdjacencies.ref get selfAdjacencies
+#test tests/traceroute-1-2.ref get traceroute ingressNode="as1core1" | dstIp="2.128.0.101"
+#test tests/traceroute-2-1.ref get traceroute ingressNode="host2" | dstIp="1.0.1.1"
+#test tests/multipath-host1.ref get reachability type="multipath" | ingressNodeRegex="host1" | srcIps=["2.128.0.0"] | dstIps=["3.0.1.2"] | ipProtocols=["TCP"] | srcPorts=[0] | dstPorts=[0]
+#test tests/multipath-host2.ref get reachability type="multipath" | ingressNodeRegex="host2" | srcIps=["2.128.0.0"] | dstIps=["1.0.1.1"] | ipProtocols=["UDP"] | srcPorts=[0] | dstPorts=[0]
+#test tests/undefinedReferences.ref get undefinedReferences
+#test tests/uniqueIpAssignments.ref get uniqueIpAssignments
+#test tests/unusedStructures.ref get unusedStructures
+
+# disable-as-reuse
+test tests/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
+test tests/routes-dc-as-reuse.ref get routes

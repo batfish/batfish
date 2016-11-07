@@ -1,0 +1,192 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement"
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "unusedStructures" : {
+        "plane_0_spine_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "plane_1_spine_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_0_leaf_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_0_leaf_1" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_0_tor_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_0_tor_1" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_1_leaf_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_1_leaf_1" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_1_tor_0" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        },
+        "pod_1_tor_1" : {
+          "community-list" : [
+            "LEAK_COMMUNITY"
+          ],
+          "prefix-list" : [
+            "DEFAULT_IPV4",
+            "IPV4_18_OR_LONGER"
+          ]
+        }
+      },
+      "warnings" : {
+        "plane_0_spine_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "plane_1_spine_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_0_leaf_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_0_leaf_1" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_0_tor_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_0_tor_1" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_1_leaf_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_1_leaf_1" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_1_tor_0" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        },
+        "pod_1_tor_1" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
+          }
+        }
+      }
+    }
+  ],
+  "status" : "SUCCESS"
+}{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
+      "bgpIterations" : {
+        "1" : 2,
+        "2" : 2,
+        "3" : 2,
+        "4" : 2,
+        "5" : 2
+      },
+      "dependentRoutesIterations" : 5,
+      "ospfInternalIterations" : 1,
+      "totalRoutes" : 218
+    }
+  ],
+  "status" : "SUCCESS"
+}

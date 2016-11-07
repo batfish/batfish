@@ -2,6 +2,9 @@
 
 add-batfish-option ppt
 
+#dc-as-reuse
+test test_rigs/dc-as-reuse/parsing.ref init-testrig -nodataplane test_rigs/dc-as-reuse
+
 #disable-as-suppression
 test test_rigs/disable-as-suppression/parsing.ref init-testrig -nodataplane test_rigs/disable-as-suppression
 

@@ -1,0 +1,6 @@
+!
+hostname arista_misc
+!
+switchport default mode routed
+!
+

@@ -3123,6 +3123,11 @@ HIGH_AVAILABILITY
    'high-availability'
 ;
 
+HIGH_RESOLUTION
+:
+   'high-resolution'
+;
+
 HISTORY
 :
    'history'
@@ -7487,6 +7492,11 @@ TRACKED
 TRACKING_PRIORITY_INCREMENT
 :
    'tracking-priority-increment'
+;
+
+TRADITIONAL
+:
+   'traditional'
 ;
 
 TRAFFIC_ENG

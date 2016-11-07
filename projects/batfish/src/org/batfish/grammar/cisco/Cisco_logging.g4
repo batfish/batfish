@@ -23,6 +23,27 @@ logging_console
    )? NEWLINE
 ;
 
+logging_format
+:
+   FORMAT
+   (
+      (
+         HOSTNAME FQDN
+      )
+      |
+      (
+         TIMESTAMP
+         (
+            HIGH_RESOLUTION
+            |
+            (
+               TRADITIONAL ~NEWLINE*
+            )
+         )
+      )
+   ) NEWLINE
+;
+
 logging_host
 :
    HOST hostname = variable
@@ -89,6 +110,7 @@ s_logging
    (
       logging_buffered
       | logging_console
+      | logging_format
       | logging_host
       | logging_null
       | logging_on
