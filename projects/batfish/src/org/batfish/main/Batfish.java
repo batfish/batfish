@@ -704,12 +704,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    public void checkEnvironmentExists(TestrigSettings testrigSettings) {
-      checkBaseDirExists();
-      EnvironmentSettings envSettings = testrigSettings
-            .getEnvironmentSettings();
-      if (!Files.exists(envSettings.getEnvPath())) {
+      if (!environmentExists(testrigSettings)) {
          throw new CleanBatfishException("Environment not initialized: \""
-               + envSettings.getName() + "\"");
+               + testrigSettings.getEnvironmentSettings().getName() + "\"");
       }
    }
 
@@ -763,6 +760,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    private Answer computeDataPlane(boolean differentialContext) {
+      checkEnvironmentExists();
       return _dataPlanePlugin.computeDataPlane(differentialContext);
    }
 
@@ -1089,8 +1087,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       checkBaseDirExists();
       Path envPath = testrigSettings.getEnvironmentSettings().getEnvPath();
       if (envPath == null) {
-         throw new BatfishException("No environment specified for testrig: "
-               + testrigSettings.getName());
+         throw new CleanBatfishException(
+               "No environment specified for testrig: "
+                     + testrigSettings.getName());
       }
       return Files.exists(envPath);
    }
