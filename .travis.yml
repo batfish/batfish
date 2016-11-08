@@ -3,10 +3,10 @@ jdk:
   - oraclejdk8
 addons:
    hostname: short-hostname
+sudo: true
 matrix:
    include:
       - os: linux
-        sudo: true
         dist: trusty
 install: ./.travis/install.sh
 script: ./.travis/build.sh

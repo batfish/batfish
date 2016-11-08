@@ -11,9 +11,9 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    wget ${Z3_ZIP_URL} || return 1
    unzip ${Z3_ZIP} || return 1
    cd ${Z3_DIR}
-   sudo cp bin/libz3.so bin/libz3java.so bin/com.microsoft.z3.jar /usr/lib/
-   sudo cp bin/z3 /usr/bin/
-   sudo cp include/* /usr/include/
+   sudo cp bin/libz3.so bin/libz3java.so bin/com.microsoft.z3.jar /usr/lib/ || exit 1
+   sudo cp bin/z3 /usr/bin/ || exit 1
+   sudo cp include/* /usr/include/ || exit 1
    z3 --version || exit 1
 else
    exit 1 # CI not supported in this case
