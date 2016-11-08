@@ -6,7 +6,8 @@ addons:
 matrix:
    include:
       - os: linux
-        sudo: required 
+        sudo: true
+        dist: trusty
 install: ./.travis/install.sh
 script: ./.travis/build.sh
 
