@@ -1,11 +1,11 @@
-language: java
-jdk:
-  - oraclejdk8
-sudo: true
 matrix:
    include:
       - os: linux
         dist: trusty
-install: ./.travis/install.sh
-script: ./.travis/build.sh
+        language: java
+        jdk:
+          - oraclejdk8
+        sudo: true
+        install: ./.travis/install.sh
+        script: ./.travis/build.sh
 
