@@ -7,10 +7,11 @@ from coordconsts import CoordConsts
 class Session:
 
     def __init__(self, logger):
-        self.useSsl = Options.use_ssl
         self.coordinatorHost = Options.coordinator_host
         self.coordinatorPort = Options.coordinator_work_port
         self.coordinatorBase = CoordConsts.SVC_BASE_WORK_MGR
+        self.useSsl = Options.use_ssl
+        self.verifySslCerts = Options.verify_ssl_certs
 
         self.apiKey = CoordConsts.DEFAULT_API_KEY
         self.container = None

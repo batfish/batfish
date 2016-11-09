@@ -18,7 +18,7 @@ def execute(wItem, session):
     jsonData[CoordConsts.SVC_WORKITEM_KEY] =  wItem.to_json()
     jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
       
-    resthelper.post_data(session, CoordConsts.SVC_QUEUE_WORK_RSC, jsonData)
+    resthelper.get_json_response(session, CoordConsts.SVC_QUEUE_WORK_RSC, jsonData)
     
     status = get_work_status(wItem, session)
 
@@ -110,7 +110,7 @@ def get_work_status(wItem, session):
     jsonData[CoordConsts.SVC_API_KEY] = session.apiKey
     jsonData[CoordConsts.SVC_WORKID_KEY] = wItem.id
 
-    answer = resthelper.post_data(session, CoordConsts.SVC_GET_WORKSTATUS_RSC, jsonData)
+    answer = resthelper.get_json_response(session, CoordConsts.SVC_GET_WORKSTATUS_RSC, jsonData)
     
     if CoordConsts.SVC_WORKSTATUS_KEY in answer:
         return answer[CoordConsts.SVC_WORKSTATUS_KEY]
