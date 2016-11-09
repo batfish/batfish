@@ -17,6 +17,9 @@ pybatfish tests/python/commands.py  || exit 1
 echo -e "\n .... Failed tests: "
 find -name *.testout
 
+echo -e "\n .... Diffing failed tests:"
+for i in $(find -name *.testout); do echo -e "\n $i"; diff -u $i ${i%.testout}; done
+
 #exit with exit code 1 if any test failed
 if [ -n "$(find -name '*.testout')" ]; then exit 1; fi
 
