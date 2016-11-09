@@ -3,10 +3,6 @@
 . tools/batfish_functions.sh
 batfish_build_all || exit 1
 
-echo -e "\n ..... testing pybatfish"
-pybatfish -V
-pybatfish -m requests
-
 #echo -e "\n  ..... Running parsing tests"
 #allinone -cmdfile test_rigs/parsing-test.cmds || return 1
 
@@ -16,6 +12,7 @@ pybatfish -m requests
 echo -e "\n  ..... Running python client tests"
 coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &
+sleep 5
 pybatfish tests/python/commands.py  || exit 1
 
 echo -e "\n .... Failed tests: "

@@ -15,9 +15,7 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    sudo cp bin/z3 /usr/bin/ || exit 1
    sudo cp include/* /usr/include/ || exit 1
    z3 --version || exit 1
-   ### install the python and packages
-   #echo -e "\n   ............. Installing python 2.7"
-   #sudo -H apt-get -y install python2.7 || exit 1
+   ### install python packages
    echo -e "\n   ............. Installing pip"
    sudo -H apt-get -y install python-pip || exit 1
    echo -e "\n   ............. Installing requests"
