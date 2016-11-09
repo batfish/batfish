@@ -16,9 +16,10 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    sudo cp include/* /usr/include/ || exit 1
    z3 --version || exit 1
    ### install the python and packages
-   sudo apt-get -y install python2.7
-   sudo apt-get -y install python-pip
-   sudo pip install requests_toolbelt
+   sudo apt-get -y install python2.7 || exit 1
+   sudo apt-get -y install python-pip || exit 1
+   sudo pip install requests || exit 1
+   sudo pip install requests_toolbelt || exit 1
 else
    exit 1 # CI not supported in this case
 fi
