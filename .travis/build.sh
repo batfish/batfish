@@ -12,7 +12,7 @@ batfish_build_all || exit 1
 echo -e "\n  ..... Running python client tests"
 coordinator -loglevel debug &
 batfish -servicemode -register -coordinatorhost localhost -loglevel debug &
-sleep 5
+sleep 60
 pybatfish tests/python/commands.py  || exit 1
 
 echo -e "\n .... Failed tests: "
