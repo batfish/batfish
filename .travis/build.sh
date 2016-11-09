@@ -10,8 +10,8 @@ batfish_build_all || exit 1
 #allinone -cmdfile tests/java/commands || return 1
 
 echo -e "\n  ..... Running python client tests"
-coordinator &
-batfish -servicemode -register -coordinatorhost localhost -loglevel output &
+coordinator -loglevel debug &
+batfish -servicemode -register -coordinatorhost localhost -loglevel debug &
 sleep 5
 pybatfish tests/python/commands.py  || exit 1
 
