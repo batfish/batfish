@@ -10,9 +10,8 @@ echo -e "\n  ..... Running java client tests"
 allinone -cmdfile tests/java/commands || return 1
 
 echo -e "\n  ..... Running python client tests"
-coordinator -loglevel debug &
-batfish -servicemode -register -coordinatorhost localhost -loglevel debug &
-sleep 60  # this should be removed after implementing re-tries in the client
+coordinator &
+batfish -servicemode -register -coordinatorhost localhost -loglevel output &
 pybatfish tests/python/commands.py  || exit 1
 
 echo -e "\n .... Failed tests: "
