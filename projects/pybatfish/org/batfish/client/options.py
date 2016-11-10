@@ -9,14 +9,19 @@ class Options(object):
     classdocs
     '''
 
-    use_ssl = True
     coordinator_host = "localhost"
     coordinator_work_port = "9997"    
+    use_ssl = True    
+    # This should be true when coordinator is a public-facing service
+    verify_ssl_certs = False
 
     default_container_prefix = "pcp"
-    default_delta_env_prefix = "env_";
-    default_question_prefix = "q";
-    default_testrig_prefix = "tr_";
+    default_delta_env_prefix = "env_"
+    default_question_prefix = "q"
+    default_testrig_prefix = "tr_"
+
+    max_tries_to_coonnect_to_coordinator = 10
+    seconds_to_sleep_between_tries_to_coordinator = 3
 
     def __init__(self):
         '''

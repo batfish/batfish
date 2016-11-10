@@ -19,6 +19,7 @@ public class Settings extends BaseSettings {
    private static final String ARG_HELP = "help";
    private static final String ARG_LOG_FILE = "logfile";
    private static final String ARG_LOG_LEVEL = "loglevel";
+   private static final String ARG_RUN_CLIENT = "runclient";
    private static final String ARG_RUN_MODE = org.batfish.client.Settings.ARG_RUN_MODE;
    private static final String ARG_TESTRIG_DIR = org.batfish.client.Settings.ARG_TESTRIG_DIR;
 
@@ -31,6 +32,7 @@ public class Settings extends BaseSettings {
    private String _logFile;
    private String _logLevel;
    private List<Path> _pluginDirs;
+   private boolean _runClient;
    private String _runMode;
    private String _testrigDir;
 
@@ -72,6 +74,10 @@ public class Settings extends BaseSettings {
       return _pluginDirs;
    }
 
+   public boolean getRunClient() {
+      return _runClient;
+   }
+
    public String getRunMode() {
       return _runMode;
    }
@@ -92,7 +98,8 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_BATFISH_ARGS, "");
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
-      setDefaultProperty(ARG_RUN_MODE, "batch");
+      setDefaultProperty(ARG_RUN_CLIENT, true);
+           setDefaultProperty(ARG_RUN_MODE, "batch");
       setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
             Collections.<String> emptyList());
    }
@@ -118,6 +125,8 @@ public class Settings extends BaseSettings {
       addOption(ARG_COORDINATOR_ARGS, "arguments for coordinator process",
             "coordinator_args");
 
+      addBooleanOption(ARG_RUN_CLIENT, "whether to run the client");
+
       addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)",
             "run_mode");
 
@@ -142,6 +151,7 @@ public class Settings extends BaseSettings {
       _batfishArgs = getStringOptionValue(ARG_BATFISH_ARGS);
       _clientArgs = getStringOptionValue(ARG_CLIENT_ARGS);
       _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
+      _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);
       _runMode = getStringOptionValue(ARG_RUN_MODE);
       _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
       _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);

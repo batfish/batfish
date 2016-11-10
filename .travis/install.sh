@@ -15,6 +15,13 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    sudo cp bin/z3 /usr/bin/ || exit 1
    sudo cp include/* /usr/include/ || exit 1
    z3 --version || exit 1
+   ### install python packages
+   echo -e "\n   ............. Installing pip"
+   sudo -H apt-get -y install python-pip || exit 1
+   echo -e "\n   ............. Installing requests"
+   pip install requests || exit 1
+   echo -e "\n   ............. Installing requests_toolbelt"
+   pip install requests_toolbelt || exit 1
 else
    exit 1 # CI not supported in this case
 fi
