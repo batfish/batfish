@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -65,6 +66,14 @@ public class AllInOne {
                _settings.getTestrigDir());
       }
 
+      //if we are not running the client, we were like not specified a cmdfile.
+      //lets do a dummy cmdfile do client initialization does not barf
+      if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
+         argString += String.format(" -%s %s",
+               org.batfish.client.Settings.ARG_COMMAND_FILE,
+               "dummy_allinone");
+      }
+     
       String[] initialArgArray = getArgArrayFromString(argString);
       List<String> clientArgs = new ArrayList<>(Arrays.asList(initialArgArray));
       List<Path> pluginDirs = _settings.getPluginDirs();
@@ -93,13 +102,27 @@ public class AllInOne {
       }
 
       runCoordinator();
+
       runBatfish();
 
-      _client.run(new LinkedList<String>());
-
-      // The program does not terminate without it in case the user misses the
-      // quit command
-      System.exit(0);
+      if (_settings.getRunClient()) {         
+         _client.run(new LinkedList<String>());
+         // The program does not terminate without it if the user misses the quit command
+         System.exit(0);
+      }
+      else {
+         // sleep indefinitely, in chunks, since the client does not keep us alive
+         try {
+            while (true) {
+               Thread.sleep(10 * 60 * 1000); // 10 minutes
+               _logger.info("allinone: still alive ....\n");
+            }
+         }
+         catch (Exception ex) {
+            String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+            System.err.println(stackTrace);
+         }
+      }
    }
 
    private void runBatfish() {

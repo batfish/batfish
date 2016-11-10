@@ -48,7 +48,7 @@ def bf_answer(questionStr, parametersStr="{}", doDelta=False):
     questionName = Options.default_question_prefix + "_" + batfishutils.get_uuid()
 
     jsonData = workhelper.get_data_answer(bf_session, questionName, questionStr, parametersStr)
-    resthelper.post_data(bf_session, CoordConsts.SVC_UPLOAD_QUESTION_RSC, jsonData)
+    resthelper.get_json_response(bf_session, CoordConsts.SVC_UPLOAD_QUESTION_RSC, jsonData)
 
     workItem = workhelper.get_workitem_answer(bf_session, questionName, doDelta)
     answer = workhelper.execute(workItem, bf_session)
@@ -115,7 +115,7 @@ def bf_init_container(containerPrefix=Options.default_container_prefix):
     '''
     
     jsonData = workhelper.get_data_init_container(bf_session, containerPrefix)
-    jsonResponse = resthelper.post_data(bf_session, CoordConsts.SVC_INIT_CONTAINER_RSC, jsonData)
+    jsonResponse = resthelper.get_json_response(bf_session, CoordConsts.SVC_INIT_CONTAINER_RSC, jsonData)
     
     if (jsonResponse[CoordConsts.SVC_CONTAINER_NAME_KEY]):
         bf_session.container = jsonResponse[CoordConsts.SVC_CONTAINER_NAME_KEY]
@@ -155,7 +155,7 @@ def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
         testrigName = Options.default_testrig_prefix + batfishutils.get_uuid()
     
     jsonData = workhelper.get_data_upload_testrig(bf_session, testrigName, fileToSend)
-    resthelper.post_data(bf_session, CoordConsts.SVC_UPLOAD_TESTRIG_RSC, jsonData)
+    resthelper.get_json_response(bf_session, CoordConsts.SVC_UPLOAD_TESTRIG_RSC, jsonData)
     
     if (not doDelta):
         bf_session.baseTestrig = testrigName
@@ -180,7 +180,7 @@ def bf_list_testrigs(currentContainerOnly=False):
         containerName = bf_session.container
         
     jsonData = workhelper.get_data_list_testrigs(bf_session, containerName)
-    jsonResponse = resthelper.post_data(bf_session, CoordConsts.SVC_LIST_TESTRIGS_RSC, jsonData)
+    jsonResponse = resthelper.get_json_response(bf_session, CoordConsts.SVC_LIST_TESTRIGS_RSC, jsonData)
 
     return jsonResponse
 

@@ -12,7 +12,7 @@ questionTypeToClass = {
     "environmentcreation" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
     "error" : "org.batfish.question.ErrorQuestionPlugin$ErrorQuestion",
     "ipsecvpncheck" : "org.batfish.question.IpsecVpnCheckQuestionPlugin$IpsecVpnCheckQuestion",
-    "isisloopback" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
+    "isisloopbacks" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
     "neighbors" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
     "nodes" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "nodespath" : "org.batfish.question.nodespath.NodesPathQuestionPlugin$NodesPathQuestion",

@@ -1,0 +1,467 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.AclLinesAnswerElement",
+      "acls" : {
+        "as1border1" : {
+          "102" : {
+            "@id" : 1,
+            "name" : "102",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.0.0.0"
+                ],
+                "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                "srcIps" : [
+                  "2.0.0.0"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.0.0"
+                ],
+                "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                "srcIps" : [
+                  "2.128.0.0"
+                ]
+              }
+            ]
+          }
+        },
+        "as2border1" : {
+          "INSIDE_TO_OUTSIDE" : {
+            "@id" : 2,
+            "name" : "INSIDE_TO_OUTSIDE",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "1.0.0.0/8"
+                ],
+                "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+                "srcIps" : [
+                  "2.0.0.0/8"
+                ]
+              },
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "deny ip any any",
+                "srcIps" : [
+                  "0.0.0.0/0"
+                ]
+              }
+            ]
+          },
+          "OUTSIDE_TO_INSIDE" : {
+            "@id" : 3,
+            "name" : "OUTSIDE_TO_INSIDE",
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                "srcIps" : [
+                  "2.0.0.0/8"
+                ]
+              },
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "2.128.1.101"
+                ],
+                "name" : "deny ip any host 2.128.1.101",
+                "srcIps" : [
+                  "0.0.0.0/0"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "permit ip any any",
+                "srcIps" : [
+                  "0.0.0.0/0"
+                ]
+              }
+            ]
+          }
+        },
+        "as2border2" : {
+          "INSIDE_TO_OUTSIDE" : {
+            "@id" : 4,
+            "name" : "INSIDE_TO_OUTSIDE",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "3.0.0.0/8"
+                ],
+                "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+                "srcIps" : [
+                  "2.0.0.0/8"
+                ]
+              },
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "deny ip any any",
+                "srcIps" : [
+                  "0.0.0.0/0"
+                ]
+              }
+            ]
+          },
+          "OUTSIDE_TO_INSIDE" : {
+            "@id" : 5,
+            "name" : "OUTSIDE_TO_INSIDE",
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+                "srcIps" : [
+                  "2.0.0.0/8"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "0.0.0.0/0"
+                ],
+                "name" : "permit ip any any",
+                "srcIps" : [
+                  "0.0.0.0/0"
+                ]
+              }
+            ]
+          }
+        },
+        "as2dept1" : {
+          "102" : {
+            "@id" : 6,
+            "name" : "102",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.255.0"
+                ],
+                "name" : "permit ip host 2.128.0.0 host 255.255.255.0",
+                "srcIps" : [
+                  "2.128.0.0"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.255.0"
+                ],
+                "name" : "permit ip host 2.128.1.0 host 255.255.255.0",
+                "srcIps" : [
+                  "2.128.1.0"
+                ]
+              }
+            ]
+          }
+        },
+        "as2dist1" : {
+          "102" : {
+            "@id" : 7,
+            "name" : "102",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.0.0"
+                ],
+                "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                "srcIps" : [
+                  "2.128.0.0"
+                ]
+              }
+            ]
+          }
+        },
+        "host1" : {
+          "filter::INPUT" : {
+            "@id" : 8,
+            "name" : "filter::INPUT",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstPorts" : [
+                  "53-53"
+                ],
+                "ipProtocols" : [
+                  "UDP"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstPorts" : [
+                  "22-22"
+                ],
+                "ipProtocols" : [
+                  "TCP"
+                ]
+              },
+              {
+                "action" : "REJECT"
+              }
+            ]
+          },
+          "filter::OUTPUT" : {
+            "@id" : 9,
+            "name" : "filter::OUTPUT",
+            "lines" : [
+              {
+                "action" : "ACCEPT"
+              }
+            ]
+          }
+        },
+        "host2" : {
+          "filter::INPUT" : {
+            "@id" : 10,
+            "name" : "filter::INPUT",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstPorts" : [
+                  "22-22"
+                ],
+                "ipProtocols" : [
+                  "TCP"
+                ]
+              },
+              {
+                "action" : "REJECT"
+              }
+            ]
+          },
+          "filter::OUTPUT" : {
+            "@id" : 11,
+            "name" : "filter::OUTPUT",
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "dstIps" : [
+                  "2.128.0.101"
+                ]
+              },
+              {
+                "action" : "ACCEPT"
+              }
+            ]
+          }
+        }
+      },
+      "equivalenceClasses" : {
+        "102" : {
+          "as1border1" : [
+            "as1border1",
+            "as1border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "as2dept1" : [
+            "as2dept1"
+          ],
+          "as2dist1" : [
+            "as2dist1",
+            "as2dist2"
+          ]
+        },
+        "INSIDE_TO_OUTSIDE" : {
+          "as2border1" : [
+            "as2border1"
+          ],
+          "as2border2" : [
+            "as2border2"
+          ]
+        },
+        "OUTSIDE_TO_INSIDE" : {
+          "as2border1" : [
+            "as2border1"
+          ],
+          "as2border2" : [
+            "as2border2"
+          ]
+        },
+        "filter::INPUT" : {
+          "host1" : [
+            "host1"
+          ],
+          "host2" : [
+            "host2"
+          ]
+        },
+        "filter::OUTPUT" : {
+          "host1" : [
+            "host1"
+          ],
+          "host2" : [
+            "host2"
+          ]
+        }
+      },
+      "reachableLines" : {
+        "as1border1" : {
+          "102" : [
+            {
+              "index" : 0,
+              "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+              "differentAction" : false
+            }
+          ]
+        },
+        "as2border1" : {
+          "INSIDE_TO_OUTSIDE" : [
+            {
+              "index" : 0,
+              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "deny ip any any",
+              "differentAction" : false
+            }
+          ],
+          "OUTSIDE_TO_INSIDE" : [
+            {
+              "index" : 0,
+              "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "deny ip any host 2.128.1.101",
+              "differentAction" : false
+            },
+            {
+              "index" : 2,
+              "name" : "permit ip any any",
+              "differentAction" : false
+            }
+          ]
+        },
+        "as2border2" : {
+          "INSIDE_TO_OUTSIDE" : [
+            {
+              "index" : 0,
+              "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "deny ip any any",
+              "differentAction" : false
+            }
+          ],
+          "OUTSIDE_TO_INSIDE" : [
+            {
+              "index" : 0,
+              "name" : "deny ip 2.0.0.0 0.255.255.255 any",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "permit ip any any",
+              "differentAction" : false
+            }
+          ]
+        },
+        "as2dept1" : {
+          "102" : [
+            {
+              "index" : 0,
+              "name" : "permit ip host 2.128.0.0 host 255.255.255.0",
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "name" : "permit ip host 2.128.1.0 host 255.255.255.0",
+              "differentAction" : false
+            }
+          ]
+        },
+        "as2dist1" : {
+          "102" : [
+            {
+              "index" : 0,
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+              "differentAction" : false
+            }
+          ]
+        },
+        "host1" : {
+          "filter::INPUT" : [
+            {
+              "index" : 0,
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "differentAction" : false
+            },
+            {
+              "index" : 2,
+              "differentAction" : false
+            }
+          ],
+          "filter::OUTPUT" : [
+            {
+              "index" : 0,
+              "differentAction" : false
+            }
+          ]
+        },
+        "host2" : {
+          "filter::INPUT" : [
+            {
+              "index" : 0,
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "differentAction" : false
+            }
+          ],
+          "filter::OUTPUT" : [
+            {
+              "index" : 0,
+              "differentAction" : false
+            },
+            {
+              "index" : 1,
+              "differentAction" : false
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.AclReachabilityQuestionPlugin$AclReachabilityQuestion"
+  },
+  "status" : "SUCCESS"
+}
