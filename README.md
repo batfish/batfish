@@ -48,7 +48,7 @@ If you are a DIYer, go to [Batfish Wiki] (https://github.com/arifogel/batfish/wi
 
 If you'd like a hosted service, drop a line to info@intentionet.com.
 
-## What devices does Batfish support? 
+## What configuration formats does Batfish support? 
 
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
   - Arista
