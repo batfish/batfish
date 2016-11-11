@@ -56,6 +56,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
   - Cisco (Nexus, IOS, IOS-XR, ASA)
   - Dell Force10
   - Foundry
+  - iptables (on hosts)
   - Juniper (JunOS, Firewall)
   - MRV
   - Quagga
