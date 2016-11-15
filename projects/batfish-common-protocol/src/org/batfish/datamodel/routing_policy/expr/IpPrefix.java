@@ -4,6 +4,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class IpPrefix implements PrefixExpr {
 
    /**
@@ -15,6 +17,10 @@ public class IpPrefix implements PrefixExpr {
 
    private IntExpr _prefixLength;
 
+   @JsonCreator
+   public IpPrefix() {
+   }
+
    public IpPrefix(IpExpr ip, IntExpr prefixLength) {
       _ip = ip;
       _prefixLength = prefixLength;
@@ -25,6 +31,22 @@ public class IpPrefix implements PrefixExpr {
       Ip ip = _ip.evaluate(env);
       int prefixLength = _prefixLength.evaluate(env);
       return new Prefix(ip, prefixLength);
+   }
+
+   public IpExpr getIp() {
+      return _ip;
+   }
+
+   public IntExpr getPrefixLength() {
+      return _prefixLength;
+   }
+
+   public void setIp(IpExpr ip) {
+      _ip = ip;
+   }
+
+   public void setPrefixLength(IntExpr prefixLength) {
+      _prefixLength = prefixLength;
    }
 
 }
