@@ -209,7 +209,7 @@ public class Main {
          initWorkManager();
       }
       catch (Exception e) {
-         System.err.print(
+         System.err.println(
                "org.batfish.coordinator: Initialization of a helper failed: "
                      + e.getMessage());
          System.exit(1);

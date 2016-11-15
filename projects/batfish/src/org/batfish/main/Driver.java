@@ -166,7 +166,7 @@ public class Driver {
             }
          }
          catch (ProcessingException e) {
-            String msg = "FATAL ERROR: " + e.getMessage();
+            String msg = "FATAL ERROR: " + e.getMessage() + "\n";
             _mainLogger.error(msg);
             System.exit(1);
          }
