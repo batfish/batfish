@@ -10,9 +10,13 @@ if batfish_cygwin; then
 fi
 if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
    java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" -plugindirs "${BATFISH_PLUGIN_DIRS}" "$@"
+   EXIT_CODE=$?
 else
    java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" "$@"
+   EXIT_CODE=$?
 fi
 if batfish_cygwin; then
    stty icanon echo
 fi
+exit $EXIT_CODE
+
