@@ -1,8 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.batfish.datamodel.collections.CommunitySet;
@@ -19,7 +19,7 @@ public class InlineCommunitySet implements CommunitySetExpr {
 
    private transient CommunitySet _cachedCommunities;
 
-   private Set<CommunitySetElem> _communities;
+   private List<CommunitySetElem> _communities;
 
    @JsonCreator
    public InlineCommunitySet() {
@@ -27,11 +27,11 @@ public class InlineCommunitySet implements CommunitySetExpr {
 
    public InlineCommunitySet(Collection<Long> communities) {
       _communities = communities.stream().map(l -> new CommunitySetElem(l))
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
    }
 
-   public InlineCommunitySet(Set<CommunitySetElem> communities) {
-      _communities = new HashSet<>();
+   public InlineCommunitySet(List<CommunitySetElem> communities) {
+      _communities = new ArrayList<>();
       _communities.addAll(communities);
    }
 
@@ -43,7 +43,7 @@ public class InlineCommunitySet implements CommunitySetExpr {
       return _cachedCommunities;
    }
 
-   public Set<CommunitySetElem> getCommunities() {
+   public List<CommunitySetElem> getCommunities() {
       return _communities;
    }
 
@@ -67,7 +67,7 @@ public class InlineCommunitySet implements CommunitySetExpr {
       return false;
    }
 
-   public void setCommunities(Set<CommunitySetElem> communities) {
+   public void setCommunities(List<CommunitySetElem> communities) {
       _communities = communities;
    }
 

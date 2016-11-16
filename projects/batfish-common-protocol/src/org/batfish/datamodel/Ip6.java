@@ -5,6 +5,8 @@ import java.math.BigInteger;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.net.InetAddresses;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
@@ -37,15 +39,13 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
       return val;
    }
 
-   private final int _hashCode;
-
    private final BigInteger _ip6;
 
    public Ip6(BigInteger ip6AsBigInteger) {
       _ip6 = ip6AsBigInteger;
-      _hashCode = _ip6.hashCode();
    }
 
+   @JsonCreator
    public Ip6(String ipAsString) {
       boolean invalid = false;
       byte[] ip6AsByteArray = null;
@@ -65,7 +65,6 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
                "Invalid ipv6 address literal: \"" + ipAsString + "\"");
       }
       _ip6 = new BigInteger(ip6AsByteArray);
-      _hashCode = _ip6.hashCode();
    }
 
    public BigInteger asBigInteger() {
@@ -90,7 +89,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
    @Override
    public int hashCode() {
-      return _hashCode;
+      return _ip6.hashCode();
    }
 
    public String networkString(int prefixLength) {
@@ -98,6 +97,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
    }
 
    @Override
+   @JsonValue
    public String toString() {
       return asIpv6AddressString(_ip6);
    }

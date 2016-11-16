@@ -21,6 +21,7 @@ public abstract class AbstractStatement implements Statement {
       return _comment;
    }
 
+   @JsonProperty(COMMENT_VAR)
    public final void setComment(String comment) {
       _comment = comment;
    }

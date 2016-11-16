@@ -3,6 +3,9 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.math.BigInteger;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public final class IsoAddress implements Serializable {
 
    /**
@@ -16,9 +19,13 @@ public final class IsoAddress implements Serializable {
 
    private final byte _nSel;
 
+   private final String _str;
+
    private final long _systemId;
 
+   @JsonCreator
    public IsoAddress(String isoAddressStr) {
+      _str = isoAddressStr;
       String[] parts = isoAddressStr.split("\\.");
       int areaEndOffset = parts.length - 5;
       BigInteger areaId = BigInteger.ZERO;
@@ -116,6 +123,12 @@ public final class IsoAddress implements Serializable {
       result = prime * result + _nSel;
       result = prime * result + (int) (_systemId ^ (_systemId >>> 32));
       return result;
+   }
+
+   @Override
+   @JsonValue
+   public String toString() {
+      return _str;
    }
 
 }

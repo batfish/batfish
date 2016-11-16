@@ -5,6 +5,8 @@ import java.io.Serializable;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.Environment;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class SubRangeExpr implements Serializable {
 
    /**
@@ -16,6 +18,10 @@ public class SubRangeExpr implements Serializable {
 
    private IntExpr _last;
 
+   @JsonCreator
+   public SubRangeExpr() {
+   }
+
    public SubRangeExpr(IntExpr first, IntExpr last) {
       _first = first;
       _last = last;
@@ -25,6 +31,22 @@ public class SubRangeExpr implements Serializable {
       int first = _first.evaluate(env);
       int last = _last.evaluate(env);
       return new SubRange(first, last);
+   }
+
+   public IntExpr getFirst() {
+      return _first;
+   }
+
+   public IntExpr getLast() {
+      return _last;
+   }
+
+   public void setFirst(IntExpr first) {
+      _first = first;
+   }
+
+   public void setLast(IntExpr last) {
+      _last = last;
    }
 
 }

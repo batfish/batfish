@@ -4,10 +4,10 @@
 batfish_build_all || exit 1
 
 echo -e "\n  ..... Running parsing tests"
-allinone -cmdfile test_rigs/parsing-test.cmds || return 1
+allinone -cmdfile test_rigs/parsing-test.cmds || exit 1
 
 echo -e "\n  ..... Running java client tests"
-allinone -cmdfile tests/java/commands || return 1
+allinone -cmdfile tests/java/commands || exit 1
 
 echo -e "\n  ..... Running python client tests"
 coordinator &

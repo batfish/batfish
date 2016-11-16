@@ -66,14 +66,13 @@ public class AllInOne {
                _settings.getTestrigDir());
       }
 
-      //if we are not running the client, we were like not specified a cmdfile.
-      //lets do a dummy cmdfile do client initialization does not barf
+      // if we are not running the client, we were like not specified a cmdfile.
+      // lets do a dummy cmdfile do client initialization does not barf
       if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
          argString += String.format(" -%s %s",
-               org.batfish.client.Settings.ARG_COMMAND_FILE,
-               "dummy_allinone");
+               org.batfish.client.Settings.ARG_COMMAND_FILE, "dummy_allinone");
       }
-     
+
       String[] initialArgArray = getArgArrayFromString(argString);
       List<String> clientArgs = new ArrayList<>(Arrays.asList(initialArgArray));
       List<Path> pluginDirs = _settings.getPluginDirs();
@@ -105,13 +104,15 @@ public class AllInOne {
 
       runBatfish();
 
-      if (_settings.getRunClient()) {         
+      if (_settings.getRunClient()) {
          _client.run(new LinkedList<String>());
-         // The program does not terminate without it if the user misses the quit command
+         // The program does not terminate without it if the user misses the
+         // quit command
          System.exit(0);
       }
       else {
-         // sleep indefinitely, in chunks, since the client does not keep us alive
+         // sleep indefinitely, in chunks, since the client does not keep us
+         // alive
          try {
             while (true) {
                Thread.sleep(10 * 60 * 1000); // 10 minutes

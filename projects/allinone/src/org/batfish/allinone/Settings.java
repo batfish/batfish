@@ -99,7 +99,7 @@ public class Settings extends BaseSettings {
       setDefaultProperty(ARG_CLIENT_ARGS, "");
       setDefaultProperty(ARG_COORDINATOR_ARGS, "");
       setDefaultProperty(ARG_RUN_CLIENT, true);
-           setDefaultProperty(ARG_RUN_MODE, "batch");
+      setDefaultProperty(ARG_RUN_MODE, "batch");
       setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS,
             Collections.<String> emptyList());
    }

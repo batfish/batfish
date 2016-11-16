@@ -4693,7 +4693,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          // inline
          return new RoutePolicyCommunitySetInline(
                ctx.elems.stream().map(elem -> toCommunitySetElemExpr(elem))
-                     .collect(Collectors.toSet()));
+                     .collect(Collectors.toList()));
       }
    }
 
