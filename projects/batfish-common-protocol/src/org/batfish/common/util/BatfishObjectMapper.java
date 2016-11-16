@@ -53,7 +53,7 @@ public class BatfishObjectMapper extends ObjectMapper {
       super(new Factory());
       enable(SerializationFeature.INDENT_OUTPUT);
       enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-      setSerializationInclusion(Include.NON_NULL);
+      setSerializationInclusion(Include.NON_EMPTY);
    }
 
    public BatfishObjectMapper(ClassLoader cl) {

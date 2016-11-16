@@ -516,7 +516,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion"
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "summary" : true
   },
   "status" : "SUCCESS"
 }

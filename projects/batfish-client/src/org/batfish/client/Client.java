@@ -198,7 +198,7 @@ public class Client extends AbstractClient implements IClient {
       }
       else {
          questionString = QuestionHelper.getQuestionString(questionType,
-               _questions);
+               _questions, false);
          _logger.debugf("Question Json:\n%s\n", questionString);
 
          parametersString = QuestionHelper.getParametersString(parameters);
@@ -398,7 +398,7 @@ public class Client extends AbstractClient implements IClient {
       _questions.forEach((qName, supplier) -> {
          try {
             String questionString = QuestionHelper.getQuestionString(qName,
-                  _questions);
+                  _questions, true);
             String qFile = Paths
                   .get(_settings.getQuestionsDir(), qName + ".json").toFile()
                   .getAbsolutePath();

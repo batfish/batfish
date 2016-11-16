@@ -7,14 +7,11 @@ import java.util.HashMap;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Represents a bgp process on a router
  */
-@JsonInclude(Include.NON_DEFAULT)
 public class BgpProcess implements Serializable {
 
    private static final String GENERATED_ROUTES_VAR = "generatedRoutes";

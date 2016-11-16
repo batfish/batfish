@@ -8,11 +8,8 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.QuestionException;
 import org.batfish.datamodel.questions.Question;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-@JsonInclude(Include.NON_DEFAULT)
 public class Answer {
 
    public static Answer failureAnswer(String message) {

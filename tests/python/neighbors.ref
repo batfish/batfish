@@ -247,7 +247,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
+    "differential" : false,
+    "node1Regex" : ".*",
+    "node2Regex" : ".*"
   },
   "status" : "SUCCESS"
 }

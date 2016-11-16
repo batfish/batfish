@@ -5,7 +5,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion"
+    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion",
+    "differential" : false,
+    "node1Regex" : ".*",
+    "node2Regex" : ".*"
   },
   "status" : "SUCCESS"
 }

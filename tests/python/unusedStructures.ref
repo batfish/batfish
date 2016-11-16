@@ -89,7 +89,9 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion"
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }

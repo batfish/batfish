@@ -31,8 +31,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,7 +40,6 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
    public static class NodesAnswerElement implements AnswerElement {
 
-      @JsonInclude(Include.NON_DEFAULT)
       public static class NodeSummary {
 
          private SortedSet<String> _asPathAccessLists;
