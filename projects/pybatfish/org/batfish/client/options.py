@@ -21,6 +21,7 @@ class Options(object):
     default_testrig_prefix = "tr_"
 
     max_tries_to_coonnect_to_coordinator = 10
+    num_tries_warn_threshold = 5
     seconds_to_sleep_between_tries_to_coordinator = 3
 
     def __init__(self):
