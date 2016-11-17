@@ -6,10 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonInclude(Include.NON_DEFAULT)
 public class OspfProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;

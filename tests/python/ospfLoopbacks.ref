@@ -86,7 +86,9 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion"
+    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }

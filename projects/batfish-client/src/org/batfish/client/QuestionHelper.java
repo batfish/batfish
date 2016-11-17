@@ -84,10 +84,15 @@ public class QuestionHelper {
    }
 
    public static String getQuestionString(String questionTypeStr,
-         Map<String, Supplier<Question>> questions)
+         Map<String, Supplier<Question>> questions, boolean full)
          throws JsonProcessingException {
       Question question = getQuestion(questionTypeStr, questions);
-      return question.toJsonString();
+      if (full) {
+         return question.toFullJsonString();
+      }
+      else {
+         return question.toJsonString();
+      }
    }
 
    public static IQuestion getReachabilityQuestion(String dstIp,

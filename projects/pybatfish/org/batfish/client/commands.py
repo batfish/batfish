@@ -18,7 +18,8 @@ import workhelper
 
 #suppress the urllib3 warnings due to old version of urllib3 (inside requests)
 import requests.packages.urllib3
-requests.packages.urllib3.disable_warnings()
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 _bfDebug = True;
 

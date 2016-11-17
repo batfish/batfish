@@ -11,11 +11,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "IosXrMultiCast",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "IosXrMultiCast"
             }
           }
         },
@@ -27,11 +23,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "L2VPN",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "L2VPN"
             }
           }
         },
@@ -43,11 +35,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "MCastRouting",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "MCastRouting"
             }
           }
         },
@@ -67,11 +55,7 @@
                 },
                 "newModel" : false
               },
-              "banners" : { },
-              "features" : { },
-              "hostname" : "aaa_accounting",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "aaa_accounting"
             }
           }
         },
@@ -94,11 +78,7 @@
                 },
                 "newModel" : false
               },
-              "banners" : { },
-              "features" : { },
-              "hostname" : "aaa_authentication_login_default_tacacs_local",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "aaa_authentication_login_default_tacacs_local"
             }
           }
         },
@@ -113,11 +93,7 @@
               "aaa" : {
                 "newModel" : false
               },
-              "banners" : { },
-              "features" : { },
-              "hostname" : "aaa_group_server_source_interface",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "aaa_group_server_source_interface"
             }
           }
         },
@@ -129,11 +105,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "access_list",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "access_list"
             }
           }
         },
@@ -146,12 +118,21 @@
                 "@id" : 9,
                 "name" : "1.2.3.4/32",
                 "address" : "1.2.3.4",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.3.4~",
                 "localAs" : 1,
                 "owner" : 8,
                 "remoteAs" : 1,
-                "remotePrefix" : "1.2.3.4/32"
+                "remotePrefix" : "1.2.3.4/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -251,11 +232,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "address_family",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "address_family"
             }
           }
         },
@@ -430,11 +407,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "aggAddress",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "aggAddress"
             }
           }
         },
@@ -446,11 +419,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "arista-event-handler",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "arista-event-handler"
             }
           }
         },
@@ -462,14 +431,8 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "arista_logging",
-              "lines" : { },
-              "logging" : {
-                "hosts" : { }
-              },
-              "services" : { }
+              "logging" : { }
             }
           }
         },
@@ -481,11 +444,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "arista_misc",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "arista_misc"
             }
           }
         },
@@ -525,11 +484,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "as_path_prepend",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "as_path_prepend"
             }
           }
         },
@@ -545,17 +500,13 @@
                 "login" : "^C\n***************************************************************************\n*                                                                         *\n*  This banner was seen in IOS XR                                         *\n*  It ends with a caret                                                   *\n*                                                                         *\n***************************************************************************\n^C\n\n",
                 "motd" : "^=================================================================================                                             \n                       BLAH BLAH\n\n                             BOOP\n=================================================================================^\n\n\n\n"
               },
-              "features" : { },
               "hostname" : "banner",
-              "lines" : { },
               "logging" : {
-                "hosts" : { },
                 "trap" : {
                   "severity" : "informational",
                   "severityNum" : 6
                 }
-              },
-              "services" : { }
+              }
             }
           }
         },
@@ -571,10 +522,7 @@
                 "login" : "\nTHIS IS AN ARISTA STYLE BANNER\n\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nUnauthorized access and/or use prohibited. All access and/or use subject to monitoring.\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n\nEOF\n",
                 "motd" : "^C\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\nTHIS BANNER CONTAINS A UNICODE '0003' character (CTRL-C)\nNOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE\n^C\n"
               },
-              "features" : { },
-              "hostname" : "banner_dos",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "banner_dos"
             }
           }
         },
@@ -587,26 +535,42 @@
                 "@id" : 29,
                 "name" : "1.10.1.1/32",
                 "address" : "1.10.1.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
                 "group" : "as1",
                 "localAs" : 1,
                 "owner" : 28,
                 "remoteAs" : 1,
                 "remotePrefix" : "1.10.1.1/32",
+                "routeReflectorClient" : false,
                 "sendCommunity" : true
               },
               "10.12.11.2/32" : {
                 "@id" : 30,
                 "name" : "10.12.11.2/32",
                 "address" : "10.12.11.2",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.12.11.2~",
                 "group" : "as2",
                 "localAs" : 1,
                 "owner" : 28,
                 "remoteAs" : 2,
                 "remotePrefix" : "10.12.11.2/32",
+                "routeReflectorClient" : false,
                 "sendCommunity" : true
               }
             },
@@ -745,11 +709,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "bgp_address_family",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "bgp_address_family"
             }
           }
         },
@@ -828,11 +788,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "bgp_default_originate_policy",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "bgp_default_originate_policy"
             }
           }
         },
@@ -911,11 +867,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "bgp_foundry",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "bgp_foundry"
             }
           }
         },
@@ -994,11 +946,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "bgp_nsr",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "bgp_nsr"
             }
           }
         },
@@ -1011,14 +959,23 @@
                 "@id" : 49,
                 "name" : "64.57.21.1/32",
                 "address" : "64.57.21.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "cps AS11164 - SVL-PNI",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:64.57.21.1~",
                 "group" : "EBGP-PEER-SVL-PNI",
                 "localAs" : 2152,
                 "owner" : 48,
                 "remoteAs" : 11164,
-                "remotePrefix" : "64.57.21.1/32"
+                "remotePrefix" : "64.57.21.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -1118,11 +1075,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "bgp_route_policy",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "bgp_route_policy"
             }
           }
         },
@@ -1153,11 +1106,7 @@
                 },
                 "newModel" : true
               },
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_aaa",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_aaa"
             }
           }
         },
@@ -1169,14 +1118,8 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "cisco_callhome",
-              "lines" : { },
-              "ntp" : {
-                "servers" : { }
-              },
-              "services" : { }
+              "ntp" : { }
             }
           }
         },
@@ -1188,11 +1131,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_dot1x",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_dot1x"
             }
           }
         },
@@ -1206,35 +1145,79 @@
             "Async1" : {
               "@id" : 58,
               "name" : "Async1",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 57
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 57,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Crypto-Engine1/2/3" : {
               "@id" : 59,
               "name" : "Crypto-Engine1/2/3",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 57
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 57,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Dot11Radio0" : {
               "@id" : 60,
               "name" : "Dot11Radio0",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 57
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 57,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Ethernet1/11" : {
               "@id" : 61,
               "name" : "Ethernet1/11",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E9,
-              "owner" : 57
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 57,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_interface",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_interface"
             }
           }
         },
@@ -1292,11 +1275,7 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_ip_route",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_ip_route"
             }
           }
         },
@@ -1310,50 +1289,88 @@
             "GigabitEthernet0/0/1" : {
               "@id" : 64,
               "name" : "GigabitEthernet0/0/1",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "137.164.25.57/30"
               ],
               "bandwidth" : 1.0E9,
               "isisCost" : 15,
+              "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "passive",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "owner" : 63,
-              "prefix" : "137.164.25.57/30"
+              "prefix" : "137.164.25.57/30",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "GigabitEthernet0/1" : {
               "@id" : 65,
               "name" : "GigabitEthernet0/1",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
-              "owner" : 63
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 63,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "HundredGigabitEthernet0/0/0/0.2302" : {
               "@id" : 66,
               "name" : "HundredGigabitEthernet0/0/0/0.2302",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "passive",
-              "owner" : 63
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 63,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Serial4/0" : {
               "@id" : 67,
               "name" : "Serial4/0",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
-              "owner" : 63
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 63,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "isisProcess" : {
-            "generatedRoutes" : [ ],
             "level" : "LEVEL_2",
-            "netAddress" : "49.2152.1371.6403.9016.1371.6403.9016.00",
-            "policyExportLevels" : { }
+            "netAddress" : "49.2152.1371.6403.9016.1371.6403.9016.00"
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_isis",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_isis"
             }
           }
         },
@@ -1365,8 +1382,6 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "cisco_line",
               "lines" : {
                 "<UNNAMED>0/0/0" : {
@@ -1516,7 +1531,8 @@
                 "<UNNAMED>2" : {
                   "@id" : 85,
                   "name" : "<UNNAMED>2",
-                  "execTimeoutMinutes" : 1
+                  "execTimeoutMinutes" : 1,
+                  "execTimeoutSeconds" : 0
                 },
                 "<UNNAMED>35" : {
                   "@id" : 86,
@@ -1591,7 +1607,8 @@
                 "console" : {
                   "@id" : 100,
                   "name" : "console",
-                  "execTimeoutMinutes" : 15
+                  "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0
                 },
                 "vty" : {
                   "@id" : 101,
@@ -1602,6 +1619,7 @@
                   "@id" : 102,
                   "name" : "vty0",
                   "execTimeoutMinutes" : 60,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "ipv6-vty-acl",
                   "loginAuthentication" : "blah",
                   "transportPreferred" : "none"
@@ -1610,6 +1628,7 @@
                   "@id" : 103,
                   "name" : "vty1",
                   "execTimeoutMinutes" : 60,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "ipv6-vty-acl",
                   "loginAuthentication" : "blah",
                   "transportPreferred" : "none"
@@ -1618,6 +1637,7 @@
                   "@id" : 104,
                   "name" : "vty10",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1625,6 +1645,7 @@
                   "@id" : 105,
                   "name" : "vty11",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1632,6 +1653,7 @@
                   "@id" : 106,
                   "name" : "vty12",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1639,6 +1661,7 @@
                   "@id" : 107,
                   "name" : "vty13",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1646,6 +1669,7 @@
                   "@id" : 108,
                   "name" : "vty14",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1653,6 +1677,7 @@
                   "@id" : 109,
                   "name" : "vty15",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1660,6 +1685,7 @@
                   "@id" : 110,
                   "name" : "vty2",
                   "execTimeoutMinutes" : 60,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "ipv6-vty-acl",
                   "loginAuthentication" : "blah",
                   "transportPreferred" : "none"
@@ -1668,6 +1694,7 @@
                   "@id" : 111,
                   "name" : "vty3",
                   "execTimeoutMinutes" : 60,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "ipv6-vty-acl",
                   "loginAuthentication" : "blah",
                   "transportPreferred" : "none"
@@ -1676,6 +1703,7 @@
                   "@id" : 112,
                   "name" : "vty4",
                   "execTimeoutMinutes" : 60,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "ipv6-vty-acl",
                   "loginAuthentication" : "blah",
                   "transportPreferred" : "none"
@@ -1684,6 +1712,7 @@
                   "@id" : 113,
                   "name" : "vty5",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1691,6 +1720,7 @@
                   "@id" : 114,
                   "name" : "vty6",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1698,6 +1728,7 @@
                   "@id" : 115,
                   "name" : "vty7",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1705,6 +1736,7 @@
                   "@id" : 116,
                   "name" : "vty8",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 },
@@ -1712,11 +1744,11 @@
                   "@id" : 117,
                   "name" : "vty9",
                   "execTimeoutMinutes" : 15,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
                   "loginAuthentication" : "blah"
                 }
-              },
-              "services" : { }
+              }
             }
           }
         },
@@ -1728,10 +1760,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "cisco_logging",
-              "lines" : { },
               "logging" : {
                 "buffered" : {
                   "size" : 5000
@@ -1752,8 +1781,7 @@
                   }
                 },
                 "sourceInterface" : "Vlan1"
-              },
-              "services" : { }
+              }
             }
           }
         },
@@ -1765,11 +1793,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_mac_acl",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_mac_acl"
             }
           }
         },
@@ -1784,12 +1808,8 @@
               "aaa" : {
                 "newModel" : true
               },
-              "banners" : { },
               "domainName" : "my.domain.name",
-              "features" : { },
-              "hostname" : "cisco_misc",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_misc"
             }
           }
         },
@@ -1801,11 +1821,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "cisco_platform",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "cisco_platform"
             }
           }
         },
@@ -1817,18 +1833,15 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "cisco_snmp",
-              "lines" : { },
-              "services" : { },
               "snmpServer" : {
                 "communities" : {
                   "dummycommunity" : {
                     "@id" : 126,
                     "name" : "dummycommunity",
                     "accessList" : "snmp-arpa-acl",
-                    "ro" : true
+                    "ro" : true,
+                    "rw" : false
                   }
                 },
                 "hosts" : {
@@ -1930,11 +1943,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "cisco_ssh",
-              "lines" : { },
-              "services" : { },
               "ssh" : {
                 "version" : 1
               }
@@ -1958,6 +1967,7 @@
                     "0.0.0.0/0"
                   ],
                   "name" : "permit ip any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -1966,12 +1976,7 @@
             }
           },
           "vendorFamily" : {
-            "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "lines" : { },
-              "services" : { }
-            }
+            "cisco" : { }
           }
         },
         "cisco_style_acl2" : {
@@ -1991,6 +1996,7 @@
                     "0.0.0.0/0"
                   ],
                   "name" : "permit any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -1999,12 +2005,7 @@
             }
           },
           "vendorFamily" : {
-            "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "lines" : { },
-              "services" : { }
-            }
+            "cisco" : { }
           }
         },
         "colon_in_vrf" : {
@@ -2082,11 +2083,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "colon_in_vrf",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "colon_in_vrf"
             }
           }
         },
@@ -2098,11 +2095,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "commSet",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "commSet"
             }
           }
         },
@@ -2118,7 +2111,8 @@
                   "regex" : "9999:8888"
                 }
               ],
-              "name" : "9999-RRR"
+              "name" : "9999-RRR",
+              "invertMatch" : false
             }
           },
           "configurationFormat" : "CISCO_NX",
@@ -2126,11 +2120,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "community-name-numbers",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "community-name-numbers"
             }
           }
         },
@@ -2146,7 +2136,8 @@
                   "regex" : "9999:8888"
                 }
               ],
-              "name" : "9999-RRR"
+              "name" : "9999-RRR",
+              "invertMatch" : false
             }
           },
           "configurationFormat" : "CISCO_NX",
@@ -2154,11 +2145,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "community-name-numbers_dos",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "community-name-numbers_dos"
             }
           }
         },
@@ -2174,7 +2161,8 @@
                   "regex" : "75:42"
                 }
               ],
-              "name" : "COMM_LIST_NAME"
+              "name" : "COMM_LIST_NAME",
+              "invertMatch" : false
             }
           },
           "configurationFormat" : "CISCO_NX",
@@ -2244,11 +2232,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "community_list_named",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "community_list_named"
             }
           }
         },
@@ -2260,11 +2244,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "community_set",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "community_set"
             }
           }
         },
@@ -2276,11 +2256,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "crypto",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "crypto"
             }
           }
         },
@@ -2292,11 +2268,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "dhcp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "dhcp"
             }
           }
         },
@@ -2323,6 +2295,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 30.9.132.0 0.0.1.255 host 1.1.1.1 range 48000 48060",
+                  "negate" : false,
                   "srcIps" : [
                     "30.9.132.0/23"
                   ]
@@ -2339,6 +2312,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp host 1.1.1.1 any eq 27401",
+                  "negate" : false,
                   "srcIps" : [
                     "1.1.1.1"
                   ]
@@ -2355,6 +2329,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp any host 1.1.1.1 eq 65001",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -2371,6 +2346,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp host 1.1.1.1 any eq 20000",
+                  "negate" : false,
                   "srcIps" : [
                     "1.1.1.1"
                   ]
@@ -2387,6 +2363,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp any host 1.1.1.1 eq 65111",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -2409,6 +2386,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp addrgroup bleep_blorp any eq 13000",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -2418,11 +2396,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "eigrp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "eigrp"
             }
           }
         },
@@ -2434,11 +2408,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "foundry_access_list",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "foundry_access_list"
             }
           }
         },
@@ -2517,11 +2487,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "foundry_bgp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "foundry_bgp"
             }
           }
         },
@@ -2535,17 +2501,25 @@
             "Ethernet1/15" : {
               "@id" : 158,
               "name" : "Ethernet1/15",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E9,
-              "owner" : 157
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 157,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "foundry_interface",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "foundry_interface"
             }
           }
         },
@@ -2566,17 +2540,12 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
               "hostname" : "foundry_misc",
-              "lines" : { },
               "logging" : {
                 "buffered" : {
                   "size" : 1000
-                },
-                "hosts" : { }
-              },
-              "services" : { }
+                }
+              }
             }
           }
         },
@@ -2588,11 +2557,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "foundry_vlan_group",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "foundry_vlan_group"
             }
           }
         },
@@ -2606,14 +2571,26 @@
             "eth0" : {
               "@id" : 162,
               "name" : "eth0",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "2.128.0.101/24"
               ],
               "bandwidth" : 1.0E9,
               "incomingFilter" : 163,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "outgoingFilter" : 164,
               "owner" : 161,
-              "prefix" : "2.128.0.101/24"
+              "prefix" : "2.128.0.101/24",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "ipAccessLists" : {
@@ -2622,7 +2599,8 @@
               "name" : "filter::FORWARD",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2638,6 +2616,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4"
                   ]
@@ -2650,6 +2629,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "negate" : false,
                   "srcIps" : [
                     "11.22.33.44"
                   ]
@@ -2662,6 +2642,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "negate" : false,
                   "srcIps" : [
                     "111.222.111.222"
                   ]
@@ -2674,6 +2655,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "negate" : false,
                   "srcIps" : [
                     "4.3.2.1"
                   ]
@@ -2686,12 +2668,14 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "negate" : false,
                   "srcIps" : [
                     "44.22.33.11"
                   ]
                 },
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2700,7 +2684,8 @@
               "name" : "filter::OUTPUT",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2709,7 +2694,8 @@
               "name" : "mangle::FORWARD",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2718,7 +2704,8 @@
               "name" : "mangle::INPUT",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2727,7 +2714,8 @@
               "name" : "mangle::OUTPUT",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2736,7 +2724,8 @@
               "name" : "mangle::POSTROUTING",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2745,7 +2734,8 @@
               "name" : "mangle::PREROUTING",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2754,7 +2744,8 @@
               "name" : "nat::OUTPUT",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2763,7 +2754,8 @@
               "name" : "nat::POSTROUTING",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             },
@@ -2772,7 +2764,8 @@
               "name" : "nat::PREROUTING",
               "lines" : [
                 {
-                  "action" : "ACCEPT"
+                  "action" : "ACCEPT",
+                  "negate" : false
                 }
               ]
             }
@@ -3048,11 +3041,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "if_tag_is",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "if_tag_is"
             }
           }
         },
@@ -3066,33 +3055,51 @@
             "Vlan303" : {
               "@id" : 177,
               "name" : "Vlan303",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "10.22.33.10/29"
               ],
               "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
               "mtu" : 9100,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "owner" : 176,
-              "prefix" : "10.22.33.10/29"
+              "prefix" : "10.22.33.10/29",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Vlan803" : {
               "@id" : 178,
               "name" : "Vlan803",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "10.12.12.1/23"
               ],
               "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
               "mtu" : 9100,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "owner" : 176,
-              "prefix" : "10.12.12.1/23"
+              "prefix" : "10.12.12.1/23",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "interface_exit",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "interface_exit"
             }
           }
         },
@@ -3106,36 +3113,79 @@
             "FastEthernet12/13" : {
               "@id" : 180,
               "name" : "FastEthernet12/13",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E8,
-              "owner" : 179
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 179,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "HundredGigabitEthernet0/6/0/8" : {
               "@id" : 181,
               "name" : "HundredGigabitEthernet0/6/0/8",
+              "accessVlan" : 0,
               "active" : false,
               "bandwidth" : 1.0E12,
-              "owner" : 179
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 179,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Port-channel1" : {
               "@id" : 182,
               "name" : "Port-channel1",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 179
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 179,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Vlan100" : {
               "@id" : 183,
               "name" : "Vlan100",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 179
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 179,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "interface_name",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "interface_name"
             }
           }
         },
@@ -3149,22 +3199,30 @@
             "Loopback0" : {
               "@id" : 185,
               "name" : "Loopback0",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "137.164.16.80/32"
               ],
               "bandwidth" : 1.0E12,
               "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "owner" : 184,
-              "prefix" : "137.164.16.80/32"
+              "prefix" : "137.164.16.80/32",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "interface_sdr",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "interface_sdr"
             }
           }
         },
@@ -3176,11 +3234,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ios_xr_acl",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ios_xr_acl"
             }
           }
         },
@@ -3194,24 +3248,28 @@
             "GigabitEthernet0/2/1/6" : {
               "@id" : 188,
               "name" : "GigabitEthernet0/2/1/6",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E9,
               "isisL1InterfaceMode" : "active",
               "isisL2InterfaceMode" : "active",
-              "owner" : 187
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 187,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "isisProcess" : {
-            "generatedRoutes" : [ ],
-            "level" : "LEVEL_1_2",
-            "policyExportLevels" : { }
+            "level" : "LEVEL_1_2"
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ios_xr_isis",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ios_xr_isis"
             }
           }
         },
@@ -3226,10 +3284,7 @@
               "banners" : {
                 "login" : "^C\n\n***************************************************************************\n*                                                                         *\n*  This router is : ios_xr_multipart                                      *\n*                                                                         * \n***************************************************************************\n^C\n\n"
               },
-              "features" : { },
-              "hostname" : "ios_xr_multipart",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ios_xr_multipart"
             }
           }
         },
@@ -3241,11 +3296,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ios_xr_router_static",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ios_xr_router_static"
             }
           }
         },
@@ -3257,11 +3308,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ios_xr_taskgroup",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ios_xr_taskgroup"
             }
           }
         },
@@ -3285,6 +3332,7 @@
                     "ICMP"
                   ],
                   "name" : "10 permit icmp any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3295,6 +3343,7 @@
                     "0.0.0.0/0"
                   ],
                   "name" : "20 permit ip any any tracked",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ],
@@ -3311,6 +3360,7 @@
                     "OSPF"
                   ],
                   "name" : "30 permit ospf any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3327,6 +3377,7 @@
                     "TCP"
                   ],
                   "name" : "40 permit tcp any any eq bgp",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3345,6 +3396,7 @@
                     "UDP"
                   ],
                   "name" : "50 permit udp any any eq bootps bootpc ntp",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3361,6 +3413,7 @@
                     "TCP"
                   ],
                   "name" : "60 permit tcp any any eq mlag ttl eq 255",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3377,6 +3430,7 @@
                     "UDP"
                   ],
                   "name" : "70 permit udp any any eq mlag ttl eq 255",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3390,6 +3444,7 @@
                     "VRRP"
                   ],
                   "name" : "80 permit vrrp any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3403,6 +3458,7 @@
                     "AHP"
                   ],
                   "name" : "90 permit ahp any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3416,6 +3472,7 @@
                     "PIM"
                   ],
                   "name" : "100 permit pim any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3429,6 +3486,7 @@
                     "IGMP"
                   ],
                   "name" : "110 permit igmp any any",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3445,6 +3503,7 @@
                     "TCP"
                   ],
                   "name" : "120 permit tcp any any range 1 10",
+                  "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
                   ]
@@ -3461,6 +3520,7 @@
                     "UDP"
                   ],
                   "name" : "140 permit udp 10.0.0.0/19 any eq snmp",
+                  "negate" : false,
                   "srcIps" : [
                     "10.0.0.0/19"
                   ]
@@ -3477,6 +3537,7 @@
                     "UDP"
                   ],
                   "name" : "180 permit udp host 10.0.0.0 any eq snmp",
+                  "negate" : false,
                   "srcIps" : [
                     "10.0.0.0"
                   ]
@@ -3493,6 +3554,7 @@
                     "TCP"
                   ],
                   "name" : "220 permit tcp 10.0.0.0/19 any eq ssh",
+                  "negate" : false,
                   "srcIps" : [
                     "10.0.0.0/19"
                   ]
@@ -3509,6 +3571,7 @@
                     "TCP"
                   ],
                   "name" : "260 permit tcp host 10.0.0.0 any eq ssh",
+                  "negate" : false,
                   "srcIps" : [
                     "10.0.0.0"
                   ]
@@ -3518,11 +3581,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ip_access_list_with_seq",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ip_access_list_with_seq"
             }
           }
         },
@@ -3547,11 +3606,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ip_prefix_list_single_line",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ip_prefix_list_single_line"
             }
           }
         },
@@ -3563,11 +3618,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ipsla",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ipsla"
             }
           }
         },
@@ -3579,11 +3630,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "ipv6_access_list",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "ipv6_access_list"
             }
           }
         },
@@ -3601,6 +3648,7 @@
                 {
                   "action" : "REJECT",
                   "name" : "bar",
+                  "negate" : false,
                   "tcpFlags" : [
                     {
                       "ack" : true,
@@ -3639,7 +3687,8 @@
                   "regex" : "target:123456L:.*$"
                 }
               ],
-              "name" : "COMM_ALL"
+              "name" : "COMM_ALL",
+              "invertMatch" : false
             },
             "COMM_NON_CUST" : {
               "@id" : 202,
@@ -3649,7 +3698,8 @@
                   "regex" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
                 }
               ],
-              "name" : "COMM_NON_CUST"
+              "name" : "COMM_NON_CUST",
+              "invertMatch" : false
             }
           },
           "configurationFormat" : "FLAT_JUNIPER",
@@ -3674,7 +3724,8 @@
                     "1.2.3.4",
                     "1.2.3.5"
                   ],
-                  "name" : "blorp"
+                  "name" : "blorp",
+                  "negate" : false
                 }
               ]
             }
@@ -3764,11 +3815,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "lcoal_v6_addr",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "lcoal_v6_addr"
             }
           }
         },
@@ -3780,11 +3827,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "mac_access_list",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "mac_access_list"
             }
           }
         },
@@ -3796,11 +3839,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "msdp_originator_id",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "msdp_originator_id"
             }
           }
         },
@@ -3812,11 +3851,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "multicast",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "multicast"
             }
           }
         },
@@ -3840,11 +3875,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "named_and_numbered_lists",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "named_and_numbered_lists"
             }
           }
         },
@@ -3857,12 +3888,21 @@
                 "@id" : 216,
                 "name" : "123.123.123.123/32",
                 "address" : "123.123.123.123",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:123.123.123.123~",
                 "localAs" : 1,
                 "owner" : 215,
                 "remoteAs" : 1,
-                "remotePrefix" : "123.123.123.123/32"
+                "remotePrefix" : "123.123.123.123/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -3962,11 +4002,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "neighbor",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "neighbor"
             }
           }
         },
@@ -4045,11 +4081,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "neighbor-name-numbers",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "neighbor-name-numbers"
             }
           }
         },
@@ -4062,12 +4094,21 @@
                 "@id" : 226,
                 "name" : "123.123.123.123/32",
                 "address" : "123.123.123.123",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:123.123.123.123~",
                 "localAs" : 1,
                 "owner" : 225,
                 "remoteAs" : 1,
-                "remotePrefix" : "123.123.123.123/32"
+                "remotePrefix" : "123.123.123.123/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -4167,11 +4208,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "neighbor_dos",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "neighbor_dos"
             }
           }
         },
@@ -4184,36 +4221,63 @@
                 "@id" : 232,
                 "name" : "4.4.4.4/32",
                 "address" : "4.4.4.4",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 168430090,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:4.4.4.4~",
                 "localAs" : 1,
                 "owner" : 231,
                 "remoteAs" : 4,
-                "remotePrefix" : "4.4.4.4/32"
+                "remotePrefix" : "4.4.4.4/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               },
               "3.3.3.3/32" : {
                 "@id" : 233,
                 "name" : "3.3.3.3/32",
                 "address" : "3.3.3.3",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 168430090,
+                "defaultMetric" : 0,
                 "description" : "neighbor-3-3-3-3-remote-as-3-af-ipv4-desc !nexus",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:3.3.3.3~",
                 "localAs" : 1,
                 "owner" : 231,
                 "remoteAs" : 3,
-                "remotePrefix" : "3.3.3.3/32"
+                "remotePrefix" : "3.3.3.3/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               },
               "1.1.1.1/32" : {
                 "@id" : 234,
                 "name" : "1.1.1.1/32",
                 "address" : "1.1.1.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 168430090,
+                "defaultMetric" : 0,
                 "description" : "neighbor-1-1-1-1-remote-as-1-af-ipv4-desc !nexus",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
                 "localAs" : 1,
                 "owner" : 231,
                 "remoteAs" : 1,
-                "remotePrefix" : "1.1.1.1/32"
+                "remotePrefix" : "1.1.1.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "10.10.10.10"
@@ -4372,11 +4436,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "neighbor_mix",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "neighbor_mix"
             }
           }
         },
@@ -4481,11 +4541,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "neighbor_nxos",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "neighbor_nxos"
             }
           }
         },
@@ -4564,11 +4620,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "network6",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "network6"
             }
           }
         },
@@ -4580,11 +4632,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "nexus",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "nexus"
             }
           }
         },
@@ -4663,11 +4711,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "nexus-arista-router-bgp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "nexus-arista-router-bgp"
             }
           }
         },
@@ -4679,11 +4723,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "no_aaa_group_server",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "no_aaa_group_server"
             }
           }
         },
@@ -4696,12 +4736,21 @@
                 "@id" : 257,
                 "name" : "10.0.0.0/32",
                 "address" : "10.0.0.0",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:10.0.0.0~",
                 "localAs" : 2,
                 "owner" : 256,
                 "remoteAs" : 1,
-                "remotePrefix" : "10.0.0.0/32"
+                "remotePrefix" : "10.0.0.0/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -4808,11 +4857,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "non_nexus_neighbor_af",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "non_nexus_neighbor_af"
             }
           }
         },
@@ -4824,11 +4869,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "openflow",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "openflow"
             }
           }
         },
@@ -4840,7 +4881,12 @@
               "10.98.25.0/25" : {
                 "@id" : 264,
                 "name" : "10.98.25.0/25",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "inheritance in which the neighbor is a prefix",
                 "dynamic" : true,
                 "ebgpMultihop" : true,
@@ -4849,21 +4895,31 @@
                 "localAs" : 64601,
                 "owner" : 263,
                 "remoteAs" : 65511,
-                "remotePrefix" : "10.98.25.0/25"
+                "remotePrefix" : "10.98.25.0/25",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               },
               "100.93.100.16/32" : {
                 "@id" : 265,
                 "name" : "100.93.100.16/32",
                 "address" : "100.93.100.16",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
                 "allowLocalAsIn" : true,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "a simple inheritance example",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:100.93.100.16~",
                 "group" : "SPINE",
                 "localAs" : 64601,
                 "owner" : 263,
                 "remoteAs" : 64802,
-                "remotePrefix" : "100.93.100.16/32"
+                "remotePrefix" : "100.93.100.16/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -5011,11 +5067,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "peer_template",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "peer_template"
             }
           }
         },
@@ -5029,21 +5081,29 @@
             "Loopback1" : {
               "@id" : 272,
               "name" : "Loopback1",
+              "accessVlan" : 0,
+              "active" : true,
               "allPrefixes" : [
                 "137.164.17.8/32"
               ],
               "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
               "owner" : 271,
-              "prefix" : "137.164.17.8/32"
+              "prefix" : "137.164.17.8/32",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "pim",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "pim"
             }
           }
         },
@@ -5055,11 +5115,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "pim_snooping",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "pim_snooping"
             }
           }
         },
@@ -5071,11 +5127,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "preSet",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "preSet"
             }
           }
         },
@@ -5135,11 +5187,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "prefix_list_ipv4",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "prefix_list_ipv4"
             }
           }
         },
@@ -5168,6 +5216,7 @@
                           "class" : "org.batfish.datamodel.routing_policy.statement.If",
                           "guard" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath",
+                            "exact" : false,
                             "range" : [
                               {
                                 "first" : {
@@ -5328,7 +5377,8 @@
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchMetric",
                     "comparator" : "EQ",
                     "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt"
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 0
                     }
                   },
                   "trueStatements" : [
@@ -5444,6 +5494,7 @@
                   ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath",
+                    "exact" : false,
                     "range" : [
                       {
                         "first" : {
@@ -5647,6 +5698,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                       "statement" : {
                         "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                        "destinationVrf" : false,
                         "expr" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.Ip6NextHop",
                           "ips" : [
@@ -5777,6 +5829,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                       "statement" : {
                         "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                        "destinationVrf" : false,
                         "expr" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.IpNextHop",
                           "ips" : [
@@ -5837,7 +5890,8 @@
                       "statement" : {
                         "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
                         "weight" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt"
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                          "value" : 0
                         }
                       }
                     },
@@ -6447,6 +6501,7 @@
                                                                                   },
                                                                                   {
                                                                                     "class" : "org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath",
+                                                                                    "exact" : false,
                                                                                     "range" : [
                                                                                       {
                                                                                         "first" : {
@@ -6724,6 +6779,7 @@
                                                     "conjuncts" : [
                                                       {
                                                         "class" : "org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath",
+                                                        "exact" : false,
                                                         "range" : [
                                                           {
                                                             "first" : {
@@ -7172,11 +7228,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "rP",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "rP"
             }
           }
         },
@@ -7188,11 +7240,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "role_name",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "role_name"
             }
           }
         },
@@ -7279,11 +7327,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_map",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_map"
             }
           }
         },
@@ -7311,11 +7355,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_map_sub",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_map_sub"
             }
           }
         },
@@ -7328,7 +7368,14 @@
                 "@id" : 303,
                 "name" : "1.1.1.1/32",
                 "address" : "1.1.1.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
                 "group" : "ABC",
                 "importPolicy" : "FROM_ABC_V4",
@@ -7336,6 +7383,7 @@
                 "owner" : 302,
                 "remoteAs" : 2,
                 "remotePrefix" : "1.1.1.1/32",
+                "routeReflectorClient" : false,
                 "sendCommunity" : true
               }
             },
@@ -7476,11 +7524,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_maps_in_two_address_families",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_maps_in_two_address_families"
             }
           }
         },
@@ -7810,7 +7854,8 @@
                                       "value" : 64527
                                     }
                                   }
-                                ]
+                                ],
+                                "exact" : false
                               },
                               "trueStatements" : [
                                 {
@@ -7932,6 +7977,7 @@
                       ],
                       "guard" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath",
+                        "exact" : false,
                         "range" : [
                           {
                             "first" : {
@@ -7975,11 +8021,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_policy_as_path_set",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_policy_as_path_set"
             }
           }
         },
@@ -8099,11 +8141,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_policy_igp_cost",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_policy_igp_cost"
             }
           }
         },
@@ -8206,11 +8244,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_policy_metric_type",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_policy_metric_type"
             }
           }
         },
@@ -8402,6 +8436,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                       "statement" : {
                         "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                        "destinationVrf" : false,
                         "expr" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.IpNextHop",
                           "ips" : [
@@ -8436,11 +8471,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "route_policy_param",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "route_policy_param"
             }
           }
         },
@@ -8452,11 +8483,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "router_hsrp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "router_hsrp"
             }
           }
         },
@@ -8468,11 +8495,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "router_msdp",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "router_msdp"
             }
           }
         },
@@ -8532,11 +8555,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "set_inline_community",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "set_inline_community"
             }
           }
         },
@@ -8548,11 +8567,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "statistics",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "statistics"
             }
           }
         },
@@ -8566,6 +8581,8 @@
             "FastEthernet0/1" : {
               "@id" : 326,
               "name" : "FastEthernet0/1",
+              "accessVlan" : 0,
+              "active" : true,
               "allowedVlans" : [
                 "12-12",
                 "34-34",
@@ -8573,16 +8590,22 @@
                 "99-99"
               ],
               "bandwidth" : 1.0E8,
-              "owner" : 325
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 325,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "switchport_range",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "switchport_range"
             }
           }
         },
@@ -8594,11 +8617,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "syslog_source_interface",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "syslog_source_interface"
             }
           }
         },
@@ -8610,11 +8629,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "taskgroup",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "taskgroup"
             }
           }
         },
@@ -8638,6 +8653,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 1.2.3.4/31 any ack",
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4/31"
                   ],
@@ -8671,6 +8687,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 1.2.3.4/31 any rst",
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4/31"
                   ],
@@ -8704,6 +8721,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 1.2.3.4/31 any syn ack urg psh rst ece fin cwr",
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4/31"
                   ],
@@ -8845,6 +8863,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 1.2.3.4/31 any fin",
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4/31"
                   ],
@@ -8878,6 +8897,7 @@
                     "TCP"
                   ],
                   "name" : "permit tcp 1.2.3.4/31 any fin ack",
+                  "negate" : false,
                   "srcIps" : [
                     "1.2.3.4/31"
                   ],
@@ -8925,11 +8945,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "tcpflags",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "tcpflags"
             }
           }
         },
@@ -8941,11 +8957,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "test",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "test"
             }
           }
         },
@@ -8969,11 +8981,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "underscore_variable",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "underscore_variable"
             }
           }
         },
@@ -8987,17 +8995,25 @@
             "FastEthernet0/0" : {
               "@id" : 335,
               "name" : "FastEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E8,
-              "owner" : 334
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 334,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "variables",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "variables"
             }
           }
         },
@@ -9011,17 +9027,25 @@
             "FastEthernet0/0" : {
               "@id" : 337,
               "name" : "FastEthernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E8,
-              "owner" : 336
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 336,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "variables_dos",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "variables_dos"
             }
           }
         },
@@ -9033,11 +9057,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "vlan",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "vlan"
             }
           }
         },
@@ -9181,11 +9201,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "vlan_access_map4",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "vlan_access_map4"
             }
           }
         },
@@ -9206,11 +9222,7 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "vrf_context",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "vrf_context"
             }
           }
         },
@@ -9222,11 +9234,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "vxlan",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "vxlan"
             }
           }
         },
@@ -9239,40 +9247,67 @@
                 "@id" : 347,
                 "name" : "1.2.1.3/32",
                 "address" : "1.2.1.3",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "bafjewoifj",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.1.3~",
                 "group" : "foobar-iBGP_border_ipv4",
                 "localAs" : 5555,
                 "owner" : 346,
                 "remoteAs" : 5555,
-                "remotePrefix" : "1.2.1.3/32"
+                "remotePrefix" : "1.2.1.3/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               },
               "1.2.1.2/32" : {
                 "@id" : 348,
                 "name" : "1.2.1.2/32",
                 "address" : "1.2.1.2",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "hejtuignrfojfgner",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.1.2~",
                 "group" : "foobar-iBGP_ipv4",
                 "localAs" : 5555,
                 "owner" : 346,
                 "remoteAs" : 5555,
-                "remotePrefix" : "1.2.1.2/32"
+                "remotePrefix" : "1.2.1.2/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               },
               "1.2.1.1/32" : {
                 "@id" : 349,
                 "name" : "1.2.1.1/32",
                 "address" : "1.2.1.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : false,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
                 "clusterId" : 0,
+                "defaultMetric" : 0,
                 "description" : "htegiofnoirwejhg",
+                "dynamic" : false,
+                "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1.2.1.1~",
                 "group" : "foobar-iBGP_ipv4",
                 "localAs" : 5555,
                 "owner" : 346,
                 "remoteAs" : 5555,
-                "remotePrefix" : "1.2.1.1/32"
+                "remotePrefix" : "1.2.1.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false
               }
             },
             "routerId" : "0.0.0.0"
@@ -9424,11 +9459,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "xrBGP_Neighbor_Group",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "xrBGP_Neighbor_Group"
             }
           }
         },
@@ -9442,56 +9473,164 @@
             "Bundle-Ethernet101" : {
               "@id" : 357,
               "name" : "Bundle-Ethernet101",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Bundle-Ethernet103" : {
               "@id" : 358,
               "name" : "Bundle-Ethernet103",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Bundle-Ethernet201" : {
               "@id" : 359,
               "name" : "Bundle-Ethernet201",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
               "@id" : 360,
               "name" : "HundredGigabitEthernet0/2/0/0.292",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "HundredGigabitEthernet0/2/0/3" : {
               "@id" : 361,
               "name" : "HundredGigabitEthernet0/2/0/3",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "Loopback0" : {
               "@id" : 362,
               "name" : "Loopback0",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E12,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "TenGigabitEthernet0/0/0/2" : {
               "@id" : 363,
               "name" : "TenGigabitEthernet0/0/0/2",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E10,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "TenGigabitEthernet0/0/0/4" : {
               "@id" : 364,
               "name" : "TenGigabitEthernet0/0/0/4",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E10,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             },
             "TenGigabitEthernet0/0/0/5" : {
               "@id" : 365,
               "name" : "TenGigabitEthernet0/0/0/5",
+              "accessVlan" : 0,
+              "active" : true,
               "bandwidth" : 1.0E10,
-              "owner" : 356
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 356,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q"
             }
           },
           "ospfProcess" : {
@@ -9542,11 +9681,7 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "xrOSPF",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "xrOSPF"
             }
           }
         },
@@ -9558,11 +9693,7 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "banners" : { },
-              "features" : { },
-              "hostname" : "xrOSPFV3",
-              "lines" : { },
-              "services" : { }
+              "hostname" : "xrOSPFV3"
             }
           }
         }
@@ -9571,6 +9702,8 @@
   ],
   "question" : {
     "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
     "summary" : false
   },
   "status" : "SUCCESS"

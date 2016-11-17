@@ -62,7 +62,8 @@
   ],
   "question" : {
     "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
-    "differential" : true
+    "differential" : true,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }
