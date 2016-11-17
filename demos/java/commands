@@ -36,6 +36,15 @@ echo # this will check if all loopbacks are being correctly announced within OSP
 get ospfloopbacks
 
 echo ################
+echo # The configurations are converted to JSON using a vendor-independent data model:
+get nodes summary=False
+
+echo # Some checks can be expressed as JsonPath queries on this JSON.
+echo # For instance, to check whether the MTU of each interface is 1500,
+echo # we look for all interfaces on all nodes with an MTU that is NOT 1500:
+get nodespath paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu", "suffix":True}]
+
+echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
 
 echo # for example, we can see how host1 reaches a particular IP address 
