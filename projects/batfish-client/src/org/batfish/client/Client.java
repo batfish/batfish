@@ -259,7 +259,7 @@ public class Client extends AbstractClient implements IClient {
             && status != WorkStatusCode.TERMINATEDNORMALLY
             && status != WorkStatusCode.ASSIGNMENTERROR) {
 
-         _logger.output(". ");
+         _logger.info(". ");
          _logger.infof("status: %s\n", status);
 
          Thread.sleep(1 * 1000);
@@ -267,7 +267,7 @@ public class Client extends AbstractClient implements IClient {
          status = _workHelper.getWorkStatus(wItem.getId());
       }
 
-      _logger.output("\n");
+      _logger.info("\n");
       _logger.infof("final status: %s\n", status);
 
       // get the answer
@@ -760,9 +760,9 @@ public class Client extends AbstractClient implements IClient {
                _currDeltaEnv = deltaEnvName;
                _currDeltaTestrig = _currTestrig;
 
-               _logger.outputf(
-                     "Active delta testrig->environment is now %s->%s\n",
-                     _currDeltaTestrig, _currDeltaEnv);
+               _logger.output("Active delta testrig->environment is set ");
+               _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+               _logger.output("\n");
 
                return true;
             }
@@ -870,7 +870,9 @@ public class Client extends AbstractClient implements IClient {
             String containerPrefix = (words.length > 1) ? words[1]
                   : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
-            _logger.outputf("Active container set to %s\n", _currContainerName);
+            _logger.output("Active container is set");
+            _logger.infof(" to  %s\n", _currContainerName);
+            _logger.output("\n");
             return true;
          }
          case INIT_DELTA_ENV: {
@@ -902,8 +904,9 @@ public class Client extends AbstractClient implements IClient {
             _currDeltaEnv = deltaEnvName;
             _currDeltaTestrig = _currTestrig;
 
-            _logger.outputf("Active delta testrig->environment is now %s->%s\n",
-                  _currDeltaTestrig, _currDeltaEnv);
+            _logger.output("Active delta testrig->environment is set");
+            _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
+            _logger.output("\n");
 
             WorkItem wItemGenDdp = _workHelper
                   .getWorkItemCompileDeltaEnvironment(_currContainerName,
@@ -947,8 +950,9 @@ public class Client extends AbstractClient implements IClient {
             if (!isSetContainer(false)) {
                _currContainerName = _workHelper
                      .initContainer(DEFAULT_CONTAINER_PREFIX);
-               _logger.outputf("Init'ed and set active container to %s\n",
-                     _currContainerName);
+               _logger.outputf("Init'ed and set active container");
+               _logger.infof(" to %s\n", _currContainerName);
+              _logger.output("\n");
             }
 
             if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) {
@@ -967,12 +971,12 @@ public class Client extends AbstractClient implements IClient {
             if (command == Command.INIT_TESTRIG) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
-               _logger.outputf("Base testrig is now %s\n", _currTestrig);
+               _logger.infof("Base testrig is now %s\n", _currTestrig);
             }
             else {
                _currDeltaTestrig = testrigName;
                _currDeltaEnv = DEFAULT_ENV_NAME;
-               _logger.outputf("Delta testrig is now %s\n", _currDeltaTestrig);
+               _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
             }
 
             if (generateDataplane) {
@@ -1409,7 +1413,10 @@ public class Client extends AbstractClient implements IClient {
                   _settings.getBatchCommandFile(), e.getMessage());
             System.exit(1);
          }
-         processCommands(commands);
+         boolean result = processCommands(commands);
+
+         if (!result)
+            System.exit(1);
 
          break;
       case genquestions:

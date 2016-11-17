@@ -1,5 +1,3 @@
-Container is now set to pcp_43a27659-4ea7-4821-8bd1-f21b4745aa60
-Base testrig/environment is now set to tr_cb8d68e7-66bd-4dfd-8a24-88aebaf86091/env_default
 load the testrig
 {
   "answerElements" : [
@@ -138,8 +136,7 @@ load the testrig
             "4" : "UNDEFINED: neighbor: '2.1.3.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'"
           }
         },
-   Question: {"class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
-     "as2dept1" : {
+        "as2dept1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused extended access-list: '105'",
             "2" : "UNUSED: Unused extended access-list: 'RESTRICT_HOST_TRAFFIC_OUT'"
@@ -172,485 +169,6 @@ load the testrig
       }
     }
   ],
-  "status" : "SUCCESS"
-}
-#####################
-# our logical representation of the network that can be queried in various ways. we have many queries and can write more
-# E.g., we can ask questions on adjacencies to ensure that they are as expected (i.e., interfaces are properly configured)
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
-      "lanNeighbors" : [
-        {
-          "node1" : "as1border1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as1core1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as1border1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2border1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as1border2",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as1core1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as1border2",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as3border2",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as1core1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as1border1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as1core1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as1border2",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2border1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as1border1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2border1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2core1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2border1",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2core2",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2border2",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as3border1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2border2",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2core1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2border2",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2core2",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2core1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2border1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2core1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2border2",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2core1",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2dist2",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2core1",
-          "node1interface" : "FastEthernet2/0",
-          "node2" : "as2dist1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as2core2",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2border2",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2core2",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2border1",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2core2",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2dist1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2core2",
-          "node1interface" : "FastEthernet2/0",
-          "node2" : "as2dist2",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2dept1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2dist1",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2dept1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2dist2",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2dept1",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "host1",
-          "node2interface" : "eth0"
-        },
-        {
-          "node1" : "as2dept1",
-          "node1interface" : "FastEthernet1/1",
-          "node2" : "host2",
-          "node2interface" : "eth0"
-        },
-        {
-          "node1" : "as2dist1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2core2",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2dist1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2core1",
-          "node2interface" : "FastEthernet2/0"
-        },
-        {
-          "node1" : "as2dist1",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2dept1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as2dist2",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2core2",
-          "node2interface" : "FastEthernet2/0"
-        },
-        {
-          "node1" : "as2dist2",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as2core1",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "as2dist2",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as2dept1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as3border1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as2border2",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as3border1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as3core1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as3border2",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as3core1",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as3border2",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as1border2",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as3core1",
-          "node1interface" : "FastEthernet0/0",
-          "node2" : "as3border2",
-          "node2interface" : "FastEthernet0/0"
-        },
-        {
-          "node1" : "as3core1",
-          "node1interface" : "FastEthernet0/1",
-          "node2" : "as3border1",
-          "node2interface" : "FastEthernet0/1"
-        },
-        {
-          "node1" : "as3core1",
-          "node1interface" : "FastEthernet1/0",
-          "node2" : "as3core1",
-          "node2interface" : "FastEthernet1/Question: {"neighborType": ["ebgp"], "class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
-Question: {"class": "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion"}
-Question: {"class": "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion"}
-1"
-        },
-        {
-          "node1" : "as3core1",
-          "node1interface" : "FastEthernet1/1",
-          "node2" : "as3core1",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "host1",
-          "node1interface" : "eth0",
-          "node2" : "as2dept1",
-          "node2interface" : "FastEthernet1/0"
-        },
-        {
-          "node1" : "host2",
-          "node1interface" : "eth0",
-          "node2" : "as2dept1",
-          "node2interface" : "FastEthernet1/1"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
-    "differential" : false,
-    "node1Regex" : ".*",
-    "node2Regex" : ".*"
-  },
-  "status" : "SUCCESS"
-}
-# we can also ask for protocol-level adjacencies to ensure that protocol sessions are configured correctly
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
-      "ebgpNeighbors" : [
-        {
-          "ip1" : "10.12.11.1",
-          "ip2" : "10.12.11.2",
-          "node1" : "as1border1",
-          "node2" : "as2border1"
-        },
-        {
-          "ip1" : "10.13.22.1",
-          "ip2" : "10.13.22.3",
-          "node1" : "as1border2",
-          "node2" : "as3border2"
-        },
-        {
-          "ip1" : "10.12.11.2",
-          "ip2" : "10.12.11.1",
-          "node1" : "as2border1",
-          "node2" : "as1border1"
-        },
-        {
-          "ip1" : "10.23.21.2",
-          "ip2" : "10.23.21.3",
-          "node1" : "as2border2",
-          "node2" : "as3border1"
-        },
-        {
-          "ip1" : "2.34.101.4",
-          "ip2" : "2.34.101.3",
-          "node1" : "as2dept1",
-          "node2" : "as2dist1"
-        },
-        {
-          "ip1" : "2.34.201.4",
-          "ip2" : "2.34.201.3",
-          "node1" : "as2dept1",
-          "node2" : "as2dist2"
-        },
-        {
-          "ip1" : "2.34.101.3",
-          "ip2" : "2.34.101.4",
-          "node1" : "as2dist1",
-          "node2" : "as2dept1"
-        },
-        {
-          "ip1" : "2.34.201.3",
-          "ip2" : "2.34.201.4",
-          "node1" : "as2dist2",
-          "node2" : "as2dept1"
-        },
-        {
-          "ip1" : "10.23.21.3",
-          "ip2" : "10.23.21.2",
-          "node1" : "as3border1",
-          "node2" : "as2border2"
-        },
-        {
-          "ip1" : "10.13.22.3",
-          "ip2" : "10.13.22.1",
-          "node1" : "as3border2",
-          "node2" : "as1border2"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
-    "differential" : false,
-    "neighborType" : [
-      "ebgp"
-    ],
-    "node1Regex" : ".*",
-    "node2Regex" : ".*"
-  },
-  "status" : "SUCCESS"
-}
-##############
-# we can also do other simple checks based on best practices of the network
-# E.g., we can check if all interface ips are unique
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsAnswerElement",
-      "allIps" : {
-        "2.1.1.2" : [
-          {
-            "hostname" : "as2border2",
-            "interface" : "Loopback0"
-          },
-          {
-            "hostname" : "as2dept1",
-            "interface" : "Loopback0"
-          }
-        ]
-      },
-      "enabledIps" : {
-        "2.1.1.2" : [
-          {
-            "hostname" : "as2border2",
-            "interface" : "Loopback0"
-          },
-          {
-            "hostname" : "as2dept1",
-            "interface" : "Loopback0"
-          }
-        ]
-      }
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*",
-    "verbose" : false
-  },
-  "status" : "SUCCESS"
-}
-# Or that all loopbacks are announced within OSPF
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksAnswerElement",
-      "active" : {
-        "as1border1" : [
-          "Loopback0"
-        ],
-        "as1border2" : [
-          "Question: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", "summary": false}
-Loopback0"
-        ],
-        "as1core1" : [
-          "Loopback0"
-        ],
-        "as2border1" : [
-          "Loopback0"
-        ],
-        "as2border2" : [
-          "Loopback0"
-        ],
-        "as2core1" : [
-          "Loopback0"
-        ],
-        "as2core2" : [
-          "Loopback0"
-        ],
-        "as2dist1" : [
-          "Loopback0"
-        ],
-        "as2dist2" : [
-          "Loopback0"
-        ],
-        "as3border1" : [
-          "Loopback0"
-        ],
-        "as3border2" : [
-          "Loopback0"
-        ],
-        "as3core1" : [
-          "Loopback0"
-        ]
-      },
-      "inactive" : {
-        "as2dept1" : [
-          "Loopback0"
-        ]
-      },
-      "running" : {
-        "as1border1" : [
-          "Loopback0"
-        ],
-        "as1border2" : [
-          "Loopback0"
-        ],
-        "as1core1" : [
-          "Loopback0"
-        ],
-        "as2border1" : [
-          "Loopback0"
-        ],
-        "as2border2" : [
-          "Loopback0"
-        ],
-        "as2core1" : [
-          "Loopback0"
-        ],
-        "as2core2" : [
-          "Loopback0"
-        ],
-        "as2dist1" : [
-          "Loopback0"
-        ],
-        "as2dist2" : [
-          "Loopback0"
-        ],
-        "as3border1" : [
-          "Loopback0"
-        ],
-        "as3border2" : [
-          "Loopback0"
-        ],
-        "as3core1" : [
-          "Loopback0"
-        ]
-      }
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
-  },
   "status" : "SUCCESS"
 }
 ################
@@ -10400,9 +9918,7 @@ Loopback0"
                 {
                   "action" : "ACCEPT",
                   "negate" : false
-  Question: {"paths": [{"path": "$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu", "suffix": true}], "class": "org.batfish.question.nodespath.NodesPathQuestionPlugin$NodesPathQuestion"}
-Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion", "ingressNode": "host1"}
-              }
+                }
               ]
             },
             "mangle::POSTROUTING" : {
@@ -10512,6 +10028,481 @@ Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestion
         "summary" : false
       }
     ]
+  },
+  "status" : "SUCCESS"
+}
+#####################
+# our logical representation of the network that can be queried in various ways. we have many queries and can write more
+# E.g., we can ask questions on adjacencies to ensure that they are as expected (i.e., interfaces are properly configured)
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
+      "lanNeighbors" : [
+        {
+          "node1" : "as1border1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as1core1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as1border1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2border1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as1border2",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as1core1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as1border2",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as3border2",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as1core1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as1border1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as1core1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as1border2",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2border1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as1border1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2border1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2core1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2border1",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2core2",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2border2",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as3border1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2border2",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2core1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2border2",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2core2",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2core1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2border1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2core1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2border2",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2core1",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2dist2",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2core1",
+          "node1interface" : "FastEthernet2/0",
+          "node2" : "as2dist1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as2core2",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2border2",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2core2",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2border1",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2core2",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2dist1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2core2",
+          "node1interface" : "FastEthernet2/0",
+          "node2" : "as2dist2",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2dept1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2dist1",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2dept1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2dist2",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2dept1",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "host1",
+          "node2interface" : "eth0"
+        },
+        {
+          "node1" : "as2dept1",
+          "node1interface" : "FastEthernet1/1",
+          "node2" : "host2",
+          "node2interface" : "eth0"
+        },
+        {
+          "node1" : "as2dist1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2core2",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2dist1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2core1",
+          "node2interface" : "FastEthernet2/0"
+        },
+        {
+          "node1" : "as2dist1",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2dept1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as2dist2",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2core2",
+          "node2interface" : "FastEthernet2/0"
+        },
+        {
+          "node1" : "as2dist2",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as2core1",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "as2dist2",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as2dept1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as3border1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as2border2",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as3border1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as3core1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as3border2",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as3core1",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as3border2",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as1border2",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as3core1",
+          "node1interface" : "FastEthernet0/0",
+          "node2" : "as3border2",
+          "node2interface" : "FastEthernet0/0"
+        },
+        {
+          "node1" : "as3core1",
+          "node1interface" : "FastEthernet0/1",
+          "node2" : "as3border1",
+          "node2interface" : "FastEthernet0/1"
+        },
+        {
+          "node1" : "as3core1",
+          "node1interface" : "FastEthernet1/0",
+          "node2" : "as3core1",
+          "node2interface" : "FastEthernet1/1"
+        },
+        {
+          "node1" : "as3core1",
+          "node1interface" : "FastEthernet1/1",
+          "node2" : "as3core1",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "host1",
+          "node1interface" : "eth0",
+          "node2" : "as2dept1",
+          "node2interface" : "FastEthernet1/0"
+        },
+        {
+          "node1" : "host2",
+          "node1interface" : "eth0",
+          "node2" : "as2dept1",
+          "node2interface" : "FastEthernet1/1"
+        }
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
+    "differential" : false,
+    "node1Regex" : ".*",
+    "node2Regex" : ".*"
+  },
+  "status" : "SUCCESS"
+}
+# we can also ask for protocol-level adjacencies to ensure that protocol sessions are configured correctly
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
+      "ebgpNeighbors" : [
+        {
+          "ip1" : "10.12.11.1",
+          "ip2" : "10.12.11.2",
+          "node1" : "as1border1",
+          "node2" : "as2border1"
+        },
+        {
+          "ip1" : "10.13.22.1",
+          "ip2" : "10.13.22.3",
+          "node1" : "as1border2",
+          "node2" : "as3border2"
+        },
+        {
+          "ip1" : "10.12.11.2",
+          "ip2" : "10.12.11.1",
+          "node1" : "as2border1",
+          "node2" : "as1border1"
+        },
+        {
+          "ip1" : "10.23.21.2",
+          "ip2" : "10.23.21.3",
+          "node1" : "as2border2",
+          "node2" : "as3border1"
+        },
+        {
+          "ip1" : "2.34.101.4",
+          "ip2" : "2.34.101.3",
+          "node1" : "as2dept1",
+          "node2" : "as2dist1"
+        },
+        {
+          "ip1" : "2.34.201.4",
+          "ip2" : "2.34.201.3",
+          "node1" : "as2dept1",
+          "node2" : "as2dist2"
+        },
+        {
+          "ip1" : "2.34.101.3",
+          "ip2" : "2.34.101.4",
+          "node1" : "as2dist1",
+          "node2" : "as2dept1"
+        },
+        {
+          "ip1" : "2.34.201.3",
+          "ip2" : "2.34.201.4",
+          "node1" : "as2dist2",
+          "node2" : "as2dept1"
+        },
+        {
+          "ip1" : "10.23.21.3",
+          "ip2" : "10.23.21.2",
+          "node1" : "as3border1",
+          "node2" : "as2border2"
+        },
+        {
+          "ip1" : "10.13.22.3",
+          "ip2" : "10.13.22.1",
+          "node1" : "as3border2",
+          "node2" : "as1border2"
+        }
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
+    "differential" : false,
+    "neighborType" : [
+      "ebgp"
+    ],
+    "node1Regex" : ".*",
+    "node2Regex" : ".*"
+  },
+  "status" : "SUCCESS"
+}
+##############
+# we can also do other simple checks based on best practices of the network
+# E.g., we can check if all interface ips are unique
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsAnswerElement",
+      "allIps" : {
+        "2.1.1.2" : [
+          {
+            "hostname" : "as2border2",
+            "interface" : "Loopback0"
+          },
+          {
+            "hostname" : "as2dept1",
+            "interface" : "Loopback0"
+          }
+        ]
+      },
+      "enabledIps" : {
+        "2.1.1.2" : [
+          {
+            "hostname" : "as2border2",
+            "interface" : "Loopback0"
+          },
+          {
+            "hostname" : "as2dept1",
+            "interface" : "Loopback0"
+          }
+        ]
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "verbose" : false
+  },
+  "status" : "SUCCESS"
+}
+# Or that all loopbacks are announced within OSPF
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksAnswerElement",
+      "active" : {
+        "as1border1" : [
+          "Loopback0"
+        ],
+        "as1border2" : [
+          "Loopback0"
+        ],
+        "as1core1" : [
+          "Loopback0"
+        ],
+        "as2border1" : [
+          "Loopback0"
+        ],
+        "as2border2" : [
+          "Loopback0"
+        ],
+        "as2core1" : [
+          "Loopback0"
+        ],
+        "as2core2" : [
+          "Loopback0"
+        ],
+        "as2dist1" : [
+          "Loopback0"
+        ],
+        "as2dist2" : [
+          "Loopback0"
+        ],
+        "as3border1" : [
+          "Loopback0"
+        ],
+        "as3border2" : [
+          "Loopback0"
+        ],
+        "as3core1" : [
+          "Loopback0"
+        ]
+      },
+      "inactive" : {
+        "as2dept1" : [
+          "Loopback0"
+        ]
+      },
+      "running" : {
+        "as1border1" : [
+          "Loopback0"
+        ],
+        "as1border2" : [
+          "Loopback0"
+        ],
+        "as1core1" : [
+          "Loopback0"
+        ],
+        "as2border1" : [
+          "Loopback0"
+        ],
+        "as2border2" : [
+          "Loopback0"
+        ],
+        "as2core1" : [
+          "Loopback0"
+        ],
+        "as2core2" : [
+          "Loopback0"
+        ],
+        "as2dist1" : [
+          "Loopback0"
+        ],
+        "as2dist2" : [
+          "Loopback0"
+        ],
+        "as3border1" : [
+          "Loopback0"
+        ],
+        "as3border2" : [
+          "Loopback0"
+        ],
+        "as3core1" : [
+          "Loopback0"
+        ]
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.OspfLoopbacksQuestionPlugin$OspfLoopbacksQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }
@@ -10786,8 +10777,7 @@ Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestion
                   ]
                 },
                 {
-                  "edge" Question: {"ipProtocol": "UDP", "dstPort": 53, "dstIp": "2.128.0.101", "class": "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion", "ingressNode": "as2border1"}
-: {
+                  "edge" : {
                     "node1" : "as2dept1",
                     "node1interface" : "FastEthernet0/1",
                     "node2" : "as2dist2",
@@ -11033,8 +11023,7 @@ Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestion
                 },
                 {
                   "edge" : {
-                    "nodeQuestion: {"ipProtocols": ["UDP"], "dstIps": ["2.128.0.101"], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion", "actions": ["drop"], "dstPorts": [53]}
-1" : "as2dept1",
+                    "node1" : "as2dept1",
                     "node1interface" : "FastEthernet1/0",
                     "node2" : "host1",
                     "node2interface" : "eth0"
@@ -11517,8 +11506,6 @@ Question: {"dstIp": "1.0.2.2", "class": "org.batfish.question.TracerouteQuestion
   "question" : {
     "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
     "actions" : [
-Question: {"notIpProtocols": ["TCP"], "notDstPorts": [22], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion", "actions": ["ACCEPT"], "dstIps": ["2.128.1.101"]}
-Question: {"ipProtocols": ["TCP"], "dstIps": ["2.128.1.101"], "ingressNodeRegex": "as(1|3)border1", "actions": ["ACCEPT"], "dstPorts": [22], "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
       "drop"
     ],
     "differential" : false,
@@ -11905,8 +11892,7 @@ Question: {"ipProtocols": ["TCP"], "dstIps": ["2.128.1.101"], "ingressNodeRegex"
     "differential" : false,
     "dstIps" : [
       "2.128.1.101"
- Delta testrig/environment is now set to tr_14b2eac4-6e82-4fbf-8293-4a4d99d65f3a/env_default
-   ],
+    ],
     "dstPorts" : [
       "22-22"
     ],
@@ -12055,9 +12041,7 @@ Question: {"ipProtocols": ["TCP"], "dstIps": ["2.128.1.101"], "ingressNodeRegex"
         "as2core2" : {
           "Red flags" : {
             "1" : "UNDEFINED: neighbor: '2.1.1.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
-            "2" : "UNDEFINED: neighbor: '2.1.3.1': grouQuestion: {"differential": true, "class": "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion"}
-Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
-p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
+            "2" : "UNDEFINED: neighbor: '2.1.3.1': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             "3" : "UNDEFINED: neighbor: '2.1.1.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             "4" : "UNDEFINED: neighbor: '2.1.3.2': group: 'as2': undefined reference to inbound route-map: 'filter-bogons'"
           }
@@ -12201,7 +12185,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
           "icmpVar" : 255,
           "ingressNode" : "as2border1",
           "ipProtocol" : "TCP",
-          "srcIp" : "253.127.0.0",
+          "srcIp" : "253.123.0.0",
           "srcPort" : 0,
           "state" : "NEW",
           "tag" : "DIFFERENTIAL",
@@ -12225,7 +12209,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
           "icmpVar" : 255,
           "ingressNode" : "as2border2",
           "ipProtocol" : "TCP",
-          "srcIp" : "253.127.0.0",
+          "srcIp" : "253.123.0.0",
           "srcPort" : 0,
           "state" : "NEW",
           "tag" : "DIFFERENTIAL",
@@ -12249,7 +12233,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
           "icmpVar" : 255,
           "ingressNode" : "as2core1",
           "ipProtocol" : "TCP",
-          "srcIp" : "253.127.0.0",
+          "srcIp" : "253.123.0.0",
           "srcPort" : 0,
           "state" : "NEW",
           "tag" : "DIFFERENTIAL",
@@ -12297,7 +12281,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
           "icmpVar" : 255,
           "ingressNode" : "as2dept1",
           "ipProtocol" : "UDP",
-          "srcIp" : "253.59.0.0",
+          "srcIp" : "253.63.0.0",
           "srcPort" : 0,
           "state" : "NEW",
           "tag" : "DIFFERENTIAL",
@@ -12435,11 +12419,11 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
         "Flow<ingressNode:as1border1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 1,
         "Flow<ingressNode:as1border2 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 2,
         "Flow<ingressNode:as1core1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 3,
-        "Flow<ingressNode:as2border1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 4,
-        "Flow<ingressNode:as2border2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 5,
-        "Flow<ingressNode:as2core1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 6,
+        "Flow<ingressNode:as2border1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 4,
+        "Flow<ingressNode:as2border2 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 5,
+        "Flow<ingressNode:as2core1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 6,
         "Flow<ingressNode:as2core2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 7,
-        "Flow<ingressNode:as2dept1 srcIp:253.59.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 8,
+        "Flow<ingressNode:as2dept1 srcIp:253.63.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 8,
         "Flow<ingressNode:as2dist1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 9,
         "Flow<ingressNode:as2dist2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 10,
         "Flow<ingressNode:as3border1 srcIp:253.0.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 11,
@@ -14193,7 +14177,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             }
           ]
         },
-        "Flow<ingressNode:as2border1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:as2border1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -14599,7 +14583,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             }
           ]
         },
-        "Flow<ingressNode:as2border2 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:as2border2 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -15005,7 +14989,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             }
           ]
         },
-        "Flow<ingressNode:as2core1 srcIp:253.127.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:as2core1 srcIp:253.123.0.0 dstIp:2.128.0.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -15329,7 +15313,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
             }
           ]
         },
-        "Flow<ingressNode:as2dept1 srcIp:253.59.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:as2dept1 srcIp:253.63.0.0 dstIp:2.128.0.101 ipProtocol:UDP srcPort:0 dstPort:DOMAIN(53) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -17197,10 +17181,7 @@ p: 'as2': undefined reference to inbound route-map: 'filter-bogons'",
                     "node2" : "as2core2",
                     "node2interface" : "FastEthernet0/0"
                   },
- Delta testrig/environment is now set to tr_cb8d68e7-66bd-4dfd-8a24-88aebaf86091/env_f0fcd2f3-f166-4207-ba3d-797855a84e9b
-Question: {"interfaceBlacklist": [{"interface": "FastEthernet0/0", "hostname": "as2border2"}], "environmentName": "env_f0fcd2f3-f166-4207-ba3d-797855a84e9b", "nodeBlacklist": null, "class": "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion"}
-Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
-                 "routes" : [
+                  "routes" : [
                     "BgpRoute<2.128.0.0/24>"
                   ]
                 },
@@ -17266,13 +17247,13 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.EnvironmentCreationAnswerElement",
-      "newEnvironmentName" : "env_f0fcd2f3-f166-4207-ba3d-797855a84e9b",
+      "newEnvironmentName" : "env_7c69ddf1-3dae-4193-bf65-8e627e02b577",
       "oldEnvironmentName" : "env_default"
     }
   ],
   "question" : {
     "class" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
-    "environmentName" : "env_f0fcd2f3-f166-4207-ba3d-797855a84e9b",
+    "environmentName" : "env_7c69ddf1-3dae-4193-bf65-8e627e02b577",
     "interfaceBlacklist" : [
       {
         "hostname" : "as2border2",
@@ -17387,7 +17368,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
         {
           "@id" : 5,
           "dscp" : 0,
-          "dstIp" : "3.0.1.1",
+          "dstIp" : "3.0.1.2",
           "dstPort" : 65484,
           "ecn" : 0,
           "fragmentOffset" : 0,
@@ -17531,7 +17512,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
         {
           "@id" : 11,
           "dscp" : 0,
-          "dstIp" : "3.0.2.2",
+          "dstIp" : "3.0.1.2",
           "dstPort" : 0,
           "ecn" : 0,
           "fragmentOffset" : 0,
@@ -17582,13 +17563,13 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
         "Flow<ingressNode:as2border2 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 2,
         "Flow<ingressNode:as2core1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 3,
         "Flow<ingressNode:as2core2 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 4,
-        "Flow<ingressNode:as2dept1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:65484 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 5,
+        "Flow<ingressNode:as2dept1 srcIp:2.0.0.0 dstIp:3.0.1.2 ipProtocol:UDP srcPort:0 dstPort:65484 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 5,
         "Flow<ingressNode:as2dist1 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 6,
         "Flow<ingressNode:as2dist2 srcIp:2.0.0.0 dstIp:3.0.2.1 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 7,
         "Flow<ingressNode:as3border1 srcIp:253.0.0.0 dstIp:2.128.1.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 8,
         "Flow<ingressNode:as3border2 srcIp:253.0.0.0 dstIp:2.128.1.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 9,
         "Flow<ingressNode:as3core1 srcIp:253.0.0.0 dstIp:2.128.1.101 ipProtocol:TCP srcPort:0 dstPort:SSH(22) dscp: 0 ecn:0 fragmentOffset:0 state:NEW tcpFlags:00000000 tag:DIFFERENTIAL>" : 10,
-        "Flow<ingressNode:host1 srcIp:2.128.0.0 dstIp:3.0.2.2 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 11,
+        "Flow<ingressNode:host1 srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : 11,
         "Flow<ingressNode:host2 srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 state:NEW tag:DIFFERENTIAL>" : 12
       },
       "traces" : {
@@ -18006,7 +17987,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
             }
           ]
         },
-        "Flow<ingressNode:as2dept1 srcIp:2.0.0.0 dstIp:3.0.1.1 ipProtocol:UDP srcPort:0 dstPort:65484 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:as2dept1 srcIp:2.0.0.0 dstIp:3.0.1.2 ipProtocol:UDP srcPort:0 dstPort:65484 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -18054,6 +18035,17 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                   "routes" : [
                     "BgpRoute<3.0.1.0/24>"
                   ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "as3border1",
+                    "node1interface" : "FastEthernet0/1",
+                    "node2" : "as3core1",
+                    "node2interface" : "FastEthernet0/1"
+                  },
+                  "routes" : [
+                    "ConnectedRoute<3.0.1.0/24>"
+                  ]
                 }
               ],
               "notes" : "ACCEPTED"
@@ -18103,6 +18095,17 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                   },
                   "routes" : [
                     "BgpRoute<3.0.1.0/24>"
+                  ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "as3border1",
+                    "node1interface" : "FastEthernet0/1",
+                    "node2" : "as3core1",
+                    "node2interface" : "FastEthernet0/1"
+                  },
+                  "routes" : [
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -18154,6 +18157,17 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                   "routes" : [
                     "BgpRoute<3.0.1.0/24>"
                   ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "as3border1",
+                    "node1interface" : "FastEthernet0/1",
+                    "node2" : "as3core1",
+                    "node2interface" : "FastEthernet0/1"
+                  },
+                  "routes" : [
+                    "ConnectedRoute<3.0.1.0/24>"
+                  ]
                 }
               ],
               "notes" : "ACCEPTED"
@@ -18203,6 +18217,17 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                   },
                   "routes" : [
                     "BgpRoute<3.0.1.0/24>"
+                  ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "as3border1",
+                    "node1interface" : "FastEthernet0/1",
+                    "node2" : "as3core1",
+                    "node2interface" : "FastEthernet0/1"
+                  },
+                  "routes" : [
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -19889,7 +19914,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
             }
           ]
         },
-        "Flow<ingressNode:host1 srcIp:2.128.0.0 dstIp:3.0.2.2 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
+        "Flow<ingressNode:host1 srcIp:2.128.0.0 dstIp:3.0.1.2 ipProtocol:UDP srcPort:0 dstPort:0 dscp: 0 ecn:0 fragmentOffset:0 state:NEW tag:DIFFERENTIAL>" : {
           "BASE" : [
             {
               "disposition" : "ACCEPTED",
@@ -19913,7 +19938,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -19924,7 +19949,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -19935,7 +19960,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -19946,7 +19971,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -19957,7 +19982,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfIntraAreaRoute<3.0.2.0/24>"
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -19985,7 +20010,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -19996,7 +20021,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet2/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20007,7 +20032,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20018,7 +20043,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20029,7 +20054,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfIntraAreaRoute<3.0.2.0/24>"
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20057,7 +20082,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20068,7 +20093,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet2/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20079,7 +20104,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20090,7 +20115,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20101,7 +20126,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfIntraAreaRoute<3.0.2.0/24>"
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20129,7 +20154,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20140,7 +20165,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20151,7 +20176,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20162,7 +20187,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20173,7 +20198,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "OspfIntraAreaRoute<3.0.2.0/24>"
+                    "ConnectedRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20203,7 +20228,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20214,7 +20239,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20225,7 +20250,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20236,7 +20261,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "null_interface"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20264,7 +20289,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20275,7 +20300,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet2/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20286,7 +20311,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20297,7 +20322,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "null_interface"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20325,7 +20350,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20336,7 +20361,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet2/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20347,7 +20372,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20358,7 +20383,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "null_interface"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20386,7 +20411,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20397,7 +20422,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet1/0"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20408,7 +20433,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {
@@ -20419,7 +20444,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "null_interface"
                   },
                   "routes" : [
-                    "BgpRoute<3.0.2.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 }
               ],
@@ -20946,8 +20971,7 @@ Question: {"type": "reduced", "class": "org.batfish.question.ReachabilityQuestio
                     "node2interface" : "FastEthernet0/1"
                   },
                   "routes" : [
-  Question: {"type": "multipath", "class": "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion"}
-                  "BgpRoute<3.0.1.0/24>"
+                    "BgpRoute<3.0.1.0/24>"
                   ]
                 },
                 {

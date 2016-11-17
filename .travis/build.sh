@@ -16,6 +16,22 @@ coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &
 pybatfish tests/python/commands.py || exit 1
 
+echo -e "\n  ..... Running java demo tests"
+allinone -cmdfile demo/java/commands > demo/java/commands.ref.testout || exit 1
+rm demo/java/commands.ref.testout
+#export diffcount=`diff demo/java/commands.{ref,ref.testout}`
+#if [ $diffcount == 100]; then 
+#	rm demo/java/commands.ref.testout
+#fi
+
+echo -e "\n  ..... Running java demo tests"
+pybatfish demo/python/commands.py > demo/python/commands.ref.testout || exit 1
+rm demo/python/commands.ref.testout
+#export diffcount=`diff demo/java/commands.{ref,ref.testout}`
+#if [ $diffcount == 186]; then 
+#	rm demo/java/commands.ref.testout
+#fi
+
 echo -e "\n .... Failed tests: "
 find -name *.testout
 
