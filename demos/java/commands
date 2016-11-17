@@ -15,7 +15,7 @@ echo # load the testing
 init-testrig test_rigs/example
 
 echo #####################
-echo # our logical representation of the network that can be queried in various ways. 
+echo # our logical representation of the network that can be queried in various ways.
 echo # we have many queries and can write more
 
 echo # for example, we can ask simple questions on adjacencies
@@ -34,6 +34,21 @@ get uniqueipassignments
 
 echo # this will check if all loopbacks are being correctly announced within OSPF
 get ospfloopbacks
+
+echo ################
+echo # The configurations are converted to JSON using a vendor-independent data model:
+get nodes summary=False
+
+echo # Some checks can be expressed as JsonPath queries on this JSON.
+echo # For instance, to check whether the MTU of each interface is 1500,
+echo # we look for all interfaces on all nodes with an MTU that is NOT 1500:
+get nodespath paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu", "suffix":True}]
+
+echo # We can also do checks on the data model using our more powerful assertion language:
+echo # Check that
+echo #  1. There are 15 nodes
+echo #  2. Every node mentioning aaa new-model has it set to true ('aaa new-model' vs. 'no aaa new-model')
+get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
 
 echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
@@ -93,6 +108,6 @@ echo # --> any lack of fault tolerance is easy to see
 echo ##############
 echo # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
 
-echo # a powerful example: multipath consistency. 
+echo # a powerful example: multipath consistency.
 get reachability type=multipath
 echo # --> will catch hard-to-debug, bad interactions between routing and ACLs

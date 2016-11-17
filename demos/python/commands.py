@@ -37,6 +37,15 @@ print "# Or that all loopbacks are announced within OSPF"
 print bf_answer_type("ospfloopbacks")
 
 print "################"
+print "# The configurations are converted to JSON using a vendor-independent data model:"
+print bf_answer_type("nodes", summary=False)
+
+print "# Some checks can be expressed as JsonPath queries on this JSON."
+print "# For instance, to check whether the MTU of each interface is 1500,"
+print "# we look for all interfaces on all nodes with an MTU that is NOT 1500:"
+print bf_answer_type("nodespath", paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].mtu", "suffix":True}])
+
+print "################"
 print "# going deeper, we can ask questions about data flow, i.e., the end-to-end impact of all configuration snippets"
 
 print "# E.g., we can see how host1 reaches a given IP address "

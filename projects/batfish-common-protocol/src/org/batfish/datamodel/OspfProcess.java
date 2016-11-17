@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 public class OspfProcess implements Serializable {
 
    private static final long serialVersionUID = 1L;

@@ -56,6 +56,7 @@ public class Client extends AbstractClient implements IClient {
 
    private static final String FLAG_FAILING_TEST = "-error";
    private static final String FLAG_NO_DATAPLANE = "-nodataplane";
+   private static final int NUM_TRIES_WARNING_THRESHOLD = 5;
 
    private Map<String, String> _additionalBatfishOptions;
 
@@ -461,10 +462,11 @@ public class Client extends AbstractClient implements IClient {
       while (true) {
          try {
             numTries++;
-            if (_workHelper.isReachable()) {
+            boolean exceededNumTriesWarningThreshold = numTries > NUM_TRIES_WARNING_THRESHOLD;
+            if (_workHelper.isReachable(exceededNumTriesWarningThreshold)) {
                // print this message only we might have printed unable to
                // connect message earlier
-               if (numTries > 1) {
+               if (exceededNumTriesWarningThreshold) {
                   _logger.outputf("Connected to coordinator after %d tries\n",
                         numTries);
                }
