@@ -1,5 +1,10 @@
 package org.batfish.question.assertion;
 
+import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 public class Assertion {
 
    private boolean _asPathList;
@@ -40,6 +45,17 @@ public class Assertion {
 
    public void setSummary(boolean summary) {
       _summary = summary;
+   }
+
+   @Override
+   public String toString() {
+      BatfishObjectMapper mapper = new BatfishObjectMapper(false);
+      try {
+         return mapper.writeValueAsString(this);
+      }
+      catch (JsonProcessingException e) {
+         throw new BatfishException("Could not map to JSON string", e);
+      }
    }
 
 }

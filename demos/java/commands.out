@@ -9,9 +9,9 @@
 ## If you want to run against www.batfish.org
 ## % batfish_client -runmode interactive
 # load the testing
-Init'ed and set active container to cp_387ce0b5-5009-4d0e-a5de-5e5e2a6a50ad
+Init'ed and set active container to cp_bc6acb3e-df46-4cd0-b7fa-170b6c86599e
 Uploaded testrig. Parsing now.
-. . . . . . . 
+. . . . . . 
 Status: SUCCESS
 Question: null
 {
@@ -181,7 +181,7 @@ Question: null
     }
   }
 }
-Base testrig is now tr_ecbead57-dbff-4425-a18f-adfef6db452f
+Base testrig is now tr_1d60c040-97d8-42a4-bedb-c5d2a7a82ef2
 Generating dataplane now
 . . 
 Status: SUCCESS
@@ -10483,7 +10483,7 @@ Question: nodespath paths="[{"path":"$.nodes[*].interfaces[*][?(@.mtu != 1500)].
 # 2. Every node mentioning aaa new-model has it set to true ('aaa new-model' vs. 'no aaa new-model')
 . 
 Status: SUCCESS
-Question: assert assertions="[org.batfish.question.assertion.Assertion@2c7a8af2, org.batfish.question.assertion.Assertion@10c07b8d]"
+Question: assert assertions="[{"asPathList":false,"assertion":"(eq 15 (pathsize '$.nodes[*]'))","summary":false}, {"asPathList":false,"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))","summary":false}]"
 {
   "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
   "fail" : false,
@@ -10678,7 +10678,7 @@ Flow: ingress:as3border1 253.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) state:
 #############
 # comparing two sets of configs (e.g., current + planned) is a powerful debugging aid
 # initialize the delta environment and generate its dataplane
-Active delta testrig->environment is now tr_ecbead57-dbff-4425-a18f-adfef6db452f->env_b76e1457-62d8-4004-a26a-875859cb05cc
+Active delta testrig->environment is now tr_1d60c040-97d8-42a4-bedb-c5d2a7a82ef2->env_85f5f98e-89d6-407a-845c-739632161908
 . . . . . 
 Status: SUCCESS
 Question: null
@@ -10848,7 +10848,7 @@ Question: null
   }
 }
 Generating delta dataplane
-. . 
+. 
 Status: SUCCESS
 Question: null
 Computation summary:
@@ -11460,7 +11460,7 @@ Flow: ingress:as3core1 253.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) state:NE
 Status: SUCCESS
 Question: {
   "class" : "org.batfish.question.EnvironmentCreationQuestionPlugin$EnvironmentCreationQuestion",
-  "environmentName" : "env_325c2d13-d0b1-4e84-8263-c7e2325a47e8",
+  "environmentName" : "env_3cfb8351-4578-410a-aca4-73d235d3c1e8",
   "interfaceBlacklist" : [
     {
       "hostname" : "as2border2",
@@ -11468,8 +11468,8 @@ Question: {
     }
   ]
 }
-New environment: 'env_325c2d13-d0b1-4e84-8263-c7e2325a47e8' successfully created from old environment: 'env_default' with supplied parameters
-Active delta testrig->environment is now tr_ecbead57-dbff-4425-a18f-adfef6db452f->env_325c2d13-d0b1-4e84-8263-c7e2325a47e8
+New environment: 'env_3cfb8351-4578-410a-aca4-73d235d3c1e8' successfully created from old environment: 'env_default' with supplied parameters
+Active delta testrig->environment is now tr_1d60c040-97d8-42a4-bedb-c5d2a7a82ef2->env_3cfb8351-4578-410a-aca4-73d235d3c1e8
 # we can see if reachability changes at all after this failure
 . . . . 
 Status: SUCCESS
