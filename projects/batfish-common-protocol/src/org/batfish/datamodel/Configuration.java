@@ -98,6 +98,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, Interface> _interfaces;
 
+   private NavigableMap<String, Ip6AccessList> _ip6AccessLists;
+
    private NavigableMap<String, IpAccessList> _ipAccessLists;
 
    private NavigableMap<String, IpsecPolicy> _ipsecPolicies;
@@ -123,6 +125,8 @@ public final class Configuration extends ComparableStructure<String> {
    private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
 
    private RoleSet _roles;
+
+   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
    private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
@@ -154,11 +158,13 @@ public final class Configuration extends ComparableStructure<String> {
       _ikeProposals = new TreeMap<>();
       _interfaces = new TreeMap<>();
       _ipAccessLists = new TreeMap<>();
+      _ip6AccessLists = new TreeMap<>();
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
+      _route6FilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
       _staticRoutes = new TreeSet<>();
       _vendorFamily = new VendorFamily();
@@ -235,6 +241,10 @@ public final class Configuration extends ComparableStructure<String> {
       return _interfaces;
    }
 
+   public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
+      return _ip6AccessLists;
+   }
+
    @JsonProperty(IP_ACCESS_LISTS_VAR)
    public NavigableMap<String, IpAccessList> getIpAccessLists() {
       return _ipAccessLists;
@@ -298,6 +308,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(ROLES_VAR)
    public RoleSet getRoles() {
       return _roles;
+   }
+
+   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
+      return _route6FilterLists;
    }
 
    @JsonProperty(ROUTE_FILTER_LISTS_VAR)
@@ -421,6 +435,11 @@ public final class Configuration extends ComparableStructure<String> {
       _interfaces = interfaces;
    }
 
+   public void setIp6AccessLists(
+         NavigableMap<String, Ip6AccessList> ip6AccessLists) {
+      _ip6AccessLists = ip6AccessLists;
+   }
+
    @JsonProperty(IP_ACCESS_LISTS_VAR)
    public void setIpAccessLists(
          NavigableMap<String, IpAccessList> ipAccessLists) {
@@ -456,6 +475,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setRoles(RoleSet roles) {
       _roles = roles;
+   }
+
+   public void setRoute6FilterLists(
+         NavigableMap<String, Route6FilterList> route6FilterLists) {
+      _route6FilterLists = route6FilterLists;
    }
 
    @JsonProperty(ROUTE_FILTER_LISTS_VAR)

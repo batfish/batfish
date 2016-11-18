@@ -11,6 +11,7 @@ interface Dot11Radio0
  !
  speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
  channel 2462
+ ip verify unicast source reachable-via rx 167
  station-role root access-point
  antenna gain 6
  l2-filter bridge-group-acl

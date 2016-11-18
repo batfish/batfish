@@ -34,11 +34,6 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
       return _routing;
    }
 
-   @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.IP_ACCESS_LIST;
-   }
-
    public void setRouting(boolean routing) {
       _routing = routing;
    }

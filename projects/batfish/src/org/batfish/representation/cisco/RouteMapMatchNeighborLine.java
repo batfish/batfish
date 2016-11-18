@@ -19,11 +19,6 @@ public class RouteMapMatchNeighborLine extends RouteMapMatchLine {
    }
 
    @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.NEIGHBOR;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       throw new UnsupportedOperationException(

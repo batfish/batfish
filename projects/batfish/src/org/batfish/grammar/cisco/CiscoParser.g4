@@ -523,10 +523,7 @@ l_access_class
       )
       |
       (
-         (
-            name = variable
-            | DEC
-         )
+         name = variable
          (
             IN
             | OUT
@@ -813,7 +810,28 @@ ntp_peer
 
 ntp_server
 :
-   SERVER hostname = variable ~NEWLINE* NEWLINE
+   SERVER
+   (
+      VRF vrf = variable
+   )? hostname = variable
+   (
+      (
+         KEY key = DEC
+      )
+      | prefer = PREFER
+      |
+      (
+         SOURCE src = variable
+      )
+      |
+      (
+         USE_VRF vrf = variable
+      )
+      |
+      (
+         VERSION ver = DEC
+      )
+   )* NEWLINE
 ;
 
 ntp_source
@@ -1336,6 +1354,19 @@ router_multicast_tail
    )*
 ;
 
+s_archive
+:
+   ARCHIVE ~NEWLINE* NEWLINE
+   (
+      (
+         HIDEKEYS
+         | LOG
+         | LOGGING
+         | NOTIFY
+      ) ~NEWLINE* NEWLINE
+   )*
+;
+
 s_class_map
 :
    CLASS_MAP
@@ -1372,6 +1403,28 @@ s_control_plane_tail
    | cp_management_plane
    | cp_null
    | cp_service_policy
+;
+
+s_dial_peer
+:
+   DIAL_PEER ~NEWLINE* NEWLINE
+   (
+      NO?
+      (
+         CODEC
+         | DESCRIPTION
+         | DESTINATION_PATTERN
+         | DTMF_RELAY
+         | FORWARD_DIGITS
+         | INCOMING
+         | MEDIA
+         | PORT
+         | SERVICE
+         | SESSION
+         | TRANSLATION_PROFILE
+         | VAD
+      ) ~NEWLINE* NEWLINE
+   )*
 ;
 
 s_failover
@@ -1513,6 +1566,38 @@ s_service
    )+ NEWLINE
 ;
 
+s_sntp
+:
+   SNTP sntp_server
+;
+
+s_ssh
+:
+   SSH
+   (
+      ssh_access_group
+      | ssh_client
+      | ssh_null
+      | ssh_server
+      | ssh_timeout
+   )
+;
+
+s_stcapp
+:
+   STCAPP ~NEWLINE* NEWLINE
+   (
+      (
+         CALL
+         | CPTONE
+         | FALLBACK_DN
+         | PICKUP
+         | PORT
+         | PREFIX
+      ) ~NEWLINE* NEWLINE
+   )*
+;
+
 s_switchport
 :
    SWITCHPORT DEFAULT MODE
@@ -1520,6 +1605,14 @@ s_switchport
       ACCESS
       | ROUTED
    ) NEWLINE
+;
+
+sntp_server
+:
+   SERVER hostname = variable
+   (
+      VERSION version = DEC
+   )? NEWLINE
 ;
 
 srlg_interface_numeric_stanza
@@ -1537,6 +1630,55 @@ srlg_stanza
    SRLG NEWLINE srlg_interface_stanza*
 ;
 
+ssh_access_group
+:
+   ACCESS_GROUP IPV6? name = variable NEWLINE
+;
+
+ssh_client
+:
+   CLIENT ~NEWLINE* NEWLINE
+;
+
+ssh_null
+:
+   (
+      IP_ADDRESS
+      | KEY
+      | KEY_EXCHANGE
+      | STRICTHOSTKEYCHECK
+      | VERSION
+   ) ~NEWLINE* NEWLINE
+;
+
+ssh_server
+:
+   SERVER
+   (
+      (
+         IPV4 ACCESS_LIST acl = variable
+      )
+      |
+      (
+         IPV6 ACCESS_LIST acl6 = variable
+      )
+      |
+      (
+         SESSION_LIMIT limit = DEC
+      )
+      | V2
+      |
+      (
+         VRF vrf = variable
+      )
+   )* NEWLINE
+;
+
+ssh_timeout
+:
+   TIMEOUT DEC NEWLINE
+;
+
 stanza
 :
    appletalk_access_list_stanza
@@ -1544,6 +1686,7 @@ stanza
    | community_set_stanza
    | dhcp_stanza
    | extended_access_list_stanza
+   | extended_ipv6_access_list_stanza
    | hostname_stanza
    | interface_stanza
    | ip_as_path_access_list_stanza
@@ -1553,6 +1696,7 @@ stanza
    | ip_default_gateway_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
+   | ipv6_prefix_list_stanza
    | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
@@ -1578,9 +1722,11 @@ stanza
    | router_static_stanza
    | rsvp_stanza
    | s_aaa
+   | s_archive
    | s_callhome
    | s_class_map
    | s_control_plane
+   | s_dial_peer
    | s_ethernet_services
    | s_failover
    | s_foundry_mac_access_list
@@ -1600,8 +1746,12 @@ stanza
    | s_router_eigrp
    | s_service
    | s_snmp_server
+   | s_sntp
+   | s_ssh
+   | s_stcapp
    | s_switchport
    | standard_access_list_stanza
+   | standard_ipv6_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza
    | vrf_context_stanza

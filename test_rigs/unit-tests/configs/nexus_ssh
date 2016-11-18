@@ -1,0 +1,6 @@
+!
+hostname nexus_ssh
+!
+ssh key rsa 2048
+!
+

@@ -33,6 +33,8 @@ public class CiscoFamily implements Serializable {
 
    private SnmpServer _snmpServer;
 
+   private Sntp _sntp;
+
    private Boolean _sourceRoute;
 
    private SshSettings _ssh;
@@ -88,6 +90,10 @@ public class CiscoFamily implements Serializable {
       return _snmpServer;
    }
 
+   public Sntp getSntp() {
+      return _sntp;
+   }
+
    public Boolean getSourceRoute() {
       return _sourceRoute;
    }
@@ -138,6 +144,10 @@ public class CiscoFamily implements Serializable {
 
    public void setSnmpServer(SnmpServer snmpServer) {
       _snmpServer = snmpServer;
+   }
+
+   public void setSntp(Sntp sntp) {
+      _sntp = sntp;
    }
 
    public void setSourceRoute(Boolean sourceRoute) {

@@ -26,11 +26,6 @@ public class RouteMapMatchTagLine extends RouteMapMatchLine {
    }
 
    @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.TAG;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();

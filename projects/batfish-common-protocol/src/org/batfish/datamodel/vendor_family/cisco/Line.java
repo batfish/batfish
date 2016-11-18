@@ -18,9 +18,13 @@ public class Line extends ComparableStructure<String> {
 
    private String _inputAccessList;
 
+   private String _inputIpv6AccessList;
+
    private String _loginAuthentication;
 
    private String _outputAccessList;
+
+   private String _outputIpv6AccessList;
 
    private String _transportInput;
 
@@ -45,12 +49,20 @@ public class Line extends ComparableStructure<String> {
       return _inputAccessList;
    }
 
+   public String getInputIpv6AccessList() {
+      return _inputIpv6AccessList;
+   }
+
    public String getLoginAuthentication() {
       return _loginAuthentication;
    }
 
    public String getOutputAccessList() {
       return _outputAccessList;
+   }
+
+   public String getOutputIpv6AccessList() {
+      return _outputIpv6AccessList;
    }
 
    public String getTransportInput() {
@@ -77,12 +89,20 @@ public class Line extends ComparableStructure<String> {
       _inputAccessList = inputAccessList;
    }
 
+   public void setInputIpv6AccessList(String inputIpv6AccessList) {
+      _inputIpv6AccessList = inputIpv6AccessList;
+   }
+
    public void setLoginAuthentication(String loginAuthentication) {
       _loginAuthentication = loginAuthentication;
    }
 
    public void setOutputAccessList(String outputAccessList) {
       _outputAccessList = outputAccessList;
+   }
+
+   public void setOutputIpv6AccessList(String outputIpv6AccessList) {
+      _outputIpv6AccessList = outputIpv6AccessList;
    }
 
    public void setTransportInput(String transportInput) {

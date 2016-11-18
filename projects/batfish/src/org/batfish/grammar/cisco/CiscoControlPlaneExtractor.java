@@ -32,6 +32,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -103,6 +104,8 @@ import org.batfish.datamodel.vendor_family.cisco.Service;
 import org.batfish.datamodel.vendor_family.cisco.SnmpCommunity;
 import org.batfish.datamodel.vendor_family.cisco.SnmpHost;
 import org.batfish.datamodel.vendor_family.cisco.SnmpServer;
+import org.batfish.datamodel.vendor_family.cisco.Sntp;
+import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.main.RedFlagBatfishException;
 import org.batfish.main.Warnings;
@@ -238,10 +241,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toIp(ctx.ip);
       }
       else if (ctx.prefix != null) {
-         return getPrefixIp(ctx.prefix);
+         return new Prefix(ctx.prefix.getText()).getAddress();
       }
       else {
-         return new Ip(0l);
+         return Ip.ZERO;
+      }
+   }
+
+   private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
+      if (ctx.ip != null) {
+         return toIp6(ctx.ip);
+      }
+      else if (ctx.ipv6_prefix != null) {
+         return new Prefix6(ctx.ipv6_prefix.getText()).getAddress();
+      }
+      else {
+         return Ip6.ZERO;
       }
    }
 
@@ -350,6 +365,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private ExtendedAccessList _currentExtendedAcl;
 
+   private ExtendedIpv6AccessList _currentExtendedIpv6Acl;
+
    private List<Interface> _currentInterfaces;
 
    private IpBgpPeerGroup _currentIpPeerGroup;
@@ -376,6 +393,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private NamedBgpPeerGroup _currentPeerSession;
 
+   private Prefix6List _currentPrefix6List;
+
    private PrefixList _currentPrefixList;
 
    private RouteMap _currentRouteMap;
@@ -392,6 +411,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private StandardAccessList _currentStandardAcl;
 
    private StandardCommunityList _currentStandardCommunityList;
+
+   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
    private String _currentVrf;
 
@@ -584,12 +605,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterExtended_access_list_stanza(
          Extended_access_list_stanzaContext ctx) {
-      boolean ipv6 = (ctx.IPV6() != null);
-
-      if (ipv6) {
-         todo(ctx, F_IPV6);
-      }
-
       String name;
       if (ctx.name != null) {
          name = ctx.name.getText();
@@ -600,14 +615,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Could not determine acl name");
       }
-      _currentExtendedAcl = _configuration.getExtendedAcls().get(name);
-      if (_currentExtendedAcl == null) {
-         _currentExtendedAcl = new ExtendedAccessList(name);
-         _currentExtendedAcl.setIpv6(ipv6);
-         if (!ipv6) {
-            _configuration.getExtendedAcls().put(name, _currentExtendedAcl);
-         }
+      ExtendedAccessList list = _configuration.getExtendedAcls().get(name);
+      if (list == null) {
+         list = new ExtendedAccessList(name);
+         _configuration.getExtendedAcls().put(name, list);
       }
+      _currentExtendedAcl = list;
+   }
+
+   @Override
+   public void enterExtended_ipv6_access_list_stanza(
+         Extended_ipv6_access_list_stanzaContext ctx) {
+      boolean ipv6 = (ctx.IPV6() != null);
+
+      if (ipv6) {
+         todo(ctx, F_IPV6);
+      }
+
+      String name;
+      if (ctx.name != null) {
+         name = ctx.name.getText();
+      }
+      else {
+         throw new BatfishException("Could not determine acl name");
+      }
+      ExtendedIpv6AccessList list = _configuration.getExtendedIpv6Acls()
+            .get(name);
+      if (list == null) {
+         list = new ExtendedIpv6AccessList(name);
+         _configuration.getExtendedIpv6Acls().put(name, list);
+      }
+      _currentExtendedIpv6Acl = list;
    }
 
    @Override
@@ -724,19 +762,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
       String name = ctx.name.getText();
-      boolean isIpv6 = (ctx.IPV6() != null);
-      if (isIpv6) {
-         _currentPrefixList = null;
-         todo(ctx, F_IPV6);
-         return;
+      PrefixList list = _configuration.getPrefixLists().get(name);
+      if (list == null) {
+         list = new PrefixList(name);
+         _configuration.getPrefixLists().put(name, list);
       }
-      else {
-         _currentPrefixList = _configuration.getPrefixLists().get(name);
-         if (_currentPrefixList == null) {
-            _currentPrefixList = new PrefixList(name);
-            _configuration.getPrefixLists().put(name, _currentPrefixList);
-         }
-      }
+      _currentPrefixList = list;
    }
 
    @Override
@@ -754,6 +785,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (_configuration.getCf().getSsh() == null) {
          _configuration.getCf().setSsh(new SshSettings());
       }
+   }
+
+   @Override
+   public void enterIpv6_prefix_list_stanza(
+         Ipv6_prefix_list_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      Prefix6List list = _configuration.getPrefix6Lists().get(name);
+      if (list == null) {
+         list = new Prefix6List(name);
+         _configuration.getPrefix6Lists().put(name, list);
+      }
+      _currentPrefix6List = list;
    }
 
    @Override
@@ -1004,10 +1047,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.first != null) {
          if (ctx.slot1 != null) {
             slot1 = toInteger(ctx.slot1);
-            nameBase += slot1 + "/";
+            slot2 = slot1;
             if (ctx.port1 != null) {
                port1 = toInteger(ctx.port1);
-               nameBase += port1 + "/";
+               port2 = port1;
             }
          }
          int first = toInteger(ctx.first);
@@ -1015,16 +1058,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          if (ctx.last != null) {
             if (ctx.slot2 != null) {
                slot2 = toInteger(ctx.slot2);
-               if (!slot2.equals(slot1)) {
-                  throw new BatfishException(
-                        "Do not support changing slot number in line declaration");
-               }
                if (ctx.port2 != null) {
                   port2 = toInteger(ctx.port2);
-                  if (!port2.equals(port1)) {
-                     throw new BatfishException(
-                           "Do not support changing port number in line declaration");
-                  }
                }
             }
             last = toInteger(ctx.last);
@@ -1036,9 +1071,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             throw new BatfishException("Do not support decreasing line range: "
                   + first + " " + last);
          }
-         for (int i = first; i <= last; i++) {
-            String name = nameBase + i;
-            names.add(name);
+         if (slot1 != null && port1 != null) {
+            for (int s = slot1; s <= slot2; s++) {
+               for (int p = port1; p <= port2; p++) {
+                  for (int i = first; i <= last; i++) {
+                     String name = nameBase + s + "/" + p + "/" + i;
+                     names.add(name);
+                  }
+               }
+            }
+         }
+         else if (slot1 != null) {
+            for (int s = slot1; s <= slot2; s++) {
+               for (int i = first; i <= last; i++) {
+                  String name = nameBase + s + "/" + i;
+                  names.add(name);
+               }
+            }
+         }
+         else {
+            for (int i = first; i <= last; i++) {
+               String name = nameBase + i;
+               names.add(name);
+            }
          }
       }
       else {
@@ -1071,6 +1126,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_snmp_server(S_snmp_serverContext ctx) {
       if (_configuration.getCf().getSnmpServer() == null) {
          _configuration.getCf().setSnmpServer(new SnmpServer());
+      }
+   }
+
+   @Override
+   public void enterS_sntp(S_sntpContext ctx) {
+      if (_configuration.getCf().getSntp() == null) {
+         _configuration.getCf().setSntp(new Sntp());
       }
    }
 
@@ -1116,7 +1178,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       String name;
-      boolean ipv6 = (ctx.IPV6() != null);
       if (ctx.name != null) {
          name = ctx.name.getText();
       }
@@ -1126,14 +1187,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Invalid standard access-list name");
       }
-      _currentStandardAcl = _configuration.getStandardAcls().get(name);
-      if (_currentStandardAcl == null) {
-         _currentStandardAcl = new StandardAccessList(name);
-         _currentStandardAcl.setIpv6(ipv6);
-         if (!ipv6) {
-            _configuration.getStandardAcls().put(name, _currentStandardAcl);
-         }
+      StandardAccessList list = _configuration.getStandardAcls().get(name);
+      if (list == null) {
+         list = new StandardAccessList(name);
+         _configuration.getStandardAcls().put(name, list);
       }
+      _currentStandardAcl = list;
+   }
+
+   @Override
+   public void enterStandard_ipv6_access_list_stanza(
+         Standard_ipv6_access_list_stanzaContext ctx) {
+      String name;
+      if (ctx.name != null) {
+         name = ctx.name.getText();
+      }
+      else {
+         throw new BatfishException("Invalid standard access-list name");
+      }
+      StandardIpv6AccessList list = _configuration.getStandardIpv6Acls()
+            .get(name);
+      if (list == null) {
+         list = new StandardIpv6AccessList(name);
+         _configuration.getStandardIpv6Acls().put(name, list);
+      }
+      _currentStandardIpv6Acl = list;
    }
 
    @Override
@@ -1480,9 +1558,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitExtended_access_list_tail(
          Extended_access_list_tailContext ctx) {
 
-      if (_currentExtendedAcl.getIpv6()) {
-         return;
-      }
       LineAction action = toLineAction(ctx.ala);
       IpProtocol protocol = toIpProtocol(ctx.prot);
       switch (protocol) {
@@ -1492,7 +1567,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case IPV6_NO_NXT:
       case IPV6_OPTS:
       case IPV6_ROUTE:
-         _currentExtendedAcl.setIpv6(true);
+         throw new BatfishException("Did not expect ipv6 information here");
          // $CASES-OMITTED$
       default:
          break;
@@ -1650,6 +1725,170 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitExtended_ipv6_access_list_stanza(
+         Extended_ipv6_access_list_stanzaContext ctx) {
+      _currentExtendedIpv6Acl = null;
+   }
+
+   @Override
+   public void exitExtended_ipv6_access_list_tail(
+         Extended_ipv6_access_list_tailContext ctx) {
+      LineAction action = toLineAction(ctx.ala);
+      IpProtocol protocol = toIpProtocol(ctx.prot);
+      Ip6 srcIp = getIp(ctx.srcipr);
+      Ip6 srcWildcard = getWildcard(ctx.srcipr);
+      Ip6 dstIp = getIp(ctx.dstipr);
+      Ip6 dstWildcard = getWildcard(ctx.dstipr);
+      String srcAddressGroup = getAddressGroup(ctx.srcipr);
+      String dstAddressGroup = getAddressGroup(ctx.dstipr);
+      List<SubRange> srcPortRanges = ctx.alps_src != null
+            ? toPortRanges(ctx.alps_src) : Collections.<SubRange> emptyList();
+      List<SubRange> dstPortRanges = ctx.alps_dst != null
+            ? toPortRanges(ctx.alps_dst) : Collections.<SubRange> emptyList();
+      Integer icmpType = null;
+      Integer icmpCode = null;
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
+      Set<State> states = EnumSet.noneOf(State.class);
+      for (Extended_access_list_additional_featureContext feature : ctx.features) {
+         if (feature.ACK() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseAck(true);
+            alt.setAck(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.DSCP() != null) {
+            int dscpType = toDscpType(feature.dscp_type());
+            dscps.add(dscpType);
+         }
+         if (feature.ECE() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseEce(true);
+            alt.setEce(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.ECHO_REPLY() != null) {
+            icmpType = IcmpType.ECHO_REPLY;
+            icmpCode = IcmpCode.ECHO_REPLY;
+         }
+         if (feature.ECHO() != null) {
+            icmpType = IcmpType.ECHO_REQUEST;
+            icmpCode = IcmpCode.ECHO_REQUEST;
+         }
+         if (feature.ECN() != null) {
+            int ecn = toInteger(feature.ecn);
+            ecns.add(ecn);
+         }
+         if (feature.ESTABLISHED() != null) {
+            // must contain ACK or RST
+            TcpFlags alt1 = new TcpFlags();
+            TcpFlags alt2 = new TcpFlags();
+            alt1.setUseAck(true);
+            alt1.setAck(true);
+            alt2.setUseRst(true);
+            alt2.setRst(true);
+            tcpFlags.add(alt1);
+            tcpFlags.add(alt2);
+         }
+         if (feature.FIN() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseFin(true);
+            alt.setFin(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.FRAGMENTS() != null) {
+            todo(ctx, F_FRAGMENTS);
+         }
+         if (feature.HOST_UNKNOWN() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+         }
+         if (feature.HOST_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
+         }
+         if (feature.NETWORK_UNKNOWN() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+         }
+         if (feature.NET_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
+         }
+         if (feature.PACKET_TOO_BIG() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.PACKET_TOO_BIG;
+         }
+         if (feature.PARAMETER_PROBLEM() != null) {
+            icmpType = IcmpType.PARAMETER_PROBLEM;
+         }
+         if (feature.PORT_UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+            icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
+         }
+         if (feature.PSH() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUsePsh(true);
+            alt.setPsh(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.REDIRECT() != null) {
+            icmpType = IcmpType.REDIRECT_MESSAGE;
+         }
+         if (feature.RST() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseRst(true);
+            alt.setRst(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.SOURCE_QUENCH() != null) {
+            icmpType = IcmpType.SOURCE_QUENCH;
+            icmpCode = IcmpCode.SOURCE_QUENCH;
+         }
+         if (feature.SYN() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseSyn(true);
+            alt.setSyn(true);
+            tcpFlags.add(alt);
+         }
+         if (feature.TIME_EXCEEDED() != null) {
+            icmpType = IcmpType.TIME_EXCEEDED;
+         }
+         if (feature.TTL() != null) {
+            todo(ctx, F_TTL);
+         }
+         if (feature.TTL_EXCEEDED() != null) {
+            icmpType = IcmpType.TIME_EXCEEDED;
+            icmpCode = IcmpCode.TTL_EXCEEDED;
+         }
+         if (feature.TRACEROUTE() != null) {
+            icmpType = IcmpType.TRACEROUTE;
+            icmpCode = IcmpCode.TRACEROUTE;
+         }
+         if (feature.TRACKED() != null) {
+            states.add(State.ESTABLISHED);
+         }
+         if (feature.UNREACHABLE() != null) {
+            icmpType = IcmpType.DESTINATION_UNREACHABLE;
+         }
+         if (feature.URG() != null) {
+            TcpFlags alt = new TcpFlags();
+            alt.setUseUrg(true);
+            alt.setUrg(true);
+            tcpFlags.add(alt);
+         }
+      }
+      String name = getFullText(ctx).trim();
+      ExtendedIpv6AccessListLine line = new ExtendedIpv6AccessListLine(name,
+            action, protocol, new Ip6Wildcard(srcIp, srcWildcard),
+            srcAddressGroup, new Ip6Wildcard(dstIp, dstWildcard),
+            dstAddressGroup, srcPortRanges, dstPortRanges, dscps, ecns,
+            icmpType, icmpCode, states, tcpFlags);
+      _currentExtendedIpv6Acl.addLine(line);
+   }
+
+   @Override
    public void exitFailover_interface(Failover_interfaceContext ctx) {
       String name = ctx.name.getText();
       Ip primaryIp = toIp(ctx.pip);
@@ -1708,6 +1947,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean enabled = ctx.NO() == null;
       for (Interface currentInterface : _currentInterfaces) {
          currentInterface.setProxyArp(enabled);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_verify(If_ip_verifyContext ctx) {
+      if (ctx.acl != null) {
+         String acl = ctx.acl.getText();
+         _configuration.getVerifyAccessLists().add(acl);
       }
    }
 
@@ -1944,24 +2191,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
-      boolean ipv6 = ctx.ipv6_prefix != null;
       LineAction action = toLineAction(ctx.action);
-      Prefix prefix = null;
-      Prefix6 prefix6 = null;
-      int prefixLength;
-      if (ipv6) {
-         prefix6 = new Prefix6(ctx.ipv6_prefix.getText());
-         prefixLength = prefix6.getPrefixLength();
-      }
-      else {
-         prefix = new Prefix(ctx.prefix.getText());
-         prefixLength = prefix.getPrefixLength();
-      }
+      Prefix prefix = new Prefix(ctx.prefix.getText());
+      int prefixLength = prefix.getPrefixLength();
       int minLen = prefixLength;
       int maxLen = prefixLength;
       if (ctx.minpl != null) {
          minLen = toInteger(ctx.minpl);
-         maxLen = ipv6 ? 128 : 32;
+         maxLen = Prefix.MAX_PREFIX_LENGTH;
       }
       if (ctx.maxpl != null) {
          maxLen = toInteger(ctx.maxpl);
@@ -1971,13 +2208,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          maxLen = toInteger(ctx.eqpl);
       }
       SubRange lengthRange = new SubRange(minLen, maxLen);
-      if (ipv6) {
-         todo(ctx, F_IPV6);
-      }
-      else {
-         PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
-         _currentPrefixList.addLine(line);
-      }
+      PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
+      _currentPrefixList.addLine(line);
    }
 
    @Override
@@ -2055,6 +2287,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
+      _currentPrefix6List = null;
+   }
+
+   @Override
+   public void exitIpv6_prefix_list_tail(Ipv6_prefix_list_tailContext ctx) {
+      LineAction action = toLineAction(ctx.action);
+      Prefix6 prefix6 = new Prefix6(ctx.prefix6.getText());
+      int prefixLength = prefix6.getPrefixLength();
+      int minLen = prefixLength;
+      int maxLen = prefixLength;
+      if (ctx.minpl != null) {
+         minLen = toInteger(ctx.minpl);
+         maxLen = Prefix6.MAX_PREFIX_LENGTH;
+      }
+      if (ctx.maxpl != null) {
+         maxLen = toInteger(ctx.maxpl);
+      }
+      if (ctx.eqpl != null) {
+         minLen = toInteger(ctx.eqpl);
+         maxLen = toInteger(ctx.eqpl);
+      }
+      SubRange lengthRange = new SubRange(minLen, maxLen);
+      Prefix6ListLine line = new Prefix6ListLine(action, prefix6, lengthRange);
+      _currentPrefix6List.addLine(line);
+   }
+
+   @Override
    public void exitIsis_metric_if_stanza(Isis_metric_if_stanzaContext ctx) {
       int metric = toInteger(ctx.metric);
       for (Interface iface : _currentInterfaces) {
@@ -2064,19 +2324,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitL_access_class(L_access_classContext ctx) {
+      boolean ipv6 = (ctx.IPV6() != null);
       String name = ctx.name.getText();
       BiConsumer<Line, String> setter;
       if (ctx.OUT() != null || ctx.EGRESS() != null) {
-         setter = Line::setOutputAccessList;
+         if (ipv6) {
+            setter = Line::setOutputIpv6AccessList;
+            _configuration.getLineIpv6AccessClassLists().add(name);
+         }
+         else {
+            setter = Line::setOutputAccessList;
+            _configuration.getLineAccessClassLists().add(name);
+         }
+
       }
       else {
-         setter = Line::setInputAccessList;
+         if (ipv6) {
+            setter = Line::setInputIpv6AccessList;
+            _configuration.getLineIpv6AccessClassLists().add(name);
+         }
+         else {
+            setter = Line::setInputAccessList;
+            _configuration.getLineAccessClassLists().add(name);
+         }
       }
       for (String currentName : _currentLineNames) {
          Line line = _configuration.getCf().getLines().get(currentName);
          setter.accept(line, name);
       }
-      _configuration.getLineAccessClassLists().add(name);
    }
 
    @Override
@@ -2277,8 +2552,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitMatch_ipv6_rm_stanza(Match_ipv6_rm_stanzaContext ctx) {
+   public void exitMatch_ipv6_access_list_rm_stanza(
+         Match_ipv6_access_list_rm_stanzaContext ctx) {
+      Set<String> names = new TreeSet<>();
+      for (Token t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchIpv6AccessListLine line = new RouteMapMatchIpv6AccessListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
+   }
+
+   @Override
+   public void exitMatch_ipv6_prefix_list_rm_stanza(
+         Match_ipv6_prefix_list_rm_stanzaContext ctx) {
       _currentRouteMap.setIpv6(true);
+      Set<String> names = new TreeSet<>();
+      for (VariableContext t : ctx.name_list) {
+         names.add(t.getText());
+      }
+      RouteMapMatchIpv6PrefixListLine line = new RouteMapMatchIpv6PrefixListLine(
+            names);
+      _currentRouteMapClause.addMatchLine(line);
    }
 
    @Override
@@ -2557,6 +2852,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (server == null) {
          server = new NtpServer();
          ntp.getServers().put(hostname, server);
+      }
+      if (ctx.vrf != null) {
+         server.setVrf(ctx.vrf.getText());
+      }
+      if (ctx.PREFER() != null) {
+
       }
    }
 
@@ -3267,23 +3568,36 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitSntp_server(Sntp_serverContext ctx) {
+      Sntp sntp = _configuration.getCf().getSntp();
+      String hostname = ctx.hostname.getText();
+      SntpServer server = sntp.getServers().get(hostname);
+      if (server == null) {
+         server = new SntpServer();
+         sntp.getServers().put(hostname, server);
+      }
+   }
+
+   @Override
    public void exitSs_community(Ss_communityContext ctx) {
       _currentSnmpCommunity = null;
    }
 
    @Override
    public void exitSs_enable_traps(Ss_enable_trapsContext ctx) {
-      String trapName = ctx.snmp_trap_type.getText();
-      SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature.stream()
-            .map(s -> s.getText()).collect(Collectors.toList()));
-      SortedMap<String, SortedSet<String>> traps = _configuration.getCf()
-            .getSnmpServer().getTraps();
-      SortedSet<String> subfeatures = traps.get(trapName);
-      if (subfeatures == null) {
-         traps.put(trapName, subfeatureNames);
-      }
-      else {
-         subfeatures.addAll(subfeatureNames);
+      if (ctx.snmp_trap_type != null) {
+         String trapName = ctx.snmp_trap_type.getText();
+         SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature
+               .stream().map(s -> s.getText()).collect(Collectors.toList()));
+         SortedMap<String, SortedSet<String>> traps = _configuration.getCf()
+               .getSnmpServer().getTraps();
+         SortedSet<String> subfeatures = traps.get(trapName);
+         if (subfeatures == null) {
+            traps.put(trapName, subfeatureNames);
+         }
+         else {
+            subfeatures.addAll(subfeatureNames);
+         }
       }
    }
 
@@ -3315,6 +3629,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitSsh_access_group(Ssh_access_groupContext ctx) {
+      String acl = ctx.name.getText();
+      if (ctx.IPV6() != null) {
+         _configuration.getSshIpv6Acls().add(acl);
+      }
+      else {
+         _configuration.getSshAcls().add(acl);
+      }
+   }
+
+   @Override
+   public void exitSsh_server(Ssh_serverContext ctx) {
+      if (ctx.acl != null) {
+         String acl = ctx.acl.getText();
+         _configuration.getSshAcls().add(acl);
+      }
+      if (ctx.acl6 != null) {
+         String acl6 = ctx.acl6.getText();
+         _configuration.getSshIpv6Acls().add(acl6);
+      }
+   }
+
+   @Override
    public void exitStandard_access_list_stanza(
          Standard_access_list_stanzaContext ctx) {
       _currentStandardAcl = null;
@@ -3323,11 +3660,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitStandard_access_list_tail(
          Standard_access_list_tailContext ctx) {
-
-      if (_currentStandardAcl.isIpV6()) {
-         return;
-      }
-
       LineAction action = toLineAction(ctx.ala);
       Ip srcIp = getIp(ctx.ipr);
       Ip srcWildcard = getWildcard(ctx.ipr);
@@ -3353,6 +3685,42 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       StandardAccessListLine line = new StandardAccessListLine(name, action,
             new IpWildcard(srcIp, srcWildcard), dscps, ecns);
       _currentStandardAcl.addLine(line);
+   }
+
+   @Override
+   public void exitStandard_ipv6_access_list_stanza(
+         Standard_ipv6_access_list_stanzaContext ctx) {
+      _currentStandardIpv6Acl = null;
+   }
+
+   @Override
+   public void exitStandard_ipv6_access_list_tail(
+         Standard_ipv6_access_list_tailContext ctx) {
+      LineAction action = toLineAction(ctx.ala);
+      Ip6 srcIp = getIp(ctx.ipr);
+      Ip6 srcWildcard = getWildcard(ctx.ipr);
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
+      for (Standard_access_list_additional_featureContext feature : ctx.features) {
+         if (feature.DSCP() != null) {
+            int dscpType = toDscpType(feature.dscp_type());
+            dscps.add(dscpType);
+         }
+         else if (feature.ECN() != null) {
+            int ecn = toInteger(feature.ecn);
+            ecns.add(ecn);
+         }
+      }
+      String name;
+      if (ctx.num != null) {
+         name = ctx.num.getText();
+      }
+      else {
+         name = getFullText(ctx).trim();
+      }
+      StandardIpv6AccessListLine line = new StandardIpv6AccessListLine(name,
+            action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
+      _currentStandardIpv6Acl.addLine(line);
    }
 
    @Override
@@ -3597,6 +3965,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
+      if (ctx.address_group != null) {
+         return ctx.address_group.getText();
+      }
+      else {
+         return null;
+      }
+   }
+
    public CiscoConfiguration getConfiguration() {
       return _configuration;
    }
@@ -3637,19 +4014,39 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toIp(ctx.wildcard);
       }
       else if (ctx.ANY() != null || ctx.address_group != null) {
-         return new Ip(0xFFFFFFFFl);
+         return Ip.MAX;
       }
       else if (ctx.HOST() != null) {
-         return new Ip(0l);
+         return Ip.ZERO;
       }
       else if (ctx.prefix != null) {
-         int pfxLength = getPrefixLength(ctx.prefix);
-         long ipAsLong = 0xFFFFFFFFl >>> pfxLength;
-         return new Ip(ipAsLong);
+         return new Prefix(ctx.prefix.getText()).getPrefixWildcard();
       }
       else if (ctx.ip != null) {
          // basically same as host
-         return new Ip(0l);
+         return Ip.ZERO;
+      }
+      else {
+         throw convError(Ip.class, ctx);
+      }
+   }
+
+   private Ip6 getWildcard(Access_list_ip6_rangeContext ctx) {
+      if (ctx.wildcard != null) {
+         return toIp6(ctx.wildcard);
+      }
+      else if (ctx.ANY() != null || ctx.address_group != null) {
+         return Ip6.MAX;
+      }
+      else if (ctx.HOST() != null) {
+         return Ip6.ZERO;
+      }
+      else if (ctx.ipv6_prefix != null) {
+         return new Prefix6(ctx.ipv6_prefix.getText()).getPrefixWildcard();
+      }
+      else if (ctx.ip != null) {
+         // basically same as host
+         return Ip6.ZERO;
       }
       else {
          throw convError(Ip.class, ctx);

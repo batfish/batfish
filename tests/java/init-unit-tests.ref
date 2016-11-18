@@ -59,6 +59,11 @@
             "EBGP-PEER-SVL-PNI"
           ]
         },
+        "cisco_interface" : {
+          "interface ip verify access-list" : [
+            "167"
+          ]
+        },
         "cisco_line" : {
           "line access-class list" : [
             "40",
@@ -76,6 +81,27 @@
         "foundry_bgp" : {
           "interface" : [
             "Loopback1"
+          ]
+        },
+        "foundry_misc" : {
+          "ssh ipv4 access-list" : [
+            "blib"
+          ],
+          "ssh ipv6 access-list" : [
+            "blob"
+          ]
+        },
+        "ios_xr_multipart" : {
+          "ssh ipv4 access-list" : [
+            "GNS-VTY-ACCESS"
+          ]
+        },
+        "ios_xr_ssh" : {
+          "ssh ipv4 access-list" : [
+            "ACL99"
+          ],
+          "ssh ipv6 access-list" : [
+            "ipv6-vty-acl"
           ]
         },
         "named_and_numbered_lists" : {
@@ -113,12 +139,12 @@
           ]
         },
         "route_map" : {
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "hpr-connector-subnets"
           ]
         },
         "underscore_variable" : {
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "ABC_DEF",
             "_GHI"
           ]
@@ -131,7 +157,10 @@
       },
       "unusedStructures" : {
         "aggAddress" : {
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
+            "ScienceDMZ-networks"
+          ],
+          "ipv6 prefix-list" : [
             "ScienceDMZ-networks"
           ]
         },
@@ -190,6 +219,11 @@
             "bloop_blop"
           ]
         },
+        "foundry_access_list" : {
+          "ipv6 acl" : [
+            "RT404888-Caltech"
+          ]
+        },
         "foundry_bgp" : {
           "bgp group" : [
             "bippety",
@@ -202,8 +236,13 @@
           ]
         },
         "ip_prefix_list_single_line" : {
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DENY-IPV4-ANY-IN"
+          ]
+        },
+        "ipv6_access_list" : {
+          "ipv6 acl" : [
+            "RT404888-XO"
           ]
         },
         "juniper-tcpflags" : {
@@ -250,7 +289,7 @@
           ]
         },
         "prefix_list_ipv4" : {
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "test"
           ],
           "route-map" : [
@@ -269,6 +308,11 @@
         "route_map_sub" : {
           "route-map" : [
             "ABC"
+          ]
+        },
+        "route_maps_in_two_address_families" : {
+          "ipv6 prefix-list" : [
+            "v6_list"
           ]
         },
         "tcpflags" : {
@@ -302,7 +346,8 @@
         },
         "aggAddress" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'ScienceDMZ-networks'"
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'ScienceDMZ-networks'",
+            "2" : "UNUSED: Unused ipv6 prefix-list: 'ScienceDMZ-networks'"
           }
         },
         "as_path_prepend" : {
@@ -342,15 +387,16 @@
         },
         "cisco_interface" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'"
+            "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'",
+            "2" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
           }
         },
         "cisco_line" : {
           "Red flags" : {
             "1" : "UNDEFINED: Reference to undefined line access-class list: 40",
             "2" : "UNDEFINED: Reference to undefined line access-class list: 99",
-            "3" : "UNDEFINED: Reference to undefined line access-class list: ipv6-vty-acl",
-            "4" : "UNDEFINED: Reference to undefined line access-class list: vty-acl"
+            "3" : "UNDEFINED: Reference to undefined line access-class list: vty-acl",
+            "4" : "UNDEFINED: Reference to undefined line access-class list: ipv6-vty-acl"
           }
         },
         "cisco_snmp" : {
@@ -391,11 +437,33 @@
             "2" : "UNUSED: Unused extended access-list: 'bloop_blop'"
           }
         },
+        "foundry_access_list" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused extended ipv6 access-list: 'RT404888-Caltech'"
+          }
+        },
         "foundry_bgp" : {
           "Red flags" : {
             "1" : "UNDEFINED: reference to undefined update source interface: 'Loopback1'",
             "2" : "UNUSED: Unused bgp peer-group/template: 'bippety'",
             "3" : "UNUSED: Unused bgp peer-group/template: 'boop'"
+          }
+        },
+        "foundry_misc" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ssh ipv4 access-list: blib",
+            "2" : "UNDEFINED: Reference to undefined ssh ipv6 access-list: blob"
+          }
+        },
+        "ios_xr_multipart" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ssh ipv4 access-list: GNS-VTY-ACCESS"
+          }
+        },
+        "ios_xr_ssh" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ssh ipv4 access-list: ACL99",
+            "2" : "UNDEFINED: Reference to undefined ssh ipv6 access-list: ipv6-vty-acl"
           }
         },
         "ip_access_list_with_seq" : {
@@ -405,7 +473,12 @@
         },
         "ip_prefix_list_single_line" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DENY-IPV4-ANY-IN'"
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DENY-IPV4-ANY-IN'"
+          }
+        },
+        "ipv6_access_list" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused extended ipv6 access-list: 'RT404888-XO'"
           }
         },
         "juniper-tcpflags" : {
@@ -493,7 +566,7 @@
         "prefix_list_ipv4" : {
           "Red flags" : {
             "1" : "UNUSED: Unused route-map: 'to_elacc'",
-            "2" : "UNUSED: Unused prefix-list: 'test'"
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'test'"
           }
         },
         "rP" : {
@@ -522,7 +595,8 @@
         },
         "route_maps_in_two_address_families" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.1.1.1'"
+            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.1.1.1'",
+            "2" : "UNUSED: Unused ipv6 prefix-list: 'v6_list'"
           }
         },
         "tcpflags" : {

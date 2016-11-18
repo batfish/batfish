@@ -139,21 +139,13 @@ public class Ip implements Comparable<Ip>, Serializable {
    }
 
    public int numSubnetBits() {
-      int count = 0;
-      int subnetInt = (int) _ip;
-      while (subnetInt != 0) {
-         subnetInt <<= 1;
-         count++;
+      int numTrailingZeros = Long.numberOfTrailingZeros(_ip);
+      if (numTrailingZeros > Prefix.MAX_PREFIX_LENGTH) {
+         return 0;
       }
-      return count;
-   }
-
-   public int numWildcardBits() {
-      int numBits = 0;
-      for (long test = _ip; test != 0; test >>= 1) {
-         numBits++;
+      else {
+         return Prefix.MAX_PREFIX_LENGTH - numTrailingZeros;
       }
-      return numBits;
    }
 
    @Override
@@ -174,7 +166,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    }
 
    public boolean valid() {
-      return _ip >= 0 && _ip <= 0xFFFFFFFFl;
+      return 0l <= _ip && _ip <= 0xFFFFFFFFl;
    }
 
 }

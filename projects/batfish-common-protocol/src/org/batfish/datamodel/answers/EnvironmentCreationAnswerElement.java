@@ -18,10 +18,10 @@ public class EnvironmentCreationAnswerElement implements AnswerElement {
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      //having environment name GUIDs printed messes with consistency of output
-      //      return "New environment: '" + _newEnvironmentName
-      //            + "' successfully created from old environment: '"
-      //            + _oldEnvironmentName + "' with supplied parameters";
+      // having environment name GUIDs printed messes with consistency of output
+      // return "New environment: '" + _newEnvironmentName
+      // + "' successfully created from old environment: '"
+      // + _oldEnvironmentName + "' with supplied parameters";
       return "New environment created from old environment with supplied parameters";
    }
 

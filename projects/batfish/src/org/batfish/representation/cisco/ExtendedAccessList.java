@@ -9,8 +9,6 @@ public class ExtendedAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
-   private boolean _ipv6;
-
    private List<ExtendedAccessListLine> _lines;
 
    private StandardAccessList _parent;
@@ -24,20 +22,12 @@ public class ExtendedAccessList extends ComparableStructure<String> {
       _lines.add(all);
    }
 
-   public boolean getIpv6() {
-      return _ipv6;
-   }
-
    public List<ExtendedAccessListLine> getLines() {
       return _lines;
    }
 
    public StandardAccessList getParent() {
       return _parent;
-   }
-
-   public void setIpv6(boolean ipv6) {
-      _ipv6 = ipv6;
    }
 
    public void setParent(StandardAccessList parent) {

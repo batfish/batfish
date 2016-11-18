@@ -12,7 +12,7 @@ import com.google.common.net.InetAddresses;
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
    public static final Ip6 MAX = new Ip6(
-         new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
+         new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
 
    private static final long serialVersionUID = 1L;
 
@@ -22,7 +22,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
          BigInteger ipv6AddressAsBigInteger) {
       BigInteger remainder = ipv6AddressAsBigInteger;
       String out = "";
-      BigInteger segmentMask = new BigInteger("FFFF", 16);
+      BigInteger segmentMask = new BigInteger("+FFFF", 16);
       for (int i = 0; i < 8; i++) {
          out = remainder.and(segmentMask).toString(16) + ":" + out;
          remainder = remainder.shiftRight(16);
@@ -33,10 +33,16 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
    private static BigInteger numSubnetBitsToSubnetBigInteger(int numBits) {
       BigInteger val = BigInteger.ZERO;
-      for (int i = 127; i > 127 - numBits; i--) {
+      for (int i = Prefix6.MAX_PREFIX_LENGTH - 1; i > Prefix6.MAX_PREFIX_LENGTH
+            - 1 - numBits; i--) {
          val = val.or(BigInteger.ONE.shiftLeft(i));
       }
       return val;
+   }
+
+   public static Ip6 numSubnetBitsToSubnetMask(int numBits) {
+      BigInteger mask = numSubnetBitsToSubnetBigInteger(numBits);
+      return new Ip6(mask);
    }
 
    private final BigInteger _ip6;
@@ -92,14 +98,35 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
       return _ip6.hashCode();
    }
 
+   public Ip6 inverted() {
+      BigInteger mask = new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+      BigInteger invertedBigInteger = mask.andNot(_ip6);
+      return new Ip6(invertedBigInteger);
+   }
+
    public String networkString(int prefixLength) {
       return toString() + "/" + prefixLength;
+   }
+
+   public int numSubnetBits() {
+      int numTrailingZeros = _ip6.getLowestSetBit();
+      if (numTrailingZeros == -1) {
+         return 0;
+      }
+      else {
+         return Prefix6.MAX_PREFIX_LENGTH - numTrailingZeros;
+      }
    }
 
    @Override
    @JsonValue
    public String toString() {
       return asIpv6AddressString(_ip6);
+   }
+
+   public boolean valid() {
+      return _ip6.compareTo(BigInteger.ZERO) >= 0 && _ip6.compareTo(
+            new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)) <= 0;
    }
 
 }
