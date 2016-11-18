@@ -41,11 +41,39 @@ if_ip_proxy_arp
    NO? IP PROXY_ARP NEWLINE
 ;
 
+if_ip_verify
+:
+   IP VERIFY UNICAST
+   (
+      (
+         NOTIFICATION THRESHOLD DEC
+      )
+      |
+      (
+         REVERSE_PATH ALLOW_SELF_PING? acl = DEC?
+      )
+      |
+      (
+         SOURCE REACHABLE_VIA
+         (
+            ANY
+            | RX
+         )
+         (
+            ALLOW_DEFAULT
+            | ALLOW_SELF_PING
+            | L2_SRC
+         )* acl = DEC?
+      )
+   ) NEWLINE
+;
+
 if_stanza
 :
    default_gw_if_stanza
    | description_if_stanza
    | if_ip_proxy_arp
+   | if_ip_verify
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_dhcp_if_stanza
@@ -398,7 +426,6 @@ null_block_if_stanza
             | TCP
             | UNNUMBERED
             | UNREACHABLES
-            | VERIFY
             | VIRTUAL_REASSEMBLY
             | VIRTUAL_ROUTER
             | VRF

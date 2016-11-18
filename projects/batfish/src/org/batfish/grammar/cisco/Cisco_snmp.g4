@@ -98,11 +98,14 @@ ss_null
       | LOCATION
       | LOGGING
       | MANAGER
+      | MAX_IFINDEX_PER_MODULE
       | OVERLOAD_CONTROL
+      | QUEUE_LENGTH
       | SOURCE_INTERFACE
       | TRAPS
       | USER
       | VIEW
+      | VRF
    ) ~NEWLINE* NEWLINE
 ;
 

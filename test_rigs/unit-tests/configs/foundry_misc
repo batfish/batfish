@@ -28,6 +28,8 @@ acl-policy
  enable-acl-counter                                                                                                                        
 !
 no transceiver-type-check
+ssh access-group blib
+ssh access-group ipv6 blob
 router msdp
  msdp-peer 1.2.17.15 connect-source loopback 1
  msdp-peer 1.2.17.13 connect-source loopback 1

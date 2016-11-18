@@ -153,7 +153,8 @@ public final class Node extends ComparableStructure<String> {
                active = false;
                for (AbstractRoute contributingRoute : _prevMainRib
                      .getRoutes()) {
-                  if (generationPolicy.process(contributingRoute, grb, null)) {
+                  if (generationPolicy.process(contributingRoute, null, grb,
+                        null)) {
                      if (!discard) {
                         grb.setNextHopIp(contributingRoute.getNextHopIp());
                      }
@@ -340,7 +341,7 @@ public final class Node extends ComparableStructure<String> {
                            .get(importPolicyName);
                      if (importPolicy != null) {
                         allowed = importPolicy.process(transformedOutgoingRoute,
-                              transformedIncomingRouteBuilder,
+                              null, transformedIncomingRouteBuilder,
                               advert.getSrcIp());
                      }
                   }
@@ -462,8 +463,8 @@ public final class Node extends ComparableStructure<String> {
             if (exportPolicy != null) {
                for (AbstractRoute potentialExport : _prevMainRib.getRoutes()) {
                   OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
-                  if (exportPolicy.process(potentialExport, outputRouteBuilder,
-                        null)) {
+                  if (exportPolicy.process(potentialExport, null,
+                        outputRouteBuilder, null)) {
                      outputRouteBuilder.setAdmin(outputRouteBuilder
                            .getOspfMetricType().toRoutingProtocol()
                            .getDefaultAdministrativeCost(
@@ -723,7 +724,7 @@ public final class Node extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
-                  if (remoteExportPolicy.process(remoteRoute,
+                  if (remoteExportPolicy.process(remoteRoute, null,
                         transformedOutgoingRouteBuilder,
                         remoteBgpNeighbor.getLocalIp())) {
                      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder
@@ -799,7 +800,7 @@ public final class Node extends ComparableStructure<String> {
                               .get(importPolicyName);
                         if (importPolicy != null) {
                            allowed = importPolicy.process(
-                                 transformedOutgoingRoute,
+                                 transformedOutgoingRoute, null,
                                  transformedIncomingRouteBuilder,
                                  remoteBgpNeighbor.getLocalIp());
                         }

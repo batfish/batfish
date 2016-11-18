@@ -14,13 +14,25 @@ access_list_ip_range
    | ANY
    |
    (
-      HOST?
-      (
-         ip = IP_ADDRESS
-         | ipv6 = IPV6_ADDRESS
-      )
+      HOST? ip = IP_ADDRESS
    )
    | prefix = IP_PREFIX
+   |
+   (
+      ADDRGROUP address_group = variable
+   )
+;
+
+access_list_ip6_range
+:
+   (
+      ip = IPV6_ADDRESS wildcard = IPV6_ADDRESS
+   )
+   | ANY
+   |
+   (
+      HOST? ipv6 = IPV6_ADDRESS
+   )
    | ipv6_prefix = IPV6_PREFIX
    |
    (
@@ -205,7 +217,6 @@ extended_access_list_stanza
          (
             IP
             | IPV4
-            | IPV6
          ) ACCESS_LIST name = variable_permissive
       )
    )
@@ -220,6 +231,25 @@ extended_access_list_stanza
       |
       (
          extended_access_list_tail
+         | extended_access_list_null_tail
+      )
+   ) exit_line?
+;
+
+extended_ipv6_access_list_stanza
+:
+   IPV6 ACCESS_LIST EXTENDED? name = variable_permissive
+   (
+      (
+         NEWLINE
+         (
+            extended_ipv6_access_list_tail
+            | extended_access_list_null_tail
+         )*
+      )
+      |
+      (
+         extended_ipv6_access_list_tail
          | extended_access_list_null_tail
       )
    ) exit_line?
@@ -240,27 +270,34 @@ extended_access_list_tail
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
    (
-      NEXTHOP1
+      NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
       (
-         (
-            nh4 = IPV4 nexthop1 = IP_ADDRESS
-         )
-         |
-         (
-            nh6 = IPV6 nexthop1 = IPV6_ADDRESS
-         )
-      )
+         NEXTHOP2 IPV4 nexthop2 = IP_ADDRESS
+      )?
+   )?
+   (
+      SEQUENCE num = DEC
+   )? NEWLINE
+;
+
+extended_ipv6_access_list_tail
+:
+   (
       (
-         NEXTHOP2
-         (
-            (
-               nh4 = IPV4 nexthop2 = IP_ADDRESS
-            )
-            |
-            (
-               nh6 = IPV6 nexthop2 = IPV6_ADDRESS
-            )
-         )
+         SEQ
+         | SEQUENCE
+      )? num = DEC
+   )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
+   (
+      alps_src = port_specifier
+   )? dstipr = access_list_ip6_range
+   (
+      alps_dst = port_specifier
+   )? features += extended_access_list_additional_feature*
+   (
+      NEXTHOP1 IPV6 nexthop1 = IPV6_ADDRESS
+      (
+         NEXTHOP2 IPV6 nexthop2 = IPV6_ADDRESS
       )?
    )?
    (
@@ -361,7 +398,6 @@ ip_prefix_list_stanza
    (
       IP
       | IPV4
-      | IPV6
    ) PREFIX_LIST name = variable
    (
       (
@@ -374,6 +410,25 @@ ip_prefix_list_stanza
       |
       (
          ip_prefix_list_tail
+         | ip_prefix_list_null_tail
+      )
+   )
+;
+
+ipv6_prefix_list_stanza
+:
+   IPV6 PREFIX_LIST name = variable
+   (
+      (
+         NEWLINE
+         (
+            ip_prefix_list_null_tail
+            | ipv6_prefix_list_tail
+         )*
+      )
+      |
+      (
+         ipv6_prefix_list_tail
          | ip_prefix_list_null_tail
       )
    )
@@ -394,11 +449,27 @@ ip_prefix_list_tail
 :
    (
       SEQ seqnum = DEC
-   )? action = access_list_action
+   )? action = access_list_action prefix = IP_PREFIX
    (
-      prefix = IP_PREFIX
-      | ipv6_prefix = IPV6_PREFIX
-   )
+      (
+         GE minpl = DEC
+      )
+      |
+      (
+         LE maxpl = DEC
+      )
+      |
+      (
+         EQ eqpl = DEC
+      )
+   )* NEWLINE
+;
+
+ipv6_prefix_list_tail
+:
+   (
+      SEQ seqnum = DEC
+   )? action = access_list_action prefix6 = IPV6_PREFIX
    (
       (
          GE minpl = DEC
@@ -600,10 +671,7 @@ standard_access_list_stanza
 :
    (
       (
-         (
-            IP
-            | IPV6
-         ) ACCESS_LIST STANDARD name = variable
+         IP ACCESS_LIST STANDARD name = variable
       )
       |
       (
@@ -628,6 +696,27 @@ standard_access_list_stanza
    )
 ;
 
+standard_ipv6_access_list_stanza
+:
+   IPV6 ACCESS_LIST STANDARD name = variable
+   (
+      (
+         NEWLINE
+         (
+            standard_ipv6_access_list_tail
+            | standard_access_list_null_tail
+         )*
+      )
+      |
+      (
+         (
+            standard_ipv6_access_list_tail
+            | standard_access_list_null_tail
+         )
+      )
+   )
+;
+
 standard_access_list_tail
 :
    (
@@ -636,6 +725,19 @@ standard_access_list_tail
          | SEQUENCE
       )? num = DEC
    )? ala = access_list_action ipr = access_list_ip_range
+   (
+      features += standard_access_list_additional_feature
+   )* NEWLINE
+;
+
+standard_ipv6_access_list_tail
+:
+   (
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
+   )? ala = access_list_action ipr = access_list_ip6_range
    (
       features += standard_access_list_additional_feature
    )* NEWLINE

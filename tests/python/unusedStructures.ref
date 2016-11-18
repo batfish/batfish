@@ -10,7 +10,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -21,7 +21,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -32,7 +32,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -43,7 +43,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -70,7 +70,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -81,7 +81,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         }

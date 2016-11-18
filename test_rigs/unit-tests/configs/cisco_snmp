@@ -9,6 +9,7 @@ snmp-server community dummycommunity use-acl snmp-arpa-acl
 snmp-server chassis-id FOC1743N1BE
 snmp-server contact CENIC Core Engineering
 snmp-server enable mib np-qos-stat
+snmp-server enable traps
 snmp-server enable traps aaa server-state-change
 snmp-server enable traps bgp
 snmp-server enable traps bridge newroot
@@ -60,7 +61,9 @@ snmp-server ifindex persist
 snmp-server location UC Santa Cruz 4900M
 snmp-server logging threshold oid-processing 1000
 snmp-server manager
+snmp-server max-ifindex-per-module 40
 snmp-server overload-control 0 0
+snmp-server queue-length 1000
 snmp-server source-interface trap loopback0
 snmp-server source-interface trap mgmt0
 snmp-server source-interface trap Vlan1
@@ -69,5 +72,6 @@ snmp-server traps snmp linkup
 snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
 snmp-server view NOROUTES mib-2 included
 snmp-server view NOROUTES lsystem included
+snmp-server vrf Management
 !
 

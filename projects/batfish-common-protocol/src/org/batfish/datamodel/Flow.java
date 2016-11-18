@@ -447,23 +447,6 @@ public final class Flow implements Comparable<Flow> {
             + tcpFlagsStr;
    }
 
-   public String toLBLine() {
-      long src_ip = _srcIp.asLong();
-      long dst_ip = _dstIp.asLong();
-      long src_port = _srcPort;
-      long dst_port = _dstPort;
-      long protocol = _ipProtocol.number();
-      long icmpType = _icmpType;
-      long icmpCode = _icmpCode;
-      String line = _ingressNode + "|" + src_ip + "|" + dst_ip + "|" + src_port
-            + "|" + dst_port + "|" + protocol + "|" + _dscp + "|" + _ecn + "|"
-            + _fragmentOffset + "|" + icmpType + "|" + icmpCode + "|" + _state
-            + "|" + _tcpFlagsCwr + "|" + _tcpFlagsEce + "|" + _tcpFlagsUrg + "|"
-            + _tcpFlagsAck + "|" + _tcpFlagsPsh + "|" + _tcpFlagsRst + "|"
-            + _tcpFlagsSyn + "|" + _tcpFlagsFin + "|" + _tag + "\n";
-      return line;
-   }
-
    @Override
    public String toString() {
       boolean icmp = _ipProtocol == IpProtocol.ICMP;

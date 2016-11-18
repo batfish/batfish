@@ -18,7 +18,6 @@ null_block_stanza
       | ADMIN
       | ALLOW
       | APPLETALK
-      | ARCHIVE
       | AS_PATH_SET
       | ATM
       | BASH
@@ -55,7 +54,6 @@ null_block_stanza
       | DEFAULT_MAX_FRAME_SIZE
       | DEFAULT_VALUE
       | DHCPRELAY
-      | DIAL_PEER
       | DO STOP
       | DOMAIN
       | DOT11
@@ -217,6 +215,7 @@ null_block_stanza
                )
             )
             | LOGGING
+            | SSH
          )
       )
       | NLS
@@ -267,12 +266,10 @@ null_block_stanza
       | SFLOW
       | SLOT
       | SLOT_TABLE_COS
-      | SNTP
       | SPANNING_TREE
       | STACK_MAC
       | STACK_UNIT
       | STATISTICS
-      | STCAPP
       | SVCLC
       | SWITCH
       | SWITCH_PROFILE
@@ -292,6 +289,7 @@ null_block_stanza
       | TIME_RANGE
       | TIMEOUT
       | TFTP
+      | TLS_PROXY
       | TRACE
       | TRACK
       | TRANSCEIVER
@@ -381,7 +379,11 @@ null_block_substanza
          | BANDWIDTH_PERCENTAGE
          |
          (
-            BANNER VALUE
+            BANNER
+            (
+               NONE
+               | VALUE
+            )
          )
          | BIND
          | BRIDGE
@@ -411,7 +413,6 @@ null_block_substanza
          | CONTACT_EMAIL_ADDR
          | CONTACT_NAME
          | CONTRACT_ID
-         | CPTONE
          | CREDENTIALS
          | CRL
          | CRYPTOGRAPHIC_ALGORITHM
@@ -443,7 +444,6 @@ null_block_substanza
          | DSCP
          | DSCP_VALUE
          | DS0_GROUP
-         | DTMF_RELAY
          | DUAL_ACTIVE
          | ECHO
          | ECHO_CANCEL
@@ -621,7 +621,6 @@ null_block_substanza
          | POLICY
          | POLICY_LIST
          | POLICY_MAP
-         | PORT
          | PORT_NAME
          | PORTS
          | PRECEDENCE
@@ -768,7 +767,6 @@ null_block_substanza
          | USER_MESSAGE
          | USER_STATISTICS
          | USERS
-         | VAD
          | VERIFY_DATA
          | VERSION
          | VIOLATE_ACTION
@@ -1053,7 +1051,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SCRIPTING
       | SDM
       | SECURITY
-      | SERVER
       | SERVER_TYPE
       | SERVICE_POLICY
       | SETUP
@@ -1066,7 +1063,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SPE
       | SPEED
       | STOPBITS
-      | SSH
       | SSL
       | STATIC
       | SUBJECT_NAME
@@ -1079,7 +1075,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | TELNET
       | TFTP_SERVER
       | THREAT_DETECTION
-      | TLS_PROXY
       | TRANSLATE
       | TRANSPORT
       | TYPE

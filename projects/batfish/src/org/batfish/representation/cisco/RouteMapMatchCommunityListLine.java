@@ -26,11 +26,6 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
    }
 
    @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.COMMUNITY_LIST;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();

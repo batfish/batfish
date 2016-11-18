@@ -121,7 +121,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
    }
 
    public Ip getPrefixWildcard() {
-      int numWildcardBits = 32 - _prefixLength;
+      int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
       long wildcardLong = numWildcardBitsToWildcardLong(numWildcardBits);
       return new Ip(wildcardLong);
    }

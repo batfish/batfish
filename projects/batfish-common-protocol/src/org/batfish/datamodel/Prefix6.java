@@ -5,6 +5,9 @@ import java.math.BigInteger;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
    public static final int MAX_PREFIX_LENGTH = 128;
@@ -19,11 +22,19 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
    private static BigInteger getNetworkEnd(BigInteger networkStart,
          int prefix_length) {
       BigInteger networkEnd = networkStart;
-      int ones_length = 128 - prefix_length;
+      int ones_length = MAX_PREFIX_LENGTH - prefix_length;
       for (int i = 0; i < ones_length; i++) {
          networkEnd = networkEnd.or(BigInteger.ONE.shiftLeft(i));
       }
       return networkEnd;
+   }
+
+   private static BigInteger numWildcardBitsToWildcardBigInteger(int numBits) {
+      BigInteger wildcard = BigInteger.ZERO;
+      for (int i = 0; i < numBits; i++) {
+         wildcard = wildcard.or(BigInteger.ONE.shiftLeft(i));
+      }
+      return wildcard;
    }
 
    private Ip6 _address;
@@ -35,6 +46,18 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
       _prefixLength = prefixLength;
    }
 
+   public Prefix6(Ip6 address, Ip6 mask) {
+      if (address == null) {
+         throw new BatfishException("Cannot create prefix6 with null network");
+      }
+      if (mask == null) {
+         throw new BatfishException("Cannot create prefix6 with null mask");
+      }
+      _address = address;
+      _prefixLength = mask.numSubnetBits();
+   }
+
+   @JsonCreator
    public Prefix6(String text) {
       String[] parts = text.split("/");
       if (parts.length != 2) {
@@ -88,8 +111,19 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
       return _address.getNetworkAddress(_prefixLength);
    }
 
+   public Prefix6 getNetworkPrefix() {
+      return new Prefix6(getNetworkAddress(), _prefixLength);
+   }
+
    public int getPrefixLength() {
       return _prefixLength;
+   }
+
+   public Ip6 getPrefixWildcard() {
+      int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
+      BigInteger wildcardBigInteger = numWildcardBitsToWildcardBigInteger(
+            numWildcardBits);
+      return new Ip6(wildcardBigInteger);
    }
 
    @Override
@@ -102,6 +136,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
    }
 
    @Override
+   @JsonValue
    public String toString() {
       return _address.toString() + "/" + _prefixLength;
    }

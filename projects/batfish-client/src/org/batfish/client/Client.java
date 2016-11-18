@@ -952,7 +952,7 @@ public class Client extends AbstractClient implements IClient {
                      .initContainer(DEFAULT_CONTAINER_PREFIX);
                _logger.outputf("Init'ed and set active container");
                _logger.infof(" to %s\n", _currContainerName);
-              _logger.output("\n");
+               _logger.output("\n");
             }
 
             if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) {
@@ -1409,14 +1409,15 @@ public class Client extends AbstractClient implements IClient {
                   StandardCharsets.US_ASCII);
          }
          catch (Exception e) {
-            System.err.printf("Exception in reading command file %s: %s",
+            System.err.printf("Exception reading command file %s: %s\n",
                   _settings.getBatchCommandFile(), e.getMessage());
             System.exit(1);
          }
          boolean result = processCommands(commands);
 
-         if (!result)
+         if (!result) {
             System.exit(1);
+         }
 
          break;
       case genquestions:

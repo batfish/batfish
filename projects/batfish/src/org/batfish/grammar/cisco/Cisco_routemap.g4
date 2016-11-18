@@ -245,6 +245,18 @@ match_ip_access_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_ipv6_access_list_rm_stanza
+:
+   MATCH IPV6 ADDRESS
+   (
+      name_list +=
+      (
+         VARIABLE
+         | DEC
+      )
+   )+ NEWLINE
+;
+
 match_ip_next_hop_rm_stanza_null
 :
    MATCH IP NEXT_HOP
@@ -266,9 +278,12 @@ match_ip_route_source_rm_stanza
    MATCH IP ROUTE_SOURCE src = DEC NEWLINE
 ;
 
-match_ipv6_rm_stanza
+match_ipv6_prefix_list_rm_stanza
 :
-   MATCH IPV6 ~NEWLINE* NEWLINE
+   MATCH IPV6 ADDRESS PREFIX_LIST
+   (
+      name_list += variable
+   )+ NEWLINE
 ;
 
 match_length_rm_stanza
@@ -295,7 +310,8 @@ match_rm_stanza
    | match_ip_next_hop_rm_stanza_null
    | match_ip_prefix_list_rm_stanza
    | match_ip_route_source_rm_stanza
-   | match_ipv6_rm_stanza
+   | match_ipv6_access_list_rm_stanza
+   | match_ipv6_prefix_list_rm_stanza
    | match_length_rm_stanza
    | match_policy_list_rm_stanza
    | match_tag_rm_stanza
