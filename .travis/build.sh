@@ -18,7 +18,7 @@ pybatfish tests/python/commands.py || exit 1
 
 echo -e "\n  ..... Running java demo tests"
 #using batfish_client since the coordinator is running due to python client testing
-batfish_client -cmdfile demos/java/commands || exit 1
+batfish_client -cmdfile demos/java/commands -coordinatorhost localhost || exit 1
 #export diffcount=`diff demos/java/commands.{ref,ref.testout}`
 #if [ $diffcount == 100]; then 
 #	rm demo/java/commands.ref.testout
