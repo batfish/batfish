@@ -506,4 +506,5 @@ public class CommonUtil {
          throw new BatfishException("Failed to write file: " + outputPath, e);
       }
    }
+
 }

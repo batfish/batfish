@@ -64,7 +64,8 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
 
    @Override
    public String toString() {
-      return getNode1() + ":" + getInt1() + ", " + getNode2() + ":" + getInt2();
+      return "<" + getNode1() + ":" + getInt1() + ", " + getNode2() + ":"
+            + getInt2() + ">";
    }
 
 }

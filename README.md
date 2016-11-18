@@ -44,13 +44,11 @@ Batfish supports many types of correctness checks, including
 
 ## How do I get started?
 
-Read the [INSTALL.md] (https://github.com/arifogel/batfish/blob/master/INSTALL.md) file.
+If you are a DIYer, go to [Batfish Wiki] (https://github.com/arifogel/batfish/wiki)
 
-Batfish is structured as a service that may be hosted locally or on a remote machine. The service can be accessed via RESTful APIs using any client language. Java and Python clients are included in this repository.
+If you'd like a hosted service, drop a line to info@intentionet.com.
 
-Instead of DIY, if you'd prefer a cloud-hosted, configuration analysis service, drop a line to info@intentionet.com.
-
-## What devices does Batfish support? 
+## What configuration formats does Batfish support? 
 
 Batfish supports configurations for a large and growing set of (physical and virtual) devices, including:
   - Arista
@@ -58,6 +56,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
   - Cisco (Nexus, IOS, IOS-XR, ASA)
   - Dell Force10
   - Foundry
+  - iptables (on hosts)
   - Juniper (JunOS, Firewall)
   - MRV
   - Quagga

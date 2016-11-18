@@ -29,7 +29,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion"
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "verbose" : false
   },
   "status" : "SUCCESS"
 }

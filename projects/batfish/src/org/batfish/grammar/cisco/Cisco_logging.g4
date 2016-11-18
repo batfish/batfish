@@ -23,6 +23,11 @@ logging_console
    )? NEWLINE
 ;
 
+logging_enable
+:
+   ENABLE NEWLINE
+;
+
 logging_format
 :
    FORMAT
@@ -46,7 +51,7 @@ logging_format
 
 logging_host
 :
-   HOST hostname = variable
+   HOST iname = variable? hostname = variable
    (
       VRF variable
    )? NEWLINE
@@ -55,7 +60,12 @@ logging_host
 logging_null
 :
    (
-      EVENT
+      ASDM
+      | ASDM_BUFFER_SIZE
+      | BUFFER_SIZE
+      | DEBUG_TRACE
+      | ESM
+      | EVENT
       | FACILITY
       | HISTORY
       | IP_ADDRESS
@@ -63,13 +73,17 @@ logging_null
       | LEVEL
       | LINECARD
       | LOGFILE
+      | MONITOR
+      | PERMIT_HOSTDOWN
       | QUEUE_LIMIT
       | RATE_LIMIT
-      | SERVER
       | SEQUENCE_NUMS
+      | SERVER
+      | SERVER_ARP
       | SNMP_AUTHFAIL
       | SYNCHRONOUS
       | TIMESTAMP
+      | VRF
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -110,6 +124,7 @@ s_logging
    (
       logging_buffered
       | logging_console
+      | logging_enable
       | logging_format
       | logging_host
       | logging_null

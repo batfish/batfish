@@ -10145,7 +10145,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10156,7 +10156,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10167,7 +10167,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10178,7 +10178,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10204,7 +10204,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10215,7 +10215,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         }
@@ -10224,28 +10224,28 @@
         "as1border1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as3'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as1_community'"
           }
         },
         "as1border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as2'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as1_community'"
           }
         },
         "as2border1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as3'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as2_community'"
           }
         },
         "as2border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as1'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as2_community'"
           }
         },
@@ -10267,14 +10267,14 @@
         "as3border1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as1'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as3_community'"
           }
         },
         "as3border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as2'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as3_community'"
           }
         }

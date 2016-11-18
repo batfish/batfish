@@ -9,6 +9,14 @@ public class NtpServer implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   public Object _placeholder;
+   private String _vrf;
+
+   public String getVrf() {
+      return _vrf;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
+   }
 
 }

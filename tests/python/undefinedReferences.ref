@@ -12,7 +12,9 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion"
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }

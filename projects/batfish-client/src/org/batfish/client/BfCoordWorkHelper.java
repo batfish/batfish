@@ -481,7 +481,7 @@ public class BfCoordWorkHelper {
       }
    }
 
-   public boolean isReachable() throws Exception {
+   public boolean isReachable(boolean chatty) throws Exception {
 
       WebTarget webTarget = null;
 
@@ -503,20 +503,26 @@ public class BfCoordWorkHelper {
       }
       catch (ProcessingException e) {
          if (e.getMessage().contains("ConnectException")) {
-            _logger.errorf(
-                  "BF-Client: unable to connect to coordinator at %s\n",
-                  webTarget.getUri().toString());
+            if (chatty) {
+               _logger.errorf(
+                     "BF-Client: unable to connect to coordinator at %s\n",
+                     webTarget.getUri().toString());
+            }
             return false;
          }
          if (e.getMessage().contains("SSLHandshakeException")) {
-            _logger.errorf(
-                  "SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            if (chatty) {
+               _logger.errorf(
+                     "SSL handshake exception while connecting to coordinator (Is the coordinator using SSL and using keys that you trust?)\n");
+            }
             return false;
          }
          if (e.getMessage()
                .contains("SocketException: Unexpected end of file")) {
-            _logger.errorf(
-                  "SocketException while connecting to coordinator. (Are you using SSL?)\n");
+            if (chatty) {
+               _logger.errorf(
+                     "SocketException while connecting to coordinator. (Are you using SSL?)\n");
+            }
             return false;
          }
          throw e;

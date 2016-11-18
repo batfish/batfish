@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,6 +24,10 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.Ip6AccessListLine;
+import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -32,8 +37,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Route6FilterLine;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -85,11 +93,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
    protected static final String IP_ACCESS_LIST = "ip acl";
 
+   protected static final String IPV6_ACCESS_LIST = "ipv6 acl";
+
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
    private static final String OSPF_EXPORT_POLICY_NAME = "~OSPF_EXPORT_POLICY~";
 
-   protected static final String PREFIX_LIST = "prefix-list";
+   protected static final String PREFIX_LIST = "ipv4 prefix-list";
+
+   protected static final String PREFIX6_LIST = "ipv6 prefix-list";
 
    protected static final String ROUTE_MAP = "route-map";
 
@@ -128,8 +140,33 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          else {
             for (RouteMapClause clause : currentMap.getClauses().values()) {
                for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-                  if (matchLine.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
+                  if (matchLine instanceof RouteMapMatchIpAccessListLine) {
                      RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
+                     for (String listName : ipall.getListNames()) {
+                        if (eaListName.equals(listName)) {
+                           return true;
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return false;
+   }
+
+   private boolean containsIpv6AccessList(String eaListName, String mapName) {
+      if (mapName != null) {
+         RouteMap currentMap = _routeMaps.get(mapName);
+         if (currentMap == null) {
+            undefined("Reference to undefined to route-map: " + mapName,
+                  ROUTE_MAP, mapName);
+         }
+         else {
+            for (RouteMapClause clause : currentMap.getClauses().values()) {
+               for (RouteMapMatchLine matchLine : clause.getMatchList()) {
+                  if (matchLine instanceof RouteMapMatchIpv6AccessListLine) {
+                     RouteMapMatchIpv6AccessListLine ipall = (RouteMapMatchIpv6AccessListLine) matchLine;
                      for (String listName : ipall.getListNames()) {
                         if (eaListName.equals(listName)) {
                            return true;
@@ -150,7 +187,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             List<RouteMapMatchLine> matchList = clause.getMatchList();
             for (int i = 0; i < matchList.size(); i++) {
                RouteMapMatchLine line = matchList.get(i);
-               if (line.getType() == RouteMapMatchType.IP_ACCESS_LIST) {
+               if (line instanceof RouteMapMatchIpAccessListLine) {
                   RouteMapMatchIpAccessListLine matchIpAccessListLine = (RouteMapMatchIpAccessListLine) line;
                   matchIpAccessListLine.setRouting(true);
                }
@@ -271,6 +308,30 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                extendedAccessList.getReferers().put(this, msg);
             }
             StandardAccessList standardAccessList = _standardAccessLists
+                  .get(listName);
+            if (standardAccessList != null) {
+               standardAccessList.getReferers().put(this, msg);
+            }
+         }
+         else {
+            undefined("Reference to undefined " + type + ": " + listName, type,
+                  listName);
+         }
+      }
+   }
+
+   private void markIpv6Acls(Set<String> acls, String type, Configuration c) {
+      for (String listName : acls) {
+         boolean exists = _extendedIpv6AccessLists.containsKey(listName)
+               || _standardIpv6AccessLists.containsKey(listName);
+         if (exists) {
+            String msg = type;
+            ExtendedIpv6AccessList extendedAccessList = _extendedIpv6AccessLists
+                  .get(listName);
+            if (extendedAccessList != null) {
+               extendedAccessList.getReferers().put(this, msg);
+            }
+            StandardIpv6AccessList standardAccessList = _standardIpv6AccessLists
                   .get(listName);
             if (standardAccessList != null) {
                standardAccessList.getReferers().put(this, msg);
@@ -1017,6 +1078,51 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       return newIface;
    }
 
+   private Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
+      String name = eaList.getName();
+      List<Ip6AccessListLine> lines = new ArrayList<>();
+      for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
+         Ip6AccessListLine newLine = new Ip6AccessListLine();
+         newLine.setName(fromLine.getName());
+         newLine.setAction(fromLine.getAction());
+         Ip6Wildcard srcIpWildcard = fromLine.getSourceIpWildcard();
+         if (srcIpWildcard != null) {
+            newLine.getSrcIps().add(srcIpWildcard);
+         }
+         Ip6Wildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
+         if (dstIpWildcard != null) {
+            newLine.getDstIps().add(dstIpWildcard);
+         }
+         // TODO: src/dst address group
+         IpProtocol protocol = fromLine.getProtocol();
+         if (protocol != IpProtocol.IP) {
+            newLine.getIpProtocols().add(protocol);
+         }
+         newLine.getDstPorts().addAll(fromLine.getDstPorts());
+         newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
+         Integer icmpType = fromLine.getIcmpType();
+         if (icmpType != null) {
+            newLine.setIcmpTypes(
+                  new TreeSet<>(Collections.singleton(new SubRange(icmpType))));
+         }
+         Integer icmpCode = fromLine.getIcmpCode();
+         if (icmpCode != null) {
+            newLine.setIcmpCodes(
+                  new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
+         }
+         Set<State> states = fromLine.getStates();
+         newLine.getStates().addAll(states);
+         List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
+         newLine.getTcpFlags().addAll(tcpFlags);
+         Set<Integer> dscps = fromLine.getDscps();
+         newLine.getDscps().addAll(dscps);
+         Set<Integer> ecns = fromLine.getEcns();
+         newLine.getEcns().addAll(ecns);
+         lines.add(newLine);
+      }
+      return new Ip6AccessList(name, lines);
+   }
+
    private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
       String name = eaList.getName();
       List<IpAccessListLine> lines = new ArrayList<>();
@@ -1633,6 +1739,49 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       return newProcess;
    }
 
+   private Route6FilterLine toRoute6FilterLine(
+         ExtendedIpv6AccessListLine fromLine) {
+      LineAction action = fromLine.getAction();
+      Ip6 ip = fromLine.getSourceIpWildcard().getIp();
+      BigInteger minSubnet = fromLine.getDestinationIpWildcard().getIp()
+            .asBigInteger();
+      BigInteger maxSubnet = minSubnet.or(
+            fromLine.getDestinationIpWildcard().getWildcard().asBigInteger());
+      int minPrefixLength = fromLine.getDestinationIpWildcard().getIp()
+            .numSubnetBits();
+      int maxPrefixLength = new Ip6(maxSubnet).numSubnetBits();
+      int statedPrefixLength = fromLine.getSourceIpWildcard().getWildcard()
+            .inverted().numSubnetBits();
+      int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
+      Prefix6 prefix = new Prefix6(ip, prefixLength);
+      return new Route6FilterLine(action, prefix,
+            new SubRange(minPrefixLength, maxPrefixLength));
+   }
+
+   private Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
+      String name = eaList.getName();
+      Route6FilterList newList = new Route6FilterList(name);
+      List<Route6FilterLine> lines = new ArrayList<>();
+      for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
+         Route6FilterLine newLine = toRoute6FilterLine(fromLine);
+         lines.add(newLine);
+      }
+      newList.getLines().addAll(lines);
+      return newList;
+   }
+
+   private Route6FilterList toRoute6FilterList(Prefix6List list) {
+      Route6FilterList newRouteFilterList = new Route6FilterList(
+            list.getName());
+      for (Prefix6ListLine prefixListLine : list.getLines()) {
+         Route6FilterLine newRouteFilterListLine = new Route6FilterLine(
+               prefixListLine.getAction(), prefixListLine.getPrefix(),
+               prefixListLine.getLengthRange());
+         newRouteFilterList.addLine(newRouteFilterListLine);
+      }
+      return newRouteFilterList;
+   }
+
    private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
       LineAction action = fromLine.getAction();
       Ip ip = fromLine.getSourceIpWildcard().getIp();
@@ -1660,7 +1809,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
       newList.getLines().addAll(lines);
       return newList;
-
    }
 
    private RouteFilterList toRouteFilterList(PrefixList list) {
@@ -1783,6 +1931,13 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                newRouteFilterList);
       }
 
+      // convert ipv6 prefix lists to route6 filter lists
+      for (Prefix6List prefixList : _prefix6Lists.values()) {
+         Route6FilterList newRouteFilterList = toRoute6FilterList(prefixList);
+         c.getRoute6FilterLists().put(newRouteFilterList.getName(),
+               newRouteFilterList);
+      }
+
       // convert standard/extended access lists to access lists or route filter
       // lists
       List<ExtendedAccessList> allACLs = new ArrayList<>();
@@ -1806,6 +1961,32 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          }
          IpAccessList ipaList = toIpAccessList(eaList);
          c.getIpAccessLists().put(ipaList.getName(), ipaList);
+      }
+
+      // convert standard/extended ipv6 access lists to ipv6 access lists or
+      // route6 filter
+      // lists
+      List<ExtendedIpv6AccessList> allIpv6ACLs = new ArrayList<>();
+      for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
+         ExtendedIpv6AccessList eaList = saList.toExtendedIpv6AccessList();
+         allIpv6ACLs.add(eaList);
+      }
+      allIpv6ACLs.addAll(_extendedIpv6AccessLists.values());
+      for (ExtendedIpv6AccessList eaList : allIpv6ACLs) {
+         if (usedForRouting(eaList)) {
+            String msg = "used for routing";
+            StandardIpv6AccessList parent = eaList.getParent();
+            if (parent != null) {
+               parent.getReferers().put(this, msg);
+            }
+            else {
+               eaList.getReferers().put(this, msg);
+            }
+            Route6FilterList rfList = toRoute6FilterList(eaList);
+            c.getRoute6FilterLists().put(rfList.getName(), rfList);
+         }
+         Ip6AccessList ipaList = toIp6AccessList(eaList);
+         c.getIp6AccessLists().put(ipaList.getName(), ipaList);
       }
 
       // convert route maps to policy maps
@@ -1866,6 +2047,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
 
       markAcls(_lineAccessClassLists, "line access-class list", c);
+      markIpv6Acls(_lineIpv6AccessClassLists, "line access-class list", c);
       markAcls(_classMapAccessGroups, "class-map access-group", c);
       markAcls(_ntpAccessGroups, "ntp access-group", c);
       markAcls(_pimAcls, "pim acl", c);
@@ -1873,13 +2055,18 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       markAcls(_managementAccessGroups, "management ip access-group", c);
       markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
       markAcls(_snmpAccessLists, "snmp access-list", c);
+      markAcls(_sshAcls, "ssh ipv4 access-list", c);
+      markAcls(_sshIpv6Acls, "ssh ipv6 access-list", c);
+      markAcls(_verifyAccessLists, "interface ip verify access-list", c);
       markRouteMaps(_pimRouteMaps, "pim route-map", c);
       // warn about unreferenced data structures
       warnUnusedPeerGroups();
       warnUnusedPeerSessions();
       warnUnusedRouteMaps();
       warnUnusedIpAccessLists();
+      warnUnusedIpv6AccessLists();
       warnUnusedPrefixLists();
+      warnUnusedPrefix6Lists();
       warnUnusedIpAsPathAccessLists();
       warnUnusedCommunityLists();
       c.simplifyRoutingPolicies();
@@ -1931,6 +2118,51 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       return false;
    }
 
+   private boolean usedForRouting(ExtendedIpv6AccessList eaList) {
+      String eaListName = eaList.getName();
+      String currentMapName;
+      // check ospf policies
+      if (_ospfProcess != null) {
+         OspfProcess oproc = _ospfProcess;
+         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
+               .values()) {
+            currentMapName = rp.getMap();
+            if (containsIpv6AccessList(eaListName, currentMapName)) {
+               return true;
+            }
+         }
+         currentMapName = oproc.getDefaultInformationOriginateMap();
+         if (containsIpAccessList(eaListName, currentMapName)) {
+            return true;
+         }
+      }
+      // check bgp policies
+      for (BgpProcess bgpProcess : _bgpProcesses.values()) {
+         for (BgpRedistributionPolicy rp : bgpProcess
+               .getRedistributionPolicies().values()) {
+            currentMapName = rp.getMap();
+            if (containsIpv6AccessList(eaListName, currentMapName)) {
+               return true;
+            }
+         }
+         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
+            currentMapName = pg.getInboundRouteMap();
+            if (containsIpv6AccessList(eaListName, currentMapName)) {
+               return true;
+            }
+            currentMapName = pg.getOutboundRouteMap();
+            if (containsIpv6AccessList(eaListName, currentMapName)) {
+               return true;
+            }
+            currentMapName = pg.getDefaultOriginateMap();
+            if (containsIpv6AccessList(eaListName, currentMapName)) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
    private void warnUnusedCommunityLists() {
       for (Entry<String, ExpandedCommunityList> e : _expandedCommunityLists
             .entrySet()) {
@@ -1966,7 +2198,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          ExtendedAccessList acl = e.getValue();
-         if (!acl.getIpv6() && acl.isUnused()) {
+         if (acl.isUnused()) {
             unused("Unused extended access-list: '" + name + "'",
                   IP_ACCESS_LIST, name);
          }
@@ -2000,6 +2232,33 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
    }
 
+   private void warnUnusedIpv6AccessLists() {
+      for (Entry<String, ExtendedIpv6AccessList> e : _extendedIpv6AccessLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         ExtendedIpv6AccessList acl = e.getValue();
+         if (acl.isUnused()) {
+            unused("Unused extended ipv6 access-list: '" + name + "'",
+                  IPV6_ACCESS_LIST, name);
+         }
+      }
+      for (Entry<String, StandardIpv6AccessList> e : _standardIpv6AccessLists
+            .entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         StandardIpv6AccessList acl = e.getValue();
+         if (acl.isUnused()) {
+            unused("Unused standard ipv6 access-list: '" + name + "'",
+                  IPV6_ACCESS_LIST, name);
+         }
+      }
+   }
+
    private void warnUnusedPeerGroups() {
       if (_unusedPeerGroups != null) {
          for (String name : _unusedPeerGroups) {
@@ -2020,6 +2279,20 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       }
    }
 
+   private void warnUnusedPrefix6Lists() {
+      for (Entry<String, Prefix6List> e : _prefix6Lists.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         Prefix6List prefixList = e.getValue();
+         if (prefixList.isUnused()) {
+            unused("Unused ipv6 prefix-list: '" + name + "'", PREFIX6_LIST,
+                  name);
+         }
+      }
+   }
+
    private void warnUnusedPrefixLists() {
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
          String name = e.getKey();
@@ -2028,7 +2301,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          }
          PrefixList prefixList = e.getValue();
          if (prefixList.isUnused()) {
-            unused("Unused prefix-list: '" + name + "'", PREFIX_LIST, name);
+            unused("Unused ipv4 prefix-list: '" + name + "'", PREFIX_LIST,
+                  name);
          }
       }
    }

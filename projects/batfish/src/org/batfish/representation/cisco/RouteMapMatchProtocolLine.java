@@ -24,11 +24,6 @@ public class RouteMapMatchProtocolLine extends RouteMapMatchLine {
    }
 
    @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.PROTOCOL;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();

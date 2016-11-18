@@ -171,6 +171,11 @@ ACCOUNTING_THRESHOLD
    'accounting-threshold'
 ;
 
+ACCT_PORT
+:
+   'acct-port'
+;
+
 ACK
 :
    'ack'
@@ -431,14 +436,24 @@ ALLOCATE
    'allocate'
 ;
 
+ALLOW
+:
+   'allow'
+;
+
 ALLOW_CONNECTIONS
 :
    'allow-connections'
 ;
 
-ALLOW
+ALLOW_DEFAULT
 :
-   'allow'
+   'allow-default'
+;
+
+ALLOW_SELF_PING
+:
+   'allow-self-ping'
 ;
 
 ALLOWED
@@ -603,6 +618,11 @@ ASDM
    'asdm'
 ;
 
+ASDM_BUFFER_SIZE
+:
+   'asdm-buffer-size'
+;
+
 ASN
 :
    'asn'
@@ -671,6 +691,11 @@ ATTRIBUTE_SET
 AUDIT
 :
    'audit'
+;
+
+AUTH_PORT
+:
+   'auth-port'
 ;
 
 AUTH_PROXY
@@ -1001,6 +1026,11 @@ BSR_CANDIDATE
 BUCKETS
 :
    'buckets'
+;
+
+BUFFER_SIZE
+:
+   'buffer-size'
 ;
 
 BUFFERED
@@ -1687,6 +1717,11 @@ DEADTIME
 DEBUG
 :
    'debug'
+;
+
+DEBUG_TRACE
+:
+   'debug-trace'
 ;
 
 DEBUGGING
@@ -2422,6 +2457,11 @@ ERSPAN_ID
 ESCAPE_CHARACTER
 :
    'escape-character'
+;
+
+ESM
+:
+   'esm'
 ;
 
 ESP
@@ -3629,7 +3669,12 @@ KERBEROS
 
 KEY
 :
-   'key' -> pushMode ( M_Key )
+   'key'
+;
+
+KEY_EXCHANGE
+:
+   'key-exchange'
 ;
 
 KEY_SOURCE
@@ -3675,6 +3720,11 @@ KSHELL
 L2_FILTER
 :
    'l2-filter'
+;
+
+L2_SRC
+:
+   'l2-src'
 ;
 
 L2PROTOCOL_TUNNEL
@@ -4185,6 +4235,11 @@ MATCHES_EVERY
 MAX_ASSOCIATIONS
 :
    'max-associations'
+;
+
+MAX_IFINDEX_PER_MODULE
+:
+   'max-ifindex-per-module'
 ;
 
 MAX_LSA
@@ -4902,6 +4957,11 @@ NOT_ADVERTISE
    'not-advertise'
 ;
 
+NOTIFICATION
+:
+   'notification'
+;
+
 NOTIFICATION_TIMER
 :
    'notification-timer'
@@ -5312,6 +5372,11 @@ PERMIT
    'permit'
 ;
 
+PERMIT_HOSTDOWN
+:
+   'permit-hostdown'
+;
+
 PERSISTENT
 :
    'persistent'
@@ -5552,6 +5617,11 @@ PREEMPT
    'preempt'
 ;
 
+PREFER
+:
+   'prefer'
+;
+
 PREFERRED
 :
    'preferred'
@@ -5767,6 +5837,11 @@ QUEUE_BUFFERS
    'queue-buffers'
 ;
 
+QUEUE_LENGTH
+:
+   'queue-length'
+;
+
 QUEUE_LIMIT
 :
    'queue-limit'
@@ -5850,6 +5925,11 @@ RCV_QUEUE
 RD
 :
    'rd'
+;
+
+REACHABLE_VIA
+:
+   'reachable-via'
 ;
 
 REACT
@@ -6082,6 +6162,11 @@ RETRIES
    'retries'
 ;
 
+REVERSE_PATH
+:
+   'reverse-path'
+;
+
 REVERSE_ROUTE
 :
    'reverse-route'
@@ -6295,6 +6380,11 @@ RX_COS_SLOT
 RW
 :
    'rw'
+;
+
+RX
+:
+   'rx'
 ;
 
 SA_FILTER
@@ -6520,6 +6610,11 @@ SERVE_ONLY
 SERVER
 :
    'server'
+;
+
+SERVER_ARP
+:
+   'server-arp'
 ;
 
 SERVERFARM
@@ -7027,6 +7122,11 @@ STREET_ADDRESS
 STREETADDRESS
 :
    'streetaddress' -> pushMode ( M_Description )
+;
+
+STRICTHOSTKEYCHECK
+:
+   'stricthostkeycheck'
 ;
 
 STRING
@@ -7842,6 +7942,11 @@ UUCP
 V1_RP_REACHABILITY
 :
    'v1-rp-reachability'
+;
+
+V2
+:
+   'v2'
 ;
 
 V4
@@ -9070,6 +9175,11 @@ M_Banner_NEWLINE
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
 
+M_Banner_NONE
+:
+   'none' -> type ( NONE )
+;
+
 M_Banner_PROMPT_TIMEOUT
 :
    'prompt-timeout' -> type ( PROMPT_TIMEOUT ) , mode ( M_BannerText )
@@ -9152,7 +9262,7 @@ M_CertificateText_QUIT
 
 M_CertificateText_REMOVED
 :
-   '<removed>' -> type (REMOVED ) , mode ( DEFAULT_MODE )
+   '<removed>' -> type ( REMOVED ) , mode ( DEFAULT_MODE )
 ;
 
 M_CertificateText_HEX_FRAGMENT
@@ -9382,7 +9492,8 @@ mode M_IosRegex;
 
 M_IosRegex_COMMUNITY_SET_REGEX
 :
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) , popMode
+   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) ,
+   popMode
 ;
 
 M_IosRegex_AS_PATH_SET_REGEX
@@ -9408,18 +9519,6 @@ M_ISO_Address_ISO_ADDRESS
 M_ISO_Address_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_Key;
-
-M_Key_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_Key_NON_NEWLINE
-:
-   F_NonNewline+
 ;
 
 mode M_MOTD_C;

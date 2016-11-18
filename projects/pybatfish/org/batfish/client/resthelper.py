@@ -39,8 +39,9 @@ def _post_data(session, resource, jsonData, stream=False):
     multipart_data = MultipartEncoder(jsonData)
     
     numTriesLeft = Options.max_tries_to_coonnect_to_coordinator
-    
+    numTries = 0
     while (numTriesLeft > 0):
+        numTries = numTries + 1
         numTriesLeft = numTriesLeft - 1
         try:
             response = requests.post(
@@ -55,7 +56,8 @@ def _post_data(session, resource, jsonData, stream=False):
             response.raise_for_status()
             return response
         except ConnectionError, e:
-            session.logger.info("Could not connect to coordinator at %s. NumTriesLeft = %d", session.get_url(resource), numTriesLeft)
+            if (numTries > Options.num_tries_warn_threshold):
+                session.logger.info("Could not connect to coordinator at %s. NumTriesLeft = %d", session.get_url(resource), numTriesLeft)
             if (numTriesLeft <= 0):
                 raise BatfishException("Failed to connect to Coordinator", cause=BatfishException(e))
             else:

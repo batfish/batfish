@@ -8,15 +8,13 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-@JsonInclude(Include.NON_DEFAULT)
 public abstract class Question implements IQuestion {
 
    private static final String DIFF_VAR = "differential";
@@ -100,6 +98,13 @@ public abstract class Question implements IQuestion {
          }
       }
 
+   }
+
+   @Override
+   public String toFullJsonString() throws JsonProcessingException {
+      ObjectMapper mapper = new BatfishObjectMapper();
+      mapper.setSerializationInclusion(Include.ALWAYS);
+      return mapper.writeValueAsString(this);
    }
 
    @Override

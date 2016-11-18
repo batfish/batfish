@@ -78,6 +78,7 @@ wsma agent filesys
  profile httpslistener
 group-policy GroupPolicy_NOC-VPN attributes
  banner value ** AUTHORIZED ACCESS ONLY **
+ banner none
  wins-server none
  dns-server value 1.2.3.4 2.3.4.5
  vpn-simultaneous-logins 2
@@ -186,12 +187,17 @@ ip sla 10
  history filter failures
 !
 dial-peer voice 1 voip
- destination-pattern .T
- session target ras
  codec transparent
- translation-profile 
+ description oigjaiowfjiofjweiofjowe
+ destination-pattern .T
+ dtmf-relay rtp-nte
+ forward-digits all
  incoming from-vide
  media flow-around
+ session target ras
+ translation-profile incoming from-vide
+ translation-profile 
+ no vad
 !
 gatekeeper
  zone local SVL-GK.cenic.net cenic.net invia SVL-GK.cenic.net outvia SVL-GK.cenic.net
@@ -214,6 +220,14 @@ cos-queue-group queuemap-red
 !
 power-mgr disable
 !
+archive
+ log config
+  logging enable
+  logging size 200
+  notify syslog contenttype plaintext
+  hidekeys
+tls-proxy ASA-tls-proxy
+ server trust-point _internal_PP_ctl_phoneproxy_file
 global-port-security
  age 2
  delete-dynamic-learn

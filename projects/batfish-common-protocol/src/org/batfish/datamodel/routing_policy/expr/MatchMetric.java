@@ -3,6 +3,8 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public class MatchMetric extends AbstractBooleanExpr {
 
    /**
@@ -13,6 +15,10 @@ public class MatchMetric extends AbstractBooleanExpr {
    private IntComparator _comparator;
 
    private IntExpr _metric;
+
+   @JsonCreator
+   public MatchMetric() {
+   }
 
    public MatchMetric(IntComparator comparator, IntExpr metric) {
       _comparator = comparator;

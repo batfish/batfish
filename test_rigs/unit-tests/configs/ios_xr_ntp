@@ -1,0 +1,9 @@
+!
+hostname ios_xr_ntp
+!
+ntp
+ server 1.2.3.4 prefer
+ source Loopback0
+ update-calendar
+!
+

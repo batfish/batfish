@@ -6,16 +6,22 @@
   ],
   "question" : {
     "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "actions" : [
+      "accept"
+    ],
+    "differential" : false,
     "dstIps" : [
       "1.0.1.1"
     ],
     "dstPorts" : [
       "0-0"
     ],
+    "finalNodeRegex" : ".*",
     "ingressNodeRegex" : "host2",
     "ipProtocols" : [
       "UDP"
     ],
+    "negateHeader" : false,
     "srcIps" : [
       "2.128.0.0"
     ],

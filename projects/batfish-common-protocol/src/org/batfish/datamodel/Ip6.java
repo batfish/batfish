@@ -5,12 +5,14 @@ import java.math.BigInteger;
 
 import org.batfish.common.BatfishException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.net.InetAddresses;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
    public static final Ip6 MAX = new Ip6(
-         new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
+         new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
 
    private static final long serialVersionUID = 1L;
 
@@ -20,7 +22,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
          BigInteger ipv6AddressAsBigInteger) {
       BigInteger remainder = ipv6AddressAsBigInteger;
       String out = "";
-      BigInteger segmentMask = new BigInteger("FFFF", 16);
+      BigInteger segmentMask = new BigInteger("+FFFF", 16);
       for (int i = 0; i < 8; i++) {
          out = remainder.and(segmentMask).toString(16) + ":" + out;
          remainder = remainder.shiftRight(16);
@@ -31,21 +33,25 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
    private static BigInteger numSubnetBitsToSubnetBigInteger(int numBits) {
       BigInteger val = BigInteger.ZERO;
-      for (int i = 127; i > 127 - numBits; i--) {
+      for (int i = Prefix6.MAX_PREFIX_LENGTH - 1; i > Prefix6.MAX_PREFIX_LENGTH
+            - 1 - numBits; i--) {
          val = val.or(BigInteger.ONE.shiftLeft(i));
       }
       return val;
    }
 
-   private final int _hashCode;
+   public static Ip6 numSubnetBitsToSubnetMask(int numBits) {
+      BigInteger mask = numSubnetBitsToSubnetBigInteger(numBits);
+      return new Ip6(mask);
+   }
 
    private final BigInteger _ip6;
 
    public Ip6(BigInteger ip6AsBigInteger) {
       _ip6 = ip6AsBigInteger;
-      _hashCode = _ip6.hashCode();
    }
 
+   @JsonCreator
    public Ip6(String ipAsString) {
       boolean invalid = false;
       byte[] ip6AsByteArray = null;
@@ -65,7 +71,6 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
                "Invalid ipv6 address literal: \"" + ipAsString + "\"");
       }
       _ip6 = new BigInteger(ip6AsByteArray);
-      _hashCode = _ip6.hashCode();
    }
 
    public BigInteger asBigInteger() {
@@ -90,16 +95,38 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
    @Override
    public int hashCode() {
-      return _hashCode;
+      return _ip6.hashCode();
+   }
+
+   public Ip6 inverted() {
+      BigInteger mask = new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
+      BigInteger invertedBigInteger = mask.andNot(_ip6);
+      return new Ip6(invertedBigInteger);
    }
 
    public String networkString(int prefixLength) {
       return toString() + "/" + prefixLength;
    }
 
+   public int numSubnetBits() {
+      int numTrailingZeros = _ip6.getLowestSetBit();
+      if (numTrailingZeros == -1) {
+         return 0;
+      }
+      else {
+         return Prefix6.MAX_PREFIX_LENGTH - numTrailingZeros;
+      }
+   }
+
    @Override
+   @JsonValue
    public String toString() {
       return asIpv6AddressString(_ip6);
+   }
+
+   public boolean valid() {
+      return _ip6.compareTo(BigInteger.ZERO) >= 0 && _ip6.compareTo(
+            new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)) <= 0;
    }
 
 }

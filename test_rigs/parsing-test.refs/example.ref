@@ -5355,6 +5355,11 @@
             "            IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (if_stanza",
+            "          (mtu_if_stanza",
+            "            MTU:'mtu'  <== mode:DEFAULT_MODE",
+            "            DEC:'1300'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_stanza",
             "          (null_if_stanza",
             "            (null_block_if_stanza",
             "              DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
@@ -5384,6 +5389,11 @@
             "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "            IP_ADDRESS:'2.12.12.2'  <== mode:DEFAULT_MODE",
             "            IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_stanza",
+            "          (mtu_if_stanza",
+            "            MTU:'mtu'  <== mode:DEFAULT_MODE",
+            "            DEC:'1100'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (if_stanza",
             "          (null_if_stanza",
@@ -5446,6 +5456,11 @@
             "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "            IP_ADDRESS:'2.23.22.2'  <== mode:DEFAULT_MODE",
             "            IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_stanza",
+            "          (mtu_if_stanza",
+            "            MTU:'mtu'  <== mode:DEFAULT_MODE",
+            "            DEC:'1200'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (if_stanza",
             "          (null_if_stanza",
@@ -10687,7 +10702,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10698,7 +10713,7 @@
           "community-list" : [
             "as1_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10709,7 +10724,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10720,7 +10735,7 @@
           "community-list" : [
             "as2_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10747,7 +10762,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         },
@@ -10758,7 +10773,7 @@
           "community-list" : [
             "as3_community"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "inbound_route_filter"
           ]
         }
@@ -10769,28 +10784,28 @@
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '3.2.2.2'",
             "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '5.6.7.8'",
             "3" : "UNUSED: Unused bgp peer-group/template: 'as3'",
-            "4" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "4" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "5" : "UNUSED: Unused expanded community-list: 'as1_community'"
           }
         },
         "as1border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as2'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as1_community'"
           }
         },
         "as2border1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as3'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as2_community'"
           }
         },
         "as2border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as1'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as2_community'"
           }
         },
@@ -10821,14 +10836,14 @@
         "as3border1" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as1'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as3_community'"
           }
         },
         "as3border2" : {
           "Red flags" : {
             "1" : "UNUSED: Unused bgp peer-group/template: 'as2'",
-            "2" : "UNUSED: Unused prefix-list: 'inbound_route_filter'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'inbound_route_filter'",
             "3" : "UNUSED: Unused expanded community-list: 'as3_community'"
           }
         }

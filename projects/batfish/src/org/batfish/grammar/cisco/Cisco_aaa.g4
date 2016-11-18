@@ -548,8 +548,18 @@ aaa_group_server
       | name = variable
    )
    (
-      PORT DEC
-   )? NEWLINE
+      (
+         ACCT_PORT acct_port = DEC
+      )
+      |
+      (
+         AUTH_PORT auth_port = DEC
+      )
+      |
+      (
+         PORT prt = DEC
+      )
+   )* NEWLINE
 ;
 
 aaa_group_server_private

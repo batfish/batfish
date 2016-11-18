@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
          @JsonProperty(HOPS_VAR) List<FlowTraceHop> hops,
          @JsonProperty(NOTES_VAR) String notes) {
       _disposition = disposition;
-      _hops = hops;
+      _hops = hops != null ? hops : Collections.emptyList();
       _notes = notes;
    }
 

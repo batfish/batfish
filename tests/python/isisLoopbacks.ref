@@ -46,7 +46,9 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion"
+    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS"
 }

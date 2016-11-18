@@ -10,7 +10,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -19,7 +19,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -28,7 +28,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -37,7 +37,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -46,7 +46,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -55,7 +55,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -64,7 +64,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -73,7 +73,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -82,7 +82,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -91,7 +91,7 @@
           "community-list" : [
             "LEAK_COMMUNITY"
           ],
-          "prefix-list" : [
+          "ipv4 prefix-list" : [
             "DEFAULT_IPV4",
             "IPV4_18_OR_LONGER"
           ]
@@ -100,71 +100,71 @@
       "warnings" : {
         "plane_0_spine_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "plane_1_spine_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_0_leaf_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_0_leaf_1" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_0_tor_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_0_tor_1" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_1_leaf_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_1_leaf_1" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_1_tor_0" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         },
         "pod_1_tor_1" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused prefix-list: 'IPV4_18_OR_LONGER'",
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
             "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
           }
         }
@@ -185,7 +185,7 @@
       },
       "dependentRoutesIterations" : 5,
       "ospfInternalIterations" : 1,
-      "totalRoutes" : 218
+      "totalRoutes" : 170
     }
   ],
   "status" : "SUCCESS"

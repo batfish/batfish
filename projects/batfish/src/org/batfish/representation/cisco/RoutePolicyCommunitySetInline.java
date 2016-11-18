@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import java.util.Set;
+import java.util.List;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
@@ -12,13 +12,13 @@ public class RoutePolicyCommunitySetInline extends RoutePolicyCommunitySet {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<CommunitySetElem> _elems;
+   private List<CommunitySetElem> _elems;
 
-   public RoutePolicyCommunitySetInline(Set<CommunitySetElem> elems) {
+   public RoutePolicyCommunitySetInline(List<CommunitySetElem> elems) {
       _elems = elems;
    }
 
-   public Set<CommunitySetElem> getNumbers() {
+   public List<CommunitySetElem> getNumbers() {
       return _elems;
    }
 

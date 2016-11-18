@@ -25,11 +25,6 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
    }
 
    @Override
-   public RouteMapMatchType getType() {
-      return RouteMapMatchType.AS_PATH_ACCESS_LIST;
-   }
-
-   @Override
    public BooleanExpr toBooleanExpr(Configuration c, CiscoConfiguration cc,
          Warnings w) {
       Disjunction d = new Disjunction();

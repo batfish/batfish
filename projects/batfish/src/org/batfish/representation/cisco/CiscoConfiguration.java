@@ -32,6 +32,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
 
+   protected final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
+
    protected boolean _failover;
 
    protected String _failoverCommunicationInterface;
@@ -60,6 +62,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _lineAccessClassLists;
 
+   protected final Set<String> _lineIpv6AccessClassLists;
+
    protected final Set<String> _managementAccessGroups;
 
    protected final Set<String> _msdpPeerSaLists;
@@ -72,6 +76,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _pimRouteMaps;
 
+   protected final Map<String, Prefix6List> _prefix6Lists;
+
    protected final Map<String, PrefixList> _prefixLists;
 
    protected final Set<String> _referencedRouteMaps;
@@ -82,11 +88,19 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _snmpAccessLists;
 
+   protected final Set<String> _sshAcls;
+
+   protected final Set<String> _sshIpv6Acls;
+
    protected final Map<String, StandardAccessList> _standardAccessLists;
 
    protected final Map<String, StandardCommunityList> _standardCommunityLists;
 
+   protected final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
+
    protected final Set<StaticRoute> _staticRoutes;
+
+   protected final Set<String> _verifyAccessLists;
 
    public CiscoConfiguration() {
       _asPathAccessLists = new TreeMap<>();
@@ -96,25 +110,32 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _controlPlaneAccessGroups = new TreeSet<>();
       _expandedCommunityLists = new TreeMap<>();
       _extendedAccessLists = new TreeMap<>();
+      _extendedIpv6AccessLists = new TreeMap<>();
       _failoverInterfaces = new TreeMap<>();
       _failoverPrimaryPrefixes = new TreeMap<>();
       _failoverStandbyPrefixes = new TreeMap<>();
       _interfaces = new TreeMap<>();
       _ipv6PeerGroups = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
+      _lineIpv6AccessClassLists = new TreeSet<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
       _ntpAccessGroups = new TreeSet<>();
       _pimAcls = new TreeSet<>();
       _pimRouteMaps = new TreeSet<>();
       _prefixLists = new TreeMap<>();
+      _prefix6Lists = new TreeMap<>();
       _referencedRouteMaps = new TreeSet<>();
       _routeMaps = new TreeMap<>();
       _routePolicies = new TreeMap<>();
       _snmpAccessLists = new TreeSet<>();
+      _sshAcls = new TreeSet<>();
+      _sshIpv6Acls = new TreeSet<>();
       _standardAccessLists = new TreeMap<>();
+      _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
       _staticRoutes = new HashSet<>();
+      _verifyAccessLists = new HashSet<>();
    }
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
@@ -143,6 +164,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public final Map<String, ExtendedAccessList> getExtendedAcls() {
       return _extendedAccessLists;
+   }
+
+   public Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
+      return _extendedIpv6AccessLists;
    }
 
    public boolean getFailover() {
@@ -202,6 +227,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _lineAccessClassLists;
    }
 
+   public Set<String> getLineIpv6AccessClassLists() {
+      return _lineIpv6AccessClassLists;
+   }
+
    public Set<String> getManagementAccessGroups() {
       return _managementAccessGroups;
    }
@@ -226,6 +255,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _pimRouteMaps;
    }
 
+   public Map<String, Prefix6List> getPrefix6Lists() {
+      return _prefix6Lists;
+   }
+
    public final Map<String, PrefixList> getPrefixLists() {
       return _prefixLists;
    }
@@ -246,6 +279,14 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _snmpAccessLists;
    }
 
+   public Set<String> getSshAcls() {
+      return _sshAcls;
+   }
+
+   public Set<String> getSshIpv6Acls() {
+      return _sshIpv6Acls;
+   }
+
    public final Map<String, StandardAccessList> getStandardAcls() {
       return _standardAccessLists;
    }
@@ -254,8 +295,16 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _standardCommunityLists;
    }
 
+   public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
+      return _standardIpv6AccessLists;
+   }
+
    public final Set<StaticRoute> getStaticRoutes() {
       return _staticRoutes;
+   }
+
+   public Set<String> getVerifyAccessLists() {
+      return _verifyAccessLists;
    }
 
    public void setFailover(boolean failover) {

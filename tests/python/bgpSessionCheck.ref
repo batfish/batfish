@@ -452,7 +452,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion"
+    "class" : "org.batfish.question.BgpSessionCheckQuestionPlugin$BgpSessionCheckQuestion",
+    "differential" : false,
+    "node1Regex" : ".*",
+    "node2Regex" : ".*"
   },
   "status" : "SUCCESS"
 }

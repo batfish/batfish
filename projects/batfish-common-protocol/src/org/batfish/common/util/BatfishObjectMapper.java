@@ -50,10 +50,16 @@ public class BatfishObjectMapper extends ObjectMapper {
    private static final long serialVersionUID = 1L;
 
    public BatfishObjectMapper() {
-      super(new Factory());
-      enable(SerializationFeature.INDENT_OUTPUT);
+      this(true);
+   }
+
+   public BatfishObjectMapper(boolean indent) {
+      super(indent ? new Factory() : new JsonFactory());
+      if (indent) {
+         enable(SerializationFeature.INDENT_OUTPUT);
+      }
       enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-      setSerializationInclusion(Include.NON_NULL);
+      setSerializationInclusion(Include.NON_EMPTY);
    }
 
    public BatfishObjectMapper(ClassLoader cl) {
