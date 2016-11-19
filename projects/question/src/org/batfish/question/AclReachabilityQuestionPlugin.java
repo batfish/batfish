@@ -47,6 +47,18 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
 
    }
 
+   // <question_page_comment>
+   /**
+    * Identifies unreachable lines in ACLs.
+    * <p>
+    * Report ACLs with unreachable lines, as well as reachability of each line within the ACL. 
+    * Unreachable lines can indicate erroneous configuration.
+    *
+    * @type AclReachability
+    *
+    * @param aclNameRegex Regular expression for names of the ACLs to analyze. Default value is '.*' (i.e., all ACLs).
+    * @param nodeRegex Regular expression for names of nodes to analyze. Default value is '.*' (i.e., all nodes).
+    */
    public static class AclReachabilityQuestion extends Question {
 
       private static final String ACL_NAME_REGEX_VAR = "aclNameRegex";

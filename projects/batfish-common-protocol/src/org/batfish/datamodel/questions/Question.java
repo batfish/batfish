@@ -17,16 +17,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Question implements IQuestion {
 
+   private static final String DESC_VAR = "description";
+
    private static final String DIFF_VAR = "differential";
 
+   private String _description;
+   
    private boolean _differential;
 
    public Question() {
+      _description = "Generic description. Override in subclass";
       _differential = false;
    }
 
    @JsonIgnore
    public abstract boolean getDataPlane();
+
+   @JsonProperty(DESC_VAR)
+   public String getDescription() {
+      return _description;
+   }
 
    @JsonProperty(DIFF_VAR)
    public boolean getDifferential() {
@@ -41,6 +51,7 @@ public abstract class Question implements IQuestion {
 
    protected boolean isBaseParamKey(String paramKey) {
       switch (paramKey) {
+      case DESC_VAR:
       case DIFF_VAR:
          return true;
       default:
@@ -69,6 +80,10 @@ public abstract class Question implements IQuestion {
       }
    }
 
+   public void setDescription(String description) {
+      _description = description;
+   }
+
    public void setDifferential(boolean differential) {
       _differential = differential;
    }
@@ -85,6 +100,9 @@ public abstract class Question implements IQuestion {
 
          try {
             switch (paramKey) {
+            case DESC_VAR:
+               setDescription(parameters.getString(paramKey));
+               break;
             case DIFF_VAR:
                setDifferential(parameters.getBoolean(paramKey));
                break;
