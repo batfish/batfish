@@ -1,6 +1,10 @@
 !
-hostname dhcp
+hostname cisco_dhcp
 !
+dhcprelay server 1.2.3.4 outside
+dhcprelay server 1.2.3.5 outside
+dhcprelay enable inside
+dhcprelay timeout 60
 dhcp ipv4
  profile irnc-dhcp relay
   helper-address vrf default 137.164.55.68
@@ -10,4 +14,10 @@ dhcp ipv4
  interface Bundle-Ether1.1031 relay profile irnc-dhcp
  interface Bundle-Ether1.1032 relay profile irnc-dhcp
 !
-    
+ipv6 dhcp relay
+no ip dhcp packet strict-validation
+no ipv6 dhcp relay option vpn
+no ipv6 dhcp relay option type cisco
+no ipv6 dhcp relay source-interface
+!
+

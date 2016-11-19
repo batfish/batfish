@@ -6,12 +6,7 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-area_ipv6_ro_stanza
-:
-   AREA ~NEWLINE* NEWLINE
-;
-
-area_nssa_ro_stanza
+ro_area_nssa
 :
    AREA
    (
@@ -24,7 +19,7 @@ area_nssa_ro_stanza
    )* NEWLINE
 ;
 
-area_stub_ro_stanza
+ro_area_stub
 :
    AREA
    (
@@ -36,7 +31,7 @@ area_stub_ro_stanza
    )* NEWLINE
 ;
 
-area_xr_ro_stanza
+ro_area
 :
    AREA
    (
@@ -44,49 +39,25 @@ area_xr_ro_stanza
       | area_ip = IP_ADDRESS
    ) NEWLINE
    (
-      authentication_xr_ro_stanza
-      | nssa_xr_ro_stanza
-      | interface_xr_ro_stanza
+      ro_common
+      | roa_interface
+      | roa_range
    )*
 ;
 
-authentication_xr_ro_stanza
+ro_authentication
 :
    AUTHENTICATION MESSAGE_DIGEST? NEWLINE
 ;
 
-nssa_xr_ro_stanza
+ro_common
 :
-   NSSA
-   (
-      (
-         DEFAULT_INFORMATION_ORIGINATE
-         (
-            (
-               METRIC DEC
-            )
-            |
-            (
-               METRIC_TYPE DIGIT
-            )
-         )*
-      )
-      | NO_REDISTRIBUTION
-      | NO_SUMMARY
-   )* NEWLINE
+   ro_authentication
+   | ro_nssa
+   | ro_null
 ;
 
-auto_cost_ipv6_ro_stanza
-:
-   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
-;
-
-default_information_ipv6_ro_stanza
-:
-   DEFAULT_INFORMATION ~NEWLINE* NEWLINE
-;
-
-default_information_ro_stanza
+ro_default_information
 :
    DEFAULT_INFORMATION ORIGINATE
    (
@@ -110,80 +81,23 @@ default_information_ro_stanza
    )* NEWLINE
 ;
 
-distance_ipv6_ro_stanza
+ro_distance
 :
    DISTANCE value = DEC NEWLINE
 ;
 
-distance_ro_stanza
-:
-   DISTANCE value = DEC NEWLINE
-;
-
-interface_xr_ro_stanza
-:
-   INTERFACE name = interface_name NEWLINE interface_xr_ro_tail*
-;
-
-interface_xr_ro_tail
+ro_maximum_paths
 :
    (
-      NETWORK
+      MAXIMUM_PATHS
+      |
       (
-         BROADCAST
-         | NON_BROADCAST
-         |
-         (
-            POINT_TO_MULTIPOINT NON_BROADCAST?
-         )
-         | POINT_TO_POINT
+         MAXIMUM PATHS
       )
-      | PRIORITY DEC
-      | PASSIVE
-      (
-         ENABLE
-         | DISABLE
-      )?
-   ) NEWLINE
+   ) DEC NEWLINE
 ;
 
-ipv6_ro_stanza
-:
-   area_ipv6_ro_stanza
-   | auto_cost_ipv6_ro_stanza
-   | default_information_ipv6_ro_stanza
-   | distance_ipv6_ro_stanza
-   | log_adjacency_changes_ipv6_ro_stanza
-   | maximum_paths_ipv6_ro_stanza
-   | passive_interface_ipv6_ro_stanza
-   | redistribute_ipv6_ro_stanza
-   | router_id_ipv6_ro_stanza
-;
-
-ipv6_router_ospf_stanza
-:
-   IPV6 ROUTER OSPF procnum = DEC NEWLINE
-   (
-      rosl += ipv6_ro_stanza
-   )+
-;
-
-log_adjacency_changes_ipv6_ro_stanza
-:
-   LOG_ADJACENCY_CHANGES NEWLINE
-;
-
-maximum_paths_ipv6_ro_stanza
-:
-   MAXIMUM_PATHS DEC NEWLINE
-;
-
-maximum_paths_ro_stanza
-:
-   MAXIMUM_PATHS DEC NEWLINE
-;
-
-network_ro_stanza
+ro_network
 :
    NETWORK
    (
@@ -198,81 +112,82 @@ network_ro_stanza
    ) NEWLINE
 ;
 
-null_ro_stanza
+ro_nssa
 :
-   null_standalone_ro_stanza
+   NSSA
+   (
+      (
+         DEFAULT_INFORMATION_ORIGINATE
+         (
+            (
+               METRIC DEC
+            )
+            |
+            (
+               METRIC_TYPE DIGIT
+            )
+         )*
+      )
+      | NO_REDISTRIBUTION
+      | NO_SUMMARY
+   )* NEWLINE
 ;
 
-null_rov3_stanza
-:
-   null_standalone_rov3_stanza
-   | unrecognized_line
-;
-
-null_standalone_ro_stanza
+ro_null
 :
    NO?
    (
-      ADDRESS_FAMILY
-      |
       (
-         AREA
-         (
-            DEC
-            | IP_ADDRESS
-         ) AUTHENTICATION
+         AREA variable AUTHENTICATION
       )
-      | AUTHENTICATION MESSAGE_DIGEST?
+      | AUTHENTICATION
       | AUTO_COST
       | BFD
+      | COST
+      | DISCARD_ROUTE
       | DISTRIBUTE_LIST
       | GRACEFUL_RESTART
+      |
+      (
+         IP
+         (
+            OSPF
+            (
+               EVENT_HISTORY
+            )
+         )
+      )
       | LOG
       | LOG_ADJACENCY_CHANGES
       | MAX_LSA
       | MAX_METRIC
+      |
+      (
+         MAXIMUM
+         (
+            REDISTRIBUTED_PREFIXES
+         )
+      )
+      | MESSAGE_DIGEST_KEY
       | MTU_IGNORE
       | NSF
       | NSR
       | RFC1583COMPATIBILITY
+      | TIMERS
    ) ~NEWLINE* NEWLINE
 ;
 
-null_standalone_rov3_stanza
-:
-   (
-      AREA
-      | DEAD_INTERVAL
-      | DEFAULT_INFORMATION
-      | HELLO_INTERVAL
-      | INTERFACE
-      | LOG
-      | MTU_IGNORE
-      | NETWORK
-      | NSSA
-      | NSR
-      | PASSIVE
-      | PRIORITY
-      | ROUTER_ID
-   ) ~NEWLINE* NEWLINE
-;
-
-passive_interface_ipv6_ro_stanza
-:
-   NO? PASSIVE_INTERFACE ~NEWLINE* NEWLINE
-;
-
-passive_interface_default_ro_stanza
+ro_passive_interface_default
 :
    PASSIVE_INTERFACE DEFAULT NEWLINE
 ;
 
-passive_interface_ro_stanza
+ro_passive_interface
 :
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
-redistribute_bgp_ro_stanza
+ro_redistribute_bgp
 :
    REDISTRIBUTE BGP as = DEC
    (
@@ -295,14 +210,13 @@ redistribute_bgp_ro_stanza
    )* NEWLINE
 ;
 
-redistribute_ipv6_ro_stanza
+ro_redistribute_connected
 :
-   REDISTRIBUTE ~NEWLINE* NEWLINE
-;
-
-redistribute_connected_ro_stanza
-:
-   REDISTRIBUTE CONNECTED
+   REDISTRIBUTE
+   (
+      CONNECTED
+      | DIRECT
+   )
    (
       (
          METRIC metric = DEC
@@ -323,12 +237,12 @@ redistribute_connected_ro_stanza
    )* NEWLINE
 ;
 
-redistribute_rip_ro_stanza
+ro_redistribute_rip
 :
    REDISTRIBUTE RIP ~NEWLINE* NEWLINE
 ;
 
-redistribute_static_ro_stanza
+ro_redistribute_static
 :
    REDISTRIBUTE STATIC
    (
@@ -351,59 +265,204 @@ redistribute_static_ro_stanza
    )* NEWLINE
 ;
 
-ro_stanza
-:
-   area_nssa_ro_stanza
-   | area_stub_ro_stanza
-   | area_xr_ro_stanza
-   | default_information_ro_stanza
-   | distance_ro_stanza
-   | maximum_paths_ro_stanza
-   | network_ro_stanza
-   | null_ro_stanza
-   | passive_interface_default_ro_stanza
-   | passive_interface_ro_stanza
-   | redistribute_bgp_ro_stanza
-   | redistribute_connected_ro_stanza
-   | redistribute_rip_ro_stanza
-   | redistribute_static_ro_stanza
-   | router_id_ro_stanza
-   | summary_address_ro_stanza
-   | unrecognized_line
-;
-
-router_id_ipv6_ro_stanza
-:
-   ROUTER_ID ~NEWLINE* NEWLINE
-;
-
-router_id_ro_stanza
+ro_router_id
 :
    ROUTER_ID ip = IP_ADDRESS NEWLINE
 ;
 
-router_ospf_stanza
-:
-   ROUTER OSPF procnum = DEC
-   (
-      VRF vrf = variable
-   )? NEWLINE router_ospf_stanza_tail
-;
-
-router_ospf_stanza_tail
-:
-   (
-      rosl += ro_stanza
-   )+
-;
-
-router_ospfv3_stanza
-:
-   ROUTER OSPFV3 procnum = DEC NEWLINE null_rov3_stanza*
-;
-
-summary_address_ro_stanza
+ro_summary_address
 :
    SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
    NEWLINE
 ;
+
+ro6_area
+:
+   AREA ~NEWLINE* NEWLINE
+;
+
+ro6_auto_cost
+:
+   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
+;
+
+ro6_default_information
+:
+   DEFAULT_INFORMATION ~NEWLINE* NEWLINE
+;
+
+ro6_distance
+:
+   DISTANCE value = DEC NEWLINE
+;
+
+ro6_log_adjacency_changes
+:
+   LOG_ADJACENCY_CHANGES NEWLINE
+;
+
+ro6_maximum_paths
+:
+   (
+      MAXIMUM_PATHS
+      |
+      (
+         MAXIMUM PATHS
+      )
+   ) DEC NEWLINE
+;
+
+ro6_passive_interface
+:
+   NO? PASSIVE_INTERFACE ~NEWLINE* NEWLINE
+;
+
+ro6_router_id
+:
+   ROUTER_ID ~NEWLINE* NEWLINE
+;
+
+ro6_redistribute
+:
+   REDISTRIBUTE ~NEWLINE* NEWLINE
+;
+
+roa_interface
+:
+   INTERFACE iname = interface_name NEWLINE
+   (
+      ro_common
+      | roi_network
+      | roi_priority
+      | roi_passive
+   )*
+;
+
+roa_range
+:
+   RANGE ~NEWLINE* NEWLINE
+;
+
+roi_network
+:
+   NETWORK
+   (
+      BROADCAST
+      | NON_BROADCAST
+      |
+      (
+         POINT_TO_MULTIPOINT NON_BROADCAST?
+      )
+      | POINT_TO_POINT
+   ) NEWLINE
+;
+
+roi_passive
+:
+   PASSIVE
+   (
+      ENABLE
+      | DISABLE
+   )? NEWLINE
+;
+
+roi_priority
+:
+   PRIORITY DEC NEWLINE
+;
+
+rov3_address_family
+:
+   ADDRESS_FAMILY IPV6 UNICAST NEWLINE rov3_common
+;
+
+rov3_common
+:
+   rov3_null
+   | unrecognized_line
+;
+
+rov3_null
+:
+   (
+      AREA
+      | AUTO_COST
+      | BFD
+      | COST
+      | DEAD_INTERVAL
+      | DEFAULT_INFORMATION
+      | DISCARD_ROUTE
+      | DISTANCE
+      | GRACEFUL_RESTART
+      | HELLO_INTERVAL
+      | INTERFACE
+      | LOG
+      | LOG_ADJACENCY_CHANGES
+      | MAXIMUM
+      | MAXIMUM_PATHS
+      | MTU_IGNORE
+      | NETWORK
+      | NSSA
+      | NSR
+      | OSPFV3
+      | PASSIVE
+      | PRIORITY
+      | RANGE
+      | REDISTRIBUTE
+      | ROUTER_ID
+      | TIMERS
+   ) ~NEWLINE* NEWLINE
+;
+
+s_ipv6_router_ospf
+:
+   IPV6 ROUTER OSPF procnum = DEC NEWLINE
+   (
+      ro6_area
+      | ro6_auto_cost
+      | ro6_default_information
+      | ro6_distance
+      | ro6_log_adjacency_changes
+      | ro6_maximum_paths
+      | ro6_passive_interface
+      | ro6_redistribute
+      | ro6_router_id
+   )*
+;
+
+s_router_ospf
+:
+   ROUTER OSPF procnum = DEC
+   (
+      VRF vrf = variable
+   )? NEWLINE
+   (
+      ro_area_nssa
+      | ro_area_stub
+      | ro_area
+      | ro_default_information
+      | ro_distance
+      | ro_maximum_paths
+      | ro_network
+      | ro_passive_interface_default
+      | ro_passive_interface
+      | ro_redistribute_bgp
+      | ro_redistribute_connected
+      | ro_redistribute_rip
+      | ro_redistribute_static
+      | ro_null
+      | ro_router_id
+      | ro_summary_address
+      | unrecognized_line
+   )*
+;
+
+s_router_ospfv3
+:
+   ROUTER OSPFV3 procnum = DEC NEWLINE
+   (
+      rov3_address_family
+      | rov3_common
+   )*
+;
+

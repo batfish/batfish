@@ -13,8 +13,10 @@ s_callhome
       callhome_email_contact
       | callhome_destination_profile
       | callhome_enable
+      | callhome_null
       | callhome_phone_contact
       | callhome_streetaddress
+      | callhome_switch_priority
       | callhome_transport
    )*
 ;
@@ -25,8 +27,10 @@ callhome_destination_profile
    (
       callhome_destination_profile_alert_group
       | callhome_destination_profile_email_addr
-      | callhome_destination_profile_message_level
       | callhome_destination_profile_format
+      | callhome_destination_profile_message_level
+      | callhome_destination_profile_message_size
+      | callhome_destination_profile_transport_method
       | NEWLINE
    )
 ;
@@ -46,6 +50,11 @@ callhome_destination_profile_message_level
    MESSAGE_LEVEL DEC NEWLINE
 ;
 
+callhome_destination_profile_message_size
+:
+   MESSAGE_SIZE DEC NEWLINE
+;
+
 callhome_destination_profile_format
 :
    FORMAT
@@ -54,6 +63,11 @@ callhome_destination_profile_format
       | FULL_TXT
       | SHORT_TXT
    ) NEWLINE
+;
+
+callhome_destination_profile_transport_method
+:
+   TRANSPORT_METHOD variable NEWLINE
 ;
 
 callhome_email_contact
@@ -66,6 +80,31 @@ callhome_enable
    ENABLE NEWLINE
 ;
 
+callhome_null
+:
+   NO?
+   (
+      DUPLICATE_MESSAGE
+      |
+      (
+         NO
+         (
+            DESTINATION_PROFILE
+            | ENABLE
+            | TRANSPORT
+         )
+      )
+      | PERIODIC_INVENTORY
+      |
+      (
+         TRANSPORT
+         (
+            HTTP
+         )
+      )
+   ) ~NEWLINE* NEWLINE
+;
+
 callhome_phone_contact
 :
    PHONE_CONTACT variable NEWLINE
@@ -74,6 +113,11 @@ callhome_phone_contact
 callhome_streetaddress
 :
    STREETADDRESS variable NEWLINE
+;
+
+callhome_switch_priority
+:
+   SWITCH_PRIORITY DEC NEWLINE
 ;
 
 callhome_transport

@@ -2,6 +2,9 @@
 hostname cisco_misc
 !
 appletalk routing
+no bloggerd log-dump all
+bloggerd log-throttle
+no bloggerd log-transfer
 port-profile default max-ports 512
 policy-map type inspect dns preset_dns_map
  parameters
@@ -95,6 +98,9 @@ group-policy GroupPolicy_NOC-VPN attributes
  webvpn
   anyconnect profiles value NOC-VPN_client_profile type user
 password-policy minimum-length 7
+hardware ip glean throttle maximum 1000
+keystore type default
+ip internal event-history static-rt size small
 webvpn
  enable outside
  csd image disk0:/csd_3.6.6234-k9.pkg
@@ -117,10 +123,6 @@ webvpn
 exception-slave core-file C2960-WM3-core
 exception memory ignore overflow processor
 exception memory ignore overflow io
-dhcprelay server 1.2.3.4 outside
-dhcprelay server 1.2.3.5 outside
-dhcprelay enable inside
-dhcprelay timeout 60
 management-access inside
 vpc domain 32
   peer-switch
@@ -234,8 +236,7 @@ global-port-security
 !
 no dual-mode-default-vlan
 !
-control-plane
-control-plane slot 1
+no fabricpath mode transit
 qos-mapping
  pcp decode-map BBone_Std
   pcp-value 3 4 7 to priority 0

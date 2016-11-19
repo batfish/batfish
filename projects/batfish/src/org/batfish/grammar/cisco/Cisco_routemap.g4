@@ -55,6 +55,14 @@ boolean_and_rp_stanza
    | boolean_and_rp_stanza AND boolean_not_rp_stanza
 ;
 
+boolean_apply_rp_stanza
+:
+   APPLY name = variable
+   (
+      PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
+   )?
+;
+
 boolean_as_path_in_rp_stanza
 :
    AS_PATH IN expr = as_path_set_expr
@@ -120,6 +128,7 @@ boolean_rp_stanza
 boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
+   | boolean_apply_rp_stanza
    | boolean_as_path_in_rp_stanza
    | boolean_as_path_neighbor_is_rp_stanza
    | boolean_as_path_originates_from_rp_stanza

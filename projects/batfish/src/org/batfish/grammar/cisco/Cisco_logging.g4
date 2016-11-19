@@ -66,6 +66,7 @@ logging_null
       | DEBUG_TRACE
       | ESM
       | EVENT
+      | EVENTS
       | FACILITY
       | HISTORY
       | IP_ADDRESS

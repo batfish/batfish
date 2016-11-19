@@ -1,22 +1,29 @@
 !
 hostname cisco_callhome
 !
-callhome                                                                                                                                   
+callhome
   email-contact fake@example.com
   phone-contact +1-555-555-5555
   streetaddress 555 Fake St, Fakeville
-  destination-profile full_txt message-level 3
-  destination-profile mns
-  destination-profile mns format short-txt
-  destination-profile mns message-level 3
-  destination-profile short_txt message-level 3
-  destination-profile mns email-addr fake2@example.com
-  destination-profile short_txt email-addr fake3@example.com
-  destination-profile mns alert-group all
+  destination-profile p
+  destination-profile p alert-group all
+  destination-profile p email-addr fake2@example.com
+  destination-profile p format short-txt
+  destination-profile p message-level 3
+  destination-profile p message-size 5000000
+  destination-profile p transport-method email
+  duplicate-message throttle
+  enable
+  no destination-profile p transport-method http
+  no enable
+  periodic-inventory notification
+  periodic-inventory notification interval  7
+  periodic-inventory notification timeofday 08:00
+  switch-priority 7
   transport email smtp-server 1.2.3.4 port 25 use-vrf management
   transport email from FAKE4@EXAMPLE.COM
   transport email reply-to fake5@example.com
-  enable
+!
 no call-home reporting anonymous
 call-home
  contact-email-addr a@support.ccc

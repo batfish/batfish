@@ -24,6 +24,12 @@ route-policy fooey_to_barbar_ipv6
     set local-preference 350
   endif
 end-policy
+route-policy aaaa
+ if apply bbbb then
+  apply cccc
+ endif
+end-policy
+end-policy
 route-policy drop_community_5555
   if community matches-any community_5555 then
     delete community in community_5555

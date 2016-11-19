@@ -1,0 +1,7 @@
+!
+hostname cisco_ip
+!
+ip adjacency route distance 250
+ip adjmgr internal event-history snmp size small
+!
+

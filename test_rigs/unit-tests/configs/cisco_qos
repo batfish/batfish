@@ -1,0 +1,66 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname cisco_qos
+!
+class-map type network-qos match-any bippety
+  description dum dee dum
+  match cos 0,5-7
+class-map type network-qos match-any boppety
+  match cos 1-2,4
+  match protocol fcoe mpls
+  match protocol fcoe
+!
+policy-map type network-qos default-ploosh-policy
+  class type network-qos bippetyboo-drop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+  class type network-qos bippetyboo-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  class type network-qos bippetyboo-ndrop
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  end-policy-map
+policy-map type control-plane feefoo
+ class fffoooddd
+  set cos 7 
+  police cir 36000 kbps bc 250 ms conform transmit violate drop 
+policy-map type network-qos default-foob-policy
+  class type network-qos c-foob-drop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+  class type network-qos c-foob-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+  class type network-qos c-foob-ndrop
+    pause
+    no congestion-control random-detect
+    mtu 2112
+policy-map type queueing qqqqq
+  class type queuing bleefee
+    priority level 1
+    bandwidth remaining percent 14
+policy-map type network-qos default-bleeb-policy
+  class type network-qos c-bleeb-drop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+  class type network-qos c-bleeb-ndrop-fcoe
+    pause
+    no congestion-control random-detect
+    mtu 2112
+policy-map type network-qos default-fleep-policy
+  class type network-qos floop
+    no pause
+    congestion-control tail-drop
+    no congestion-control random-detect
+    mtu 1500
+

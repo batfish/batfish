@@ -521,6 +521,7 @@ aaa_group
    (
       aaa_group_deadtime
       | aaa_group_ip_tacacs
+      | aaa_group_no_source_interface
       | aaa_group_server
       | aaa_group_server_private
       | aaa_group_source_interface
@@ -537,6 +538,11 @@ aaa_group_deadtime
 aaa_group_ip_tacacs
 :
    IP TACACS SOURCE_INTERFACE interface_name NEWLINE
+;
+
+aaa_group_no_source_interface
+:
+   NO SOURCE_INTERFACE NEWLINE
 ;
 
 aaa_group_server

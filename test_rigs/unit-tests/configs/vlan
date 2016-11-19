@@ -8,6 +8,8 @@ vlan 396 name UCR-HPR
  router-interface ve 396
  no spanning-tree
 !
+vlan dot1Q tag native
+no vlan dot1Q tag native
 vlan 1054 name [CENIC]sie-ucla-paix-lax 
  tagged ethe 5/1
  tagged ethe 15/2

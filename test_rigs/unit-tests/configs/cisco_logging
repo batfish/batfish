@@ -16,6 +16,7 @@ logging debug-trace
 logging enable
 logging esm config
 logging event link-status default
+logging events link-status software-interfaces
 logging facility local0
 logging history informational
 logging host mgmt 10.246.131.130

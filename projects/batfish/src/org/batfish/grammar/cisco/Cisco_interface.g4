@@ -336,6 +336,7 @@ null_block_if_stanza
       | DCB
       | DCBX
       | DCB_POLICY
+      | DELAY
       | DESTINATION
       | DIALER
       | DFS
@@ -477,6 +478,7 @@ null_block_if_stanza
       | MAP_GROUP
       | MDIX
       | MEDIA_TYPE
+      | MEDIUM
       | MEMBER
       | MINIMUM_LINKS
       | MLAG
@@ -491,6 +493,13 @@ null_block_if_stanza
       | NMSP
       |
       (
+         NO
+         (
+            DESCRIPTION
+         )
+      )
+      |
+      (
          NTP
          (
             BROADCAST
@@ -500,6 +509,7 @@ null_block_if_stanza
       | NV
       | OPENFLOW
       | OPTICAL_MONITOR
+      | OSPFV3
       | PATH_OPTION
       | PEAKDETECT
       | PEER

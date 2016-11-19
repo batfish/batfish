@@ -171,7 +171,8 @@ public final class Format {
       Matcher rancidMrv = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$")
             .matcher(_fileText);
       if (rancidCisco.find()) {
-         return ConfigurationFormat.CISCO_IOS;
+         return checkCisco(); // unfortunately, old RANCID cannot distinguish
+                              // subtypes
       }
       else if (rancidCiscoNx.find()) {
          return ConfigurationFormat.CISCO_NX;

@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_logging, Cisco_mpls, Cisco_ospf, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_callhome, Cisco_eigrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_logging, Cisco_mpls, Cisco_ospf, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -107,140 +107,6 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
-cm_end_class_map
-:
-   END_CLASS_MAP NEWLINE
-;
-
-cm_match
-:
-   MATCH cm_match_tail
-;
-
-cm_match_tail
-:
-   cmm_access_group
-   | cmm_access_list
-   | cmm_any
-   | cmm_cos
-   | cmm_default_inspection_traffic
-   | cmm_dscp
-   | cmm_exception
-   | cmm_mpls
-   | cmm_non_client_nrt
-   | cmm_port
-   | cmm_precedence
-   | cmm_protocol
-   | cmm_redirect
-   | cmm_qos_group
-;
-
-cmm_access_group
-:
-   (
-      IP
-      | IPV6
-   )? ACCESS_GROUP
-   (
-      IP
-      | IPV6
-      | IPV4
-   )?
-   (
-      num = DEC
-      |
-      (
-         NAME name = variable
-      )
-      |
-      (
-         name = variable color_setter?
-      )
-   ) NEWLINE
-;
-
-cmm_access_list
-:
-   ACCESS_LIST name = variable NEWLINE
-;
-
-cmm_any
-:
-   ANY NEWLINE
-;
-
-cmm_cos
-:
-   COS DEC NEWLINE
-;
-
-cmm_default_inspection_traffic
-:
-   DEFAULT_INSPECTION_TRAFFIC NEWLINE
-;
-
-cmm_dscp
-:
-   IP? DSCP
-   (
-      (
-         dscp_types += dscp_type
-      )+
-      |
-      (
-         dscp_range = range
-      )
-   ) NEWLINE
-;
-
-cmm_exception
-:
-   EXCEPTION ~NEWLINE+ NEWLINE
-;
-
-cmm_mpls
-:
-   MPLS ~NEWLINE* NEWLINE
-;
-
-cmm_non_client_nrt
-:
-   NON_CLIENT_NRT NEWLINE
-;
-
-cmm_port
-:
-   PORT
-   (
-      TCP
-      | UDP
-   ) port_specifier NEWLINE
-;
-
-cmm_precedence
-:
-   IP? PRECEDENCE IPV4?
-   (
-      DEC+
-      | name = variable
-   ) NEWLINE
-;
-
-cmm_protocol
-:
-   PROTOCOL ~NEWLINE NEWLINE
-;
-
-cmm_qos_group
-:
-   QOS_GROUP DEC NEWLINE
-;
-
-cmm_redirect
-:
-   REDIRECT ~NEWLINE NEWLINE
-;
-
 cp_ip_access_group
 :
    (
@@ -275,6 +141,7 @@ cp_null
    NO?
    (
       EXIT
+      | SCALE_FACTOR
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -332,8 +199,8 @@ failover_link
 
 failover_interface
 :
-   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
-   = IP_ADDRESS NEWLINE
+   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY
+   sip = IP_ADDRESS NEWLINE
 ;
 
 flan_interface
@@ -869,6 +736,7 @@ null_stanza
    | no_failover
    | no_ip_access_list_stanza
    | null_block_stanza
+   | null_no_stanza
    | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
    | srlg_stanza
 ;
@@ -1154,13 +1022,15 @@ os_description
 
 os_service
 :
-   SERVICE protocol NEWLINE //todo: change to os_service_typoe allowing tcp and udp port ranges
+   SERVICE protocol NEWLINE
+   //todo: change to os_service_typoe allowing tcp and udp port ranges
 
 ;
 
 p2p_stanza
 :
-   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
+   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE*
+   NEWLINE
 ;
 
 peer_sa_filter
@@ -1367,27 +1237,6 @@ s_archive
    )*
 ;
 
-s_class_map
-:
-   CLASS_MAP
-   (
-      TYPE ~NEWLINE
-   )?
-   (
-      MATCH_ALL
-      | MATCH_ANY
-   )? name = variable NEWLINE
-   (
-      DESCRIPTION ~NEWLINE+ NEWLINE
-   )? s_class_map_tail*
-;
-
-s_class_map_tail
-:
-   cm_end_class_map
-   | cm_match
-;
-
 s_control_plane
 :
    CONTROL_PLANE
@@ -1532,32 +1381,6 @@ s_ntp_tail
    )
 ;
 
-s_object
-:
-   OBJECT s_object_tail
-;
-
-s_object_tail
-:
-   o_network
-   | o_service
-;
-
-s_object_group
-:
-   OBJECT_GROUP s_object_group_tail
-;
-
-s_object_group_tail
-:
-   og_icmp_type
-   | og_ip_address
-   | og_network
-   | og_protocol
-   | og_service
-   | og_user
-;
-
 s_service
 :
    NO? SERVICE
@@ -1646,6 +1469,7 @@ ssh_null
       IP_ADDRESS
       | KEY
       | KEY_EXCHANGE
+      | LOGIN_ATTEMPTS
       | STRICTHOSTKEYCHECK
       | VERSION
    ) ~NEWLINE* NEWLINE
@@ -1697,7 +1521,6 @@ stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza
-   | ipv6_router_ospf_stanza
    | ipx_sap_access_list_stanza
    | l2vpn_stanza
    | mgmt_api_stanza
@@ -1716,8 +1539,6 @@ stanza
    | router_hsrp_stanza
    | router_isis_stanza
    | router_multicast_stanza
-   | router_ospf_stanza
-   | router_ospfv3_stanza
    | router_rip_stanza
    | router_static_stanza
    | rsvp_stanza
@@ -1733,6 +1554,7 @@ stanza
    | s_feature
    | s_ip
    | s_ip_source_route
+   | s_ipv6_router_ospf
    | s_line
    | s_logging
    | s_management
@@ -1743,7 +1565,10 @@ stanza
    | s_ntp
    | s_object
    | s_object_group
+   | s_policy_map
    | s_router_eigrp
+   | s_router_ospf
+   | s_router_ospfv3
    | s_service
    | s_snmp_server
    | s_sntp

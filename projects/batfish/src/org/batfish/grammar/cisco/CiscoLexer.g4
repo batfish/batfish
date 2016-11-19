@@ -70,9 +70,7 @@ tokens {
    SELF_SIGNED,
    SLIP_PPP,
    VALUE
-}
-
-// Cisco Keywords
+} // Cisco Keywords
 
 AAA
 :
@@ -82,6 +80,11 @@ AAA
 AAA_SERVER
 :
    'aaa-server'
+;
+
+AAA_USER
+:
+   'aaa-user'
 ;
 
 ABSOLUTE_TIMEOUT
@@ -259,6 +262,16 @@ ADJACENCY
 ADJACENCY_CHECK
 :
    'adjacency-check'
+;
+
+ADJACENCY_STALE_TIMER
+:
+   'adjacency-stale-timer'
+;
+
+ADJMGR
+:
+   'adjmgr'
 ;
 
 ADMIN
@@ -923,6 +936,11 @@ BIND
    'bind'
 ;
 
+BLOGGERD
+:
+   'bloggerd'
+;
+
 BOOT
 :
    'boot'
@@ -1273,6 +1291,11 @@ CLIENT_GROUP
    'client-group'
 ;
 
+CLIENT_TO_CLIENT
+:
+   'client-to-client'
+;
+
 CLNS
 :
    'clns'
@@ -1559,6 +1582,11 @@ CPTONE
    'cptone'
 ;
 
+CPU_SHARE
+:
+   'cpu-share'
+;
+
 CRC
 :
    'crc'
@@ -1662,6 +1690,16 @@ CWR
 DAEMON
 :
    'daemon'
+;
+
+DAMPEN
+:
+   'dampen'
+;
+
+DAMPEN_IGP_METRIC
+:
+   'dampen-igp-metric'
 ;
 
 DAMPENING
@@ -2004,6 +2042,11 @@ DISCARD
    'discard'
 ;
 
+DISCARD_ROUTE
+:
+   'discard-route'
+;
+
 DISCOVERY
 :
    'discovery'
@@ -2101,7 +2144,7 @@ DOT11
 
 DOT1Q
 :
-   'dot1q'
+   'dot1' [Qq]
 ;
 
 DOT1Q_TUNNEL
@@ -2184,6 +2227,11 @@ DUPLEX
    'duplex'
 ;
 
+DUPLICATE_MESSAGE
+:
+   'duplicate-message'
+;
+
 DVMRP
 :
    'dvmrp'
@@ -2197,6 +2245,11 @@ DYNAMIC
 DYNAMIC_ACCESS_POLICY_RECORD
 :
    'dynamic-access-policy-record'
+;
+
+DYNAMIC_CAPABILITY
+:
+   'dynamic-capability'
 ;
 
 DYNAMIC_MAP
@@ -2509,6 +2562,11 @@ EVENT_HISTORY
    'event-history'
 ;
 
+EVENTS
+:
+   'events'
+;
+
 EXACT
 :
    'exact'
@@ -2646,6 +2704,11 @@ FABRIC
    'fabric'
 ;
 
+FABRICPATH
+:
+   'fabricpath'
+;
+
 FACILITY
 :
    'facility'
@@ -2704,6 +2767,11 @@ FALLBACK_DN
 FAST_DETECT
 :
    'fast-detect'
+;
+
+FAST_EXTERNAL_FALLOVER
+:
+   'fast-external-fallover'
 ;
 
 FAST_FLOOD
@@ -2968,6 +3036,11 @@ GLBP
    'glbp'
 ;
 
+GLOBALENFORCEPRIV
+:
+   'globalEnforcePriv'
+;
+
 GLOBAL_MTU
 :
    'global-mtu'
@@ -3076,6 +3149,11 @@ H323
 H323_GATEWAY
 :
    'h323-gateway'
+;
+
+HA_POLICY
+:
+   'ha-policy'
 ;
 
 HALF_DUPLEX
@@ -3702,6 +3780,11 @@ KEYRING
    'keyring'
 ;
 
+KEYSTORE
+:
+   'keystore'
+;
+
 KLOGIN
 :
    'klogin'
@@ -4047,6 +4130,11 @@ LOGIN
    'login'
 ;
 
+LOGIN_ATTEMPTS
+:
+   'login-attempts'
+;
+
 LOOPBACK
 :
    'loopback'
@@ -4317,6 +4405,11 @@ MED
    'med'
 ;
 
+MEDIUM
+:
+   'medium'
+;
+
 MEDIA
 :
    'media'
@@ -4370,6 +4463,11 @@ MESSAGE_LENGTH
 MESSAGE_LEVEL
 :
    'message-level'
+;
+
+MESSAGE_SIZE
+:
+   'message-size'
 ;
 
 METRIC
@@ -4822,6 +4920,11 @@ NEXT_HOP_SELF
    'next-hop-self'
 ;
 
+NEXT_HOP_THIRD_PARTY
+:
+   'next-hop-third-party'
+;
+
 NEXTHOP
 :
    'nexthop'
@@ -5267,6 +5370,11 @@ PATH_RETRANSMIT
    'path-retransmit'
 ;
 
+PATHS
+:
+   'paths'
+;
+
 PATHS_OF_STATISTICS_KEPT
 :
    'paths-of-statistics-kept'
@@ -5360,6 +5468,11 @@ PEER_SWITCH
 PERIODIC
 :
    'periodic'
+;
+
+PERIODIC_INVENTORY
+:
+   'periodic-inventory'
 ;
 
 PERMANENT
@@ -5992,6 +6105,11 @@ REDISTRIBUTE_INTERNAL
    'redistribute-internal'
 ;
 
+REDISTRIBUTED_PREFIXES
+:
+   'redistributed-prefixes'
+;
+
 REDUNDANCY
 :
    'redundancy'
@@ -6217,6 +6335,11 @@ RMON
    'rmon'
 ;
 
+RO
+:
+   [rR] [oO]
+;
+
 ROLE
 :
    'role'
@@ -6225,11 +6348,6 @@ ROLE
 ROOT
 :
    'root'
-;
-
-RO
-:
-   [rR] [oO]
 ;
 
 ROTARY
@@ -6379,7 +6497,7 @@ RX_COS_SLOT
 
 RW
 :
-   'rw'
+   [Rr] [Ww]
 ;
 
 RX
@@ -6425,6 +6543,11 @@ SATELLITE
 SATELLITE_FABRIC_LINK
 :
    'satellite-fabric-link'
+;
+
+SCALE_FACTOR
+:
+   'scale-factor'
 ;
 
 SCAN_TIME
@@ -7234,6 +7357,11 @@ SWITCH
    'switch'
 ;
 
+SWITCH_PRIORITY
+:
+   'switch-priority'
+;
+
 SWITCH_PROFILE
 :
    'switch-profile'
@@ -7422,6 +7550,11 @@ TCP
 TCP_CONNECT
 :
    'tcp-connect'
+;
+
+TCP_SESSION
+:
+   'tcp-session'
 ;
 
 TCP_UDP
@@ -7642,6 +7775,11 @@ TRANSPARENT_HW_FLOODING
 TRANSPORT
 :
    'transport'
+;
+
+TRANSPORT_METHOD
+:
+   'transport-method'
 ;
 
 TRANSPORT_MODE
@@ -8344,9 +8482,7 @@ YELLOW
 ZONE
 :
    'zone'
-;
-
-// Other Tokens
+; // Other Tokens
 
 MULTICONFIGPART
 :
@@ -8771,9 +8907,7 @@ UNDERSCORE
 WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-// Fragments
+; // Fragments
 
 fragment
 F_Dec16
@@ -9605,8 +9739,8 @@ M_NEIGHBOR_CHANGES
 
 M_NEIGHBOR_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
-   popMode
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS )
+   , popMode
 ;
 
 M_NEIGHBOR_IP_PREFIX

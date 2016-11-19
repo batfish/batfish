@@ -90,9 +90,12 @@ ss_host_version
 ss_null
 :
    (
-      CHASSIS_ID
+      AAA
+      | AAA_USER
+      | CHASSIS_ID
       | CONTACT
       | ENGINEID
+      | GLOBALENFORCEPRIV
       | GROUP
       | IFINDEX
       | LOCATION
@@ -100,8 +103,10 @@ ss_null
       | MANAGER
       | MAX_IFINDEX_PER_MODULE
       | OVERLOAD_CONTROL
+      | PROTOCOL
       | QUEUE_LENGTH
       | SOURCE_INTERFACE
+      | TCP_SESSION
       | TRAPS
       | USER
       | VIEW

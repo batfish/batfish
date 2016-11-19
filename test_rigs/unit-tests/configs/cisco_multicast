@@ -1,6 +1,8 @@
 !
-hostname multicast
+hostname cisco_multicast
 !
+ipv4 routing multicast holddown 210
+ipv6 routing multicast holddown 210
 multicast-routing
  address-family ipv4
   nsf

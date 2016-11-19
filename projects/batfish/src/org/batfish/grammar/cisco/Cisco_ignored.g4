@@ -23,6 +23,7 @@ null_block_stanza
       | BASH
       | BFD
       | BGP DISABLE_ADVERTISEMENT
+      | BLOGGERD
       | BSD_CLIENT
       | BSD_USERNAME
       | BUFFERS
@@ -70,6 +71,7 @@ null_block_stanza
       | EVENT_HANDLER
       | EXCEPTION_SLAVE
       | EXIT
+      | FABRICPATH
       | FEATURE_SET
       | FEX
       | FLOW
@@ -94,6 +96,8 @@ null_block_stanza
             )
             | ACCOUNTING_LIST
             | ACCOUNTING_THRESHOLD
+            | ADJACENCY
+            | ADJMGR
             | BOOTP_RELAY
             | DECAP_GROUP
             | DHCP
@@ -107,6 +111,7 @@ null_block_stanza
             | HARDWARE
             | ICMP_ERRORS
             | INSPECT
+            | INTERNAL
             | NAME_SERVER
             |
             (
@@ -139,6 +144,7 @@ null_block_stanza
             ASSEMBLER
             | CONFLICT_POLICY
             | HARDWARE
+            | ROUTING
             | UNNUMBERED
             | VIRTUAL
          )
@@ -147,15 +153,21 @@ null_block_stanza
       (
          IPV6
          (
-            CONFLICT_POLICY
+            ADJACENCY
+            | ADJACENCY_STALE_TIMER
+            | CONFLICT_POLICY
+            | DHCP
             | GLOBAL_MTU
             | ENABLE_ACL_CAM_SHARING
             | HARDWARE
+            | ICMP
             | MROUTE
             | NEIGHBOR
+            | ROUTING
          )
       )
       | KEY
+      | KEYSTORE
       | KRON
       | L2TP_CLASS
       | LACP
@@ -169,7 +181,6 @@ null_block_stanza
       | MANAGEMENT_ACCESS
       | MAP_CLASS
       | MAP_LIST
-      | MAXIMUM_PATHS
       | MEDIA_TERMINATION
       | MENU
       | MLAG
@@ -191,33 +202,6 @@ null_block_stanza
       )
       | MULTI_CONFIG
       | MULTICAST
-      |
-      (
-         NO
-         (
-            (
-               AAA
-               (
-                  NEW_MODEL
-                  | ROOT
-                  |
-                  (
-                     USER DEFAULT_ROLE
-                  )
-               )
-            )
-            | CLASS_MAP
-            |
-            (
-               IP
-               (
-                  AS_PATH
-               )
-            )
-            | LOGGING
-            | SSH
-         )
-      )
       | NLS
       | NO_BANNER
       | NO_L4R_SHIM
@@ -226,17 +210,22 @@ null_block_stanza
       | ONE
       | OPENFLOW
       | OPTICAL_MONITOR
+      |
+      (
+         OSPF
+         (
+            NAME_LOOKUP
+         )
+      )
       | PASSWORD_POLICY
       | PLAT
       | PLATFORM
-      | POLICY_MAP
       | POLICY_MAP_INPUT
       | POLICY_MAP_OUTPUT
       | PORT_PROFILE
       | POWEROFF
       | POWER_MGR
       | PRIORITY_FLOW_CONTROL
-      | PROTOCOL
       | PSEUDOWIRE_CLASS
       | PTP
       | QOS_MAPPING
@@ -305,8 +294,9 @@ null_block_stanza
       (
          VLAN
          (
-            DEC
-            | ACCESS_MAP
+            ACCESS_MAP
+            | DEC
+            | DOT1Q
          )
       )
       | VLAN_GROUP
@@ -356,6 +346,7 @@ null_block_substanza
          | AIS_SHUT
          | ALARM_REPORT
          | ALERT_GROUP
+         | ALLOCATE
          | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
          | ANYCONNECT
@@ -375,7 +366,6 @@ null_block_substanza
          | BACK_UP
          | BACKGROUND_ROUTES_ENABLE
          | BACKUPCRF
-         | BANDWIDTH
          | BANDWIDTH_PERCENTAGE
          |
          (
@@ -400,19 +390,18 @@ null_block_substanza
          | CHANNEL_GROUP
          | CHANNELIZED
          | CIR
-         | CLASS
          | CLIENT_GROUP
          | CLOCK
          | CODEC
          | COLLECT
          | COMMAND
          | CONFORM_ACTION
-         | CONGESTION_CONTROL
          | CONNECT_SOURCE
          | CONTEXT
          | CONTACT_EMAIL_ADDR
          | CONTACT_NAME
          | CONTRACT_ID
+         | CPU_SHARE
          | CREDENTIALS
          | CRL
          | CRYPTOGRAPHIC_ALGORITHM
@@ -429,7 +418,6 @@ null_block_substanza
          | DELETE_DYNAMIC_LEARN
          | DENY
          | DEPLOY
-         | DESCRIPTION
          | DESTINATION
          | DESTINATION_PATTERN
          | DESTINATION_SLOT
@@ -441,7 +429,6 @@ null_block_substanza
          | DOMAIN_ID
          | DOMAIN_NAME
          | DROP
-         | DSCP
          | DSCP_VALUE
          | DS0_GROUP
          | DUAL_ACTIVE
@@ -452,7 +439,6 @@ null_block_substanza
          | ENABLED
          | ENCAPSULATION
          | ENCRYPTION
-         | END_POLICY_MAP
          | ENROLLMENT
          | ERROR_RECOVERY
          | ERSPAN_ID
@@ -490,6 +476,7 @@ null_block_substanza
          | GUEST_MODE
          | H225
          | H323
+         | HA_POLICY
          | HEARTBEAT_INTERVAL
          | HEARTBEAT_TIME
          | HELPER_ADDRESS
@@ -562,7 +549,6 @@ null_block_substanza
          | MAP
          | MATCH
          | MAX_ASSOCIATIONS
-         | MAXIMUM
          | MBSSID
          | MEDIA
          | MEMBER
@@ -572,7 +558,6 @@ null_block_substanza
          | MONITORING
          | MSDP_PEER
          | MSIE_PROXY
-         | MTU
          | NAME
          | NAMESPACE
          | NAT
@@ -582,7 +567,6 @@ null_block_substanza
          | NODE
          | NOTIFICATION_TIMER
          | NOTIFY
-         | OBJECT
          | OPEN
          | OPERATION
          | OPTION
@@ -599,7 +583,6 @@ null_block_substanza
          | PATH_JITTER
          | PATH_RETRANSMIT
          | PATHS_OF_STATISTICS_KEPT
-         | PAUSE
          | PCP
          | PCP_VALUE
          | PEER_ADDRESS
@@ -617,13 +600,10 @@ null_block_substanza
          | PICKUP
          | PINNING
          | PM
-         | POLICE
          | POLICY
          | POLICY_LIST
-         | POLICY_MAP
          | PORT_NAME
          | PORTS
-         | PRECEDENCE
          | PREDICTOR
          | PRE_SHARED_KEY
          | PREEMPT
@@ -633,20 +613,17 @@ null_block_substanza
          | PRI_GROUP
          | PRIMARY_PORT
          | PRIMARY_PRIORITY
-         | PRIORITY
          | PRIVATE_VLAN
          | PRIVILEGE
          | PROACTIVE
          | PROBE
          | PROFILE
          | PROPOSAL
-         | PROTOCOL
          | PROTOCOL_VIOLATION
          | PROVISION
          | PROXY_SERVER
          | QUEUE
          | QUEUE_BUFFERS
-         | QUEUE_LIMIT
          | RANDOM
          | RANDOM_DETECT
          | RANDOM_DETECT_LABEL
@@ -698,7 +675,6 @@ null_block_substanza
          | SERVICE_QUEUE
          | SERVICE_TYPE
          | SESSION
-         | SET
          | SEVERITY
          | SHAPE
          | SHUT
@@ -813,6 +789,44 @@ null_block_substanza_full
    ) NEWLINE
 ;
 
+null_no_stanza
+:
+   NO
+   (
+      (
+         AAA
+         (
+            AUTHENTICATION
+            | NEW_MODEL
+            | ROOT
+            |
+            (
+               USER DEFAULT_ROLE
+            )
+         )
+      )
+      | CLASS_MAP
+      |
+      (
+         IP
+         (
+            AS_PATH
+         )
+      )
+      | LOGGING
+      |
+      (
+         SNMP_SERVER
+         (
+            AAA
+            | ENABLE
+            | GLOBALENFORCEPRIV
+         )
+      )
+      | SSH
+   ) ~NEWLINE* NEWLINE
+;
+
 null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
 :
    (
@@ -863,7 +877,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CTS
       | DEC
       | DEFAULT
-      | DESCRIPTION
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
@@ -880,7 +893,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ENVIRONMENT
       | ERRDISABLE
       | ESCAPE_CHARACTER
-      | EXCEPTION
       | EXEC
       | FABRIC
       | FACILITY_ALARM
@@ -994,7 +1006,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | LLDP
       | LOCATION
       | MAC_ADDRESS_TABLE
-      | MAXIMUM
       | MEMORY_SIZE
       | MGCP
       | MICROCODE
@@ -1002,7 +1013,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | MODE
       | MODEM
       | MTA
-      | MTU
       | MULTILINK
       | MVR
       | NAME_SERVER
@@ -1025,7 +1035,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
-      | PRIORITY
       | PRIORITY_QUEUE
       | PRIVILEGE
       | PROCESS

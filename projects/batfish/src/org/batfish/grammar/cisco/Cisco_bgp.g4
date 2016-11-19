@@ -499,6 +499,7 @@ null_bgp_tail
          (
             ATTRIBUTE_DOWNLOAD
             | BESTPATH
+            | CLIENT_TO_CLIENT
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
@@ -516,15 +517,21 @@ null_bgp_tail
          )
       )
       | CAPABILITY
+      | CLIENT_TO_CLIENT
       | COMPARE_ROUTERID
+      | DAMPEN
+      | DAMPEN_IGP_METRIC
       | DAMPENING
       | DESCRIPTION
       | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
+      | DYNAMIC_CAPABILITY
+      | ENFORCE_FIRST_AS
       | EVENT_HISTORY
       | EXIT
       | FAIL_OVER
       | FALL_OVER
+      | FAST_EXTERNAL_FALLOVER
       | GRACEFUL_RESTART
       | LOCAL_V6_ADDR
       | LOG_NEIGHBOR_CHANGES
@@ -543,6 +550,8 @@ null_bgp_tail
          )
       )
       | NEIGHBOR_DOWN
+      | NEXT_HOP_THIRD_PARTY
+      | NEXTHOP
       | NSR
       | PASSWORD
       | SEND_LABEL
@@ -790,7 +799,8 @@ template_peer_address_family
 ;
 
 template_peer_rb_stanza
-locals [java.util.Set<String> addressFamilies] @init {
+locals [java.util.Set<String> addressFamilies]
+@init {
    $addressFamilies = new java.util.HashSet<String>();
 }
 :
@@ -801,7 +811,7 @@ locals [java.util.Set<String> addressFamilies] @init {
 template_peer_rb_stanza_tail [java.util.Set<String> addressFamilies]
 locals [boolean active]
 :
-{
+   {
    if (_input.LT(1).getType() == ADDRESS_FAMILY) {
       String addressFamilyString = "";
       for (int i = 1, currentType = -1; _input.LT(i).getType() != NEWLINE; i++) {
@@ -830,8 +840,7 @@ locals [boolean active]
          | remote_as_bgp_tail
          | template_peer_address_family
       ) template_peer_rb_stanza_tail [$addressFamilies]
-      |
-      // intentional blank
+      | // intentional blank
 
    )
 ;
