@@ -6,19 +6,40 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-s_callhome
+call_home_null
 :
-   CALLHOME NEWLINE
+   NO?
    (
-      callhome_email_contact
-      | callhome_destination_profile
-      | callhome_enable
-      | callhome_null
-      | callhome_phone_contact
-      | callhome_streetaddress
-      | callhome_switch_priority
-      | callhome_transport
+      ALERT_GROUP
+      | CONTACT_EMAIL_ADDR
+      | CONTACT_NAME
+      | CONTRACT_ID
+      | CUSTOMER_ID
+      | MAIL_SERVER
+      | PHONE_NUMBER
+      | SENDER
+      | SITE_ID
+      | SOURCE_INTERFACE
+      | SOURCE_IP_ADDRESS
+      | STREET_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+call_home_profile
+:
+   PROFILE ~NEWLINE* NEWLINE
+   (
+      call_home_profile_null
    )*
+;
+
+call_home_profile_null
+:
+   NO?
+   (
+      DESTINATION
+      | SUBSCRIBE_TO_ALERT_GROUP
+   ) ~NEWLINE* NEWLINE
 ;
 
 callhome_destination_profile
@@ -155,5 +176,38 @@ callhome_transport_email_smtp_server
       IP_ADDRESS
       | IPV6_ADDRESS
       | variable
-   ) NEWLINE
+   )
+   (
+      (
+         PORT p = DEC
+      )
+      |
+      (
+         USE_VRF vrf = variable
+      )
+   )* NEWLINE
+;
+
+s_call_home
+:
+   NO? CALL_HOME ~NEWLINE* NEWLINE
+   (
+      call_home_null
+      | call_home_profile
+   )*
+;
+
+s_callhome
+:
+   CALLHOME NEWLINE
+   (
+      callhome_email_contact
+      | callhome_destination_profile
+      | callhome_enable
+      | callhome_null
+      | callhome_phone_contact
+      | callhome_streetaddress
+      | callhome_switch_priority
+      | callhome_transport
+   )*
 ;

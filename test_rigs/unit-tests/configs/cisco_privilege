@@ -1,0 +1,12 @@
+!
+hostname cisco_privilege
+!
+privilege interface level 15 switchport
+privilege configure level 15 interface
+privilege exec level 15 write memory
+privilege exec level 15 write
+privilege exec level 15 configure terminal
+privilege exec level 15 configure
+privilege ipenacl level 3 permit ip any any
+!
+

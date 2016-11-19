@@ -2317,7 +2317,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitL_login(L_loginContext ctx) {
+   public void exitL_login_authentication(L_login_authenticationContext ctx) {
       String list;
       if (ctx.DEFAULT() != null) {
          list = ctx.DEFAULT().getText();
@@ -2336,8 +2336,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitL_transport(L_transportContext ctx) {
-      String protocol = ctx.prot.getText();
-      BiConsumer<Line, String> setter;
+      SortedSet<String> protocols = new TreeSet<>(ctx.prot.stream()
+            .map(c -> c.getText()).collect(Collectors.toSet()));
+      BiConsumer<Line, SortedSet<String>> setter;
       if (ctx.INPUT() != null) {
          setter = Line::setTransportInput;
       }
@@ -2353,7 +2354,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       for (String currentName : _currentLineNames) {
          Line line = _configuration.getCf().getLines().get(currentName);
-         setter.accept(line, protocol);
+         setter.accept(line, protocols);
       }
    }
 

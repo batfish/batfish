@@ -68,12 +68,21 @@ if_ip_verify
    ) NEWLINE
 ;
 
+if_port_security
+:
+   PORT SECURITY NEWLINE
+   (
+      ifps_null
+   )*
+;
+
 if_stanza
 :
    default_gw_if_stanza
    | description_if_stanza
    | if_ip_proxy_arp
    | if_ip_verify
+   | if_port_security
    | ip_access_group_if_stanza
    | ip_address_if_stanza
    | ip_address_dhcp_if_stanza
@@ -109,6 +118,18 @@ if_stanza
    | vrf_forwarding_if_stanza
    | vrf_if_stanza
    | vrf_member_if_stanza
+;
+
+ifps_null
+:
+   NO?
+   (
+      AGE
+      | ENABLE
+      | MAXIMUM
+      | SECURE_MAC_ADDRESS
+      | VIOLATION
+   ) ~NEWLINE* NEWLINE
 ;
 
 interface_stanza
@@ -311,6 +332,7 @@ null_block_if_stanza
       | ARP
       | ASYNC
       | ATM
+      | AUTHENTICATION
       | AUTO
       | AUTOROUTE
       | AUTOSTATE
@@ -519,10 +541,6 @@ null_block_if_stanza
       | PORT_CHANNEL_PROTOCOL
       | PORT_NAME
       | PORTMODE
-      |
-      (
-         PORT SECURITY
-      )
       | POS
       | POWER
       | PPP

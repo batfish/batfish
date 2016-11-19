@@ -10,11 +10,26 @@ class-map type network-qos match-any boppety
   match protocol fcoe mpls
   match protocol fcoe
 !
+object network obj_any
+ subnet 0.0.0.0 0.0.0.0
+object-group network dns_servers
+ description External DNS Servers
+ network-object host 1.2.2.1
+object-group network ntp_servers
+ description External NTP Servers
+ network-object host 1.1.1.1
 policy-map type network-qos default-ploosh-policy
   class type network-qos bippetyboo-drop
+    bandwidth remaining percent 10
+    queue-limit dscp cs2 percent 80
+    queue-limit dscp cs3 percent 90
+    queue-limit dscp cs6 percent 100
+    queue-limit dscp cs7 percent 100
+    queue-buffers ratio 10
     no pause
     congestion-control tail-drop
     no congestion-control random-detect
+    shape kbps 5000000
     mtu 1500
   class type network-qos bippetyboo-ndrop-fcoe
     pause
@@ -29,6 +44,9 @@ policy-map type control-plane feefoo
  class fffoooddd
   set cos 7 
   police cir 36000 kbps bc 250 ms conform transmit violate drop 
+   conform-action transmit 
+   exceed-action set-dscp-transmit dscp table policed-dscp
+   violate-action drop 
 policy-map type network-qos default-foob-policy
   class type network-qos c-foob-drop
     no pause
@@ -47,6 +65,7 @@ policy-map type queueing qqqqq
   class type queuing bleefee
     priority level 1
     bandwidth remaining percent 14
+      dbl
 policy-map type network-qos default-bleeb-policy
   class type network-qos c-bleeb-drop
     no pause

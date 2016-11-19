@@ -6,6 +6,11 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+ro_address_family
+:
+   ADDRESS_FAMILY IPV4 UNICAST NEWLINE ro_common*
+;
+
 ro_area_nssa
 :
    AREA
@@ -140,7 +145,6 @@ ro_null
       (
          AREA variable AUTHENTICATION
       )
-      | AUTHENTICATION
       | AUTO_COST
       | BFD
       | COST
@@ -373,7 +377,7 @@ roi_priority
 
 rov3_address_family
 :
-   ADDRESS_FAMILY IPV6 UNICAST NEWLINE rov3_common
+   ADDRESS_FAMILY IPV6 UNICAST NEWLINE rov3_common*
 ;
 
 rov3_common
@@ -437,9 +441,11 @@ s_router_ospf
       VRF vrf = variable
    )? NEWLINE
    (
-      ro_area_nssa
+      ro_address_family
+      | ro_area_nssa
       | ro_area_stub
       | ro_area
+      | ro_common
       | ro_default_information
       | ro_distance
       | ro_maximum_paths
@@ -450,7 +456,6 @@ s_router_ospf
       | ro_redistribute_connected
       | ro_redistribute_rip
       | ro_redistribute_static
-      | ro_null
       | ro_router_id
       | ro_summary_address
       | unrecognized_line

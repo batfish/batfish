@@ -26,6 +26,7 @@ transceiver qsfp default-mode 4x10G
 load-balance policies
  load-balance fm6000 profile LoadBalance_Profile1_5tuple
     no fields mac
+    hash symmetric
     fields ip protocol dst-ip dst-port src-ip src-port
     distribution symmetric-hash mac-ip
 no lldp run
@@ -45,17 +46,8 @@ object-group service SVCGRP-ICMP
  service-object icmp echo
 xdr multicast-group mode individual
 xdr multicast-group internal issu-slots-split
-dynamic-access-policy-record vvvvvv
- user-message "DISCONNECTED"
- action terminate
- webvpn
-  url-list none
-dynamic-access-policy-record DAP-incoming_generic
- webvpn
-  url-list none
-  svc ask enable default svc
-  always-on-vpn profile-setting
 no monitor-interface service-module
+name 1.2.3.4 hello
 hpm topN enable
 policy-map global_policy
  class inspection_default
@@ -76,9 +68,8 @@ policy-map global_policy
  class class-default
   user-statistics accounting                                                                                                               
 service-policy global_policy global
-wsma agent filesys
- profile httplistener
- profile httpslistener
+device classifier
+ip inspect WAAS flush-timeout 10
 group-policy GroupPolicy_NOC-VPN attributes
  banner value ** AUTHORIZED ACCESS ONLY **
  banner none
@@ -121,6 +112,7 @@ webvpn
   disable
  error-recovery disable       
 exception-slave core-file C2960-WM3-core
+exception crashinfo maximum-files 1
 exception memory ignore overflow processor
 exception memory ignore overflow io
 management-access inside
@@ -148,13 +140,6 @@ aaa new-model
 ip flow-aggregation cache source-prefix
  enabled
 !
-dot11 ssid CENIC
- vlan 1
- authentication open 
- authentication key-management wpa version 2
- guest-mode
- mbssid guest-mode
-!
 voice service voip 
  allow-connections h323 to h323
  h323
@@ -173,6 +158,9 @@ event manager applet Interface_Load
  action 2.0 cli command "enable"
  action 3.0 cli command "show clock | append disk1:1.txt"
  action 4.0 cli command "show interface GigabitEthernet2/15 | append disk1:1.txt"
+ event cli pattern ".*" sync no skip no
+ action 1.0 syslog priority informational msg "$_cli_msg"
+ set 2.0 _exit_status 1
 !
 ip sla 10
  path-echo 162.250.60.5 source-ip 137.164.13.81
@@ -230,6 +218,17 @@ archive
   hidekeys
 tls-proxy ASA-tls-proxy
  server trust-point _internal_PP_ctl_phoneproxy_file
+ctl-file ctl_phoneproxy_file
+ record-entry cucm-tftp trustpoint phoneproxy_trustpoint2 address 169.232.59.5
+ no shutdown
+media-termination mymta
+ address 3.4.4.6 interface outside
+ address 2.3.4.5 interface inside
+phone-proxy ASA-phone-proxy
+ media-termination mymta
+ tftp-server address 1.2.3.4 interface inside
+ tls-proxy ASA-tls-proxy
+ cipc security-mode authenticated
 global-port-security
  age 2
  delete-dynamic-learn

@@ -1,0 +1,7 @@
+!
+hostname cisco_authentication
+!
+authentication command bounce-port ignore
+authentication mac-move permit
+!
+

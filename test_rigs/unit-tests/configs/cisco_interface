@@ -3,6 +3,7 @@ hostname cisco_interface
 !
 interface Dot11Radio0
  antenna gain 6
+ authentication control-direction in
  bridge-group 1
  bridge-group 1 block-unknown-source
  bridge-group 1 subscriber-loop-control

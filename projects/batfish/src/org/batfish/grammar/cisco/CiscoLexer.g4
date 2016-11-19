@@ -1517,6 +1517,11 @@ CONTROL_APPS_USE_MGMT_PORT
    'control-apps-use-mgmt-port'
 ;
 
+CONTROL_DIRECTION
+:
+   'control-direction'
+;
+
 CONTROL_PLANE
 :
    'control-plane'
@@ -1585,6 +1590,11 @@ CPTONE
 CPU_SHARE
 :
    'cpu-share'
+;
+
+CRASHINFO
+:
+   'crashinfo'
 ;
 
 CRC
@@ -1965,6 +1975,11 @@ DEVICE_SENSOR
 DISABLE_PEER_AS_CHECK
 :
    'disable-peer-as-check'
+;
+
+DISPUTE
+:
+   'dispute'
 ;
 
 DF
@@ -2527,6 +2542,11 @@ ESTABLISHED
    'established'
 ;
 
+ETHERCHANNEL
+:
+   'etherchannel'
+;
+
 ETHERNET
 :
    'ethernet'
@@ -2657,6 +2677,11 @@ EXPORTER
    'exporter'
 ;
 
+EXPORTER_MAP
+:
+   'exporter-map'
+;
+
 EXPANDED
 :
    'expanded'
@@ -2675,6 +2700,11 @@ EXTCOMMUNITY
 EXTCOMMUNITY_LIST
 :
    'extcommunity-list'
+;
+
+EXTEND
+:
+   'extend'
 ;
 
 EXTENDED
@@ -3619,6 +3649,11 @@ IPC
    'ipc'
 ;
 
+IPENACL
+:  
+   'ipenacl'
+;
+
 IPINIP
 :
    'ipinip'
@@ -4140,6 +4175,11 @@ LOOPBACK
    'loopback'
 ;
 
+LOOPGUARD
+:
+   'loopguard'
+;
+
 LOTUSNOTES
 :
    'lotusnotes'
@@ -4208,6 +4248,11 @@ MAC_ADDRESS_TABLE
 MAC_LEARN
 :
    'mac-learn'
+;
+
+MAC_MOVE
+:
+   'mac-move'
 ;
 
 MACRO
@@ -4430,6 +4475,11 @@ MEMBER
    'member'
 ;
 
+MEMORY
+:
+   'memory'
+;
+
 MEMORY_SIZE
 :
    'memory-size'
@@ -4593,6 +4643,11 @@ MONITOR
 MONITOR_INTERFACE
 :
    'monitor-interface'
+;
+
+MONITOR_MAP
+:
+   'monitor-map'
 ;
 
 MONITORING
@@ -5170,6 +5225,11 @@ OPTICAL_MONITOR
    'optical-monitor'
 ;
 
+OPTIMIZE
+:
+   'optimize'
+;
+
 OPTIMIZED
 :
    'optimized'
@@ -5623,6 +5683,11 @@ POP3
 PORT
 :
    'port'
+;
+
+PORTFAST
+:
+   'portfast'
 ;
 
 PORTS
@@ -7392,6 +7457,11 @@ SWITCHPORT
    'switchport'
 ;
 
+SYMMETRIC
+:
+   'symmetric'
+;
+
 SYN
 :
    'syn'
@@ -7995,6 +8065,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+UPLINKFAST
+:
+   'uplinkfast'
 ;
 
 URG
@@ -9167,6 +9242,16 @@ M_Authentication_ATTEMPTS
    'attempts' -> type ( ATTEMPTS ) , popMode
 ;
 
+M_Authentication_COMMAND
+:
+   'command' -> type ( COMMAND ) , popMode
+;
+
+M_Authentication_CONTROL_DIRECTION
+:
+   'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
+;
+
 M_Authentication_DOT1X
 :
    'dot1x' -> type ( DOT1X ) , popMode
@@ -9205,6 +9290,11 @@ M_Authentication_INCLUDE
 M_Authentication_LOGIN
 :
    'login' -> type ( LOGIN ) , popMode
+;
+
+M_Authentication_MAC_MOVE
+:
+   'mac-move' -> type ( MAC_MOVE ) , popMode
 ;
 
 M_Authentication_MESSAGE_DIGEST

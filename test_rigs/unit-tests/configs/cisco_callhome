@@ -25,17 +25,27 @@ callhome
   transport email reply-to fake5@example.com
 !
 no call-home reporting anonymous
-call-home
+call-home reporting anonymous
+ alert-group configuration
  contact-email-addr a@support.ccc
  contact-name fewrgbefw
  contract-id 12345
  customer-id 1235
+ mail-server 1.2.3.4 priority 1
+ mail-server a.b.c priority 2
  phone-number +123455677
  sender from asfad@ggesg.gwf
  sender reply-to hrteg@hrtg.fewf
  site-id rgtrfff
+ source-interface Vlan156
+ source-ip-address "1.2.3.4"
  street-address A B C D
- mail-server a.b.c priority 1
+ profile "mns"
+  destination preferred-msg-format short-text
+  destination address email a@b.c
+  subscribe-to-alert-group diagnostic severity minor
+  subscribe-to-alert-group environment severity minor
+  subscribe-to-alert-group syslog severity minor pattern ".*"call-home
  profile ppppppp
   destination address http https://a.b.c/d
   destination address email callhome@cisco.com
