@@ -56,8 +56,14 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     *
     * @type AclReachability
     *
-    * @param aclNameRegex Regular expression for names of the ACLs to analyze. Default value is '.*' (i.e., all ACLs).
-    * @param nodeRegex Regular expression for names of nodes to analyze. Default value is '.*' (i.e., all nodes).
+    * @param aclNameRegex Regular expression for names of the ACLs to analyze. 
+    *                     Default value is '.*' (i.e., all ACLs).
+    *
+    * @param nodeRegex Regular expression for names of nodes to include. 
+    *                  Default value is '.*' (all nodes).
+    * 
+    * @example bf_answer("AclReachability", aclNameRegex='OUTSIDE_TO_INSIDE.*')
+    *          Analyzes only ACLs whose names start with 'OUTSIDE_TO_INSIDE'.
     */
    public static class AclReachabilityQuestion extends Question {
 

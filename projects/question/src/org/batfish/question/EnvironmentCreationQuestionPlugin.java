@@ -44,6 +44,12 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    * 
+    * @type EnvironmentCreation
+    */
    public static class EnvironmentCreationQuestion extends Question
          implements IEnvironmentCreationQuestion {
 

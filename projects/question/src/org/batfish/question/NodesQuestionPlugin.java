@@ -435,6 +435,10 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class NodesQuestion extends Question {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";

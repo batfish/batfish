@@ -95,6 +95,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class ReachabilityQuestion extends Question
          implements IReachabilityQuestion {
 

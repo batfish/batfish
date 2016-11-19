@@ -627,6 +627,21 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
    }
 
+   //<question_page_comment>
+   /**
+    * Checks if BGP sessions are correctly configured.
+    * <p>
+    * Details coming
+    * 
+    * @type BgpSessionCheck
+    * 
+    * @param foreignBgpGroups Details coming.
+    * @param node1Regex Regular expression to match the nodes names for one end of the sessions. Default is '.*' (all nodes).
+    * @param node2Regex Regular expression to match the nodes names for the other end of the sessions. Default is '.*' (all nodes).
+    * 
+    * @example bf_answer("BgpSessionCheck", node1Regex="as1.*", node2Regex="as2.*")
+    *          Checks all BGP sessions between nodes that start with as1 and those that start with as2.
+    */
    public static class BgpSessionCheckQuestion extends Question {
 
       private static final String FOREIGN_BGP_GROUPS_VAR = "foreignBgpGroups";

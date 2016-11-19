@@ -175,7 +175,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     * RouteFilterList,
     * RoutingPolicy) 
     * Default value is '[]' (which denotes all structure types).
-    * @param nodeRegex Regular expression for the set of nodes to analyze. Default value is '.*' (i.e., all nodes).
+    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all nodes).
     */
    public static final class CompareSameNameQuestion extends Question {
 

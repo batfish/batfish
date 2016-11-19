@@ -157,6 +157,10 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
 
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class PairwiseVpnConnectivityQuestion extends Question {
 
       private static final String NODE1_REGEX_VAR = "node1Regex";

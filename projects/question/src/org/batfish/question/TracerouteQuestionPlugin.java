@@ -139,6 +139,10 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class TracerouteQuestion extends Question
          implements ITracerouteQuestion {
 

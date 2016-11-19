@@ -166,6 +166,10 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class SelfAdjacenciesQuestion extends Question {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
