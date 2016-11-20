@@ -153,6 +153,20 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
    }
 
+   //<question_page_comment>
+   /**
+    * Outputs all routes (RIB) at nodes in the network.
+    * <p>
+    * It produces routes from all protocols (e.g., BGP, OSPF, static, and connected).
+    * 
+    * @type Routes
+    * 
+    * @param nodeRegex Regular expression for names of nodes to include.
+    *                  Default value is '.*' (all nodes).
+    * 
+    * @example bf_answer("Nodes", nodeRegex="as1.*")
+    *          Outputs the routes for all nodes whose names begin with "as1".
+    */
    public static class RoutesQuestion extends Question {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";

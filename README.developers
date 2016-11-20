@@ -46,3 +46,18 @@ Adding parsing for a new vendor
 
 Coming soon ....
 
+=======================
+
+Generating the questions wiki 
+-----------------------------
+
+The page https://github.com/intentionet/batfish/wiki/Questions has documentation on the questions we currently have. 
+
+It is automatically generated from comments in question files using the script in projects/pybatfish/org/batfish/questions_page/questions_page.py. The comment format is at the top of the script.
+
+running 'batfish_wiki_questions' (after sourcing tools/batfish_functions.sh) will generate the markdown page. this function assumes that 
+  - the batfish.wiki repository is cloned parallel to the batfish repository
+  - question files are in the folder projects/questions/src
+
+the generation script recursively scans for all files with valid comments in the folder. (it can be given multiple folders to scan.)
+

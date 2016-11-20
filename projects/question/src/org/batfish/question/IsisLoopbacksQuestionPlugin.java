@@ -228,6 +228,20 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Lists which loopbacks interfaces are being announced into ISIS.
+    * <p>
+    * Details coming
+    * 
+    * @type IsisLoopbacks
+    * 
+    * @param nodeRegex Regular expression for names of nodes to include. 
+    *                  Default value is '.*' (all nodes).
+    * 
+    * @example bf_answer("IsisLoopbacks", nodeRegex='as2.*')
+    *          Answers the question only for nodes whose names start with 'as2'.
+    */
    public static class IsisLoopbacksQuestion extends Question {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
