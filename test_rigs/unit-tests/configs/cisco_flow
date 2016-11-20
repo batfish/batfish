@@ -29,6 +29,7 @@ flow monitor FLOW_MONITOR_1
  description fdgnuij53ht8953gh
  exporter FLOW_EXPORTER_1
  cache timeout active 60
+ statistics packet size
  record FLOW_RECORD_V9_1
 !
 flow monitor-map ddddddddddddd

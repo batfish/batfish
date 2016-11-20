@@ -841,6 +841,11 @@ BACK_UP
    'back-up'
 ;
 
+BACKBONEFAST
+:
+   'backbonefast'
+;
+
 BACKGROUND_ROUTES_ENABLE
 :
    'background-routes-enable'
@@ -1274,6 +1279,11 @@ CLASS_MAP
 CLEANUP
 :
    'cleanup'
+;
+
+CLEAR
+:
+   'clear'
 ;
 
 CLI
@@ -3650,7 +3660,7 @@ IPC
 ;
 
 IPENACL
-:  
+:
    'ipenacl'
 ;
 
@@ -6555,6 +6565,11 @@ RULE
    'rule' -> pushMode ( M_Rule )
 ;
 
+RUN
+:
+   'run'
+;
+
 RX_COS_SLOT
 :
    'rx-cos-slot'
@@ -6943,6 +6958,11 @@ SHELL
 SHORT_TXT
 :
    'short-txt'
+;
+
+SHOW
+:
+   'show'
 ;
 
 SHUT
@@ -9829,8 +9849,8 @@ M_NEIGHBOR_CHANGES
 
 M_NEIGHBOR_IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS )
-   , popMode
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte -> type ( IP_ADDRESS ) ,
+   popMode
 ;
 
 M_NEIGHBOR_IP_PREFIX

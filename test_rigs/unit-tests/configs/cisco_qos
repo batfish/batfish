@@ -19,6 +19,7 @@ object-group network ntp_servers
  description External NTP Servers
  network-object host 1.1.1.1
 policy-map type network-qos default-ploosh-policy
+ description gawff
   class type network-qos bippetyboo-drop
     bandwidth remaining percent 10
     queue-limit dscp cs2 percent 80
@@ -43,12 +44,16 @@ policy-map type network-qos default-ploosh-policy
 policy-map type control-plane feefoo
  class fffoooddd
   set cos 7 
+  service-policy prioritize_backbone
   police cir 36000 kbps bc 250 ms conform transmit violate drop 
    conform-action transmit 
    exceed-action set-dscp-transmit dscp table policed-dscp
    violate-action drop 
 policy-map type network-qos default-foob-policy
   class type network-qos c-foob-drop
+    random-detect aggregate minimum-thresh 1024 maximum-thresh 2048 mark-prob 10
+    fair-queue
+     random-detect
     no pause
     congestion-control tail-drop
     no congestion-control random-detect

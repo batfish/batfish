@@ -578,16 +578,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterDescription_if_stanza(Description_if_stanzaContext ctx) {
-      Token descriptionToken = ctx.description_line().text;
-      String description = descriptionToken != null
-            ? descriptionToken.getText().trim() : "";
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setDescription(description);
-      }
-   }
-
-   @Override
    public void enterExtended_access_list_stanza(
          Extended_access_list_stanzaContext ctx) {
       String name;
@@ -634,6 +624,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterIf_description(If_descriptionContext ctx) {
+      Token descriptionToken = ctx.description_line().text;
+      String description = descriptionToken != null
+            ? descriptionToken.getText().trim() : "";
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setDescription(description);
+      }
+   }
+
+   @Override
    public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
       String ifaceName = ctx.iname.getText();
       String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
@@ -643,33 +643,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
       _currentIsisInterface = iface;
-   }
-
-   @Override
-   public void enterInterface_stanza(Interface_stanzaContext ctx) {
-      String nameAlpha = ctx.iname.name_prefix_alpha.getText();
-      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
-      String namePrefix = canonicalNamePrefix;
-      for (Token part : ctx.iname.name_middle_parts) {
-         namePrefix += part.getText();
-      }
-      _currentInterfaces = new ArrayList<>();
-      if (ctx.iname.range() != null) {
-         List<SubRange> ranges = toRange(ctx.iname.range());
-         for (SubRange range : ranges) {
-            for (int i = range.getStart(); i <= range.getEnd(); i++) {
-               String name = namePrefix + i;
-               addInterface(name, ctx.iname, true);
-            }
-         }
-      }
-      else {
-         String name = namePrefix;
-         addInterface(name, ctx.iname, true);
-      }
-      if (ctx.MULTIPOINT() != null) {
-         todo(ctx, F_INTERFACE_MULTIPOINT);
-      }
    }
 
    @Override
@@ -1019,6 +992,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_aaa(S_aaaContext ctx) {
       if (_configuration.getCf().getAaa() == null) {
          _configuration.getCf().setAaa(new Aaa());
+      }
+   }
+
+   @Override
+   public void enterS_interface(S_interfaceContext ctx) {
+      String nameAlpha = ctx.iname.name_prefix_alpha.getText();
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+      String namePrefix = canonicalNamePrefix;
+      for (Token part : ctx.iname.name_middle_parts) {
+         namePrefix += part.getText();
+      }
+      _currentInterfaces = new ArrayList<>();
+      if (ctx.iname.range() != null) {
+         List<SubRange> ranges = toRange(ctx.iname.range());
+         for (SubRange range : ranges) {
+            for (int i = range.getStart(); i <= range.getEnd(); i++) {
+               String name = namePrefix + i;
+               addInterface(name, ctx.iname, true);
+            }
+         }
+      }
+      else {
+         String name = namePrefix;
+         addInterface(name, ctx.iname, true);
+      }
+      if (ctx.MULTIPOINT() != null) {
+         todo(ctx, F_INTERFACE_MULTIPOINT);
       }
    }
 
@@ -1906,6 +1906,102 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
+      String name = ctx.name.getText();
+      if (ctx.IN() != null || ctx.INGRESS() != null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setIncomingFilter(name);
+         }
+      }
+      else if (ctx.OUT() != null || ctx.EGRESS() != null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setOutgoingFilter(name);
+         }
+      }
+      else {
+         throw new BatfishException("bad direction");
+      }
+   }
+
+   @Override
+   public void exitIf_ip_address(If_ip_addressContext ctx) {
+      Prefix prefix;
+      if (ctx.prefix != null) {
+         prefix = new Prefix(ctx.prefix.getText());
+      }
+      else {
+         Ip address = new Ip(ctx.ip.getText());
+         Ip mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask);
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setPrefix(prefix);
+      }
+      if (ctx.STANDBY() != null) {
+         Ip standbyAddress = toIp(ctx.standby_address);
+         Prefix standbyPrefix = new Prefix(standbyAddress,
+               prefix.getPrefixLength());
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setStandbyPrefix(standbyPrefix);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
+      Ip address;
+      Ip mask;
+      Prefix prefix;
+      if (ctx.prefix != null) {
+         prefix = new Prefix(ctx.prefix.getText());
+      }
+      else {
+         address = new Ip(ctx.ip.getText());
+         mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask.numSubnetBits());
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.getSecondaryPrefixes().add(prefix);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
+      int cost = toInteger(ctx.cost);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfCost(cost);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_dead_interval(
+         If_ip_ospf_dead_intervalContext ctx) {
+      int seconds = toInteger(ctx.seconds);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfDeadInterval(seconds);
+         currentInterface.setOspfHelloMultiplier(0);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_dead_interval_minimal(
+         If_ip_ospf_dead_interval_minimalContext ctx) {
+      int multiplier = toInteger(ctx.mult);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfDeadInterval(1);
+         currentInterface.setOspfHelloMultiplier(multiplier);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_policy(If_ip_policyContext ctx) {
+      String policyName = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setRoutingPolicy(policyName);
+      }
+   }
+
+   @Override
    public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
       boolean enabled = ctx.NO() == null;
       for (Interface currentInterface : _currentInterfaces) {
@@ -1914,10 +2010,138 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+   }
+
+   @Override
    public void exitIf_ip_verify(If_ip_verifyContext ctx) {
       if (ctx.acl != null) {
          String acl = ctx.acl.getText();
          _configuration.getVerifyAccessLists().add(acl);
+      }
+   }
+
+   @Override
+   public void exitIf_isis_metric(If_isis_metricContext ctx) {
+      int metric = toInteger(ctx.metric);
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisCost(metric);
+      }
+   }
+
+   @Override
+   public void exitIf_mtu(If_mtuContext ctx) {
+      int mtu = toInteger(ctx.DEC());
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setMtu(mtu);
+      }
+   }
+
+   @Override
+   public void exitIf_shutdown(If_shutdownContext ctx) {
+      if (ctx.NO() == null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setActive(false);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_access(If_switchport_accessContext ctx) {
+      if (ctx.vlan != null) {
+         int vlan = toInteger(ctx.vlan);
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setAccessVlan(vlan);
+         }
+      }
+      else {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setSwitchportAccessDynamic(true);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_mode(If_switchport_modeContext ctx) {
+      SwitchportMode mode;
+      if (ctx.ACCESS() != null) {
+         mode = SwitchportMode.ACCESS;
+      }
+      else if (ctx.DOT1Q_TUNNEL() != null) {
+         mode = SwitchportMode.DOT1Q_TUNNEL;
+      }
+      else if (ctx.DYNAMIC() != null && ctx.AUTO() != null) {
+         mode = SwitchportMode.DYNAMIC_AUTO;
+      }
+      else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
+         mode = SwitchportMode.DYNAMIC_DESIRABLE;
+      }
+      else if (ctx.FEX_FABRIC() != null) {
+         mode = SwitchportMode.FEX_FABRIC;
+      }
+      else if (ctx.TAP() != null) {
+         mode = SwitchportMode.TAP;
+      }
+      else if (ctx.TRUNK() != null) {
+         mode = SwitchportMode.TRUNK;
+      }
+      else if (ctx.TOOL() != null) {
+         mode = SwitchportMode.TOOL;
+      }
+      else {
+         throw new BatfishException("Unhandled switchport mode");
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setSwitchportMode(mode);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_allowed(
+         If_switchport_trunk_allowedContext ctx) {
+      List<SubRange> ranges = toRange(ctx.r);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.addAllowedRanges(ranges);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_encapsulation(
+         If_switchport_trunk_encapsulationContext ctx) {
+      SwitchportEncapsulationType type = toEncapsulation(ctx.e);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setSwitchportTrunkEncapsulation(type);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_native(
+         If_switchport_trunk_nativeContext ctx) {
+      int vlan = toInteger(ctx.vlan);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setNativeVlan(vlan);
+      }
+   }
+
+   @Override
+   public void exitIf_vrf_forwarding(If_vrf_forwardingContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
+         currentInterface.setPrefix(null);
+      }
+   }
+
+   @Override
+   public void exitIf_vrf_member(If_vrf_memberContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
       }
    }
 
@@ -1964,73 +2188,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitInterface_is_stanza(Interface_is_stanzaContext ctx) {
       _currentIsisInterface = null;
-   }
-
-   @Override
-   public void exitInterface_stanza(Interface_stanzaContext ctx) {
-      _currentInterfaces = null;
-   }
-
-   @Override
-   public void exitIp_access_group_if_stanza(
-         Ip_access_group_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      if (ctx.IN() != null || ctx.INGRESS() != null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setIncomingFilter(name);
-         }
-      }
-      else if (ctx.OUT() != null || ctx.EGRESS() != null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setOutgoingFilter(name);
-         }
-      }
-      else {
-         throw new BatfishException("bad direction");
-      }
-   }
-
-   @Override
-   public void exitIp_address_if_stanza(Ip_address_if_stanzaContext ctx) {
-      Prefix prefix;
-      if (ctx.prefix != null) {
-         prefix = new Prefix(ctx.prefix.getText());
-      }
-      else {
-         Ip address = new Ip(ctx.ip.getText());
-         Ip mask = new Ip(ctx.subnet.getText());
-         prefix = new Prefix(address, mask);
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setPrefix(prefix);
-      }
-      if (ctx.STANDBY() != null) {
-         Ip standbyAddress = toIp(ctx.standby_address);
-         Prefix standbyPrefix = new Prefix(standbyAddress,
-               prefix.getPrefixLength());
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setStandbyPrefix(standbyPrefix);
-         }
-      }
-   }
-
-   @Override
-   public void exitIp_address_secondary_if_stanza(
-         Ip_address_secondary_if_stanzaContext ctx) {
-      Ip address;
-      Ip mask;
-      Prefix prefix;
-      if (ctx.prefix != null) {
-         prefix = new Prefix(ctx.prefix.getText());
-      }
-      else {
-         address = new Ip(ctx.ip.getText());
-         mask = new Ip(ctx.subnet.getText());
-         prefix = new Prefix(address, mask.numSubnetBits());
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.getSecondaryPrefixes().add(prefix);
-      }
    }
 
    @Override
@@ -2097,42 +2254,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_domain_name(Ip_domain_nameContext ctx) {
       String name = ctx.name.getText();
       _configuration.getCf().setDomainName(name);
-   }
-
-   @Override
-   public void exitIp_ospf_cost_if_stanza(Ip_ospf_cost_if_stanzaContext ctx) {
-      int cost = toInteger(ctx.cost);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfCost(cost);
-      }
-   }
-
-   @Override
-   public void exitIp_ospf_dead_interval_if_stanza(
-         Ip_ospf_dead_interval_if_stanzaContext ctx) {
-      int seconds = toInteger(ctx.seconds);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfDeadInterval(seconds);
-         currentInterface.setOspfHelloMultiplier(0);
-      }
-   }
-
-   @Override
-   public void exitIp_ospf_dead_interval_minimal_if_stanza(
-         Ip_ospf_dead_interval_minimal_if_stanzaContext ctx) {
-      int multiplier = toInteger(ctx.mult);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfDeadInterval(1);
-         currentInterface.setOspfHelloMultiplier(multiplier);
-      }
-   }
-
-   @Override
-   public void exitIp_policy_if_stanza(Ip_policy_if_stanzaContext ctx) {
-      String policyName = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setRoutingPolicy(policyName);
-      }
    }
 
    @Override
@@ -2221,14 +2342,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitIp_router_isis_if_stanza(
-         Ip_router_isis_if_stanzaContext ctx) {
-      for (Interface iface : _currentInterfaces) {
-         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-   }
-
-   @Override
    public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
       int version = toInteger(ctx.version);
       if (version < 1 || version > 2) {
@@ -2263,14 +2376,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       SubRange lengthRange = new SubRange(minLen, maxLen);
       Prefix6ListLine line = new Prefix6ListLine(action, prefix6, lengthRange);
       _currentPrefix6List.addLine(line);
-   }
-
-   @Override
-   public void exitIsis_metric_if_stanza(Isis_metric_if_stanzaContext ctx) {
-      int metric = toInteger(ctx.metric);
-      for (Interface iface : _currentInterfaces) {
-         iface.setIsisCost(metric);
-      }
    }
 
    @Override
@@ -2547,14 +2652,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitMgmt_ip_access_group(Mgmt_ip_access_groupContext ctx) {
       String name = ctx.name.getText();
       _configuration.getManagementAccessGroups().add(name);
-   }
-
-   @Override
-   public void exitMtu_if_stanza(Mtu_if_stanzaContext ctx) {
-      int mtu = toInteger(ctx.DEC());
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setMtu(mtu);
-      }
    }
 
    @Override
@@ -3356,6 +3453,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_interface(S_interfaceContext ctx) {
+      _currentInterfaces = null;
+   }
+
+   @Override
    public void exitS_ip_source_route(S_ip_source_routeContext ctx) {
       boolean enabled = ctx.NO() == null;
       _configuration.getCf().setSourceRoute(enabled);
@@ -3554,15 +3656,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       _currentPeerGroup.setShutdown(true);
-   }
-
-   @Override
-   public void exitShutdown_if_stanza(Shutdown_if_stanzaContext ctx) {
-      if (ctx.NO() == null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setActive(false);
-         }
-      }
    }
 
    @Override
@@ -3772,86 +3865,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitSwitchport_access_if_stanza(
-         Switchport_access_if_stanzaContext ctx) {
-      if (ctx.vlan != null) {
-         int vlan = toInteger(ctx.vlan);
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-            currentInterface.setAccessVlan(vlan);
-         }
-      }
-      else {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-            currentInterface.setSwitchportAccessDynamic(true);
-         }
-      }
-   }
-
-   @Override
-   public void exitSwitchport_mode_stanza(Switchport_mode_stanzaContext ctx) {
-      SwitchportMode mode;
-      if (ctx.ACCESS() != null) {
-         mode = SwitchportMode.ACCESS;
-      }
-      else if (ctx.DOT1Q_TUNNEL() != null) {
-         mode = SwitchportMode.DOT1Q_TUNNEL;
-      }
-      else if (ctx.DYNAMIC() != null && ctx.AUTO() != null) {
-         mode = SwitchportMode.DYNAMIC_AUTO;
-      }
-      else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
-         mode = SwitchportMode.DYNAMIC_DESIRABLE;
-      }
-      else if (ctx.FEX_FABRIC() != null) {
-         mode = SwitchportMode.FEX_FABRIC;
-      }
-      else if (ctx.TAP() != null) {
-         mode = SwitchportMode.TAP;
-      }
-      else if (ctx.TRUNK() != null) {
-         mode = SwitchportMode.TRUNK;
-      }
-      else if (ctx.TOOL() != null) {
-         mode = SwitchportMode.TOOL;
-      }
-      else {
-         throw new BatfishException("Unhandled switchport mode");
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(mode);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_allowed_if_stanza(
-         Switchport_trunk_allowed_if_stanzaContext ctx) {
-      List<SubRange> ranges = toRange(ctx.r);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.addAllowedRanges(ranges);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_encapsulation_if_stanza(
-         Switchport_trunk_encapsulation_if_stanzaContext ctx) {
-      SwitchportEncapsulationType type = toEncapsulation(ctx.e);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportTrunkEncapsulation(type);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_native_if_stanza(
-         Switchport_trunk_native_if_stanzaContext ctx) {
-      int vlan = toInteger(ctx.vlan);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setNativeVlan(vlan);
-      }
-   }
-
-   @Override
    public void exitTemplate_peer_address_family(
          Template_peer_address_familyContext ctx) {
       popPeer();
@@ -3934,24 +3947,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitVrf_context_stanza(Vrf_context_stanzaContext ctx) {
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
-   }
-
-   @Override
-   public void exitVrf_forwarding_if_stanza(
-         Vrf_forwarding_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setVrf(name);
-         currentInterface.setPrefix(null);
-      }
-   }
-
-   @Override
-   public void exitVrf_member_if_stanza(Vrf_member_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setVrf(name);
-      }
    }
 
    private String getAddressGroup(Access_list_ip_rangeContext ctx) {

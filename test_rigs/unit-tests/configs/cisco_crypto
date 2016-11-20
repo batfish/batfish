@@ -41,6 +41,9 @@ crypto ikev2 policy 10
 !
 crypto ipsec transform-set ESP-3DES-MD5 esp-3des esp-md5-hmac 
  mode transport
+crypto ipsec ikev2 ipsec-proposal ffffffffff
+ protocol esp encryption aes-256
+ protocol esp integrity sha-1
 crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
 !
 crypto isakmp profile UPM

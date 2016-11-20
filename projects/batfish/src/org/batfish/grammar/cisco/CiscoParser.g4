@@ -107,6 +107,29 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
+controller_null
+:
+   NO?
+   (
+      ADMIN_STATE
+      | AIS_SHUT
+      | ALARM_REPORT
+      | CABLELENGTH
+      | CHANNEL_GROUP
+      | CLOCK
+      | DESCRIPTION
+      | FRAMING
+      | G709
+      | LINECODE
+      | PM
+      | PRI_GROUP
+      | PROACTIVE
+      | SHUTDOWN
+      | STS_1
+      | WAVELENGTH
+   ) ~NEWLINE* NEWLINE
+;
+
 cp_ip_access_group
 :
    (
@@ -197,6 +220,7 @@ crypto_null
       | MODE
       | PRE_SHARED_KEY
       | PRF
+      | PROTOCOL
       | REVERSE_ROUTE
       | REVOCATION_CHECK
       | RSAKEYPAIR
@@ -223,7 +247,8 @@ d11_null
 :
    NO?
    (
-      AUTHENTICATION
+      ACCOUNTING
+      | AUTHENTICATION
       | GUEST_MODE
       | MAX_ASSOCIATIONS
       | MBSSID
@@ -273,6 +298,27 @@ dhcp_substanza
    PROFILE ~NEWLINE+ NEWLINE
    | HELPER_ADDRESS ~NEWLINE+ NEWLINE
    | INTERFACE ~NEWLINE+ NEWLINE
+;
+
+dspf_null
+:
+   NO?
+   (
+      ASSOCIATE
+      | DESCRIPTION
+      | CODEC
+      | MAXIMUM
+   ) ~NEWLINE* NEWLINE
+;
+
+eh_null
+:
+   NO?
+   (
+      ACTION
+      | DELAY
+      | TRIGGER
+   ) ~NEWLINE* NEWLINE
 ;
 
 event_null
@@ -334,7 +380,24 @@ flow_null
       | MATCH
       | RECORD
       | SOURCE
+      | STATISTICS
       | TRANSPORT
+   ) ~NEWLINE* NEWLINE
+;
+
+flow_version
+:
+   NO? VERSION ~NEWLINE* NEWLINE
+   (
+      flowv_null
+   )*
+;
+
+flowv_null
+:
+   NO?
+   (
+      OPTIONS
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -495,6 +558,23 @@ ip_route_vrfc_stanza
    IP ROUTE ip_route_tail
 ;
 
+ip_sla_null
+:
+   NO?
+   (
+      FREQUENCY
+      | HISTORY
+      | HOPS_OF_STATISTICS_KEPT
+      | ICMP_ECHO
+      | PATH_ECHO
+      | PATHS_OF_STATISTICS_KEPT
+      | REQUEST_DATA_SIZE
+      | SAMPLES_OF_HISTORY_KEPT
+      | TAG
+      | TOS
+   ) ~NEWLINE* NEWLINE
+;
+
 ip_ssh
 :
    SSH
@@ -540,6 +620,110 @@ ipca_null
       | REMOTE_PORT
       | RETRANSMIT_TIMEOUT
       | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+ispla_operation
+:
+   NO? OPERATION ~NEWLINE* NEWLINE
+   (
+      ipslao_type
+   )*
+;
+
+ipsla_reaction
+:
+   NO? REACTION ~NEWLINE* NEWLINE
+   (
+      ipslar_react
+   )*
+;
+
+ipsla_responder
+:
+   NO? RESPONDER ~NEWLINE* NEWLINE
+   (
+      ipslarp_null
+   )*
+;
+
+ipsla_schedule
+:
+   NO? SCHEDULE ~NEWLINE* NEWLINE
+   (
+      ipslas_null
+   )*
+;
+
+ipslao_type
+:
+   NO? TYPE ~NEWLINE* NEWLINE
+   (
+      ipslaot_null
+      | ipslaot_statistics
+   )*
+;
+
+ipslaot_null
+:
+   NO?
+   (
+      DESTINATION
+      | FREQUENCY
+      | SOURCE
+      | TIMEOUT
+      | TOS
+      | VERIFY_DATA
+   ) ~NEWLINE* NEWLINE
+;
+
+ipslaot_statistics
+:
+   NO? STATISTICS ~NEWLINE* NEWLINE
+   (
+      ipslaots_null
+   )*
+;
+
+ipslaots_null
+:
+   NO?
+   (
+      BUCKETS
+   ) ~NEWLINE* NEWLINE
+;
+
+ipslar_react
+:
+   NO? REACT ~NEWLINE* NEWLINE
+   (
+      ispalrr_null
+   )*
+;
+
+ipslarp_null
+:
+   NO?
+   (
+      TYPE
+   ) ~NEWLINE* NEWLINE
+;
+
+ispalrr_null
+:
+   NO?
+   (
+      ACTION
+      | THRESHOLD
+   ) ~NEWLINE* NEWLINE
+;
+
+ipslas_null
+:
+   NO?
+   (
+      LIFE
+      | START_TIME
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -726,10 +910,21 @@ mgp_stanza
 
 mp_null
 :
+   NO?
    (
       CONNECT_SOURCE
       | DESCRIPTION
+      | MESH_GROUP
       | REMOTE_AS
+      | SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+mt_null
+:
+   NO?
+   (
+      ADDRESS
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -906,21 +1101,6 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
-null_stanza
-:
-   no_aaa_group_server_stanza
-   | asa_comment_stanza
-   | as_path_set_stanza
-   | certificate_stanza
-   | del_stanza
-   | no_failover
-   | no_ip_access_list_stanza
-   | null_block_stanza
-   | null_no_stanza
-   | null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
-   | srlg_stanza
-;
-
 null_afvrfd_stanza
 :
    MAXIMUM ~NEWLINE* NEWLINE
@@ -940,6 +1120,40 @@ null_vrfd_stanza
       RD
       | ROUTE_TARGET
       | NO SHUTDOWN
+   ) ~NEWLINE* NEWLINE
+;
+
+nv_satellite
+:
+   NO?
+   (
+      SATELLITE
+   ) ~NEWLINE* NEWLINE
+   (
+      nvs_null
+   )*
+;
+
+nvs_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | IP
+      | SERIAL_NUMBER
+      | TYPE
+   ) ~NEWLINE* NEWLINE
+;
+
+of_null
+:
+   NO?
+   (
+      BIND
+      | CONTROLLER
+      | DEFAULT_ACTION
+      | DESCRIPTION
+      | ENABLE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -968,6 +1182,20 @@ peer_stanza
       mp_null
       | peer_sa_filter
    )*
+;
+
+phone_proxy_null
+:
+   NO?
+   (
+      CIPC
+      | CTL_FILE
+      | DISABLE
+      | MEDIA_TERMINATION
+      | PROXY_SERVER
+      | TFTP_SERVER
+      | TLS_PROXY
+   ) ~NEWLINE* NEWLINE
 ;
 
 pim_accept_register
@@ -1126,6 +1354,15 @@ rmc_null
    ) ~NEWLINE* NEWLINE
 ;
 
+role_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | RULE
+   ) ~NEWLINE* NEWLINE
+;
+
 router_hsrp_stanza
 :
    ROUTER HSRP NEWLINE router_hsrp_substanza+
@@ -1170,7 +1407,7 @@ router_multicast_tail
          INTERFACE ALL ~NEWLINE* NEWLINE
       )
       | interface_multicast_stanza
-      | null_block_substanza
+      | null_inner
       | peer_stanza
       | rmc_null
    )*
@@ -1198,6 +1435,15 @@ s_authentication
    ) ~NEWLINE* NEWLINE
 ;
 
+s_cluster
+:
+   NO? CLUSTER
+   (
+      ENABLE
+      | RUN
+   ) ~NEWLINE* NEWLINE
+;
+
 s_control_plane
 :
    CONTROL_PLANE
@@ -1213,6 +1459,14 @@ s_control_plane_tail
    | cp_management_plane
    | cp_null
    | cp_service_policy
+;
+
+s_controller
+:
+   NO? CONTROLLER ~NEWLINE* NEWLINE
+   (
+      controller_null
+   )*
 ;
 
 s_cos_queue_group
@@ -1269,6 +1523,14 @@ s_dot11
    )*
 ;
 
+s_dspfarm
+:
+   NO? DSPFARM ~NEWLINE* NEWLINE
+   (
+      dspf_null
+   )*
+;
+
 s_dynamic_access_policy_record
 :
    NO? DYNAMIC_ACCESS_POLICY_RECORD ~NEWLINE* NEWLINE
@@ -1283,6 +1545,14 @@ s_event
    NO? EVENT ~NEWLINE* NEWLINE
    (
       event_null
+   )*
+;
+
+s_event_handler
+:
+   NO? EVENT_HANDLER ~NEWLINE* NEWLINE
+   (
+      eh_null
    )*
 ;
 
@@ -1319,6 +1589,7 @@ s_flow
    ) ~NEWLINE* NEWLINE
    (
       flow_null
+      | flow_version
    )*
 ;
 
@@ -1348,6 +1619,14 @@ s_ip
    )
 ;
 
+s_ip_sla
+:
+   NO? IP SLA ~NEWLINE* NEWLINE
+   (
+      ip_sla_null
+   )*
+;
+
 s_ip_source_route
 :
    NO? IP SOURCE_ROUTE NEWLINE
@@ -1358,6 +1637,17 @@ s_ipc
    IPC ~NEWLINE* NEWLINE
    (
       ipc_association
+   )*
+;
+
+s_ipsla
+:
+   NO? IPSLA ~NEWLINE* NEWLINE
+   (
+      ispla_operation
+      | ipsla_reaction
+      | ipsla_responder
+      | ipsla_schedule
    )*
 ;
 
@@ -1406,6 +1696,14 @@ s_management_tail
    | mgmt_null
 ;
 
+s_media_termination
+:
+   NO? MEDIA_TERMINATION ~NEWLINE* NEWLINE
+   (
+      mt_null
+   )*
+;
+
 s_mtu
 :
    MTU variable DEC NEWLINE
@@ -1428,26 +1726,52 @@ s_no_access_list_standard
 
 s_ntp
 :
-   NTP s_ntp_tail
+   NTP
+   (
+      ntp_common
+      |
+      (
+         NEWLINE ntp_common*
+      )
+   )
 ;
 
-s_ntp_tail
+s_nv
 :
-   ntp_common
-   |
+   NO? NV NEWLINE
    (
-      NEWLINE ntp_common*
-   )
+      nv_satellite
+   )*
+;
+
+s_openflow
+:
+   NO? OPENFLOW ~NEWLINE* NEWLINE
+   (
+      of_null
+   )*
+;
+
+s_phone_proxy
+:
+   NO? PHONE_PROXY ~NEWLINE* NEWLINE
+   (
+      phone_proxy_null
+   )*
 ;
 
 s_privilege
 :
    NO? PRIVILEGE
    (
-      CONFIGURE
+      CLEAR
+      | CMD
+      | CONFIGURE
       | EXEC
       | INTERFACE
       | IPENACL
+      | ROUTER
+      | SHOW
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1457,6 +1781,22 @@ s_redundancy
    (
       redundancy_main_cpu
       | redundancy_null
+   )*
+;
+
+s_role
+:
+   NO? ROLE ~NEWLINE* NEWLINE
+   (
+      role_null
+   )*
+;
+
+s_sccp
+:
+   NO? SCCP ~NEWLINE* NEWLINE
+   (
+      sccp_null
    )*
 ;
 
@@ -1475,25 +1815,23 @@ s_sntp
 
 s_spanning_tree
 :
+   NO? SPANNING_TREE
    (
       (
-         NO? SPANNING_TREE
-         (
-            DISPUTE
-            | ETHERCHANNEL
-            | EXTEND
-            | LOGGING
-            | LOOPGUARD
-            | MODE
-            | OPTIMIZE
-            | PORT
-            | PORTFAST
-            | UPLINKFAST
-            | VLAN
-         ) ~NEWLINE*
-      )
-      | SPANNING_TREE
-   ) NEWLINE
+         BACKBONEFAST
+         | DISPUTE
+         | ETHERCHANNEL
+         | EXTEND
+         | LOGGING
+         | LOOPGUARD
+         | MODE
+         | OPTIMIZE
+         | PORT
+         | PORTFAST
+         | UPLINKFAST
+         | VLAN
+      ) ~NEWLINE*
+   )? NEWLINE
 ;
 
 s_ssh
@@ -1506,6 +1844,14 @@ s_ssh
       | ssh_server
       | ssh_timeout
    )
+;
+
+s_statistics
+:
+   NO? STATISTICS ~NEWLINE* NEWLINE
+   (
+      statistics_null
+   )*
 ;
 
 s_stcapp
@@ -1532,11 +1878,27 @@ s_switchport
    ) NEWLINE
 ;
 
+s_tap
+:
+   NO? TAP ~NEWLINE* NEWLINE
+   (
+      tap_null
+   )*
+;
+
 s_track
 :
    TRACK ~NEWLINE* NEWLINE
    (
       track_null
+   )*
+;
+
+s_tunnel_group
+:
+   NO? TUNNEL_GROUP ~NEWLINE* NEWLINE
+   (
+      tg_null
    )*
 ;
 
@@ -1552,6 +1914,22 @@ s_vlan
    )*
 ;
 
+s_voice_port
+:
+   NO? VOICE_PORT ~NEWLINE* NEWLINE
+   (
+      vp_null
+   )*
+;
+
+s_vpc
+:
+   NO? VPC ~NEWLINE* NEWLINE
+   (
+      vpc_null
+   )*
+;
+
 s_vpdn_group
 :
    NO? VPDN_GROUP ~NEWLINE* NEWLINE
@@ -1561,12 +1939,39 @@ s_vpdn_group
    )*
 ;
 
+s_vpn
+:
+   NO? VPN ~NEWLINE* NEWLINE
+   (
+      vpn_null
+   )*
+;
+
+s_webvpn
+:
+   NO? WEBVPN ~NEWLINE* NEWLINE
+   (
+      webvpn_null
+   )*
+;
+
 s_wsma
 :
    WSMA ~NEWLINE* NEWLINE
    (
       wsma_null
    )*
+;
+
+sccp_null
+:
+   NO?
+   (
+      ASSOCIATE
+      | BIND
+      | DESCRIPTION
+      | SWITCHBACK
+   ) ~NEWLINE* NEWLINE
 ;
 
 sntp_server
@@ -1645,13 +2050,16 @@ ssh_timeout
 stanza
 :
    appletalk_access_list_stanza
+   | asa_comment_stanza
+   | as_path_set_stanza
    | banner_stanza
+   | certificate_stanza
    | community_set_stanza
+   | del_stanza
    | dhcp_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | hostname_stanza
-   | interface_stanza
    | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
@@ -1667,9 +2075,11 @@ stanza
    | multicast_routing_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
+   | no_aaa_group_server_stanza
+   | no_failover
+   | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | null_stanza
    | prefix_set_stanza
    | protocol_type_code_access_list_stanza
    | route_map_stanza
@@ -1687,55 +2097,77 @@ stanza
    | s_call_home
    | s_callhome
    | s_class_map
+   | s_cluster
    | s_control_plane
+   | s_controller
    | s_cos_queue_group
    | s_crypto
    | s_ctl_file
    | s_dial_peer
    | s_dot11
+   | s_dspfarm
    | s_dynamic_access_policy_record
    | s_ethernet_services
    | s_event
+   | s_event_handler
    | s_failover
    | s_flow
    | s_foundry_mac_access_list
    | s_feature
    | s_gatekeeper
    | s_global_port_security
+   | s_interface
    | s_ip
+   | s_ip_sla
    | s_ip_source_route
    | s_ipc
    | s_ipv6_router_ospf
+   | s_ipsla
    | s_line
    | s_logging
    | s_management
    | s_mac_access_list
    | s_mac_access_list_extended
+   | s_media_termination
    | s_mtu
    | s_name
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_ntp
+   | s_null
+   | s_nv
    | s_object
    | s_object_group
+   | s_openflow
+   | s_phone_proxy
    | s_policy_map
    | s_privilege
    | s_qos_mapping
    | s_redundancy
+   | s_role
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_sccp
    | s_service
    | s_snmp_server
    | s_sntp
    | s_spanning_tree
    | s_ssh
+   | s_statistics
    | s_stcapp
    | s_switchport
+   | s_tap
    | s_track
+   | s_tunnel_group
    | s_vlan
+   | s_voice_port
+   | s_vpc
    | s_vpdn_group
+   | s_vpn
+   | s_webvpn
    | s_wsma
+   | srlg_stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
@@ -1744,16 +2176,50 @@ stanza
    | vrf_definition_stanza
 ;
 
+statistics_null
+:
+   NO?
+   (
+      EXTENDED_COUNTERS
+      | TM_VOQ_COLLECTION
+   ) ~NEWLINE* NEWLINE
+;
+
 switching_mode_stanza
 :
    SWITCHING_MODE ~NEWLINE* NEWLINE
+;
+
+tap_null
+:
+   NO?
+   (
+      MODE
+   ) ~NEWLINE* NEWLINE
+;
+
+tg_null
+:
+   NO?
+   (
+      ACCOUNTING_SERVER_GROUP
+      | ADDRESS_POOL
+      | AUTHENTICATION
+      | AUTHENTICATION_SERVER_GROUP
+      | DEFAULT_GROUP_POLICY
+      | GROUP_URL
+      | IPV6_ADDRESS_POOL
+      | ISAKMP
+   ) ~NEWLINE* NEWLINE
 ;
 
 track_null
 :
    NO?
    (
-      OBJECT
+      DELAY
+      | OBJECT
+      | TYPE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1807,6 +2273,34 @@ vrfd_stanza
    | null_vrfd_stanza
 ;
 
+vp_null
+:
+   NO?
+   (
+      CALLER_ID
+      | DESCRIPTION
+      | ECHO_CANCEL
+      | SHUTDOWN
+      | SIGNAL
+      | TIMEOUTS
+      | TIMING
+   ) ~NEWLINE* NEWLINE
+;
+
+vpc_null
+:
+   NO?
+   (
+      DELAY
+      | IP
+      | PEER_GATEWAY
+      | PEER_KEEPALIVE
+      | PEER_SWITCH
+      | ROLE
+      | SYSTEM_PRIORITY
+   ) ~NEWLINE* NEWLINE
+;
+
 vpdng_accept_dialin
 :
    NO? ACCEPT_DIALIN ~NEWLINE* NEWLINE
@@ -1829,6 +2323,33 @@ vpdnga_null
    (
       PROTOCOL
       | VIRTUAL_TEMPLATE
+   ) ~NEWLINE* NEWLINE
+;
+
+vpn_null
+:
+   NO?
+   (
+      CLUSTER
+      | PARTICIPATE
+      | PRIORITY
+      | REDIRECT_FQDN
+   ) ~NEWLINE* NEWLINE
+;
+
+webvpn_null
+:
+   NO?
+   (
+      ANYCONNECT
+      | ANYCONNECT_ESSENTIALS
+      | CACHE
+      | CSD
+      | DISABLE
+      | ENABLE
+      | ERROR_RECOVERY
+      | KEEPOUT
+      | TUNNEL_GROUP_LIST
    ) ~NEWLINE* NEWLINE
 ;
 

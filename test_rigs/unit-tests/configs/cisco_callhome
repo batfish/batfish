@@ -43,6 +43,8 @@ call-home reporting anonymous
  profile "mns"
   destination preferred-msg-format short-text
   destination address email a@b.c
+  no active
+  no destination transport-method http
   subscribe-to-alert-group diagnostic severity minor
   subscribe-to-alert-group environment severity minor
   subscribe-to-alert-group syslog severity minor pattern ".*"call-home

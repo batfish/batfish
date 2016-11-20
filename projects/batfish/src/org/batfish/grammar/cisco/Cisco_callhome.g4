@@ -37,7 +37,8 @@ call_home_profile_null
 :
    NO?
    (
-      DESTINATION
+      ACTIVE
+      | DESTINATION
       | SUBSCRIBE_TO_ALERT_GROUP
    ) ~NEWLINE* NEWLINE
 ;

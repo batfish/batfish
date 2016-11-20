@@ -1,0 +1,26 @@
+!
+hostname cisco_controller
+!
+controller T1 1/0
+ framing esf
+ linecode b8zs
+ clock source internal
+ channel-group 0 timeslots 1-24
+!
+controller dwdm0/0/2/3
+ admin-state in-service
+ cablelength long 0db
+ pri-group timeslots 1-24 service mgcp
+ description gjaio
+ wavelength 71
+ proactive
+ g709 fec enhanced i.7
+ pm 15-min fec report ec-bits enable
+!
+controller SONET 5/0
+ sts-1 1 serial t3
+ alarm-report lais
+ ais-shut
+!
+!
+

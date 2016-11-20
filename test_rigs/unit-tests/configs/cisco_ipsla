@@ -1,18 +1,19 @@
 !
-hostname ipsla
+hostname cisco_ipsla
 !
 ipsla
  operation 2
   type icmp echo
-   source address 2607:f380::118:9a41:51
-   destination address 2607:f380::118:9a41:a1
+   timeout 1000
+   source address abcd:abcd::118:9a41:51
+   destination address abcd:abcd::118:9a41:a1
    frequency 60
   !
  !
  operation 3
   type icmp echo
-   source address 2607:f380::118:9a41:51
-   destination address 2607:f380::118:9a41:80
+   source address abcd:abcd::118:9a41:51
+   destination address abcd:abcd::118:9a41:80
    frequency 60
   !
  !
@@ -108,7 +109,7 @@ ipsla
  !
  operation 3
   type icmp echo
-   source address 2607:f380::118:9a41:40
+   source address abcd:abcd::118:9a41:40
    destination address 2607:0000::118:9a41:b1
    frequency 60
   !
@@ -167,9 +168,26 @@ ipsla
   start-time now
   life forever
  !
- responder                                                                                                                                 
+ responder
   type udp ipv4 address 1.2.4.41 port 12345
  !
+!
+ip sla 10
+ icmp-echo 1.2.3.4 source-interface GigabitEthernet0/0/3
+ path-echo 1.2.3.4 source-ip 2.3.4.5
+ request-data-size 64
+ frequency 600
+ tos 184
+ tag edfwrgth
+ history hours-of-statistics-kept 4
+ paths-of-statistics-kept 3
+ hops-of-statistics-kept 30
+ history distributions-of-statistics-kept 5
+ history statistics-distribution-interval 10
+ history lives-kept 2
+ history buckets-kept 25
+ samples-of-history-kept 10
+ history filter failures
 !
 
 !

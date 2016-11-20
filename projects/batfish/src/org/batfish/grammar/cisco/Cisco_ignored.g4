@@ -6,7 +6,7 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-null_block_stanza
+null_block
 :
    NO?
    (
@@ -39,7 +39,6 @@ null_block_stanza
       | CONFDCONFIG
       | CONFIGURATION
       | CONFIGURE
-      | CONTROLLER
       | COAP
       | COPP
       | COPY
@@ -63,15 +62,6 @@ null_block_stanza
       | ENABLE_QOS_STATISTICS
       | END
       | ETHERNET
-      | EVENT_HANDLER
-      |
-      (
-         EXCEPTION
-         (
-            CRASHINFO
-            | MEMORY
-         )
-      )
       | EXCEPTION_SLAVE
       | EXIT
       | FABRICPATH
@@ -126,7 +116,6 @@ null_block_stanza
             | ROUTER_ID
             | RSVP
             | SDR
-            | SLA
             | SOURCE
             | SYSLOG
             | VIRTUAL_ROUTER
@@ -136,7 +125,6 @@ null_block_stanza
             )
          )
       )
-      | IPSLA
       |
       (
          IPV4
@@ -181,7 +169,6 @@ null_block_stanza
       | MANAGEMENT_ACCESS
       | MAP_CLASS
       | MAP_LIST
-      | MEDIA_TERMINATION
       | MENU
       | MLAG
       | MODULE
@@ -205,9 +192,7 @@ null_block_stanza
       | NO_BANNER
       | NO_L4R_SHIM
       | NSR
-      | NV
       | ONE
-      | OPENFLOW
       | OPTICAL_MONITOR
       |
       (
@@ -232,7 +217,6 @@ null_block_stanza
       | RELOAD_TYPE
       | REMOVED
       | RMON
-      | ROLE
       | ROUTE_ONLY
       | ROUTER
       (
@@ -244,8 +228,6 @@ null_block_stanza
       | SAMPLER
       | SAMPLER_MAP
       | SAP
-      | SCCP
-      | SCHEDULE
       | SDR
       | SENSOR
       | SERVICE_CLASS
@@ -265,7 +247,6 @@ null_block_stanza
       | TACACS
       | TACACS_SERVER
       | TAG_TYPE
-      | TAP
       | TASKGROUP
       | TCP
       | TEMPLATE
@@ -295,8 +276,6 @@ null_block_stanza
       | VLAN_POLICY
       | VLT
       | VOICE
-      | VOICE_PORT
-      | VPC
       | VXLAN
       | VTY_POOL
       | WISM
@@ -307,13 +286,12 @@ null_block_stanza
    ) ~NEWLINE* NEWLINE
    (
       description_line
-      | null_block_substanza
-      | null_block_substanza_full
+      | null_inner
       | unrecognized_line
    )*
 ;
 
-null_block_substanza
+null_inner
 :
    (
       NO?
@@ -321,28 +299,19 @@ null_block_substanza
          ACCEPT_DIALIN
          | ACCEPT_LIFETIME
          | ACCOUNTING
-         | ACCOUNTING_SERVER_GROUP
          | ACTIVE
          | ADD_VLAN
          | ADDRESS
-         | ADDRESS_POOL
          | ADDRESS_POOLS
          | ADMINISTRATIVE_WEIGHT
-         | ADMIN_STATE
          | ADVERTISE
          | AESA
-         | AIS_SHUT
-         | ALARM_REPORT
          | ALLOCATE
          | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
-         | ANYCONNECT
-         | ANYCONNECT_ESSENTIALS
          | APPLICATION
          | ARCHIVE_LENGTH
          | ARCHIVE_SIZE
-         | ASSOCIATE
-         | AUTHENTICATION_SERVER_GROUP
          | AUTHORIZATION_REQUIRED
          | AUTHORIZATION_SERVER_GROUP
          | AUTO_RECOVERY
@@ -357,40 +326,30 @@ null_block_substanza
                | VALUE
             )
          )
-         | BIND
          | BRIDGE_PRIORITY
-         | BUCKETS
-         | CABLELENGTH
          | CACHE_TIMEOUT
          | CALL
-         | CALLER_ID
          | CAS_CUSTOM
          | CERTIFICATE
          | CHANNEL_GROUP
          | CHANNELIZED
          | CLIENT_GROUP
          | CLOCK
-         | CODEC
          | COMMAND
          | CONNECT_SOURCE
          | CONTEXT
          | CPU_SHARE
          | CREDENTIALS
          | CRYPTOGRAPHIC_ALGORITHM
-         | CSD
          | DEADTIME
          | DEFAULT
-         | DEFAULT_ACTION
          | DEFAULT_DOMAIN
-         | DEFAULT_GROUP_POLICY
          | DEFAULT_ROUTER
-         | DELAY
          | DENY
          | DEPLOY
          | DESTINATION_PATTERN
          | DESTINATION_SLOT
          | DIAGNOSTIC
-         | DISABLE
          | DISTRIBUTION
          | DNS_SERVER
          | DOMAIN_ID
@@ -399,17 +358,14 @@ null_block_substanza
          | DS0_GROUP
          | DUAL_ACTIVE
          | ECHO
-         | ECHO_CANCEL
          | EGRESS
          | ENABLED
          | ENCAPSULATION
-         | ERROR_RECOVERY
          | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXIT
          | EXPECT
          | EXPORT
-         | EXTENDED_COUNTERS
          | FABRIC
          | FAILED
          | FAIR_QUEUE
@@ -421,15 +377,12 @@ null_block_substanza
          | FLUSH_AT_ACTIVATION
          | FORWARD_DIGITS
          | FRAMING
-         | FREQUENCY
          | FT
-         | G709
          | GATEWAY
          | GID
          | GROUP_ALIAS
          | GROUP_LOCK
          | GROUP_POLICY
-         | GROUP_URL
          | H225
          | H323
          | HA_POLICY
@@ -444,9 +397,7 @@ null_block_substanza
          | HIDDEN_SHARES
          | HIDEKEYS
          | HIGH_AVAILABILITY
-         | HISTORY
          | HOMEDIR
-         | HOPS_OF_STATISTICS_KEPT
          | ICMP_ECHO
          | IDLE
          | IDLE_TIMEOUT
@@ -475,16 +426,11 @@ null_block_substanza
          )
          | IPSEC_UDP
          | IPX
-         | IPV6_ADDRESS_POOL
-         | ISAKMP
-         | FREQUENCY
-         | KEEPOUT
          | KEY_STRING
          | KEYPATH
          | LACP_TIMEOUT
          | LEASE
          | LENGTH
-         | LIFE
          | LIMIT_RESOURCE
          | LINECODE
          | LLDP
@@ -496,6 +442,7 @@ null_block_substanza
          | MEDIA
          | MEMBER
          | MESH_GROUP
+         | MODE
          | MONITORING
          | MSDP_PEER
          | MSIE_PROXY
@@ -507,9 +454,7 @@ null_block_substanza
          | NODE
          | NOTIFY
          | OPEN
-         | OPERATION
          | OPTION
-         | OPTIONS
          | OPS
          | ORIGINATOR_ID
          | OUI
@@ -517,23 +462,17 @@ null_block_substanza
          | PARITY
          | PASSWORD
          | PASSWORD_STORAGE
-         | PATH_ECHO
          | PATH_JITTER
-         | PATHS_OF_STATISTICS_KEPT
          | PEER_ADDRESS
          | PEER_CONFIG_CHECK_BYPASS
-         | PEER_GATEWAY
          | PEER_ID_VALIDATE
-         | PEER_KEEPALIVE
          | PEER_LINK
-         | PEER_SWITCH
          | PERIODIC
          | PERMIT
          | PERSISTENT
          | PHYSICAL_PORT
          | PICKUP
          | PINNING
-         | PM
          | POLICY
          | POLICY_LIST
          | PORT_NAME
@@ -542,19 +481,15 @@ null_block_substanza
          | PREEMPT
          | PREFERRED_PATH
          | PREFIX
-         | PRI_GROUP
          | PRIMARY_PORT
          | PRIMARY_PRIORITY
-         | PROACTIVE
          | PROBE
          | PROPOSAL
          | PROVISION
-         | PROXY_SERVER
          | RANDOM
          | RANDOM_DETECT
          | RD
          | REACT
-         | REACTION
          | REAL
          | RECEIVE
          | REDISTRIBUTE
@@ -563,20 +498,17 @@ null_block_substanza
          | REMARK
          | REMOTE_AS
          | REQUEST
-         | REQUEST_DATA_SIZE
          | RESOURCES
          | RESPONDER
          | RETRANSMIT
          | RETRIES
          | REVISION
          | RING
-         | ROLE
          | ROUTE
          | ROUTE_TARGET
          | RP_ADDRESS
          | RULE
          | SA_FILTER
-         | SAMPLES_OF_HISTORY_KEPT
          | SATELLITE
          | SECRET
          | SEND_LIFETIME
@@ -590,7 +522,6 @@ null_block_substanza
          | SESSION
          | SEVERITY
          | SHUT
-         | SIGNAL
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SLOT
@@ -599,43 +530,31 @@ null_block_substanza
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
          | SSH_KEYDIR
-         | START_TIME
          | STICKY
-         | STS_1
-         | SWITCHBACK
          | SWITCHPORT
          | SYNC
-         | SYSTEM_PRIORITY
          | TAG
          | TAGGED
          | TASK
          | TASK_SPACE_EXECUTE
          | TASKGROUP
          | TCP_CONNECT
-         | THRESHOLD
          | TIMEOUT
-         | TIMEOUTS
          | TIMER
-         | TIMING
-         | TM_VOQ_COLLECTION
          | TOP
-         | TOS
          | TRACKING_PRIORITY_INCREMENT
          | TRANSLATION_PROFILE
-         | TRIGGER
          | TRUNK
          | TRUNK_THRESHOLD
          | TRUST
          | TTL_THRESHOLD
          | TUNNEL
          | TUNNEL_GROUP
-         | TUNNEL_GROUP_LIST
          | TYPE
          | UDP_JITTER
          | UID
          | USE_VRF
          | USERS
-         | VERIFY_DATA
          | VERSION
          | VIRTUAL
          | VIRTUAL_ROUTER
@@ -648,70 +567,15 @@ null_block_substanza
          | VPN_SIMULTANEOUS_LOGINS
          | VPN_TUNNEL_PROTOCOL
          | VSERVER
-         | WAVELENGTH
          | WINS_SERVER
          | WITHOUT_CSD
          | WRED
          | XML_CONFIG
-      )
-      (
-         remaining_tokens += ~NEWLINE
-      )* NEWLINE
+      ) ~NEWLINE* NEWLINE
    )
 ;
 
-null_block_substanza_full
-:
-   (
-      (
-         VLAN DEC
-         (
-            CLIENT
-            | SERVER
-         )
-      )
-   ) NEWLINE
-;
-
-null_no_stanza
-:
-   NO
-   (
-      (
-         AAA
-         (
-            AUTHENTICATION
-            | NEW_MODEL
-            | ROOT
-            |
-            (
-               USER DEFAULT_ROLE
-            )
-         )
-      )
-      | CLASS_MAP
-      |
-      (
-         IP
-         (
-            AS_PATH
-         )
-      )
-      | LOGGING
-      |
-      (
-         SNMP_SERVER
-         (
-            AAA
-            | ENABLE
-            | GLOBALENFORCEPRIV
-         )
-      )
-      | SSH
-   ) ~NEWLINE* NEWLINE
-;
-
-null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
+null_single
 :
    (
       NO
@@ -735,7 +599,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | ARP
       | ASA
       | ASDM
-      | ASSOCIATE
       | ASYNC_BOOTP
       | AUTHENTICATION_PORT
       | AUTO
@@ -748,11 +611,8 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | CCM_MANAGER
       | CDP
       | CFS
-      | CIPC
       | CLOCK
-      | CLUSTER
       | CNS
-      | CODEC
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
@@ -762,16 +622,15 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | DHCPD
       | DIAGNOSTIC
       | DIALER_LIST
-      | DISABLE
       | DNS
       | DNS_GUARD
       | DOMAIN_NAME
       | DSP
-      | DSPFARM
       | DSS
       | ENVIRONMENT
       | ERRDISABLE
       | ESCAPE_CHARACTER
+      | EXCEPTION
       | EXEC
       | FABRIC
       | FACILITY_ALARM
@@ -782,8 +641,8 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | FRAME_RELAY
       | FTP
       | FTP_SERVER
+      | GROUP
       | HARDWARE
-      | HISTORY
       | HOST
       | HTTP
       | HW_MODULE
@@ -837,7 +696,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
 
             | SAP
             | SCP
-            | SLA
             | SUBNET_ZERO
             | TACACS
             | TCP
@@ -896,13 +754,48 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | NETWORK_OBJECT
       | NETWORK_CLOCK_PARTICIPATE
       | NETWORK_CLOCK_SELECT
+      |
+      (
+         NO
+         (
+            (
+               AAA
+               (
+                  AUTHENTICATION
+                  | NEW_MODEL
+                  | ROOT
+                  |
+                  (
+                     USER DEFAULT_ROLE
+                  )
+               )
+            )
+            | CLASS_MAP
+            |
+            (
+               IP
+               (
+                  AS_PATH
+               )
+            )
+            | LOGGING
+            |
+            (
+               SNMP_SERVER
+               (
+                  AAA
+                  | ENABLE
+                  | GLOBALENFORCEPRIV
+               )
+            )
+            | SSH
+         )
+      )
       | OWNER
       | PAGER
       | PARSER
-      | PARTICIPATE
       | PASSWORD
       | PERCENT
-      | PHONE_PROXY
       | PLATFORM
       | PORT_CHANNEL
       | PORT_OBJECT
@@ -916,13 +809,13 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
       | RD
-      | REDIRECT_FQDN
       | RESOURCE
       | RESOURCE_POOL
       | ROUTE
       | ROUTE_TARGET
       | RTR
       | SAME_SECURITY_TRAFFIC
+      | SCHEDULE
       | SCHEDULER
       | SCRIPTING
       | SDM
@@ -946,10 +839,8 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       | SYSTEM
       | TAG_SWITCHING
       | TELNET
-      | TFTP_SERVER
       | THREAT_DETECTION
       | TRANSLATE
-      | TYPE
       | UDLD
       | UNABLE
       | UPGRADE
@@ -968,7 +859,6 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
       )
       | VMPS
       | VPDN
-      | VPN
       | VTP
       | VOICE_CARD
       | WLAN
@@ -982,7 +872,13 @@ null_standalone_stanza_DEPRECATED_DO_NOT_ADD_ITEMS
    )* NEWLINE
 ;
 
+s_null
+:
+   null_block
+   | null_single
+;
+
 unrecognized_block_stanza
 :
-   unrecognized_line null_block_substanza*
+   unrecognized_line null_inner*
 ;

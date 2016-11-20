@@ -1,0 +1,14 @@
+!
+hostname cisco_voice_port
+!
+voice-port 0/0/0:23
+ caller-id enable
+ description giuahwefuiowjh
+ echo-cancel coverage 64
+ shutdown
+ signal cama KP-0-NXX-XXXX-ST
+ timeouts ringing infinity
+ timing hookflash-out 50
+ timing guard-out 1000
+!
+

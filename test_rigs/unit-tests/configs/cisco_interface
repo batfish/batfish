@@ -10,6 +10,10 @@ interface Dot11Radio0
  bridge-group 1 spanning-disabledinterface Ethernet0/0
  channel 2462
  channel width 80
+ disable
+ no disable
+ shutdown
+ no shutdown
  delay 1
  dfs
  encryption mode ciphers aes-ccm tkip 

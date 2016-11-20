@@ -407,6 +407,7 @@ pm_null
    NO?
    (
       CIR
+      | DESCRIPTION
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -425,12 +426,15 @@ pmc_null
       BANDWIDTH
       | CONGESTION_CONTROL
       | DBL
+      | FAIR_QUEUE
       | INSPECT
       | MTU
       | PAUSE
       | PRIORITY
       | QUEUE_BUFFERS
       | QUEUE_LIMIT
+      | RANDOM_DETECT
+      | SERVICE_POLICY
       | SET
       | SHAPE
       | USER_STATISTICS
