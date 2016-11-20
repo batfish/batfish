@@ -6,17 +6,41 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-s_callhome
+call_home_null
 :
-   CALLHOME NEWLINE
+   NO?
    (
-      callhome_email_contact
-      | callhome_destination_profile
-      | callhome_enable
-      | callhome_phone_contact
-      | callhome_streetaddress
-      | callhome_transport
+      ALERT_GROUP
+      | CONTACT_EMAIL_ADDR
+      | CONTACT_NAME
+      | CONTRACT_ID
+      | CUSTOMER_ID
+      | MAIL_SERVER
+      | PHONE_NUMBER
+      | SENDER
+      | SITE_ID
+      | SOURCE_INTERFACE
+      | SOURCE_IP_ADDRESS
+      | STREET_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+call_home_profile
+:
+   PROFILE ~NEWLINE* NEWLINE
+   (
+      call_home_profile_null
    )*
+;
+
+call_home_profile_null
+:
+   NO?
+   (
+      ACTIVE
+      | DESTINATION
+      | SUBSCRIBE_TO_ALERT_GROUP
+   ) ~NEWLINE* NEWLINE
 ;
 
 callhome_destination_profile
@@ -25,8 +49,10 @@ callhome_destination_profile
    (
       callhome_destination_profile_alert_group
       | callhome_destination_profile_email_addr
-      | callhome_destination_profile_message_level
       | callhome_destination_profile_format
+      | callhome_destination_profile_message_level
+      | callhome_destination_profile_message_size
+      | callhome_destination_profile_transport_method
       | NEWLINE
    )
 ;
@@ -46,6 +72,11 @@ callhome_destination_profile_message_level
    MESSAGE_LEVEL DEC NEWLINE
 ;
 
+callhome_destination_profile_message_size
+:
+   MESSAGE_SIZE DEC NEWLINE
+;
+
 callhome_destination_profile_format
 :
    FORMAT
@@ -54,6 +85,11 @@ callhome_destination_profile_format
       | FULL_TXT
       | SHORT_TXT
    ) NEWLINE
+;
+
+callhome_destination_profile_transport_method
+:
+   TRANSPORT_METHOD variable NEWLINE
 ;
 
 callhome_email_contact
@@ -66,6 +102,31 @@ callhome_enable
    ENABLE NEWLINE
 ;
 
+callhome_null
+:
+   NO?
+   (
+      DUPLICATE_MESSAGE
+      |
+      (
+         NO
+         (
+            DESTINATION_PROFILE
+            | ENABLE
+            | TRANSPORT
+         )
+      )
+      | PERIODIC_INVENTORY
+      |
+      (
+         TRANSPORT
+         (
+            HTTP
+         )
+      )
+   ) ~NEWLINE* NEWLINE
+;
+
 callhome_phone_contact
 :
    PHONE_CONTACT variable NEWLINE
@@ -74,6 +135,11 @@ callhome_phone_contact
 callhome_streetaddress
 :
    STREETADDRESS variable NEWLINE
+;
+
+callhome_switch_priority
+:
+   SWITCH_PRIORITY DEC NEWLINE
 ;
 
 callhome_transport
@@ -111,5 +177,38 @@ callhome_transport_email_smtp_server
       IP_ADDRESS
       | IPV6_ADDRESS
       | variable
-   ) NEWLINE
+   )
+   (
+      (
+         PORT p = DEC
+      )
+      |
+      (
+         USE_VRF vrf = variable
+      )
+   )* NEWLINE
+;
+
+s_call_home
+:
+   NO? CALL_HOME ~NEWLINE* NEWLINE
+   (
+      call_home_null
+      | call_home_profile
+   )*
+;
+
+s_callhome
+:
+   CALLHOME NEWLINE
+   (
+      callhome_email_contact
+      | callhome_destination_profile
+      | callhome_enable
+      | callhome_null
+      | callhome_phone_contact
+      | callhome_streetaddress
+      | callhome_switch_priority
+      | callhome_transport
+   )*
 ;

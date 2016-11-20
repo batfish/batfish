@@ -168,7 +168,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Details coming
     */

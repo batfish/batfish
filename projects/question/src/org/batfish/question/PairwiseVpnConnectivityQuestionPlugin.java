@@ -157,19 +157,24 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
 
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Checks if VPN connectivity between pairs of nodes is correctly configured.
     * <p>
     * Details coming on what it means to be correctly configured.
-    * 
+    *
     * @type PairwiseVpnConnectivity
-    * 
-    * @param node1Regex Regular expression to match the nodes names for one end of the sessions. Default is '.*' (all nodes).
-    * @param node2Regex Regular expression to match the nodes names for the other end of the sessions. Default is '.*' (all nodes).
-    * 
-    * @example bf_answer("PairwiseVpnConnectivity", node1Regex="as1.*", node2Regex="as2.*")
-    *          Checks pairwise VPN connectivity between nodes that start with as1 and those that start with as2.
+    *
+    * @param node1Regex
+    *           Regular expression to match the nodes names for one end of the
+    *           sessions. Default is '.*' (all nodes).
+    * @param node2Regex
+    *           Regular expression to match the nodes names for the other end of
+    *           the sessions. Default is '.*' (all nodes).
+    *
+    * @example bf_answer("PairwiseVpnConnectivity", node1Regex="as1.*",
+    *          node2Regex="as2.*") Checks pairwise VPN connectivity between
+    *          nodes that start with as1 and those that start with as2.
     */
    public static class PairwiseVpnConnectivityQuestion extends Question {
 

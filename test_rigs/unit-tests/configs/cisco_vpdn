@@ -1,0 +1,12 @@
+!
+hostname cisco_vpdn
+!
+vpdn enable
+vpdn-group 1
+ ! Default L2TP VPDN group
+ accept-dialin
+  protocol l2tp
+  virtual-template 1
+ no l2tp tunnel authentication
+!
+

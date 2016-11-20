@@ -156,26 +156,27 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    /**
     * Compares named structures with identical names across multiple nodes.
     * <p>
-    * Named structures refer to constructs like route-maps and access-control lists. 
-    * Often, identical functionality is needed on multiple routers and it is common to have the same name for those structures across routers. 
-    * We compare the contents of structures with the same name across different routers. When the contents of a same-named structure differ across routers, it usually indicates a configuration error. For instance, if the ACL named ``\verb|block_non_http_ssh|'' has identical content on nine out of ten routers, but is different in the tenth router, the ACL is likely misconfigured on the tenth router.
+    * Named structures refer to constructs like route-maps and access-control
+    * lists. Often, identical functionality is needed on multiple routers and it
+    * is common to have the same name for those structures across routers. We
+    * compare the contents of structures with the same name across different
+    * routers. When the contents of a same-named structure differ across
+    * routers, it usually indicates a configuration error. For instance, if the
+    * ACL named ``\verb|block_non_http_ssh|'' has identical content on nine out
+    * of ten routers, but is different in the tenth router, the ACL is likely
+    * misconfigured on the tenth router.
     *
     * @type CompareSameName
     *
-    * @param namedStructType Set of structure types to analyze drawn from (
-    * AsPathAccessList, 
-    * CommunityList, 
-    * IkeGateway, 
-    * IkePolicies,
-    * IkeProposal,
-    * IpAccessList,
-    * IpsecPolicy,
-    * IpsecProposal,
-    * IpsecVpn,
-    * RouteFilterList,
-    * RoutingPolicy) 
-    * Default value is '[]' (which denotes all structure types).
-    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all nodes).
+    * @param namedStructType
+    *           Set of structure types to analyze drawn from ( AsPathAccessList,
+    *           CommunityList, IkeGateway, IkePolicies, IkeProposal,
+    *           IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn,
+    *           RouteFilterList, RoutingPolicy) Default value is '[]' (which
+    *           denotes all structure types).
+    * @param nodeRegex
+    *           Regular expression for names of nodes to include. Default value
+    *           is '.*' (all nodes).
     */
    public static final class CompareSameNameQuestion extends Question {
 

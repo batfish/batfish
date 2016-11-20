@@ -1,0 +1,14 @@
+!
+hostname cisco_dot11
+!
+dot11 ssid CENIC
+ accounting asdfgh
+ authentication open 
+ authentication key-management wpa version 2
+ guest-mode
+ max-associations 5
+ mbssid guest-mode
+ vlan 1
+!
+
+!

@@ -570,36 +570,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterArea_xr_ro_stanza(Area_xr_ro_stanzaContext ctx) {
-      long area;
-      if (ctx.area_int != null) {
-         area = toInteger(ctx.area_int);
-      }
-      else if (ctx.area_ip != null) {
-         area = toIp(ctx.area_ip).asLong();
-      }
-      else {
-         throw new BatfishException("Missing area");
-      }
-      _currentOspfArea = area;
-   }
-
-   @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _vendorConfiguration = new CiscoVendorConfiguration(
             _unimplementedFeatures);
       _configuration = _vendorConfiguration;
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
-   }
-
-   @Override
-   public void enterDescription_if_stanza(Description_if_stanzaContext ctx) {
-      Token descriptionToken = ctx.description_line().text;
-      String description = descriptionToken != null
-            ? descriptionToken.getText().trim() : "";
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setDescription(description);
-      }
    }
 
    @Override
@@ -649,6 +624,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterIf_description(If_descriptionContext ctx) {
+      Token descriptionToken = ctx.description_line().text;
+      String description = descriptionToken != null
+            ? descriptionToken.getText().trim() : "";
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setDescription(description);
+      }
+   }
+
+   @Override
    public void enterInterface_is_stanza(Interface_is_stanzaContext ctx) {
       String ifaceName = ctx.iname.getText();
       String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
@@ -658,50 +643,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
       _currentIsisInterface = iface;
-   }
-
-   @Override
-   public void enterInterface_stanza(Interface_stanzaContext ctx) {
-      String nameAlpha = ctx.iname.name_prefix_alpha.getText();
-      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
-      String namePrefix = canonicalNamePrefix;
-      for (Token part : ctx.iname.name_middle_parts) {
-         namePrefix += part.getText();
-      }
-      _currentInterfaces = new ArrayList<>();
-      if (ctx.iname.range() != null) {
-         List<SubRange> ranges = toRange(ctx.iname.range());
-         for (SubRange range : ranges) {
-            for (int i = range.getStart(); i <= range.getEnd(); i++) {
-               String name = namePrefix + i;
-               addInterface(name, ctx.iname, true);
-            }
-         }
-      }
-      else {
-         String name = namePrefix;
-         addInterface(name, ctx.iname, true);
-      }
-      if (ctx.MULTIPOINT() != null) {
-         todo(ctx, F_INTERFACE_MULTIPOINT);
-      }
-   }
-
-   @Override
-   public void enterInterface_xr_ro_stanza(Interface_xr_ro_stanzaContext ctx) {
-      String ifaceName = getCanonicalInterfaceName(
-            ctx.interface_name().getText());
-      // may have to change if interfaces are ever declared after ospf
-      Interface iface = _configuration.getInterfaces().get(ifaceName);
-      if (iface == null) {
-         throw new BatfishException(
-               "fixme: reference to undefined interface in ospf area");
-      }
-      for (Prefix prefix : iface.getAllPrefixes()) {
-         OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
-         _currentOspfProcess.getNetworks().add(network);
-      }
-      _currentOspfInterface = ifaceName;
    }
 
    @Override
@@ -956,6 +897,40 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterRo_area(Ro_areaContext ctx) {
+      long area;
+      if (ctx.area_int != null) {
+         area = toInteger(ctx.area_int);
+      }
+      else if (ctx.area_ip != null) {
+         area = toIp(ctx.area_ip).asLong();
+      }
+      else {
+         throw new BatfishException("Missing area");
+      }
+      _currentOspfArea = area;
+   }
+
+   @Override
+   public void enterRoa_interface(Roa_interfaceContext ctx) {
+      String ifaceName = ctx.iname.getText();
+      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+      if (iface == null) {
+         _w.redFlag("OSPF: Interface: '" + ifaceName
+               + "' not declared before OSPF process");
+         iface = addInterface(canonicalIfaceName, ctx.iname, false);
+      }
+      // might cause problems if interfaces are declared after ospf, but
+      // whatever
+      for (Prefix prefix : iface.getAllPrefixes()) {
+         OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
+         _currentOspfProcess.getNetworks().add(network);
+      }
+      _currentOspfInterface = iface.getName();
+   }
+
+   @Override
    public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
       String name = ctx.name.getText();
       _currentRouteMap = _configuration.getRouteMaps().get(name);
@@ -1009,18 +984,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
-      int procNum = toInteger(ctx.procnum);
-      _currentOspfProcess = new OspfProcess(procNum);
-      if (ctx.vrf != null) {
-         todo(ctx, F_OSPF_VRF);
-      }
-      else {
-         _configuration.setOspfProcess(_currentOspfProcess);
-      }
-   }
-
-   @Override
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
       todo(ctx, F_RIP);
    }
@@ -1029,6 +992,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_aaa(S_aaaContext ctx) {
       if (_configuration.getCf().getAaa() == null) {
          _configuration.getCf().setAaa(new Aaa());
+      }
+   }
+
+   @Override
+   public void enterS_interface(S_interfaceContext ctx) {
+      String nameAlpha = ctx.iname.name_prefix_alpha.getText();
+      String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
+      String namePrefix = canonicalNamePrefix;
+      for (Token part : ctx.iname.name_middle_parts) {
+         namePrefix += part.getText();
+      }
+      _currentInterfaces = new ArrayList<>();
+      if (ctx.iname.range() != null) {
+         List<SubRange> ranges = toRange(ctx.iname.range());
+         for (SubRange range : ranges) {
+            for (int i = range.getStart(); i <= range.getEnd(); i++) {
+               String name = namePrefix + i;
+               addInterface(name, ctx.iname, true);
+            }
+         }
+      }
+      else {
+         String name = namePrefix;
+         addInterface(name, ctx.iname, true);
+      }
+      if (ctx.MULTIPOINT() != null) {
+         todo(ctx, F_INTERFACE_MULTIPOINT);
       }
    }
 
@@ -1119,6 +1109,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_ntp(S_ntpContext ctx) {
       if (_configuration.getCf().getNtp() == null) {
          _configuration.getCf().setNtp(new Ntp());
+      }
+   }
+
+   @Override
+   public void enterS_router_ospf(S_router_ospfContext ctx) {
+      int procNum = toInteger(ctx.procnum);
+      _currentOspfProcess = new OspfProcess(procNum);
+      if (ctx.vrf != null) {
+         todo(ctx, F_OSPF_VRF);
+      }
+      else {
+         _configuration.setOspfProcess(_currentOspfProcess);
       }
    }
 
@@ -1374,24 +1376,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitArea_nssa_ro_stanza(Area_nssa_ro_stanzaContext ctx) {
-      OspfProcess proc = _currentOspfProcess;
-      int area = (ctx.area_int != null) ? toInteger(ctx.area_int)
-            : (int) toIp(ctx.area_ip).asLong();
-      boolean noSummary = ctx.NO_SUMMARY() != null;
-      boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
-      if (defaultOriginate) {
-         todo(ctx, F_OSPF_AREA_NSSA);
-      }
-      proc.getNssas().put(area, noSummary);
-   }
-
-   @Override
-   public void exitArea_xr_ro_stanza(Area_xr_ro_stanzaContext ctx) {
-      _currentOspfArea = null;
-   }
-
-   @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx, F_BGP_AUTO_SUMMARY);
    }
@@ -1470,27 +1454,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitDefault_information_originate_rb_stanza(
          Default_information_originate_rb_stanzaContext ctx) {
       _currentPeerGroup.setDefaultOriginate(true);
-   }
-
-   @Override
-   public void exitDefault_information_ro_stanza(
-         Default_information_ro_stanzaContext ctx) {
-      OspfProcess proc = _currentOspfProcess;
-      proc.setDefaultInformationOriginate(true);
-      boolean always = ctx.ALWAYS().size() > 0;
-      proc.setDefaultInformationOriginateAlways(always);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         proc.setDefaultInformationMetric(metric);
-      }
-      if (ctx.metric_type != null) {
-         int metricTypeInt = toInteger(ctx.metric_type);
-         OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
-         proc.setDefaultInformationMetricType(metricType);
-      }
-      if (ctx.map != null) {
-         proc.setDefaultInformationOriginateMap(ctx.map.getText());
-      }
    }
 
    @Override
@@ -1943,6 +1906,102 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
+      String name = ctx.name.getText();
+      if (ctx.IN() != null || ctx.INGRESS() != null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setIncomingFilter(name);
+         }
+      }
+      else if (ctx.OUT() != null || ctx.EGRESS() != null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setOutgoingFilter(name);
+         }
+      }
+      else {
+         throw new BatfishException("bad direction");
+      }
+   }
+
+   @Override
+   public void exitIf_ip_address(If_ip_addressContext ctx) {
+      Prefix prefix;
+      if (ctx.prefix != null) {
+         prefix = new Prefix(ctx.prefix.getText());
+      }
+      else {
+         Ip address = new Ip(ctx.ip.getText());
+         Ip mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask);
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setPrefix(prefix);
+      }
+      if (ctx.STANDBY() != null) {
+         Ip standbyAddress = toIp(ctx.standby_address);
+         Prefix standbyPrefix = new Prefix(standbyAddress,
+               prefix.getPrefixLength());
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setStandbyPrefix(standbyPrefix);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
+      Ip address;
+      Ip mask;
+      Prefix prefix;
+      if (ctx.prefix != null) {
+         prefix = new Prefix(ctx.prefix.getText());
+      }
+      else {
+         address = new Ip(ctx.ip.getText());
+         mask = new Ip(ctx.subnet.getText());
+         prefix = new Prefix(address, mask.numSubnetBits());
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.getSecondaryPrefixes().add(prefix);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
+      int cost = toInteger(ctx.cost);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfCost(cost);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_dead_interval(
+         If_ip_ospf_dead_intervalContext ctx) {
+      int seconds = toInteger(ctx.seconds);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfDeadInterval(seconds);
+         currentInterface.setOspfHelloMultiplier(0);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_ospf_dead_interval_minimal(
+         If_ip_ospf_dead_interval_minimalContext ctx) {
+      int multiplier = toInteger(ctx.mult);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setOspfDeadInterval(1);
+         currentInterface.setOspfHelloMultiplier(multiplier);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_policy(If_ip_policyContext ctx) {
+      String policyName = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setRoutingPolicy(policyName);
+      }
+   }
+
+   @Override
    public void exitIf_ip_proxy_arp(If_ip_proxy_arpContext ctx) {
       boolean enabled = ctx.NO() == null;
       for (Interface currentInterface : _currentInterfaces) {
@@ -1951,10 +2010,138 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+   }
+
+   @Override
    public void exitIf_ip_verify(If_ip_verifyContext ctx) {
       if (ctx.acl != null) {
          String acl = ctx.acl.getText();
          _configuration.getVerifyAccessLists().add(acl);
+      }
+   }
+
+   @Override
+   public void exitIf_isis_metric(If_isis_metricContext ctx) {
+      int metric = toInteger(ctx.metric);
+      for (Interface iface : _currentInterfaces) {
+         iface.setIsisCost(metric);
+      }
+   }
+
+   @Override
+   public void exitIf_mtu(If_mtuContext ctx) {
+      int mtu = toInteger(ctx.DEC());
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setMtu(mtu);
+      }
+   }
+
+   @Override
+   public void exitIf_shutdown(If_shutdownContext ctx) {
+      if (ctx.NO() == null) {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setActive(false);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_access(If_switchport_accessContext ctx) {
+      if (ctx.vlan != null) {
+         int vlan = toInteger(ctx.vlan);
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setAccessVlan(vlan);
+         }
+      }
+      else {
+         for (Interface currentInterface : _currentInterfaces) {
+            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+            currentInterface.setSwitchportAccessDynamic(true);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_mode(If_switchport_modeContext ctx) {
+      SwitchportMode mode;
+      if (ctx.ACCESS() != null) {
+         mode = SwitchportMode.ACCESS;
+      }
+      else if (ctx.DOT1Q_TUNNEL() != null) {
+         mode = SwitchportMode.DOT1Q_TUNNEL;
+      }
+      else if (ctx.DYNAMIC() != null && ctx.AUTO() != null) {
+         mode = SwitchportMode.DYNAMIC_AUTO;
+      }
+      else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
+         mode = SwitchportMode.DYNAMIC_DESIRABLE;
+      }
+      else if (ctx.FEX_FABRIC() != null) {
+         mode = SwitchportMode.FEX_FABRIC;
+      }
+      else if (ctx.TAP() != null) {
+         mode = SwitchportMode.TAP;
+      }
+      else if (ctx.TRUNK() != null) {
+         mode = SwitchportMode.TRUNK;
+      }
+      else if (ctx.TOOL() != null) {
+         mode = SwitchportMode.TOOL;
+      }
+      else {
+         throw new BatfishException("Unhandled switchport mode");
+      }
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setSwitchportMode(mode);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_allowed(
+         If_switchport_trunk_allowedContext ctx) {
+      List<SubRange> ranges = toRange(ctx.r);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.addAllowedRanges(ranges);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_encapsulation(
+         If_switchport_trunk_encapsulationContext ctx) {
+      SwitchportEncapsulationType type = toEncapsulation(ctx.e);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setSwitchportTrunkEncapsulation(type);
+      }
+   }
+
+   @Override
+   public void exitIf_switchport_trunk_native(
+         If_switchport_trunk_nativeContext ctx) {
+      int vlan = toInteger(ctx.vlan);
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setNativeVlan(vlan);
+      }
+   }
+
+   @Override
+   public void exitIf_vrf_forwarding(If_vrf_forwardingContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
+         currentInterface.setPrefix(null);
+      }
+   }
+
+   @Override
+   public void exitIf_vrf_member(If_vrf_memberContext ctx) {
+      String name = ctx.name.getText();
+      for (Interface currentInterface : _currentInterfaces) {
+         currentInterface.setVrf(name);
       }
    }
 
@@ -2001,85 +2188,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitInterface_is_stanza(Interface_is_stanzaContext ctx) {
       _currentIsisInterface = null;
-   }
-
-   @Override
-   public void exitInterface_stanza(Interface_stanzaContext ctx) {
-      _currentInterfaces = null;
-   }
-
-   @Override
-   public void exitInterface_xr_ro_stanza(Interface_xr_ro_stanzaContext ctx) {
-      _currentOspfInterface = null;
-   }
-
-   @Override
-   public void exitInterface_xr_ro_tail(Interface_xr_ro_tailContext ctx) {
-      if (ctx.PASSIVE() != null && ctx.ENABLE() != null) {
-         _currentOspfProcess.getInterfaceBlacklist().add(_currentOspfInterface);
-      }
-   }
-
-   @Override
-   public void exitIp_access_group_if_stanza(
-         Ip_access_group_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      if (ctx.IN() != null || ctx.INGRESS() != null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setIncomingFilter(name);
-         }
-      }
-      else if (ctx.OUT() != null || ctx.EGRESS() != null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setOutgoingFilter(name);
-         }
-      }
-      else {
-         throw new BatfishException("bad direction");
-      }
-   }
-
-   @Override
-   public void exitIp_address_if_stanza(Ip_address_if_stanzaContext ctx) {
-      Prefix prefix;
-      if (ctx.prefix != null) {
-         prefix = new Prefix(ctx.prefix.getText());
-      }
-      else {
-         Ip address = new Ip(ctx.ip.getText());
-         Ip mask = new Ip(ctx.subnet.getText());
-         prefix = new Prefix(address, mask);
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setPrefix(prefix);
-      }
-      if (ctx.STANDBY() != null) {
-         Ip standbyAddress = toIp(ctx.standby_address);
-         Prefix standbyPrefix = new Prefix(standbyAddress,
-               prefix.getPrefixLength());
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setStandbyPrefix(standbyPrefix);
-         }
-      }
-   }
-
-   @Override
-   public void exitIp_address_secondary_if_stanza(
-         Ip_address_secondary_if_stanzaContext ctx) {
-      Ip address;
-      Ip mask;
-      Prefix prefix;
-      if (ctx.prefix != null) {
-         prefix = new Prefix(ctx.prefix.getText());
-      }
-      else {
-         address = new Ip(ctx.ip.getText());
-         mask = new Ip(ctx.subnet.getText());
-         prefix = new Prefix(address, mask.numSubnetBits());
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.getSecondaryPrefixes().add(prefix);
-      }
    }
 
    @Override
@@ -2146,42 +2254,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_domain_name(Ip_domain_nameContext ctx) {
       String name = ctx.name.getText();
       _configuration.getCf().setDomainName(name);
-   }
-
-   @Override
-   public void exitIp_ospf_cost_if_stanza(Ip_ospf_cost_if_stanzaContext ctx) {
-      int cost = toInteger(ctx.cost);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfCost(cost);
-      }
-   }
-
-   @Override
-   public void exitIp_ospf_dead_interval_if_stanza(
-         Ip_ospf_dead_interval_if_stanzaContext ctx) {
-      int seconds = toInteger(ctx.seconds);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfDeadInterval(seconds);
-         currentInterface.setOspfHelloMultiplier(0);
-      }
-   }
-
-   @Override
-   public void exitIp_ospf_dead_interval_minimal_if_stanza(
-         Ip_ospf_dead_interval_minimal_if_stanzaContext ctx) {
-      int multiplier = toInteger(ctx.mult);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setOspfDeadInterval(1);
-         currentInterface.setOspfHelloMultiplier(multiplier);
-      }
-   }
-
-   @Override
-   public void exitIp_policy_if_stanza(Ip_policy_if_stanzaContext ctx) {
-      String policyName = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setRoutingPolicy(policyName);
-      }
    }
 
    @Override
@@ -2270,14 +2342,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitIp_router_isis_if_stanza(
-         Ip_router_isis_if_stanzaContext ctx) {
-      for (Interface iface : _currentInterfaces) {
-         iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-   }
-
-   @Override
    public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
       int version = toInteger(ctx.version);
       if (version < 1 || version > 2) {
@@ -2312,14 +2376,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       SubRange lengthRange = new SubRange(minLen, maxLen);
       Prefix6ListLine line = new Prefix6ListLine(action, prefix6, lengthRange);
       _currentPrefix6List.addLine(line);
-   }
-
-   @Override
-   public void exitIsis_metric_if_stanza(Isis_metric_if_stanzaContext ctx) {
-      int metric = toInteger(ctx.metric);
-      for (Interface iface : _currentInterfaces) {
-         iface.setIsisCost(metric);
-      }
    }
 
    @Override
@@ -2366,7 +2422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitL_login(L_loginContext ctx) {
+   public void exitL_login_authentication(L_login_authenticationContext ctx) {
       String list;
       if (ctx.DEFAULT() != null) {
          list = ctx.DEFAULT().getText();
@@ -2385,8 +2441,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitL_transport(L_transportContext ctx) {
-      String protocol = ctx.prot.getText();
-      BiConsumer<Line, String> setter;
+      SortedSet<String> protocols = new TreeSet<>(ctx.prot.stream()
+            .map(c -> c.getText()).collect(Collectors.toSet()));
+      BiConsumer<Line, SortedSet<String>> setter;
       if (ctx.INPUT() != null) {
          setter = Line::setTransportInput;
       }
@@ -2402,7 +2459,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       for (String currentName : _currentLineNames) {
          Line line = _configuration.getCf().getLines().get(currentName);
-         setter.accept(line, protocol);
+         setter.accept(line, protocols);
       }
    }
 
@@ -2587,15 +2644,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitMaximum_paths_ro_stanza(Maximum_paths_ro_stanzaContext ctx) {
-      todo(ctx, F_OSPF_MAXIMUM_PATHS);
-      /*
-       * Note that this is very difficult to enforce, and may not help the
-       * analysis without major changes
-       */
-   }
-
-   @Override
    public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
       todo(ctx, F_BGP_MAXIMUM_PEERS);
    }
@@ -2604,14 +2652,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitMgmt_ip_access_group(Mgmt_ip_access_groupContext ctx) {
       String name = ctx.name.getText();
       _configuration.getManagementAccessGroups().add(name);
-   }
-
-   @Override
-   public void exitMtu_if_stanza(Mtu_if_stanzaContext ctx) {
-      int mtu = toInteger(ctx.DEC());
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setMtu(mtu);
-      }
    }
 
    @Override
@@ -2653,34 +2693,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _configuration.getBgpProcesses().get(_currentVrf).getNetworks()
                .add(prefix);
       }
-   }
-
-   @Override
-   public void exitNetwork_ro_stanza(Network_ro_stanzaContext ctx) {
-      Ip address;
-      Ip wildcard;
-      if (ctx.prefix != null) {
-         Prefix prefix = new Prefix(ctx.prefix.getText());
-         address = prefix.getAddress();
-         wildcard = prefix.getPrefixWildcard();
-      }
-      else {
-         address = toIp(ctx.ip);
-         wildcard = toIp(ctx.wildcard);
-      }
-      long area;
-      if (ctx.area_int != null) {
-         area = toLong(ctx.area_int);
-      }
-      else if (ctx.area_ip != null) {
-         area = toIp(ctx.area_ip).asLong();
-      }
-      else {
-         throw new BatfishException("bad area");
-      }
-      OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard,
-            area);
-      _currentOspfProcess.getWildcardNetworks().add(network);
    }
 
    @Override
@@ -2880,12 +2892,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitPassive_interface_default_ro_stanza(
-         Passive_interface_default_ro_stanzaContext ctx) {
-      _currentOspfProcess.setPassiveInterfaceDefault(true);
-   }
-
-   @Override
    public void exitPassive_interface_is_stanza(
          Passive_interface_is_stanzaContext ctx) {
       String ifaceName = ctx.name.getText();
@@ -2899,20 +2905,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-   }
-
-   @Override
-   public void exitPassive_interface_ro_stanza(
-         Passive_interface_ro_stanzaContext ctx) {
-      boolean passive = ctx.NO() == null;
-      String iname = ctx.i.getText();
-      OspfProcess proc = _currentOspfProcess;
-      if (passive) {
-         proc.getInterfaceBlacklist().add(iname);
-      }
-      else {
-         proc.getInterfaceWhitelist().add(iname);
       }
    }
 
@@ -3043,38 +3035,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRedistribute_bgp_ro_stanza(
-         Redistribute_bgp_ro_stanzaContext ctx) {
-      OspfProcess proc = _currentOspfProcess;
-      RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      int as = toInteger(ctx.as);
-      r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
-      }
-      if (ctx.type != null) {
-         int typeInt = toInteger(ctx.type);
-         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-         r.setOspfMetricType(type);
-      }
-      else {
-         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-      }
-      if (ctx.tag != null) {
-         long tag = toLong(ctx.tag);
-         r.setTag(tag);
-      }
-      r.setSubnets(ctx.subnets != null);
-   }
-
-   @Override
    public void exitRedistribute_connected_bgp_tail(
          Redistribute_connected_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
@@ -3128,36 +3088,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRedistribute_connected_ro_stanza(
-         Redistribute_connected_ro_stanzaContext ctx) {
-      OspfProcess proc = _currentOspfProcess;
-      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
-      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-      proc.getRedistributionPolicies().put(sourceProtocol, r);
-      if (ctx.metric != null) {
-         int metric = toInteger(ctx.metric);
-         r.setMetric(metric);
-      }
-      if (ctx.map != null) {
-         String map = ctx.map.getText();
-         r.setMap(map);
-      }
-      if (ctx.type != null) {
-         int typeInt = toInteger(ctx.type);
-         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-         r.setOspfMetricType(type);
-      }
-      else {
-         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-      }
-      if (ctx.tag != null) {
-         long tag = toLong(ctx.tag);
-         r.setTag(tag);
-      }
-      r.setSubnets(ctx.subnets != null);
-   }
-
-   @Override
    public void exitRedistribute_ospf_bgp_tail(
          Redistribute_ospf_bgp_tailContext ctx) {
       BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
@@ -3182,12 +3112,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          throw new BatfishException(
                "do not currently handle per-neighbor redistribution policies");
       }
-   }
-
-   @Override
-   public void exitRedistribute_rip_ro_stanza(
-         Redistribute_rip_ro_stanzaContext ctx) {
-      todo(ctx, F_OSPF_REDISTRIBUTE_RIP);
    }
 
    @Override
@@ -3244,8 +3168,185 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRedistribute_static_ro_stanza(
-         Redistribute_static_ro_stanzaContext ctx) {
+   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
+      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
+      int as = toInteger(ctx.as);
+      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+         _currentPeerGroup.setRemoteAs(as);
+      }
+      else {
+         throw new BatfishException("no peer or peer group in context");
+      }
+   }
+
+   @Override
+   public void exitRemove_private_as_bgp_tail(
+         Remove_private_as_bgp_tailContext ctx) {
+      _currentPeerGroup.setRemovePrivateAs(true);
+   }
+
+   @Override
+   public void exitRo_area(Ro_areaContext ctx) {
+      _currentOspfArea = null;
+   }
+
+   @Override
+   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
+      OspfProcess proc = _currentOspfProcess;
+      int area = (ctx.area_int != null) ? toInteger(ctx.area_int)
+            : (int) toIp(ctx.area_ip).asLong();
+      boolean noSummary = ctx.NO_SUMMARY() != null;
+      boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
+      if (defaultOriginate) {
+         todo(ctx, F_OSPF_AREA_NSSA);
+      }
+      proc.getNssas().put(area, noSummary);
+   }
+
+   @Override
+   public void exitRo_default_information(Ro_default_informationContext ctx) {
+      OspfProcess proc = _currentOspfProcess;
+      proc.setDefaultInformationOriginate(true);
+      boolean always = ctx.ALWAYS().size() > 0;
+      proc.setDefaultInformationOriginateAlways(always);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         proc.setDefaultInformationMetric(metric);
+      }
+      if (ctx.metric_type != null) {
+         int metricTypeInt = toInteger(ctx.metric_type);
+         OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
+         proc.setDefaultInformationMetricType(metricType);
+      }
+      if (ctx.map != null) {
+         proc.setDefaultInformationOriginateMap(ctx.map.getText());
+      }
+   }
+
+   @Override
+   public void exitRo_maximum_paths(Ro_maximum_pathsContext ctx) {
+      todo(ctx, F_OSPF_MAXIMUM_PATHS);
+      /*
+       * Note that this is very difficult to enforce, and may not help the
+       * analysis without major changes
+       */
+   }
+
+   @Override
+   public void exitRo_network(Ro_networkContext ctx) {
+      Ip address;
+      Ip wildcard;
+      if (ctx.prefix != null) {
+         Prefix prefix = new Prefix(ctx.prefix.getText());
+         address = prefix.getAddress();
+         wildcard = prefix.getPrefixWildcard();
+      }
+      else {
+         address = toIp(ctx.ip);
+         wildcard = toIp(ctx.wildcard);
+      }
+      long area;
+      if (ctx.area_int != null) {
+         area = toLong(ctx.area_int);
+      }
+      else if (ctx.area_ip != null) {
+         area = toIp(ctx.area_ip).asLong();
+      }
+      else {
+         throw new BatfishException("bad area");
+      }
+      OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard,
+            area);
+      _currentOspfProcess.getWildcardNetworks().add(network);
+   }
+
+   @Override
+   public void exitRo_passive_interface(Ro_passive_interfaceContext ctx) {
+      boolean passive = ctx.NO() == null;
+      String iname = ctx.i.getText();
+      OspfProcess proc = _currentOspfProcess;
+      if (passive) {
+         proc.getInterfaceBlacklist().add(iname);
+      }
+      else {
+         proc.getInterfaceWhitelist().add(iname);
+      }
+   }
+
+   @Override
+   public void exitRo_passive_interface_default(
+         Ro_passive_interface_defaultContext ctx) {
+      _currentOspfProcess.setPassiveInterfaceDefault(true);
+   }
+
+   @Override
+   public void exitRo_redistribute_bgp(Ro_redistribute_bgpContext ctx) {
+      OspfProcess proc = _currentOspfProcess;
+      RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      int as = toInteger(ctx.as);
+      r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
+      }
+      else {
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+      }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
+   }
+
+   @Override
+   public void exitRo_redistribute_connected(
+         Ro_redistribute_connectedContext ctx) {
+      OspfProcess proc = _currentOspfProcess;
+      RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
+      OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      if (ctx.metric != null) {
+         int metric = toInteger(ctx.metric);
+         r.setMetric(metric);
+      }
+      if (ctx.map != null) {
+         String map = ctx.map.getText();
+         r.setMap(map);
+      }
+      if (ctx.type != null) {
+         int typeInt = toInteger(ctx.type);
+         OspfMetricType type = OspfMetricType.fromInteger(typeInt);
+         r.setOspfMetricType(type);
+      }
+      else {
+         r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+      }
+      if (ctx.tag != null) {
+         long tag = toLong(ctx.tag);
+         r.setTag(tag);
+      }
+      r.setSubnets(ctx.subnets != null);
+   }
+
+   @Override
+   public void exitRo_redistribute_rip(Ro_redistribute_ripContext ctx) {
+      todo(ctx, F_OSPF_REDISTRIBUTE_RIP);
+   }
+
+   @Override
+   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
       OspfProcess proc = _currentOspfProcess;
       RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
@@ -3274,21 +3375,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
-      BgpProcess proc = _configuration.getBgpProcesses().get(_currentVrf);
-      int as = toInteger(ctx.as);
-      if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
-         _currentPeerGroup.setRemoteAs(as);
-      }
-      else {
-         throw new BatfishException("no peer or peer group in context");
-      }
+   public void exitRo_router_id(Ro_router_idContext ctx) {
+      Ip routerId = toIp(ctx.ip);
+      _currentOspfProcess.setRouterId(routerId);
    }
 
    @Override
-   public void exitRemove_private_as_bgp_tail(
-         Remove_private_as_bgp_tailContext ctx) {
-      _currentPeerGroup.setRemovePrivateAs(true);
+   public void exitRoa_interface(Roa_interfaceContext ctx) {
+      _currentOspfInterface = null;
+   }
+
+   @Override
+   public void exitRoi_passive(Roi_passiveContext ctx) {
+      if (ctx.ENABLE() != null) {
+         _currentOspfProcess.getInterfaceBlacklist().add(_currentOspfInterface);
+      }
    }
 
    @Override
@@ -3338,21 +3439,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitRouter_id_ro_stanza(Router_id_ro_stanzaContext ctx) {
-      Ip routerId = toIp(ctx.ip);
-      _currentOspfProcess.setRouterId(routerId);
-   }
-
-   @Override
    public void exitRouter_isis_stanza(Router_isis_stanzaContext ctx) {
       _currentIsisProcess = null;
-   }
-
-   @Override
-   public void exitRouter_ospf_stanza(Router_ospf_stanzaContext ctx) {
-      _currentOspfProcess
-            .computeNetworks(_configuration.getInterfaces().values());
-      _currentOspfProcess = null;
    }
 
    @Override
@@ -3362,6 +3450,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       boolean enabled = ctx.NO() == null;
       String name = String.join(".", words);
       _configuration.getCf().getFeatures().put(name, enabled);
+   }
+
+   @Override
+   public void exitS_interface(S_interfaceContext ctx) {
+      _currentInterfaces = null;
    }
 
    @Override
@@ -3387,6 +3480,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          S_no_access_list_standardContext ctx) {
       String name = ctx.ACL_NUM_STANDARD().getText();
       _configuration.getStandardAcls().remove(name);
+   }
+
+   @Override
+   public void exitS_router_ospf(S_router_ospfContext ctx) {
+      _currentOspfProcess
+            .computeNetworks(_configuration.getInterfaces().values());
+      _currentOspfProcess = null;
    }
 
    @Override
@@ -3556,15 +3656,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       _currentPeerGroup.setShutdown(true);
-   }
-
-   @Override
-   public void exitShutdown_if_stanza(Shutdown_if_stanzaContext ctx) {
-      if (ctx.NO() == null) {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setActive(false);
-         }
-      }
    }
 
    @Override
@@ -3774,86 +3865,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitSwitchport_access_if_stanza(
-         Switchport_access_if_stanzaContext ctx) {
-      if (ctx.vlan != null) {
-         int vlan = toInteger(ctx.vlan);
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-            currentInterface.setAccessVlan(vlan);
-         }
-      }
-      else {
-         for (Interface currentInterface : _currentInterfaces) {
-            currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-            currentInterface.setSwitchportAccessDynamic(true);
-         }
-      }
-   }
-
-   @Override
-   public void exitSwitchport_mode_stanza(Switchport_mode_stanzaContext ctx) {
-      SwitchportMode mode;
-      if (ctx.ACCESS() != null) {
-         mode = SwitchportMode.ACCESS;
-      }
-      else if (ctx.DOT1Q_TUNNEL() != null) {
-         mode = SwitchportMode.DOT1Q_TUNNEL;
-      }
-      else if (ctx.DYNAMIC() != null && ctx.AUTO() != null) {
-         mode = SwitchportMode.DYNAMIC_AUTO;
-      }
-      else if (ctx.DYNAMIC() != null && ctx.DESIRABLE() != null) {
-         mode = SwitchportMode.DYNAMIC_DESIRABLE;
-      }
-      else if (ctx.FEX_FABRIC() != null) {
-         mode = SwitchportMode.FEX_FABRIC;
-      }
-      else if (ctx.TAP() != null) {
-         mode = SwitchportMode.TAP;
-      }
-      else if (ctx.TRUNK() != null) {
-         mode = SwitchportMode.TRUNK;
-      }
-      else if (ctx.TOOL() != null) {
-         mode = SwitchportMode.TOOL;
-      }
-      else {
-         throw new BatfishException("Unhandled switchport mode");
-      }
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportMode(mode);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_allowed_if_stanza(
-         Switchport_trunk_allowed_if_stanzaContext ctx) {
-      List<SubRange> ranges = toRange(ctx.r);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.addAllowedRanges(ranges);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_encapsulation_if_stanza(
-         Switchport_trunk_encapsulation_if_stanzaContext ctx) {
-      SwitchportEncapsulationType type = toEncapsulation(ctx.e);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setSwitchportTrunkEncapsulation(type);
-      }
-   }
-
-   @Override
-   public void exitSwitchport_trunk_native_if_stanza(
-         Switchport_trunk_native_if_stanzaContext ctx) {
-      int vlan = toInteger(ctx.vlan);
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setNativeVlan(vlan);
-      }
-   }
-
-   @Override
    public void exitTemplate_peer_address_family(
          Template_peer_address_familyContext ctx) {
       popPeer();
@@ -3936,24 +3947,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitVrf_context_stanza(Vrf_context_stanzaContext ctx) {
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
-   }
-
-   @Override
-   public void exitVrf_forwarding_if_stanza(
-         Vrf_forwarding_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setVrf(name);
-         currentInterface.setPrefix(null);
-      }
-   }
-
-   @Override
-   public void exitVrf_member_if_stanza(Vrf_member_if_stanzaContext ctx) {
-      String name = ctx.name.getText();
-      for (Interface currentInterface : _currentInterfaces) {
-         currentInterface.setVrf(name);
-      }
    }
 
    private String getAddressGroup(Access_list_ip_rangeContext ctx) {
@@ -4905,6 +4898,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_apply_rp_stanzaContext ctx) {
+      return new RoutePolicyBooleanApply(ctx.name.getText());
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_as_path_in_rp_stanzaContext ctx) {
       AsPathSetExpr asPathSetExpr = toAsPathSetExpr(ctx.expr);
       return new RoutePolicyBooleanAsPathIn(asPathSetExpr);
@@ -5004,6 +5002,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
       if (bctx != null) {
          return toRoutePolicyBoolean(bctx);
+      }
+
+      Boolean_apply_rp_stanzaContext actx = ctx.boolean_apply_rp_stanza();
+      if (actx != null) {
+         return toRoutePolicyBoolean(actx);
       }
 
       Boolean_as_path_in_rp_stanzaContext aictx = ctx

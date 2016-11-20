@@ -6,39 +6,147 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-default_gw_if_stanza
+if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
 ;
 
-description_if_stanza
+if_description
 :
    description_line
 ;
 
-hsrp_stanza
+if_hsrp
 :
-   HSRP group = DEC NEWLINE hsrp_stanza_tail
-;
-
-hsrp_stanza_tail
-:
+   HSRP group = DEC NEWLINE
    (
-      hsrpcl += hsrpc_stanza
+      if_hsrp_ip_address
+      | if_hsrp_preempt
+      | if_hsrp_priority
+      | if_hsrp_track
    )*
 ;
 
-hsrpc_stanza
+if_hsrp_ip_address
 :
-   ip_address_hsrpc_stanza
-   | preempt_hsrpc_stanza
-   | priority_hsprc_stanza
-   | track_hsrpc_stanza
+   IP ip = IP_ADDRESS NEWLINE
+;
+
+if_hsrp_preempt
+:
+   PREEMPT NEWLINE
+;
+
+if_hsrp_priority
+:
+   PRIORITY value = DEC NEWLINE
+;
+
+if_hsrp_track
+:
+   TRACK ~NEWLINE* NEWLINE
+;
+
+if_ip_access_group
+:
+   (
+      (
+         (
+            IP
+            | IPV4
+         ) PORT? ACCESS_GROUP
+      )
+      |
+      (
+         ACCESS_LIST NAME
+      )
+   ) name = variable
+   (
+      EGRESS
+      | IN
+      | INGRESS
+      | OUT
+   )
+   (
+      HARDWARE_COUNT
+      | OPTIMIZED
+   )* NEWLINE
+;
+
+if_ip_address
+:
+   (
+      IP
+      | IPV4
+   ) ADDRESS
+   (
+      (
+         ip = IP_ADDRESS subnet = IP_ADDRESS
+      )
+      | prefix = IP_PREFIX
+   )
+   (
+      STANDBY standby_address = IP_ADDRESS
+   )? NEWLINE
+;
+
+if_ip_address_dhcp
+:
+   IP ADDRESS DHCP NEWLINE
+;
+
+if_ip_address_secondary
+:
+   (
+      IP
+      | IPV4
+   ) ADDRESS
+   (
+      (
+         ip = IP_ADDRESS subnet = IP_ADDRESS
+      )
+      | prefix = IP_PREFIX
+   ) SECONDARY NEWLINE
+;
+
+if_ip_ospf_cost
+:
+   IP OSPF COST cost = DEC NEWLINE
+;
+
+if_ip_ospf_dead_interval
+:
+   IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
+;
+
+if_ip_ospf_dead_interval_minimal
+:
+   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+;
+
+if_ip_ospf_hello_interval
+:
+   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
+;
+
+if_ip_ospf_passive_interface
+:
+   NO? IP OSPF PASSIVE_INTERFACE NEWLINE
+;
+
+if_ip_policy
+:
+   IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
 ;
 
 if_ip_proxy_arp
 :
    NO? IP PROXY_ARP NEWLINE
+;
+
+if_ip_router_isis
+:
+   IP ROUTER ISIS NEWLINE
 ;
 
 if_ip_verify
@@ -68,169 +176,7 @@ if_ip_verify
    ) NEWLINE
 ;
 
-if_stanza
-:
-   default_gw_if_stanza
-   | description_if_stanza
-   | if_ip_proxy_arp
-   | if_ip_verify
-   | ip_access_group_if_stanza
-   | ip_address_if_stanza
-   | ip_address_dhcp_if_stanza
-   | ip_address_secondary_if_stanza
-   | ip_ospf_cost_if_stanza
-   | ip_ospf_dead_interval_if_stanza
-   | ip_ospf_dead_interval_minimal_if_stanza
-   | ip_ospf_hello_interval_if_stanza
-   | ip_ospf_passive_interface_if_stanza
-   | ip_policy_if_stanza
-   | ip_router_isis_if_stanza
-   | isis_circuit_type_if_stanza
-   | isis_enable_if_stanza
-   | isis_hello_interval_if_stanza
-   | isis_metric_if_stanza
-   | isis_network_if_stanza
-   | isis_passive_if_stanza
-   | isis_tag_if_stanza
-   | load_interval_if_stanza
-   | mtu_if_stanza
-   | no_ip_address_if_stanza
-   | null_if_stanza
-   | shutdown_if_stanza
-   | switchport_access_if_stanza
-   | switchport_private_vlan_association_if_stanza
-   | switchport_private_vlan_host_association_if_stanza
-   | switchport_private_vlan_mapping_if_stanza
-   | switchport_trunk_native_if_stanza
-   | switchport_trunk_encapsulation_if_stanza
-   | switchport_trunk_allowed_if_stanza
-   | switchport_mode_stanza
-   | unrecognized_line
-   | vrf_forwarding_if_stanza
-   | vrf_if_stanza
-   | vrf_member_if_stanza
-;
-
-interface_stanza
-:
-   INTERFACE PRECONFIGURE? iname = interface_name
-   (
-      L2TRANSPORT
-      | MULTIPOINT
-      | POINT_TO_POINT
-   )? NEWLINE interface_stanza_tail
-;
-
-interface_stanza_tail
-:
-   (
-      ifsl += if_stanza
-   )*
-;
-
-ip_access_group_if_stanza
-:
-   (
-      (
-         (
-            IP
-            | IPV4
-         ) PORT? ACCESS_GROUP
-      )
-      |
-      (
-         ACCESS_LIST NAME
-      )
-   ) name = variable
-   (
-      EGRESS
-      | IN
-      | INGRESS
-      | OUT
-   )
-   (
-      HARDWARE_COUNT
-      | OPTIMIZED
-   )* NEWLINE
-;
-
-ip_address_hsrpc_stanza
-:
-   IP ip = IP_ADDRESS NEWLINE
-;
-
-ip_address_if_stanza
-:
-   (
-      IP
-      | IPV4
-   ) ADDRESS
-   (
-      (
-         ip = IP_ADDRESS subnet = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   )
-   (
-      STANDBY standby_address = IP_ADDRESS
-   )? NEWLINE
-;
-
-ip_address_dhcp_if_stanza
-:
-   IP ADDRESS DHCP NEWLINE
-;
-
-ip_address_secondary_if_stanza
-:
-   (
-      IP
-      | IPV4
-   ) ADDRESS
-   (
-      (
-         ip = IP_ADDRESS subnet = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   ) SECONDARY NEWLINE
-;
-
-ip_ospf_cost_if_stanza
-:
-   IP OSPF COST cost = DEC NEWLINE
-;
-
-ip_ospf_dead_interval_if_stanza
-:
-   IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
-;
-
-ip_ospf_dead_interval_minimal_if_stanza
-:
-   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
-;
-
-ip_ospf_hello_interval_if_stanza
-:
-   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
-;
-
-ip_ospf_passive_interface_if_stanza
-:
-   NO? IP OSPF PASSIVE_INTERFACE NEWLINE
-;
-
-ip_policy_if_stanza
-:
-   IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
-;
-
-ip_router_isis_if_stanza
-:
-   IP ROUTER ISIS NEWLINE
-;
-
-isis_circuit_type_if_stanza
+if_isis_circuit_type
 :
    ISIS CIRCUIT_TYPE
    (
@@ -239,12 +185,12 @@ isis_circuit_type_if_stanza
    ) NEWLINE
 ;
 
-isis_enable_if_stanza
+if_isis_enable
 :
    ISIS ENABLE num = DEC NEWLINE
 ;
 
-isis_hello_interval_if_stanza
+if_isis_hello_interval
 :
    ISIS HELLO_INTERVAL DEC
    (
@@ -253,7 +199,7 @@ isis_hello_interval_if_stanza
    )? NEWLINE
 ;
 
-isis_metric_if_stanza
+if_isis_metric
 :
    ISIS IPV6? METRIC metric = DEC
    (
@@ -262,47 +208,37 @@ isis_metric_if_stanza
    )? NEWLINE
 ;
 
-isis_network_if_stanza
+if_isis_network
 :
    ISIS NETWORK POINT_TO_POINT NEWLINE
 ;
 
-isis_passive_if_stanza
+if_isis_passive
 :
    ISIS PASSIVE NEWLINE
 ;
 
-isis_tag_if_stanza
+if_isis_tag
 :
    ISIS TAG tag = DEC NEWLINE
 ;
 
-load_interval_if_stanza
+if_load_interval
 :
    LOAD_INTERVAL li = DEC NEWLINE
 ;
 
-mtu_if_stanza
+if_mtu
 :
    MTU mtu_size = DEC NEWLINE
 ;
 
-no_ip_address_if_stanza
+if_no_ip_address
 :
    NO IP ADDRESS NEWLINE
 ;
 
-null_if_stanza
-:
-   hsrp_stanza
-   |
-   (
-      NO? SWITCHPORT NEWLINE
-   )
-   | null_block_if_stanza
-;
-
-null_block_if_stanza
+if_null_block
 :
    NO?
    (
@@ -311,6 +247,7 @@ null_block_if_stanza
       | ARP
       | ASYNC
       | ATM
+      | AUTHENTICATION
       | AUTO
       | AUTOROUTE
       | AUTOSTATE
@@ -336,6 +273,7 @@ null_block_if_stanza
       | DCB
       | DCBX
       | DCB_POLICY
+      | DELAY
       | DESTINATION
       | DIALER
       | DFS
@@ -477,6 +415,7 @@ null_block_if_stanza
       | MAP_GROUP
       | MDIX
       | MEDIA_TYPE
+      | MEDIUM
       | MEMBER
       | MINIMUM_LINKS
       | MLAG
@@ -491,6 +430,13 @@ null_block_if_stanza
       | NMSP
       |
       (
+         NO
+         (
+            DESCRIPTION
+         )
+      )
+      |
+      (
          NTP
          (
             BROADCAST
@@ -500,6 +446,7 @@ null_block_if_stanza
       | NV
       | OPENFLOW
       | OPTICAL_MONITOR
+      | OSPFV3
       | PATH_OPTION
       | PEAKDETECT
       | PEER
@@ -509,10 +456,6 @@ null_block_if_stanza
       | PORT_CHANNEL_PROTOCOL
       | PORT_NAME
       | PORTMODE
-      |
-      (
-         PORT SECURITY
-      )
       | POS
       | POWER
       | PPP
@@ -592,10 +535,10 @@ null_block_if_stanza
       | WRR_QUEUE
       | X25
       | XCONNECT
-   ) ~NEWLINE* NEWLINE null_block_if_substanza*
+   ) ~NEWLINE* NEWLINE if_null_inner*
 ;
 
-null_block_if_substanza
+if_null_inner
 :
    NO?
    (
@@ -609,22 +552,41 @@ null_block_if_substanza
    ) ~NEWLINE* NEWLINE
 ;
 
-preempt_hsrpc_stanza
+if_port_security
 :
-   PREEMPT NEWLINE
+   PORT SECURITY NEWLINE
+   (
+      if_port_security_null
+   )*
 ;
 
-priority_hsprc_stanza
+if_port_security_null
 :
-   PRIORITY value = DEC NEWLINE
+   NO?
+   (
+      AGE
+      | ENABLE
+      | MAXIMUM
+      | SECURE_MAC_ADDRESS
+      | VIOLATION
+   ) ~NEWLINE* NEWLINE
 ;
 
-shutdown_if_stanza
+if_shutdown
 :
-   NO? SHUTDOWN FORCE? LAN? NEWLINE
+   NO?
+   (
+      DISABLE
+      | SHUTDOWN
+   ) FORCE? LAN? NEWLINE
 ;
 
-switchport_access_if_stanza
+if_switchport
+:
+   NO? SWITCHPORT NEWLINE
+;
+
+if_switchport_access
 :
    SWITCHPORT ACCESS VLAN
    (
@@ -633,7 +595,7 @@ switchport_access_if_stanza
    ) NEWLINE
 ;
 
-switchport_mode_stanza
+if_switchport_mode
 :
    SWITCHPORT MODE
    (
@@ -654,55 +616,104 @@ switchport_mode_stanza
    ) NEWLINE
 ;
 
-switchport_private_vlan_association_if_stanza
+if_switchport_private_vlan_association
 :
    SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
    secondary_vlan_id = DEC NEWLINE
 ;
 
-switchport_private_vlan_host_association_if_stanza
+if_switchport_private_vlan_host_association
 :
    SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
    secondary_vlan_id = DEC NEWLINE
 ;
 
-switchport_private_vlan_mapping_if_stanza
+if_switchport_private_vlan_mapping
 :
    SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
    secondary_vlan_list = range NEWLINE
 ;
 
-switchport_trunk_allowed_if_stanza
+if_switchport_trunk_allowed
 :
    SWITCHPORT TRUNK ALLOWED VLAN ADD? r = range NEWLINE
 ;
 
-switchport_trunk_encapsulation_if_stanza
+if_switchport_trunk_encapsulation
 :
    SWITCHPORT TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
-switchport_trunk_native_if_stanza
+if_switchport_trunk_native
 :
    SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
 ;
 
-track_hsrpc_stanza
-:
-   TRACK ~NEWLINE* NEWLINE
-;
-
-vrf_forwarding_if_stanza
-:
-   VRF FORWARDING name = variable NEWLINE
-;
-
-vrf_if_stanza
+if_vrf
 :
    VRF name = variable NEWLINE
 ;
 
-vrf_member_if_stanza
+if_vrf_forwarding
+:
+   VRF FORWARDING name = variable NEWLINE
+;
+
+if_vrf_member
 :
    VRF MEMBER name = variable NEWLINE
+;
+
+s_interface
+:
+   INTERFACE PRECONFIGURE? iname = interface_name
+   (
+      L2TRANSPORT
+      | MULTIPOINT
+      | POINT_TO_POINT
+   )? NEWLINE
+   (
+      if_default_gw
+      | if_description
+      | if_hsrp
+      | if_ip_proxy_arp
+      | if_ip_verify
+      | if_ip_access_group
+      | if_ip_address
+      | if_ip_address_dhcp
+      | if_ip_address_secondary
+      | if_ip_ospf_cost
+      | if_ip_ospf_dead_interval
+      | if_ip_ospf_dead_interval_minimal
+      | if_ip_ospf_hello_interval
+      | if_ip_ospf_passive_interface
+      | if_ip_policy
+      | if_ip_router_isis
+      | if_isis_circuit_type
+      | if_isis_enable
+      | if_isis_hello_interval
+      | if_isis_metric
+      | if_isis_network
+      | if_isis_passive
+      | if_isis_tag
+      | if_load_interval
+      | if_mtu
+      | if_no_ip_address
+      | if_null_block
+      | if_port_security
+      | if_shutdown
+      | if_switchport
+      | if_switchport_access
+      | if_switchport_mode
+      | if_switchport_private_vlan_association
+      | if_switchport_private_vlan_host_association
+      | if_switchport_private_vlan_mapping
+      | if_switchport_trunk_allowed
+      | if_switchport_trunk_encapsulation
+      | if_switchport_trunk_native
+      | if_vrf
+      | if_vrf_forwarding
+      | if_vrf_member
+      | unrecognized_line
+   )*
 ;

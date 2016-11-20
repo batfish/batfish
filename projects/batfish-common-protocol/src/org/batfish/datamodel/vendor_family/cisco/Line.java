@@ -1,5 +1,8 @@
 package org.batfish.datamodel.vendor_family.cisco;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -26,15 +29,18 @@ public class Line extends ComparableStructure<String> {
 
    private String _outputIpv6AccessList;
 
-   private String _transportInput;
+   private SortedSet<String> _transportInput;
 
-   private String _transportOutput;
+   private SortedSet<String> _transportOutput;
 
-   private String _transportPreferred;
+   private SortedSet<String> _transportPreferred;
 
    @JsonCreator
    public Line(@JsonProperty(NAME_VAR) String name) {
       super(name);
+      _transportInput = new TreeSet<>();
+      _transportOutput = new TreeSet<>();
+      _transportPreferred = new TreeSet<>();
    }
 
    public Integer getExecTimeoutMinutes() {
@@ -65,15 +71,15 @@ public class Line extends ComparableStructure<String> {
       return _outputIpv6AccessList;
    }
 
-   public String getTransportInput() {
+   public SortedSet<String> getTransportInput() {
       return _transportInput;
    }
 
-   public String getTransportOutput() {
+   public SortedSet<String> getTransportOutput() {
       return _transportOutput;
    }
 
-   public String getTransportPreferred() {
+   public SortedSet<String> getTransportPreferred() {
       return _transportPreferred;
    }
 
@@ -105,15 +111,15 @@ public class Line extends ComparableStructure<String> {
       _outputIpv6AccessList = outputIpv6AccessList;
    }
 
-   public void setTransportInput(String transportInput) {
+   public void setTransportInput(SortedSet<String> transportInput) {
       _transportInput = transportInput;
    }
 
-   public void setTransportOutput(String transportOutput) {
+   public void setTransportOutput(SortedSet<String> transportOutput) {
       _transportOutput = transportOutput;
    }
 
-   public void setTransportPreferred(String transportPreferred) {
+   public void setTransportPreferred(SortedSet<String> transportPreferred) {
       _transportPreferred = transportPreferred;
    }
 

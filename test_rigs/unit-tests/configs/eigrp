@@ -92,13 +92,6 @@ ip access-list extended bloop_blop
 
 
 !
-redundancy
- keepalive-enable
- main-cpu
- mode sso
-  auto-sync running-config
-!
-
 router eigrp 5
  redistribute static metric 10000 10 255 1 1500
  passive-interface default

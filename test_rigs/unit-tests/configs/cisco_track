@@ -1,0 +1,19 @@
+!
+hostname cisco_track
+!
+track 1 interface GigabitEthernet0/0 line-protocol
+track 2 interface GigabitEthernet0/1 line-protocol
+track 3 list boolean and
+ object 1
+ object 2
+ delay up 10
+ delay down 10
+!
+track IPv6Loopback
+ type list boolean or
+  object PrimaryRouter
+  object SecondaryRouter
+ !
+!
+!
+

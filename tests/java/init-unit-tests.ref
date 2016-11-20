@@ -18,6 +18,19 @@
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl2'\n"
           }
         },
+        "ios_xr_ospf" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether101' not declared before OSPF process",
+            "2" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether103' not declared before OSPF process",
+            "3" : "MISCELLANEOUS: OSPF: Interface: 'Bundle-Ether201' not declared before OSPF process",
+            "4" : "MISCELLANEOUS: OSPF: Interface: 'Loopback0' not declared before OSPF process",
+            "5" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/4' not declared before OSPF process",
+            "6" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/5' not declared before OSPF process",
+            "7" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/0.292' not declared before OSPF process",
+            "8" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/3' not declared before OSPF process",
+            "9" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
+          }
+        },
         "nexus-arista-router-bgp" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: reference to undeclared peer group: '1.2.3.4'"
@@ -72,8 +85,14 @@
             "vty-acl"
           ]
         },
+        "cisco_ospf" : {
+          "route-map" : [
+            "DIRECT_OSPF"
+          ]
+        },
         "cisco_snmp" : {
           "snmp access-list" : [
+            "2",
             "snmp-acl",
             "snmp-arpa-acl"
           ]
@@ -119,6 +138,13 @@
         "neighbor_nxos" : {
           "bgp group" : [
             "KLMN"
+          ]
+        },
+        "nexus_bgp" : {
+          "route-map" : [
+            "BLOBB",
+            "EG_CCC",
+            "IN_BBB"
           ]
         },
         "peer_template" : {
@@ -288,6 +314,11 @@
             "abc1.2.3.4def"
           ]
         },
+        "nexus_bgp" : {
+          "bgp group" : [
+            "PEER_BLLF"
+          ]
+        },
         "prefix_list_ipv4" : {
           "ipv4 prefix-list" : [
             "test"
@@ -399,10 +430,16 @@
             "4" : "UNDEFINED: Reference to undefined line access-class list: ipv6-vty-acl"
           }
         },
+        "cisco_ospf" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: undefined reference to route-map: DIRECT_OSPF"
+          }
+        },
         "cisco_snmp" : {
           "Red flags" : {
-            "1" : "UNDEFINED: Reference to undefined snmp access-list: snmp-acl",
-            "2" : "UNDEFINED: Reference to undefined snmp access-list: snmp-arpa-acl"
+            "1" : "UNDEFINED: Reference to undefined snmp access-list: 2",
+            "2" : "UNDEFINED: Reference to undefined snmp access-list: snmp-acl",
+            "3" : "UNDEFINED: Reference to undefined snmp access-list: snmp-arpa-acl"
           }
         },
         "cisco_style_acl1" : {
@@ -548,6 +585,14 @@
             "1" : "UNDEFINED: Reference to undefined peer-group: 'KLMN'",
             "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.1.1.0/25'",
             "3" : "MISCELLANEOUS: No remote-as set for peer: 10.1.1.0/25"
+          }
+        },
+        "nexus_bgp" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined route-map for connected-to-bgp route redistribution: 'BLOBB'",
+            "2" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to inbound route-map: 'IN_BBB'",
+            "3" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to outbound policy map: 'EG_CCC'",
+            "4" : "UNUSED: Unused bgp peer-group/template: 'PEER_BLLF'"
           }
         },
         "non_nexus_neighbor_af" : {

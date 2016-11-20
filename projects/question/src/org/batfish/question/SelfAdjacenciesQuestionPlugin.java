@@ -166,20 +166,22 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
-   //<question_page_comment>
+   // <question_page_comment>
+   // <question_page_comment>
    /**
-    * Outputs cases where two interfaces on the same node are in the same subnet. 
+    * Outputs cases where two interfaces on the same node are in the same
+    * subnet.
     * <p>
     * This occurrence likely indicates an error in IP address announcement.
-    * 
+    *
     * @type SelfAdjacencies
-    * 
-    * @param nodeRegex Regular expression for names of nodes to include.
-    *                  Default value is '.*' (all nodes).
-    * 
-    * @example bf_answer("SelfAdjacencies", nodeRegex="as1.*")
-    *          Analyze nodes whose names begin with "as1".
+    *
+    * @param nodeRegex
+    *           Regular expression for names of nodes to include. Default value
+    *           is '.*' (all nodes).
+    *
+    * @example bf_answer("SelfAdjacencies", nodeRegex="as1.*") Analyze nodes
+    *          whose names begin with "as1".
     */
    public static class SelfAdjacenciesQuestion extends Question {
 

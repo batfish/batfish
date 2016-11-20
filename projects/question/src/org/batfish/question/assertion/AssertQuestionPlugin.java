@@ -144,11 +144,12 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Checks assertions.
-    * 
-    * @param assertions List of assertions
+    *
+    * @param assertions
+    *           List of assertions
     */
    public static class AssertQuestion extends Question {
 

@@ -1,0 +1,62 @@
+!
+hostname cisco_webvpn
+!
+group-policy GroupPolicy_NOC-VPN attributes
+ banner value ** AUTHORIZED ACCESS ONLY **
+ banner none
+ wins-server none
+ dns-server value 1.2.3.4 2.3.4.5
+ vpn-simultaneous-logins 2
+ vpn-idle-timeout 30
+ vpn-session-timeout 240
+ vpn-tunnel-protocol ssl-client ssl-clientless
+ group-lock value NOC-VPN
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value ACL-NET-stunnel
+ default-domain none
+ msie-proxy method no-proxy
+ msie-proxy lockdown enable
+ address-pools value LOCAL-VPN-POOL                                                                                                        
+ webvpn
+  anyconnect profiles value NOC-VPN_client_profile type user
+!
+webvpn
+ anyconnect image disk0:/anyconnect-win-4.2.03013-k9.pkg 1
+ anyconnect image disk0:/anyconnect-macosx-i386-4.2.03013-k9.pkg 2
+ anyconnect image disk0:/anyconnect-linux-64-4.2.03013-k9.pkg 3
+ anyconnect image disk0:/anyconnect-linux-3.1.14018-k9.pkg 4
+ anyconnect profiles bac disk0:/eeeeeeee.xml
+ anyconnect profiles defe disk0:/ddddddd.xml
+ anyconnect profiles htefegr disk0:/cccccccccc.xml
+ anyconnect profiles gg456h5tg disk0:/bbbbb.xml
+ anyconnect profiles efregth56yh5gr disk0:/aaaa.xml
+ anyconnect enable
+ anyconnect-essentials
+ cache
+  disable
+ csd image disk0:/csd_3.6.6234-k9.pkg
+ csd hostscan image disk0:/hostscan_3.1.04063-k9.pkg
+ csd enable
+ enable outside
+ error-recovery disable       
+ keepout "Clientless Service Not Available"
+ tunnel-group-list enable
+!
+tunnel-group DefaultRAGroup general-attributes
+ accounting-server-group aaaaaaaa
+ address-pool bbbbbbb
+ authentication-server-group Duo-RADIUS
+ default-group-policy ccccccccc
+ ipv6-address-pool dddddddddddddd
+tunnel-group DefaultRAGroup ipsec-attributes
+ isakmp keepalive threshold 3600 retry 2
+tunnel-group DefaultRAGroup ppp-attributes
+ authentication ms-chap-v2
+ authentication pap
+ no authentication chap
+ no authentication ms-chap-v1
+tunnel-group eeeeeeeeee type remote-access
+tunnel-group ffffffffff webvpn-attributes
+ group-url https://example.com enable
+!
+

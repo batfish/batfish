@@ -1,0 +1,8 @@
+!
+hostname cisco_control_plane
+!
+control-plane
+ scale-factor 1.00 module 1
+control-plane slot 1
+!
+

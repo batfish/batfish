@@ -255,19 +255,24 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
 
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Checks if IPSec VPNs are correctly configured.
     * <p>
     * Details coming
-    * 
+    *
     * @type IpsecVpnCheck
-    * 
-    * @param node1Regex Regular expression to match the nodes names for one end of the sessions. Default is '.*' (all nodes).
-    * @param node2Regex Regular expression to match the nodes names for the other end of the sessions. Default is '.*' (all nodes).
-    * 
-    * @example bf_answer("IpsecVpnCheck", node1Regex="as1.*", node2Regex="as2.*")
-    *          Checks all IPSec VPN sessions between nodes that start with as1 and those that start with as2.
+    *
+    * @param node1Regex
+    *           Regular expression to match the nodes names for one end of the
+    *           sessions. Default is '.*' (all nodes).
+    * @param node2Regex
+    *           Regular expression to match the nodes names for the other end of
+    *           the sessions. Default is '.*' (all nodes).
+    *
+    * @example bf_answer("IpsecVpnCheck", node1Regex="as1.*",
+    *          node2Regex="as2.*") Checks all IPSec VPN sessions between nodes
+    *          that start with as1 and those that start with as2.
     */
    public static class IpsecVpnCheckQuestion extends Question {
 

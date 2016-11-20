@@ -202,20 +202,22 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Lists which loopbacks interfaces are being announced into OSPF.
     * <p>
-    * When running OSPF, it is a good practice to announce loopbacks interface IPs into OSPF. 
-    * This question produces the list of nodes for which such announcements are happening. 
-    * 
+    * When running OSPF, it is a good practice to announce loopbacks interface
+    * IPs into OSPF. This question produces the list of nodes for which such
+    * announcements are happening.
+    *
     * @type OspfLoopbacks
-    * 
-    * @param nodeRegex Regular expression for names of nodes to include. 
-    *                  Default value is '.*' (all nodes).
-    * 
-    * @example bf_answer("OspfLoopbacks", nodeRegex='as2.*')
-    *          Answers the question only for nodes whose names start with 'as2'.
+    *
+    * @param nodeRegex
+    *           Regular expression for names of nodes to include. Default value
+    *           is '.*' (all nodes).
+    *
+    * @example bf_answer("OspfLoopbacks", nodeRegex='as2.*') Answers the
+    *          question only for nodes whose names start with 'as2'.
     */
    public static class OspfLoopbacksQuestion extends Question {
 

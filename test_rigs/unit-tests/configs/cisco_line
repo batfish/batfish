@@ -35,6 +35,9 @@ line 35 48
  flowcontrol hardware
 line 2
  no activation-character
+ login local
+ transport input ssh telnet
+ privilege level 15
  no exec
  exec-timeout 0 15
  exec-timeout 1
@@ -49,3 +52,5 @@ line vty 0 4
  transport preferred none
  notify
 !
+!
+

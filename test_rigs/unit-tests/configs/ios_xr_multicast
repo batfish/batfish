@@ -20,6 +20,7 @@ router msdp
   connect-source Loopback0
   description bd11f2.csb1 MSDP Peer
   mesh-group ucla_msdp_mesh
+  shutdown
  !
  peer 137.164.27.5
   connect-source HundredGigE0/2/0/0.292

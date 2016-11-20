@@ -1,0 +1,15 @@
+!
+hostname cisco_redundancy
+!
+redundancy inter-device
+ scheme standby HSRP
+redundancy
+ protocol
+ notification-timer 60000
+ keepalive-enable
+ mode sso
+ main-cpu
+  auto-sync running-config
+!
+!
+

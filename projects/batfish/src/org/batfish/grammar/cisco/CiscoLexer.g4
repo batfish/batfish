@@ -70,9 +70,7 @@ tokens {
    SELF_SIGNED,
    SLIP_PPP,
    VALUE
-}
-
-// Cisco Keywords
+} // Cisco Keywords
 
 AAA
 :
@@ -82,6 +80,11 @@ AAA
 AAA_SERVER
 :
    'aaa-server'
+;
+
+AAA_USER
+:
+   'aaa-user'
 ;
 
 ABSOLUTE_TIMEOUT
@@ -259,6 +262,16 @@ ADJACENCY
 ADJACENCY_CHECK
 :
    'adjacency-check'
+;
+
+ADJACENCY_STALE_TIMER
+:
+   'adjacency-stale-timer'
+;
+
+ADJMGR
+:
+   'adjmgr'
 ;
 
 ADMIN
@@ -828,6 +841,11 @@ BACK_UP
    'back-up'
 ;
 
+BACKBONEFAST
+:
+   'backbonefast'
+;
+
 BACKGROUND_ROUTES_ENABLE
 :
    'background-routes-enable'
@@ -921,6 +939,11 @@ BIFF
 BIND
 :
    'bind'
+;
+
+BLOGGERD
+:
+   'bloggerd'
 ;
 
 BOOT
@@ -1258,6 +1281,11 @@ CLEANUP
    'cleanup'
 ;
 
+CLEAR
+:
+   'clear'
+;
+
 CLI
 :
    'cli'
@@ -1271,6 +1299,11 @@ CLIENT
 CLIENT_GROUP
 :
    'client-group'
+;
+
+CLIENT_TO_CLIENT
+:
+   'client-to-client'
 ;
 
 CLNS
@@ -1494,6 +1527,11 @@ CONTROL_APPS_USE_MGMT_PORT
    'control-apps-use-mgmt-port'
 ;
 
+CONTROL_DIRECTION
+:
+   'control-direction'
+;
+
 CONTROL_PLANE
 :
    'control-plane'
@@ -1557,6 +1595,16 @@ CPD
 CPTONE
 :
    'cptone'
+;
+
+CPU_SHARE
+:
+   'cpu-share'
+;
+
+CRASHINFO
+:
+   'crashinfo'
 ;
 
 CRC
@@ -1662,6 +1710,16 @@ CWR
 DAEMON
 :
    'daemon'
+;
+
+DAMPEN
+:
+   'dampen'
+;
+
+DAMPEN_IGP_METRIC
+:
+   'dampen-igp-metric'
 ;
 
 DAMPENING
@@ -1929,6 +1987,11 @@ DISABLE_PEER_AS_CHECK
    'disable-peer-as-check'
 ;
 
+DISPUTE
+:
+   'dispute'
+;
+
 DF
 :
    'df'
@@ -2002,6 +2065,11 @@ DISABLE_ADVERTISEMENT
 DISCARD
 :
    'discard'
+;
+
+DISCARD_ROUTE
+:
+   'discard-route'
 ;
 
 DISCOVERY
@@ -2101,7 +2169,7 @@ DOT11
 
 DOT1Q
 :
-   'dot1q'
+   'dot1' [Qq]
 ;
 
 DOT1Q_TUNNEL
@@ -2184,6 +2252,11 @@ DUPLEX
    'duplex'
 ;
 
+DUPLICATE_MESSAGE
+:
+   'duplicate-message'
+;
+
 DVMRP
 :
    'dvmrp'
@@ -2197,6 +2270,11 @@ DYNAMIC
 DYNAMIC_ACCESS_POLICY_RECORD
 :
    'dynamic-access-policy-record'
+;
+
+DYNAMIC_CAPABILITY
+:
+   'dynamic-capability'
 ;
 
 DYNAMIC_MAP
@@ -2474,6 +2552,11 @@ ESTABLISHED
    'established'
 ;
 
+ETHERCHANNEL
+:
+   'etherchannel'
+;
+
 ETHERNET
 :
    'ethernet'
@@ -2507,6 +2590,11 @@ EVENT_HANDLER
 EVENT_HISTORY
 :
    'event-history'
+;
+
+EVENTS
+:
+   'events'
 ;
 
 EXACT
@@ -2599,6 +2687,11 @@ EXPORTER
    'exporter'
 ;
 
+EXPORTER_MAP
+:
+   'exporter-map'
+;
+
 EXPANDED
 :
    'expanded'
@@ -2617,6 +2710,11 @@ EXTCOMMUNITY
 EXTCOMMUNITY_LIST
 :
    'extcommunity-list'
+;
+
+EXTEND
+:
+   'extend'
 ;
 
 EXTENDED
@@ -2644,6 +2742,11 @@ EXTERNAL
 FABRIC
 :
    'fabric'
+;
+
+FABRICPATH
+:
+   'fabricpath'
 ;
 
 FACILITY
@@ -2706,6 +2809,11 @@ FAST_DETECT
    'fast-detect'
 ;
 
+FAST_EXTERNAL_FALLOVER
+:
+   'fast-external-fallover'
+;
+
 FAST_FLOOD
 :
    'fast-flood'
@@ -2714,6 +2822,11 @@ FAST_FLOOD
 FAST_REROUTE
 :
    'fast-reroute'
+;
+
+FCOE
+:
+   'fcoe'
 ;
 
 FEATURE
@@ -2968,6 +3081,11 @@ GLBP
    'glbp'
 ;
 
+GLOBALENFORCEPRIV
+:
+   'globalEnforcePriv'
+;
+
 GLOBAL_MTU
 :
    'global-mtu'
@@ -3076,6 +3194,11 @@ H323
 H323_GATEWAY
 :
    'h323-gateway'
+;
+
+HA_POLICY
+:
+   'ha-policy'
 ;
 
 HALF_DUPLEX
@@ -3541,6 +3664,11 @@ IPC
    'ipc'
 ;
 
+IPENACL
+:
+   'ipenacl'
+;
+
 IPINIP
 :
    'ipinip'
@@ -3700,6 +3828,11 @@ KEYPATH
 KEYRING
 :
    'keyring'
+;
+
+KEYSTORE
+:
+   'keystore'
 ;
 
 KLOGIN
@@ -4047,9 +4180,19 @@ LOGIN
    'login'
 ;
 
+LOGIN_ATTEMPTS
+:
+   'login-attempts'
+;
+
 LOOPBACK
 :
    'loopback'
+;
+
+LOOPGUARD
+:
+   'loopguard'
 ;
 
 LOTUSNOTES
@@ -4120,6 +4263,11 @@ MAC_ADDRESS_TABLE
 MAC_LEARN
 :
    'mac-learn'
+;
+
+MAC_MOVE
+:
+   'mac-move'
 ;
 
 MACRO
@@ -4317,6 +4465,11 @@ MED
    'med'
 ;
 
+MEDIUM
+:
+   'medium'
+;
+
 MEDIA
 :
    'media'
@@ -4335,6 +4488,11 @@ MEDIA_TYPE
 MEMBER
 :
    'member'
+;
+
+MEMORY
+:
+   'memory'
 ;
 
 MEMORY_SIZE
@@ -4370,6 +4528,11 @@ MESSAGE_LENGTH
 MESSAGE_LEVEL
 :
    'message-level'
+;
+
+MESSAGE_SIZE
+:
+   'message-size'
 ;
 
 METRIC
@@ -4495,6 +4658,11 @@ MONITOR
 MONITOR_INTERFACE
 :
    'monitor-interface'
+;
+
+MONITOR_MAP
+:
+   'monitor-map'
 ;
 
 MONITORING
@@ -4822,6 +4990,11 @@ NEXT_HOP_SELF
    'next-hop-self'
 ;
 
+NEXT_HOP_THIRD_PARTY
+:
+   'next-hop-third-party'
+;
+
 NEXTHOP
 :
    'nexthop'
@@ -5067,6 +5240,11 @@ OPTICAL_MONITOR
    'optical-monitor'
 ;
 
+OPTIMIZE
+:
+   'optimize'
+;
+
 OPTIMIZED
 :
    'optimized'
@@ -5267,6 +5445,16 @@ PATH_RETRANSMIT
    'path-retransmit'
 ;
 
+PATHCOST
+:
+   'pathcost'
+;
+
+PATHS
+:
+   'paths'
+;
+
 PATHS_OF_STATISTICS_KEPT
 :
    'paths-of-statistics-kept'
@@ -5360,6 +5548,11 @@ PEER_SWITCH
 PERIODIC
 :
    'periodic'
+;
+
+PERIODIC_INVENTORY
+:
+   'periodic-inventory'
 ;
 
 PERMANENT
@@ -5510,6 +5703,11 @@ POP3
 PORT
 :
    'port'
+;
+
+PORTFAST
+:
+   'portfast'
 ;
 
 PORTS
@@ -5992,6 +6190,11 @@ REDISTRIBUTE_INTERNAL
    'redistribute-internal'
 ;
 
+REDISTRIBUTED_PREFIXES
+:
+   'redistributed-prefixes'
+;
+
 REDUNDANCY
 :
    'redundancy'
@@ -6217,6 +6420,11 @@ RMON
    'rmon'
 ;
 
+RO
+:
+   [rR] [oO]
+;
+
 ROLE
 :
    'role'
@@ -6225,11 +6433,6 @@ ROLE
 ROOT
 :
    'root'
-;
-
-RO
-:
-   [rR] [oO]
 ;
 
 ROTARY
@@ -6372,6 +6575,11 @@ RULE
    'rule' -> pushMode ( M_Rule )
 ;
 
+RUN
+:
+   'run'
+;
+
 RX_COS_SLOT
 :
    'rx-cos-slot'
@@ -6379,7 +6587,7 @@ RX_COS_SLOT
 
 RW
 :
-   'rw'
+   [Rr] [Ww]
 ;
 
 RX
@@ -6425,6 +6633,11 @@ SATELLITE
 SATELLITE_FABRIC_LINK
 :
    'satellite-fabric-link'
+;
+
+SCALE_FACTOR
+:
+   'scale-factor'
 ;
 
 SCAN_TIME
@@ -6755,6 +6968,11 @@ SHELL
 SHORT_TXT
 :
    'short-txt'
+;
+
+SHOW
+:
+   'show'
 ;
 
 SHUT
@@ -7234,6 +7452,11 @@ SWITCH
    'switch'
 ;
 
+SWITCH_PRIORITY
+:
+   'switch-priority'
+;
+
 SWITCH_PROFILE
 :
    'switch-profile'
@@ -7262,6 +7485,11 @@ SWITCHNAME
 SWITCHPORT
 :
    'switchport'
+;
+
+SYMMETRIC
+:
+   'symmetric'
 ;
 
 SYN
@@ -7422,6 +7650,11 @@ TCP
 TCP_CONNECT
 :
    'tcp-connect'
+;
+
+TCP_SESSION
+:
+   'tcp-session'
 ;
 
 TCP_UDP
@@ -7644,6 +7877,11 @@ TRANSPORT
    'transport'
 ;
 
+TRANSPORT_METHOD
+:
+   'transport-method'
+;
+
 TRANSPORT_MODE
 :
    'transport-mode'
@@ -7857,6 +8095,11 @@ UPDATE_SOURCE
 UPGRADE
 :
    'upgrade'
+;
+
+UPLINKFAST
+:
+   'uplinkfast'
 ;
 
 URG
@@ -8344,9 +8587,7 @@ YELLOW
 ZONE
 :
    'zone'
-;
-
-// Other Tokens
+; // Other Tokens
 
 MULTICONFIGPART
 :
@@ -8771,9 +9012,7 @@ UNDERSCORE
 WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
-;
-
-// Fragments
+; // Fragments
 
 fragment
 F_Dec16
@@ -9033,6 +9272,16 @@ M_Authentication_ATTEMPTS
    'attempts' -> type ( ATTEMPTS ) , popMode
 ;
 
+M_Authentication_COMMAND
+:
+   'command' -> type ( COMMAND ) , popMode
+;
+
+M_Authentication_CONTROL_DIRECTION
+:
+   'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
+;
+
 M_Authentication_DOT1X
 :
    'dot1x' -> type ( DOT1X ) , popMode
@@ -9071,6 +9320,11 @@ M_Authentication_INCLUDE
 M_Authentication_LOGIN
 :
    'login' -> type ( LOGIN ) , popMode
+;
+
+M_Authentication_MAC_MOVE
+:
+   'mac-move' -> type ( MAC_MOVE ) , popMode
 ;
 
 M_Authentication_MESSAGE_DIGEST

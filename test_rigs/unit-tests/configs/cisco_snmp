@@ -2,8 +2,10 @@
 hostname cisco_snmp
 !
 snmp-server
+snmp-server aaa-user cache-timeout 3600
 snmp-server community dummycommunity group network-operator
 snmp-server community dummycommunity RO snmp-acl
+snmp-server community dummycommunity RW 2
 snmp-server community dummycommunity use-acl snmp-acl
 snmp-server community dummycommunity use-acl snmp-arpa-acl
 snmp-server chassis-id FOC1743N1BE
@@ -63,15 +65,20 @@ snmp-server logging threshold oid-processing 1000
 snmp-server manager
 snmp-server max-ifindex-per-module 40
 snmp-server overload-control 0 0
+snmp-server protocol enable
 snmp-server queue-length 1000
 snmp-server source-interface trap loopback0
 snmp-server source-interface trap mgmt0
 snmp-server source-interface trap Vlan1
+snmp-server tcp-session auth
 snmp-server trap-source Loopback0
 snmp-server traps snmp linkup
 snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
 snmp-server view NOROUTES mib-2 included
 snmp-server view NOROUTES lsystem included
 snmp-server vrf Management
+no snmp-server aaa exclusive-behavior enable 
+no snmp-server enable traps callhome event-notify
+no snmp-server globalEnforcePriv
 !
 

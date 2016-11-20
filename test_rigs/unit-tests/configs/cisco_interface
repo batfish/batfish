@@ -2,58 +2,66 @@
 hostname cisco_interface
 !
 interface Dot11Radio0
- no ip address
- no ip route-cache
- !
- encryption mode ciphers aes-ccm tkip 
- !
- ssid blah
- !
- speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
- channel 2462
- ip verify unicast source reachable-via rx 167
- station-role root access-point
  antenna gain 6
- l2-filter bridge-group-acl
+ authentication control-direction in
  bridge-group 1
- bridge-group 1 subscriber-loop-control
  bridge-group 1 block-unknown-source
+ bridge-group 1 subscriber-loop-control
+ bridge-group 1 spanning-disabledinterface Ethernet0/0
+ channel 2462
+ channel width 80
+ disable
+ no disable
+ shutdown
+ no shutdown
+ delay 1
+ dfs
+ encryption mode ciphers aes-ccm tkip 
+ ip verify unicast source reachable-via rx 167
+ l2-filter bridge-group-acl
  no bridge-group 1 source-learning
  no bridge-group 1 unicast-flooding
- bridge-group 1 spanning-disabledinterface Ethernet0/0
+ no description
+ no ip address
+ no ip route-cache
  peakdetect
+ speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
+ ssid blah
+ station-role root access-point
  stbc
- dfs
- channel width 80
 !
 interface Async1
- no ip address
  dialer in-band
  dialer idle-timeout 60
+ no ip address
 !
 interface Crypto-Engine1/2/3
 !
 interface ethernet 1/11
- enable
  bgp-policy accounting input
- spanning-tree protect
+ enable
+ gig-default neg-off
  ipv4 point-to-point
  ipv4 unnumbered Loopback100
  ipv4 access-group 310-systems egress hardware-count
+ medium broadcast
+ no ospfv3 passive-interface
  nv
   satellite-fabric-link satellite 100
    remote-ports GigabitEthernet 0/0/0-43
   !
  !
- transceiver permit pid all
- transport-mode otn bit-transparent opu2e
- gig-default neg-off
- xconnect 1.2.3.4 649 encapsulation mpls
-  remote circuit id 649
+ ospfv3 network point-to-point
  port security
   enable
   violation restrict
   maximum 100
   age 2
   secure-mac-address 8618.88f2.eae1 vlan 428 auto
+ spanning-tree protect
+ transceiver permit pid all
+ transport-mode otn bit-transparent opu2e
+ xconnect 1.2.3.4 649 encapsulation mpls
+  remote circuit id 649
 !
+

@@ -1,0 +1,22 @@
+!
+hostname cisco_spanning_tree
+!
+spanning-tree
+spanning-tree backbonefast
+spanning-tree bridge assurance
+spanning-tree etherchannel guard misconfig
+spanning-tree extend system-id
+spanning-tree fcoe
+spanning-tree logging
+spanning-tree loopguard default
+spanning-tree mode rapid-pvst
+spanning-tree pathcost method short
+spanning-tree port type edge default
+spanning-tree portfast edge bpduguard default
+spanning-tree uplinkfast
+spanning-tree vlan 100 priority 4096
+no spanning-tree
+no spanning-tree dispute
+no spanning-tree optimize bpdu transmission
+!
+

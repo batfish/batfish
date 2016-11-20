@@ -1,34 +1,53 @@
 !
 hostname cisco_callhome
 !
-callhome                                                                                                                                   
+callhome
   email-contact fake@example.com
   phone-contact +1-555-555-5555
   streetaddress 555 Fake St, Fakeville
-  destination-profile full_txt message-level 3
-  destination-profile mns
-  destination-profile mns format short-txt
-  destination-profile mns message-level 3
-  destination-profile short_txt message-level 3
-  destination-profile mns email-addr fake2@example.com
-  destination-profile short_txt email-addr fake3@example.com
-  destination-profile mns alert-group all
+  destination-profile p
+  destination-profile p alert-group all
+  destination-profile p email-addr fake2@example.com
+  destination-profile p format short-txt
+  destination-profile p message-level 3
+  destination-profile p message-size 5000000
+  destination-profile p transport-method email
+  duplicate-message throttle
+  enable
+  no destination-profile p transport-method http
+  no enable
+  periodic-inventory notification
+  periodic-inventory notification interval  7
+  periodic-inventory notification timeofday 08:00
+  switch-priority 7
   transport email smtp-server 1.2.3.4 port 25 use-vrf management
   transport email from FAKE4@EXAMPLE.COM
   transport email reply-to fake5@example.com
-  enable
+!
 no call-home reporting anonymous
-call-home
+call-home reporting anonymous
+ alert-group configuration
  contact-email-addr a@support.ccc
  contact-name fewrgbefw
  contract-id 12345
  customer-id 1235
+ mail-server 1.2.3.4 priority 1
+ mail-server a.b.c priority 2
  phone-number +123455677
  sender from asfad@ggesg.gwf
  sender reply-to hrteg@hrtg.fewf
  site-id rgtrfff
+ source-interface Vlan156
+ source-ip-address "1.2.3.4"
  street-address A B C D
- mail-server a.b.c priority 1
+ profile "mns"
+  destination preferred-msg-format short-text
+  destination address email a@b.c
+  no active
+  no destination transport-method http
+  subscribe-to-alert-group diagnostic severity minor
+  subscribe-to-alert-group environment severity minor
+  subscribe-to-alert-group syslog severity minor pattern ".*"call-home
  profile ppppppp
   destination address http https://a.b.c/d
   destination address email callhome@cisco.com
