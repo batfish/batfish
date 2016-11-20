@@ -91,7 +91,17 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
    //<question_page_comment>
    /**
-    * Details coming
+    * Outputs cases where structures (e.g., ACL, routemaps) are defined but not used.
+    * <p>
+    * Such occurrences could be configuration errors or leftover cruft. 
+    * 
+    * @type UnusedStructures
+    * 
+    * @param nodeRegex Regular expression for names of nodes to include.
+    *                  Default value is '.*' (all nodes).
+    * 
+    * @example bf_answer("Nodes", nodeRegex="as1.*")
+    *          Analyze all nodes whose names begin with "as1".
     */
    public static class UnusedStructuresQuestion extends Question {
 
