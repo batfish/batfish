@@ -2824,6 +2824,11 @@ FAST_REROUTE
    'fast-reroute'
 ;
 
+FCOE
+:
+   'fcoe'
+;
+
 FEATURE
 :
    'feature'
@@ -5438,6 +5443,11 @@ PATH_OPTION
 PATH_RETRANSMIT
 :
    'path-retransmit'
+;
+
+PATHCOST
+:
+   'pathcost'
 ;
 
 PATHS

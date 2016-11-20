@@ -1819,13 +1819,16 @@ s_spanning_tree
    (
       (
          BACKBONEFAST
+         | BRIDGE
          | DISPUTE
          | ETHERCHANNEL
          | EXTEND
+         | FCOE
          | LOGGING
          | LOOPGUARD
          | MODE
          | OPTIMIZE
+         | PATHCOST
          | PORT
          | PORTFAST
          | UPLINKFAST
