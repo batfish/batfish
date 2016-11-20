@@ -250,21 +250,29 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Lists neighbor relationships in the testrig.
     * <p>
     * Details coming
-    * 
+    *
     * @type Neighbors
-    * 
-    * @param neighborType The type(s) of neighbor relationships to focus on among (eBGP, iBGP, IP). Default is IP.
-    * @param node1Regex Regular expression to match the nodes names for one end of pair. Default is '.*' (all nodes).
-    * @param node2Regex Regular expression to match the nodes names for the other end of the pair. Default is '.*' (all nodes).
-    * 
-    * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"] node1Regex="as1.*", node2Regex="as2.*")
-    *          Shows all eBGP and iBGP neighbor relationships between nodes that start with as1 and those that start with as2.
-    * 
+    *
+    * @param neighborType
+    *           The type(s) of neighbor relationships to focus on among (eBGP,
+    *           iBGP, IP). Default is IP.
+    * @param node1Regex
+    *           Regular expression to match the nodes names for one end of pair.
+    *           Default is '.*' (all nodes).
+    * @param node2Regex
+    *           Regular expression to match the nodes names for the other end of
+    *           the pair. Default is '.*' (all nodes).
+    *
+    * @example bf_answer("Neighbors", neighborType=["ebgp", "ibgp"]
+    *          node1Regex="as1.*", node2Regex="as2.*") Shows all eBGP and iBGP
+    *          neighbor relationships between nodes that start with as1 and
+    *          those that start with as2.
+    *
     */
    public static class NeighborsQuestion extends Question {
 

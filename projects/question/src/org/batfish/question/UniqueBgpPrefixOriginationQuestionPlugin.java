@@ -136,18 +136,20 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Lists cases where the same prefix is originated by multiple BGP speakers.
     * <p>
-    * Except in cases of anycast or a multihoming arrangement, a prefix be originated by only one BGP speakers. 
-    * This question produces the list of prefixes for which this condition does not hold. 
-    * 
+    * Except in cases of anycast or a multihoming arrangement, a prefix be
+    * originated by only one BGP speakers. This question produces the list of
+    * prefixes for which this condition does not hold.
+    *
     * @type UniqueBgpPrefixOrigination
-    * 
-    * @param nodeRegex Regular expression for names of nodes to include. 
-    *                  Default value is '.*' (all nodes).
-    * 
+    *
+    * @param nodeRegex
+    *           Regular expression for names of nodes to include. Default value
+    *           is '.*' (all nodes).
+    *
     * @example bf_answer("UniqueBgpPrefixOrigination", nodeRegex='as2.*')
     *          Answers the question only for nodes whose names start with 'as2'.
     */

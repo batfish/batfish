@@ -91,19 +91,22 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
-    * Outputs cases where undefined structures (e.g., ACL, routemaps) are referenced.
+    * Outputs cases where undefined structures (e.g., ACL, routemaps) are
+    * referenced.
     * <p>
-    * Such occurrences indicate configuration errors and can have serious consequences with some vendors.
-    * 
+    * Such occurrences indicate configuration errors and can have serious
+    * consequences with some vendors.
+    *
     * @type UndefinedReferences
-    * 
-    * @param nodeRegex Regular expression for names of nodes to include.
-    *                  Default value is '.*' (all nodes).
-    * 
-    * @example bf_answer("Nodes", nodeRegex="as1.*")
-    *          Analyze all nodes whose names begin with "as1".
+    *
+    * @param nodeRegex
+    *           Regular expression for names of nodes to include. Default value
+    *           is '.*' (all nodes).
+    *
+    * @example bf_answer("Nodes", nodeRegex="as1.*") Analyze all nodes whose
+    *          names begin with "as1".
     */
    public static class UndefinedReferencesQuestion extends Question {
 

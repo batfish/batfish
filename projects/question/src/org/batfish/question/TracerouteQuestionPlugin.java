@@ -139,43 +139,70 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
    }
 
-   //<question_page_comment>
+   // <question_page_comment>
    /**
     * Perform a traceroute.
     * <p>
-    * This question performs a virtual traceroute in the network from a starting node. 
-    * The destination IP is randomly picked if not explicitly specified. 
-    * Other IP headers are also randomly picked if unspecified, with a bias toward generating packets similar to a real traceroute (see below).
+    * This question performs a virtual traceroute in the network from a starting
+    * node. The destination IP is randomly picked if not explicitly specified.
+    * Other IP headers are also randomly picked if unspecified, with a bias
+    * toward generating packets similar to a real traceroute (see below).
     * <p>
-    * Unlike a real traceroute, this traceroute is directional. That is, for it to succeed, the reverse connectivity is not needed.
-    * This feature can help debug connectivity issues by decoupling the two directions. 
-    * 
-    * @type Traceroute 
-    * 
-    * @param ingressNode Name of the node where the traceroute should be done from. This parameter is mandatory and has no default value.
-    * @param dscp Details coming
-    * @param dstIp Destination IP for the traceroute. The default is to pick one randomly.
-    * @param dstPort Destination port for the traceroute. The default is Details coming.
-    * @param ecn Details coming
-    * @param icmpCode Details coming
-    * @param icmpType Details coming
-    * @param ipProtocol Details coming
-    * @param srcIp Details coming
-    * @param srcPort Details coming
-    * @param stateVar Details coming
-    * @param tcpAck Details coming
-    * @param tcpAck Details coming
-    * @param tcpAck Details coming
-    * @param tcpCwr Details coming
-    * @param tcpEce Details coming
-    * @param tcpFin Details coming
-    * @param tcpPsh Details coming
-    * @param tcpRst Details coming
-    * @param tcpSyn Details coming
-    * @param tcpUrg Details coming
-    * 
-    * @example bf_answer("Traceroute", ingressNode="as2border1", dstIp="2.128.0.101", dstPort=53, ipProtocol="UDP")
-    *          Show the path of a DNS packet (UDP to port 53) from as2border1
+    * Unlike a real traceroute, this traceroute is directional. That is, for it
+    * to succeed, the reverse connectivity is not needed. This feature can help
+    * debug connectivity issues by decoupling the two directions.
+    *
+    * @type Traceroute
+    *
+    * @param ingressNode
+    *           Name of the node where the traceroute should be done from. This
+    *           parameter is mandatory and has no default value.
+    * @param dscp
+    *           Details coming
+    * @param dstIp
+    *           Destination IP for the traceroute. The default is to pick one
+    *           randomly.
+    * @param dstPort
+    *           Destination port for the traceroute. The default is Details
+    *           coming.
+    * @param ecn
+    *           Details coming
+    * @param icmpCode
+    *           Details coming
+    * @param icmpType
+    *           Details coming
+    * @param ipProtocol
+    *           Details coming
+    * @param srcIp
+    *           Details coming
+    * @param srcPort
+    *           Details coming
+    * @param stateVar
+    *           Details coming
+    * @param tcpAck
+    *           Details coming
+    * @param tcpAck
+    *           Details coming
+    * @param tcpAck
+    *           Details coming
+    * @param tcpCwr
+    *           Details coming
+    * @param tcpEce
+    *           Details coming
+    * @param tcpFin
+    *           Details coming
+    * @param tcpPsh
+    *           Details coming
+    * @param tcpRst
+    *           Details coming
+    * @param tcpSyn
+    *           Details coming
+    * @param tcpUrg
+    *           Details coming
+    *
+    * @example bf_answer("Traceroute", ingressNode="as2border1",
+    *          dstIp="2.128.0.101", dstPort=53, ipProtocol="UDP") Show the path
+    *          of a DNS packet (UDP to port 53) from as2border1
     */
    public static class TracerouteQuestion extends Question
          implements ITracerouteQuestion {
