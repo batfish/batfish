@@ -945,7 +945,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -1967,7 +1966,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -2306,7 +2304,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -3317,7 +3314,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -4345,7 +4341,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -4866,7 +4861,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -5349,7 +5343,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -6023,7 +6016,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -6664,7 +6656,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -7305,7 +7296,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -8193,7 +8183,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -9026,7 +9015,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
@@ -9421,7 +9409,6 @@
                   "name" : "vty4"
                 }
               },
-              "logging" : { },
               "services" : {
                 "log" : {
                   "enabled" : true,
