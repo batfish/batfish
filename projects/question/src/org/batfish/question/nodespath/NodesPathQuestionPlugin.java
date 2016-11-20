@@ -168,6 +168,10 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    */
    public static class NodesPathQuestion extends Question {
 
       private static final String PATHS_VAR = "paths";

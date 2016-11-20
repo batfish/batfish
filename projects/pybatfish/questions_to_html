@@ -1,3 +1,0 @@
-#!/usr/bin/env python
-from org.batfish.questions_to_html import __main__
-__main__.main()

@@ -23,6 +23,9 @@ public class ErrorQuestionPlugin extends QuestionPlugin {
 
    }
 
+   /**
+    * Since this is not really a  question; we do not document it as such.
+    */
    public static class ErrorQuestion extends Question {
 
       @Override

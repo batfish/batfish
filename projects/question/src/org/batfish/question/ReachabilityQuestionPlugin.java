@@ -95,6 +95,21 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       }
    }
 
+   //<question_page_comment>
+   /**
+    * Details coming
+    * <p>
+    * More details coming
+    * 
+    * @type Reachability
+    * 
+    * @param DetailsComing Details coming
+    * 
+    * @example bf_answer("Reachability", dstIps=["2.128.0.101"], dstPorts=[53], ipProtocols=["UDP"], actions=["drop"])
+    *          Finds all (starting node, packet header) combinations that cannot reach (action=drop) the 2.128.0.101 using a DNS (UDP on port 53) packet.
+    * @example bf_answer_type("Reachability", actions=["ACCEPT"], dstIps=["2.128.1.101"], notDstPorts=[22], notIpProtocols=["TCP"])
+    *          Finds all (starting node, packet header) combinations that can reach (action=drop) 2.128.1.101 using non-SSH packets.
+    */
    public static class ReachabilityQuestion extends Question
          implements IReachabilityQuestion {
 

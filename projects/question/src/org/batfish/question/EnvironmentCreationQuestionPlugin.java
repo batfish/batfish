@@ -44,6 +44,9 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
    }
 
+   /**
+    * Since this is not really a  question; we do not document it as such.
+    */
    public static class EnvironmentCreationQuestion extends Question
          implements IEnvironmentCreationQuestion {
 

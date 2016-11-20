@@ -232,6 +232,24 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
    }
 
+   //<question_page_comment>
+   /**
+    * Lists BGP adverstisements in the network. 
+    * <p>
+    * It can output all eBGP/iBGP advertisements that are exchanged in the network.
+    * 
+    * @type BgpAdvertisements
+    * 
+    * @param ebgp (True|False) which indicates if eBGP advertisements should be included. Default is True.
+    * @param ibgp (True|False) which indicates if iBGP advertisements should be included. Default is True.
+    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all nodes).
+    * @param prefixRange Details coming. Default is entire range.
+    * @param received (True|False) which indicates if received advertisements should be included. Default is True.
+    * @param sent (True|False) which indicates if sent advertisements should be included. Default is True.
+    * 
+    * @example bf_answer("BgpAdvertisements", sent='False', nodeRegex='as1.*')
+    * Lists all BGP advertisements received (not sent) by nodes whose names start with 'as1'.
+    */
    public static class BgpAdvertisementsQuestion extends Question {
 
       private static final String EBGP_VAR = "ebgp";
