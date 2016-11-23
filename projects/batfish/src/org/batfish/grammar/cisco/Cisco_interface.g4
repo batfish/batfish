@@ -300,6 +300,7 @@ if_null_block
       | GROUP_RANGE
       | H323_GATEWAY
       | HALF_DUPLEX
+      | HARDWARE
       | HISTORY
       | HOLD_QUEUE
       |
@@ -364,6 +365,7 @@ if_null_block
             | TCP
             | UNNUMBERED
             | UNREACHABLES
+            | VERIFY
             | VIRTUAL_REASSEMBLY
             | VIRTUAL_ROUTER
             | VRF
@@ -411,6 +413,7 @@ if_null_block
       | MAC
       | MAC_ADDRESS
       | MACRO
+      | MANAGEMENT
       | MANAGEMENT_ONLY
       | MAP_GROUP
       | MDIX
@@ -433,6 +436,15 @@ if_null_block
          NO
          (
             DESCRIPTION
+            |
+            (
+               SWITCHPORT
+               (
+                  BLOCK
+                  | DOT1Q
+                  | PRIORITY
+               )
+            )
          )
       )
       |
@@ -447,6 +459,7 @@ if_null_block
       | OPENFLOW
       | OPTICAL_MONITOR
       | OSPFV3
+      | PACKET
       | PATH_OPTION
       | PEAKDETECT
       | PEER

@@ -1,0 +1,11 @@
+!
+hostname cisco_hardware
+!
+hardware profile tcam resource template default
+ vacl 1024
+ ifacl 1152
+ qos 448
+ rbacl 1152
+ span 64
+!
+

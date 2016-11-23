@@ -95,6 +95,7 @@ s_null
    (
       (
          ACCESS
+         | APPLY_MACRO
          | ETHERNET_SWITCHING_OPTIONS
          | MULTI_CHASSIS
          | POE
@@ -170,6 +171,7 @@ st_null
 :
    (
       ACCOUNTING
+      | ALLOW_V4MAPPED_PACKETS
       | ARP
       | AUTHENTICATION_ORDER
       | BACKUP_ROUTER
@@ -193,6 +195,8 @@ st_null
       | RADIUS_OPTIONS
       | RADIUS_SERVER
       | ROOT_AUTHENTICATION
+      | SAVED_CORE_CONTEXT
+      | SAVED_CORE_FILES
       | SCRIPTS
       | SERVICES
       | SWITCHOVER_ON_ROUTING_CRASH

@@ -97,14 +97,14 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
    // <question_page_comment>
    /**
-    * Details coming
+    * Details coming.
     * <p>
-    * More details coming
+    * More details coming.
     *
     * @type Reachability
     *
     * @param DetailsComing
-    *           Details coming
+    *           Details coming.
     *
     * @example bf_answer("Reachability", dstIps=["2.128.0.101"], dstPorts=[53],
     *          ipProtocols=["UDP"], actions=["drop"]) Finds all (starting node,

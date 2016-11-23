@@ -247,6 +247,11 @@ APPLY_GROUPS_EXCEPT
    'apply-groups-except'
 ;
 
+APPLY_MACRO
+:
+   'apply-macro'
+;
+
 APPLY_PATH
 :
    'apply-path'
@@ -295,6 +300,11 @@ AS_PATH_PREPEND
 ASCII_TEXT
 :
    'ascii-text'
+;
+
+ALLOW_V4MAPPED_PACKETS
+:
+   'allow-v4mapped-packets'
 ;
 
 AUTHENTICATION
@@ -3051,6 +3061,11 @@ NO_CLIENT_REFLECT
    'no-client-reflect'
 ;
 
+NO_ECMP_FAST_REROUTE
+:
+   'no-ecmp-fast-reroute'
+;
+
 NO_EXPORT
 :
    'no-export'
@@ -3849,6 +3864,16 @@ SAMPLING
 SAP
 :
    'sap'
+;
+
+SAVED_CORE_CONTEXT
+:
+   'saved-core-context'
+;
+
+SAVED_CORE_FILES
+:
+   'saved-core-files'
 ;
 
 SCCP

@@ -24,6 +24,13 @@ interface Dot11Radio0
  no description
  no ip address
  no ip route-cache
+ no ip verify source dhcp-snooping-vlan
+ no management
+ no switchport block unicast
+ no switchport block multicast
+ no switchport dot1q ethertype
+ no switchport priority extend
+ packet latency threshold 536870904
  peakdetect
  speed basic-6.0 9.0 12.0 18.0 24.0 36.0 48.0 54.0
  ssid blah
@@ -38,6 +45,7 @@ interface Async1
 interface Crypto-Engine1/2/3
 !
 interface ethernet 1/11
+ no hardware vethernet mac filtering per-vlan
  bgp-policy accounting input
  enable
  gig-default neg-off
@@ -46,7 +54,8 @@ interface ethernet 1/11
  ipv4 access-group 310-systems egress hardware-count
  medium broadcast
  no ospfv3 passive-interface
- nv
+ no spanning-tree bpdufilter
+ no spanning-tree bpduguard nv
   satellite-fabric-link satellite 100
    remote-ports GigabitEthernet 0/0/0-43
   !
@@ -58,6 +67,11 @@ interface ethernet 1/11
   maximum 100
   age 2
   secure-mac-address 8618.88f2.eae1 vlan 428 auto
+
+ spanning-tree cost auto
+ spanning-tree link-type auto
+ spanning-tree port type normal
+ spanning-tree port-priority 128
  spanning-tree protect
  transceiver permit pid all
  transport-mode otn bit-transparent opu2e

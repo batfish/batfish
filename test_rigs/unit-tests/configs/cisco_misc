@@ -5,6 +5,15 @@ appletalk routing
 no bloggerd log-dump all
 bloggerd log-throttle
 no bloggerd log-transfer
+ip mfwd event-history packet size small
+no mpls strip
+wrr-queue cos-map 0 0 1
+wrr unicast-bandwidth 50
+downlink delay disable timeout 20
+virtual-service
+  signing level cisco
+poap transit
+fabric-mode 40G
 port-profile default max-ports 512
 policy-map type inspect dns preset_dns_map
  parameters

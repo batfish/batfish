@@ -1,0 +1,5 @@
+# RANCID-CONTENT-TYPE: juniper
+set system host-name juniper_apply_macro
+set groups jctyztp apply-macro conf package abc.tgz
+#
+

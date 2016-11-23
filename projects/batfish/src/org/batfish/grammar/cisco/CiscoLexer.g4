@@ -941,6 +941,11 @@ BIND
    'bind'
 ;
 
+BLOCK
+:
+   'block'
+;
+
 BLOGGERD
 :
    'bloggerd'
@@ -2187,6 +2192,11 @@ DOT1X_ENABLE
    'dot1x-enable'
 ;
 
+DOWNLINK
+:
+   'downlink'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -2742,6 +2752,11 @@ EXTERNAL
 FABRIC
 :
    'fabric'
+;
+
+FABRIC_MODE
+:
+   'fabric-mode'
 ;
 
 FABRICPATH
@@ -3454,6 +3469,11 @@ IDLE_TIMEOUT
 IF
 :
    'if'
+;
+
+IFACL
+:
+   'ifacl'
 ;
 
 IF_NEEDED
@@ -4185,6 +4205,11 @@ LOGIN_ATTEMPTS
    'login-attempts'
 ;
 
+LOGOUT_WARNING
+:
+   'logout-warning'
+;
+
 LOOPBACK
 :
    'loopback'
@@ -4558,6 +4583,11 @@ MFIB
 MFIB_MODE
 :
    'mfib-mode'
+;
+
+MFWD
+:
+   'mfwd'
 ;
 
 MGCP
@@ -5340,6 +5370,11 @@ P2P
    'p2p'
 ;
 
+PACKET
+:
+   'packet'
+;
+
 PACKET_TOO_BIG
 :
    'packet-too-big'
@@ -5648,6 +5683,11 @@ PLATFORM
 PM
 :
    'pm'
+;
+
+POAP
+:
+   'poap'
 ;
 
 POINT_TO_MULTIPOINT
@@ -6105,6 +6145,11 @@ RATE_MODE
    'rate-mode'
 ;
 
+RBACL
+:
+   'rbacl'
+;
+
 RC4_SHA1
 :
    'rc4-sha1'
@@ -6148,6 +6193,11 @@ REAL
 RECEIVE
 :
    'receive'
+;
+
+RECONNECT_INTERVAL
+:
+   'reconnect-interval'
 ;
 
 RECORD
@@ -7005,6 +7055,11 @@ SIGNALLING
    'signalling'
 ;
 
+SIGNING
+:
+   'signing'
+;
+
 SINGLE_CONNECTION
 :
    'single-connection'
@@ -7145,6 +7200,11 @@ SOURCE_QUENCH
    'source-quench'
 ;
 
+SPAN
+:
+   'span'
+;
+
 SPANNING_TREE
 :
    'spanning-tree'
@@ -7267,6 +7327,11 @@ START_TIME
    'start-time'
 ;
 
+STATE
+:
+   'state'
+;
+
 STATE_REFRESH
 :
    'state-refresh'
@@ -7350,6 +7415,11 @@ STRICTHOSTKEYCHECK
 STRING
 :
    'string'
+;
+
+STRIP
+:
+   'strip'
 ;
 
 STS_1
@@ -8202,6 +8272,11 @@ V6
    'v6'
 ;
 
+VACL
+:
+   'vacl'
+;
+
 VAD
 :
    'vad'
@@ -8270,6 +8345,11 @@ VIRTUAL_REASSEMBLY
 VIRTUAL_ROUTER
 :
    'virtual-router'
+;
+
+VIRTUAL_SERVICE
+:
+   'virtual-service'
 ;
 
 VIRTUAL_TEMPLATE
@@ -8524,6 +8604,11 @@ WRED_PROFILE
    'wred-profile'
 ;
 
+WRR
+:
+   'wrr'
+;
+
 WRR_QUEUE
 :
    'wrr-queue'
@@ -8571,7 +8656,8 @@ XLATE
 
 XML
 :
-   'xml'
+   'XML'
+   | 'xml'
 ;
 
 XML_CONFIG

@@ -6,6 +6,7 @@ vlan 396 name grgrgrgrgr
  tagged ethe 1/2
  tb-vlan1 1002
  tb-vlan2 1003
+ state active
  priority 2
  bridge 1
  stp type ieee

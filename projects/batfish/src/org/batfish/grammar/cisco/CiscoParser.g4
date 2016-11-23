@@ -421,6 +421,18 @@ gpsec_null
    ) ~NEWLINE* NEWLINE
 ;
 
+hardware_null
+:
+   NO?
+   (
+      IFACL
+      | QOS
+      | RBACL
+      | SPAN
+      | VACL
+   ) ~NEWLINE* NEWLINE
+;
+
 hostname_stanza
 :
    (
@@ -793,6 +805,7 @@ l_null
       | IPV6
       | LOCATION
       | LOGGING
+      | LOGOUT_WARNING
       | MODEM
       | NOTIFY
       | PRIVILEGE
@@ -1609,6 +1622,14 @@ s_global_port_security
    )*
 ;
 
+s_hardware
+:
+   NO? HARDWARE ~NEWLINE* NEWLINE
+   (
+      hardware_null
+   )*
+;
+
 s_ip
 :
    IP
@@ -2119,6 +2140,7 @@ stanza
    | s_feature
    | s_gatekeeper
    | s_global_port_security
+   | s_hardware
    | s_interface
    | s_ip
    | s_ip_sla
@@ -2243,6 +2265,7 @@ vlan_null
       | REMOTE_SPAN
       | ROUTER_INTERFACE
       | SPANNING_TREE
+      | STATE
       | STATISTICS
       | STP
       | TAGGED

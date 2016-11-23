@@ -284,6 +284,11 @@ roftt_export
    EXPORT name = variable
 ;
 
+roftt_no_ecmp_fast_reroute
+:
+   NO_ECMP_FAST_REROUTE
+;
+
 roftt_null
 :
    (
@@ -352,6 +357,7 @@ rot_forwarding_table
 rot_forwarding_table_tail
 :
    roftt_export
+   | roftt_no_ecmp_fast_reroute
    | roftt_null
 ;
 

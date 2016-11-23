@@ -4,6 +4,7 @@ hostname cisco_line
 line vty 0 15
  session-timeout 15
  access-class 40 in
+ logout-warning 20
  exec-timeout 15 0
  login authentication blah
 !
