@@ -184,6 +184,7 @@ null_block
                | LDP ~NEWLINE
             )
             | OAM
+            | STRIP
             | TRAFFIC_ENG
          )
       )
@@ -265,6 +266,7 @@ null_block
       | USERNAME
       | VDC
       | VER
+      | VIRTUAL_SERVICE
       |
       (
          VLAN
@@ -522,6 +524,7 @@ null_inner
          | SESSION
          | SEVERITY
          | SHUT
+         | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SLOT
@@ -625,6 +628,7 @@ null_single
       | DNS
       | DNS_GUARD
       | DOMAIN_NAME
+      | DOWNLINK
       | DSP
       | DSS
       | ENVIRONMENT
@@ -633,6 +637,7 @@ null_single
       | EXCEPTION
       | EXEC
       | FABRIC
+      | FABRIC_MODE
       | FACILITY_ALARM
       | FILE
       | FIREWALL
@@ -642,7 +647,6 @@ null_single
       | FTP
       | FTP_SERVER
       | GROUP
-      | HARDWARE
       | HOST
       | HTTP
       | HW_MODULE
@@ -685,6 +689,7 @@ null_single
             | LOAD_SHARING
             | LOCAL
             | MFIB
+            | MFWD
             | MROUTE
             | MSDP
             | MULTICAST
@@ -797,6 +802,7 @@ null_single
       | PASSWORD
       | PERCENT
       | PLATFORM
+      | POAP
       | PORT_CHANNEL
       | PORT_OBJECT
       | POWER
@@ -862,6 +868,8 @@ null_single
       | VTP
       | VOICE_CARD
       | WLAN
+      | WRR
+      | WRR_QUEUE
       | X25
       | X29
       | XLATE

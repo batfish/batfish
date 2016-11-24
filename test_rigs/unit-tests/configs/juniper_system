@@ -1,0 +1,9 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper_system
+#
+set system allow-v4mapped-packets
+set system saved-core-files 10
+set system saved-core-context
+#
+

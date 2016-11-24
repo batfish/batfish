@@ -9,6 +9,7 @@ callhome
   destination-profile p alert-group all
   destination-profile p email-addr fake2@example.com
   destination-profile p format short-txt
+  destination-profile p format XML
   destination-profile p message-level 3
   destination-profile p message-size 5000000
   destination-profile p transport-method email

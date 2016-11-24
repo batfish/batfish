@@ -167,7 +167,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
    }
 
    // <question_page_comment>
-   // <question_page_comment>
    /**
     * Outputs cases where two interfaces on the same node are in the same
     * subnet.

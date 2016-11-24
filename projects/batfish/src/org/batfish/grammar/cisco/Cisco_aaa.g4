@@ -27,7 +27,8 @@ aaa_accounting_commands
 :
    COMMANDS
    (
-      level = DEC
+      ALL
+      | level = DEC
    )?
    (
       DEFAULT

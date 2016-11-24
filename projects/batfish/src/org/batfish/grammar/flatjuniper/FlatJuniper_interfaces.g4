@@ -59,7 +59,11 @@ efamt_port_mode
 
 efamt_vlan
 :
-   VLAN MEMBERS name = variable
+   VLAN MEMBERS
+   (
+      ALL
+      | range
+   )
 ;
 
 eot_802_3ad
@@ -131,8 +135,7 @@ famt_bridge
 ;
 
 famt_bridge_tail
-:
-// intentional blank
+: // intentional blank
 
    | brt_filter
    | brt_interface_mode
@@ -150,8 +153,7 @@ famt_ethernet_switching
 ;
 
 famt_ethernet_switching_tail
-:
-// intentional blank
+: // intentional blank
 
    | efamt_filter
    | efamt_interface_mode
@@ -166,8 +168,7 @@ famt_inet
 ;
 
 famt_inet_tail
-:
-// intentional blank
+: // intentional blank
 
    | ifamt_address
    | ifamt_apply_groups
@@ -190,8 +191,7 @@ famt_iso
 ;
 
 famt_iso_tail
-:
-// intentional blank
+: // intentional blank
 
    | isofamt_address
    | isofamt_mtu
@@ -203,8 +203,7 @@ famt_mpls
 ;
 
 famt_mpls_tail
-:
-// intentional blank alternative
+: // intentional blank alternative
 
    | mfamt_filter
    | mfamt_maximum_labels
@@ -217,8 +216,7 @@ filter
 ;
 
 filter_tail
-:
-// intentional blank
+: // intentional blank
 
    | ft_direction
 ;
@@ -265,6 +263,7 @@ ifamat_vrrp_group_tail
 :
    ivrrpt_accept_data
    | ivrrpt_advertise_interval
+   | ivrrpt_authentication_key
    | ivrrpt_authentication_type
    | ivrrpt_preempt
    | ivrrpt_priority
@@ -554,8 +553,7 @@ it_unit
 ;
 
 it_unit_tail
-:
-// intentional blank
+: // intentional blank
 
    | it_common
    | it_peer_unit
@@ -586,9 +584,18 @@ ivrrpt_advertise_interval
    ADVERTISE_INTERVAL DEC
 ;
 
+ivrrpt_authentication_key
+:
+   AUTHENTICATION_KEY DOUBLE_QUOTED_STRING
+;
+
 ivrrpt_authentication_type
 :
-   AUTHENTICATION_TYPE SIMPLE
+   AUTHENTICATION_TYPE
+   (
+      MD5
+      | SIMPLE
+   )
 ;
 
 ivrrpt_preempt

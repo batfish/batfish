@@ -1,0 +1,7 @@
+!
+hostname cisco_bgp
+!
+router bgp 1
+ reconnect-interval 30
+!
+

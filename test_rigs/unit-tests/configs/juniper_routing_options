@@ -1,0 +1,8 @@
+# RANCID-CONTENT-TYPE: juniper
+#
+set system host-name juniper_routing_options
+#
+set routing-options forwarding-table no-ecmp-fast-reroute
+
+#
+
