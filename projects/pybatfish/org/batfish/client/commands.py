@@ -34,7 +34,7 @@ else:
 
 
 
-def bf_answer(questionStr, parametersStr="{}", doDelta=False):
+def bf_answer_str(questionStr, parametersStr="{}", doDelta=False):
     '''
     Answer a question based on json strings for question and parametersJsonStr
     '''
@@ -56,7 +56,7 @@ def bf_answer(questionStr, parametersStr="{}", doDelta=False):
 
     return answer
 
-def bf_answer_type(questionType, doDelta=False, **parameters):
+def bf_answer(questionType, doDelta=False, **parameters):
     '''
     Answer a question based on question type
     '''
@@ -66,7 +66,7 @@ def bf_answer_type(questionType, doDelta=False, **parameters):
 
     bf_logger.info("Question: %s", json.dumps(questionJson))
      
-    return bf_answer(json.dumps(questionJson), doDelta=doDelta)
+    return bf_answer_str(json.dumps(questionJson), doDelta=doDelta)
 
 def bf_generate_dataplane(doDelta=False):
     '''
@@ -87,8 +87,7 @@ def bf_help():
     '''
     print """
     Basic function calls
-        bf_answer           Answer a question based on question json
-        bf_answer_file      Answer a question based on question file
+        bf_answer           Answer a question based on question type
         bf_init_container   Initializes a new container
         bf_init_testrig     Initializes a new testrig
         bf_list_testrigs    Lists all the testrigs
@@ -103,6 +102,7 @@ def bf_help_advanced():
     '''
     print """
     Advanced function calls
+        bf_answer_str      Answer a question based on string 
         bf_generate_dataplane Generate the dataplane
         bf_reinit_testrig     Re-initializes an existing testrig
 
@@ -135,7 +135,7 @@ def bf_init_environment(environmentName=None, interfaceBlacklist=None, nodeBlack
     bf_session.deltaEnvironment = environmentName
     bf_logger.info("Delta testrig/environment is now set to %s/%s", bf_session.deltaTestrig, bf_session.deltaEnvironment)
     
-    return bf_answer_type("environmentcreation", environmentName=environmentName, interfaceBlacklist=interfaceBlacklist, nodeBlacklist=nodeBlacklist)
+    return bf_answer("environmentcreation", environmentName=environmentName, interfaceBlacklist=interfaceBlacklist, nodeBlacklist=nodeBlacklist)
           
 def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
     '''
