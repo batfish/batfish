@@ -166,7 +166,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     * of ten routers, but is different in the tenth router, the ACL is likely
     * misconfigured on the tenth router.
     *
-    * @type CompareSameName
+    * @type CompareSameName multifile
     *
     * @param namedStructType
     *           Set of structure types to analyze drawn from ( AsPathAccessList,

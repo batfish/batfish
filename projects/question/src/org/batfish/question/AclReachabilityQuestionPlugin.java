@@ -54,7 +54,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     * Report ACLs with unreachable lines, as well as reachability of each line
     * within the ACL. Unreachable lines can indicate erroneous configuration.
     *
-    * @type AclReachability
+    * @type AclReachability onefile
     *
     * @param aclNameRegex
     *           Regular expression for names of the ACLs to analyze. Default

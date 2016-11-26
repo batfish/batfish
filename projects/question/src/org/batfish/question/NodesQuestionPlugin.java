@@ -442,7 +442,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     * This question may be used to extract the configuration of the node in the
     * Batfish datamodel or a summary of it.
     *
-    * @type Nodes
+    * @type Nodes onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

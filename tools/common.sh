@@ -796,11 +796,6 @@ _batfish_tests_update() {
 }
 export -f _batfish_tests_update
 
-batfish_questions_doc() {
-   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/doc "$@"
-}
-export -f batfish_questions_doc
-
 if batfish_cygwin; then
    export ANT_BATFISH_PATH="$(cygpath -w "${BATFISH_PATH}")"
    export ANT_BATFISH_CLIENT_PATH="$(cygpath -w "${BATFISH_CLIENT_PATH}")"

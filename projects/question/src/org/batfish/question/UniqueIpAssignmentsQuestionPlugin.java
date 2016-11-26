@@ -202,7 +202,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     * interface. This question produces the list of IP addresses for which this
     * condition does not hold.
     *
-    * @type UniqueIpAssignments
+    * @type UniqueIpAssignments multifile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

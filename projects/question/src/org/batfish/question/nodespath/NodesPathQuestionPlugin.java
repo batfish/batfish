@@ -177,7 +177,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     * absence of specified patterns in the data model induced by the
     * configurations supplied in the test-rig.
     *
-    * @type NodesPath
+    * @type NodesPath onefile
     *
     * @param paths
     *           A JSON list of path queries, each of which is a JSON object

@@ -163,7 +163,7 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
     * <p>
     * Details coming on what it means to be correctly configured.
     *
-    * @type PairwiseVpnConnectivity
+    * @type PairwiseVpnConnectivity multifile
     *
     * @param node1Regex
     *           Regular expression to match the nodes names for one end of the

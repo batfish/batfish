@@ -261,7 +261,7 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
     * <p>
     * Details coming
     *
-    * @type IpsecVpnCheck
+    * @type IpsecVpnCheck multifile
     *
     * @param node1Regex
     *           Regular expression to match the nodes names for one end of the

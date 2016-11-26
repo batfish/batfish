@@ -101,7 +101,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     * <p>
     * More details coming.
     *
-    * @type Reachability
+    * @type Reachability dataplane
     *
     * @param DetailsComing
     *           Details coming.

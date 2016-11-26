@@ -1,16 +1,12 @@
-# Author: Todd Millstein
+# Author: Todd Millstein, Ratul Mahajan
 # Copyright 2016
 
-# This script parses Javadoc comments in Batfish question files and produces a documentation page batfish-questions.html.
+# This script parses Javadoc comments, with some enhancements, in Batfish question files and outputs a documentation.
 
-# If a command-line argument is given, it is used as the directory name in which to find Batfish questions;
-# otherwise the default directory is the current directory.
-
-# The script assumes that each question file has a javadoc comment of the following form:
+# It assumes that each question file has a comment of the following form:
 
 # // <question_page_comment>
 # /**
-#  * @type QuestionType
 #  * The description is here.
 #  * <p>
 #  * More of the description is 
@@ -19,6 +15,8 @@
 #  * And even more explanations to follow in consecutive
 #  * paragraphs separated by HTML paragraph breaks.
 #  *
+#  * @type QuestionType CategoryType
+#  *    
 #  * @param var1 description
 #  * @param var1 text 
 #  *             text text
@@ -28,13 +26,12 @@
 #  */
 
 # So, the comment has to start with '// <question_page_comment>' , then 
-# /** by itself on the line
-# @typename oneword: optional; if not specified, filename will be used
+# /** 
 # Arbitrary HTML description; the first sentence is treated as summary
+# @type question_type cateory_type #this line is optional, by default the filename is used as question_type and "miscellaneous" is used as category type
 # Zero or more @param attributes, each with a name and description (which can take multiple lines)
-# Zero of more example attributes, the code snippet should follow the attribute and the description (possibly multi-line)  on following lines
-# ends with */
-
+# Zero of more @example attributes, the code snippet should follow the attribute and the description (possibly multi-line)  on following lines
+# */
 # The leading * on each line is optional.
 
 import sys
@@ -44,6 +41,13 @@ from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
 nl = "\n"
+
+orderedCategories = ["onefile", "multifile", "dataplane", "misc"]
+categoryNames = {"onefile" : "Questions about configuration of individual nodes",
+                 "multifile" : "Questions about consistency of configuration across nodes",
+                 "dataplane" : "Questions about RIBs and FIBs",
+                 "misc" : "Miscellaneous"}
+
 
 class Options(object):
     '''
@@ -59,11 +63,11 @@ class Options(object):
 def allFilesWithComment(dirlist):
     retFiles = []
     
-    for dir in dirlist:
-        for root, subdirs, files in os.walk(dir):
-            retFiles += [os.path.join(root, file) 
-                         for file in files 
-                         if "<question_page_comment>" in open(os.path.join(root, file)).read()]
+    for dirName in dirlist:
+        for root, _, files in os.walk(dirName):
+            retFiles += [os.path.join(root, fileName) 
+                         for fileName in files 
+                         if "<question_page_comment>" in open(os.path.join(root, fileName)).read()]
     
     return retFiles
 
@@ -78,6 +82,10 @@ def isParamAttr(s):
 # check if this line starts with @type
 def isTypeAttr(s):    
     return s.find("@type") == 0 and s[5] in string.whitespace
+
+# gets markdown anchor string from the base string
+def makeAnchor(s):    
+    return s.lower().replace(" ", "-")
 
 def removeWhitespaceAndOptionalStar(s):
     s = s.lstrip(string.whitespace)
@@ -105,7 +113,7 @@ def parseParam(s):
 # we assume the comment is in the syntax above
 def parseComment(fullfname, options):
     f = open(fullfname)
-    res = {"file":fullfname, "desc":"", "params":[], "examples":[], "commentFound": False}
+    res = {"file":fullfname, "desc":"", "params":[], "examples":[], "commentFound": False, "category": "misc"}
     param = None
     example = None
 
@@ -147,6 +155,12 @@ def parseComment(fullfname, options):
             if (isTypeAttr(line)):
                 words = line.split()
                 res["name"] = words[1]  
+                if (len(words) > 2):
+                    category = words[2]
+                    if (category not in categoryNames):
+                        raise Exception("Unknown category " + category + " in " + fullfname), None, sys.exc_info()[2]
+
+                    res["category"] = words[2]
             elif (isParamAttr(line)):
                 param = parseParam(line)
                 state = "2:foundparam"
@@ -274,30 +288,28 @@ def questionsToHtml(comments, options):
         
     html += "</HTML>" + nl
 
-    if (options.outputFile != None):
-        f = open(options.outputFile, "w")
-        f.write(html)
-        f.close()
-    else:
-        print html
+    return html
 
 
-def questionsToMarkdown(comments, options):
+def categoryListMarkdown(comments, options):
     markdown = ""
     
-    markdown += "## Batfish Questions" + nl + nl
-    markdown += "### Summary" + nl
-
     for comment in comments:        
         commentParams = comment["params"]
         pnames = map(lambda p: p["name"], commentParams)
         markdown += "[" + comment["name"] + "(" + string.join(pnames, ", ") + ")] (#" + comment["name"].lower() + ")" +  nl
         markdown += " * " + firstSentence(comment["desc"]) + nl + nl
 
+    return markdown
+
+def questionsToMarkdown(comments, options):
+    markdown = ""
+    
+    markdown += nl + nl + "***" + nl + nl
     markdown += nl + nl + "### Detailed Descriptions" + nl
     
     for comment in comments:
-        pnames = map(lambda p: p["name"], comment["params"])
+        #pnames = map(lambda p: p["name"], comment["params"])
         markdown += "#### " + comment["name"] + nl
     
         markdown += "\n\n" + comment["desc"] + nl
@@ -316,13 +328,18 @@ def questionsToMarkdown(comments, options):
             
         markdown += nl + nl + "***" + nl + nl
         
-    if (options.outputFile != None):
-        f = open(options.outputFile, "w")
-        f.write(markdown)
-        f.close()
-    else:
-        print markdown
+    return markdown
 
+def tocMarkdown(options):
+    markdown = ""
+    
+    markdown += "#Question categories" + nl + nl
+
+    for category in orderedCategories:        
+        categoryName = categoryNames[category]
+        markdown += "  - [" + categoryName + "] (#" + makeAnchor(categoryName) + ")" +  nl
+
+    return markdown
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -350,18 +367,43 @@ def main(argv=None): # IGNORE:C0111
     options.outputFile = args.outFile
     options.outputFormat = args.outputFormat
 
-    files = allFilesWithComment(options.inputDirs)
-    comments = [parseComment(file, options) for file in files]
-    comments = sorted( (comment for comment in comments), key=lambda x: x["name"])
-    # ignore inputFile names that don't end in .q
-    # comments = [parseComment(inputFile, inputDir, options) for inputFile in files if (len(inputFile) > 1 and len(inputFile) == inputFile.rfind(".q") + 2)]
+    if (options.outputFormat != "html" and options.outputFormat != "markdown"):
+        raise Exception("Unknown output format: " + options.outputFormat), None, sys.exc_info()[2]
 
-    if (options.outputFormat == "html"):
-        questionsToHtml(comments, options)
-    elif (options.outputFormat == "markdown"):
-        questionsToMarkdown(comments, options)
+    files = allFilesWithComment(options.inputDirs)
+    comments = [parseComment(fileName, options) for fileName in files]
+
+    outStr = ""
+
+    if (options.outputFormat == "markdown"):
+        outStr += tocMarkdown(options)
     else:
-        raise "Unknown output format: " + options.outputFormat
+        raise Exception("tocHtml is unimplemented")
+
+    outStr += nl + nl
+
+    for category in orderedCategories:
+        categoryComments = sorted( (comment for comment in comments if comment["category"] == category), key=lambda x: x["name"])
+
+        outStr += "## " + categoryNames[category] + nl
+
+        if (options.outputFormat == "markdown"):
+            outStr += categoryListMarkdown(categoryComments, options)
+        else:
+            raise Exception("categoryListHtml is unimplemented")
+
+    sortedComments = sorted ( (comment for comment in comments), key=lambda x:x["name"])
+    if (options.outputFormat == "markdown"):
+        outStr += questionsToMarkdown(sortedComments, options)
+    else:
+        outStr += questionsToHtml(sortedComments, options)
+
+    if (options.outputFile != None):
+        f = open(options.outputFile, "w")
+        f.write(outStr)
+        f.close()
+    else:
+        print outStr
 
     return 0
 

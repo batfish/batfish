@@ -239,7 +239,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     * It can output all eBGP/iBGP advertisements that are exchanged in the
     * network.
     *
-    * @type BgpAdvertisements
+    * @type BgpAdvertisements dataplane
     *
     * @param ebgp
     *           (True|False) which indicates if eBGP advertisements should be

@@ -160,7 +160,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     * It produces routes from all protocols (e.g., BGP, OSPF, static, and
     * connected).
     *
-    * @type Routes
+    * @type Routes dataplane
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

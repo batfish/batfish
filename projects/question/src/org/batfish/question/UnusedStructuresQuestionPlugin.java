@@ -96,7 +96,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     * <p>
     * Such occurrences could be configuration errors or leftover cruft.
     *
-    * @type UnusedStructures
+    * @type UnusedStructures onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

@@ -148,6 +148,8 @@ public class AssertQuestionPlugin extends QuestionPlugin {
    /**
     * Checks assertions.
     *
+    * @type Assert misc
+    * 
     * @param assertions
     *           List of assertions
     */

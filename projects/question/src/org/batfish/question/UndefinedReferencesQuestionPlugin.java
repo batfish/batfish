@@ -99,7 +99,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     * Such occurrences indicate configuration errors and can have serious
     * consequences with some vendors.
     *
-    * @type UndefinedReferences
+    * @type UndefinedReferences onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

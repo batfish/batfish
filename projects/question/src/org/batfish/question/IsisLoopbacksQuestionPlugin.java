@@ -234,7 +234,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
     * <p>
     * Details coming
     *
-    * @type IsisLoopbacks
+    * @type IsisLoopbacks onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value
