@@ -199,9 +199,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     *           Defaults to false. If true, then instead of outputting each
     *           matching path, only the count of matching paths will be output.
     *
-    * @example bf_answer("NodesPath",
-    *          paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu !=
-    *          1500)].mtu"}]) Return all interfaces with MTUs not equal to 1500
+    * @example bf_answer("NodesPath",paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu!=1500)].mtu"}])
+    *          Return all interfaces with MTUs not equal to 1500
     *
     */
    public static class NodesPathQuestion extends Question {
