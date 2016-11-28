@@ -186,18 +186,18 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     *           list of paths in the data model matching the criteria of the
     *           query.
     *
-    * @param path
-    *           The JsonPath query to execute.
+    * @hparam path (Property of each element of 'paths') The JsonPath query to
+    *         execute.
     *
-    * @param suffix
-    *           Defaults to false. If true, then each path in the returned list
-    *           will map to the remaining content of the datamodel at the end of
-    *           that path. This can be useful for debugging, but can also be
-    *           very verbose. If false, then each path will map to a null value.
+    * @hparam suffix (Property of each element of 'paths') Defaults to false. If
+    *         true, then each path in the returned list will map to the
+    *         remaining content of the datamodel at the end of that path. This
+    *         can be useful for debugging, but can also be very verbose. If
+    *         false, then each path will map to a null value.
     *
-    * @param summary
-    *           Defaults to false. If true, then instead of outputting each
-    *           matching path, only the count of matching paths will be output.
+    * @hparam summary (Property of each element of 'paths') Defaults to false.
+    *         If true, then instead of outputting each matching path, only the
+    *         count of matching paths will be output.
     *
     * @example bf_answer("NodesPath",paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu!=1500)].mtu"}])
     *          Return all interfaces with MTUs not equal to 1500

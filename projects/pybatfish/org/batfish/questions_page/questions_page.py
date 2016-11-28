@@ -75,6 +75,10 @@ def allFilesWithComment(dirlist):
 def isExampleAttr(s):
     return s.find("@example") == 0 and (len(s) == 8 or s[8] in string.whitespace)
 
+# check if this line starts with @hparam
+def isHiddenParamAttr(s):
+    return s.find("@hparam") == 0 and (len(s) == 7 or s[7] in string.whitespace)
+
 # check if this line starts with @param
 def isParamAttr(s):
     return s.find("@param") == 0 and (len(s) == 6 or s[6] in string.whitespace)
@@ -101,12 +105,20 @@ def parseExample(s):
     example = {"name":s, "desc": ""}
     return example
             
+# parse a hidden param attribute
+# we assume isHiddenParamAttr(s) is True
+def parseHiddenParam(s):
+    s = s[8:].lstrip(string.whitespace)
+    pname = s.split()[0]
+    param = {"name":pname, "desc":s[len(pname):], "hidden":True}
+    return param
+
 # parse a param attribute
 # we assume isParamAttr(s) is True    
 def parseParam(s):    
     s = s[7:].lstrip(string.whitespace)
     pname = s.split()[0]
-    param = {"name":pname, "desc":s[len(pname):]}
+    param = {"name":pname, "desc":s[len(pname):], "hidden":False}
     return param
             
 # parse the given file to grab the comment describing this property
@@ -161,6 +173,9 @@ def parseComment(fullfname, options):
                         raise Exception("Unknown category " + category + " in " + fullfname), None, sys.exc_info()[2]
 
                     res["category"] = words[2]
+            elif (isHiddenParamAttr(line)):
+                param = parseHiddenParam(line)
+                state = "2:foundparam"
             elif (isParamAttr(line)):
                 param = parseParam(line)
                 state = "2:foundparam"
@@ -173,7 +188,10 @@ def parseComment(fullfname, options):
             # now we are parsing a parameter
             line = removeWhitespaceAndOptionalStar(line)            
 
-            if (isParamAttr(line)):
+            if (isHiddenParamAttr(line)):
+                res["params"].append(param)
+                param = parseHiddenParam(line)
+            elif (isParamAttr(line)):
                 res["params"].append(param)
                 param = parseParam(line)
             elif (isExampleAttr(line)):
@@ -296,7 +314,8 @@ def categoryListMarkdown(comments, options):
     
     for comment in comments:        
         commentParams = comment["params"]
-        pnames = map(lambda p: p["name"], commentParams)
+        nonHiddenCommentParams = filter(lambda p: not p["hidden"], commentParams)
+        pnames = map(lambda p: p["name"], nonHiddenCommentParams)
         markdown += "[" + comment["name"] + "(" + string.join(pnames, ", ") + ")] (#" + comment["name"].lower() + ")" +  nl
         markdown += " * " + firstSentence(comment["desc"]) + nl + nl
 
