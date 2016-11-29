@@ -19,6 +19,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public final class Configuration extends ComparableStructure<String> {
 
@@ -172,6 +173,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
+   @JsonPropertyDescription("This is a test")
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
    }

@@ -37,20 +37,37 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
 
 public class Client extends AbstractClient implements IClient {
 
+   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
+   @JsonSchemaTitle("title")
+   public abstract class Shape {
+      @JsonPropertyDescription("this is name")
+      @JsonSchemaDescription("another description")
+      public String name;
+   }
+   
+   public class Rectable extends Shape {
+      
+   }
+   
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
    private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
@@ -394,13 +411,20 @@ public class Client extends AbstractClient implements IClient {
    private void generateDatamodel() {
       try {
          ObjectMapper mapper = new BatfishObjectMapper();
-         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-         JsonSchema schema = schemaGen.generateSchema(Configuration.class);
-                  
+
+         com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
+               new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
+         JsonSchema schema = schemaGen.generateSchema(AsPathAccessList.class);                  
          _logger.output(mapper.writeValueAsString(schema));
+         
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
+         JsonNode schemaNew = schemaGenNew.generateJsonSchema(AsPathAccessList.class);                  
+         _logger.output(mapper.writeValueAsString(schemaNew));
+                  
       } 
       catch (Exception e) {
          _logger.errorf("Could not generate data model: " + e.getMessage());
+         e.printStackTrace();
       }
    }
 

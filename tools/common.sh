@@ -637,7 +637,7 @@ batfish_wiki_datamodel() {
    pybatfish $BATFISH_DATAMODEL_PAGE_SCRIPT $tmpSchemaFile > $BATFISH_WIKI_DATAMODEL
    rm $tmpSchemaFile
 }
-export -f batfish_wiki_questions
+export -f batfish_wiki_datamodel
 
 batfish_wiki_questions() {
    echo "Generating questions to " $BATFISH_WIKI_QUESTIONS
