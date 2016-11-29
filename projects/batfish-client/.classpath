@@ -39,5 +39,6 @@
 	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-module-jsonSchema-2.8.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
