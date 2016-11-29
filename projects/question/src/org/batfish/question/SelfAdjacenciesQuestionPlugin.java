@@ -173,7 +173,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     * <p>
     * This occurrence likely indicates an error in IP address announcement.
     *
-    * @type SelfAdjacencies
+    * @type SelfAdjacencies onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

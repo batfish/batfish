@@ -12,8 +12,7 @@ The developers of Batfish include researchers from Intentionet, University of Ca
 Batfish supports many types of correctness checks, including
 
 1. #####Compliance and best-practices guidelines, e.g.:
-  - Flag undefined but referenced structures (e.g., ACLs, route maps)
-  - Flag defined but unused structures
+  - Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
   - Ensure that all interface MTUs are per the network's standard
   - AAA, SNMP, and NTP configuration is correct
   - Devices can only be accessed using SSHv2 and password is not null
@@ -41,6 +40,8 @@ Batfish supports many types of correctness checks, including
   - End-to-end reachability is identical across new and old configurations
   - Planned ACL changes have no collateral damage, e.g., relative to the current configuration, only flows that are intended to be (un)blocked are (un)blocked; no other flow is impacted.
   - Two configurations, potentially from different vendors, are semantically equivalent
+
+These checks are performed by asking questions about configruations. See [here] (https://github.com/intentionet/batfish/wiki/Questions) for the list of questions.
 
 ## How do I get started?
 

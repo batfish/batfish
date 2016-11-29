@@ -785,20 +785,6 @@ _common_build() {
 }
 export -f _common_build
 
-batfish_tests() {
-   bash -c '_batfish_tests' _batfish_tests || return 1
-}
-export -f batfish_tests
-
-_batfish_tests() {
-   cd $BATFISH_ROOT
-   rm -f $(find -name '*.testout')
-   allinone -cmdfile tests/commands |& grep -i fail | sed 's/.* \([^ ]*.ref\).*/\1/g' | while read i; do echo "$(readlink -f "$i")"; done
-   allinone -cmdfile test_rigs/parsing-test.cmds |& grep -i fail | sed 's/.* \([^ ]*.ref\).*/\1/g' | while read i; do echo "$(readlink -f "$i")"; done
-
-}
-export -f _batfish_tests
-
 batfish_tests_update() {
    bash -c '_batfish_tests_update' _batfish_tests_update || return 1
 }
@@ -809,11 +795,6 @@ _batfish_tests_update() {
    find -name '*.testout' | while read f; do mv $f "$(dirname "$f")/$(basename "$f" .testout)"; done
 }
 export -f _batfish_tests_update
-
-batfish_questions_doc() {
-   $BATFISH_ROOT/projects/pybatfish/bin/questions_to_html -i $BATFISH_ROOT/example_questions -o $BATFISH_ROOT/doc "$@"
-}
-export -f batfish_questions_doc
 
 if batfish_cygwin; then
    export ANT_BATFISH_PATH="$(cygpath -w "${BATFISH_PATH}")"

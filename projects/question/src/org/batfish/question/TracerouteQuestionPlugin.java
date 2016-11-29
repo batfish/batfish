@@ -152,7 +152,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     * to succeed, the reverse connectivity is not needed. This feature can help
     * debug connectivity issues by decoupling the two directions.
     *
-    * @type Traceroute
+    * @type Traceroute dataplane
     *
     * @param ingressNode
     *           Name of the node where the traceroute should be done from. This

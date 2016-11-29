@@ -633,7 +633,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     * <p>
     * Details coming
     *
-    * @type BgpSessionCheck
+    * @type BgpSessionCheck multifile
     *
     * @param foreignBgpGroups
     *           Details coming.

@@ -256,7 +256,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     * <p>
     * Details coming
     *
-    * @type Neighbors
+    * @type Neighbors multifile
     *
     * @param neighborType
     *           The type(s) of neighbor relationships to focus on among (eBGP,

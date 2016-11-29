@@ -144,7 +144,7 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
     * originated by only one BGP speakers. This question produces the list of
     * prefixes for which this condition does not hold.
     *
-    * @type UniqueBgpPrefixOrigination
+    * @type UniqueBgpPrefixOrigination multifile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

@@ -210,7 +210,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
     * IPs into OSPF. This question produces the list of nodes for which such
     * announcements are happening.
     *
-    * @type OspfLoopbacks
+    * @type OspfLoopbacks onefile
     *
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value

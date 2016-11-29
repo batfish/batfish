@@ -235,7 +235,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
     * When running ISIS, it is a good practice to announce loopbacks interface IPs into ISIS. 
     * This question produces the list of nodes for which such announcements are happening. 
     * 
-    * @type IsisLoopbacks
+    * @type IsisLoopbacks onefile
     * 
     * @param nodeRegex Regular expression for names of nodes to include. 
     *                  Default value is '.*' (all nodes).
