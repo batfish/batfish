@@ -34,10 +34,10 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
          csnQuestion.setNodeRegex(question.getNodeRegex());
          csnQuestion.setNamedStructTypes(
                Collections.singleton(IpAccessList.class.getSimpleName()));
+         csnQuestion.setSingletons(true);
          CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(
                csnQuestion, _batfish);
-         CompareSameNameAnswerElement csnAnswer = (CompareSameNameAnswerElement) csnAnswerer
-               .answer();
+         CompareSameNameAnswerElement csnAnswer = csnAnswerer.answer();
          NamedStructureEquivalenceSets<?> aclEqSets = csnAnswer
                .getEquivalenceSets().get(IpAccessList.class.getSimpleName());
 
