@@ -255,8 +255,8 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
 
    }
 
-   //<question_page_comment>
-   /** 
+   // <question_page_comment>
+   /**
     * Checks if IPSec VPNs are correctly configured.
     * <p>
     * Details coming on what it means to be correctly configured.
