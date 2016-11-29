@@ -37,11 +37,14 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -92,6 +95,10 @@ public class Client extends AbstractClient implements IClient {
                   Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
             System.exit(1);
          }
+         _logger = new BatfishLogger(_settings.getLogLevel(), false,
+               _settings.getLogFile(), false, false);
+         break;
+      case gendatamodel:
          _logger = new BatfishLogger(_settings.getLogLevel(), false,
                _settings.getLogFile(), false, false);
          break;
@@ -382,6 +389,19 @@ public class Client extends AbstractClient implements IClient {
             _currDeltaEnv);
 
       return execute(wItemGenDdp, outWriter);
+   }
+
+   private void generateDatamodel() {
+      try {
+         ObjectMapper mapper = new BatfishObjectMapper();
+         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+         JsonSchema schema = schemaGen.generateSchema(Configuration.class);
+                  
+         _logger.output(mapper.writeValueAsString(schema));
+      } 
+      catch (Exception e) {
+         _logger.errorf("Could not generate data model: " + e.getMessage());
+      }
    }
 
    private void generateQuestions() {
@@ -1419,6 +1439,9 @@ public class Client extends AbstractClient implements IClient {
             System.exit(1);
          }
 
+         break;
+      case gendatamodel:
+         generateDatamodel();
          break;
       case genquestions:
          generateQuestions();

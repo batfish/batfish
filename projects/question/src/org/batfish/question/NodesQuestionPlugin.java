@@ -360,7 +360,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
                if (!nodeRegex.matcher(node).matches()) {
                   continue;
                }
-               nodes.addAll(configurations.keySet());
+               nodes.add(node);
             }
          }
          SortedMap<String, Configuration> answerNodes = new TreeMap<>();

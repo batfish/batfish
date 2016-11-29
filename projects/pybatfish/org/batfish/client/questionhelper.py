@@ -50,6 +50,6 @@ def bf_get_question_json(questionType):
 def _get_answer(questionJson, parametersJson, doDelta, differential):
     #add the correct value of differential if one does not already exist
     parametersJson["differential"] = str(differential)
-    return commands.bf_answer(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
+    return commands.bf_answer_str(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
     
     

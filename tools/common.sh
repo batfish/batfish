@@ -14,7 +14,9 @@ export BATFISH_CLIENT_PATH="$BATFISH_ROOT/projects/batfish-client"
 export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 
 export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
+export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
 export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
+export BATFISH_DATAMODEL_PAGE_SCRIPT="$BATFISH_ROOT/projects/pybatfish/org/batfish/questions_page/datamodel_page.py"
 export BATFISH_QUESTIONS_PAGE_SCRIPT="$BATFISH_ROOT/projects/pybatfish/org/batfish/questions_page/questions_page.py"
 
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
@@ -627,6 +629,15 @@ batfish_unit_tests_parser() {
    echo ": END UNIT TEST: Vendor configuration parser"
 }
 export -f batfish_unit_tests_parser
+
+batfish_wiki_datamodel() {
+   tmpSchemaFile=mktemp
+   batfish_client -runmode gendatamodel > $tmpSchemaFile
+   echo "Generating questions to " $BATFISH_WIKI_DATAMODEL
+   pybatfish $BATFISH_DATAMODEL_PAGE_SCRIPT $tmpSchemaFile > $BATFISH_WIKI_DATAMODEL
+   rm $tmpSchemaFile
+}
+export -f batfish_wiki_questions
 
 batfish_wiki_questions() {
    echo "Generating questions to " $BATFISH_WIKI_QUESTIONS
