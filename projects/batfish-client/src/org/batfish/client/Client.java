@@ -392,14 +392,12 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private void generateDatamodel() {
-      _logger.error("Will generate data model\n");
-
       try {
          ObjectMapper mapper = new BatfishObjectMapper();
          JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
          JsonSchema schema = schemaGen.generateSchema(Configuration.class);
                   
-         _logger.output("scheme is " + mapper.writeValueAsString(schema));
+         _logger.output(mapper.writeValueAsString(schema));
       } 
       catch (Exception e) {
          _logger.errorf("Could not generate data model: " + e.getMessage());
