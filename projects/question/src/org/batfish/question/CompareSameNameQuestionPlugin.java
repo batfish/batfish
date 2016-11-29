@@ -182,6 +182,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value
     *           is '.*' (all nodes).
+    *
+    * @param singletons
+    *           Defaults to false. Specifies whether or not to include named
+    *           structures for which there is only one equivalence class.
+    *
     */
    public static final class CompareSameNameQuestion extends Question {
 
