@@ -87,6 +87,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       private List<String> _nodes;
 
+      private boolean _singletons;
+
       public CompareSameNameAnswerer(Question question, IBatfish batfish) {
          super(question, batfish);
       }
@@ -102,7 +104,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
+      public CompareSameNameAnswerElement answer() {
 
          CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
          _batfish.checkConfigurations();
@@ -113,6 +115,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                _configurations.keySet());
          _namedStructTypes = question.getNamedStructTypes().stream()
                .map(s -> s.toLowerCase()).collect(Collectors.toSet());
+         _singletons = question.getSingletons();
 
          add(AsPathAccessList.class, c -> c.getAsPathAccessLists());
          add(CommunityList.class, c -> c.getCommunityLists());
@@ -146,7 +149,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                ae.add(hostname, listName, structureMap.get(listName));
             }
          }
-         ae.clean();
+         if (!_singletons) {
+            ae.clean();
+         }
          return ae;
       }
 
@@ -177,6 +182,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     * @param nodeRegex
     *           Regular expression for names of nodes to include. Default value
     *           is '.*' (all nodes).
+    *
+    * @param singletons
+    *           Defaults to false. Specifies whether or not to include named
+    *           structures for which there is only one equivalence class.
+    *
     */
    public static final class CompareSameNameQuestion extends Question {
 
@@ -187,6 +197,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       private Set<String> _namedStructTypes;
 
       private String _nodeRegex;
+
+      private boolean _singletons;
 
       public CompareSameNameQuestion() {
          _namedStructTypes = new TreeSet<>();
@@ -211,6 +223,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NODE_REGEX_VAR)
       public String getNodeRegex() {
          return _nodeRegex;
+      }
+
+      public boolean getSingletons() {
+         return _singletons;
       }
 
       @Override
@@ -258,6 +274,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       public void setNodeRegex(String regex) {
          _nodeRegex = regex;
+      }
+
+      public void setSingletons(boolean singletons) {
+         _singletons = singletons;
       }
 
    }

@@ -319,7 +319,8 @@
   "question" : {
     "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
     "differential" : false,
-    "nodeRegex" : ".*"
+    "nodeRegex" : ".*",
+    "singletons" : false
   },
   "status" : "SUCCESS"
 }
