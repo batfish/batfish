@@ -2478,6 +2478,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentCommunityList.getLines()
                .add(new CommunityListLine(communityStr));
       }
+      else if (ctx.invalid_community_regex() != null) {
+         String text = ctx.invalid_community_regex().getText();
+         _currentCommunityList.getLines().add(new CommunityListLine(text));
+         _w.redFlag(ctx.getStart().getLine() + ": In community-list '"
+               + _currentCommunityList.getName()
+               + "': Invalid or unsupported community regex: '" + text + "'");
+      }
    }
 
    @Override

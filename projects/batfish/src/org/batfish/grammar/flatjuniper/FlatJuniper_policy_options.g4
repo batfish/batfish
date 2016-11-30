@@ -59,6 +59,9 @@ ct_members
 
       | community_regex
       | extended_community_regex
+      // invalid_community_regex MUST BE LAST
+
+      | invalid_community_regex
    )
 ;
 
@@ -226,6 +229,11 @@ fromt_source_address_filter
 fromt_tag
 :
    TAG DEC
+;
+
+invalid_community_regex
+:
+   ~NEWLINE*
 ;
 
 metric_expression
