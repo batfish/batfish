@@ -18,6 +18,10 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
    @Override
    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
          int line, int charPositionInLine, String msg, RecognitionException e) {
+      if (_syntaxErrorHandler != null && _syntaxErrorHandler.handle(recognizer,
+            offendingSymbol, line, charPositionInLine, msg, e)) {
+         return;
+      }
       StringBuilder sb = new StringBuilder();
       BatfishParser parser = _combinedParser.getParser();
       BatfishLexer lexer = _combinedParser.getLexer();
