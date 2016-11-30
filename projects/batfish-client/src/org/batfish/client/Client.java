@@ -59,9 +59,9 @@ import jline.console.completer.Completer;
 public class Client extends AbstractClient implements IClient {
 
    public class Shape {
-      private List<Color> _colors;
+      private Map<String, Color> _colors;
 
-      public List<Color> getColors() {
+      public Map<String, Color> getColors() {
          return _colors;
       }
    }
