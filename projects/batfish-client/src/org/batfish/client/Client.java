@@ -365,6 +365,19 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
+   private void generateDatamodel() {
+      try {
+         ObjectMapper mapper = new BatfishObjectMapper();
+         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+         JsonSchema schema = schemaGen.generateSchema(Configuration.class);
+
+         _logger.output(mapper.writeValueAsString(schema));
+      }
+      catch (Exception e) {
+         _logger.errorf("Could not generate data model: " + e.getMessage());
+      }
+   }
+
    private boolean generateDataplane(FileWriter outWriter) throws Exception {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
@@ -389,19 +402,6 @@ public class Client extends AbstractClient implements IClient {
             _currDeltaEnv);
 
       return execute(wItemGenDdp, outWriter);
-   }
-
-   private void generateDatamodel() {
-      try {
-         ObjectMapper mapper = new BatfishObjectMapper();
-         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-         JsonSchema schema = schemaGen.generateSchema(Configuration.class);
-                  
-         _logger.output(mapper.writeValueAsString(schema));
-      } 
-      catch (Exception e) {
-         _logger.errorf("Could not generate data model: " + e.getMessage());
-      }
    }
 
    private void generateQuestions() {
