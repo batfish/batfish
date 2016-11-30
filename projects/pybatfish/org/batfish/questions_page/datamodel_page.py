@@ -21,7 +21,9 @@ def toMarkdown(options):
     
     markdown += "Batfish converts vendors configuration files into a vendor-independent datamodel. The complete datamodel in [JSON Schema] (http://json-schema.org/) Draft v4 is below."
     markdown += "**An easier-to-browse version is [here] (http://intentionet.github.io/batfish/docson/#../datamodel.json).**" + nl + nl
-        
+    
+    markdown += "Also see [example datamodels] (https://github.com/intentionet/batfish/blob/master/tests/java/nodes.ref) for [example configs] (https://github.com/intentionet/batfish/tree/master/test_rigs/example)." + nl + nl
+
     for line in open(options.inFile, "r"):
         markdown += "    " + line
     
