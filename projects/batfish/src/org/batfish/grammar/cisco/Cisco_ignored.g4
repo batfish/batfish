@@ -644,6 +644,7 @@ null_single
       | FIRMWARE
       | FLOWCONTROL
       | FRAME_RELAY
+      | FRI
       | FTP
       | FTP_SERVER
       | GROUP
@@ -748,6 +749,7 @@ null_single
       | MICROCODE
       | MLS
       | MODEM
+      | MON
       | MTA
       | MULTILINK
       | MVR
@@ -821,6 +823,7 @@ null_single
       | ROUTE_TARGET
       | RTR
       | SAME_SECURITY_TRAFFIC
+      | SAT
       | SCHEDULE
       | SCHEDULER
       | SCRIPTING
@@ -841,12 +844,15 @@ null_single
       | SUBNET
       | SUBSCRIBER
       | SUBSCRIBE_TO
+      | SUN
       | SYSOPT
       | SYSTEM
       | TAG_SWITCHING
       | TELNET
       | THREAT_DETECTION
+      | THU
       | TRANSLATE
+      | TUE
       | UDLD
       | UNABLE
       | UPGRADE
@@ -867,6 +873,7 @@ null_single
       | VPDN
       | VTP
       | VOICE_CARD
+      | WED
       | WLAN
       | WRR
       | WRR_QUEUE
