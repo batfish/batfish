@@ -19,10 +19,10 @@ def get_object(session, objectName):
     response = _post_data(session, CoordConsts.SVC_GET_OBJECT_RSC, jsonData, stream=True)
 
     tempFile = tempfile.NamedTemporaryFile();
-    
-    with open(tempFile.name, 'wb') as fd:
-        for chunk in response.iter_content(1000):
-            fd.write(chunk)
+    for chunk in response.iter_content(1000):
+        tempFile.write(chunk)
+    tempFile.flush()
+    tempFile.seek(0)
             
     return tempFile
 
