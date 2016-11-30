@@ -173,7 +173,6 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
-   @JsonPropertyDescription("This is a test")
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
    }

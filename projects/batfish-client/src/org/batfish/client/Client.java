@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,15 +58,19 @@ import jline.console.completer.Completer;
 
 public class Client extends AbstractClient implements IClient {
 
-   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "class")
-   @JsonSchemaTitle("title")
-   public abstract class Shape {
-      @JsonPropertyDescription("this is name")
-      @JsonSchemaDescription("another description")
-      public String name;
+   public class Shape {
+      private List<Color> _colors;
+
+      public List<Color> getColors() {
+         return _colors;
+      }
    }
    
-   public class Rectable extends Shape {
+   public class Color {
+      public String colorName;
+   }
+   
+   public class Rectangle extends Shape {
       
    }
    
@@ -414,11 +420,11 @@ public class Client extends AbstractClient implements IClient {
 
          com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
                new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
-         JsonSchema schema = schemaGen.generateSchema(AsPathAccessList.class);                  
+         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
          _logger.output(mapper.writeValueAsString(schema));
          
          JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
-         JsonNode schemaNew = schemaGenNew.generateJsonSchema(AsPathAccessList.class);                  
+         JsonNode schemaNew = schemaGenNew.generateJsonSchema(Shape.class);                  
          _logger.output(mapper.writeValueAsString(schemaNew));
                   
       } 
