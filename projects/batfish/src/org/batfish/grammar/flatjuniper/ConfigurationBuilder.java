@@ -2478,6 +2478,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentCommunityList.getLines()
                .add(new CommunityListLine(communityStr));
       }
+      else if (ctx.invalid_community_regex() != null) {
+         String text = ctx.invalid_community_regex().getText();
+         _currentCommunityList.getLines().add(new CommunityListLine(text));
+         _w.redFlag(ctx.getStart().getLine() + ": In community-list '"
+               + _currentCommunityList.getName()
+               + "': Invalid or unsupported community regex: '" + text + "'");
+      }
    }
 
    @Override
@@ -3387,8 +3394,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
-      int as = toInt(ctx.as);
-      _currentRoutingInstance.setAs(as);
+      if (ctx.as != null) {
+         int as = toInt(ctx.as);
+         _currentRoutingInstance.setAs(as);
+      }
    }
 
    @Override
