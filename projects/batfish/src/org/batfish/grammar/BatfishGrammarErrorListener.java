@@ -17,6 +17,8 @@ public abstract class BatfishGrammarErrorListener
 
    protected final Settings _settings;
 
+   protected BatfishSyntaxErrorHandler _syntaxErrorHandler;
+
    public BatfishGrammarErrorListener(String grammarName,
          BatfishCombinedParser<?, ?> parser) {
       _grammarName = grammarName;
@@ -37,6 +39,11 @@ public abstract class BatfishGrammarErrorListener
    @Override
    public void reportContextSensitivity(Parser arg0, DFA arg1, int arg2,
          int arg3, int arg4, ATNConfigSet arg5) {
+   }
+
+   public void setSyntaxErrorHandler(
+         BatfishSyntaxErrorHandler syntaxErrorHandler) {
+      _syntaxErrorHandler = syntaxErrorHandler;
    }
 
 }

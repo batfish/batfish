@@ -324,7 +324,7 @@ rot_auto_export
 
 rot_autonomous_system
 :
-   AUTONOMOUS_SYSTEM as = DEC rot_autonomous_system_tail
+   AUTONOMOUS_SYSTEM as = DEC? rot_autonomous_system_tail
 ;
 
 rot_autonomous_system_tail

@@ -3026,6 +3026,11 @@ FREQUENCY
    'frequency'
 ;
 
+FRI
+:
+   'Fri'
+;
+
 FROM
 :
    'from'
@@ -4678,6 +4683,11 @@ MODEM
 MODULE
 :
    'module'
+;
+
+MON
+:
+   'Mon'
 ;
 
 MONITOR
@@ -6675,6 +6685,11 @@ SAP
    'sap'
 ;
 
+SAT
+:
+   'Sat'
+;
+
 SATELLITE
 :
    'satellite'
@@ -7487,6 +7502,11 @@ SUMMARY_ONLY
    'summary-only'
 ;
 
+SUN
+:
+   'Sun'
+;
+
 SUNRPC
 :
    'sunrpc'
@@ -7787,6 +7807,11 @@ THRESHOLD
    'threshold'
 ;
 
+THU
+:
+   'Thu'
+;
+
 TIME
 :
    'time'
@@ -8025,6 +8050,11 @@ TTL_THRESHOLD
 TTY
 :
    'tty'
+;
+
+TUE
+:
+   'Tue'
 ;
 
 TUNABLE_OPTIC
@@ -8542,6 +8572,11 @@ WAVELENGTH
 WEBVPN
 :
    'webvpn'
+;
+
+WED
+:
+   'Wed'
 ;
 
 WEIGHT
