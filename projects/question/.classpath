@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jsonpath/json-path-2.2.0.jar" sourcepath="/batfish-common-protocol/lib/jsonpath/json-path-2.2.0-sources.jar"/>
+	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jsonpath/json-path-2.2.1-SNAPSHOT.jar" sourcepath="/batfish-common-protocol/lib/jsonpath/json-path-2.2.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="/batfish-common-protocol/lib/jsonpath/json-path-assert-2.2.0.jar" sourcepath="/batfish-common-protocol/lib/jsonpath/json-path-assert-2.2.0-sources.jar"/>
 	<classpathentry kind="lib" path="/batfish-common-protocol/lib/hamcrest/java-hamcrest-2.0.0.0.jar" sourcepath="/batfish-common-protocol/lib/hamcrest/java-hamcrest-2.0.0.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
