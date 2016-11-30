@@ -19,7 +19,7 @@ class Options(object):
 def toMarkdown(options):   
     markdown = ""
     
-    markdown += "The Batfish datamodel in [JSON Schema] (http://json-schema.org/) Draft v4 is below."
+    markdown += "Batfish converts vendors configuration files into a vendor-independent datamodel. The complete datamodel in [JSON Schema] (http://json-schema.org/) Draft v4 is below."
     markdown += "**An easier-to-browse version is [here] (http://intentionet.github.io/batfish/docson/#../datamodel.json).**" + nl + nl
         
     for line in open(options.inFile, "r"):
