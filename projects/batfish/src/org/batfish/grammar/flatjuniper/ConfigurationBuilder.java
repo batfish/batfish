@@ -3394,8 +3394,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
-      int as = toInt(ctx.as);
-      _currentRoutingInstance.setAs(as);
+      if (ctx.as != null) {
+         int as = toInt(ctx.as);
+         _currentRoutingInstance.setAs(as);
+      }
    }
 
    @Override
