@@ -1,0 +1,98 @@
+[
+    {
+        "schema": {
+            "Invoice": {
+                "id": "Invoice",
+                "description": "Represents the document sent to the customer for payment.",
+                "properties": {
+                    "customer": {
+                        "description": "Who will pay?\nNot me! éàè",
+                        "type": "string"
+                    },
+                    "lines": {
+                        "description": "Invoice content\n",
+                        "minItems": "1",
+                        "maxItems": "50",
+                        "type": "array",
+                        "items": {
+                            "$ref": "InvoiceLine"
+                        }
+                    },
+                    "dimension": {
+                        "description": "Total dimension of the order ",
+                        "$ref": "Dimension"
+                    }
+                }
+            },
+            "InvoiceLine": {
+                "id": "InvoiceLine",
+                "properties": {
+                    "product": {
+                        "$ref": "Product"
+                    },
+                    "quantity": {
+                        "minimum": "0",
+                        "exclusiveMinimum": "true",
+                        "maximum": "10",
+                        "exclusiveMaximum": "false",
+                        "type": "number"
+                    }
+                }
+            },
+            "Dimension": {
+                "id": "Dimension",
+                "properties": {
+                    "width": {
+                        "description": "Width in cm ",
+                        "type": "number"
+                    },
+                    "height": {
+                        "description": "Height in cm ",
+                        "type": "number"
+                    },
+                    "length": {
+                        "description": "Length in cm ",
+                        "type": "number"
+                    }
+                }
+            },
+            "Product": {
+                "id": "Product",
+                "properties": {
+                    "name": {
+                        "description": "Uniquely defines the product ",
+                        "type": "string"
+                    },
+                    "dimension": {
+                        "description": "How big it is ",
+                        "$ref": "Dimension"
+                    },
+                    "category": {
+                        "description": "Classification ",
+                        "$ref": "Category"
+                    }
+                }
+            },
+            "Category": {
+                "id": "Category",
+                "properties": {
+                    "name": {
+                        "description": "Uniquely identifies the category ",
+                        "type": "string"
+                    },
+                    "level": {
+                        "description": "Classification level from 1 to 5 (highest) ",
+                        "type": "number"
+                    }
+                }
+            },
+            "CategoryIndex": {
+                "id": "CategoryIndex",
+                "properties": {
+                    "categories": {},
+                    "products": {},
+                    "sizes": {}
+                }
+            }
+        }
+    }]

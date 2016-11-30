@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Standing instance",
+    "type": "object",
+    "required": ["positions"],
+    "properties": {
+        "positions": {
+            "anyOf": [
+                { "type": "integer", "maximum": 20, "description": "this is a desc"},
+                { "type": "boolean", "description": "this is a desc" }]
+        }
+    },
+    "additionalProperties": {
+        "anyOf": [
+            { "type": "integer", "maximum": 20},
+            { "type": "boolean" },
+            { "type": "string", "maxLength": 5},
+            {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "required": ["key"],
+                    "additionalProperties": false,
+                    "properties": {
+                        "key": {
+                            "type": "integer", "description": "this is a desc"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "object",
+                "description": "Docson is able to visualize it",
+                "properties": {
+                    "id": {
+                        "description": "The unique identifier for a product",
+                        "type": "number"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            }
+        ]
+    }
+}

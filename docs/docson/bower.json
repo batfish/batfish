@@ -1,0 +1,25 @@
+{
+  "name": "docson",
+  "main": "docson.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/lbovet/docson",
+  "authors": [
+    "Laurent Bovet <laurent.bovet@windmaster.ch>"
+  ],
+  "description": "Documentation for your JSON types",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "docson",
+    "json"
+  ],
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
