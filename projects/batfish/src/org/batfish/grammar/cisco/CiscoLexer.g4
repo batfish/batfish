@@ -3885,6 +3885,11 @@ L2_SRC
    'l2-src'
 ;
 
+L2PROTOCOL
+:
+   'l2protocol'
+;
+
 L2PROTOCOL_TUNNEL
 :
    'l2protocol-tunnel'
@@ -9040,7 +9045,13 @@ IPV6_ADDRESS
       )+
    )
    (
-      F_HexDigit+
+      (
+         F_HexDigit+
+      )
+      |
+      (
+         F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+      )
    )?
 ;
 
@@ -9065,10 +9076,16 @@ IPV6_PREFIX
 
          ':' ':'?
       )+
+   )
+   (
       (
          F_HexDigit+
-      )?
-   ) '/' F_DecByte
+      )
+      |
+      (
+         F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+      )
+   )? '/' F_DecByte
 ;
 
 NEWLINE

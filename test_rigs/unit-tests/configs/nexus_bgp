@@ -17,6 +17,8 @@ router bgp 1
     maximum-paths ibgp 32
     network 1.2.3.0/24 route-map BLIBB
     nexthop trigger-delay critical 3000 non-critical 10000
+  address-family ipv6 unicast
+     network ::ffff:1.2.3.0/120 route-map BLIB
   template peer PEER_BLLF
     remote-as 12345
     dynamic-capability

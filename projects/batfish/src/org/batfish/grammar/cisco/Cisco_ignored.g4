@@ -731,6 +731,7 @@ null_single
          )
       )
       | ISDN
+      | L2PROTOCOL
       | LDAP_BASE_DN
       | LDAP_LOGIN
       | LDAP_LOGIN_DN

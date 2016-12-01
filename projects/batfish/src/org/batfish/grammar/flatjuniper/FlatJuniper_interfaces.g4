@@ -63,6 +63,7 @@ efamt_vlan
    (
       ALL
       | range
+      | variable
    )
 ;
 
