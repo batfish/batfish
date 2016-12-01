@@ -9,7 +9,7 @@ package org.batfish.grammar.cisco;
 }
 
 @members {
-private int lastTokenType = 0;
+private int lastTokenType = -1;
 private boolean enableIPV6_ADDRESS = true;
 private boolean enableIP_ADDRESS = true;
 private boolean enableDEC = true;
@@ -8931,8 +8931,8 @@ COMMENT_LINE
 :
    (
       F_Whitespace
-   )* '!'
-   {lastTokenType == NEWLINE}?
+   )* [!#]
+   {lastTokenType == NEWLINE || lastTokenType == -1}?
 
    F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;

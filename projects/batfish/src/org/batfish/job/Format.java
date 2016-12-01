@@ -20,8 +20,19 @@ public final class Format {
 
    private char _firstChar;
 
+   private boolean _notJuniper;
+
    private Format(String fileText) {
       _fileText = fileText;
+   }
+
+   private void blacklist() {
+      Matcher bannerMatcher = Pattern.compile("(?m)^banner ")
+            .matcher(_fileText);
+      if (bannerMatcher.find()) {
+         _notJuniper = true;
+      }
+
    }
 
    private ConfigurationFormat checkAlcatelAos() {
@@ -108,6 +119,9 @@ public final class Format {
    }
 
    private ConfigurationFormat checkJuniper() {
+      if (_notJuniper) {
+         return null;
+      }
       Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(_fileText);
       Matcher flattenedJuniperMatcher = Pattern
             .compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER))
@@ -219,6 +233,7 @@ public final class Format {
       if (format != null) {
          return format;
       }
+      blacklist();
       format = checkCiscoXr();
       if (format != null) {
          return format;
