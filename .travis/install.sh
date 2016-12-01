@@ -4,11 +4,6 @@ TMP_DIR=$(mktemp -d)
 cd ${TMP_DIR} || exit 1
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
-   ### install java 8 and ant
-   sudo add-apt-repository -y ppa:webupd8team/java
-   sudo apt-get update
-   sudo apt-get -y install oracle-java8-installer ant
-
    ### install z3
    Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-4.5.0/z3-4.5.0-x64-ubuntu-14.04.zip
    Z3_ZIP=$(basename ${Z3_ZIP_URL})
