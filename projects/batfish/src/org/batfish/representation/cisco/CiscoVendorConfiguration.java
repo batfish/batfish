@@ -1898,6 +1898,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       final Configuration c = new Configuration(_hostname);
       c.setConfigurationFormat(_vendor);
       c.getVendorFamily().setCisco(_cf);
+      c.setDomainName(_domainName);
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);

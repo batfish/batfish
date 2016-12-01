@@ -42,6 +42,7 @@ load-balance policies
     distribution symmetric-hash mac-ip
 no lldp run
 ip domain-name my.domain.name
+domain-name my.domain.name
 nv
  satellite 100
   type asr9000v

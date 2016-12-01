@@ -433,17 +433,6 @@ hardware_null
    ) ~NEWLINE* NEWLINE
 ;
 
-hostname_stanza
-:
-   (
-      HOSTNAME
-      | SWITCHNAME
-   )
-   (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
-;
-
 iimgp_stanza
 :
    allow_iimgp_stanza
@@ -499,17 +488,16 @@ ip_default_gateway_stanza
    IP DEFAULT_GATEWAY gateway = IP_ADDRESS NEWLINE
 ;
 
-ip_domain_name
+ip_dhcp_null
 :
-   DOMAIN_NAME name = variable NEWLINE
-;
-
-ip_pim
-:
-   PIM
+   NO?
    (
-      VRF vrf = variable
-   )? ip_pim_tail
+      DEFAULT_ROUTER
+      | DNS_SERVER
+      | DOMAIN_NAME
+      | LEASE
+      | NETWORK
+   ) ~NEWLINE* NEWLINE
 ;
 
 ip_pim_tail
@@ -585,15 +573,6 @@ ip_sla_null
       | TAG
       | TOS
    ) ~NEWLINE* NEWLINE
-;
-
-ip_ssh
-:
-   SSH
-   (
-      ip_ssh_version
-      | ip_ssh_null
-   )
 ;
 
 ip_ssh_null
@@ -1528,6 +1507,14 @@ s_dial_peer
    )*
 ;
 
+s_domain_name
+:
+   DOMAIN_NAME
+   (
+      name_parts += ~NEWLINE
+   )+ NEWLINE
+;
+
 s_dot11
 :
    DOT11 ~NEWLINE* NEWLINE
@@ -1630,14 +1617,40 @@ s_hardware
    )*
 ;
 
-s_ip
+s_hostname
 :
-   IP
    (
-      ip_domain_name
-      | ip_pim
-      | ip_ssh
+      HOSTNAME
+      | SWITCHNAME
    )
+   (
+      name_parts += ~NEWLINE
+   )+ NEWLINE
+;
+
+s_ip_dhcp
+:
+   NO?
+   (
+      IP
+      | IPV6
+   ) DHCP ~NEWLINE* NEWLINE
+   (
+      ip_dhcp_null
+   )*
+;
+
+s_ip_domain_name
+:
+   IP DOMAIN_NAME name = variable NEWLINE
+;
+
+s_ip_pim
+:
+   IP PIM
+   (
+      VRF vrf = variable
+   )? ip_pim_tail
 ;
 
 s_ip_sla
@@ -1651,6 +1664,15 @@ s_ip_sla
 s_ip_source_route
 :
    NO? IP SOURCE_ROUTE NEWLINE
+;
+
+s_ip_ssh
+:
+   IP SSH
+   (
+      ip_ssh_version
+      | ip_ssh_null
+   )
 ;
 
 s_ipc
@@ -2083,7 +2105,6 @@ stanza
    | dhcp_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
-   | hostname_stanza
    | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
@@ -2128,6 +2149,7 @@ stanza
    | s_crypto
    | s_ctl_file
    | s_dial_peer
+   | s_domain_name
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
@@ -2141,10 +2163,14 @@ stanza
    | s_gatekeeper
    | s_global_port_security
    | s_hardware
+   | s_hostname
    | s_interface
-   | s_ip
+   | s_ip_dhcp
+   | s_ip_domain_name
+   | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
+   | s_ip_ssh
    | s_ipc
    | s_ipv6_router_ospf
    | s_ipsla

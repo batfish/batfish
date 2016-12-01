@@ -722,13 +722,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterIp_ssh(Ip_sshContext ctx) {
-      if (_configuration.getCf().getSsh() == null) {
-         _configuration.getCf().setSsh(new SshSettings());
-      }
-   }
-
-   @Override
    public void enterIpv6_prefix_list_stanza(
          Ipv6_prefix_list_stanzaContext ctx) {
       String name = ctx.name.getText();
@@ -1019,6 +1012,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.MULTIPOINT() != null) {
          todo(ctx, F_INTERFACE_MULTIPOINT);
+      }
+   }
+
+   @Override
+   public void enterS_ip_ssh(S_ip_sshContext ctx) {
+      if (_configuration.getCf().getSsh() == null) {
+         _configuration.getCf().setSsh(new SshSettings());
       }
    }
 
@@ -1895,17 +1895,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitHostname_stanza(Hostname_stanzaContext ctx) {
-      StringBuilder sb = new StringBuilder();
-      for (Token namePart : ctx.name_parts) {
-         sb.append(namePart.getText());
-      }
-      String hostname = sb.toString();
-      _configuration.setHostname(hostname);
-      _configuration.getCf().setHostname(hostname);
-   }
-
-   @Override
    public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
       String name = ctx.name.getText();
       if (ctx.IN() != null || ctx.INGRESS() != null) {
@@ -2248,12 +2237,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
       todo(ctx, F_IP_DEFAULT_GATEWAY);
-   }
-
-   @Override
-   public void exitIp_domain_name(Ip_domain_nameContext ctx) {
-      String name = ctx.name.getText();
-      _configuration.getCf().setDomainName(name);
    }
 
    @Override
@@ -3444,6 +3427,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_domain_name(S_domain_nameContext ctx) {
+      StringBuilder sb = new StringBuilder();
+      for (Token namePart : ctx.name_parts) {
+         sb.append(namePart.getText());
+      }
+      String domainName = sb.toString();
+      _configuration.setDomainName(domainName);
+   }
+
+   @Override
    public void exitS_feature(S_featureContext ctx) {
       List<String> words = ctx.words.stream().map(w -> w.getText())
             .collect(Collectors.toList());
@@ -3453,8 +3446,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_hostname(S_hostnameContext ctx) {
+      StringBuilder sb = new StringBuilder();
+      for (Token namePart : ctx.name_parts) {
+         sb.append(namePart.getText());
+      }
+      String hostname = sb.toString();
+      _configuration.setHostname(hostname);
+      _configuration.getCf().setHostname(hostname);
+   }
+
+   @Override
    public void exitS_interface(S_interfaceContext ctx) {
       _currentInterfaces = null;
+   }
+
+   @Override
+   public void exitS_ip_domain_name(S_ip_domain_nameContext ctx) {
+      String name = ctx.name.getText();
+      _configuration.setDomainName(name);
    }
 
    @Override
