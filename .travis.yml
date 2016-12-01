@@ -2,8 +2,11 @@ matrix:
    include:
       - os: linux
         dist: trusty
-        jdk:
-           - oraclejdk8
+        group: deprecated
+        addons:
+           apt:
+              packages:
+                 - oracle-java8-installer
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
