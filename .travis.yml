@@ -2,11 +2,6 @@ matrix:
    include:
       - os: linux
         dist: trusty
-        language: java
-        addons:
-           apt:
-              packages:
-                 - oracle-java8-installer
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
