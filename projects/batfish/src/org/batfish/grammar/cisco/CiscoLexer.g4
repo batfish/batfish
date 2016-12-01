@@ -9038,20 +9038,16 @@ IPV6_ADDRESS
       )
       |
       (
-         F_HexDigit+
-         {enableIPV6_ADDRESS}?
+         (
+            F_HexDigit+
+            {enableIPV6_ADDRESS}?
 
-         ':' ':'?
-      )+
+            ':' ':'?
+         )+ F_HexDigit*
+      )
    )
    (
-      (
-         F_HexDigit+
-      )
-      |
-      (
-         F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-      )
+      ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
    )?
 ;
 
@@ -9071,20 +9067,16 @@ IPV6_PREFIX
       )
       |
       (
-         F_HexDigit+
-         {enableIPV6_ADDRESS}?
+         (
+            F_HexDigit+
+            {enableIPV6_ADDRESS}?
 
-         ':' ':'?
-      )+
+            ':' ':'?
+         )+ F_HexDigit*
+      )
    )
    (
-      (
-         F_HexDigit+
-      )
-      |
-      (
-         F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-      )
+      ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
    )? '/' F_DecByte
 ;
 
@@ -10021,11 +10013,13 @@ M_NEIGHBOR_IPV6_ADDRESS
          )
          |
          (
-            F_HexDigit+ ':' ':'?
-         )+
+            (
+               F_HexDigit+ ':' ':'?
+            )+ F_HexDigit*
+         )
       )
       (
-         F_HexDigit+
+         ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
       )?
    ) -> type ( IPV6_ADDRESS ) , popMode
 ;
@@ -10034,19 +10028,23 @@ M_NEIGHBOR_IPV6_PREFIX
 :
    (
       (
-         '::'
+         (
+            '::'
+            (
+               (
+                  F_HexDigit+ ':'
+               )* F_HexDigit+
+            )?
+         )
+         |
          (
             (
-               F_HexDigit+ ':'
-            )* F_HexDigit+
-         )?
+               F_HexDigit+ ':' ':'?
+            )+ F_HexDigit*
+         )
       )
-      |
       (
-         F_HexDigit+ ':' ':'?
-      )+
-      (
-         F_HexDigit+
+         ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
       )? '/' F_DecByte
    ) -> type ( IPV6_PREFIX ) , popMode
 ;

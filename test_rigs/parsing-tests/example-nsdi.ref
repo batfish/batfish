@@ -6,7 +6,6 @@
         "c1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -330,7 +329,6 @@
         "c2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -654,7 +652,6 @@
         "n1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1048,7 +1045,6 @@
         "n10" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1339,7 +1335,6 @@
         "n2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1758,7 +1753,6 @@
         "n3" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -2194,7 +2188,6 @@
         "n4" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -2485,7 +2478,6 @@
         "p1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",

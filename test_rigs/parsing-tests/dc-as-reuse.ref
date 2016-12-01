@@ -6,7 +6,6 @@
         "plane_0_spine_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -427,7 +426,6 @@
         "plane_1_spine_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -848,7 +846,6 @@
         "pod_0_leaf_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -1333,7 +1330,6 @@
         "pod_0_leaf_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -1818,7 +1814,6 @@
         "pod_0_tor_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -2279,7 +2274,6 @@
         "pod_0_tor_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -2740,7 +2734,6 @@
         "pod_1_leaf_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -3225,7 +3218,6 @@
         "pod_1_leaf_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -3710,7 +3702,6 @@
         "pod_1_tor_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -4171,7 +4162,6 @@
         "pod_1_tor_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",

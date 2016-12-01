@@ -803,7 +803,6 @@
         "n3" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",

@@ -6,7 +6,6 @@
         "D1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -296,7 +295,6 @@
         "D2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -622,7 +620,6 @@
         "R" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1010,7 +1007,6 @@
         "S" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1313,7 +1309,6 @@
         "SL" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1601,7 +1596,6 @@
         "SR" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",

@@ -6,7 +6,6 @@
         "IosXrMultiCast" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -336,7 +335,6 @@
         "L2VPN" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -483,7 +481,6 @@
         "MCastRouting" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -819,7 +816,6 @@
         "aaa_accounting" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -873,7 +869,6 @@
         "aaa_authentication_login_default_tacacs_local" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -899,7 +894,6 @@
         "aaa_group_server_source_interface" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -929,7 +923,6 @@
         "access_list" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -953,7 +946,6 @@
         "address_family" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -993,7 +985,6 @@
         "aggAddress" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1095,7 +1086,6 @@
         "arista-event-handler" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1134,7 +1124,6 @@
         "arista_logging" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1154,7 +1143,6 @@
         "arista_misc" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1173,7 +1161,6 @@
         "as_path_prepend" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1203,7 +1190,6 @@
         "asa_ssh" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1259,7 +1245,6 @@
         "banner" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1344,7 +1329,6 @@
         "banner_dos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1401,7 +1385,6 @@
         "bgp_address_family" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1678,7 +1661,6 @@
         "bgp_default_originate_policy" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1784,7 +1766,6 @@
         "bgp_foundry" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1879,7 +1860,6 @@
         "bgp_nsr" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -1910,7 +1890,6 @@
         "bgp_route_policy" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -2058,7 +2037,6 @@
         "cisco_aaa" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -2682,7 +2660,6 @@
         "cisco_authentication" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -2707,7 +2684,6 @@
         "cisco_bgp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -2731,7 +2707,6 @@
         "cisco_callhome" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3080,7 +3055,6 @@
         "cisco_control_plane" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3109,7 +3083,6 @@
         "cisco_controller" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3218,7 +3191,6 @@
         "cisco_crypto" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3718,7 +3690,6 @@
         "cisco_dhcp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3886,7 +3857,6 @@
         "cisco_dot11" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3934,7 +3904,6 @@
         "cisco_dot1x" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -3990,7 +3959,6 @@
         "cisco_dspfarm" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4039,7 +4007,6 @@
         "cisco_dynamic_access_policy_record" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4094,7 +4061,6 @@
         "cisco_flow" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4288,7 +4254,6 @@
         "cisco_hardware" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4329,7 +4294,6 @@
         "cisco_interface" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4724,7 +4688,6 @@
         "cisco_ip" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4756,7 +4719,6 @@
         "cisco_ip_route" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -4853,7 +4815,6 @@
         "cisco_ipsla" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -5489,7 +5450,6 @@
         "cisco_ipv6" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -5544,7 +5504,6 @@
         "cisco_isis" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -5991,7 +5950,6 @@
         "cisco_line" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -6254,7 +6212,6 @@
         "cisco_logging" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -6681,7 +6638,6 @@
         "cisco_mac_acl" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -6713,7 +6669,6 @@
         "cisco_misc" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -6798,6 +6753,14 @@
             "          LEVEL:'level'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'cisco'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        L2PROTOCOL:'l2protocol'  <== mode:DEFAULT_MODE",
+            "        TUNNEL:'tunnel'  <== mode:DEFAULT_MODE",
+            "        COS:'cos'  <== mode:DEFAULT_MODE",
+            "        DEC:'5'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -7947,7 +7910,6 @@
         "cisco_multicast" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -8049,7 +8011,6 @@
         "cisco_ospf" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -8330,7 +8291,6 @@
         "cisco_platform" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -8386,7 +8346,6 @@
         "cisco_privilege" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -8553,7 +8512,6 @@
         "cisco_qos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -9026,7 +8984,6 @@
         "cisco_redundancy" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -9073,7 +9030,6 @@
         "cisco_role" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -9136,7 +9092,6 @@
         "cisco_sccp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -9216,7 +9171,6 @@
         "cisco_snmp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10020,7 +9974,6 @@
         "cisco_spanning_tree" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10137,7 +10090,6 @@
         "cisco_ssh" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10193,7 +10145,6 @@
         "cisco_stcapp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10436,7 +10387,6 @@
         "cisco_track" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10515,7 +10465,6 @@
         "cisco_vdc" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10665,7 +10614,6 @@
         "cisco_vlan" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10844,7 +10792,6 @@
         "cisco_voice_port" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10901,7 +10848,6 @@
         "cisco_vpdn" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10941,7 +10887,6 @@
         "cisco_vpn" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -10979,7 +10924,6 @@
         "cisco_webvpn" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11291,7 +11235,6 @@
         "cisco_wsma" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11342,7 +11285,6 @@
         "colon_in_vrf" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11390,7 +11332,6 @@
         "commSet" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11571,10 +11512,6 @@
             "        VARIABLE:'EBGP-PEER'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (community_set_elem_list",
-            "        (hash_comment",
-            "          POUND:'#'  <== mode:DEFAULT_MODE",
-            "          RAW_TEXT:' CF (Commodity Peer) All Commodity Peer routes'  <== mode:M_Description)",
-            "        NEWLINE:'\\n'  <== mode:M_Description",
             "        (community_set_elem",
             "          (rp_community_set_elem",
             "            (community",
@@ -11593,7 +11530,6 @@
         "community-name-numbers" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11649,11 +11585,7 @@
             "            SET:'set'  <== mode:DEFAULT_MODE",
             "            IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "            NEXT_HOP:'next-hop'  <== mode:DEFAULT_MODE",
-            "            IPV6_ADDRESS:'::FFFF:1'  <== mode:DEFAULT_MODE",
-            "            PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "            FLOAT:'2.3'  <== mode:DEFAULT_MODE",
-            "            PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "            DEC:'4'  <== mode:DEFAULT_MODE",
+            "            IPV6_ADDRESS:'::FFFF:1.2.3.4'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_null",
@@ -11666,7 +11598,6 @@
         "community-name-numbers_dos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11722,11 +11653,7 @@
             "            SET:'set'  <== mode:DEFAULT_MODE",
             "            IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "            NEXT_HOP:'next-hop'  <== mode:DEFAULT_MODE",
-            "            IPV6_ADDRESS:'::FFFF:1'  <== mode:DEFAULT_MODE",
-            "            PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "            FLOAT:'2.3'  <== mode:DEFAULT_MODE",
-            "            PERIOD:'.'  <== mode:DEFAULT_MODE",
-            "            DEC:'4'  <== mode:DEFAULT_MODE",
+            "            IPV6_ADDRESS:'::FFFF:1.2.3.4'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_null",
@@ -11739,7 +11666,6 @@
         "community_list_named" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11808,7 +11734,6 @@
         "community_set" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -11865,7 +11790,6 @@
         "eigrp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -12637,7 +12561,6 @@
         "foundry_access_list" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -12821,7 +12744,6 @@
         "foundry_bgp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -12930,7 +12852,6 @@
         "foundry_interface" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13019,7 +12940,6 @@
         "foundry_misc" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13322,7 +13242,6 @@
         "foundry_vlan_group" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13360,7 +13279,6 @@
         "if_tag_is" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13497,7 +13415,6 @@
         "interface_exit" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13615,7 +13532,6 @@
         "interface_name" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13680,7 +13596,6 @@
         "interface_sdr" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13732,7 +13647,6 @@
         "ios_xr_acl" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13770,7 +13684,6 @@
         "ios_xr_isis" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -13865,7 +13778,6 @@
         "ios_xr_multipart" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14011,7 +13923,6 @@
         "ios_xr_ntp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14043,7 +13954,6 @@
         "ios_xr_ospf" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14520,7 +14430,6 @@
         "ios_xr_router_static" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14704,7 +14613,6 @@
         "ios_xr_ssh" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14770,7 +14678,6 @@
         "ios_xr_taskgroup" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -14958,7 +14865,6 @@
         "ip_access_list_with_seq" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -15222,7 +15128,6 @@
         "ip_prefix_list_single_line" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -15254,7 +15159,6 @@
         "ipv6_access_list" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -15818,6 +15722,38 @@
             "                                        (ivrrpt_authentication_key",
             "                                          AUTHENTICATION_KEY:'authentication-key'  <== mode:DEFAULT_MODE",
             "                                          DOUBLE_QUOTED_STRING:'\"$9$dLV2aZGi.fzDiORSeXxDikqmT\"'  <== mode:DEFAULT_MODE)))))))))))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'  <== mode:DEFAULT_MODE",
+            "            (s_interfaces_tail",
+            "              (intt_named",
+            "                (variable",
+            "                  VARIABLE:'xe-0/0/5'  <== mode:M_Interface)",
+            "                COLON:':'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  DEC:'0'  <== mode:DEFAULT_MODE)",
+            "                (intt_named_tail",
+            "                  (it_unit",
+            "                    UNIT:'unit'  <== mode:DEFAULT_MODE",
+            "                    DEC:'0'  <== mode:DEFAULT_MODE",
+            "                    (it_unit_tail",
+            "                      (it_common",
+            "                        (it_family",
+            "                          FAMILY:'family'  <== mode:DEFAULT_MODE",
+            "                          (it_family_tail",
+            "                            (famt_ethernet_switching",
+            "                              ETHERNET_SWITCHING:'ethernet-switching'  <== mode:DEFAULT_MODE",
+            "                              (famt_ethernet_switching_tail",
+            "                                (efamt_vlan",
+            "                                  VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "                                  MEMBERS:'members'  <== mode:M_Vlan",
+            "                                  (variable",
+            "                                    VARIABLE:'bippetyboppety'  <== mode:DEFAULT_MODE))))))))))))))))",
             "    NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -16162,7 +16098,6 @@
         "lcoal_v6_addr" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16195,7 +16130,6 @@
         "mac_access_list" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16232,7 +16166,6 @@
         "msdp_originator_id" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16275,7 +16208,6 @@
         "named_and_numbered_lists" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16316,7 +16248,6 @@
         "neighbor" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16400,7 +16331,6 @@
         "neighbor-name-numbers" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16436,7 +16366,6 @@
         "neighbor_dos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16520,7 +16449,6 @@
         "neighbor_mix" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16639,7 +16567,6 @@
         "neighbor_nxos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16678,7 +16605,6 @@
         "network6" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16716,7 +16642,6 @@
         "nexus" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16740,7 +16665,6 @@
         "nexus-arista-router-bgp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16801,7 +16725,6 @@
         "nexus_bgp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -16904,6 +16827,23 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))",
             "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            (bgp_address_family",
+            "              IPV6:'ipv6'  <== mode:DEFAULT_MODE",
+            "              UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (bgp_tail",
+            "            (network6_bgp_tail",
+            "              NETWORK:'network'  <== mode:DEFAULT_MODE",
+            "              IPV6_PREFIX:'::ffff:1.2.3.0/120'  <== mode:DEFAULT_MODE",
+            "              ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'BLIB'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (address_family_footer)))",
+            "      (router_bgp_stanza_tail",
             "        (template_peer_rb_stanza",
             "          TEMPLATE:'template'  <== mode:DEFAULT_MODE",
             "          PEER:'peer'  <== mode:DEFAULT_MODE",
@@ -16970,7 +16910,6 @@
         "nexus_ntp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17001,7 +16940,6 @@
         "nexus_ssh" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17028,7 +16966,6 @@
         "no_aaa_group_server" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17049,7 +16986,6 @@
         "non_nexus_neighbor_af" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17123,7 +17059,6 @@
         "openflow" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17169,7 +17104,6 @@
         "peer_template" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17339,7 +17273,6 @@
         "pim" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17482,7 +17415,6 @@
         "pim_snooping" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17511,7 +17443,6 @@
         "preSet" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17536,10 +17467,6 @@
             "        VARIABLE:'ucla_networks'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (prefix_set_elem_list",
-            "        (hash_comment",
-            "          POUND:'#'  <== mode:DEFAULT_MODE",
-            "          RAW_TEXT:'boo'  <== mode:M_Description)",
-            "        NEWLINE:'\\n'  <== mode:M_Description",
             "        (prefix_set_elem",
             "          IP_PREFIX:'128.97.0.0/16'  <== mode:DEFAULT_MODE",
             "          LE:'le'  <== mode:DEFAULT_MODE",
@@ -17558,10 +17485,6 @@
             "          DEC:'32'  <== mode:DEFAULT_MODE)",
             "        COMMA:','  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "        (hash_comment",
-            "          POUND:'#'  <== mode:DEFAULT_MODE",
-            "          RAW_TEXT:' bippety boppety'  <== mode:M_Description)",
-            "        NEWLINE:'\\n'  <== mode:M_Description",
             "        (prefix_set_elem",
             "          IP_PREFIX:'164.67.0.0/16'  <== mode:DEFAULT_MODE",
             "          LE:'le'  <== mode:DEFAULT_MODE",
@@ -17604,7 +17527,6 @@
         "prefix_list_ipv4" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -17660,7 +17582,6 @@
         "rP" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -18346,37 +18267,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:'elseif (community matches-any (2152:65517, 2152:65502, 2152:65511, 2152:65513, 2152:65514, 2152:65512)) then'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description)",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' prepend as-path 2152'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description)",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' pass'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description)",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:'elseif (as-path in xo-aapl-shift) then'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description)",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' prepend as-path most-recent'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description)",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:'  pass'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18474,11 +18365,6 @@
             "              (disposition_rp_stanza",
             "                DROP:'drop'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "            (rp_stanza",
-            "              (hash_comment",
-            "                POUND:'#'  <== mode:DEFAULT_MODE",
-            "                RAW_TEXT:' Begin blackhole matching'  <== mode:M_Description)",
-            "              NEWLINE:'\\n'  <== mode:M_Description)",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18546,12 +18432,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' End blackhole matching'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18572,12 +18453,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Intent is to not advertise if prefix is tagged with Chills ASN & 65535'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18601,12 +18477,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Intent is to not advertise if tagged with scenes ASNs & 65535'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18630,12 +18501,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Intent is to not advertise if AS path matches the above path-set'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18659,12 +18525,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Intent is to not advertise prefixes tagged with WRN related ASNs & 65535'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18710,12 +18571,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  DROP:'drop'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Intent is to not advertise prefixes tagged with WRN related ASNs & 65535'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -18777,12 +18633,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  PASS:'pass'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:' Routes from chippy should be advertised with a high MED if they are tagged with 65298 or 65498'  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -19032,12 +18883,7 @@
             "              (rp_stanza",
             "                (disposition_rp_stanza",
             "                  PASS:'pass'  <== mode:DEFAULT_MODE",
-            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "              (rp_stanza",
-            "                (hash_comment",
-            "                  POUND:'#'  <== mode:DEFAULT_MODE",
-            "                  RAW_TEXT:'UUUU specific matching                                                                                                                '  <== mode:M_Description)",
-            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "            (elseif_rp_stanza",
             "              ELSEIF:'elseif'  <== mode:DEFAULT_MODE",
             "              (boolean_rp_stanza",
@@ -19190,7 +19036,6 @@
         "route_map" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -19324,7 +19169,6 @@
         "route_map_sub" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -19354,7 +19198,6 @@
         "route_maps_in_two_address_families" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -19518,7 +19361,6 @@
         "route_policy_as_path_set" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -19853,7 +19695,6 @@
         "route_policy_igp_cost" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -19993,7 +19834,6 @@
         "route_policy_metric_type" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20077,7 +19917,6 @@
         "route_policy_param" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20301,7 +20140,6 @@
         "router_hsrp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20386,7 +20224,6 @@
         "router_msdp" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20413,7 +20250,6 @@
         "set_inline_community" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20446,7 +20282,6 @@
         "statistics" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20470,7 +20305,6 @@
         "switchport_range" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20518,7 +20352,6 @@
         "syslog_source_interface" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20539,7 +20372,6 @@
         "taskgroup" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20581,7 +20413,6 @@
         "tcpflags" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20674,7 +20505,6 @@
         "test" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -20974,7 +20804,6 @@
         "underscore_variable" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21012,7 +20841,6 @@
         "variables" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21047,7 +20875,6 @@
         "variables_dos" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21082,7 +20909,6 @@
         "vlan_access_map4" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21157,7 +20983,6 @@
         "vrf_context" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21253,7 +21078,6 @@
         "vxlan" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -21272,7 +21096,6 @@
         "xrBGP_Neighbor_Group" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",

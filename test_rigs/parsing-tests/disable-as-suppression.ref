@@ -6,7 +6,6 @@
         "as1r1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -79,7 +78,6 @@
         "as1r2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
@@ -152,7 +150,6 @@
         "as2r1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",

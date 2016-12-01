@@ -6,7 +6,6 @@
         "A1Border" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -412,7 +411,6 @@
         "A1Dist" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -733,7 +731,6 @@
         "A1Inter" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1066,7 +1063,6 @@
         "A2Dist1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1395,7 +1391,6 @@
         "A2Dist2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -2090,7 +2085,6 @@
         "ISP" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
