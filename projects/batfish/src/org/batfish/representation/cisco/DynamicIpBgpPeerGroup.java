@@ -1,8 +1,9 @@
 package org.batfish.representation.cisco;
 
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 
-public class DynamicBgpPeerGroup extends LeafBgpPeerGroup {
+public class DynamicIpBgpPeerGroup extends LeafBgpPeerGroup {
 
    /**
     *
@@ -11,7 +12,7 @@ public class DynamicBgpPeerGroup extends LeafBgpPeerGroup {
 
    private Prefix _prefix;
 
-   public DynamicBgpPeerGroup(Prefix prefix) {
+   public DynamicIpBgpPeerGroup(Prefix prefix) {
       _prefix = prefix;
    }
 
@@ -23,6 +24,11 @@ public class DynamicBgpPeerGroup extends LeafBgpPeerGroup {
    @Override
    public Prefix getNeighborPrefix() {
       return _prefix;
+   }
+
+   @Override
+   public Prefix6 getNeighborPrefix6() {
+      return null;
    }
 
    public Prefix getPrefix() {

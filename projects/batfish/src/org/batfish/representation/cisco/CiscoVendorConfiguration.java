@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.CommunityList;
@@ -23,6 +24,7 @@ import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -38,6 +40,8 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Prefix6Range;
+import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
@@ -56,9 +60,12 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -80,6 +87,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private static final String BGP_COMMON_EXPORT_POLICY_NAME = "~BGP_COMMON_EXPORT_POLICY~";
 
    private static final String BGP_NETWORK_NETWORKS_FILTER_NAME = "~BGP_NETWORK_NETWORKS_FILTER~";
+
+   private static final String BGP_NETWORK6_NETWORKS_FILTER_NAME = "~BGP_NETWORK6_NETWORKS_FILTER~";
 
    protected static final String BGP_PEER_GROUP = "bgp group";
 
@@ -299,6 +308,43 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private void markAcls(Set<String> acls, String type, Configuration c) {
       for (String listName : acls) {
          boolean exists = _extendedAccessLists.containsKey(listName)
+               || _standardAccessLists.containsKey(listName)
+               || _extendedIpv6AccessLists.containsKey(listName)
+               || _standardIpv6AccessLists.containsKey(listName)
+               || _macAccessLists.contains(listName);
+         if (exists) {
+            String msg = type;
+            ExtendedAccessList extendedAccessList = _extendedAccessLists
+                  .get(listName);
+            if (extendedAccessList != null) {
+               extendedAccessList.getReferers().put(this, msg);
+            }
+            StandardAccessList standardAccessList = _standardAccessLists
+                  .get(listName);
+            if (standardAccessList != null) {
+               standardAccessList.getReferers().put(this, msg);
+            }
+            ExtendedIpv6AccessList extendedAccessList6 = _extendedIpv6AccessLists
+                  .get(listName);
+            if (extendedAccessList6 != null) {
+               extendedAccessList6.getReferers().put(this, msg);
+            }
+            StandardIpv6AccessList standardAccessList6 = _standardIpv6AccessLists
+                  .get(listName);
+            if (standardAccessList6 != null) {
+               standardAccessList6.getReferers().put(this, msg);
+            }
+         }
+         else {
+            undefined("Reference to undefined " + type + ": " + listName, type,
+                  listName);
+         }
+      }
+   }
+
+   private void markIpv4Acls(Set<String> acls, String type, Configuration c) {
+      for (String listName : acls) {
+         boolean exists = _extendedAccessLists.containsKey(listName)
                || _standardAccessLists.containsKey(listName);
          if (exists) {
             String msg = type;
@@ -432,14 +478,25 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
       int defaultMetric = proc.getDefaultMetric();
       Ip bgpRouterId = getBgpRouterId(c, proc);
+      MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
+            new DestinationNetwork(),
+            new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
+                  new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
+      matchDefaultRoute.setComment("match default route");
+      MatchPrefix6Set matchDefaultRoute6 = new MatchPrefix6Set(
+            new DestinationNetwork6(),
+            new ExplicitPrefix6Set(new Prefix6Space(Collections.singleton(
+                  new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0))))));
+      matchDefaultRoute.setComment("match default route");
       newBgpProcess.setRouterId(bgpRouterId);
-      Set<BgpAggregateNetwork> summaryOnlyNetworks = new HashSet<>();
+      Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
+      Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
 
-      // add generated routes for aggregate addresses
-      for (Entry<Prefix, BgpAggregateNetwork> e : proc.getAggregateNetworks()
-            .entrySet()) {
+      // add generated routes for aggregate ipv4 addresses
+      for (Entry<Prefix, BgpAggregateIpv4Network> e : proc
+            .getAggregateNetworks().entrySet()) {
          Prefix prefix = e.getKey();
-         BgpAggregateNetwork aggNet = e.getValue();
+         BgpAggregateIpv4Network aggNet = e.getValue();
          boolean summaryOnly = aggNet.getSummaryOnly();
          int prefixLength = prefix.getPrefixLength();
          SubRange prefixRange = new SubRange(prefixLength + 1, 32);
@@ -487,6 +544,60 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          }
       }
 
+      // add generated routes for aggregate ipv6 addresses
+      // TODO: merge with above to make cleaner
+      for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc
+            .getAggregateIpv6Networks().entrySet()) {
+         Prefix6 prefix6 = e.getKey();
+         BgpAggregateIpv6Network aggNet = e.getValue();
+         boolean summaryOnly = aggNet.getSummaryOnly();
+         int prefixLength = prefix6.getPrefixLength();
+         SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+         if (summaryOnly) {
+            summaryOnlyIpv6Networks.add(aggNet);
+         }
+
+         // create generation policy for aggregate network
+         String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:"
+               + prefix6.toString() + "~";
+         RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
+               generationPolicyName);
+         If currentGeneratedRouteConditional = new If();
+         currentGeneratedRoutePolicy.getStatements()
+               .add(currentGeneratedRouteConditional);
+         currentGeneratedRouteConditional.setGuard(new MatchPrefix6Set(
+               new DestinationNetwork6(),
+               new ExplicitPrefix6Set(new Prefix6Space(Collections
+                     .singleton(new Prefix6Range(prefix6, prefixRange))))));
+         currentGeneratedRouteConditional.getTrueStatements()
+               .add(Statements.ReturnTrue.toStaticStatement());
+         c.getRoutingPolicies().put(generationPolicyName,
+               currentGeneratedRoutePolicy);
+         GeneratedRoute6 gr = new GeneratedRoute6(prefix6,
+               CISCO_AGGREGATE_ROUTE_ADMIN_COST);
+         gr.setGenerationPolicy(generationPolicyName);
+         gr.setDiscard(true);
+         c.getGeneratedIpv6Routes().add(gr);
+
+         // set attribute map for aggregate network
+         String attributeMapName = aggNet.getAttributeMap();
+         if (attributeMapName != null) {
+            RouteMap attributeMap = _routeMaps.get(attributeMapName);
+            if (attributeMap != null) {
+               attributeMap.getReferers().put(aggNet,
+                     "attribute-map of aggregate ipv6 route: "
+                           + prefix6.toString());
+               gr.setAttributePolicy(attributeMapName);
+            }
+            else {
+               undefined(
+                     "Reference to undefined route-map used as attribute-map: '"
+                           + attributeMapName + "'",
+                     ROUTE_MAP, attributeMapName);
+            }
+         }
+      }
+
       /*
        * Create common bgp export policy. This policy encompasses network
        * statements, aggregate-address with/without summary-only, redistribution
@@ -510,7 +621,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                matchSuppressedSummaryOnlyRoutesName);
          c.getRouteFilterLists().put(matchSuppressedSummaryOnlyRoutesName,
                matchSuppressedSummaryOnlyRoutes);
-         for (BgpAggregateNetwork summaryOnlyNetwork : summaryOnlyNetworks) {
+         for (BgpAggregateIpv4Network summaryOnlyNetwork : summaryOnlyNetworks) {
             Prefix prefix = summaryOnlyNetwork.getPrefix();
             int prefixLength = prefix.getPrefixLength();
             RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT,
@@ -592,7 +703,9 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // group if it exists, and then always from process master peer group
       Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<>();
       leafGroups.addAll(proc.getIpPeerGroups().values());
-      leafGroups.addAll(proc.getDynamicPeerGroups().values());
+      leafGroups.addAll(proc.getIpv6PeerGroups().values());
+      leafGroups.addAll(proc.getDynamicIpPeerGroups().values());
+      leafGroups.addAll(proc.getDynamicIpv6PeerGroups().values());
       for (LeafBgpPeerGroup lpg : leafGroups) {
          lpg.inheritUnsetFields(proc, this);
       }
@@ -649,13 +762,49 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // create origination prefilter from listed advertised networks
       RouteFilterList localFilter = new RouteFilterList(
             BGP_NETWORK_NETWORKS_FILTER_NAME);
-      for (Prefix prefix : proc.getNetworks()) {
+      proc.getIpNetworks().forEach((prefix, mapName) -> {
          int prefixLen = prefix.getPrefixLength();
          RouteFilterLine line = new RouteFilterLine(LineAction.ACCEPT, prefix,
                new SubRange(prefixLen, prefixLen));
          localFilter.addLine(line);
-      }
+         if (mapName != null) {
+            RouteMap routeMap = _routeMaps.get(mapName);
+            if (routeMap != null) {
+               routeMap.getReferers().put(proc,
+                     "bgp ipv4 advertised network route-map");
+               // TODO: implement instead of advertising unconditionally
+               _w.unimplemented("bgp ipv4 advertised network route-map");
+            }
+            else {
+               undefined("Reference to bgp ipv4 advertised network route-map: '"
+                     + mapName + "'", ROUTE_MAP, mapName);
+            }
+         }
+      });
       c.getRouteFilterLists().put(localFilter.getName(), localFilter);
+
+      Route6FilterList localFilter6 = new Route6FilterList(
+            BGP_NETWORK6_NETWORKS_FILTER_NAME);
+      proc.getIpv6Networks().forEach((prefix6, mapName) -> {
+         int prefixLen = prefix6.getPrefixLength();
+         Route6FilterLine line = new Route6FilterLine(LineAction.ACCEPT,
+               prefix6, new SubRange(prefixLen, prefixLen));
+         localFilter6.addLine(line);
+         if (mapName != null) {
+            RouteMap routeMap = _routeMaps.get(mapName);
+            if (routeMap != null) {
+               routeMap.getReferers().put(proc,
+                     "bgp ipv6 advertised network route-map");
+               // TODO: implement instead of advertising unconditionally
+               _w.unimplemented("bgp ipv6 advertised network route-map");
+            }
+            else {
+               undefined("Reference to bgp ipv6 advertised network route-map: '"
+                     + mapName + "'", ROUTE_MAP, mapName);
+            }
+         }
+      });
+      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
 
       // add prefilter policy for explicitly advertised networks
       Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
@@ -690,44 +839,48 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
          Ip updateSource = null;
-         if (updateSourceInterface != null) {
-            org.batfish.datamodel.Interface sourceInterface = c.getInterfaces()
-                  .get(updateSourceInterface);
-            if (sourceInterface != null) {
-               Prefix prefix = c.getInterfaces().get(updateSourceInterface)
-                     .getPrefix();
-               if (prefix != null) {
-                  Ip sourceIp = prefix.getAddress();
-                  updateSource = sourceIp;
+         boolean ipv4 = lpg.getNeighborPrefix() != null;
+         if (ipv4) {
+            if (updateSourceInterface != null) {
+               org.batfish.datamodel.Interface sourceInterface = c
+                     .getInterfaces().get(updateSourceInterface);
+               if (sourceInterface != null) {
+                  Prefix prefix = c.getInterfaces().get(updateSourceInterface)
+                        .getPrefix();
+                  if (prefix != null) {
+                     Ip sourceIp = prefix.getAddress();
+                     updateSource = sourceIp;
+                  }
+                  else {
+                     _w.redFlag("bgp update source interface: '"
+                           + updateSourceInterface
+                           + "' not assigned an ip address");
+                  }
                }
                else {
-                  _w.redFlag(
-                        "bgp update source interface: '" + updateSourceInterface
-                              + "' not assigned an ip address");
+                  undefined(
+                        "reference to undefined update source interface: '"
+                              + updateSourceInterface + "'",
+                        INTERFACE, updateSourceInterface);
                }
             }
             else {
-               undefined(
-                     "reference to undefined update source interface: '"
-                           + updateSourceInterface + "'",
-                     INTERFACE, updateSourceInterface);
-            }
-         }
-         else {
-            Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
-            for (Interface iface : _interfaces.values()) {
-               for (Prefix ifacePrefix : iface.getAllPrefixes()) {
-                  if (ifacePrefix.contains(neighborAddress)) {
-                     Ip ifaceAddress = ifacePrefix.getAddress();
-                     updateSource = ifaceAddress;
+               Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
+               for (Interface iface : _interfaces.values()) {
+                  for (Prefix ifacePrefix : iface.getAllPrefixes()) {
+                     if (ifacePrefix.contains(neighborAddress)) {
+                        Ip ifaceAddress = ifacePrefix.getAddress();
+                        updateSource = ifaceAddress;
+                     }
                   }
                }
             }
-         }
-         if (updateSource == null
-               && lpg.getNeighborPrefix().getAddress().valid()) {
-            _w.redFlag("Could not determine update source for BGP neighbor: '"
-                  + lpg.getName() + "'");
+            if (updateSource == null
+                  && lpg.getNeighborPrefix().getAddress().valid()) {
+               _w.redFlag(
+                     "Could not determine update source for BGP neighbor: '"
+                           + lpg.getName() + "'");
+            }
          }
          RoutingPolicy importPolicy = null;
          String inboundRouteMapName = lpg.getInboundRouteMap();
@@ -794,14 +947,17 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
 
          // set up default export policy for this peer group
          GeneratedRoute defaultRoute = null;
+         GeneratedRoute6 defaultRoute6 = null;
          if (lpg.getDefaultOriginate()) {
-            MatchPrefixSet matchDefaultRoute = new MatchPrefixSet(
-                  new DestinationNetwork(),
-                  new ExplicitPrefixSet(new PrefixSpace(Collections.singleton(
-                        new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
-            localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
-            matchDefaultRoute.setComment("match default route");
+            if (ipv4) {
+               localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
+            }
+            else {
+               localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute6);
+            }
             defaultRoute = new GeneratedRoute(Prefix.ZERO,
+                  MAX_ADMINISTRATIVE_COST);
+            defaultRoute6 = new GeneratedRoute6(Prefix6.ZERO,
                   MAX_ADMINISTRATIVE_COST);
 
             String defaultOriginateMapName = lpg.getDefaultOriginateMap();
@@ -832,15 +988,27 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                If defaultRouteGenerationConditional = new If();
                defaultRouteGenerationPolicy.getStatements()
                      .add(defaultRouteGenerationConditional);
-               defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
+               if (ipv4) {
+                  defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
+               }
+               else {
+                  defaultRouteGenerationConditional
+                        .setGuard(matchDefaultRoute6);
+               }
                defaultRouteGenerationConditional.getTrueStatements()
                      .add(Statements.ReturnTrue.toStaticStatement());
                if (lpg.getActive() && !lpg.getShutdown()) {
                   c.getRoutingPolicies().put(defaultRouteGenerationPolicyName,
                         defaultRouteGenerationPolicy);
                }
-               defaultRoute
-                     .setGenerationPolicy(defaultRouteGenerationPolicyName);
+               if (ipv4) {
+                  defaultRoute
+                        .setGenerationPolicy(defaultRouteGenerationPolicyName);
+               }
+               else {
+                  defaultRoute6
+                        .setGenerationPolicy(defaultRouteGenerationPolicyName);
+               }
             }
          }
 
@@ -856,36 +1024,65 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          boolean disablePeerAsCheck = lpg.getDisablePeerAsCheck();
          String inboundPrefixListName = lpg.getInboundPrefixList();
          if (inboundPrefixListName != null) {
-            PrefixList inboundPrefixList = _prefixLists
-                  .get(inboundPrefixListName);
+            ReferenceCountedStructure inboundPrefixList;
+            if (ipv4) {
+               inboundPrefixList = _prefixLists.get(inboundPrefixListName);
+            }
+            else {
+               inboundPrefixList = _prefix6Lists.get(inboundPrefixListName);
+            }
             if (inboundPrefixList != null) {
                inboundPrefixList.getReferers().put(lpg,
                      "inbound prefix-list for neighbor: '" + lpg.getName()
                            + "'");
             }
             else {
-               undefined(
-                     "Reference to undefined inbound prefix-list: '"
-                           + inboundPrefixListName + "' at neighbor: '"
-                           + lpg.getName() + "'",
-                     PREFIX_LIST, inboundPrefixListName);
+               if (ipv4) {
+                  undefined(
+                        "Reference to undefined inbound prefix-list: '"
+                              + inboundPrefixListName + "' at neighbor: '"
+                              + lpg.getName() + "'",
+                        PREFIX_LIST, inboundPrefixListName);
+               }
+               else {
+                  undefined(
+                        "Reference to undefined inbound ipv6 prefix-list: '"
+                              + inboundPrefixListName + "' at neighbor: '"
+                              + lpg.getName() + "'",
+                        PREFIX6_LIST, inboundPrefixListName);
+               }
             }
          }
          String outboundPrefixListName = lpg.getOutboundPrefixList();
          if (outboundPrefixListName != null) {
-            PrefixList outboundPrefixList = _prefixLists
-                  .get(outboundPrefixListName);
+            ReferenceCountedStructure outboundPrefixList;
+            if (ipv4) {
+               outboundPrefixList = _prefixLists.get(outboundPrefixListName);
+            }
+            else {
+               outboundPrefixList = _prefix6Lists.get(outboundPrefixListName);
+            }
             if (outboundPrefixList != null) {
                outboundPrefixList.getReferers().put(lpg,
                      "outbound prefix-list for neighbor: '" + lpg.getName()
                            + "'");
             }
             else {
-               undefined(
-                     "Reference to undefined outbound prefix-list: '"
-                           + outboundPrefixListName + "' at neighbor: '"
-                           + lpg.getName() + "'",
-                     PREFIX_LIST, outboundPrefixListName);
+               if (ipv4) {
+                  undefined(
+                        "Reference to undefined outbound prefix-list: '"
+                              + outboundPrefixListName + "' at neighbor: '"
+                              + lpg.getName() + "'",
+                        PREFIX_LIST, outboundPrefixListName);
+               }
+               else {
+                  undefined(
+                        "Reference to undefined outbound ipv6 prefix-list: '"
+                              + outboundPrefixListName + "' at neighbor: '"
+                              + lpg.getName() + "'",
+                        PREFIX6_LIST, outboundPrefixListName);
+
+               }
             }
          }
          String description = lpg.getDescription();
@@ -901,10 +1098,15 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
                Ip neighborAddress = ipg.getIp();
                newNeighbor = new BgpNeighbor(neighborAddress, c);
             }
-            else if (lpg instanceof DynamicBgpPeerGroup) {
-               DynamicBgpPeerGroup dpg = (DynamicBgpPeerGroup) lpg;
+            else if (lpg instanceof DynamicIpBgpPeerGroup) {
+               DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
                Prefix neighborAddressRange = dpg.getPrefix();
                newNeighbor = new BgpNeighbor(neighborAddressRange, c);
+            }
+            else if (lpg instanceof Ipv6BgpPeerGroup
+                  || lpg instanceof DynamicIpv6BgpPeerGroup) {
+               // TODO: implement ipv6 bgp neighbors
+               continue;
             }
             else {
                throw new VendorConversionException(
@@ -1993,9 +2195,6 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
       // convert route maps to policy maps
       Set<RouteMap> routingRouteMaps = getRoutingRouteMaps();
       for (RouteMap map : _routeMaps.values()) {
-         if (map.getIpv6()) {
-            continue;
-         }
          convertForPurpose(routingRouteMaps, map);
          // convert route maps to RoutingPolicy objects
          RoutingPolicy newPolicy = toRoutingPolicy(c, map);
@@ -2047,19 +2246,24 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
          c.setBgpProcess(newBgpProcess);
       }
 
-      markAcls(_lineAccessClassLists, "line access-class list", c);
+      markIpv4Acls(_lineAccessClassLists, "line access-class list", c);
       markIpv6Acls(_lineIpv6AccessClassLists, "line access-class list", c);
       markAcls(_classMapAccessGroups, "class-map access-group", c);
-      markAcls(_ntpAccessGroups, "ntp access-group", c);
-      markAcls(_pimAcls, "pim acl", c);
-      markAcls(_controlPlaneAccessGroups, "control-plane ip access-group", c);
-      markAcls(_managementAccessGroups, "management ip access-group", c);
-      markAcls(_msdpPeerSaLists, "msdp peer sa-list", c);
+      markIpv4Acls(_ntpAccessGroups, "ntp access-group", c);
+      markIpv4Acls(_pimAcls, "pim acl", c);
+      markIpv4Acls(_controlPlaneAccessGroups, "control-plane ip access-group",
+            c);
+      markIpv4Acls(_managementAccessGroups, "management ip access-group", c);
+      markIpv4Acls(_msdpPeerSaLists, "msdp peer sa-list", c);
       markAcls(_snmpAccessLists, "snmp access-list", c);
-      markAcls(_sshAcls, "ssh ipv4 access-list", c);
-      markAcls(_sshIpv6Acls, "ssh ipv6 access-list", c);
-      markAcls(_verifyAccessLists, "interface ip verify access-list", c);
+      markIpv4Acls(_sshAcls, "ssh ipv4 access-list", c);
+      markIpv4Acls(_sshIpv6Acls, "ssh ipv6 access-list", c);
+      markIpv4Acls(_verifyAccessLists, "interface ip verify access-list", c);
       markRouteMaps(_pimRouteMaps, "pim route-map", c);
+      markRouteMaps(_bgpVrfAggregateAddressRouteMaps,
+            "bgp vrf aggregate-address route-map", c);
+      markRouteMaps(_referencedRouteMaps, "bgp otherwise in/outbound route-map",
+            c);
       // warn about unreferenced data structures
       warnUnusedPeerGroups();
       warnUnusedPeerSessions();
@@ -2263,10 +2467,8 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
    private void warnUnusedPeerGroups() {
       if (_unusedPeerGroups != null) {
          for (String name : _unusedPeerGroups) {
-            if (!_ipv6PeerGroups.contains(name)) {
-               unused("Unused bgp peer-group/template: '" + name + "'",
-                     BGP_PEER_GROUP, name);
-            }
+            unused("Unused bgp peer-group/template: '" + name + "'",
+                  BGP_PEER_GROUP, name);
          }
       }
    }
@@ -2315,8 +2517,7 @@ public final class CiscoVendorConfiguration extends CiscoConfiguration {
             continue;
          }
          RouteMap routeMap = e.getValue();
-         if (!routeMap.getIpv6() && routeMap.isUnused()
-               && !_referencedRouteMaps.contains(name)) {
+         if (routeMap.isUnused()) {
             unused("Unused route-map: '" + name + "'", ROUTE_MAP, name);
          }
       }

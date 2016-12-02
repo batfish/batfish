@@ -249,6 +249,11 @@ ADDRESS_POOLS
    'address-pools'
 ;
 
+ADDRESS_TABLE
+:
+   'address-table'
+;
+
 ADDRGROUP
 :
    'addrgroup'
@@ -512,6 +517,16 @@ ANTENNA
 ANY
 :
    'any'
+;
+
+ANY4
+:
+   'any4'
+;
+
+ANY6
+:
+   'any6'
 ;
 
 ANYCONNECT
@@ -4655,6 +4670,11 @@ MLD_REPORT
    'mld-report'
 ;
 
+MLDV2
+:
+   'mldv2'
+;
+
 MLS
 :
    'mls'
@@ -8740,6 +8760,11 @@ MAC_ADDRESS_LITERAL
    F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit F_HexDigit F_HexDigit
 ;
 
+HEX
+:
+   '0x' F_HexDigit+
+;
+
 VARIABLE
 :
    (
@@ -8999,11 +9024,6 @@ FLOAT
 FORWARD_SLASH
 :
    '/'
-;
-
-HEX
-:
-   '0x' F_HexDigit+
 ;
 
 IP_ADDRESS
@@ -9769,6 +9789,16 @@ M_Interface_DOLLAR
    '$' -> type ( DOLLAR ) , popMode
 ;
 
+M_Interface_EQ
+:
+   'eq' -> type ( EQ ) , popMode
+;
+
+M_Interface_GT
+:
+   'gt' -> type ( GT ) , popMode
+;
+
 M_Interface_IP
 :
    'ip' -> type ( IP ) , popMode
@@ -9787,6 +9817,11 @@ M_Interface_POLICY
 M_Interface_L2TRANSPORT
 :
    'l2transport' -> type ( L2TRANSPORT ) , popMode
+;
+
+M_Interface_LT
+:
+   'lt' -> type ( LT ) , popMode
 ;
 
 M_Interface_MODULE

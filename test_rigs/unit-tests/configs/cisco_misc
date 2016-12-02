@@ -13,6 +13,7 @@ downlink delay disable timeout 20
 virtual-service
   signing level cisco
 l2protocol tunnel cos 5
+mac address-table aging-time 1800
 poap transit
 fabric-mode 40G
 port-profile default max-ports 512

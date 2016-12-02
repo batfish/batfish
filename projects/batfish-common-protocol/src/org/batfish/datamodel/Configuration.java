@@ -91,6 +91,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private String _domainName;
 
+   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
+
    private NavigableSet<GeneratedRoute> _generatedRoutes;
 
    private NavigableMap<String, IkeGateway> _ikeGateways;
@@ -156,6 +158,7 @@ public final class Configuration extends ComparableStructure<String> {
       _communities = new TreeSet<>();
       _communityLists = new TreeMap<>();
       _generatedRoutes = new TreeSet<>();
+      _generatedIpv6Routes = new TreeSet<>();
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
       _ikeProposals = new TreeMap<>();
@@ -216,6 +219,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    public String getDomainName() {
       return _domainName;
+   }
+
+   public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
+      return _generatedIpv6Routes;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
@@ -418,6 +425,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setDomainName(String domainName) {
       _domainName = domainName;
+   }
+
+   public void setGeneratedIpv6Routes(
+         NavigableSet<GeneratedRoute6> generatedIpv6Routes) {
+      _generatedIpv6Routes = generatedIpv6Routes;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
