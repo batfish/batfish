@@ -89,6 +89,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private LineAction _defaultInboundAction;
 
+   private String _domainName;
+
    private NavigableSet<GeneratedRoute> _generatedRoutes;
 
    private NavigableMap<String, IkeGateway> _ikeGateways;
@@ -210,6 +212,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(DEFAULT_INBOUND_ACTION_VAR)
    public LineAction getDefaultInboundAction() {
       return _defaultInboundAction;
+   }
+
+   public String getDomainName() {
+      return _domainName;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
@@ -408,6 +414,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setDefaultInboundAction(LineAction defaultInboundAction) {
       _defaultInboundAction = defaultInboundAction;
+   }
+
+   public void setDomainName(String domainName) {
+      _domainName = domainName;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)

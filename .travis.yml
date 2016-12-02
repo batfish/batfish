@@ -2,7 +2,7 @@ matrix:
    include:
       - os: linux
         dist: trusty
-        language: java
+        group: deprecated
         addons:
            apt:
               packages:

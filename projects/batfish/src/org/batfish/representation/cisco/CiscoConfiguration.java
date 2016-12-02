@@ -28,6 +28,8 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Set<String> _controlPlaneAccessGroups;
 
+   protected String _domainName;
+
    protected final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
    protected final Map<String, ExtendedAccessList> _extendedAccessLists;
@@ -305,6 +307,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getVerifyAccessLists() {
       return _verifyAccessLists;
+   }
+
+   public void setDomainName(String domainName) {
+      _domainName = domainName;
    }
 
    public void setFailover(boolean failover) {

@@ -14,6 +14,13 @@ dhcp ipv4
  interface Bundle-Ether1.1031 relay profile irnc-dhcp
  interface Bundle-Ether1.1032 relay profile irnc-dhcp
 !
+ip dhcp pool abcdefg
+  network 1.2.3.0 255.255.255.0
+  default-router 1.2.3.1
+  domain-name example.com
+  dns-server 2.3.4.5 3.4.5.6
+  lease infinite
+!
 ipv6 dhcp relay
 no ip dhcp packet strict-validation
 no ipv6 dhcp relay option vpn

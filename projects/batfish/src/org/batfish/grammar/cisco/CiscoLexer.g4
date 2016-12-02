@@ -9,7 +9,7 @@ package org.batfish.grammar.cisco;
 }
 
 @members {
-private int lastTokenType = 0;
+private int lastTokenType = -1;
 private boolean enableIPV6_ADDRESS = true;
 private boolean enableIP_ADDRESS = true;
 private boolean enableDEC = true;
@@ -3883,6 +3883,11 @@ L2_FILTER
 L2_SRC
 :
    'l2-src'
+;
+
+L2PROTOCOL
+:
+   'l2protocol'
 ;
 
 L2PROTOCOL_TUNNEL
@@ -8931,8 +8936,8 @@ COMMENT_LINE
 :
    (
       F_Whitespace
-   )* '!'
-   {lastTokenType == NEWLINE}?
+   )* [!#]
+   {lastTokenType == NEWLINE || lastTokenType == -1}?
 
    F_NonNewline* F_Newline+ -> channel ( HIDDEN )
 ;
@@ -9033,14 +9038,16 @@ IPV6_ADDRESS
       )
       |
       (
-         F_HexDigit+
-         {enableIPV6_ADDRESS}?
+         (
+            F_HexDigit+
+            {enableIPV6_ADDRESS}?
 
-         ':' ':'?
-      )+
+            ':' ':'?
+         )+ F_HexDigit*
+      )
    )
    (
-      F_HexDigit+
+      ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
    )?
 ;
 
@@ -9060,15 +9067,17 @@ IPV6_PREFIX
       )
       |
       (
-         F_HexDigit+
-         {enableIPV6_ADDRESS}?
+         (
+            F_HexDigit+
+            {enableIPV6_ADDRESS}?
 
-         ':' ':'?
-      )+
-      (
-         F_HexDigit+
-      )?
-   ) '/' F_DecByte
+            ':' ':'?
+         )+ F_HexDigit*
+      )
+   )
+   (
+      ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+   )? '/' F_DecByte
 ;
 
 NEWLINE
@@ -10004,11 +10013,13 @@ M_NEIGHBOR_IPV6_ADDRESS
          )
          |
          (
-            F_HexDigit+ ':' ':'?
-         )+
+            (
+               F_HexDigit+ ':' ':'?
+            )+ F_HexDigit*
+         )
       )
       (
-         F_HexDigit+
+         ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
       )?
    ) -> type ( IPV6_ADDRESS ) , popMode
 ;
@@ -10017,19 +10028,23 @@ M_NEIGHBOR_IPV6_PREFIX
 :
    (
       (
-         '::'
+         (
+            '::'
+            (
+               (
+                  F_HexDigit+ ':'
+               )* F_HexDigit+
+            )?
+         )
+         |
          (
             (
-               F_HexDigit+ ':'
-            )* F_HexDigit+
-         )?
+               F_HexDigit+ ':' ':'?
+            )+ F_HexDigit*
+         )
       )
-      |
       (
-         F_HexDigit+ ':' ':'?
-      )+
-      (
-         F_HexDigit+
+         ':' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
       )? '/' F_DecByte
    ) -> type ( IPV6_PREFIX ) , popMode
 ;

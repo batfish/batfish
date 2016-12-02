@@ -1,0 +1,5 @@
+#
+set system host-name juniper_misc
+set system domain-name my.domain.name
+#
+

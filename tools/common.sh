@@ -555,6 +555,9 @@ batfish_replace_symlinks() {
 export -f batfish_replace_symlinks
 
 _batfish_replace_symlinks() {
+   if [[ "$CYGWIN" =~ .*winsymlinks:native.* ]]; then
+      return
+   fi
    cd $BATFISH_ROOT
    if [ -d ".git" ]; then
       echo "(Cygwin workaround) Updating git index to ignore changes to symlinks"

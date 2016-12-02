@@ -6,7 +6,6 @@
         "D1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -45,7 +44,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'D1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -296,7 +295,6 @@
         "D2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -335,7 +333,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'D2'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -622,7 +620,6 @@
         "R" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -661,7 +658,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'R'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1010,7 +1007,6 @@
         "S" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1049,7 +1045,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'S'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1313,7 +1309,6 @@
         "SL" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1352,7 +1347,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'SL'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1601,7 +1596,6 @@
         "SR" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1640,7 +1634,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'SR'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",

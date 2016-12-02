@@ -91,7 +91,6 @@ null_block
             | ADJMGR
             | BOOTP_RELAY
             | DECAP_GROUP
-            | DHCP
             | DNS
             | ECMP_GROUP
             | FLOW_AGGREGATION
@@ -144,7 +143,6 @@ null_block
             ADJACENCY
             | ADJACENCY_STALE_TIMER
             | CONFLICT_POLICY
-            | DHCP
             | GLOBAL_MTU
             | ENABLE_ACL_CAM_SHARING
             | HARDWARE
@@ -355,7 +353,6 @@ null_inner
          | DISTRIBUTION
          | DNS_SERVER
          | DOMAIN_ID
-         | DOMAIN_NAME
          | DROP
          | DS0_GROUP
          | DUAL_ACTIVE
@@ -627,7 +624,6 @@ null_single
       | DIALER_LIST
       | DNS
       | DNS_GUARD
-      | DOMAIN_NAME
       | DOWNLINK
       | DSP
       | DSS
@@ -735,6 +731,7 @@ null_single
          )
       )
       | ISDN
+      | L2PROTOCOL
       | LDAP_BASE_DN
       | LDAP_LOGIN
       | LDAP_LOGIN_DN

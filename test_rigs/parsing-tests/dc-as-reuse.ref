@@ -6,7 +6,6 @@
         "plane_0_spine_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -60,7 +59,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'plane_0_spine_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -427,7 +426,6 @@
         "plane_1_spine_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -481,7 +479,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'plane_1_spine_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -848,7 +846,6 @@
         "pod_0_leaf_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -902,7 +899,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_0_leaf_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1333,7 +1330,6 @@
         "pod_0_leaf_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -1387,7 +1383,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_0_leaf_1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1818,7 +1814,6 @@
         "pod_0_tor_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -1872,7 +1867,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_0_tor_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -2279,7 +2274,6 @@
         "pod_0_tor_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -2333,7 +2327,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_0_tor_1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -2740,7 +2734,6 @@
         "pod_1_leaf_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -2794,7 +2787,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_1_leaf_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -3225,7 +3218,6 @@
         "pod_1_leaf_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -3279,7 +3271,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_1_leaf_1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -3710,7 +3702,6 @@
         "pod_1_tor_0" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -3764,7 +3755,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_1_tor_0'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -4171,7 +4162,6 @@
         "pod_1_tor_1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_switchport",
             "      SWITCHPORT:'switchport'  <== mode:DEFAULT_MODE",
@@ -4225,7 +4215,7 @@
             "      VARIABLE:'mstp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'pod_1_tor_1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
