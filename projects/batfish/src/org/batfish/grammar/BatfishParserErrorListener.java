@@ -42,6 +42,10 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
    public void syntaxError(ParserRuleContext ctx, Object offendingSymbol,
          int line, int charPositionInLine, String msg) {
+      if (_syntaxErrorHandler != null && _syntaxErrorHandler.handle(ctx,
+            offendingSymbol, line, charPositionInLine, msg)) {
+         return;
+      }
       BatfishParser parser = _combinedParser.getParser();
       List<String> ruleNames = Arrays.asList(parser.getRuleNames());
       String ruleStack = ctx.toString(ruleNames);

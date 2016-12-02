@@ -388,6 +388,26 @@ public class Client extends AbstractClient implements IClient {
       }
    }
 
+   private void generateDatamodel() {
+      try {
+         ObjectMapper mapper = new BatfishObjectMapper();
+
+         com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
+               new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
+         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
+         _logger.output(mapper.writeValueAsString(schema));
+         
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
+         JsonNode schemaNew = schemaGenNew.generateJsonSchema(Shape.class);                  
+         _logger.output(mapper.writeValueAsString(schemaNew));
+                  
+      } 
+      catch (Exception e) {
+         _logger.errorf("Could not generate data model: " + e.getMessage());
+         e.printStackTrace();
+      }
+   }
+
    private boolean generateDataplane(FileWriter outWriter) throws Exception {
       if (!isSetTestrig() || !isSetContainer(true)) {
          return false;
@@ -412,26 +432,6 @@ public class Client extends AbstractClient implements IClient {
             _currDeltaEnv);
 
       return execute(wItemGenDdp, outWriter);
-   }
-
-   private void generateDatamodel() {
-      try {
-         ObjectMapper mapper = new BatfishObjectMapper();
-
-         com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
-               new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
-         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
-         _logger.output(mapper.writeValueAsString(schema));
-         
-         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
-         JsonNode schemaNew = schemaGenNew.generateJsonSchema(Shape.class);                  
-         _logger.output(mapper.writeValueAsString(schemaNew));
-                  
-      } 
-      catch (Exception e) {
-         _logger.errorf("Could not generate data model: " + e.getMessage());
-         e.printStackTrace();
-      }
    }
 
    private void generateQuestions() {
