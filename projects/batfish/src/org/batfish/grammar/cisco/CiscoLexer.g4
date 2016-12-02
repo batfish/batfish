@@ -8745,6 +8745,11 @@ MAC_ADDRESS_LITERAL
    F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit F_HexDigit F_HexDigit
 ;
 
+HEX
+:
+   '0x' F_HexDigit+
+;
+
 VARIABLE
 :
    (
@@ -9004,11 +9009,6 @@ FLOAT
 FORWARD_SLASH
 :
    '/'
-;
-
-HEX
-:
-   '0x' F_HexDigit+
 ;
 
 IP_ADDRESS

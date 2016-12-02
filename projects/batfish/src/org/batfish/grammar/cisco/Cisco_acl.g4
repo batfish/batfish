@@ -461,7 +461,7 @@ ip_prefix_list_null_tail
 ip_prefix_list_tail
 :
    (
-      SEQ seqnum = DEC
+      SEQ? seqnum = DEC
    )? action = access_list_action prefix = IP_PREFIX
    (
       (
@@ -481,7 +481,7 @@ ip_prefix_list_tail
 ipv6_prefix_list_tail
 :
    (
-      SEQ seqnum = DEC
+      SEQ? seqnum = DEC
    )? action = access_list_action prefix6 = IPV6_PREFIX
    (
       (
@@ -512,6 +512,12 @@ irs_stanza
 :
    bandwidth_irs_stanza
    | null_irs_stanza
+;
+
+mac_access_list_additional_feature
+:
+   HEX
+   | IP
 ;
 
 no_ip_prefix_list_stanza
@@ -661,7 +667,7 @@ s_mac_access_list_extended
 s_mac_access_list_extended_tail
 :
    num = DEC? action = access_list_action src = access_list_mac_range dst =
-   access_list_mac_range NEWLINE
+   access_list_mac_range mac_access_list_additional_feature* NEWLINE
 ;
 
 standard_access_list_additional_feature
