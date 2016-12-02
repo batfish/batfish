@@ -1175,6 +1175,7 @@ public final class JuniperVendorConfiguration extends JuniperConfiguration {
       _c = new Configuration(hostname);
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
+      _c.setDomainName(_defaultRoutingInstance.getDomainName());
 
       // convert prefix lists to route filter lists
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {

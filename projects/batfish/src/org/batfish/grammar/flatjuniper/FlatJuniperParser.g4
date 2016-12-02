@@ -108,14 +108,13 @@ s_null
 
 s_system
 :
-   SYSTEM s_system_tail
-;
-
-s_system_tail
-:
-   st_default_address_selection
-   | st_host_name
-   | st_null
+   SYSTEM
+   (
+      sy_default_address_selection
+      | sy_domain_name
+      | sy_host_name
+      | sy_null
+   )
 ;
 
 s_version
@@ -157,17 +156,22 @@ set_line_tail
    | s_version
 ;
 
-st_default_address_selection
+sy_default_address_selection
 :
    DEFAULT_ADDRESS_SELECTION
 ;
 
-st_host_name
+sy_domain_name
+:
+   DOMAIN_NAME variable
+;
+
+sy_host_name
 :
    HOST_NAME variable
 ;
 
-st_null
+sy_null
 :
    (
       ACCOUNTING
@@ -177,7 +181,6 @@ st_null
       | BACKUP_ROUTER
       | COMMIT
       | DDOS_PROTECTION
-      | DOMAIN_NAME
       | DOMAIN_SEARCH
       | EXTENSIONS
       | INTERNET_OPTIONS

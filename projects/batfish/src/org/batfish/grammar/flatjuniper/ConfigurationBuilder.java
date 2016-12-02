@@ -3593,13 +3593,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSt_default_address_selection(
-         St_default_address_selectionContext ctx) {
+   public void exitSy_default_address_selection(
+         Sy_default_address_selectionContext ctx) {
       _configuration.setDefaultAddressSelection(true);
    }
 
    @Override
-   public void exitSt_host_name(St_host_nameContext ctx) {
+   public void exitSy_domain_name(Sy_domain_nameContext ctx) {
+      String domainName = ctx.variable().getText();
+      _currentRoutingInstance.setDomainName(domainName);
+   }
+
+   @Override
+   public void exitSy_host_name(Sy_host_nameContext ctx) {
       String hostname = ctx.variable().getText();
       _currentRoutingInstance.setHostname(hostname);
    }

@@ -6,7 +6,6 @@
         "A1Border" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -45,7 +44,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A1Border'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -412,7 +411,6 @@
         "A1Dist" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -451,7 +449,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A1Dist'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -733,7 +731,6 @@
         "A1Inter" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -772,7 +769,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A1Inter'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1066,7 +1063,6 @@
         "A2Dist1" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1105,7 +1101,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A2Dist1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1395,7 +1391,6 @@
         "A2Dist2" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -1434,7 +1429,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A2Dist2'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -1763,7 +1758,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'A2Inter'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -2090,7 +2085,6 @@
         "ISP" : {
           "sentences" : [
             "(cisco_configuration",
-            "  NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -2129,7 +2123,7 @@
             "        VARIABLE:'password-encryption'  <== mode:DEFAULT_MODE)",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (hostname_stanza",
+            "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'ISP'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",

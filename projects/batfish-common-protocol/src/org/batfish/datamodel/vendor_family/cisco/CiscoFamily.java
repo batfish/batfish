@@ -15,8 +15,6 @@ public class CiscoFamily implements Serializable {
 
    private SortedMap<String, String> _banners;
 
-   private String _domainName;
-
    private SortedMap<String, Boolean> _features;
 
    private String _hostname;
@@ -52,10 +50,6 @@ public class CiscoFamily implements Serializable {
 
    public SortedMap<String, String> getBanners() {
       return _banners;
-   }
-
-   public String getDomainName() {
-      return _domainName;
    }
 
    public SortedMap<String, Boolean> getFeatures() {
@@ -108,10 +102,6 @@ public class CiscoFamily implements Serializable {
 
    public void setBanners(SortedMap<String, String> banners) {
       _banners = banners;
-   }
-
-   public void setDomainName(String domainName) {
-      _domainName = domainName;
    }
 
    public void setFeatures(SortedMap<String, Boolean> features) {
