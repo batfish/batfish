@@ -6656,13 +6656,33 @@
             "    (s_mac_access_list_extended",
             "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
             "      ACL_NUM_EXTENDED_MAC:'1199'  <== mode:DEFAULT_MODE",
-            "      (access_list_action",
-            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
-            "      MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE",
-            "      MAC_ADDRESS_LITERAL:'ffff.ffff.ffff'  <== mode:DEFAULT_MODE",
-            "      MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE",
-            "      MAC_ADDRESS_LITERAL:'ffff.ffff.ffff'  <== mode:DEFAULT_MODE",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (s_mac_access_list_extended_tail",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE",
+            "          MAC_ADDRESS_LITERAL:'ffff.ffff.ffff'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE",
+            "          MAC_ADDRESS_LITERAL:'ffff.ffff.ffff'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_mac_access_list_extended",
+            "      MAC:'mac'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'copp-system-p-acl-mac-cdp-udld-vtp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (s_mac_access_list_extended_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          MAC_ADDRESS_LITERAL:'0100.0ccc.cccc'  <== mode:DEFAULT_MODE",
+            "          MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -6760,6 +6780,14 @@
             "        TUNNEL:'tunnel'  <== mode:DEFAULT_MODE",
             "        COS:'cos'  <== mode:DEFAULT_MODE",
             "        DEC:'5'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        MAC:'mac'  <== mode:DEFAULT_MODE",
+            "        ADDRESS_TABLE:'address-table'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'aging-time'  <== mode:DEFAULT_MODE",
+            "        DEC:'1800'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
@@ -15307,6 +15335,65 @@
             "        (access_list_ip6_range",
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (extended_ipv6_access_list_stanza",
+            "      IPV6:'ipv6'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      (variable_permissive",
+            "        VARIABLE:'abcdefg'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (extended_ipv6_access_list_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          MLD_QUERY:'mld-query'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_ipv6_access_list_tail",
+            "        DEC:'20'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          MLD_REPORT:'mld-report'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_ipv6_access_list_tail",
+            "        DEC:'30'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          MLD_REDUCTION:'mld-reduction'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_ipv6_access_list_tail",
+            "        DEC:'40'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip6_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (extended_access_list_additional_feature",
+            "          MLDV2:'mldv2'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -16136,29 +16223,44 @@
             "      VARIABLE:'mac_access_list'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
-            "    (s_null",
-            "      (null_block",
-            "        MAC:'mac'  <== mode:DEFAULT_MODE",
-            "        ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'permitCDP'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
+            "    (s_mac_access_list_extended",
+            "      MAC:'mac'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'permitCDP'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (s_mac_access_list_extended_tail",
             "        DEC:'10'  <== mode:DEFAULT_MODE",
-            "        PERMIT:'permit'  <== mode:DEFAULT_MODE",
-            "        ANY:'any'  <== mode:DEFAULT_MODE",
-            "        MAC_ADDRESS_LITERAL:'0100.0CCC.CCCC'  <== mode:DEFAULT_MODE",
-            "        MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          MAC_ADDRESS_LITERAL:'0100.0CCC.CCCC'  <== mode:DEFAULT_MODE",
+            "          MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (s_mac_access_list_extended_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          MAC_ADDRESS_LITERAL:'0100.0CCC.CCCC'  <== mode:DEFAULT_MODE",
+            "          MAC_ADDRESS_LITERAL:'0000.0000.0000'  <== mode:DEFAULT_MODE)",
+            "        (mac_access_list_additional_feature",
+            "          HEX:'0x8843'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (s_mac_access_list_extended_tail",
             "        DEC:'20'  <== mode:DEFAULT_MODE",
-            "        DENY:'deny'  <== mode:DEFAULT_MODE",
-            "        ANY:'any'  <== mode:DEFAULT_MODE",
-            "        ANY:'any'  <== mode:DEFAULT_MODE",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          DENY:'deny'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_mac_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (mac_access_list_additional_feature",
+            "          IP:'ip'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -17538,12 +17640,11 @@
             "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
             "      (variable",
             "        VARIABLE:'test'  <== mode:DEFAULT_MODE)",
-            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (ip_prefix_list_tail",
             "        DEC:'10'  <== mode:DEFAULT_MODE",
-            "        PERMIT:'permit'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
             "        IP_PREFIX:'192.168.100.2/31'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -21469,7 +21570,8 @@
         },
         "nexus-arista-router-bgp" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: reference to undeclared peer group: '1.2.3.4'"
+            "1" : "MISCELLANEOUS: reference to undeclared peer group: '1.2.3.4'",
+            "2" : "MISCELLANEOUS: reference to undeclared peer group: '1a01:111:0:1000:a:0:0:1'"
           }
         },
         "vlan_access_map4" : {
@@ -21500,7 +21602,8 @@
         },
         "bgp_foundry" : {
           "route-map" : [
-            "from_ucr"
+            "from_ucr",
+            "tag-bbone-prefixes"
           ]
         },
         "bgp_route_policy" : {
@@ -21578,6 +21681,8 @@
         },
         "nexus_bgp" : {
           "route-map" : [
+            "BLIB",
+            "BLIBB",
             "BLOBB",
             "EG_CCC",
             "IN_BBB"
@@ -21598,11 +21703,39 @@
             "chill_aspath_141_permit",
             "chill_aspath_142_permit",
             "xo-deny-as"
+          ],
+          "ipv4 prefix-list" : [
+            "EBGP-PEER-BOGONS",
+            "EBGP-PEER-OTHER-UNDESIRABLES",
+            "EBGP-PEER-TOO-SPECIFIC",
+            "barbar_blackhole_routes",
+            "barbar_networks_ipv4",
+            "barbar_networks_ipv6",
+            "bippetyboppety_ipv4",
+            "local-peer-aggregates",
+            "null",
+            "remote-router-loopbacks"
           ]
         },
         "route_map" : {
           "ipv4 prefix-list" : [
             "hpr-connector-subnets"
+          ]
+        },
+        "route_policy_as_path_set" : {
+          "ipv4 prefix-list" : [
+            "CENIC_DC_Internal",
+            "classful_default"
+          ]
+        },
+        "route_policy_metric_type" : {
+          "ipv4 prefix-list" : [
+            "DC_Internal"
+          ]
+        },
+        "route_policy_param" : {
+          "ipv4 prefix-list" : [
+            "$cust_v4_pfx"
           ]
         },
         "underscore_variable" : {
@@ -21658,13 +21791,13 @@
           ]
         },
         "community-name-numbers" : {
-          "community-list" : [
-            "9999-RRR"
+          "route-map" : [
+            "AAA1-BBB-CCC"
           ]
         },
         "community-name-numbers_dos" : {
-          "community-list" : [
-            "9999-RRR"
+          "route-map" : [
+            "AAA1-BBB-CCC"
           ]
         },
         "community_list_named" : {
@@ -21704,7 +21837,8 @@
         },
         "ipv6_access_list" : {
           "ipv6 acl" : [
-            "RT404888-XO"
+            "RT404888-XO",
+            "abcdefg"
           ]
         },
         "juniper-tcpflags" : {
@@ -21755,6 +21889,12 @@
             "PEER_BLLF"
           ]
         },
+        "preSet" : {
+          "ipv4 prefix-list" : [
+            "default_route",
+            "ucla_networks"
+          ]
+        },
         "prefix_list_ipv4" : {
           "ipv4 prefix-list" : [
             "test"
@@ -21778,8 +21918,8 @@
           ]
         },
         "route_maps_in_two_address_families" : {
-          "ipv6 prefix-list" : [
-            "v6_list"
+          "route-map" : [
+            "FROM_ABC_V6"
           ]
         },
         "tcpflags" : {
@@ -21842,8 +21982,9 @@
         },
         "bgp_foundry" : {
           "Red flags" : {
-            "1" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'ucr': undefined reference to inbound route-map: 'from_ucr'",
-            "2" : "UNUSED: Unused bgp peer-group/template: 'ucr'"
+            "1" : "UNDEFINED: Reference to bgp ipv4 advertised network route-map: 'tag-bbone-prefixes'",
+            "2" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'ucr': undefined reference to inbound route-map: 'from_ucr'",
+            "3" : "UNUSED: Unused bgp peer-group/template: 'ucr'"
           }
         },
         "bgp_route_policy" : {
@@ -21890,12 +22031,12 @@
         },
         "community-name-numbers" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused standard community-list: '9999-RRR'"
+            "1" : "UNUSED: Unused route-map: 'AAA1-BBB-CCC'"
           }
         },
         "community-name-numbers_dos" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused standard community-list: '9999-RRR'"
+            "1" : "UNUSED: Unused route-map: 'AAA1-BBB-CCC'"
           }
         },
         "community_list_named" : {
@@ -21951,7 +22092,8 @@
         },
         "ipv6_access_list" : {
           "Red flags" : {
-            "1" : "UNUSED: Unused extended ipv6 access-list: 'RT404888-XO'"
+            "1" : "UNUSED: Unused extended ipv6 access-list: 'RT404888-XO'",
+            "2" : "UNUSED: Unused extended ipv6 access-list: 'abcdefg'"
           }
         },
         "juniper-tcpflags" : {
@@ -22026,9 +22168,11 @@
         "nexus_bgp" : {
           "Red flags" : {
             "1" : "UNDEFINED: Reference to undefined route-map for connected-to-bgp route redistribution: 'BLOBB'",
-            "2" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to inbound route-map: 'IN_BBB'",
-            "3" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to outbound policy map: 'EG_CCC'",
-            "4" : "UNUSED: Unused bgp peer-group/template: 'PEER_BLLF'"
+            "2" : "UNDEFINED: Reference to bgp ipv4 advertised network route-map: 'BLIBB'",
+            "3" : "UNDEFINED: Reference to bgp ipv6 advertised network route-map: 'BLIB'",
+            "4" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to inbound route-map: 'IN_BBB'",
+            "5" : "UNDEFINED: neighbor: 'AUTO/NONE(-1l)': group: 'PEER_BLLF': undefined reference to outbound policy map: 'EG_CCC'",
+            "6" : "UNUSED: Unused bgp peer-group/template: 'PEER_BLLF'"
           }
         },
         "non_nexus_neighbor_af" : {
@@ -22044,6 +22188,12 @@
             "4" : "UNDEFINED: neighbor: '10.98.25.0/25': group: 'RAAS': undefined reference to inbound route-map: 'PROTECT-LEAF'"
           }
         },
+        "preSet" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused ipv4 prefix-list: 'default_route'",
+            "2" : "UNUSED: Unused ipv4 prefix-list: 'ucla_networks'"
+          }
+        },
         "prefix_list_ipv4" : {
           "Red flags" : {
             "1" : "UNUSED: Unused route-map: 'to_elacc'",
@@ -22053,10 +22203,22 @@
         "rP" : {
           "Red flags" : {
             "1" : "UNDEFINED: Reference to undefined ip as-path access-list: xo-deny-as",
-            "2" : "UNDEFINED: Reference to undefined ip as-path access-list: chill-as-path",
-            "3" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_deny",
-            "4" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_permit",
-            "5" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_142_permit"
+            "2" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-BOGONS",
+            "3" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-OTHER-UNDESIRABLES",
+            "4" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-TOO-SPECIFIC",
+            "5" : "UNDEFINED: Reference to undefined ipv4 prefix-list: barbar_networks_ipv4",
+            "6" : "UNDEFINED: Reference to undefined ipv4 prefix-list: barbar_blackhole_routes",
+            "7" : "UNDEFINED: Reference to undefined ipv4 prefix-list: bippetyboppety_ipv4",
+            "8" : "UNDEFINED: Reference to undefined ipv4 prefix-list: barbar_blackhole_routes",
+            "9" : "UNDEFINED: Reference to undefined ipv4 prefix-list: barbar_networks_ipv6",
+            "10" : "UNDEFINED: Reference to undefined ipv4 prefix-list: bippetyboppety_ipv4",
+            "11" : "UNDEFINED: Reference to undefined ipv4 prefix-list: remote-router-loopbacks",
+            "12" : "UNDEFINED: Reference to undefined ipv4 prefix-list: local-peer-aggregates",
+            "13" : "UNDEFINED: Reference to undefined ipv4 prefix-list: null",
+            "14" : "UNDEFINED: Reference to undefined ip as-path access-list: chill-as-path",
+            "15" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_deny",
+            "16" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_permit",
+            "17" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_142_permit"
           }
         },
         "route_map" : {
@@ -22077,7 +22239,23 @@
         "route_maps_in_two_address_families" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.1.1.1'",
-            "2" : "UNUSED: Unused ipv6 prefix-list: 'v6_list'"
+            "2" : "UNUSED: Unused route-map: 'FROM_ABC_V6'"
+          }
+        },
+        "route_policy_as_path_set" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ipv4 prefix-list: classful_default",
+            "2" : "UNDEFINED: Reference to undefined ipv4 prefix-list: CENIC_DC_Internal"
+          }
+        },
+        "route_policy_metric_type" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ipv4 prefix-list: DC_Internal"
+          }
+        },
+        "route_policy_param" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined ipv4 prefix-list: $cust_v4_pfx"
           }
         },
         "tcpflags" : {

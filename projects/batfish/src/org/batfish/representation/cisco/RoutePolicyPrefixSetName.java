@@ -28,8 +28,13 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
          return null;
       }
       else if (!cc.getPrefix6Lists().containsKey(_name)) {
-         cc.undefined("Reference to undefined ipv64 prefix-list: " + _name,
+         cc.undefined("Reference to undefined ipv6 prefix-list: " + _name,
                CiscoVendorConfiguration.PREFIX6_LIST, _name);
+      }
+      else {
+         Prefix6List list = cc.getPrefix6Lists().get(_name);
+         list.getReferers().put(this,
+               "route policy named ipv6 prefix-set: '" + _name + "'");
       }
       return new NamedPrefix6Set(_name);
    }
@@ -43,6 +48,11 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
       else if (!cc.getPrefixLists().containsKey(_name)) {
          cc.undefined("Reference to undefined ipv4 prefix-list: " + _name,
                CiscoVendorConfiguration.PREFIX_LIST, _name);
+      }
+      else {
+         PrefixList list = cc.getPrefixLists().get(_name);
+         list.getReferers().put(this,
+               "route policy named ipv4 prefix-set: '" + _name + "'");
       }
       return new NamedPrefixSet(_name);
    }

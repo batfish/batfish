@@ -3543,7 +3543,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       String mapName = ctx.name.getText();
-      _configuration.getReferencedRouteMaps().add(mapName);
+      if (!_currentVrf.equals(CiscoConfiguration.MASTER_VRF_NAME)) {
+         // for now, this otherwise won't get marked
+         _configuration.getReferencedRouteMaps().add(mapName);
+      }
       if (ctx.IN() != null) {
          _currentPeerGroup.setInboundRouteMap(mapName);
       }
