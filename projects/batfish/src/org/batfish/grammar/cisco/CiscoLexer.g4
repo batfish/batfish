@@ -4660,6 +4660,11 @@ MLD_REPORT
    'mld-report'
 ;
 
+MLDV2
+:
+   'mldv2'
+;
+
 MLS
 :
    'mls'

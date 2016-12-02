@@ -168,6 +168,7 @@ extended_access_list_additional_feature
    | MLD_QUERY
    | MLD_REDUCTION
    | MLD_REPORT
+   | MLDV2
    | ND
    | ND_NA
    | ND_NS
