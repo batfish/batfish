@@ -2845,7 +2845,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String hostname = ctx.hostname.getText();
       NtpServer server = ntp.getServers().get(hostname);
       if (server == null) {
-         server = new NtpServer();
+         server = new NtpServer(hostname);
          ntp.getServers().put(hostname, server);
       }
       if (ctx.vrf != null) {
@@ -3674,7 +3674,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String hostname = ctx.hostname.getText();
       SntpServer server = sntp.getServers().get(hostname);
       if (server == null) {
-         server = new SntpServer();
+         server = new SntpServer(hostname);
          sntp.getServers().put(hostname, server);
       }
    }
