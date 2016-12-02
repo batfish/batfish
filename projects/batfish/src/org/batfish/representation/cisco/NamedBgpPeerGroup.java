@@ -27,6 +27,8 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
    public NamedBgpPeerGroup(String name) {
       _neighborIpAddresses = new LinkedHashSet<>();
       _neighborIpPrefixes = new LinkedHashSet<>();
+      _neighborIpv6Addresses = new LinkedHashSet<>();
+      _neighborIpv6Prefixes = new LinkedHashSet<>();
       _name = name;
    }
 

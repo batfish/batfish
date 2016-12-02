@@ -12,6 +12,7 @@ access_list_ip_range
       ip = IP_ADDRESS wildcard = IP_ADDRESS
    )
    | ANY
+   | ANY4
    |
    (
       HOST? ip = IP_ADDRESS
@@ -21,6 +22,18 @@ access_list_ip_range
    (
       ADDRGROUP address_group = variable
    )
+   |
+   (
+      INTERFACE iface = variable
+   )
+   |
+   (
+      OBJECT obj = variable
+   )
+   |
+   (
+      OBJECT_GROUP og = variable
+   )
 ;
 
 access_list_ip6_range
@@ -29,6 +42,7 @@ access_list_ip6_range
       ip = IPV6_ADDRESS wildcard = IPV6_ADDRESS
    )
    | ANY
+   | ANY6
    |
    (
       HOST? ipv6 = IPV6_ADDRESS
@@ -232,6 +246,10 @@ extended_access_list_stanza
             IP
             | IPV4
          ) ACCESS_LIST name = variable_permissive
+      )
+      |
+      (
+         ACCESS_LIST name = variable_permissive EXTENDED
       )
    )
    (
@@ -517,8 +535,24 @@ irs_stanza
 
 mac_access_list_additional_feature
 :
-   HEX
+   (
+      ETYPE etype
+   )
+   | HEX
    | IP
+   | LOG_ENABLE
+   |
+   (
+      PRIORITY priority = DEC
+   )
+   |
+   (
+      PRIORITY_FORCE priority_force = DEC
+   )
+   |
+   (
+      PRIORITY_MAPPING priority_mapping = DEC
+   )
 ;
 
 no_ip_prefix_list_stanza
@@ -661,14 +695,24 @@ s_mac_access_list_extended
    )
    |
    (
-      MAC ACCESS_LIST name = variable NEWLINE s_mac_access_list_extended_tail*
+      MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
+      s_mac_access_list_extended_tail*
    )
 ;
 
 s_mac_access_list_extended_tail
 :
-   num = DEC? action = access_list_action src = access_list_mac_range dst =
-   access_list_mac_range mac_access_list_additional_feature* NEWLINE
+   (
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
+   )? action = access_list_action src = access_list_mac_range dst =
+   access_list_mac_range
+   (
+      vlan = DEC
+      | vlan_any = ANY
+   )? mac_access_list_additional_feature* NEWLINE
 ;
 
 standard_access_list_additional_feature
@@ -701,11 +745,15 @@ standard_access_list_stanza
 :
    (
       (
-         IP ACCESS_LIST STANDARD name = variable
+         IP ACCESS_LIST STANDARD name = variable_permissive
       )
       |
       (
          ACCESS_LIST num = ACL_NUM_STANDARD
+      )
+      |
+      (
+         ACCESS_LIST name = variable_permissive STANDARD
       )
    )
    (

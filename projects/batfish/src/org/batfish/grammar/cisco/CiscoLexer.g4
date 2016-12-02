@@ -519,6 +519,16 @@ ANY
    'any'
 ;
 
+ANY4
+:
+   'any4'
+;
+
+ANY6
+:
+   'any6'
+;
+
 ANYCONNECT
 :
    'anyconnect'
@@ -9779,6 +9789,16 @@ M_Interface_DOLLAR
    '$' -> type ( DOLLAR ) , popMode
 ;
 
+M_Interface_EQ
+:
+   'eq' -> type ( EQ ) , popMode
+;
+
+M_Interface_GT
+:
+   'gt' -> type ( GT ) , popMode
+;
+
 M_Interface_IP
 :
    'ip' -> type ( IP ) , popMode
@@ -9797,6 +9817,11 @@ M_Interface_POLICY
 M_Interface_L2TRANSPORT
 :
    'l2transport' -> type ( L2TRANSPORT ) , popMode
+;
+
+M_Interface_LT
+:
+   'lt' -> type ( LT ) , popMode
 ;
 
 M_Interface_MODULE

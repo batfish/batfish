@@ -4172,10 +4172,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private Ip getWildcard(Access_list_ip_rangeContext ctx) {
+      // TODO: fix for address-group, object, object-group, interface
       if (ctx.wildcard != null) {
          return toIp(ctx.wildcard);
       }
-      else if (ctx.ANY() != null || ctx.address_group != null) {
+      else if (ctx.ANY() != null || ctx.ANY4() != null
+            || ctx.address_group != null || ctx.obj != null || ctx.og != null
+            || ctx.iface != null) {
          return Ip.MAX;
       }
       else if (ctx.HOST() != null) {
@@ -4197,7 +4200,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.wildcard != null) {
          return toIp6(ctx.wildcard);
       }
-      else if (ctx.ANY() != null || ctx.address_group != null) {
+      else if (ctx.ANY() != null || ctx.ANY6() != null
+            || ctx.address_group != null) {
          return Ip6.MAX;
       }
       else if (ctx.HOST() != null) {

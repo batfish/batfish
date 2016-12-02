@@ -588,7 +588,11 @@ null_single
             (
                DEC
                | VARIABLE
-            ) REMARK
+            )
+            (
+               EXTENDED
+               | REMARK
+            )
          )
       )
       | ACCOUNTING_PORT
