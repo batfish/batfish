@@ -40,6 +40,19 @@ access_list_ip6_range
    )
 ;
 
+access_list_mac_range
+:
+   ANY
+   |
+   (
+      address = MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL
+   )
+   |
+   (
+      HOST address = MAC_ADDRESS_LITERAL
+   )
+;
+
 appletalk_access_list_null_tail
 :
    action = access_list_action
@@ -636,9 +649,19 @@ s_mac_access_list
 
 s_mac_access_list_extended
 :
-   ACCESS_LIST num = ACL_NUM_EXTENDED_MAC action = access_list_action
-   src_address = MAC_ADDRESS_LITERAL src_wildcard = MAC_ADDRESS_LITERAL
-   dst_address = MAC_ADDRESS_LITERAL dst_wildcard = MAC_ADDRESS_LITERAL NEWLINE
+   (
+      ACCESS_LIST num = ACL_NUM_EXTENDED_MAC s_mac_access_list_extended_tail
+   )
+   |
+   (
+      MAC ACCESS_LIST name = variable NEWLINE s_mac_access_list_extended_tail*
+   )
+;
+
+s_mac_access_list_extended_tail
+:
+   num = DEC? action = access_list_action src = access_list_mac_range dst =
+   access_list_mac_range NEWLINE
 ;
 
 standard_access_list_additional_feature

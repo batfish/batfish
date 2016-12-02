@@ -22,8 +22,14 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, BgpProcess> _bgpProcesses;
 
+   protected final Set<String> _bgpVrfAggregateAddressRouteMaps;
+
    protected final CiscoFamily _cf;
 
+   /**
+    * These can be either ipv4 or ipv6, so we must check both protocols for
+    * access-lists when doing undefined references check
+    */
    protected final Set<String> _classMapAccessGroups;
 
    protected final Set<String> _controlPlaneAccessGroups;
@@ -58,13 +64,13 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    protected final Map<String, Interface> _interfaces;
 
-   protected final Set<String> _ipv6PeerGroups;
-
    protected IsisProcess _isisProcess;
 
    protected final Set<String> _lineAccessClassLists;
 
    protected final Set<String> _lineIpv6AccessClassLists;
+
+   protected final Set<String> _macAccessLists;
 
    protected final Set<String> _managementAccessGroups;
 
@@ -107,6 +113,7 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
    public CiscoConfiguration() {
       _asPathAccessLists = new TreeMap<>();
       _bgpProcesses = new TreeMap<>();
+      _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
@@ -117,9 +124,9 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       _failoverPrimaryPrefixes = new TreeMap<>();
       _failoverStandbyPrefixes = new TreeMap<>();
       _interfaces = new TreeMap<>();
-      _ipv6PeerGroups = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
       _lineIpv6AccessClassLists = new TreeSet<>();
+      _macAccessLists = new TreeSet<>();
       _managementAccessGroups = new TreeSet<>();
       _msdpPeerSaLists = new TreeSet<>();
       _ntpAccessGroups = new TreeSet<>();
@@ -146,6 +153,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public final Map<String, BgpProcess> getBgpProcesses() {
       return _bgpProcesses;
+   }
+
+   public Set<String> getBgpVrfAggregateAddressRouteMaps() {
+      return _bgpVrfAggregateAddressRouteMaps;
    }
 
    public CiscoFamily getCf() {
@@ -217,10 +228,6 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
       return _interfaces;
    }
 
-   public Set<String> getIpv6PeerGroups() {
-      return _ipv6PeerGroups;
-   }
-
    public IsisProcess getIsisProcess() {
       return _isisProcess;
    }
@@ -231,6 +238,10 @@ public abstract class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getLineIpv6AccessClassLists() {
       return _lineIpv6AccessClassLists;
+   }
+
+   public Set<String> getMacAccessLists() {
+      return _macAccessLists;
    }
 
    public Set<String> getManagementAccessGroups() {

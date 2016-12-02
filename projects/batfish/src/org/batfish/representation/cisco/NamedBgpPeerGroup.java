@@ -4,7 +4,9 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 
 public class NamedBgpPeerGroup extends BgpPeerGroup {
 
@@ -14,22 +16,34 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private String _name;
 
-   private Set<Ip> _neighborAddresses;
+   private Set<Ip> _neighborIpAddresses;
 
-   private Set<Prefix> _neighborPrefixes;
+   private Set<Prefix> _neighborIpPrefixes;
+
+   private Set<Ip6> _neighborIpv6Addresses;
+
+   private Set<Prefix6> _neighborIpv6Prefixes;
 
    public NamedBgpPeerGroup(String name) {
-      _neighborAddresses = new LinkedHashSet<>();
-      _neighborPrefixes = new LinkedHashSet<>();
+      _neighborIpAddresses = new LinkedHashSet<>();
+      _neighborIpPrefixes = new LinkedHashSet<>();
       _name = name;
    }
 
-   public void addNeighborAddress(Ip address) {
-      _neighborAddresses.add(address);
+   public void addNeighborIpAddress(Ip address) {
+      _neighborIpAddresses.add(address);
    }
 
-   public void addNeighborPrefix(Prefix prefix) {
-      _neighborPrefixes.add(prefix);
+   public void addNeighborIpPrefix(Prefix prefix) {
+      _neighborIpPrefixes.add(prefix);
+   }
+
+   public void addNeighborIpv6Address(Ip6 address) {
+      _neighborIpv6Addresses.add(address);
+   }
+
+   public void addNeighborIpv6Prefix(Prefix6 prefix6) {
+      _neighborIpv6Prefixes.add(prefix6);
    }
 
    public boolean getCreated() {

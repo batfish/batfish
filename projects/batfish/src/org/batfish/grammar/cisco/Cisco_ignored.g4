@@ -161,7 +161,6 @@ null_block
       | LINECARD
       | LOAD_BALANCE
       | LOGIN
-      | MAC
       | MAC_LEARN
       | MACRO
       | MANAGEMENT_ACCESS
@@ -587,9 +586,9 @@ null_single
          ACCESS_LIST
          (
             (
-               DEC REMARK
-            )
-            | VARIABLE
+               DEC
+               | VARIABLE
+            ) REMARK
          )
       )
       | ACCOUNTING_PORT
@@ -616,7 +615,6 @@ null_single
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
-      | DEC
       | DEFAULT
       | DEVICE_SENSOR
       | DHCPD
@@ -740,6 +738,13 @@ null_single
       | LICENSE
       | LLDP
       | LOCATION
+      |
+      (
+         MAC
+         (
+            ADDRESS_TABLE
+         )
+      )
       | MAC_ADDRESS_TABLE
       | MEMORY_SIZE
       | MGCP

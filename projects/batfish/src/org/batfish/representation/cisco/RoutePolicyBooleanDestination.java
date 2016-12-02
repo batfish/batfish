@@ -3,7 +3,11 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.main.Warnings;
 
 public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
@@ -23,8 +27,14 @@ public class RoutePolicyBooleanDestination extends RoutePolicyBoolean {
    @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new MatchPrefixSet(new DestinationNetwork(),
-            _prefixSet.toPrefixSetExpr(cc, c, w));
+      PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
+      if (prefixSetExpr != null) {
+         return new MatchPrefixSet(new DestinationNetwork(), prefixSetExpr);
+      }
+      else {
+         Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
+         return new MatchPrefix6Set(new DestinationNetwork6(), prefix6SetExpr);
+      }
    }
 
 }

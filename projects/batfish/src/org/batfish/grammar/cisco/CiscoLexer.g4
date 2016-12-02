@@ -249,6 +249,11 @@ ADDRESS_POOLS
    'address-pools'
 ;
 
+ADDRESS_TABLE
+:
+   'address-table'
+;
+
 ADDRGROUP
 :
    'addrgroup'

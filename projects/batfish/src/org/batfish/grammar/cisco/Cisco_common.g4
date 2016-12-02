@@ -457,6 +457,6 @@ variable
 variable_permissive
 :
    (
-      ~( WS | NEWLINE )
+      ~( EXTENDED | NEWLINE | STANDARD | WS )
    )+
 ;
