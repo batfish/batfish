@@ -227,6 +227,13 @@
             "rmap"
           ]
         },
+        "asa_acl" : {
+          "ip acl" : [
+            "Local_LAN_Access",
+            "outside",
+            "outside_in"
+          ]
+        },
         "bgp_address_family" : {
           "bgp group" : [
             "as3",
@@ -423,6 +430,13 @@
         "as_path_prepend" : {
           "Red flags" : {
             "1" : "UNUSED: Unused route-map: 'rmap'"
+          }
+        },
+        "asa_acl" : {
+          "Red flags" : {
+            "1" : "UNUSED: Unused extended access-list: 'outside'",
+            "2" : "UNUSED: Unused extended access-list: 'outside_in'",
+            "3" : "UNUSED: Unused standard access-list: 'Local_LAN_Access'"
           }
         },
         "bgp_address_family" : {
