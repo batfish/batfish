@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
+import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.main.Warnings;
 
@@ -24,9 +25,15 @@ public class RoutePolicyInlinePrefix6Set extends RoutePolicyPrefixSet {
    }
 
    @Override
+   public Prefix6SetExpr toPrefix6SetExpr(CiscoConfiguration cc,
+         Configuration c, Warnings w) {
+      return new ExplicitPrefix6Set(_prefix6Space);
+   }
+
+   @Override
    public PrefixSetExpr toPrefixSetExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new ExplicitPrefix6Set(_prefix6Space);
+      return null;
    }
 
 }

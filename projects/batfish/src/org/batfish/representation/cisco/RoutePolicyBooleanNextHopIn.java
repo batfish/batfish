@@ -2,11 +2,17 @@ package org.batfish.representation.cisco;
 
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Ip6Prefix;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp6;
+import org.batfish.datamodel.routing_policy.expr.Prefix6SetExpr;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.main.Warnings;
 
 public class RoutePolicyBooleanNextHopIn extends RoutePolicyBoolean {
@@ -25,10 +31,18 @@ public class RoutePolicyBooleanNextHopIn extends RoutePolicyBoolean {
    @Override
    public BooleanExpr toBooleanExpr(CiscoConfiguration cc, Configuration c,
          Warnings w) {
-      return new MatchPrefixSet(
-            new IpPrefix(new NextHopIp(),
-                  new LiteralInt(Prefix.MAX_PREFIX_LENGTH)),
-            _prefixSet.toPrefixSetExpr(cc, c, w));
+      PrefixSetExpr prefixSetExpr = _prefixSet.toPrefixSetExpr(cc, c, w);
+      if (prefixSetExpr != null) {
+         return new MatchPrefixSet(new IpPrefix(new NextHopIp(),
+               new LiteralInt(Prefix.MAX_PREFIX_LENGTH)), prefixSetExpr);
+      }
+      else {
+         Prefix6SetExpr prefix6SetExpr = _prefixSet.toPrefix6SetExpr(cc, c, w);
+         return new MatchPrefix6Set(
+               new Ip6Prefix(new NextHopIp6(),
+                     new LiteralInt(Prefix6.MAX_PREFIX_LENGTH)),
+               prefix6SetExpr);
+      }
    }
 
 }

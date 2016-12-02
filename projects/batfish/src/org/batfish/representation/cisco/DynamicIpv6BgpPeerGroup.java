@@ -1,29 +1,24 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 
-public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {
+public class DynamicIpv6BgpPeerGroup extends LeafBgpPeerGroup {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   private Ip6 _ip6;
+   private Prefix6 _prefix6;
 
-   public Ipv6BgpPeerGroup(Ip6 ip6) {
-      _ip6 = ip6;
-   }
-
-   public Ip6 getIp6() {
-      return _ip6;
+   public DynamicIpv6BgpPeerGroup(Prefix6 prefix6) {
+      _prefix6 = prefix6;
    }
 
    @Override
    public String getName() {
-      return _ip6.toString();
+      return _prefix6.toString();
    }
 
    @Override
@@ -33,7 +28,11 @@ public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {
 
    @Override
    public Prefix6 getNeighborPrefix6() {
-      return new Prefix6(_ip6, Prefix6.MAX_PREFIX_LENGTH);
+      return _prefix6;
+   }
+
+   public Prefix getPrefix() {
+      return null;
    }
 
 }

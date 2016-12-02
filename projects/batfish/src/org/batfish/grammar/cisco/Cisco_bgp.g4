@@ -331,11 +331,7 @@ network_bgp_tail
 
 network6_bgp_tail
 :
-   NETWORK
-   (
-      address = IPV6_ADDRESS
-      | prefix = IPV6_PREFIX
-   )
+   NETWORK prefix = IPV6_PREFIX
    (
       ROUTE_MAP mapname = variable
    )?

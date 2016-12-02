@@ -16,3 +16,8 @@ ipv6 access-list RT404888-XO
  permit ipv6 any any
 !
 
+ipv6 access-list abcdefg
+ 10 permit icmp any any mld-query
+ 20 permit icmp any any mld-report
+ 30 permit icmp any any mld-reduction
+ 40 permit icmp any any mldv2

@@ -11,8 +11,6 @@ public class RouteMap extends ComparableStructure<String> {
 
    private Map<Integer, RouteMapClause> _clauses;
 
-   private boolean _ipv6;
-
    public RouteMap(String name) {
       super(name);
       _clauses = new TreeMap<>();
@@ -20,14 +18,6 @@ public class RouteMap extends ComparableStructure<String> {
 
    public Map<Integer, RouteMapClause> getClauses() {
       return _clauses;
-   }
-
-   public boolean getIpv6() {
-      return _ipv6;
-   }
-
-   public void setIpv6(boolean ipv6) {
-      _ipv6 = ipv6;
    }
 
 }
