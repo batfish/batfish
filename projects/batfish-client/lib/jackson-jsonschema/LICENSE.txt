@@ -1,0 +1,1 @@
+../../../../lib/jackson-jsonschema/LICENSE.txt
