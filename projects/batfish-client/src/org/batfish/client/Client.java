@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,19 +37,13 @@ import org.batfish.common.plugin.IClient;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
