@@ -2,6 +2,9 @@
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
+# Build and install pybatfish
+pip install projects/pybatfish || exit 1
+
 . tools/batfish_functions.sh
 batfish_build_all || exit 1
 

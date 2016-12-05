@@ -14,7 +14,7 @@
 ## replace <server> with service location (e.g., "localhost" or "www.batfish.org") 
 '''
 import logging
-from org.batfish.client.commands import *
+from pybatfish.client.commands import *
 
 bf_logger.setLevel(logging.DEBUG)
 

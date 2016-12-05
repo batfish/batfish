@@ -10,7 +10,7 @@ from bfconsts import BfConsts
 from coordconsts import CoordConsts
 import resthelper
 from workitem import WorkItem
-from org.batfish.util.batfish_exception import BatfishException
+from pybatfish.util.batfish_exception import BatfishException
 
 def execute(wItem, session):
     

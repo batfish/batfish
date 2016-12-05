@@ -13,7 +13,7 @@
 ## % batfish_pyclient -c demo-python/commands -s <server>
 ## replace <server> with service location (e.g., "localhost" or "www.batfish.org") 
 '''
-from org.batfish.client.commands import *
+from pybatfish.client.commands import *
 import os.path
 
 def test(referenceFilename, testOutput):
