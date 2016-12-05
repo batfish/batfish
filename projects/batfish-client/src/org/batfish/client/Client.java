@@ -57,22 +57,6 @@ import jline.console.completer.Completer;
 
 public class Client extends AbstractClient implements IClient {
 
-   public class Shape {
-      private Map<String, Color> _colors;
-
-      public Map<String, Color> getColors() {
-         return _colors;
-      }
-   }
-   
-   public class Color {
-      public String colorName;
-   }
-   
-   public class Rectangle extends Shape {
-      
-   }
-   
    private static final String DEFAULT_CONTAINER_PREFIX = "cp";
    private static final String DEFAULT_DELTA_ENV_PREFIX = "env_";
    private static final String DEFAULT_ENV_NAME = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
