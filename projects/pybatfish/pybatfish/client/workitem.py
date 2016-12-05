@@ -4,7 +4,7 @@ This class mirrors WorkItem.java in batfish-common
 
 import json
 
-import org.batfish.util.util as batfishutils
+import pybatfish.util.util as batfishutils
 
 class WorkItem:
     

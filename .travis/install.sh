@@ -18,10 +18,11 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    ### install python packages
    echo -e "\n   ............. Installing pip"
    sudo -H apt-get -y install python-pip || exit 1
-   echo -e "\n   ............. Installing requests"
-   pip install requests || exit 1
-   echo -e "\n   ............. Installing requests_toolbelt"
-   pip install requests_toolbelt || exit 1
+   ### dependencies should now be installed automatically when pip installing pybatfish
+   #echo -e "\n   ............. Installing requests"
+   #pip install requests || exit 1
+   #echo -e "\n   ............. Installing requests_toolbelt"
+   #pip install requests_toolbelt || exit 1
 else
    exit 1 # CI not supported in this case
 fi

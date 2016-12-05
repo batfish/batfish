@@ -1,4 +1,4 @@
-from org.batfish.util.batfish_exception import BatfishException
+from pybatfish.util.batfish_exception import BatfishException
 
 class BfResponse:
     '''

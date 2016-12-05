@@ -1,1 +1,4 @@
 *.pyc
+/pybatfish.egg-info
+/build
+/dist

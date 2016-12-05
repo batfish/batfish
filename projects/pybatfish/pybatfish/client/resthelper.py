@@ -6,7 +6,7 @@ from requests.exceptions import ConnectionError
 
 from coordconsts import CoordConsts
 from options import Options
-from org.batfish.util.batfish_exception import BatfishException
+from pybatfish.util.batfish_exception import BatfishException
 
 def get_object(session, objectName):
     

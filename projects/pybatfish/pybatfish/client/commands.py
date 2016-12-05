@@ -6,8 +6,8 @@ import json
 import logging
 import tempfile
 
-from org.batfish.util.batfish_exception import BatfishException
-import org.batfish.util.util as batfishutils
+from pybatfish.util.batfish_exception import BatfishException
+import pybatfish.util.util as batfishutils
 from coordconsts import CoordConsts
 from bfconsts import BfConsts
 from options import Options
