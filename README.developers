@@ -61,3 +61,13 @@ running 'batfish_wiki_questions' (after sourcing tools/batfish_functions.sh) wil
 
 the generation script recursively scans for all files with valid comments in the folder. (it can be given multiple folders to scan.)
 
+Generating the datamodel documentation 
+--------------------------------------
+
+Two pages that document the datamodel
+   https://github.com/intentionet/batfish/wiki/Datamodel
+   http://intentionet.github.io/batfish/docson/#../datamodel.json
+Both are automatically generated
+
+To generate them, run 'batfish_datamodel' (after sourcing tools/batfish_functions.sh). This command runs 'batfish_client -runmode gendatamodel' to get the datamodel in json. And it then runs datamodel_page.py to generate the Datamodel.md file.
+

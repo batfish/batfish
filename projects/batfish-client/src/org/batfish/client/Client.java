@@ -43,8 +43,7 @@ import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 import jline.console.ConsoleReader;
 import jline.console.completer.Completer;
@@ -368,13 +367,20 @@ public class Client extends AbstractClient implements IClient {
    private void generateDatamodel() {
       try {
          ObjectMapper mapper = new BatfishObjectMapper();
-         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-         JsonSchema schema = schemaGen.generateSchema(Configuration.class);
 
-         _logger.output(mapper.writeValueAsString(schema));
-      }
+//         com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
+//               new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
+//         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
+//         _logger.output(mapper.writeValueAsString(schema));
+         
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
+         JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
+         _logger.output(mapper.writeValueAsString(schemaNew));
+                  
+      } 
       catch (Exception e) {
          _logger.errorf("Could not generate data model: " + e.getMessage());
+         e.printStackTrace();
       }
    }
 

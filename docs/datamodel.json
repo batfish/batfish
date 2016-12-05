@@ -1,6 +1,8 @@
 {
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "title" : "Configuration",
   "type" : "object",
-  "id" : "urn:jsonschema:org:batfish:datamodel:Configuration",
+  "additionalProperties" : false,
   "properties" : {
     "name" : {
       "type" : "string"
@@ -8,168 +10,17 @@
     "aggregateRoutes" : {
       "type" : "array",
       "items" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:GeneratedRoute",
-        "properties" : {
-          "network" : {
-            "type" : "string"
-          },
-          "administrativeCost" : {
-            "type" : "integer"
-          },
-          "asPath" : {
-            "type" : "array",
-            "items" : {
-              "type" : "array",
-              "items" : {
-                "type" : "integer"
-              }
-            }
-          },
-          "attributePolicy" : {
-            "type" : "string"
-          },
-          "discard" : {
-            "type" : "boolean"
-          },
-          "generationPolicy" : {
-            "type" : "string"
-          },
-          "metric" : {
-            "type" : "integer"
-          },
-          "nextHopInterface" : {
-            "type" : "string"
-          }
-        }
+        "$ref" : "#/definitions/GeneratedRoute"
       }
     },
     "asPathAccessLists" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:AsPathAccessList",
-        "properties" : {
-          "lines" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:AsPathAccessListLine",
-              "properties" : {
-                "action" : {
-                  "type" : "string",
-                  "enum" : [
-                    "ACCEPT",
-                    "REJECT"
-                  ]
-                },
-                "regex" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "name" : {
-            "type" : "string"
-          }
-        }
+        "$ref" : "#/definitions/AsPathAccessList"
       }
     },
     "bgpProcess" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:org:batfish:datamodel:BgpProcess",
-      "properties" : {
-        "generatedRoutes" : {
-          "type" : "array",
-          "items" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:GeneratedRoute"
-          }
-        },
-        "neighbors" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "object",
-            "id" : "urn:jsonschema:org:batfish:datamodel:BgpNeighbor",
-            "properties" : {
-              "name" : {
-                "type" : "string"
-              },
-              "address" : {
-                "type" : "string"
-              },
-              "advertiseExternal" : {
-                "type" : "boolean"
-              },
-              "advertiseInactive" : {
-                "type" : "boolean"
-              },
-              "allowLocalAsIn" : {
-                "type" : "boolean"
-              },
-              "allowRemoteAsOut" : {
-                "type" : "boolean"
-              },
-              "clusterId" : {
-                "type" : "integer"
-              },
-              "defaultMetric" : {
-                "type" : "integer"
-              },
-              "description" : {
-                "type" : "string"
-              },
-              "dynamic" : {
-                "type" : "boolean"
-              },
-              "ebgpMultihop" : {
-                "type" : "boolean"
-              },
-              "exportPolicy" : {
-                "type" : "string"
-              },
-              "generatedRoutes" : {
-                "type" : "array",
-                "items" : {
-                  "type" : "object",
-                  "$ref" : "urn:jsonschema:org:batfish:datamodel:GeneratedRoute"
-                }
-              },
-              "group" : {
-                "type" : "string"
-              },
-              "importPolicy" : {
-                "type" : "string"
-              },
-              "localAs" : {
-                "type" : "integer"
-              },
-              "localIp" : {
-                "type" : "string"
-              },
-              "owner" : {
-                "type" : "object",
-                "$ref" : "urn:jsonschema:org:batfish:datamodel:Configuration"
-              },
-              "remoteAs" : {
-                "type" : "integer"
-              },
-              "remotePrefix" : {
-                "type" : "string"
-              },
-              "routeReflectorClient" : {
-                "type" : "boolean"
-              },
-              "sendCommunity" : {
-                "type" : "boolean"
-              }
-            }
-          }
-        },
-        "routerId" : {
-          "type" : "string"
-        }
-      }
+      "$ref" : "#/definitions/BgpProcess"
     },
     "communities" : {
       "type" : "array",
@@ -180,35 +31,7 @@
     "communityLists" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:CommunityList",
-        "properties" : {
-          "lines" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:CommunityListLine",
-              "properties" : {
-                "action" : {
-                  "type" : "string",
-                  "enum" : [
-                    "ACCEPT",
-                    "REJECT"
-                  ]
-                },
-                "regex" : {
-                  "type" : "string"
-                }
-              }
-            }
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "invertMatch" : {
-            "type" : "boolean"
-          }
-        }
+        "$ref" : "#/definitions/CommunityList"
       }
     },
     "configurationFormat" : {
@@ -252,1889 +75,2460 @@
         "REJECT"
       ]
     },
+    "domainName" : {
+      "type" : "string"
+    },
+    "generatedIpv6Routes" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/definitions/GeneratedRoute6"
+      }
+    },
     "ikeGateways" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:IkeGateway",
-        "properties" : {
-          "address" : {
-            "type" : "string"
-          },
-          "externalInterface" : {
-            "type" : "object",
-            "id" : "urn:jsonschema:org:batfish:datamodel:Interface",
-            "properties" : {
-              "name" : {
-                "type" : "string"
-              },
-              "accessVlan" : {
-                "type" : "integer"
-              },
-              "active" : {
-                "type" : "boolean"
-              },
-              "allPrefixes" : {
-                "type" : "array",
-                "items" : {
-                  "type" : "string"
-                }
-              },
-              "allowedVlans" : {
-                "type" : "array",
-                "items" : {
-                  "type" : "string"
-                }
-              },
-              "bandwidth" : {
-                "type" : "number"
-              },
-              "description" : {
-                "type" : "string"
-              },
-              "inboundFilter" : {
-                "type" : "object",
-                "id" : "urn:jsonschema:org:batfish:datamodel:IpAccessList",
-                "properties" : {
-                  "name" : {
-                    "type" : "string"
-                  },
-                  "lines" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "object",
-                      "id" : "urn:jsonschema:org:batfish:datamodel:IpAccessListLine",
-                      "properties" : {
-                        "action" : {
-                          "type" : "string",
-                          "enum" : [
-                            "ACCEPT",
-                            "REJECT"
-                          ]
-                        },
-                        "dscps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "integer"
-                          }
-                        },
-                        "dstIps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "dstPorts" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "ecns" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "integer"
-                          }
-                        },
-                        "fragmentOffsets" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "icmpCodes" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "icmpTypes" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "ipProtocols" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string",
-                            "enum" : [
-                              "AHP",
-                              "AN",
-                              "ANY_0_HOP_PROTOCOL",
-                              "ANY_DISTRIBUTED_FILE_SYSTEM",
-                              "ANY_HOST_INTERNAL_PROTOCOL",
-                              "ANY_LOCAL_NETWORK",
-                              "ANY_PRIVATE_ENCRYPTION_SCHEME",
-                              "ARGUS",
-                              "ARIS",
-                              "AX25",
-                              "BBN_RCC_MON",
-                              "BNA",
-                              "BR_SAT_MON",
-                              "CBT",
-                              "CFTP",
-                              "CHAOS",
-                              "COMPAQ_PEER",
-                              "CPHB",
-                              "CPNX",
-                              "CRTP",
-                              "CRUDP",
-                              "DCCP",
-                              "DCN_MEAS",
-                              "DDP",
-                              "DDX",
-                              "DGP",
-                              "EGP",
-                              "EIGRP",
-                              "EMCON",
-                              "ENCAP",
-                              "ESP",
-                              "ETHERIP",
-                              "FC",
-                              "FIRE",
-                              "GGP",
-                              "GMTP",
-                              "GRE",
-                              "HIP",
-                              "HMP",
-                              "HOPOPT",
-                              "I_NLSP",
-                              "IATP",
-                              "ICMP",
-                              "IDPR",
-                              "IDPR_CMTP",
-                              "IDRP",
-                              "IFMP",
-                              "IGMP",
-                              "IGP",
-                              "IL",
-                              "IP",
-                              "IPComp",
-                              "IPCU",
-                              "IPINIP",
-                              "IPIP",
-                              "IPLT",
-                              "IPPC",
-                              "IPV6",
-                              "IPV6_FRAG",
-                              "IPV6_ICMP",
-                              "IPV6_NO_NXT",
-                              "IPV6_OPTS",
-                              "IPV6_ROUTE",
-                              "IPX_IN_IP",
-                              "IRTP",
-                              "ISIS",
-                              "ISO_IP",
-                              "ISO_TP4",
-                              "KRYPTOLAN",
-                              "L2TP",
-                              "LARP",
-                              "LEAF1",
-                              "LEAF2",
-                              "MANAET",
-                              "MERIT_INP",
-                              "MFE_NSP",
-                              "MHRP",
-                              "MICP",
-                              "MOBILE",
-                              "MOBILITY",
-                              "MPLS_IN_IP",
-                              "MTP",
-                              "MUX",
-                              "NARP",
-                              "NETBLT",
-                              "NSFNET_IGP",
-                              "NVPII",
-                              "OSPF",
-                              "PGM",
-                              "PIM",
-                              "PIPE",
-                              "PNNI",
-                              "PRM",
-                              "PTP",
-                              "PUP",
-                              "PVP",
-                              "QNX",
-                              "RDP",
-                              "ROHC",
-                              "RSVP",
-                              "RSVP_E2E_IGNORE",
-                              "RVD",
-                              "SAT_EXPAK",
-                              "SAT_MON",
-                              "SCC_SP",
-                              "SCPS",
-                              "SCTP",
-                              "SDRP",
-                              "SECURE_VMTP",
-                              "SHIM6",
-                              "SKIP",
-                              "SM",
-                              "SMP",
-                              "SNP",
-                              "SPRITE_RPC",
-                              "SPS",
-                              "SRP",
-                              "SSCOPMCE",
-                              "ST",
-                              "STP",
-                              "SUN_ND",
-                              "SWIPE",
-                              "TCF",
-                              "TCP",
-                              "THREE_PC",
-                              "TLSP",
-                              "TPPLUSPLUS",
-                              "TRUNK1",
-                              "TRUNK2",
-                              "TTP",
-                              "UDP",
-                              "UDP_LITE",
-                              "UNNAMED_143",
-                              "UNNAMED_144",
-                              "UNNAMED_145",
-                              "UNNAMED_146",
-                              "UNNAMED_147",
-                              "UNNAMED_148",
-                              "UNNAMED_149",
-                              "UNNAMED_150",
-                              "UNNAMED_151",
-                              "UNNAMED_152",
-                              "UNNAMED_153",
-                              "UNNAMED_154",
-                              "UNNAMED_155",
-                              "UNNAMED_156",
-                              "UNNAMED_157",
-                              "UNNAMED_158",
-                              "UNNAMED_159",
-                              "UNNAMED_160",
-                              "UNNAMED_161",
-                              "UNNAMED_162",
-                              "UNNAMED_163",
-                              "UNNAMED_164",
-                              "UNNAMED_165",
-                              "UNNAMED_166",
-                              "UNNAMED_167",
-                              "UNNAMED_168",
-                              "UNNAMED_169",
-                              "UNNAMED_170",
-                              "UNNAMED_171",
-                              "UNNAMED_172",
-                              "UNNAMED_173",
-                              "UNNAMED_174",
-                              "UNNAMED_175",
-                              "UNNAMED_176",
-                              "UNNAMED_177",
-                              "UNNAMED_178",
-                              "UNNAMED_179",
-                              "UNNAMED_180",
-                              "UNNAMED_181",
-                              "UNNAMED_182",
-                              "UNNAMED_183",
-                              "UNNAMED_184",
-                              "UNNAMED_185",
-                              "UNNAMED_186",
-                              "UNNAMED_187",
-                              "UNNAMED_188",
-                              "UNNAMED_189",
-                              "UNNAMED_190",
-                              "UNNAMED_191",
-                              "UNNAMED_192",
-                              "UNNAMED_193",
-                              "UNNAMED_194",
-                              "UNNAMED_195",
-                              "UNNAMED_196",
-                              "UNNAMED_197",
-                              "UNNAMED_198",
-                              "UNNAMED_199",
-                              "UNNAMED_200",
-                              "UNNAMED_201",
-                              "UNNAMED_202",
-                              "UNNAMED_203",
-                              "UNNAMED_204",
-                              "UNNAMED_205",
-                              "UNNAMED_206",
-                              "UNNAMED_207",
-                              "UNNAMED_208",
-                              "UNNAMED_209",
-                              "UNNAMED_210",
-                              "UNNAMED_211",
-                              "UNNAMED_212",
-                              "UNNAMED_213",
-                              "UNNAMED_214",
-                              "UNNAMED_215",
-                              "UNNAMED_216",
-                              "UNNAMED_217",
-                              "UNNAMED_218",
-                              "UNNAMED_219",
-                              "UNNAMED_220",
-                              "UNNAMED_221",
-                              "UNNAMED_222",
-                              "UNNAMED_223",
-                              "UNNAMED_224",
-                              "UNNAMED_225",
-                              "UNNAMED_226",
-                              "UNNAMED_227",
-                              "UNNAMED_228",
-                              "UNNAMED_229",
-                              "UNNAMED_230",
-                              "UNNAMED_231",
-                              "UNNAMED_232",
-                              "UNNAMED_233",
-                              "UNNAMED_234",
-                              "UNNAMED_235",
-                              "UNNAMED_236",
-                              "UNNAMED_237",
-                              "UNNAMED_238",
-                              "UNNAMED_239",
-                              "UNNAMED_240",
-                              "UNNAMED_241",
-                              "UNNAMED_242",
-                              "UNNAMED_243",
-                              "UNNAMED_244",
-                              "UNNAMED_245",
-                              "UNNAMED_246",
-                              "UNNAMED_247",
-                              "UNNAMED_248",
-                              "UNNAMED_249",
-                              "UNNAMED_250",
-                              "UNNAMED_251",
-                              "UNNAMED_252",
-                              "UNNAMED_253",
-                              "UNNAMED_254",
-                              "UNNAMED_255",
-                              "UTI",
-                              "VINES",
-                              "VISA",
-                              "VMTP",
-                              "VRRP",
-                              "WB_EXPAK",
-                              "WB_MON",
-                              "WESP",
-                              "WSN",
-                              "XNET",
-                              "XNS_IDP",
-                              "XTP"
-                            ]
-                          }
-                        },
-                        "name" : {
-                          "type" : "string"
-                        },
-                        "negate" : {
-                          "type" : "boolean"
-                        },
-                        "notDscps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "integer"
-                          }
-                        },
-                        "notDstIps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notDstPorts" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notEcns" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "integer"
-                          }
-                        },
-                        "notFragmentOffsets" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notIcmpCodes" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notIcmpTypes" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notIpProtocols" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string",
-                            "enum" : [
-                              "AHP",
-                              "AN",
-                              "ANY_0_HOP_PROTOCOL",
-                              "ANY_DISTRIBUTED_FILE_SYSTEM",
-                              "ANY_HOST_INTERNAL_PROTOCOL",
-                              "ANY_LOCAL_NETWORK",
-                              "ANY_PRIVATE_ENCRYPTION_SCHEME",
-                              "ARGUS",
-                              "ARIS",
-                              "AX25",
-                              "BBN_RCC_MON",
-                              "BNA",
-                              "BR_SAT_MON",
-                              "CBT",
-                              "CFTP",
-                              "CHAOS",
-                              "COMPAQ_PEER",
-                              "CPHB",
-                              "CPNX",
-                              "CRTP",
-                              "CRUDP",
-                              "DCCP",
-                              "DCN_MEAS",
-                              "DDP",
-                              "DDX",
-                              "DGP",
-                              "EGP",
-                              "EIGRP",
-                              "EMCON",
-                              "ENCAP",
-                              "ESP",
-                              "ETHERIP",
-                              "FC",
-                              "FIRE",
-                              "GGP",
-                              "GMTP",
-                              "GRE",
-                              "HIP",
-                              "HMP",
-                              "HOPOPT",
-                              "I_NLSP",
-                              "IATP",
-                              "ICMP",
-                              "IDPR",
-                              "IDPR_CMTP",
-                              "IDRP",
-                              "IFMP",
-                              "IGMP",
-                              "IGP",
-                              "IL",
-                              "IP",
-                              "IPComp",
-                              "IPCU",
-                              "IPINIP",
-                              "IPIP",
-                              "IPLT",
-                              "IPPC",
-                              "IPV6",
-                              "IPV6_FRAG",
-                              "IPV6_ICMP",
-                              "IPV6_NO_NXT",
-                              "IPV6_OPTS",
-                              "IPV6_ROUTE",
-                              "IPX_IN_IP",
-                              "IRTP",
-                              "ISIS",
-                              "ISO_IP",
-                              "ISO_TP4",
-                              "KRYPTOLAN",
-                              "L2TP",
-                              "LARP",
-                              "LEAF1",
-                              "LEAF2",
-                              "MANAET",
-                              "MERIT_INP",
-                              "MFE_NSP",
-                              "MHRP",
-                              "MICP",
-                              "MOBILE",
-                              "MOBILITY",
-                              "MPLS_IN_IP",
-                              "MTP",
-                              "MUX",
-                              "NARP",
-                              "NETBLT",
-                              "NSFNET_IGP",
-                              "NVPII",
-                              "OSPF",
-                              "PGM",
-                              "PIM",
-                              "PIPE",
-                              "PNNI",
-                              "PRM",
-                              "PTP",
-                              "PUP",
-                              "PVP",
-                              "QNX",
-                              "RDP",
-                              "ROHC",
-                              "RSVP",
-                              "RSVP_E2E_IGNORE",
-                              "RVD",
-                              "SAT_EXPAK",
-                              "SAT_MON",
-                              "SCC_SP",
-                              "SCPS",
-                              "SCTP",
-                              "SDRP",
-                              "SECURE_VMTP",
-                              "SHIM6",
-                              "SKIP",
-                              "SM",
-                              "SMP",
-                              "SNP",
-                              "SPRITE_RPC",
-                              "SPS",
-                              "SRP",
-                              "SSCOPMCE",
-                              "ST",
-                              "STP",
-                              "SUN_ND",
-                              "SWIPE",
-                              "TCF",
-                              "TCP",
-                              "THREE_PC",
-                              "TLSP",
-                              "TPPLUSPLUS",
-                              "TRUNK1",
-                              "TRUNK2",
-                              "TTP",
-                              "UDP",
-                              "UDP_LITE",
-                              "UNNAMED_143",
-                              "UNNAMED_144",
-                              "UNNAMED_145",
-                              "UNNAMED_146",
-                              "UNNAMED_147",
-                              "UNNAMED_148",
-                              "UNNAMED_149",
-                              "UNNAMED_150",
-                              "UNNAMED_151",
-                              "UNNAMED_152",
-                              "UNNAMED_153",
-                              "UNNAMED_154",
-                              "UNNAMED_155",
-                              "UNNAMED_156",
-                              "UNNAMED_157",
-                              "UNNAMED_158",
-                              "UNNAMED_159",
-                              "UNNAMED_160",
-                              "UNNAMED_161",
-                              "UNNAMED_162",
-                              "UNNAMED_163",
-                              "UNNAMED_164",
-                              "UNNAMED_165",
-                              "UNNAMED_166",
-                              "UNNAMED_167",
-                              "UNNAMED_168",
-                              "UNNAMED_169",
-                              "UNNAMED_170",
-                              "UNNAMED_171",
-                              "UNNAMED_172",
-                              "UNNAMED_173",
-                              "UNNAMED_174",
-                              "UNNAMED_175",
-                              "UNNAMED_176",
-                              "UNNAMED_177",
-                              "UNNAMED_178",
-                              "UNNAMED_179",
-                              "UNNAMED_180",
-                              "UNNAMED_181",
-                              "UNNAMED_182",
-                              "UNNAMED_183",
-                              "UNNAMED_184",
-                              "UNNAMED_185",
-                              "UNNAMED_186",
-                              "UNNAMED_187",
-                              "UNNAMED_188",
-                              "UNNAMED_189",
-                              "UNNAMED_190",
-                              "UNNAMED_191",
-                              "UNNAMED_192",
-                              "UNNAMED_193",
-                              "UNNAMED_194",
-                              "UNNAMED_195",
-                              "UNNAMED_196",
-                              "UNNAMED_197",
-                              "UNNAMED_198",
-                              "UNNAMED_199",
-                              "UNNAMED_200",
-                              "UNNAMED_201",
-                              "UNNAMED_202",
-                              "UNNAMED_203",
-                              "UNNAMED_204",
-                              "UNNAMED_205",
-                              "UNNAMED_206",
-                              "UNNAMED_207",
-                              "UNNAMED_208",
-                              "UNNAMED_209",
-                              "UNNAMED_210",
-                              "UNNAMED_211",
-                              "UNNAMED_212",
-                              "UNNAMED_213",
-                              "UNNAMED_214",
-                              "UNNAMED_215",
-                              "UNNAMED_216",
-                              "UNNAMED_217",
-                              "UNNAMED_218",
-                              "UNNAMED_219",
-                              "UNNAMED_220",
-                              "UNNAMED_221",
-                              "UNNAMED_222",
-                              "UNNAMED_223",
-                              "UNNAMED_224",
-                              "UNNAMED_225",
-                              "UNNAMED_226",
-                              "UNNAMED_227",
-                              "UNNAMED_228",
-                              "UNNAMED_229",
-                              "UNNAMED_230",
-                              "UNNAMED_231",
-                              "UNNAMED_232",
-                              "UNNAMED_233",
-                              "UNNAMED_234",
-                              "UNNAMED_235",
-                              "UNNAMED_236",
-                              "UNNAMED_237",
-                              "UNNAMED_238",
-                              "UNNAMED_239",
-                              "UNNAMED_240",
-                              "UNNAMED_241",
-                              "UNNAMED_242",
-                              "UNNAMED_243",
-                              "UNNAMED_244",
-                              "UNNAMED_245",
-                              "UNNAMED_246",
-                              "UNNAMED_247",
-                              "UNNAMED_248",
-                              "UNNAMED_249",
-                              "UNNAMED_250",
-                              "UNNAMED_251",
-                              "UNNAMED_252",
-                              "UNNAMED_253",
-                              "UNNAMED_254",
-                              "UNNAMED_255",
-                              "UTI",
-                              "VINES",
-                              "VISA",
-                              "VMTP",
-                              "VRRP",
-                              "WB_EXPAK",
-                              "WB_MON",
-                              "WESP",
-                              "WSN",
-                              "XNET",
-                              "XNS_IDP",
-                              "XTP"
-                            ]
-                          }
-                        },
-                        "notSrcIps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "notSrcPorts" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "srcIps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "srcOrDstIps" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "srcOrDstPorts" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "srcPorts" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "states" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string",
-                            "enum" : [
-                              "ESTABLISHED",
-                              "INVALID",
-                              "NEW",
-                              "RELATED"
-                            ]
-                          }
-                        },
-                        "tcpFlags" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "object",
-                            "id" : "urn:jsonschema:org:batfish:datamodel:TcpFlags",
-                            "properties" : {
-                              "ack" : {
-                                "type" : "boolean"
-                              },
-                              "cwr" : {
-                                "type" : "boolean"
-                              },
-                              "ece" : {
-                                "type" : "boolean"
-                              },
-                              "fin" : {
-                                "type" : "boolean"
-                              },
-                              "psh" : {
-                                "type" : "boolean"
-                              },
-                              "rst" : {
-                                "type" : "boolean"
-                              },
-                              "syn" : {
-                                "type" : "boolean"
-                              },
-                              "urg" : {
-                                "type" : "boolean"
-                              },
-                              "useAck" : {
-                                "type" : "boolean"
-                              },
-                              "useCwr" : {
-                                "type" : "boolean"
-                              },
-                              "useEce" : {
-                                "type" : "boolean"
-                              },
-                              "useFin" : {
-                                "type" : "boolean"
-                              },
-                              "usePsh" : {
-                                "type" : "boolean"
-                              },
-                              "useRst" : {
-                                "type" : "boolean"
-                              },
-                              "useSyn" : {
-                                "type" : "boolean"
-                              },
-                              "useUrg" : {
-                                "type" : "boolean"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "incomingFilter" : {
-                "type" : "object",
-                "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-              },
-              "isisCost" : {
-                "type" : "integer"
-              },
-              "isisL1InterfaceMode" : {
-                "type" : "string",
-                "enum" : [
-                  "active",
-                  "passive",
-                  "unset"
-                ]
-              },
-              "isisL2InterfaceMode" : {
-                "type" : "string",
-                "enum" : [
-                  "active",
-                  "passive",
-                  "unset"
-                ]
-              },
-              "mtu" : {
-                "type" : "integer"
-              },
-              "nativeVlan" : {
-                "type" : "integer"
-              },
-              "ospfArea" : {
-                "type" : "object",
-                "id" : "urn:jsonschema:org:batfish:datamodel:OspfArea",
-                "properties" : {
-                  "name" : {
-                    "type" : "integer"
-                  },
-                  "interfaces" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "object",
-                      "$ref" : "urn:jsonschema:org:batfish:datamodel:Interface"
-                    }
-                  }
-                }
-              },
-              "ospfCost" : {
-                "type" : "integer"
-              },
-              "ospfDeadInterval" : {
-                "type" : "integer"
-              },
-              "ospfEnabled" : {
-                "type" : "boolean"
-              },
-              "ospfHelloMultiplier" : {
-                "type" : "integer"
-              },
-              "ospfPassive" : {
-                "type" : "boolean"
-              },
-              "outgoingFilter" : {
-                "type" : "object",
-                "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-              },
-              "owner" : {
-                "type" : "object",
-                "$ref" : "urn:jsonschema:org:batfish:datamodel:Configuration"
-              },
-              "prefix" : {
-                "type" : "string"
-              },
-              "proxyArp" : {
-                "type" : "boolean"
-              },
-              "routingPolicy" : {
-                "type" : "string"
-              },
-              "switchportMode" : {
-                "type" : "string",
-                "enum" : [
-                  "ACCESS",
-                  "DOT1Q_TUNNEL",
-                  "DYNAMIC_AUTO",
-                  "DYNAMIC_DESIRABLE",
-                  "FEX_FABRIC",
-                  "NONE",
-                  "TAP",
-                  "TOOL",
-                  "TRUNK"
-                ]
-              },
-              "switchportTrunkEncapsulation" : {
-                "type" : "string",
-                "enum" : [
-                  "DOT1Q",
-                  "ISL",
-                  "NEGOTIATE"
-                ]
-              },
-              "zone" : {
-                "type" : "object",
-                "id" : "urn:jsonschema:org:batfish:datamodel:Zone",
-                "properties" : {
-                  "name" : {
-                    "type" : "string"
-                  },
-                  "fromHostFilter" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-                  },
-                  "inboundFilter" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-                  },
-                  "inboundInterfaceFilters" : {
-                    "type" : "object",
-                    "additionalProperties" : {
-                      "type" : "object",
-                      "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-                    }
-                  },
-                  "toHostFilter" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-                  },
-                  "toZonePolicies" : {
-                    "type" : "object",
-                    "additionalProperties" : {
-                      "type" : "object",
-                      "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "ikePolicy" : {
-            "type" : "object",
-            "id" : "urn:jsonschema:org:batfish:datamodel:IkePolicy",
-            "properties" : {
-              "name" : {
-                "type" : "string"
-              },
-              "preSharedKeyHash" : {
-                "type" : "string"
-              },
-              "proposals" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "object",
-                  "id" : "urn:jsonschema:org:batfish:datamodel:IkeProposal",
-                  "properties" : {
-                    "name" : {
-                      "type" : "string"
-                    },
-                    "authenticationAlgorithm" : {
-                      "type" : "string",
-                      "enum" : [
-                        "MD5",
-                        "SHA_256",
-                        "SHA_384",
-                        "SHA_512",
-                        "SHA1"
-                      ]
-                    },
-                    "authenticationMethod" : {
-                      "type" : "string",
-                      "enum" : [
-                        "DSA_SIGNATURES",
-                        "PRE_SHARED_KEYS",
-                        "RSA_SIGNATURES",
-                        "X509"
-                      ]
-                    },
-                    "diffieHellmanGroup" : {
-                      "type" : "string",
-                      "enum" : [
-                        "GROUP1",
-                        "GROUP14",
-                        "GROUP15",
-                        "GROUP16",
-                        "GROUP17",
-                        "GROUP18",
-                        "GROUP19",
-                        "GROUP2",
-                        "GROUP20",
-                        "GROUP21",
-                        "GROUP22",
-                        "GROUP23",
-                        "GROUP24",
-                        "GROUP25",
-                        "GROUP26",
-                        "GROUP5"
-                      ]
-                    },
-                    "encryptionAlgorithm" : {
-                      "type" : "string",
-                      "enum" : [
-                        "AES_128_CBC",
-                        "AES_192_CBC",
-                        "AES_256_CBC",
-                        "DES_CBC",
-                        "THREEDES_CBC"
-                      ]
-                    },
-                    "lifetimeSeconds" : {
-                      "type" : "integer"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "localAddress" : {
-            "type" : "string"
-          },
-          "localId" : {
-            "type" : "string"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "remoteId" : {
-            "type" : "string"
-          }
-        }
+        "$ref" : "#/definitions/IkeGateway"
       }
     },
     "ikePolicies" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:IkePolicy"
+        "$ref" : "#/definitions/IkePolicy"
       }
     },
     "ikeProposals" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:IkeProposal"
+        "$ref" : "#/definitions/IkeProposal"
       }
     },
     "interfaces" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:Interface"
+        "$ref" : "#/definitions/Interface"
       }
     },
     "ip6AccessLists" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:Ip6AccessList",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "lines" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:Ip6AccessListLine",
-              "properties" : {
-                "action" : {
-                  "type" : "string",
-                  "enum" : [
-                    "ACCEPT",
-                    "REJECT"
-                  ]
-                },
-                "dscps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "integer"
-                  }
-                },
-                "dstIps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "dstPorts" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "ecns" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "integer"
-                  }
-                },
-                "fragmentOffsets" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "icmpCodes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "icmpTypes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "ipProtocols" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string",
-                    "enum" : [
-                      "AHP",
-                      "AN",
-                      "ANY_0_HOP_PROTOCOL",
-                      "ANY_DISTRIBUTED_FILE_SYSTEM",
-                      "ANY_HOST_INTERNAL_PROTOCOL",
-                      "ANY_LOCAL_NETWORK",
-                      "ANY_PRIVATE_ENCRYPTION_SCHEME",
-                      "ARGUS",
-                      "ARIS",
-                      "AX25",
-                      "BBN_RCC_MON",
-                      "BNA",
-                      "BR_SAT_MON",
-                      "CBT",
-                      "CFTP",
-                      "CHAOS",
-                      "COMPAQ_PEER",
-                      "CPHB",
-                      "CPNX",
-                      "CRTP",
-                      "CRUDP",
-                      "DCCP",
-                      "DCN_MEAS",
-                      "DDP",
-                      "DDX",
-                      "DGP",
-                      "EGP",
-                      "EIGRP",
-                      "EMCON",
-                      "ENCAP",
-                      "ESP",
-                      "ETHERIP",
-                      "FC",
-                      "FIRE",
-                      "GGP",
-                      "GMTP",
-                      "GRE",
-                      "HIP",
-                      "HMP",
-                      "HOPOPT",
-                      "I_NLSP",
-                      "IATP",
-                      "ICMP",
-                      "IDPR",
-                      "IDPR_CMTP",
-                      "IDRP",
-                      "IFMP",
-                      "IGMP",
-                      "IGP",
-                      "IL",
-                      "IP",
-                      "IPComp",
-                      "IPCU",
-                      "IPINIP",
-                      "IPIP",
-                      "IPLT",
-                      "IPPC",
-                      "IPV6",
-                      "IPV6_FRAG",
-                      "IPV6_ICMP",
-                      "IPV6_NO_NXT",
-                      "IPV6_OPTS",
-                      "IPV6_ROUTE",
-                      "IPX_IN_IP",
-                      "IRTP",
-                      "ISIS",
-                      "ISO_IP",
-                      "ISO_TP4",
-                      "KRYPTOLAN",
-                      "L2TP",
-                      "LARP",
-                      "LEAF1",
-                      "LEAF2",
-                      "MANAET",
-                      "MERIT_INP",
-                      "MFE_NSP",
-                      "MHRP",
-                      "MICP",
-                      "MOBILE",
-                      "MOBILITY",
-                      "MPLS_IN_IP",
-                      "MTP",
-                      "MUX",
-                      "NARP",
-                      "NETBLT",
-                      "NSFNET_IGP",
-                      "NVPII",
-                      "OSPF",
-                      "PGM",
-                      "PIM",
-                      "PIPE",
-                      "PNNI",
-                      "PRM",
-                      "PTP",
-                      "PUP",
-                      "PVP",
-                      "QNX",
-                      "RDP",
-                      "ROHC",
-                      "RSVP",
-                      "RSVP_E2E_IGNORE",
-                      "RVD",
-                      "SAT_EXPAK",
-                      "SAT_MON",
-                      "SCC_SP",
-                      "SCPS",
-                      "SCTP",
-                      "SDRP",
-                      "SECURE_VMTP",
-                      "SHIM6",
-                      "SKIP",
-                      "SM",
-                      "SMP",
-                      "SNP",
-                      "SPRITE_RPC",
-                      "SPS",
-                      "SRP",
-                      "SSCOPMCE",
-                      "ST",
-                      "STP",
-                      "SUN_ND",
-                      "SWIPE",
-                      "TCF",
-                      "TCP",
-                      "THREE_PC",
-                      "TLSP",
-                      "TPPLUSPLUS",
-                      "TRUNK1",
-                      "TRUNK2",
-                      "TTP",
-                      "UDP",
-                      "UDP_LITE",
-                      "UNNAMED_143",
-                      "UNNAMED_144",
-                      "UNNAMED_145",
-                      "UNNAMED_146",
-                      "UNNAMED_147",
-                      "UNNAMED_148",
-                      "UNNAMED_149",
-                      "UNNAMED_150",
-                      "UNNAMED_151",
-                      "UNNAMED_152",
-                      "UNNAMED_153",
-                      "UNNAMED_154",
-                      "UNNAMED_155",
-                      "UNNAMED_156",
-                      "UNNAMED_157",
-                      "UNNAMED_158",
-                      "UNNAMED_159",
-                      "UNNAMED_160",
-                      "UNNAMED_161",
-                      "UNNAMED_162",
-                      "UNNAMED_163",
-                      "UNNAMED_164",
-                      "UNNAMED_165",
-                      "UNNAMED_166",
-                      "UNNAMED_167",
-                      "UNNAMED_168",
-                      "UNNAMED_169",
-                      "UNNAMED_170",
-                      "UNNAMED_171",
-                      "UNNAMED_172",
-                      "UNNAMED_173",
-                      "UNNAMED_174",
-                      "UNNAMED_175",
-                      "UNNAMED_176",
-                      "UNNAMED_177",
-                      "UNNAMED_178",
-                      "UNNAMED_179",
-                      "UNNAMED_180",
-                      "UNNAMED_181",
-                      "UNNAMED_182",
-                      "UNNAMED_183",
-                      "UNNAMED_184",
-                      "UNNAMED_185",
-                      "UNNAMED_186",
-                      "UNNAMED_187",
-                      "UNNAMED_188",
-                      "UNNAMED_189",
-                      "UNNAMED_190",
-                      "UNNAMED_191",
-                      "UNNAMED_192",
-                      "UNNAMED_193",
-                      "UNNAMED_194",
-                      "UNNAMED_195",
-                      "UNNAMED_196",
-                      "UNNAMED_197",
-                      "UNNAMED_198",
-                      "UNNAMED_199",
-                      "UNNAMED_200",
-                      "UNNAMED_201",
-                      "UNNAMED_202",
-                      "UNNAMED_203",
-                      "UNNAMED_204",
-                      "UNNAMED_205",
-                      "UNNAMED_206",
-                      "UNNAMED_207",
-                      "UNNAMED_208",
-                      "UNNAMED_209",
-                      "UNNAMED_210",
-                      "UNNAMED_211",
-                      "UNNAMED_212",
-                      "UNNAMED_213",
-                      "UNNAMED_214",
-                      "UNNAMED_215",
-                      "UNNAMED_216",
-                      "UNNAMED_217",
-                      "UNNAMED_218",
-                      "UNNAMED_219",
-                      "UNNAMED_220",
-                      "UNNAMED_221",
-                      "UNNAMED_222",
-                      "UNNAMED_223",
-                      "UNNAMED_224",
-                      "UNNAMED_225",
-                      "UNNAMED_226",
-                      "UNNAMED_227",
-                      "UNNAMED_228",
-                      "UNNAMED_229",
-                      "UNNAMED_230",
-                      "UNNAMED_231",
-                      "UNNAMED_232",
-                      "UNNAMED_233",
-                      "UNNAMED_234",
-                      "UNNAMED_235",
-                      "UNNAMED_236",
-                      "UNNAMED_237",
-                      "UNNAMED_238",
-                      "UNNAMED_239",
-                      "UNNAMED_240",
-                      "UNNAMED_241",
-                      "UNNAMED_242",
-                      "UNNAMED_243",
-                      "UNNAMED_244",
-                      "UNNAMED_245",
-                      "UNNAMED_246",
-                      "UNNAMED_247",
-                      "UNNAMED_248",
-                      "UNNAMED_249",
-                      "UNNAMED_250",
-                      "UNNAMED_251",
-                      "UNNAMED_252",
-                      "UNNAMED_253",
-                      "UNNAMED_254",
-                      "UNNAMED_255",
-                      "UTI",
-                      "VINES",
-                      "VISA",
-                      "VMTP",
-                      "VRRP",
-                      "WB_EXPAK",
-                      "WB_MON",
-                      "WESP",
-                      "WSN",
-                      "XNET",
-                      "XNS_IDP",
-                      "XTP"
-                    ]
-                  }
-                },
-                "name" : {
-                  "type" : "string"
-                },
-                "negate" : {
-                  "type" : "boolean"
-                },
-                "notDscps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "integer"
-                  }
-                },
-                "notDstIps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notDstPorts" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notEcns" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "integer"
-                  }
-                },
-                "notFragmentOffsets" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notIcmpCodes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notIcmpTypes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notIpProtocols" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string",
-                    "enum" : [
-                      "AHP",
-                      "AN",
-                      "ANY_0_HOP_PROTOCOL",
-                      "ANY_DISTRIBUTED_FILE_SYSTEM",
-                      "ANY_HOST_INTERNAL_PROTOCOL",
-                      "ANY_LOCAL_NETWORK",
-                      "ANY_PRIVATE_ENCRYPTION_SCHEME",
-                      "ARGUS",
-                      "ARIS",
-                      "AX25",
-                      "BBN_RCC_MON",
-                      "BNA",
-                      "BR_SAT_MON",
-                      "CBT",
-                      "CFTP",
-                      "CHAOS",
-                      "COMPAQ_PEER",
-                      "CPHB",
-                      "CPNX",
-                      "CRTP",
-                      "CRUDP",
-                      "DCCP",
-                      "DCN_MEAS",
-                      "DDP",
-                      "DDX",
-                      "DGP",
-                      "EGP",
-                      "EIGRP",
-                      "EMCON",
-                      "ENCAP",
-                      "ESP",
-                      "ETHERIP",
-                      "FC",
-                      "FIRE",
-                      "GGP",
-                      "GMTP",
-                      "GRE",
-                      "HIP",
-                      "HMP",
-                      "HOPOPT",
-                      "I_NLSP",
-                      "IATP",
-                      "ICMP",
-                      "IDPR",
-                      "IDPR_CMTP",
-                      "IDRP",
-                      "IFMP",
-                      "IGMP",
-                      "IGP",
-                      "IL",
-                      "IP",
-                      "IPComp",
-                      "IPCU",
-                      "IPINIP",
-                      "IPIP",
-                      "IPLT",
-                      "IPPC",
-                      "IPV6",
-                      "IPV6_FRAG",
-                      "IPV6_ICMP",
-                      "IPV6_NO_NXT",
-                      "IPV6_OPTS",
-                      "IPV6_ROUTE",
-                      "IPX_IN_IP",
-                      "IRTP",
-                      "ISIS",
-                      "ISO_IP",
-                      "ISO_TP4",
-                      "KRYPTOLAN",
-                      "L2TP",
-                      "LARP",
-                      "LEAF1",
-                      "LEAF2",
-                      "MANAET",
-                      "MERIT_INP",
-                      "MFE_NSP",
-                      "MHRP",
-                      "MICP",
-                      "MOBILE",
-                      "MOBILITY",
-                      "MPLS_IN_IP",
-                      "MTP",
-                      "MUX",
-                      "NARP",
-                      "NETBLT",
-                      "NSFNET_IGP",
-                      "NVPII",
-                      "OSPF",
-                      "PGM",
-                      "PIM",
-                      "PIPE",
-                      "PNNI",
-                      "PRM",
-                      "PTP",
-                      "PUP",
-                      "PVP",
-                      "QNX",
-                      "RDP",
-                      "ROHC",
-                      "RSVP",
-                      "RSVP_E2E_IGNORE",
-                      "RVD",
-                      "SAT_EXPAK",
-                      "SAT_MON",
-                      "SCC_SP",
-                      "SCPS",
-                      "SCTP",
-                      "SDRP",
-                      "SECURE_VMTP",
-                      "SHIM6",
-                      "SKIP",
-                      "SM",
-                      "SMP",
-                      "SNP",
-                      "SPRITE_RPC",
-                      "SPS",
-                      "SRP",
-                      "SSCOPMCE",
-                      "ST",
-                      "STP",
-                      "SUN_ND",
-                      "SWIPE",
-                      "TCF",
-                      "TCP",
-                      "THREE_PC",
-                      "TLSP",
-                      "TPPLUSPLUS",
-                      "TRUNK1",
-                      "TRUNK2",
-                      "TTP",
-                      "UDP",
-                      "UDP_LITE",
-                      "UNNAMED_143",
-                      "UNNAMED_144",
-                      "UNNAMED_145",
-                      "UNNAMED_146",
-                      "UNNAMED_147",
-                      "UNNAMED_148",
-                      "UNNAMED_149",
-                      "UNNAMED_150",
-                      "UNNAMED_151",
-                      "UNNAMED_152",
-                      "UNNAMED_153",
-                      "UNNAMED_154",
-                      "UNNAMED_155",
-                      "UNNAMED_156",
-                      "UNNAMED_157",
-                      "UNNAMED_158",
-                      "UNNAMED_159",
-                      "UNNAMED_160",
-                      "UNNAMED_161",
-                      "UNNAMED_162",
-                      "UNNAMED_163",
-                      "UNNAMED_164",
-                      "UNNAMED_165",
-                      "UNNAMED_166",
-                      "UNNAMED_167",
-                      "UNNAMED_168",
-                      "UNNAMED_169",
-                      "UNNAMED_170",
-                      "UNNAMED_171",
-                      "UNNAMED_172",
-                      "UNNAMED_173",
-                      "UNNAMED_174",
-                      "UNNAMED_175",
-                      "UNNAMED_176",
-                      "UNNAMED_177",
-                      "UNNAMED_178",
-                      "UNNAMED_179",
-                      "UNNAMED_180",
-                      "UNNAMED_181",
-                      "UNNAMED_182",
-                      "UNNAMED_183",
-                      "UNNAMED_184",
-                      "UNNAMED_185",
-                      "UNNAMED_186",
-                      "UNNAMED_187",
-                      "UNNAMED_188",
-                      "UNNAMED_189",
-                      "UNNAMED_190",
-                      "UNNAMED_191",
-                      "UNNAMED_192",
-                      "UNNAMED_193",
-                      "UNNAMED_194",
-                      "UNNAMED_195",
-                      "UNNAMED_196",
-                      "UNNAMED_197",
-                      "UNNAMED_198",
-                      "UNNAMED_199",
-                      "UNNAMED_200",
-                      "UNNAMED_201",
-                      "UNNAMED_202",
-                      "UNNAMED_203",
-                      "UNNAMED_204",
-                      "UNNAMED_205",
-                      "UNNAMED_206",
-                      "UNNAMED_207",
-                      "UNNAMED_208",
-                      "UNNAMED_209",
-                      "UNNAMED_210",
-                      "UNNAMED_211",
-                      "UNNAMED_212",
-                      "UNNAMED_213",
-                      "UNNAMED_214",
-                      "UNNAMED_215",
-                      "UNNAMED_216",
-                      "UNNAMED_217",
-                      "UNNAMED_218",
-                      "UNNAMED_219",
-                      "UNNAMED_220",
-                      "UNNAMED_221",
-                      "UNNAMED_222",
-                      "UNNAMED_223",
-                      "UNNAMED_224",
-                      "UNNAMED_225",
-                      "UNNAMED_226",
-                      "UNNAMED_227",
-                      "UNNAMED_228",
-                      "UNNAMED_229",
-                      "UNNAMED_230",
-                      "UNNAMED_231",
-                      "UNNAMED_232",
-                      "UNNAMED_233",
-                      "UNNAMED_234",
-                      "UNNAMED_235",
-                      "UNNAMED_236",
-                      "UNNAMED_237",
-                      "UNNAMED_238",
-                      "UNNAMED_239",
-                      "UNNAMED_240",
-                      "UNNAMED_241",
-                      "UNNAMED_242",
-                      "UNNAMED_243",
-                      "UNNAMED_244",
-                      "UNNAMED_245",
-                      "UNNAMED_246",
-                      "UNNAMED_247",
-                      "UNNAMED_248",
-                      "UNNAMED_249",
-                      "UNNAMED_250",
-                      "UNNAMED_251",
-                      "UNNAMED_252",
-                      "UNNAMED_253",
-                      "UNNAMED_254",
-                      "UNNAMED_255",
-                      "UTI",
-                      "VINES",
-                      "VISA",
-                      "VMTP",
-                      "VRRP",
-                      "WB_EXPAK",
-                      "WB_MON",
-                      "WESP",
-                      "WSN",
-                      "XNET",
-                      "XNS_IDP",
-                      "XTP"
-                    ]
-                  }
-                },
-                "notSrcIps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "notSrcPorts" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "srcIps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "srcOrDstIps" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "srcOrDstPorts" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "srcPorts" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                },
-                "states" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string",
-                    "enum" : [
-                      "ESTABLISHED",
-                      "INVALID",
-                      "NEW",
-                      "RELATED"
-                    ]
-                  }
-                },
-                "tcpFlags" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:org:batfish:datamodel:TcpFlags"
-                  }
-                }
-              }
-            }
-          }
-        }
+        "$ref" : "#/definitions/Ip6AccessList"
       }
     },
     "ipAccessLists" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:IpAccessList"
+        "$ref" : "#/definitions/IpAccessList"
       }
     },
     "ipsecPolicies" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:IpsecPolicy",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "pfsKeyGroup" : {
-            "type" : "string",
-            "enum" : [
-              "GROUP1",
-              "GROUP14",
-              "GROUP15",
-              "GROUP16",
-              "GROUP17",
-              "GROUP18",
-              "GROUP19",
-              "GROUP2",
-              "GROUP20",
-              "GROUP21",
-              "GROUP22",
-              "GROUP23",
-              "GROUP24",
-              "GROUP25",
-              "GROUP26",
-              "GROUP5"
-            ]
-          },
-          "pfsKeyGroupDynamicIke" : {
-            "type" : "boolean"
-          },
-          "proposals" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:IpsecProposal",
-              "properties" : {
-                "name" : {
-                  "type" : "string"
-                },
-                "authenticationAlgorithm" : {
-                  "type" : "string",
-                  "enum" : [
-                    "HMAC_MD5_96",
-                    "HMAC_SHA_256_128",
-                    "HMAC_SHA1_96"
-                  ]
-                },
-                "encryptionAlgorithm" : {
-                  "type" : "string",
-                  "enum" : [
-                    "AES_128_CBC",
-                    "AES_192_CBC",
-                    "AES_256_CBC",
-                    "DES_CBC",
-                    "THREEDES_CBC"
-                  ]
-                },
-                "lifetimeKilobytes" : {
-                  "type" : "integer"
-                },
-                "lifetimeSeconds" : {
-                  "type" : "integer"
-                },
-                "protocol" : {
-                  "type" : "string",
-                  "enum" : [
-                    "AH",
-                    "ESP"
-                  ]
-                }
-              }
-            }
-          }
-        }
+        "$ref" : "#/definitions/IpsecPolicy"
       }
     },
     "ipsecProposals" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:IpsecProposal"
+        "$ref" : "#/definitions/IpsecProposal"
       }
     },
     "ipsecVpns" : {
       "type" : "object",
       "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:IpsecVpn",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "bindInterface" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:Interface"
-          },
-          "candidateRemoteIpsecVpns" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "$ref" : "urn:jsonschema:org:batfish:datamodel:IpsecVpn"
-            }
-          },
-          "gateway" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:IkeGateway"
-          },
-          "ipsecPolicy" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:IpsecPolicy"
-          },
-          "owner" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:Configuration"
-          },
-          "remoteIpsecVpn" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:IpsecVpn"
-          }
-        }
+        "$ref" : "#/definitions/IpsecVpn"
       }
     },
     "isisProcess" : {
+      "$ref" : "#/definitions/IsisProcess"
+    },
+    "ospfProcess" : {
+      "$ref" : "#/definitions/OspfProcess"
+    },
+    "roles" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "route6FilterLists" : {
       "type" : "object",
-      "id" : "urn:jsonschema:org:batfish:datamodel:IsisProcess",
+      "additionalProperties" : {
+        "$ref" : "#/definitions/Route6FilterList"
+      }
+    },
+    "routeFilterLists" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/definitions/RouteFilterList"
+      }
+    },
+    "routingPolicies" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/definitions/RoutingPolicy"
+      }
+    },
+    "staticRoutes" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "#/definitions/StaticRoute"
+      }
+    },
+    "vendorFamily" : {
+      "$ref" : "#/definitions/VendorFamily"
+    },
+    "zones" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "$ref" : "#/definitions/Zone"
+      }
+    }
+  },
+  "definitions" : {
+    "GeneratedRoute" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        },
+        "asPath" : {
+          "type" : "array",
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer"
+            }
+          }
+        },
+        "attributePolicy" : {
+          "type" : "string"
+        },
+        "discard" : {
+          "type" : "boolean"
+        },
+        "generationPolicy" : {
+          "type" : "string"
+        },
+        "metric" : {
+          "type" : "integer"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "administrativeCost",
+        "discard"
+      ]
+    },
+    "AsPathAccessList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/AsPathAccessListLine"
+          }
+        },
+        "name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "AsPathAccessListLine" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "regex" : {
+          "type" : "string"
+        }
+      }
+    },
+    "BgpProcess" : {
+      "type" : "object",
+      "additionalProperties" : false,
       "properties" : {
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:GeneratedRoute"
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "neighbors" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/BgpNeighbor"
+          }
+        },
+        "routerId" : {
+          "type" : "string"
+        }
+      }
+    },
+    "BgpNeighbor" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "address" : {
+          "type" : "string"
+        },
+        "advertiseExternal" : {
+          "type" : "boolean"
+        },
+        "advertiseInactive" : {
+          "type" : "boolean"
+        },
+        "allowLocalAsIn" : {
+          "type" : "boolean"
+        },
+        "allowRemoteAsOut" : {
+          "type" : "boolean"
+        },
+        "clusterId" : {
+          "type" : "integer"
+        },
+        "defaultMetric" : {
+          "type" : "integer"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "dynamic" : {
+          "type" : "boolean"
+        },
+        "ebgpMultihop" : {
+          "type" : "boolean"
+        },
+        "exportPolicy" : {
+          "type" : "string"
+        },
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "group" : {
+          "type" : "string"
+        },
+        "importPolicy" : {
+          "type" : "string"
+        },
+        "localAs" : {
+          "type" : "integer"
+        },
+        "localIp" : {
+          "type" : "string"
+        },
+        "owner" : {
+          "$ref" : "#/definitions/Configuration"
+        },
+        "remoteAs" : {
+          "type" : "integer"
+        },
+        "remotePrefix" : {
+          "type" : "string"
+        },
+        "routeReflectorClient" : {
+          "type" : "boolean"
+        },
+        "sendCommunity" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "advertiseExternal",
+        "advertiseInactive",
+        "allowLocalAsIn",
+        "allowRemoteAsOut",
+        "defaultMetric",
+        "dynamic",
+        "ebgpMultihop",
+        "routeReflectorClient",
+        "sendCommunity"
+      ]
+    },
+    "Configuration" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "aggregateRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "asPathAccessLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/AsPathAccessList"
+          }
+        },
+        "bgpProcess" : {
+          "$ref" : "#/definitions/BgpProcess"
+        },
+        "communities" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "communityLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/CommunityList"
+          }
+        },
+        "configurationFormat" : {
+          "type" : "string",
+          "enum" : [
+            "ALCATEL_AOS",
+            "ARISTA",
+            "AWS_VPC",
+            "BLADENETWORK",
+            "CISCO_IOS",
+            "CISCO_IOS_XR",
+            "CISCO_NX",
+            "EMPTY",
+            "FLAT_JUNIPER",
+            "FLAT_VYOS",
+            "FORCE10",
+            "FOUNDRY",
+            "HOST",
+            "IGNORED",
+            "IPTABLES",
+            "JUNIPER",
+            "JUNIPER_SWITCH",
+            "MRV",
+            "MSS",
+            "UNKNOWN",
+            "VXWORKS",
+            "VYOS"
+          ]
+        },
+        "defaultCrossZoneAction" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "defaultInboundAction" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "domainName" : {
+          "type" : "string"
+        },
+        "generatedIpv6Routes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute6"
+          }
+        },
+        "ikeGateways" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkeGateway"
+          }
+        },
+        "ikePolicies" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkePolicy"
+          }
+        },
+        "ikeProposals" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkeProposal"
+          }
+        },
+        "interfaces" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Interface"
+          }
+        },
+        "ip6AccessLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Ip6AccessList"
+          }
+        },
+        "ipAccessLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpAccessList"
+          }
+        },
+        "ipsecPolicies" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecPolicy"
+          }
+        },
+        "ipsecProposals" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecProposal"
+          }
+        },
+        "ipsecVpns" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecVpn"
+          }
+        },
+        "isisProcess" : {
+          "$ref" : "#/definitions/IsisProcess"
+        },
+        "ospfProcess" : {
+          "$ref" : "#/definitions/OspfProcess"
+        },
+        "roles" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "route6FilterLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Route6FilterList"
+          }
+        },
+        "routeFilterLists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/RouteFilterList"
+          }
+        },
+        "routingPolicies" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/RoutingPolicy"
+          }
+        },
+        "staticRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/StaticRoute"
+          }
+        },
+        "vendorFamily" : {
+          "$ref" : "#/definitions/VendorFamily"
+        },
+        "zones" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Zone"
+          }
+        }
+      }
+    },
+    "CommunityList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/CommunityListLine"
+          }
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "invertMatch" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "invertMatch"
+      ]
+    },
+    "CommunityListLine" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "regex" : {
+          "type" : "string"
+        }
+      }
+    },
+    "GeneratedRoute6" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        },
+        "asPath" : {
+          "type" : "array",
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer"
+            }
+          }
+        },
+        "attributePolicy" : {
+          "type" : "string"
+        },
+        "discard" : {
+          "type" : "boolean"
+        },
+        "generationPolicy" : {
+          "type" : "string"
+        },
+        "metric" : {
+          "type" : "integer"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "administrativeCost",
+        "discard"
+      ]
+    },
+    "IkeGateway" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "address" : {
+          "type" : "string"
+        },
+        "externalInterface" : {
+          "$ref" : "#/definitions/Interface"
+        },
+        "ikePolicy" : {
+          "$ref" : "#/definitions/IkePolicy"
+        },
+        "localAddress" : {
+          "type" : "string"
+        },
+        "localId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "remoteId" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Interface" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "accessVlan" : {
+          "type" : "integer"
+        },
+        "active" : {
+          "type" : "boolean"
+        },
+        "allPrefixes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "allowedVlans" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "bandwidth" : {
+          "type" : "number"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "inboundFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "incomingFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "isisCost" : {
+          "type" : "integer"
+        },
+        "isisL1InterfaceMode" : {
+          "type" : "string",
+          "enum" : [
+            "active",
+            "passive",
+            "unset"
+          ]
+        },
+        "isisL2InterfaceMode" : {
+          "type" : "string",
+          "enum" : [
+            "active",
+            "passive",
+            "unset"
+          ]
+        },
+        "mtu" : {
+          "type" : "integer"
+        },
+        "nativeVlan" : {
+          "type" : "integer"
+        },
+        "ospfArea" : {
+          "$ref" : "#/definitions/OspfArea"
+        },
+        "ospfCost" : {
+          "type" : "integer"
+        },
+        "ospfDeadInterval" : {
+          "type" : "integer"
+        },
+        "ospfEnabled" : {
+          "type" : "boolean"
+        },
+        "ospfHelloMultiplier" : {
+          "type" : "integer"
+        },
+        "ospfPassive" : {
+          "type" : "boolean"
+        },
+        "outgoingFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "owner" : {
+          "$ref" : "#/definitions/Configuration"
+        },
+        "prefix" : {
+          "type" : "string"
+        },
+        "proxyArp" : {
+          "type" : "boolean"
+        },
+        "routingPolicy" : {
+          "type" : "string"
+        },
+        "switchportMode" : {
+          "type" : "string",
+          "enum" : [
+            "ACCESS",
+            "DOT1Q_TUNNEL",
+            "DYNAMIC_AUTO",
+            "DYNAMIC_DESIRABLE",
+            "FEX_FABRIC",
+            "NONE",
+            "TAP",
+            "TOOL",
+            "TRUNK"
+          ]
+        },
+        "switchportTrunkEncapsulation" : {
+          "type" : "string",
+          "enum" : [
+            "DOT1Q",
+            "ISL",
+            "NEGOTIATE"
+          ]
+        },
+        "zone" : {
+          "$ref" : "#/definitions/Zone"
+        }
+      },
+      "required" : [
+        "accessVlan",
+        "active",
+        "mtu",
+        "nativeVlan",
+        "ospfDeadInterval",
+        "ospfEnabled",
+        "ospfHelloMultiplier",
+        "ospfPassive"
+      ]
+    },
+    "IpAccessList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/IpAccessListLine"
+          }
+        }
+      }
+    },
+    "IpAccessListLine" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "dscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "dstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "dstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "ecns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "fragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "icmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "icmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "ipProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          }
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "negate" : {
+          "type" : "boolean"
+        },
+        "notDscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "notDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notEcns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "notFragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIcmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIcmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIpProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          }
+        },
+        "notSrcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notSrcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcOrDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcOrDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "states" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "ESTABLISHED",
+              "INVALID",
+              "NEW",
+              "RELATED"
+            ]
+          }
+        },
+        "tcpFlags" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TcpFlags"
+          }
+        }
+      },
+      "required" : [
+        "negate"
+      ]
+    },
+    "TcpFlags" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "ack" : {
+          "type" : "boolean"
+        },
+        "cwr" : {
+          "type" : "boolean"
+        },
+        "ece" : {
+          "type" : "boolean"
+        },
+        "fin" : {
+          "type" : "boolean"
+        },
+        "psh" : {
+          "type" : "boolean"
+        },
+        "rst" : {
+          "type" : "boolean"
+        },
+        "syn" : {
+          "type" : "boolean"
+        },
+        "urg" : {
+          "type" : "boolean"
+        },
+        "useAck" : {
+          "type" : "boolean"
+        },
+        "useCwr" : {
+          "type" : "boolean"
+        },
+        "useEce" : {
+          "type" : "boolean"
+        },
+        "useFin" : {
+          "type" : "boolean"
+        },
+        "usePsh" : {
+          "type" : "boolean"
+        },
+        "useRst" : {
+          "type" : "boolean"
+        },
+        "useSyn" : {
+          "type" : "boolean"
+        },
+        "useUrg" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "ack",
+        "cwr",
+        "ece",
+        "fin",
+        "psh",
+        "rst",
+        "syn",
+        "urg",
+        "useAck",
+        "useCwr",
+        "useEce",
+        "useFin",
+        "usePsh",
+        "useRst",
+        "useSyn",
+        "useUrg"
+      ]
+    },
+    "OspfArea" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "integer"
+        },
+        "interfaces" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Interface"
+          }
+        }
+      }
+    },
+    "Zone" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "fromHostFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "inboundFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "inboundInterfaceFilters" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpAccessList"
+          }
+        },
+        "toHostFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "toZonePolicies" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpAccessList"
+          }
+        }
+      }
+    },
+    "IkePolicy" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "preSharedKeyHash" : {
+          "type" : "string"
+        },
+        "proposals" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkeProposal"
+          }
+        }
+      }
+    },
+    "IkeProposal" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "authenticationAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "MD5",
+            "SHA_256",
+            "SHA_384",
+            "SHA_512",
+            "SHA1"
+          ]
+        },
+        "authenticationMethod" : {
+          "type" : "string",
+          "enum" : [
+            "DSA_SIGNATURES",
+            "PRE_SHARED_KEYS",
+            "RSA_SIGNATURES",
+            "X509"
+          ]
+        },
+        "diffieHellmanGroup" : {
+          "type" : "string",
+          "enum" : [
+            "GROUP1",
+            "GROUP14",
+            "GROUP15",
+            "GROUP16",
+            "GROUP17",
+            "GROUP18",
+            "GROUP19",
+            "GROUP2",
+            "GROUP20",
+            "GROUP21",
+            "GROUP22",
+            "GROUP23",
+            "GROUP24",
+            "GROUP25",
+            "GROUP26",
+            "GROUP5"
+          ]
+        },
+        "encryptionAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "AES_128_CBC",
+            "AES_192_CBC",
+            "AES_256_CBC",
+            "DES_CBC",
+            "THREEDES_CBC"
+          ]
+        },
+        "lifetimeSeconds" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "Ip6AccessList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Ip6AccessListLine"
+          }
+        }
+      }
+    },
+    "Ip6AccessListLine" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "dscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "dstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "dstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "ecns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "fragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "icmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "icmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "ipProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          }
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "negate" : {
+          "type" : "boolean"
+        },
+        "notDscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "notDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notEcns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
+        },
+        "notFragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIcmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIcmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notIpProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          }
+        },
+        "notSrcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "notSrcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcOrDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcOrDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "srcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "states" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "ESTABLISHED",
+              "INVALID",
+              "NEW",
+              "RELATED"
+            ]
+          }
+        },
+        "tcpFlags" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TcpFlags"
+          }
+        }
+      },
+      "required" : [
+        "negate"
+      ]
+    },
+    "IpsecPolicy" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "pfsKeyGroup" : {
+          "type" : "string",
+          "enum" : [
+            "GROUP1",
+            "GROUP14",
+            "GROUP15",
+            "GROUP16",
+            "GROUP17",
+            "GROUP18",
+            "GROUP19",
+            "GROUP2",
+            "GROUP20",
+            "GROUP21",
+            "GROUP22",
+            "GROUP23",
+            "GROUP24",
+            "GROUP25",
+            "GROUP26",
+            "GROUP5"
+          ]
+        },
+        "pfsKeyGroupDynamicIke" : {
+          "type" : "boolean"
+        },
+        "proposals" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecProposal"
+          }
+        }
+      },
+      "required" : [
+        "pfsKeyGroupDynamicIke"
+      ]
+    },
+    "IpsecProposal" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "authenticationAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "HMAC_MD5_96",
+            "HMAC_SHA_256_128",
+            "HMAC_SHA1_96"
+          ]
+        },
+        "encryptionAlgorithm" : {
+          "type" : "string",
+          "enum" : [
+            "AES_128_CBC",
+            "AES_192_CBC",
+            "AES_256_CBC",
+            "DES_CBC",
+            "THREEDES_CBC"
+          ]
+        },
+        "lifetimeKilobytes" : {
+          "type" : "integer"
+        },
+        "lifetimeSeconds" : {
+          "type" : "integer"
+        },
+        "protocol" : {
+          "type" : "string",
+          "enum" : [
+            "AH",
+            "ESP"
+          ]
+        }
+      }
+    },
+    "IpsecVpn" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "bindInterface" : {
+          "$ref" : "#/definitions/Interface"
+        },
+        "candidateRemoteIpsecVpns" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/IpsecVpn"
+          }
+        },
+        "gateway" : {
+          "$ref" : "#/definitions/IkeGateway"
+        },
+        "ipsecPolicy" : {
+          "$ref" : "#/definitions/IpsecPolicy"
+        },
+        "owner" : {
+          "$ref" : "#/definitions/Configuration"
+        },
+        "remoteIpsecVpn" : {
+          "$ref" : "#/definitions/IpsecVpn"
+        }
+      }
+    },
+    "IsisProcess" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
           }
         },
         "level" : {
@@ -2161,15 +2555,14 @@
         }
       }
     },
-    "ospfProcess" : {
+    "OspfProcess" : {
       "type" : "object",
-      "id" : "urn:jsonschema:org:batfish:datamodel:OspfProcess",
+      "additionalProperties" : false,
       "properties" : {
         "areas" : {
           "type" : "object",
           "additionalProperties" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:OspfArea"
+            "$ref" : "#/definitions/OspfArea"
           }
         },
         "exportPolicy" : {
@@ -2178,8 +2571,7 @@
         "generatedRoutes" : {
           "type" : "array",
           "items" : {
-            "type" : "object",
-            "$ref" : "urn:jsonschema:org:batfish:datamodel:GeneratedRoute"
+            "$ref" : "#/definitions/GeneratedRoute"
           }
         },
         "referenceBandwidth" : {
@@ -2190,454 +2582,537 @@
         }
       }
     },
-    "roles" : {
-      "type" : "array",
-      "items" : {
-        "type" : "string"
-      }
-    },
-    "route6FilterLists" : {
+    "Route6FilterList" : {
       "type" : "object",
-      "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:Route6FilterList",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "lines" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:Route6FilterLine",
-              "properties" : {
-                "action" : {
-                  "type" : "string",
-                  "enum" : [
-                    "ACCEPT",
-                    "REJECT"
-                  ]
-                },
-                "lengthRange" : {
-                  "type" : "string"
-                },
-                "prefix" : {
-                  "type" : "string"
-                }
-              }
-            }
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Route6FilterLine"
           }
         }
       }
     },
-    "routeFilterLists" : {
+    "Route6FilterLine" : {
       "type" : "object",
-      "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:RouteFilterList",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "lines" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:RouteFilterLine",
-              "properties" : {
-                "action" : {
-                  "type" : "string",
-                  "enum" : [
-                    "ACCEPT",
-                    "REJECT"
-                  ]
-                },
-                "lengthRange" : {
-                  "type" : "string"
-                },
-                "prefix" : {
-                  "type" : "string"
-                }
-              }
-            }
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "lengthRange" : {
+          "type" : "string"
+        },
+        "prefix" : {
+          "type" : "string"
+        }
+      }
+    },
+    "RouteFilterList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/RouteFilterLine"
           }
         }
       }
     },
-    "routingPolicies" : {
+    "RouteFilterLine" : {
       "type" : "object",
-      "additionalProperties" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:routing_policy:RoutingPolicy",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "statements" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:routing_policy:statement:Statement"
-            }
+      "additionalProperties" : false,
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "lengthRange" : {
+          "type" : "string"
+        },
+        "prefix" : {
+          "type" : "string"
+        }
+      }
+    },
+    "RoutingPolicy" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "statements" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Statement"
           }
         }
       }
     },
-    "staticRoutes" : {
-      "type" : "array",
-      "items" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:org:batfish:datamodel:StaticRoute",
-        "properties" : {
-          "network" : {
-            "type" : "string"
-          },
-          "nextHopInterface" : {
-            "type" : "string"
-          },
-          "nextHopIp" : {
-            "type" : "string"
-          },
-          "tag" : {
-            "type" : "integer"
-          },
-          "administrativeCost" : {
-            "type" : "integer"
-          }
-        }
-      }
-    },
-    "vendorFamily" : {
+    "Statement" : {
       "type" : "object",
-      "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:VendorFamily",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "StaticRoute" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        },
+        "nextHopIp" : {
+          "type" : "string"
+        },
+        "tag" : {
+          "type" : "integer"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "tag",
+        "administrativeCost"
+      ]
+    },
+    "VendorFamily" : {
+      "type" : "object",
+      "additionalProperties" : false,
       "properties" : {
         "cisco" : {
+          "$ref" : "#/definitions/CiscoFamily"
+        }
+      }
+    },
+    "CiscoFamily" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "aaa" : {
+          "$ref" : "#/definitions/Aaa"
+        },
+        "banners" : {
           "type" : "object",
-          "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:CiscoFamily",
-          "properties" : {
-            "aaa" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Aaa",
-              "properties" : {
-                "accounting" : {
-                  "type" : "object",
-                  "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAccounting",
-                  "properties" : {
-                    "commands" : {
-                      "type" : "object",
-                      "additionalProperties" : {
-                        "type" : "object",
-                        "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAccountingCommands",
-                        "properties" : {
-                          "_placeholder_REMOVE_ME" : {
-                            "type" : "any"
-                          }
-                        }
-                      }
-                    },
-                    "default" : {
-                      "type" : "object",
-                      "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAccountingDefault",
-                      "properties" : {
-                        "groups" : {
-                          "type" : "array",
-                          "items" : {
-                            "type" : "string"
-                          }
-                        },
-                        "local" : {
-                          "type" : "boolean"
-                        }
-                      }
-                    }
-                  }
-                },
-                "authentication" : {
-                  "type" : "object",
-                  "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAuthentication",
-                  "properties" : {
-                    "login" : {
-                      "type" : "object",
-                      "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAuthenticationLogin",
-                      "properties" : {
-                        "lists" : {
-                          "type" : "object",
-                          "additionalProperties" : {
-                            "type" : "object",
-                            "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:AaaAuthenticationLoginList",
-                            "properties" : {
-                              "PLACEHOLDER" : {
-                                "type" : "any"
-                              }
-                            }
-                          }
-                        },
-                        "privilegeMode" : {
-                          "type" : "boolean"
-                        }
-                      }
-                    }
-                  }
-                },
-                "newModel" : {
-                  "type" : "boolean"
-                }
-              }
-            },
-            "banners" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "string"
-              }
-            },
-            "domainName" : {
+          "additionalProperties" : {
+            "type" : "string"
+          }
+        },
+        "features" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "boolean"
+          }
+        },
+        "hostname" : {
+          "type" : "string"
+        },
+        "lines" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Line"
+          }
+        },
+        "logging" : {
+          "$ref" : "#/definitions/Logging"
+        },
+        "ntp" : {
+          "$ref" : "#/definitions/Ntp"
+        },
+        "proxyArp" : {
+          "type" : "boolean"
+        },
+        "services" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Service"
+          }
+        },
+        "snmpServer" : {
+          "$ref" : "#/definitions/SnmpServer"
+        },
+        "sntp" : {
+          "$ref" : "#/definitions/Sntp"
+        },
+        "sourceRoute" : {
+          "type" : "boolean"
+        },
+        "ssh" : {
+          "$ref" : "#/definitions/SshSettings"
+        }
+      }
+    },
+    "Aaa" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "accounting" : {
+          "$ref" : "#/definitions/AaaAccounting"
+        },
+        "authentication" : {
+          "$ref" : "#/definitions/AaaAuthentication"
+        },
+        "newModel" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "newModel"
+      ]
+    },
+    "AaaAccounting" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "commands" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/AaaAccountingCommands"
+          }
+        },
+        "default" : {
+          "$ref" : "#/definitions/AaaAccountingDefault"
+        }
+      }
+    },
+    "AaaAccountingCommands" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "_placeholder_REMOVE_ME" : { }
+      }
+    },
+    "AaaAccountingDefault" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "groups" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "local" : {
+          "type" : "boolean"
+        }
+      }
+    },
+    "AaaAuthentication" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "login" : {
+          "$ref" : "#/definitions/AaaAuthenticationLogin"
+        }
+      }
+    },
+    "AaaAuthenticationLogin" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "lists" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/AaaAuthenticationLoginList"
+          }
+        },
+        "privilegeMode" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "privilegeMode"
+      ]
+    },
+    "AaaAuthenticationLoginList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "PLACEHOLDER" : { }
+      }
+    },
+    "Line" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "execTimeoutMinutes" : {
+          "type" : "integer"
+        },
+        "execTimeoutSeconds" : {
+          "type" : "integer"
+        },
+        "inputAccessList" : {
+          "type" : "string"
+        },
+        "inputIpv6AccessList" : {
+          "type" : "string"
+        },
+        "loginAuthentication" : {
+          "type" : "string"
+        },
+        "outputAccessList" : {
+          "type" : "string"
+        },
+        "outputIpv6AccessList" : {
+          "type" : "string"
+        },
+        "transportInput" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "transportOutput" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "transportPreferred" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "Logging" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "buffered" : {
+          "$ref" : "#/definitions/Buffered"
+        },
+        "console" : {
+          "$ref" : "#/definitions/LoggingType"
+        },
+        "hosts" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/LoggingHost"
+          }
+        },
+        "on" : {
+          "type" : "boolean"
+        },
+        "sourceInterface" : {
+          "type" : "string"
+        },
+        "trap" : {
+          "$ref" : "#/definitions/LoggingType"
+        }
+      }
+    },
+    "Buffered" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "severity" : {
+          "type" : "string"
+        },
+        "severityNum" : {
+          "type" : "integer"
+        },
+        "size" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "LoggingType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "severity" : {
+          "type" : "string"
+        },
+        "severityNum" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "LoggingHost" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Ntp" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "servers" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/NtpServer"
+          }
+        }
+      }
+    },
+    "NtpServer" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "vrf" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Service" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "enabled" : {
+          "type" : "boolean"
+        },
+        "subservices" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Service"
+          }
+        }
+      }
+    },
+    "SnmpServer" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "communities" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/SnmpCommunity"
+          }
+        },
+        "hosts" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/SnmpHost"
+          }
+        },
+        "traps" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "array",
+            "items" : {
               "type" : "string"
-            },
-            "features" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "boolean"
-              }
-            },
-            "hostname" : {
-              "type" : "string"
-            },
-            "lines" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "object",
-                "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Line",
-                "properties" : {
-                  "name" : {
-                    "type" : "string"
-                  },
-                  "execTimeoutMinutes" : {
-                    "type" : "integer"
-                  },
-                  "execTimeoutSeconds" : {
-                    "type" : "integer"
-                  },
-                  "inputAccessList" : {
-                    "type" : "string"
-                  },
-                  "inputIpv6AccessList" : {
-                    "type" : "string"
-                  },
-                  "loginAuthentication" : {
-                    "type" : "string"
-                  },
-                  "outputAccessList" : {
-                    "type" : "string"
-                  },
-                  "outputIpv6AccessList" : {
-                    "type" : "string"
-                  },
-                  "transportInput" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "string"
-                    }
-                  },
-                  "transportOutput" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "string"
-                    }
-                  },
-                  "transportPreferred" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "string"
-                    }
-                  }
-                }
-              }
-            },
-            "logging" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Logging",
-              "properties" : {
-                "buffered" : {
-                  "type" : "object",
-                  "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Buffered",
-                  "properties" : {
-                    "severity" : {
-                      "type" : "string"
-                    },
-                    "severityNum" : {
-                      "type" : "integer"
-                    },
-                    "size" : {
-                      "type" : "integer"
-                    }
-                  }
-                },
-                "console" : {
-                  "type" : "object",
-                  "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:LoggingType",
-                  "properties" : {
-                    "severity" : {
-                      "type" : "string"
-                    },
-                    "severityNum" : {
-                      "type" : "integer"
-                    }
-                  }
-                },
-                "hosts" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "object",
-                    "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:LoggingHost",
-                    "properties" : {
-                      "name" : {
-                        "type" : "string"
-                      }
-                    }
-                  }
-                },
-                "on" : {
-                  "type" : "boolean"
-                },
-                "sourceInterface" : {
-                  "type" : "string"
-                },
-                "trap" : {
-                  "type" : "object",
-                  "$ref" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:LoggingType"
-                }
-              }
-            },
-            "ntp" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Ntp",
-              "properties" : {
-                "servers" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "object",
-                    "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:NtpServer",
-                    "properties" : {
-                      "vrf" : {
-                        "type" : "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "proxyArp" : {
-              "type" : "boolean"
-            },
-            "services" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "object",
-                "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Service",
-                "properties" : {
-                  "enabled" : {
-                    "type" : "boolean"
-                  },
-                  "subservices" : {
-                    "type" : "object",
-                    "additionalProperties" : {
-                      "type" : "object",
-                      "$ref" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Service"
-                    }
-                  }
-                }
-              }
-            },
-            "snmpServer" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:SnmpServer",
-              "properties" : {
-                "communities" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "object",
-                    "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:SnmpCommunity",
-                    "properties" : {
-                      "name" : {
-                        "type" : "string"
-                      },
-                      "accessList" : {
-                        "type" : "string"
-                      },
-                      "ro" : {
-                        "type" : "boolean"
-                      },
-                      "rw" : {
-                        "type" : "boolean"
-                      }
-                    }
-                  }
-                },
-                "hosts" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "object",
-                    "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:SnmpHost",
-                    "properties" : {
-                      "name" : {
-                        "type" : "string"
-                      }
-                    }
-                  }
-                },
-                "traps" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "array",
-                    "items" : {
-                      "type" : "string"
-                    }
-                  }
-                }
-              }
-            },
-            "sntp" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:Sntp",
-              "properties" : {
-                "servers" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "object",
-                    "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:SntpServer",
-                    "properties" : {
-                      "_version" : {
-                        "type" : "integer"
-                      },
-                      "version" : {
-                        "type" : "integer"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "sourceRoute" : {
-              "type" : "boolean"
-            },
-            "ssh" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:org:batfish:datamodel:vendor_family:cisco:SshSettings",
-              "properties" : {
-                "version" : {
-                  "type" : "integer"
-                }
-              }
             }
           }
         }
       }
     },
-    "zones" : {
+    "SnmpCommunity" : {
       "type" : "object",
-      "additionalProperties" : {
-        "type" : "object",
-        "$ref" : "urn:jsonschema:org:batfish:datamodel:Zone"
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "accessList" : {
+          "type" : "string"
+        },
+        "ro" : {
+          "type" : "boolean"
+        },
+        "rw" : {
+          "type" : "boolean"
+        }
+      },
+      "required" : [
+        "ro",
+        "rw"
+      ]
+    },
+    "SnmpHost" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        }
+      }
+    },
+    "Sntp" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "servers" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "$ref" : "#/definitions/SntpServer"
+          }
+        }
+      }
+    },
+    "SntpServer" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "_version" : {
+          "type" : "integer"
+        },
+        "version" : {
+          "type" : "integer"
+        }
+      }
+    },
+    "SshSettings" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "version" : {
+          "type" : "integer"
+        }
       }
     }
   }
