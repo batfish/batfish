@@ -5,36 +5,52 @@
   "additionalProperties" : false,
   "properties" : {
     "name" : {
-      "type" : "string"
+      "propertyOrder" : 1,
+      "type" : "string",
+      "title" : "Name"
     },
     "aggregateRoutes" : {
+      "propertyOrder" : 2,
       "type" : "array",
+      "format" : "table",
       "items" : {
         "$ref" : "#/definitions/GeneratedRoute"
-      }
+      },
+      "title" : "Aggregate Routes"
     },
     "asPathAccessLists" : {
+      "propertyOrder" : 3,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/AsPathAccessList"
-      }
+      },
+      "description" : "This is a comment. Key is KKK",
+      "title" : "As Path Access Lists"
     },
     "bgpProcess" : {
-      "$ref" : "#/definitions/BgpProcess"
+      "propertyOrder" : 4,
+      "$ref" : "#/definitions/BgpProcess",
+      "title" : "Bgp Process"
     },
     "communities" : {
+      "propertyOrder" : 5,
       "type" : "array",
+      "format" : "table",
       "items" : {
         "type" : "integer"
-      }
+      },
+      "title" : "Communities"
     },
     "communityLists" : {
+      "propertyOrder" : 6,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/CommunityList"
-      }
+      },
+      "title" : "Community Lists"
     },
     "configurationFormat" : {
+      "propertyOrder" : 7,
       "type" : "string",
       "enum" : [
         "ALCATEL_AOS",
@@ -59,129 +75,177 @@
         "UNKNOWN",
         "VXWORKS",
         "VYOS"
-      ]
+      ],
+      "title" : "Configuration Format"
     },
     "defaultCrossZoneAction" : {
+      "propertyOrder" : 8,
       "type" : "string",
       "enum" : [
         "ACCEPT",
         "REJECT"
-      ]
+      ],
+      "title" : "Default Cross Zone Action"
     },
     "defaultInboundAction" : {
+      "propertyOrder" : 9,
       "type" : "string",
       "enum" : [
         "ACCEPT",
         "REJECT"
-      ]
+      ],
+      "title" : "Default Inbound Action"
     },
     "domainName" : {
-      "type" : "string"
+      "propertyOrder" : 10,
+      "type" : "string",
+      "title" : "Domain Name"
     },
     "generatedIpv6Routes" : {
+      "propertyOrder" : 11,
       "type" : "array",
+      "format" : "table",
       "items" : {
         "$ref" : "#/definitions/GeneratedRoute6"
-      }
+      },
+      "title" : "Generated Ipv 6 Routes"
     },
     "ikeGateways" : {
+      "propertyOrder" : 12,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeGateway"
-      }
+      },
+      "title" : "Ike Gateways"
     },
     "ikePolicies" : {
+      "propertyOrder" : 13,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkePolicy"
-      }
+      },
+      "title" : "Ike Policies"
     },
     "ikeProposals" : {
+      "propertyOrder" : 14,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeProposal"
-      }
+      },
+      "title" : "Ike Proposals"
     },
     "interfaces" : {
+      "propertyOrder" : 15,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Interface"
-      }
+      },
+      "title" : "Interfaces"
     },
     "ip6AccessLists" : {
+      "propertyOrder" : 16,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Ip6AccessList"
-      }
+      },
+      "title" : "Ip 6 Access Lists"
     },
     "ipAccessLists" : {
+      "propertyOrder" : 17,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpAccessList"
-      }
+      },
+      "title" : "Ip Access Lists"
     },
     "ipsecPolicies" : {
+      "propertyOrder" : 18,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecPolicy"
-      }
+      },
+      "title" : "Ipsec Policies"
     },
     "ipsecProposals" : {
+      "propertyOrder" : 19,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecProposal"
-      }
+      },
+      "title" : "Ipsec Proposals"
     },
     "ipsecVpns" : {
+      "propertyOrder" : 20,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecVpn"
-      }
+      },
+      "title" : "Ipsec Vpns"
     },
     "isisProcess" : {
-      "$ref" : "#/definitions/IsisProcess"
+      "propertyOrder" : 21,
+      "$ref" : "#/definitions/IsisProcess",
+      "title" : "Isis Process"
     },
     "ospfProcess" : {
-      "$ref" : "#/definitions/OspfProcess"
+      "propertyOrder" : 22,
+      "$ref" : "#/definitions/OspfProcess",
+      "title" : "Ospf Process"
     },
     "roles" : {
+      "propertyOrder" : 23,
       "type" : "array",
+      "format" : "table",
       "items" : {
         "type" : "string"
-      }
+      },
+      "title" : "Roles"
     },
     "route6FilterLists" : {
+      "propertyOrder" : 24,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Route6FilterList"
-      }
+      },
+      "title" : "Route 6 Filter Lists"
     },
     "routeFilterLists" : {
+      "propertyOrder" : 25,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/RouteFilterList"
-      }
+      },
+      "title" : "Route Filter Lists"
     },
     "routingPolicies" : {
+      "propertyOrder" : 26,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/RoutingPolicy"
-      }
+      },
+      "title" : "Routing Policies"
     },
     "staticRoutes" : {
+      "propertyOrder" : 27,
       "type" : "array",
+      "format" : "table",
       "items" : {
         "$ref" : "#/definitions/StaticRoute"
-      }
+      },
+      "title" : "Static Routes"
     },
     "vendorFamily" : {
-      "$ref" : "#/definitions/VendorFamily"
+      "propertyOrder" : 28,
+      "$ref" : "#/definitions/VendorFamily",
+      "title" : "Vendor Family"
     },
     "zones" : {
+      "propertyOrder" : 29,
       "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Zone"
-      }
+      },
+      "title" : "Zones"
     }
   },
   "definitions" : {
@@ -194,37 +258,58 @@
           "enum" : [
             null
           ],
-          "default" : null
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
         },
         "network" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Network"
         },
         "administrativeCost" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Administrative Cost"
         },
         "asPath" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "array",
+            "format" : "table",
             "items" : {
               "type" : "integer"
             }
-          }
+          },
+          "title" : "As Path"
         },
         "attributePolicy" : {
-          "type" : "string"
+          "propertyOrder" : 4,
+          "type" : "string",
+          "title" : "Attribute Policy"
         },
         "discard" : {
-          "type" : "boolean"
+          "propertyOrder" : 5,
+          "type" : "boolean",
+          "title" : "Discard"
         },
         "generationPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 6,
+          "type" : "string",
+          "title" : "Generation Policy"
         },
         "metric" : {
-          "type" : "integer"
+          "propertyOrder" : 7,
+          "type" : "integer",
+          "title" : "Metric"
         },
         "nextHopInterface" : {
-          "type" : "string"
+          "propertyOrder" : 8,
+          "type" : "string",
+          "title" : "Next Hop Interface"
         }
       },
       "title" : null,
@@ -239,13 +324,18 @@
       "additionalProperties" : false,
       "properties" : {
         "lines" : {
+          "propertyOrder" : 1,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/AsPathAccessListLine"
-          }
+          },
+          "title" : "Lines"
         },
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Name"
         }
       }
     },
@@ -254,14 +344,18 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "regex" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Regex"
         }
       }
     },
@@ -270,19 +364,26 @@
       "additionalProperties" : false,
       "properties" : {
         "generatedRoutes" : {
+          "propertyOrder" : 1,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "title" : "Generated Routes"
         },
         "neighbors" : {
+          "propertyOrder" : 2,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/BgpNeighbor"
-          }
+          },
+          "title" : "Neighbors"
         },
         "routerId" : {
-          "type" : "string"
+          "propertyOrder" : 3,
+          "type" : "string",
+          "title" : "Router Id"
         }
       }
     },
@@ -291,73 +392,118 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "address" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Address"
         },
         "advertiseExternal" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Advertise External"
         },
         "advertiseInactive" : {
-          "type" : "boolean"
+          "propertyOrder" : 4,
+          "type" : "boolean",
+          "title" : "Advertise Inactive"
         },
         "allowLocalAsIn" : {
-          "type" : "boolean"
+          "propertyOrder" : 5,
+          "type" : "boolean",
+          "title" : "Allow Local As In"
         },
         "allowRemoteAsOut" : {
-          "type" : "boolean"
+          "propertyOrder" : 6,
+          "type" : "boolean",
+          "title" : "Allow Remote As Out"
         },
         "clusterId" : {
-          "type" : "integer"
+          "propertyOrder" : 7,
+          "type" : "integer",
+          "title" : "Cluster Id"
         },
         "defaultMetric" : {
-          "type" : "integer"
+          "propertyOrder" : 8,
+          "type" : "integer",
+          "title" : "Default Metric"
         },
         "description" : {
-          "type" : "string"
+          "propertyOrder" : 9,
+          "type" : "string",
+          "title" : "Description"
         },
         "dynamic" : {
-          "type" : "boolean"
+          "propertyOrder" : 10,
+          "type" : "boolean",
+          "title" : "Dynamic"
         },
         "ebgpMultihop" : {
-          "type" : "boolean"
+          "propertyOrder" : 11,
+          "type" : "boolean",
+          "title" : "Ebgp Multihop"
         },
         "exportPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 12,
+          "type" : "string",
+          "title" : "Export Policy"
         },
         "generatedRoutes" : {
+          "propertyOrder" : 13,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "title" : "Generated Routes"
         },
         "group" : {
-          "type" : "string"
+          "propertyOrder" : 14,
+          "type" : "string",
+          "title" : "Group"
         },
         "importPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 15,
+          "type" : "string",
+          "title" : "Import Policy"
         },
         "localAs" : {
-          "type" : "integer"
+          "propertyOrder" : 16,
+          "type" : "integer",
+          "title" : "Local As"
         },
         "localIp" : {
-          "type" : "string"
+          "propertyOrder" : 17,
+          "type" : "string",
+          "title" : "Local Ip"
         },
         "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "propertyOrder" : 18,
+          "$ref" : "#/definitions/Configuration",
+          "title" : "Owner"
         },
         "remoteAs" : {
-          "type" : "integer"
+          "propertyOrder" : 19,
+          "type" : "integer",
+          "title" : "Remote As"
         },
         "remotePrefix" : {
-          "type" : "string"
+          "propertyOrder" : 20,
+          "type" : "string",
+          "title" : "Remote Prefix"
         },
         "routeReflectorClient" : {
-          "type" : "boolean"
+          "propertyOrder" : 21,
+          "type" : "boolean",
+          "title" : "Route Reflector Client"
         },
         "sendCommunity" : {
-          "type" : "boolean"
+          "propertyOrder" : 22,
+          "type" : "boolean",
+          "title" : "Send Community"
         }
       },
       "required" : [
@@ -377,36 +523,52 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "aggregateRoutes" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "title" : "Aggregate Routes"
         },
         "asPathAccessLists" : {
+          "propertyOrder" : 3,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AsPathAccessList"
-          }
+          },
+          "description" : "This is a comment. Key is KKK",
+          "title" : "As Path Access Lists"
         },
         "bgpProcess" : {
-          "$ref" : "#/definitions/BgpProcess"
+          "propertyOrder" : 4,
+          "$ref" : "#/definitions/BgpProcess",
+          "title" : "Bgp Process"
         },
         "communities" : {
+          "propertyOrder" : 5,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Communities"
         },
         "communityLists" : {
+          "propertyOrder" : 6,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/CommunityList"
-          }
+          },
+          "title" : "Community Lists"
         },
         "configurationFormat" : {
+          "propertyOrder" : 7,
           "type" : "string",
           "enum" : [
             "ALCATEL_AOS",
@@ -431,129 +593,177 @@
             "UNKNOWN",
             "VXWORKS",
             "VYOS"
-          ]
+          ],
+          "title" : "Configuration Format"
         },
         "defaultCrossZoneAction" : {
+          "propertyOrder" : 8,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Default Cross Zone Action"
         },
         "defaultInboundAction" : {
+          "propertyOrder" : 9,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Default Inbound Action"
         },
         "domainName" : {
-          "type" : "string"
+          "propertyOrder" : 10,
+          "type" : "string",
+          "title" : "Domain Name"
         },
         "generatedIpv6Routes" : {
+          "propertyOrder" : 11,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute6"
-          }
+          },
+          "title" : "Generated Ipv 6 Routes"
         },
         "ikeGateways" : {
+          "propertyOrder" : 12,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeGateway"
-          }
+          },
+          "title" : "Ike Gateways"
         },
         "ikePolicies" : {
+          "propertyOrder" : 13,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkePolicy"
-          }
+          },
+          "title" : "Ike Policies"
         },
         "ikeProposals" : {
+          "propertyOrder" : 14,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeProposal"
-          }
+          },
+          "title" : "Ike Proposals"
         },
         "interfaces" : {
+          "propertyOrder" : 15,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Interface"
-          }
+          },
+          "title" : "Interfaces"
         },
         "ip6AccessLists" : {
+          "propertyOrder" : 16,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Ip6AccessList"
-          }
+          },
+          "title" : "Ip 6 Access Lists"
         },
         "ipAccessLists" : {
+          "propertyOrder" : 17,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
-          }
+          },
+          "title" : "Ip Access Lists"
         },
         "ipsecPolicies" : {
+          "propertyOrder" : 18,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecPolicy"
-          }
+          },
+          "title" : "Ipsec Policies"
         },
         "ipsecProposals" : {
+          "propertyOrder" : 19,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecProposal"
-          }
+          },
+          "title" : "Ipsec Proposals"
         },
         "ipsecVpns" : {
+          "propertyOrder" : 20,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecVpn"
-          }
+          },
+          "title" : "Ipsec Vpns"
         },
         "isisProcess" : {
-          "$ref" : "#/definitions/IsisProcess"
+          "propertyOrder" : 21,
+          "$ref" : "#/definitions/IsisProcess",
+          "title" : "Isis Process"
         },
         "ospfProcess" : {
-          "$ref" : "#/definitions/OspfProcess"
+          "propertyOrder" : 22,
+          "$ref" : "#/definitions/OspfProcess",
+          "title" : "Ospf Process"
         },
         "roles" : {
+          "propertyOrder" : 23,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Roles"
         },
         "route6FilterLists" : {
+          "propertyOrder" : 24,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Route6FilterList"
-          }
+          },
+          "title" : "Route 6 Filter Lists"
         },
         "routeFilterLists" : {
+          "propertyOrder" : 25,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/RouteFilterList"
-          }
+          },
+          "title" : "Route Filter Lists"
         },
         "routingPolicies" : {
+          "propertyOrder" : 26,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/RoutingPolicy"
-          }
+          },
+          "title" : "Routing Policies"
         },
         "staticRoutes" : {
+          "propertyOrder" : 27,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/StaticRoute"
-          }
+          },
+          "title" : "Static Routes"
         },
         "vendorFamily" : {
-          "$ref" : "#/definitions/VendorFamily"
+          "propertyOrder" : 28,
+          "$ref" : "#/definitions/VendorFamily",
+          "title" : "Vendor Family"
         },
         "zones" : {
+          "propertyOrder" : 29,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Zone"
-          }
+          },
+          "title" : "Zones"
         }
       }
     },
@@ -562,16 +772,23 @@
       "additionalProperties" : false,
       "properties" : {
         "lines" : {
+          "propertyOrder" : 1,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/CommunityListLine"
-          }
+          },
+          "title" : "Lines"
         },
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Name"
         },
         "invertMatch" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Invert Match"
         }
       },
       "required" : [
@@ -583,14 +800,18 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "regex" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Regex"
         }
       }
     },
@@ -603,37 +824,58 @@
           "enum" : [
             null
           ],
-          "default" : null
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
         },
         "network" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Network"
         },
         "administrativeCost" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Administrative Cost"
         },
         "asPath" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "array",
+            "format" : "table",
             "items" : {
               "type" : "integer"
             }
-          }
+          },
+          "title" : "As Path"
         },
         "attributePolicy" : {
-          "type" : "string"
+          "propertyOrder" : 4,
+          "type" : "string",
+          "title" : "Attribute Policy"
         },
         "discard" : {
-          "type" : "boolean"
+          "propertyOrder" : 5,
+          "type" : "boolean",
+          "title" : "Discard"
         },
         "generationPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 6,
+          "type" : "string",
+          "title" : "Generation Policy"
         },
         "metric" : {
-          "type" : "integer"
+          "propertyOrder" : 7,
+          "type" : "integer",
+          "title" : "Metric"
         },
         "nextHopInterface" : {
-          "type" : "string"
+          "propertyOrder" : 8,
+          "type" : "string",
+          "title" : "Next Hop Interface"
         }
       },
       "title" : null,
@@ -648,25 +890,39 @@
       "additionalProperties" : false,
       "properties" : {
         "address" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Address"
         },
         "externalInterface" : {
-          "$ref" : "#/definitions/Interface"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/Interface",
+          "title" : "External Interface"
         },
         "ikePolicy" : {
-          "$ref" : "#/definitions/IkePolicy"
+          "propertyOrder" : 3,
+          "$ref" : "#/definitions/IkePolicy",
+          "title" : "Ike Policy"
         },
         "localAddress" : {
-          "type" : "string"
+          "propertyOrder" : 4,
+          "type" : "string",
+          "title" : "Local Address"
         },
         "localId" : {
-          "type" : "string"
+          "propertyOrder" : 5,
+          "type" : "string",
+          "title" : "Local Id"
         },
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 6,
+          "type" : "string",
+          "title" : "Name"
         },
         "remoteId" : {
-          "type" : "string"
+          "propertyOrder" : 7,
+          "type" : "string",
+          "title" : "Remote Id"
         }
       }
     },
@@ -675,97 +931,150 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "accessVlan" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Access Vlan"
         },
         "active" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Active"
         },
         "allPrefixes" : {
+          "propertyOrder" : 4,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "All Prefixes"
         },
         "allowedVlans" : {
+          "propertyOrder" : 5,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Allowed Vlans"
         },
         "bandwidth" : {
-          "type" : "number"
+          "propertyOrder" : 6,
+          "type" : "number",
+          "title" : "Bandwidth"
         },
         "description" : {
-          "type" : "string"
+          "propertyOrder" : 7,
+          "type" : "string",
+          "title" : "Description"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 8,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "Inbound Filter"
         },
         "incomingFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 9,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "Incoming Filter"
         },
         "isisCost" : {
-          "type" : "integer"
+          "propertyOrder" : 10,
+          "type" : "integer",
+          "title" : "Isis Cost"
         },
         "isisL1InterfaceMode" : {
+          "propertyOrder" : 11,
           "type" : "string",
           "enum" : [
             "active",
             "passive",
             "unset"
-          ]
+          ],
+          "title" : "Isis L 1 Interface Mode"
         },
         "isisL2InterfaceMode" : {
+          "propertyOrder" : 12,
           "type" : "string",
           "enum" : [
             "active",
             "passive",
             "unset"
-          ]
+          ],
+          "title" : "Isis L 2 Interface Mode"
         },
         "mtu" : {
-          "type" : "integer"
+          "propertyOrder" : 13,
+          "type" : "integer",
+          "title" : "Mtu"
         },
         "nativeVlan" : {
-          "type" : "integer"
+          "propertyOrder" : 14,
+          "type" : "integer",
+          "title" : "Native Vlan"
         },
         "ospfArea" : {
-          "$ref" : "#/definitions/OspfArea"
+          "propertyOrder" : 15,
+          "$ref" : "#/definitions/OspfArea",
+          "title" : "Ospf Area"
         },
         "ospfCost" : {
-          "type" : "integer"
+          "propertyOrder" : 16,
+          "type" : "integer",
+          "title" : "Ospf Cost"
         },
         "ospfDeadInterval" : {
-          "type" : "integer"
+          "propertyOrder" : 17,
+          "type" : "integer",
+          "title" : "Ospf Dead Interval"
         },
         "ospfEnabled" : {
-          "type" : "boolean"
+          "propertyOrder" : 18,
+          "type" : "boolean",
+          "title" : "Ospf Enabled"
         },
         "ospfHelloMultiplier" : {
-          "type" : "integer"
+          "propertyOrder" : 19,
+          "type" : "integer",
+          "title" : "Ospf Hello Multiplier"
         },
         "ospfPassive" : {
-          "type" : "boolean"
+          "propertyOrder" : 20,
+          "type" : "boolean",
+          "title" : "Ospf Passive"
         },
         "outgoingFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 21,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "Outgoing Filter"
         },
         "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "propertyOrder" : 22,
+          "$ref" : "#/definitions/Configuration",
+          "title" : "Owner"
         },
         "prefix" : {
-          "type" : "string"
+          "propertyOrder" : 23,
+          "type" : "string",
+          "title" : "Prefix"
         },
         "proxyArp" : {
-          "type" : "boolean"
+          "propertyOrder" : 24,
+          "type" : "boolean",
+          "title" : "Proxy Arp"
         },
         "routingPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 25,
+          "type" : "string",
+          "title" : "Routing Policy"
         },
         "switchportMode" : {
+          "propertyOrder" : 26,
           "type" : "string",
           "enum" : [
             "ACCESS",
@@ -777,18 +1086,23 @@
             "TAP",
             "TOOL",
             "TRUNK"
-          ]
+          ],
+          "title" : "Switchport Mode"
         },
         "switchportTrunkEncapsulation" : {
+          "propertyOrder" : 27,
           "type" : "string",
           "enum" : [
             "DOT1Q",
             "ISL",
             "NEGOTIATE"
-          ]
+          ],
+          "title" : "Switchport Trunk Encapsulation"
         },
         "zone" : {
-          "$ref" : "#/definitions/Zone"
+          "propertyOrder" : 28,
+          "$ref" : "#/definitions/Zone",
+          "title" : "Zone"
         }
       },
       "required" : [
@@ -807,13 +1121,18 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "lines" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/IpAccessListLine"
-          }
+          },
+          "title" : "Lines"
         }
       }
     },
@@ -822,56 +1141,81 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "dscps" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Dscps"
         },
         "dstIps" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Dst Ips"
         },
         "dstPorts" : {
+          "propertyOrder" : 4,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Dst Ports"
         },
         "ecns" : {
+          "propertyOrder" : 5,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Ecns"
         },
         "fragmentOffsets" : {
+          "propertyOrder" : 6,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Fragment Offsets"
         },
         "icmpCodes" : {
+          "propertyOrder" : 7,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Icmp Codes"
         },
         "icmpTypes" : {
+          "propertyOrder" : 8,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Icmp Types"
         },
         "ipProtocols" : {
+          "propertyOrder" : 9,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -1133,58 +1477,86 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "title" : "Ip Protocols"
         },
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 10,
+          "type" : "string",
+          "title" : "Name"
         },
         "negate" : {
-          "type" : "boolean"
+          "propertyOrder" : 11,
+          "type" : "boolean",
+          "title" : "Negate"
         },
         "notDscps" : {
+          "propertyOrder" : 12,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Not Dscps"
         },
         "notDstIps" : {
+          "propertyOrder" : 13,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Dst Ips"
         },
         "notDstPorts" : {
+          "propertyOrder" : 14,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Dst Ports"
         },
         "notEcns" : {
+          "propertyOrder" : 15,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Not Ecns"
         },
         "notFragmentOffsets" : {
+          "propertyOrder" : 16,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Fragment Offsets"
         },
         "notIcmpCodes" : {
+          "propertyOrder" : 17,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Icmp Codes"
         },
         "notIcmpTypes" : {
+          "propertyOrder" : 18,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Icmp Types"
         },
         "notIpProtocols" : {
+          "propertyOrder" : 19,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -1446,46 +1818,67 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "title" : "Not Ip Protocols"
         },
         "notSrcIps" : {
+          "propertyOrder" : 20,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Src Ips"
         },
         "notSrcPorts" : {
+          "propertyOrder" : 21,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Src Ports"
         },
         "srcIps" : {
+          "propertyOrder" : 22,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Ips"
         },
         "srcOrDstIps" : {
+          "propertyOrder" : 23,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Or Dst Ips"
         },
         "srcOrDstPorts" : {
+          "propertyOrder" : 24,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Or Dst Ports"
         },
         "srcPorts" : {
+          "propertyOrder" : 25,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Ports"
         },
         "states" : {
+          "propertyOrder" : 26,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -1494,13 +1887,17 @@
               "NEW",
               "RELATED"
             ]
-          }
+          },
+          "title" : "States"
         },
         "tcpFlags" : {
+          "propertyOrder" : 27,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/TcpFlags"
-          }
+          },
+          "title" : "Tcp Flags"
         }
       },
       "required" : [
@@ -1512,52 +1909,84 @@
       "additionalProperties" : false,
       "properties" : {
         "ack" : {
-          "type" : "boolean"
+          "propertyOrder" : 1,
+          "type" : "boolean",
+          "title" : "Ack"
         },
         "cwr" : {
-          "type" : "boolean"
+          "propertyOrder" : 2,
+          "type" : "boolean",
+          "title" : "Cwr"
         },
         "ece" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Ece"
         },
         "fin" : {
-          "type" : "boolean"
+          "propertyOrder" : 4,
+          "type" : "boolean",
+          "title" : "Fin"
         },
         "psh" : {
-          "type" : "boolean"
+          "propertyOrder" : 5,
+          "type" : "boolean",
+          "title" : "Psh"
         },
         "rst" : {
-          "type" : "boolean"
+          "propertyOrder" : 6,
+          "type" : "boolean",
+          "title" : "Rst"
         },
         "syn" : {
-          "type" : "boolean"
+          "propertyOrder" : 7,
+          "type" : "boolean",
+          "title" : "Syn"
         },
         "urg" : {
-          "type" : "boolean"
+          "propertyOrder" : 8,
+          "type" : "boolean",
+          "title" : "Urg"
         },
         "useAck" : {
-          "type" : "boolean"
+          "propertyOrder" : 9,
+          "type" : "boolean",
+          "title" : "Use Ack"
         },
         "useCwr" : {
-          "type" : "boolean"
+          "propertyOrder" : 10,
+          "type" : "boolean",
+          "title" : "Use Cwr"
         },
         "useEce" : {
-          "type" : "boolean"
+          "propertyOrder" : 11,
+          "type" : "boolean",
+          "title" : "Use Ece"
         },
         "useFin" : {
-          "type" : "boolean"
+          "propertyOrder" : 12,
+          "type" : "boolean",
+          "title" : "Use Fin"
         },
         "usePsh" : {
-          "type" : "boolean"
+          "propertyOrder" : 13,
+          "type" : "boolean",
+          "title" : "Use Psh"
         },
         "useRst" : {
-          "type" : "boolean"
+          "propertyOrder" : 14,
+          "type" : "boolean",
+          "title" : "Use Rst"
         },
         "useSyn" : {
-          "type" : "boolean"
+          "propertyOrder" : 15,
+          "type" : "boolean",
+          "title" : "Use Syn"
         },
         "useUrg" : {
-          "type" : "boolean"
+          "propertyOrder" : 16,
+          "type" : "boolean",
+          "title" : "Use Urg"
         }
       },
       "required" : [
@@ -1584,13 +2013,18 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "integer"
+          "propertyOrder" : 1,
+          "type" : "integer",
+          "title" : "Name"
         },
         "interfaces" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/Interface"
-          }
+          },
+          "title" : "Interfaces"
         }
       }
     },
@@ -1599,28 +2033,40 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "fromHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "From Host Filter"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 3,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "Inbound Filter"
         },
         "inboundInterfaceFilters" : {
+          "propertyOrder" : 4,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
-          }
+          },
+          "title" : "Inbound Interface Filters"
         },
         "toHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+          "propertyOrder" : 5,
+          "$ref" : "#/definitions/IpAccessList",
+          "title" : "To Host Filter"
         },
         "toZonePolicies" : {
+          "propertyOrder" : 6,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
-          }
+          },
+          "title" : "To Zone Policies"
         }
       }
     },
@@ -1629,16 +2075,22 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "preSharedKeyHash" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Pre Shared Key Hash"
         },
         "proposals" : {
+          "propertyOrder" : 3,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeProposal"
-          }
+          },
+          "title" : "Proposals"
         }
       }
     },
@@ -1647,9 +2099,12 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "authenticationAlgorithm" : {
+          "propertyOrder" : 2,
           "type" : "string",
           "enum" : [
             "MD5",
@@ -1657,18 +2112,22 @@
             "SHA_384",
             "SHA_512",
             "SHA1"
-          ]
+          ],
+          "title" : "Authentication Algorithm"
         },
         "authenticationMethod" : {
+          "propertyOrder" : 3,
           "type" : "string",
           "enum" : [
             "DSA_SIGNATURES",
             "PRE_SHARED_KEYS",
             "RSA_SIGNATURES",
             "X509"
-          ]
+          ],
+          "title" : "Authentication Method"
         },
         "diffieHellmanGroup" : {
+          "propertyOrder" : 4,
           "type" : "string",
           "enum" : [
             "GROUP1",
@@ -1687,9 +2146,11 @@
             "GROUP25",
             "GROUP26",
             "GROUP5"
-          ]
+          ],
+          "title" : "Diffie Hellman Group"
         },
         "encryptionAlgorithm" : {
+          "propertyOrder" : 5,
           "type" : "string",
           "enum" : [
             "AES_128_CBC",
@@ -1697,10 +2158,13 @@
             "AES_256_CBC",
             "DES_CBC",
             "THREEDES_CBC"
-          ]
+          ],
+          "title" : "Encryption Algorithm"
         },
         "lifetimeSeconds" : {
-          "type" : "integer"
+          "propertyOrder" : 6,
+          "type" : "integer",
+          "title" : "Lifetime Seconds"
         }
       }
     },
@@ -1709,13 +2173,18 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "lines" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/Ip6AccessListLine"
-          }
+          },
+          "title" : "Lines"
         }
       }
     },
@@ -1724,56 +2193,81 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "dscps" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Dscps"
         },
         "dstIps" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Dst Ips"
         },
         "dstPorts" : {
+          "propertyOrder" : 4,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Dst Ports"
         },
         "ecns" : {
+          "propertyOrder" : 5,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Ecns"
         },
         "fragmentOffsets" : {
+          "propertyOrder" : 6,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Fragment Offsets"
         },
         "icmpCodes" : {
+          "propertyOrder" : 7,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Icmp Codes"
         },
         "icmpTypes" : {
+          "propertyOrder" : 8,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Icmp Types"
         },
         "ipProtocols" : {
+          "propertyOrder" : 9,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -2035,58 +2529,86 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "title" : "Ip Protocols"
         },
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 10,
+          "type" : "string",
+          "title" : "Name"
         },
         "negate" : {
-          "type" : "boolean"
+          "propertyOrder" : 11,
+          "type" : "boolean",
+          "title" : "Negate"
         },
         "notDscps" : {
+          "propertyOrder" : 12,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Not Dscps"
         },
         "notDstIps" : {
+          "propertyOrder" : 13,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Dst Ips"
         },
         "notDstPorts" : {
+          "propertyOrder" : 14,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Dst Ports"
         },
         "notEcns" : {
+          "propertyOrder" : 15,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "integer"
-          }
+          },
+          "title" : "Not Ecns"
         },
         "notFragmentOffsets" : {
+          "propertyOrder" : 16,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Fragment Offsets"
         },
         "notIcmpCodes" : {
+          "propertyOrder" : 17,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Icmp Codes"
         },
         "notIcmpTypes" : {
+          "propertyOrder" : 18,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Icmp Types"
         },
         "notIpProtocols" : {
+          "propertyOrder" : 19,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -2348,46 +2870,67 @@
               "XNS_IDP",
               "XTP"
             ]
-          }
+          },
+          "title" : "Not Ip Protocols"
         },
         "notSrcIps" : {
+          "propertyOrder" : 20,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Src Ips"
         },
         "notSrcPorts" : {
+          "propertyOrder" : 21,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Not Src Ports"
         },
         "srcIps" : {
+          "propertyOrder" : 22,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Ips"
         },
         "srcOrDstIps" : {
+          "propertyOrder" : 23,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Or Dst Ips"
         },
         "srcOrDstPorts" : {
+          "propertyOrder" : 24,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Or Dst Ports"
         },
         "srcPorts" : {
+          "propertyOrder" : 25,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Src Ports"
         },
         "states" : {
+          "propertyOrder" : 26,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string",
             "enum" : [
@@ -2396,13 +2939,17 @@
               "NEW",
               "RELATED"
             ]
-          }
+          },
+          "title" : "States"
         },
         "tcpFlags" : {
+          "propertyOrder" : 27,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/TcpFlags"
-          }
+          },
+          "title" : "Tcp Flags"
         }
       },
       "required" : [
@@ -2414,9 +2961,12 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "pfsKeyGroup" : {
+          "propertyOrder" : 2,
           "type" : "string",
           "enum" : [
             "GROUP1",
@@ -2435,16 +2985,21 @@
             "GROUP25",
             "GROUP26",
             "GROUP5"
-          ]
+          ],
+          "title" : "Pfs Key Group"
         },
         "pfsKeyGroupDynamicIke" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Pfs Key Group Dynamic Ike"
         },
         "proposals" : {
+          "propertyOrder" : 4,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecProposal"
-          }
+          },
+          "title" : "Proposals"
         }
       },
       "required" : [
@@ -2456,17 +3011,22 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "authenticationAlgorithm" : {
+          "propertyOrder" : 2,
           "type" : "string",
           "enum" : [
             "HMAC_MD5_96",
             "HMAC_SHA_256_128",
             "HMAC_SHA1_96"
-          ]
+          ],
+          "title" : "Authentication Algorithm"
         },
         "encryptionAlgorithm" : {
+          "propertyOrder" : 3,
           "type" : "string",
           "enum" : [
             "AES_128_CBC",
@@ -2474,20 +3034,27 @@
             "AES_256_CBC",
             "DES_CBC",
             "THREEDES_CBC"
-          ]
+          ],
+          "title" : "Encryption Algorithm"
         },
         "lifetimeKilobytes" : {
-          "type" : "integer"
+          "propertyOrder" : 4,
+          "type" : "integer",
+          "title" : "Lifetime Kilobytes"
         },
         "lifetimeSeconds" : {
-          "type" : "integer"
+          "propertyOrder" : 5,
+          "type" : "integer",
+          "title" : "Lifetime Seconds"
         },
         "protocol" : {
+          "propertyOrder" : 6,
           "type" : "string",
           "enum" : [
             "AH",
             "ESP"
-          ]
+          ],
+          "title" : "Protocol"
         }
       }
     },
@@ -2496,28 +3063,43 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "bindInterface" : {
-          "$ref" : "#/definitions/Interface"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/Interface",
+          "title" : "Bind Interface"
         },
         "candidateRemoteIpsecVpns" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/IpsecVpn"
-          }
+          },
+          "title" : "Candidate Remote Ipsec Vpns"
         },
         "gateway" : {
-          "$ref" : "#/definitions/IkeGateway"
+          "propertyOrder" : 4,
+          "$ref" : "#/definitions/IkeGateway",
+          "title" : "Gateway"
         },
         "ipsecPolicy" : {
-          "$ref" : "#/definitions/IpsecPolicy"
+          "propertyOrder" : 5,
+          "$ref" : "#/definitions/IpsecPolicy",
+          "title" : "Ipsec Policy"
         },
         "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "propertyOrder" : 6,
+          "$ref" : "#/definitions/Configuration",
+          "title" : "Owner"
         },
         "remoteIpsecVpn" : {
-          "$ref" : "#/definitions/IpsecVpn"
+          "propertyOrder" : 7,
+          "$ref" : "#/definitions/IpsecVpn",
+          "title" : "Remote Ipsec Vpn"
         }
       }
     },
@@ -2526,23 +3108,31 @@
       "additionalProperties" : false,
       "properties" : {
         "generatedRoutes" : {
+          "propertyOrder" : 1,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "title" : "Generated Routes"
         },
         "level" : {
+          "propertyOrder" : 2,
           "type" : "string",
           "enum" : [
             "LEVEL_1",
             "LEVEL_1_2",
             "LEVEL_2"
-          ]
+          ],
+          "title" : "Level"
         },
         "netAddress" : {
-          "type" : "string"
+          "propertyOrder" : 3,
+          "type" : "string",
+          "title" : "Net Address"
         },
         "policyExportLevels" : {
+          "propertyOrder" : 4,
           "type" : "object",
           "additionalProperties" : {
             "type" : "string",
@@ -2551,7 +3141,8 @@
               "LEVEL_1_2",
               "LEVEL_2"
             ]
-          }
+          },
+          "title" : "Policy Export Levels"
         }
       }
     },
@@ -2560,25 +3151,36 @@
       "additionalProperties" : false,
       "properties" : {
         "areas" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/OspfArea"
-          }
+          },
+          "title" : "Areas"
         },
         "exportPolicy" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Export Policy"
         },
         "generatedRoutes" : {
+          "propertyOrder" : 3,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/GeneratedRoute"
-          }
+          },
+          "title" : "Generated Routes"
         },
         "referenceBandwidth" : {
-          "type" : "number"
+          "propertyOrder" : 4,
+          "type" : "number",
+          "title" : "Reference Bandwidth"
         },
         "routerId" : {
-          "type" : "string"
+          "propertyOrder" : 5,
+          "type" : "string",
+          "title" : "Router Id"
         }
       }
     },
@@ -2587,13 +3189,18 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "lines" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/Route6FilterLine"
-          }
+          },
+          "title" : "Lines"
         }
       }
     },
@@ -2602,17 +3209,23 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "lengthRange" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Length Range"
         },
         "prefix" : {
-          "type" : "string"
+          "propertyOrder" : 3,
+          "type" : "string",
+          "title" : "Prefix"
         }
       }
     },
@@ -2621,13 +3234,18 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "lines" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "$ref" : "#/definitions/RouteFilterLine"
-          }
+          },
+          "title" : "Lines"
         }
       }
     },
@@ -2636,17 +3254,23 @@
       "additionalProperties" : false,
       "properties" : {
         "action" : {
+          "propertyOrder" : 1,
           "type" : "string",
           "enum" : [
             "ACCEPT",
             "REJECT"
-          ]
+          ],
+          "title" : "Action"
         },
         "lengthRange" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Length Range"
         },
         "prefix" : {
-          "type" : "string"
+          "propertyOrder" : 3,
+          "type" : "string",
+          "title" : "Prefix"
         }
       }
     },
@@ -2655,17 +3279,80 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "statements" : {
+          "propertyOrder" : 2,
           "type" : "array",
+          "format" : "table",
           "items" : {
-            "$ref" : "#/definitions/Statement"
-          }
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
+          },
+          "title" : "Statements"
         }
       }
     },
-    "Statement" : {
+    "CallStatement" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
@@ -2674,7 +3361,903 @@
           "enum" : [
             null
           ],
-          "default" : null
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "calledPolicyName" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Called Policy Name"
+        },
+        "comment" : {
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Comment"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "If" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "falseStatements" : {
+          "propertyOrder" : 2,
+          "type" : "array",
+          "format" : "table",
+          "items" : {
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
+          },
+          "title" : "False Statements"
+        },
+        "guard" : {
+          "propertyOrder" : 3,
+          "$ref" : "#/definitions/BooleanExpr",
+          "title" : "Guard"
+        },
+        "trueStatements" : {
+          "propertyOrder" : 4,
+          "type" : "array",
+          "format" : "table",
+          "items" : {
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
+          },
+          "title" : "True Statements"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "RetainCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "expr" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/CommunitySetExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "CommunitySetExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetIsisLevel" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "level" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IsisLevelExpr",
+          "title" : "Level"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "IsisLevelExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetIsisMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "metricType" : {
+          "propertyOrder" : 2,
+          "type" : "string",
+          "enum" : [
+            "EXTERNAL",
+            "INTERNAL",
+            "RIB_METRIC_AS_EXTERNAL",
+            "RIB_METRIC_AS_INTERNAL"
+          ],
+          "title" : "Metric Type"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetVarMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "var" : {
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Var"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BufferedStatement" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "statement" : {
+          "propertyOrder" : 2,
+          "oneOf" : [
+            {
+              "$ref" : "#/definitions/CallStatement"
+            },
+            {
+              "$ref" : "#/definitions/If"
+            },
+            {
+              "$ref" : "#/definitions/RetainCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisLevel"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisMetricType"
+            },
+            {
+              "$ref" : "#/definitions/SetVarMetricType"
+            },
+            {
+              "$ref" : "#/definitions/BufferedStatement"
+            },
+            {
+              "$ref" : "#/definitions/SetWeight"
+            },
+            {
+              "$ref" : "#/definitions/SetNextHop"
+            },
+            {
+              "$ref" : "#/definitions/SetCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetOrigin"
+            },
+            {
+              "$ref" : "#/definitions/DeleteCommunity"
+            },
+            {
+              "$ref" : "#/definitions/PrependAsPath"
+            },
+            {
+              "$ref" : "#/definitions/AddCommunity"
+            },
+            {
+              "$ref" : "#/definitions/Comment"
+            },
+            {
+              "$ref" : "#/definitions/SetTag"
+            },
+            {
+              "$ref" : "#/definitions/SetLocalPreference"
+            },
+            {
+              "$ref" : "#/definitions/SetMetric"
+            },
+            {
+              "$ref" : "#/definitions/SetOspfMetricType"
+            }
+          ],
+          "title" : "Statement"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetWeight" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "weight" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IntExpr",
+          "title" : "Weight"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "IntExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetNextHop" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "destinationVrf" : {
+          "propertyOrder" : 2,
+          "type" : "boolean",
+          "title" : "Destination Vrf"
+        },
+        "expr" : {
+          "propertyOrder" : 3,
+          "$ref" : "#/definitions/NextHopExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "destinationVrf"
+      ]
+    },
+    "NextHopExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "expr" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/CommunitySetExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetOrigin" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "originType" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/OriginExpr",
+          "title" : "Origin Type"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "OriginExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "DeleteCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "expr" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/CommunitySetExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "PrependAsPath" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "expr" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/AsPathListExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "AsPathListExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "AddCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "expr" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/CommunitySetExpr",
+          "title" : "Expr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "Comment" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetTag" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "tag" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IntExpr",
+          "title" : "Tag"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetLocalPreference" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "localPreference" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IntExpr",
+          "title" : "Local Preference"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetMetric" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "metric" : {
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/IntExpr",
+          "title" : "Metric"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetOspfMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
+        },
+        "comment" : {
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Comment"
+        },
+        "metricType" : {
+          "propertyOrder" : 2,
+          "type" : "string",
+          "enum" : [
+            "E1",
+            "E2"
+          ],
+          "title" : "Metric Type"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BooleanExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
         }
       },
       "title" : null,
@@ -2691,22 +4274,35 @@
           "enum" : [
             null
           ],
-          "default" : null
+          "default" : null,
+          "options" : {
+            "hidden" : true
+          }
         },
         "network" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Network"
         },
         "nextHopInterface" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Next Hop Interface"
         },
         "nextHopIp" : {
-          "type" : "string"
+          "propertyOrder" : 3,
+          "type" : "string",
+          "title" : "Next Hop Ip"
         },
         "tag" : {
-          "type" : "integer"
+          "propertyOrder" : 4,
+          "type" : "integer",
+          "title" : "Tag"
         },
         "administrativeCost" : {
-          "type" : "integer"
+          "propertyOrder" : 5,
+          "type" : "integer",
+          "title" : "Administrative Cost"
         }
       },
       "title" : null,
@@ -2721,7 +4317,9 @@
       "additionalProperties" : false,
       "properties" : {
         "cisco" : {
-          "$ref" : "#/definitions/CiscoFamily"
+          "propertyOrder" : 1,
+          "$ref" : "#/definitions/CiscoFamily",
+          "title" : "Cisco"
         }
       }
     },
@@ -2730,55 +4328,81 @@
       "additionalProperties" : false,
       "properties" : {
         "aaa" : {
-          "$ref" : "#/definitions/Aaa"
+          "propertyOrder" : 1,
+          "$ref" : "#/definitions/Aaa",
+          "title" : "Aaa"
         },
         "banners" : {
+          "propertyOrder" : 2,
           "type" : "object",
           "additionalProperties" : {
             "type" : "string"
-          }
+          },
+          "title" : "Banners"
         },
         "features" : {
+          "propertyOrder" : 3,
           "type" : "object",
           "additionalProperties" : {
             "type" : "boolean"
-          }
+          },
+          "title" : "Features"
         },
         "hostname" : {
-          "type" : "string"
+          "propertyOrder" : 4,
+          "type" : "string",
+          "title" : "Hostname"
         },
         "lines" : {
+          "propertyOrder" : 5,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Line"
-          }
+          },
+          "title" : "Lines"
         },
         "logging" : {
-          "$ref" : "#/definitions/Logging"
+          "propertyOrder" : 6,
+          "$ref" : "#/definitions/Logging",
+          "title" : "Logging"
         },
         "ntp" : {
-          "$ref" : "#/definitions/Ntp"
+          "propertyOrder" : 7,
+          "$ref" : "#/definitions/Ntp",
+          "title" : "Ntp"
         },
         "proxyArp" : {
-          "type" : "boolean"
+          "propertyOrder" : 8,
+          "type" : "boolean",
+          "title" : "Proxy Arp"
         },
         "services" : {
+          "propertyOrder" : 9,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Service"
-          }
+          },
+          "title" : "Services"
         },
         "snmpServer" : {
-          "$ref" : "#/definitions/SnmpServer"
+          "propertyOrder" : 10,
+          "$ref" : "#/definitions/SnmpServer",
+          "title" : "Snmp Server"
         },
         "sntp" : {
-          "$ref" : "#/definitions/Sntp"
+          "propertyOrder" : 11,
+          "$ref" : "#/definitions/Sntp",
+          "title" : "Sntp"
         },
         "sourceRoute" : {
-          "type" : "boolean"
+          "propertyOrder" : 12,
+          "type" : "boolean",
+          "title" : "Source Route"
         },
         "ssh" : {
-          "$ref" : "#/definitions/SshSettings"
+          "propertyOrder" : 13,
+          "$ref" : "#/definitions/SshSettings",
+          "title" : "Ssh"
         }
       }
     },
@@ -2787,13 +4411,19 @@
       "additionalProperties" : false,
       "properties" : {
         "accounting" : {
-          "$ref" : "#/definitions/AaaAccounting"
+          "propertyOrder" : 1,
+          "$ref" : "#/definitions/AaaAccounting",
+          "title" : "Accounting"
         },
         "authentication" : {
-          "$ref" : "#/definitions/AaaAuthentication"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/AaaAuthentication",
+          "title" : "Authentication"
         },
         "newModel" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "New Model"
         }
       },
       "required" : [
@@ -2805,13 +4435,17 @@
       "additionalProperties" : false,
       "properties" : {
         "commands" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AaaAccountingCommands"
-          }
+          },
+          "title" : "Commands"
         },
         "default" : {
-          "$ref" : "#/definitions/AaaAccountingDefault"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/AaaAccountingDefault",
+          "title" : "Default"
         }
       }
     },
@@ -2819,7 +4453,10 @@
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
-        "_placeholder_REMOVE_ME" : { }
+        "_placeholder_REMOVE_ME" : {
+          "propertyOrder" : 1,
+          "title" : "_placeholder _ REMOVE _ ME"
+        }
       }
     },
     "AaaAccountingDefault" : {
@@ -2827,13 +4464,18 @@
       "additionalProperties" : false,
       "properties" : {
         "groups" : {
+          "propertyOrder" : 1,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Groups"
         },
         "local" : {
-          "type" : "boolean"
+          "propertyOrder" : 2,
+          "type" : "boolean",
+          "title" : "Local"
         }
       }
     },
@@ -2842,7 +4484,9 @@
       "additionalProperties" : false,
       "properties" : {
         "login" : {
-          "$ref" : "#/definitions/AaaAuthenticationLogin"
+          "propertyOrder" : 1,
+          "$ref" : "#/definitions/AaaAuthenticationLogin",
+          "title" : "Login"
         }
       }
     },
@@ -2851,13 +4495,17 @@
       "additionalProperties" : false,
       "properties" : {
         "lists" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AaaAuthenticationLoginList"
-          }
+          },
+          "title" : "Lists"
         },
         "privilegeMode" : {
-          "type" : "boolean"
+          "propertyOrder" : 2,
+          "type" : "boolean",
+          "title" : "Privilege Mode"
         }
       },
       "required" : [
@@ -2868,7 +4516,10 @@
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
-        "PLACEHOLDER" : { }
+        "PLACEHOLDER" : {
+          "propertyOrder" : 1,
+          "title" : "PLACEHOLDER"
+        }
       }
     },
     "Line" : {
@@ -2876,46 +4527,71 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "execTimeoutMinutes" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Exec Timeout Minutes"
         },
         "execTimeoutSeconds" : {
-          "type" : "integer"
+          "propertyOrder" : 3,
+          "type" : "integer",
+          "title" : "Exec Timeout Seconds"
         },
         "inputAccessList" : {
-          "type" : "string"
+          "propertyOrder" : 4,
+          "type" : "string",
+          "title" : "Input Access List"
         },
         "inputIpv6AccessList" : {
-          "type" : "string"
+          "propertyOrder" : 5,
+          "type" : "string",
+          "title" : "Input Ipv 6 Access List"
         },
         "loginAuthentication" : {
-          "type" : "string"
+          "propertyOrder" : 6,
+          "type" : "string",
+          "title" : "Login Authentication"
         },
         "outputAccessList" : {
-          "type" : "string"
+          "propertyOrder" : 7,
+          "type" : "string",
+          "title" : "Output Access List"
         },
         "outputIpv6AccessList" : {
-          "type" : "string"
+          "propertyOrder" : 8,
+          "type" : "string",
+          "title" : "Output Ipv 6 Access List"
         },
         "transportInput" : {
+          "propertyOrder" : 9,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Transport Input"
         },
         "transportOutput" : {
+          "propertyOrder" : 10,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Transport Output"
         },
         "transportPreferred" : {
+          "propertyOrder" : 11,
           "type" : "array",
+          "format" : "table",
           "items" : {
             "type" : "string"
-          }
+          },
+          "title" : "Transport Preferred"
         }
       }
     },
@@ -2924,25 +4600,37 @@
       "additionalProperties" : false,
       "properties" : {
         "buffered" : {
-          "$ref" : "#/definitions/Buffered"
+          "propertyOrder" : 1,
+          "$ref" : "#/definitions/Buffered",
+          "title" : "Buffered"
         },
         "console" : {
-          "$ref" : "#/definitions/LoggingType"
+          "propertyOrder" : 2,
+          "$ref" : "#/definitions/LoggingType",
+          "title" : "Console"
         },
         "hosts" : {
+          "propertyOrder" : 3,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/LoggingHost"
-          }
+          },
+          "title" : "Hosts"
         },
         "on" : {
-          "type" : "boolean"
+          "propertyOrder" : 4,
+          "type" : "boolean",
+          "title" : "On"
         },
         "sourceInterface" : {
-          "type" : "string"
+          "propertyOrder" : 5,
+          "type" : "string",
+          "title" : "Source Interface"
         },
         "trap" : {
-          "$ref" : "#/definitions/LoggingType"
+          "propertyOrder" : 6,
+          "$ref" : "#/definitions/LoggingType",
+          "title" : "Trap"
         }
       }
     },
@@ -2951,13 +4639,19 @@
       "additionalProperties" : false,
       "properties" : {
         "severity" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Severity"
         },
         "severityNum" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Severity Num"
         },
         "size" : {
-          "type" : "integer"
+          "propertyOrder" : 3,
+          "type" : "integer",
+          "title" : "Size"
         }
       }
     },
@@ -2966,10 +4660,14 @@
       "additionalProperties" : false,
       "properties" : {
         "severity" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Severity"
         },
         "severityNum" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "Severity Num"
         }
       }
     },
@@ -2978,7 +4676,9 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         }
       }
     },
@@ -2987,10 +4687,12 @@
       "additionalProperties" : false,
       "properties" : {
         "servers" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/NtpServer"
-          }
+          },
+          "title" : "Servers"
         }
       }
     },
@@ -2999,10 +4701,14 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "vrf" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Vrf"
         }
       }
     },
@@ -3011,13 +4717,17 @@
       "additionalProperties" : false,
       "properties" : {
         "enabled" : {
-          "type" : "boolean"
+          "propertyOrder" : 1,
+          "type" : "boolean",
+          "title" : "Enabled"
         },
         "subservices" : {
+          "propertyOrder" : 2,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Service"
-          }
+          },
+          "title" : "Subservices"
         }
       }
     },
@@ -3026,25 +4736,32 @@
       "additionalProperties" : false,
       "properties" : {
         "communities" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SnmpCommunity"
-          }
+          },
+          "title" : "Communities"
         },
         "hosts" : {
+          "propertyOrder" : 2,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SnmpHost"
-          }
+          },
+          "title" : "Hosts"
         },
         "traps" : {
+          "propertyOrder" : 3,
           "type" : "object",
           "additionalProperties" : {
             "type" : "array",
+            "format" : "table",
             "items" : {
               "type" : "string"
             }
-          }
+          },
+          "title" : "Traps"
         }
       }
     },
@@ -3053,16 +4770,24 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "accessList" : {
-          "type" : "string"
+          "propertyOrder" : 2,
+          "type" : "string",
+          "title" : "Access List"
         },
         "ro" : {
-          "type" : "boolean"
+          "propertyOrder" : 3,
+          "type" : "boolean",
+          "title" : "Ro"
         },
         "rw" : {
-          "type" : "boolean"
+          "propertyOrder" : 4,
+          "type" : "boolean",
+          "title" : "Rw"
         }
       },
       "required" : [
@@ -3075,7 +4800,9 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         }
       }
     },
@@ -3084,10 +4811,12 @@
       "additionalProperties" : false,
       "properties" : {
         "servers" : {
+          "propertyOrder" : 1,
           "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SntpServer"
-          }
+          },
+          "title" : "Servers"
         }
       }
     },
@@ -3096,13 +4825,19 @@
       "additionalProperties" : false,
       "properties" : {
         "name" : {
-          "type" : "string"
+          "propertyOrder" : 1,
+          "type" : "string",
+          "title" : "Name"
         },
         "_version" : {
-          "type" : "integer"
+          "propertyOrder" : 2,
+          "type" : "integer",
+          "title" : "_version"
         },
         "version" : {
-          "type" : "integer"
+          "propertyOrder" : 3,
+          "type" : "integer",
+          "title" : "Version"
         }
       }
     },
@@ -3111,7 +4846,9 @@
       "additionalProperties" : false,
       "properties" : {
         "version" : {
-          "type" : "integer"
+          "propertyOrder" : 1,
+          "type" : "integer",
+          "title" : "Version"
         }
       }
     }
