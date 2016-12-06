@@ -375,7 +375,7 @@ public class Client extends AbstractClient implements IClient {
 //         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
 //         _logger.output(mapper.writeValueAsString(schema));
          
-         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, JsonSchemaConfig.html5EnabledSchema());
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, false, JsonSchemaConfig.vanillaJsonSchemaDraft4());
          JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
          _logger.output(mapper.writeValueAsString(schemaNew));
                   
