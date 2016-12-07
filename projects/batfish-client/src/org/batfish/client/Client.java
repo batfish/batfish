@@ -40,9 +40,11 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kjetland.jackson.jsonSchema.JsonSchemaConfig;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 import jline.console.ConsoleReader;
@@ -373,7 +375,7 @@ public class Client extends AbstractClient implements IClient {
 //         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
 //         _logger.output(mapper.writeValueAsString(schema));
          
-         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, false, JsonSchemaConfig.vanillaJsonSchemaDraft4());
          JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
          _logger.output(mapper.writeValueAsString(schemaNew));
                   

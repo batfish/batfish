@@ -14,7 +14,6 @@
       }
     },
     "asPathAccessLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/AsPathAccessList"
       }
@@ -29,7 +28,6 @@
       }
     },
     "communityLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/CommunityList"
       }
@@ -85,55 +83,46 @@
       }
     },
     "ikeGateways" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeGateway"
       }
     },
     "ikePolicies" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkePolicy"
       }
     },
     "ikeProposals" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeProposal"
       }
     },
     "interfaces" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Interface"
       }
     },
     "ip6AccessLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Ip6AccessList"
       }
     },
     "ipAccessLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpAccessList"
       }
     },
     "ipsecPolicies" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecPolicy"
       }
     },
     "ipsecProposals" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecProposal"
       }
     },
     "ipsecVpns" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/IpsecVpn"
       }
@@ -151,19 +140,16 @@
       }
     },
     "route6FilterLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Route6FilterList"
       }
     },
     "routeFilterLists" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/RouteFilterList"
       }
     },
     "routingPolicies" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/RoutingPolicy"
       }
@@ -178,7 +164,6 @@
       "$ref" : "#/definitions/VendorFamily"
     },
     "zones" : {
-      "type" : "object",
       "additionalProperties" : {
         "$ref" : "#/definitions/Zone"
       }
@@ -276,7 +261,6 @@
           }
         },
         "neighbors" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/BgpNeighbor"
           }
@@ -386,7 +370,6 @@
           }
         },
         "asPathAccessLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AsPathAccessList"
           }
@@ -401,7 +384,6 @@
           }
         },
         "communityLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/CommunityList"
           }
@@ -457,55 +439,46 @@
           }
         },
         "ikeGateways" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeGateway"
           }
         },
         "ikePolicies" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkePolicy"
           }
         },
         "ikeProposals" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeProposal"
           }
         },
         "interfaces" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Interface"
           }
         },
         "ip6AccessLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Ip6AccessList"
           }
         },
         "ipAccessLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
           }
         },
         "ipsecPolicies" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecPolicy"
           }
         },
         "ipsecProposals" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecProposal"
           }
         },
         "ipsecVpns" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecVpn"
           }
@@ -523,19 +496,16 @@
           }
         },
         "route6FilterLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Route6FilterList"
           }
         },
         "routeFilterLists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/RouteFilterList"
           }
         },
         "routingPolicies" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/RoutingPolicy"
           }
@@ -550,7 +520,6 @@
           "$ref" : "#/definitions/VendorFamily"
         },
         "zones" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Zone"
           }
@@ -1608,7 +1577,6 @@
           "$ref" : "#/definitions/IpAccessList"
         },
         "inboundInterfaceFilters" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
           }
@@ -1617,7 +1585,6 @@
           "$ref" : "#/definitions/IpAccessList"
         },
         "toZonePolicies" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
           }
@@ -1635,7 +1602,6 @@
           "type" : "string"
         },
         "proposals" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IkeProposal"
           }
@@ -2441,7 +2407,6 @@
           "type" : "boolean"
         },
         "proposals" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/IpsecProposal"
           }
@@ -2543,7 +2508,6 @@
           "type" : "string"
         },
         "policyExportLevels" : {
-          "type" : "object",
           "additionalProperties" : {
             "type" : "string",
             "enum" : [
@@ -2560,7 +2524,6 @@
       "additionalProperties" : false,
       "properties" : {
         "areas" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/OspfArea"
           }
@@ -2660,12 +2623,806 @@
         "statements" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Statement"
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
           }
         }
       }
     },
-    "Statement" : {
+    "CallStatement" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "calledPolicyName" : {
+          "type" : "string"
+        },
+        "comment" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "If" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "falseStatements" : {
+          "type" : "array",
+          "items" : {
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
+          }
+        },
+        "guard" : {
+          "$ref" : "#/definitions/BooleanExpr"
+        },
+        "trueStatements" : {
+          "type" : "array",
+          "items" : {
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
+          }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "RetainCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/CommunitySetExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "CommunitySetExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetIsisLevel" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "level" : {
+          "$ref" : "#/definitions/IsisLevelExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "IsisLevelExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetIsisMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "metricType" : {
+          "type" : "string",
+          "enum" : [
+            "EXTERNAL",
+            "INTERNAL",
+            "RIB_METRIC_AS_EXTERNAL",
+            "RIB_METRIC_AS_INTERNAL"
+          ]
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetVarMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "var" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BufferedStatement" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "statement" : {
+          "oneOf" : [
+            {
+              "$ref" : "#/definitions/CallStatement"
+            },
+            {
+              "$ref" : "#/definitions/If"
+            },
+            {
+              "$ref" : "#/definitions/RetainCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisLevel"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisMetricType"
+            },
+            {
+              "$ref" : "#/definitions/SetVarMetricType"
+            },
+            {
+              "$ref" : "#/definitions/BufferedStatement"
+            },
+            {
+              "$ref" : "#/definitions/SetWeight"
+            },
+            {
+              "$ref" : "#/definitions/SetNextHop"
+            },
+            {
+              "$ref" : "#/definitions/SetCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetOrigin"
+            },
+            {
+              "$ref" : "#/definitions/DeleteCommunity"
+            },
+            {
+              "$ref" : "#/definitions/PrependAsPath"
+            },
+            {
+              "$ref" : "#/definitions/AddCommunity"
+            },
+            {
+              "$ref" : "#/definitions/Comment"
+            },
+            {
+              "$ref" : "#/definitions/SetTag"
+            },
+            {
+              "$ref" : "#/definitions/SetLocalPreference"
+            },
+            {
+              "$ref" : "#/definitions/SetMetric"
+            },
+            {
+              "$ref" : "#/definitions/SetOspfMetricType"
+            }
+          ]
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetWeight" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "weight" : {
+          "$ref" : "#/definitions/IntExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "IntExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetNextHop" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "destinationVrf" : {
+          "type" : "boolean"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/NextHopExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "destinationVrf"
+      ]
+    },
+    "NextHopExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/CommunitySetExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetOrigin" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "originType" : {
+          "$ref" : "#/definitions/OriginExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "OriginExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "DeleteCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/CommunitySetExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "PrependAsPath" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/AsPathListExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "AsPathListExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "AddCommunity" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "expr" : {
+          "$ref" : "#/definitions/CommunitySetExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "Comment" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetTag" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "tag" : {
+          "$ref" : "#/definitions/IntExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetLocalPreference" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "localPreference" : {
+          "$ref" : "#/definitions/IntExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetMetric" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "metric" : {
+          "$ref" : "#/definitions/IntExpr"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "SetOspfMetricType" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "comment" : {
+          "type" : "string"
+        },
+        "metricType" : {
+          "type" : "string",
+          "enum" : [
+            "E1",
+            "E2"
+          ]
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BooleanExpr" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
@@ -2733,13 +3490,11 @@
           "$ref" : "#/definitions/Aaa"
         },
         "banners" : {
-          "type" : "object",
           "additionalProperties" : {
             "type" : "string"
           }
         },
         "features" : {
-          "type" : "object",
           "additionalProperties" : {
             "type" : "boolean"
           }
@@ -2748,7 +3503,6 @@
           "type" : "string"
         },
         "lines" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Line"
           }
@@ -2763,7 +3517,6 @@
           "type" : "boolean"
         },
         "services" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Service"
           }
@@ -2805,7 +3558,6 @@
       "additionalProperties" : false,
       "properties" : {
         "commands" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AaaAccountingCommands"
           }
@@ -2851,7 +3603,6 @@
       "additionalProperties" : false,
       "properties" : {
         "lists" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/AaaAuthenticationLoginList"
           }
@@ -2930,7 +3681,6 @@
           "$ref" : "#/definitions/LoggingType"
         },
         "hosts" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/LoggingHost"
           }
@@ -2987,7 +3737,6 @@
       "additionalProperties" : false,
       "properties" : {
         "servers" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/NtpServer"
           }
@@ -3014,7 +3763,6 @@
           "type" : "boolean"
         },
         "subservices" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/Service"
           }
@@ -3026,19 +3774,16 @@
       "additionalProperties" : false,
       "properties" : {
         "communities" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SnmpCommunity"
           }
         },
         "hosts" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SnmpHost"
           }
         },
         "traps" : {
-          "type" : "object",
           "additionalProperties" : {
             "type" : "array",
             "items" : {
@@ -3084,7 +3829,6 @@
       "additionalProperties" : false,
       "properties" : {
         "servers" : {
-          "type" : "object",
           "additionalProperties" : {
             "$ref" : "#/definitions/SntpServer"
           }
