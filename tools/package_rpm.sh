@@ -250,7 +250,7 @@ start() {
       echo "Missing pid file, but lock file present: \$LOCKFILE"
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -DquestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG_DIR/\${prog}.log -servicemode -register true >& /dev/null & echo \\\$! > \$PIDFILE'" batfish
+   su -c "bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG_DIR/\${prog}.log -servicemode -register true >& /dev/null & echo \\\$! > \$PIDFILE'" batfish
    touch \$LOCKFILE
    echo "Sucess"
 }
