@@ -6,10 +6,13 @@ package() {
    local RELEASE=1
    local PACKAGE_NAME="batfish-${VERSION}"
    local BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
+   local BATFISH_Z3_RHEL_INSTALLER=${BATFISH_TOOLS_PATH}/install_z3_rhel_x86_64.sh
    local BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    local WORKING=$(mktemp -d)
    local RBASE=$WORKING/rpmbuild
    local PBASE=$RBASE/$PACKAGE_NAME
+   local USR=/usr
+   local USR_P=${PBASE}${USR}
    local DATA_DIR=/usr/share/batfish
    local DATA_DIR_P=${PBASE}${DATA_DIR}
    local CONF_DIR=/etc/batfish
@@ -131,7 +134,7 @@ Group:   Applications/Engineering
 License: Apache2.0
 URL:     https://github.com/intentionet/batfish
 Source0: %{name}-%{version}.tar.gz
-BuildArch: noarch
+BuildArch: x86_64
 
 BuildRoot: %{_tmppath}/%name}-%{version}-%{release}-root
 Requires(pre): /usr/sbin/useradd, /usr/sbin/groupadd, /usr/bin/getent, /bin/mkdir, /bin/chown, /bin/chmod
@@ -205,6 +208,9 @@ rm -rf %{buildroot}
 %config $COORDINATOR_INIT
 $DATA_DIR/*
 $DOC_DIR/*
+$USR/bin/*
+$USR/lib64/*
+$USR/include/*
 
 %changelog
 * Tue Dec 6 2016  Ari Fogel <ari@intentionet.com> 0.1.0-1
@@ -355,15 +361,17 @@ case "\$1" in
 esac
 exit \$?
 EOF
-
+   echo "Building and installing z3 in $USR_P"
+   $BATFISH_Z3_RHEL_INSTALLER $USR_P
    cd $RBASE
    fakeroot tar -cpzvf ${PACKAGE_NAME}.tar.gz ${PACKAGE_NAME}/ && cp ${PACKAGE_NAME}.tar.gz SOURCES/ && rpmbuild --define "_topdir $RBASE" -ba SPECS/$SPEC_FILE_NAME
+   [ $? -ne 0 ] && return 1
    RPM_SRC=$(find RPMS -type f)
    RPM_NAME=$(basename $RPM_SRC)
    cp $RPM_SRC ${OLD_PWD}/
    cd $OLD_PWD
    rm -rf $WORKING
-   rpm --addsign $RPM_NAME
+   rpm --addsign $RPM_NAME || return 1
 }
 package
 
