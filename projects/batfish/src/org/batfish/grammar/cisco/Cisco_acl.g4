@@ -392,10 +392,10 @@ ip_community_list_expanded_tail
 :
    (
       SEQ DEC
-   )? ala = access_list_action
+   )? ala = access_list_action DOUBLE_QUOTE?
    (
-      remainder += ~NEWLINE
-   )+ NEWLINE
+      remainder += ~( NEWLINE | DOUBLE_QUOTE )
+   )+ DOUBLE_QUOTE? NEWLINE
 ;
 
 ip_community_list_standard_stanza
