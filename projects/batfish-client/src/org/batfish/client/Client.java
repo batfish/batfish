@@ -370,15 +370,17 @@ public class Client extends AbstractClient implements IClient {
       try {
          ObjectMapper mapper = new BatfishObjectMapper();
 
-//         com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator schemaGen = 
-//               new com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator(mapper);
-//         JsonSchema schema = schemaGen.generateSchema(Shape.class);                  
-//         _logger.output(mapper.writeValueAsString(schema));
-         
-         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, false, JsonSchemaConfig.vanillaJsonSchemaDraft4());
+         JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
          JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
          _logger.output(mapper.writeValueAsString(schemaNew));
-                  
+         
+         // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
+         // JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
+         // _logger.output(mapper.writeValueAsString(schemaNew));
+
+         // _logger.output("\n");
+         // JsonNode schemaNew2 = schemaGenNew.generateJsonSchema(SchemaTest.Parent.class);                  
+         // _logger.output(mapper.writeValueAsString(schemaNew2));
       } 
       catch (Exception e) {
          _logger.errorf("Could not generate data model: " + e.getMessage());
