@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME"
+ExecStart=/usr/bin/java -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
