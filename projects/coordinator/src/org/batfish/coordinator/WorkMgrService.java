@@ -48,12 +48,16 @@ public class WorkMgrService {
    @Path(CoordConsts.SVC_CHECK_API_KEY_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray checkApiKey(
-         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion) {
       try {
          _logger.info("WMS:checkApiKey " + apiKey + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         
+         checkClientVersion(clientVersion);
+
          if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
             return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                   new JSONObject().put(CoordConsts.SVC_API_KEY, true)));
@@ -83,6 +87,28 @@ public class WorkMgrService {
       }
    }
 
+   private void checkClientVersion(String clientVersion)
+         throws Exception {
+      
+      List<Integer> myBits = Version.getVersionBreakdown(Version.getVersion());
+      List<Integer> clientBits;
+
+      try {
+         clientBits = Version.getVersionBreakdown(clientVersion);
+
+         if (clientBits.size() != 3) 
+            throw new IllegalArgumentException("Client version " + clientVersion + " does not have 3 subparts");
+      } 
+      catch (Exception e) {
+         throw new IllegalArgumentException("Bad client version format in " + clientVersion);
+      }
+      
+      if (myBits.get(0) != clientBits.get(0) ||
+            myBits.get(1) < clientBits.get(1))  {
+         throw new IllegalArgumentException("Client version " + clientVersion + " is not compatible with server version " + Version.getVersion());
+      }      
+   }
+
    private void checkContainerAccessibility(String apiKey, String containerName)
          throws Exception {
       if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName,
@@ -92,9 +118,9 @@ public class WorkMgrService {
       }
    }
 
-   private void checkStringParam(String paramStr, String message) {
+   private void checkStringParam(String paramStr, String parameterName) {
       if (paramStr == null || paramStr.equals("")) {
-         throw new IllegalArgumentException(message);
+         throw new IllegalArgumentException(parameterName + " is missing or empty");
       }
    }
 
@@ -110,16 +136,17 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delContainer(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
       try {
          _logger.info("WMS:delContainer " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().delContainer(containerName);
@@ -157,22 +184,21 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delEnvironment(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delEnvironment " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(envName, "Environment name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(envName, "Environment name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().delEnvironment(containerName, testrigName, envName);
@@ -210,23 +236,21 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delQuestion(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String questionName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delQuestion " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(questionName,
-               "Question name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(questionName, "Question name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().delQuestion(containerName, testrigName,
@@ -263,19 +287,19 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray delTestrig(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info("WMS:delTestrig " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().delTestrig(containerName, testrigName);
@@ -303,7 +327,7 @@ public class WorkMgrService {
    public JSONArray getInfo() {
       _logger.info("WMS:getInfo\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-            "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
+            "Batfish coordinator v" + Version.getVersion() + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    /**
@@ -320,6 +344,7 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_OCTET_STREAM)
    public Response getObject(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName) {
@@ -327,16 +352,14 @@ public class WorkMgrService {
          _logger.info(
                "WMS:getObject " + testrigName + " --> " + objectName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(objectName, "Object name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(objectName, "Object name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          File file = Main.getWorkMgr().getObject(containerName, testrigName,
@@ -371,8 +394,10 @@ public class WorkMgrService {
    public JSONArray getStatus() {
       try {
          _logger.info("WMS:getWorkQueueStatus\n");
+         JSONObject retObject = Main.getWorkMgr().getStatusJson();
+         retObject.put("service-version", Version.getVersion());
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               Main.getWorkMgr().getStatusJson()));
+               retObject));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -394,15 +419,17 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray getWorkStatus(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_WORKID_KEY) String workId) {
       try {
          _logger.info("WMS:getWorkStatus " + workId + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(workId, "work id not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(workId, "work id");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
 
          QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
 
@@ -444,16 +471,17 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray initContainer(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_PREFIX_KEY) String containerPrefix) {
       try {
          _logger.info("WMS:initContainer " + containerPrefix + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerPrefix,
-               "Container prefix not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerPrefix, "Container prefix");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
 
          String containerName = Main.getWorkMgr()
                .initContainer(containerPrefix);
@@ -488,13 +516,16 @@ public class WorkMgrService {
    @Path(CoordConsts.SVC_LIST_CONTAINERS_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listContainers(
-         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey) {
+         @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion) {
       try {
          _logger.info("WMS:listContainers " + apiKey + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
 
          if (!_settings.getDefaultKeyListings()
                && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
@@ -536,20 +567,20 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listEnvironments(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info(
                "WMS:listEnvironments " + apiKey + " " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          String[] environmentList = Main.getWorkMgr()
@@ -587,20 +618,20 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listQuestions(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName) {
       try {
          _logger.info(
                "WMS:listQuestions " + apiKey + " " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          String[] questionList = Main.getWorkMgr().listQuestions(containerName,
@@ -636,14 +667,17 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray listTestrigs(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName) {
       try {
          _logger
                .info("WMS:listTestrigs " + apiKey + " " + containerName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
 
          if (!_settings.getDefaultKeyListings()
                && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
@@ -715,6 +749,7 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray putObject(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_OBJECT_NAME_KEY) String objectName,
@@ -723,16 +758,14 @@ public class WorkMgrService {
          _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName + " "
                + testrigName + " / " + objectName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(objectName, "Object name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(objectName, "Object name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().putObject(containerName, testrigName, objectName,
@@ -770,17 +803,18 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray queueWork(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_WORKITEM_KEY) String workItemStr) {
       try {
          _logger.info("WMS:queueWork " + apiKey + " " + workItemStr + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(workItemStr,
-               "Workitem string not supplied or is empty");
-         ;
-         checkApiKeyValidity(apiKey);
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(workItemStr, "Workitem string");
 
+         checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
+         
          WorkItem workItem = WorkItem.FromJsonString(workItemStr);
 
          checkContainerAccessibility(apiKey, workItem.getContainerName());
@@ -846,6 +880,7 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadEnvironment(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_ENV_NAME_KEY) String envName,
@@ -854,16 +889,14 @@ public class WorkMgrService {
          _logger.info("WMS:uploadEnvironment " + apiKey + " " + containerName
                + " " + testrigName + " / " + envName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(envName, "Environment name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(envName, "Environment name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().uploadEnvironment(containerName, testrigName,
@@ -908,6 +941,7 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadQuestion(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_QUESTION_NAME_KEY) String qName,
@@ -917,16 +951,14 @@ public class WorkMgrService {
          _logger.info("WMS:uploadQuestion " + apiKey + " " + containerName + " "
                + testrigName + " / " + qName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
-         checkStringParam(qName, "Question name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+         checkStringParam(qName, "Question name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().uploadQuestion(containerName, testrigName, qName,
@@ -967,6 +999,7 @@ public class WorkMgrService {
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray uploadTestrig(
          @FormDataParam(CoordConsts.SVC_API_KEY) String apiKey,
+         @FormDataParam(CoordConsts.SVC_VERSION_KEY) String clientVersion,
          @FormDataParam(CoordConsts.SVC_CONTAINER_NAME_KEY) String containerName,
          @FormDataParam(CoordConsts.SVC_TESTRIG_NAME_KEY) String testrigName,
          @FormDataParam(CoordConsts.SVC_ZIPFILE_KEY) InputStream fileStream) {
@@ -974,14 +1007,13 @@ public class WorkMgrService {
          _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " "
                + testrigName + "\n");
 
-         checkStringParam(apiKey, "API key not supplied or is empty");
-         ;
-         checkStringParam(containerName,
-               "Container name not supplied or is empty");
-         ;
-         checkStringParam(testrigName, "Testrig name not supplied or is empty");
-         ;
+         checkStringParam(apiKey, "API key");
+         checkStringParam(clientVersion, "Client version");
+         checkStringParam(containerName, "Container name");
+         checkStringParam(testrigName, "Testrig name");
+
          checkApiKeyValidity(apiKey);
+         checkClientVersion(clientVersion);
          checkContainerAccessibility(apiKey, containerName);
 
          Main.getWorkMgr().uploadTestrig(containerName, testrigName,

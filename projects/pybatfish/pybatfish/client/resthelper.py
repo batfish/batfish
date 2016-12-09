@@ -6,6 +6,7 @@ from requests.exceptions import ConnectionError
 
 from coordconsts import CoordConsts
 from options import Options
+import pybatfish
 from pybatfish.util.batfish_exception import BatfishException
 
 def get_object(session, objectName):
@@ -36,6 +37,7 @@ def get_json_response(session, resource, jsonData):
     return jsonResponse[1]
 
 def _post_data(session, resource, jsonData, stream=False):
+    jsonData[CoordConsts.SVC_VERSION_KEY] = pybatfish.__version__
     multipart_data = MultipartEncoder(jsonData)
     
     numTriesLeft = Options.max_tries_to_coonnect_to_coordinator

@@ -73,6 +73,7 @@ public class CoordConsts {
    public static final String SVC_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
    public static final String SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
+   public static final String SVC_VERSION_KEY = "version";
    public static final Integer SVC_WORK_PORT = 9997;
    public static final String SVC_WORKID_KEY = "workid";
    public static final String SVC_WORKITEM_KEY = "workitem";

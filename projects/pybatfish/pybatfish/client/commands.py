@@ -23,7 +23,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 _bfDebug = True;
 
-bf_logger = logging.getLogger("org.batfish.client")
+bf_logger = logging.getLogger("pybatfish.client")
 bf_session = Session(bf_logger)
 
 if (_bfDebug):
