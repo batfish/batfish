@@ -20,6 +20,7 @@ public class CoordConsts {
    /**
     * Various constants used as keys on multi-part form data
     */
+   public static final String SVC_ADD_WORKER_KEY = "addworker";
    public static final String SVC_API_KEY = "apikey";
    /**
     * Constants for where and how services are hosted
@@ -41,6 +42,7 @@ public class CoordConsts {
    public static final String SVC_DEL_ENVIRONMENT_RSC = "delenvironment";
    public static final String SVC_DEL_QUESTION_RSC = "delquestion";
    public static final String SVC_DEL_TESTRIG_RSC = "deltestrig";
+   public static final String SVC_DEL_WORKER_KEY = "delworker";
    public static final boolean SVC_DISABLE_SSL = false;
    public static final String SVC_ENV_NAME_KEY = "envname";
    public static final String SVC_ENVIRONMENT_LIST_KEY = "environmentlist";
@@ -73,6 +75,7 @@ public class CoordConsts {
    public static final String SVC_UPLOAD_ENV_RSC = "uploadenvironment";
    public static final String SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
    public static final String SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
+   public static final String SVC_VERSION_KEY = "version";
    public static final Integer SVC_WORK_PORT = 9997;
    public static final String SVC_WORKID_KEY = "workid";
    public static final String SVC_WORKITEM_KEY = "workitem";
