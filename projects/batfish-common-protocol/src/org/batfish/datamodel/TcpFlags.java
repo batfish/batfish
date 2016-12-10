@@ -135,6 +135,12 @@ public final class TcpFlags implements Serializable {
       return _useUrg;
    }
 
+   @Override
+   public int hashCode() {
+      // TODO: implement better hashcode
+      return 0;
+   }
+
    public void setAck(boolean ack) {
       _ack = ack;
    }
