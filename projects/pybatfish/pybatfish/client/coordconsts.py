@@ -71,6 +71,7 @@ class CoordConsts:
     SVC_UPLOAD_ENV_RSC = "uploadenvironment";
     SVC_UPLOAD_QUESTION_RSC = "uploadquestion";
     SVC_UPLOAD_TESTRIG_RSC = "uploadtestrig";
+    SVC_VERSION_KEY = "version";
     SVC_WORK_PORT = 9997;
     SVC_WORKID_KEY = "workid";
     SVC_WORKITEM_KEY = "workitem";

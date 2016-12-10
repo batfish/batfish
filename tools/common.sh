@@ -743,6 +743,16 @@ _pybatfish() {
 }
 export -f _pybatfish
 
+ipybatfish() {
+   bash -c '_ipybatfish "$@"' _ipybatfish "$@" || return 1
+}
+export -f ipybatfish
+
+_ipybatfish() {
+   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" ipython2 "$@" || return 1
+}
+export -f _ipybatfish
+
 allinone() {
    # if cygwin, shift and replace each parameter
    if batfish_cygwin; then

@@ -30,6 +30,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.plugin.AbstractClient;
@@ -40,11 +41,9 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kjetland.jackson.jsonSchema.JsonSchemaConfig;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 import jline.console.ConsoleReader;
@@ -900,6 +899,10 @@ public class Client extends AbstractClient implements IClient {
             String containerPrefix = (words.length > 1) ? words[1]
                   : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
+            if (_currContainerName == null) {
+               _logger.errorf("Could not init container\n");
+               return false;
+            }
             _logger.output("Active container is set");
             _logger.infof(" to  %s\n", _currContainerName);
             _logger.output("\n");
@@ -980,6 +983,10 @@ public class Client extends AbstractClient implements IClient {
             if (!isSetContainer(false)) {
                _currContainerName = _workHelper
                      .initContainer(DEFAULT_CONTAINER_PREFIX);
+               if (_currContainerName == null) {
+                  _logger.errorf("Could not init container\n");
+                  return false;
+               }
                _logger.outputf("Init'ed and set active container");
                _logger.infof(" to %s\n", _currContainerName);
                _logger.output("\n");
