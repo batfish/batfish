@@ -1437,6 +1437,10 @@ public final class Settings extends BaseSettings {
       _report = report;
    }
 
+   public void setSequential(boolean sequential) {
+      _sequential = true;
+   }
+
    public void setThrowOnLexerError(boolean throwOnLexerError) {
       _throwOnLexerError = throwOnLexerError;
    }
