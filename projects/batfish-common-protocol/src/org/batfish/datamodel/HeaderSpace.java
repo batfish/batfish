@@ -296,6 +296,12 @@ public class HeaderSpace implements Serializable {
       return _tcpFlags;
    }
 
+   @Override
+   public int hashCode() {
+      // TODO: implement better hashcode
+      return 0;
+   }
+
    public boolean matches(Flow flow) {
       if (!_dscps.isEmpty() && !_dscps.contains(flow.getDscp())) {
          return false;

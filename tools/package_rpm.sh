@@ -2,12 +2,13 @@
 export BATFISH_SOURCED_SCRIPT="$BASH_SOURCE"
 export OLD_PWD="$PWD"
 package() {
-   local VERSION="0.1.0"
+   local BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
+   local BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
+   local VERSION_FILE=$BATFISH_PATH/projects/batfish-common-protocol/src/org/batfish/common/Version.java
+   local VERSION=$(grep 'private static final String VERSION' $VERSION_FILE | sed -e 's/^[^"]*"\([^"]*\)".*$/\1/g')
    local RELEASE=1
    local PACKAGE_NAME="batfish-${VERSION}"
-   local BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
    local BATFISH_Z3_RHEL_INSTALLER=${BATFISH_TOOLS_PATH}/install_z3_rhel_x86_64.sh
-   local BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    local WORKING=$(mktemp -d)
    local RBASE=$WORKING/rpmbuild
    local PBASE=$RBASE/$PACKAGE_NAME
