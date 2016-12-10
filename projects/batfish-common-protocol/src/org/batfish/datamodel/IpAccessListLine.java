@@ -31,6 +31,12 @@ public final class IpAccessListLine extends HeaderSpace {
       return _name;
    }
 
+   @Override
+   public int hashCode() {
+      // TODO: implement better hashcode
+      return 0;
+   }
+
    public void setAction(LineAction action) {
       _action = action;
    }

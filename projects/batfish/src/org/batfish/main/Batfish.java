@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -431,6 +432,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public AnswerElement answerAclReachability(String aclNameRegexStr,
          NamedStructureEquivalenceSets<?> aclEqSets) {
+      if (SystemUtils.IS_OS_MAC_OSX) {
+         // TODO: remove when z3 parallelism bug on OSX is fixed
+         _settings.setSequential(true);
+      }
       AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
 
       Pattern aclNameRegex;
@@ -1967,6 +1972,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement multipath(HeaderSpace headerSpace) {
+      if (SystemUtils.IS_OS_MAC_OSX) {
+         // TODO: remove when z3 parallelism bug on OSX is fixed
+         _settings.setSequential(true);
+      }
       Settings settings = getSettings();
       checkDataPlaneQuestionDependencies();
       String tag = getFlowTag(_testrigSettings);
@@ -2232,6 +2241,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement pathDiff(HeaderSpace headerSpace) {
+      if (SystemUtils.IS_OS_MAC_OSX) {
+         // TODO: remove when z3 parallelism bug on OSX is fixed
+         _settings.setSequential(true);
+      }
       Settings settings = getSettings();
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
@@ -2561,6 +2574,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public AnswerElement reducedReachability(HeaderSpace headerSpace) {
+      if (SystemUtils.IS_OS_MAC_OSX) {
+         // TODO: remove when z3 parallelism bug on OSX is fixed
+         _settings.setSequential(true);
+      }
       Settings settings = getSettings();
       checkDifferentialDataPlaneQuestionDependencies();
       String tag = getDifferentialFlowTag();
@@ -3068,6 +3085,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Set<ForwardingAction> actions, String ingressNodeRegexStr,
          String notIngressNodeRegexStr, String finalNodeRegexStr,
          String notFinalNodeRegexStr) {
+      if (SystemUtils.IS_OS_MAC_OSX) {
+         // TODO: remove when z3 parallelism bug on OSX is fixed
+         _settings.setSequential(true);
+      }
       Settings settings = getSettings();
       checkDataPlaneQuestionDependencies(_testrigSettings);
       String tag = getFlowTag(_testrigSettings);
