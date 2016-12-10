@@ -9,8 +9,9 @@ VERSION=4.5.0
 Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-${VERSION}/z3-${VERSION}-x64-osx-10.11.6.zip
 Z3_ZIP=$(basename ${Z3_ZIP_URL})
 Z3_DIR=$(basename ${Z3_ZIP} .zip)
+set -x
 cd $WORKING || exit 1
-curl "${Z3_ZIP_URL}" -o "${Z3_ZIP}" || exit 1
+curl -L "${Z3_ZIP_URL}" -o "${Z3_ZIP}" || exit 1
 unzip ${Z3_ZIP} || exit 1
 cd ${Z3_DIR} || exit 1
 mkdir -p $LIBDIR $EXTDIR
