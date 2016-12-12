@@ -3,7 +3,6 @@ matrix:
       - os: osx
         install: ./.travis/install.sh
         script: ./.travis/build.sh
-        language: generic
       - os: linux
         dist: trusty
         group: deprecated
@@ -14,4 +13,3 @@ matrix:
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
-        language: generic
