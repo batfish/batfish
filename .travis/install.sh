@@ -23,6 +23,12 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    #pip install requests || exit 1
    #echo -e "\n   ............. Installing requests_toolbelt"
    #pip install requests_toolbelt || exit 1
+elif [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+   sudo ./tools/install_z3_osx.sh || exit 1
+   brew update || exit 1
+   brew install python || exit 1
+   export PATH=/usr/local/share/python:$PATH
+   easy_install pip || exit 1
 else
    exit 1 # CI not supported in this case
 fi
