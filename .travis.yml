@@ -6,6 +6,7 @@ matrix:
         language: generic
       - os: linux
         dist: trusty
+        group: deprecated
         addons:
            apt:
               packages:
