@@ -4,6 +4,7 @@ matrix:
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
+        language: generic
       - os: linux
         dist: trusty
         addons:
@@ -13,4 +14,4 @@ matrix:
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
-
+        language: generic
