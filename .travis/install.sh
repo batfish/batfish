@@ -28,7 +28,7 @@ elif [[ $TRAVIS_OS_NAME == 'osx' ]]; then
    brew update || exit 1
    which python2.7 || brew install python || exit 1
    python2.7 --version || exit 1
-   which ant brew install ant || exit 1
+   which ant || brew install ant || exit 1
    ant --version || exit 1
    echo $PATH
    export PATH=/usr/local/share/python:$PATH
