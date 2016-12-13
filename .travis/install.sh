@@ -26,9 +26,14 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
 elif [[ $TRAVIS_OS_NAME == 'osx' ]]; then
    sudo $TRAVIS_BUILD_DIR/tools/install_z3_osx.sh || exit 1
    brew update || exit 1
-   brew install python || exit 1
+   #brew install python || exit 1
+   echo $PATH
    export PATH=/usr/local/share/python:$PATH
-   easy_install pip || exit 1
+   java -version || exit 1
+   javac -version || exit 1
+   which python2.7 || exit 1
+   which pip || exit 1
+   #easy_install pip || exit 1
 else
    exit 1 # CI not supported in this case
 fi
