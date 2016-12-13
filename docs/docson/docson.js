@@ -413,6 +413,8 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
                 });
                 element.find(".expand-button").click(function() {
                     if($(this).attr("expanded")) {
+                        //this spinner show/hide does not work :(
+                        //it only works when stepping through the code; not otherwise :(
                         $("#spinner").show();
                         $(this).parent().parent().find(".expand-button").html(" + ").attr("title", "Expand all");
                         $(this).parent().parent().find(".signature-type-expandable").removeClass("signature-type-expanded");
