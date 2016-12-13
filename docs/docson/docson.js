@@ -435,7 +435,7 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
                     $(this).parent().children(".box-body").toggle();
                     $(this).parent().children(".source").toggle();
                     resized();
-                    $("#spinner").show();
+                    $("#spinner").hide();
                 });
             };
 
