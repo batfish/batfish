@@ -26,6 +26,7 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
 elif [[ $TRAVIS_OS_NAME == 'osx' ]]; then
    sudo $TRAVIS_BUILD_DIR/tools/install_z3_osx.sh || exit 1
    brew update || exit 1
+   which gfind || brew install findutils || exit 1
    which python2.7 || brew install python || exit 1
    python2.7 --version || exit 1
    which ant || brew install ant || exit 1
