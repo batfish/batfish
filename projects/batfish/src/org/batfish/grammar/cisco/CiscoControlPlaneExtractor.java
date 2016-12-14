@@ -1173,6 +1173,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_vrf_context(S_vrf_contextContext ctx) {
+      _currentVrf = ctx.name.getText();
+   }
+
+   @Override
    public void enterSs_community(Ss_communityContext ctx) {
       String name = ctx.name.getText();
       Map<String, SnmpCommunity> communities = _configuration.getCf()
@@ -1287,11 +1292,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentPeerSession = proc.getPeerSessions().get(name);
       }
       pushPeer(_currentPeerSession);
-   }
-
-   @Override
-   public void enterVrf_context_stanza(Vrf_context_stanzaContext ctx) {
-      _currentVrf = ctx.name.getText();
    }
 
    @Override
@@ -2371,11 +2371,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface,
             distance, tag, track, permanent);
       _configuration.getStaticRoutes().add(route);
-   }
-
-   @Override
-   public void exitIp_route_vrfc_stanza(Ip_route_vrfc_stanzaContext ctx) {
-      todo(ctx, F_IP_ROUTE_VRF);
    }
 
    @Override
@@ -3690,6 +3685,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_vrf_context(S_vrf_contextContext ctx) {
+      _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
+   }
+
+   @Override
    public void exitSend_community_bgp_tail(Send_community_bgp_tailContext ctx) {
       _currentPeerGroup.setSendCommunity(true);
    }
@@ -4114,8 +4114,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitVrf_context_stanza(Vrf_context_stanzaContext ctx) {
-      _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
+   public void exitVrfc_ip_route(Vrfc_ip_routeContext ctx) {
+      todo(ctx, F_IP_ROUTE_VRF);
    }
 
    private String getAddressGroup(Access_list_ip_rangeContext ctx) {
