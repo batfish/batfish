@@ -71,7 +71,7 @@ public class Driver {
       return false;
    }
 
-   public static boolean getIdle() {
+   public static synchronized boolean getIdle() {
       _lastPollFromCoordinator = new Date();
       return _idle;
    }
@@ -186,7 +186,7 @@ public class Driver {
       }
    }
 
-   private static void makeIdle() {
+   private static synchronized void makeIdle() {
       _idle = true;
    }
 
