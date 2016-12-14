@@ -39,12 +39,6 @@ public class PoolMgr {
       _logger = logger;
       workerPool = new HashMap<>();
 
-      Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask();
-      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
-            workerStatusRefreshTask, 0,
-            Main.getSettings().getPeriodWorkerStatusRefreshMs(),
-            TimeUnit.MILLISECONDS);
-
    }
 
    public synchronized void addToPool(final String worker) {
@@ -185,6 +179,15 @@ public class PoolMgr {
          _logger.error(String.format("exception: %s\n", stackTrace));
          updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
       }
+   }
+
+   public void startPoolManager() {
+      Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask();
+      Executors.newScheduledThreadPool(1).scheduleWithFixedDelay(
+            workerStatusRefreshTask, 0,
+            Main.getSettings().getPeriodWorkerStatusRefreshMs(),
+            TimeUnit.MILLISECONDS);
+
    }
 
    private synchronized void updateWorkerStatus(String worker,
