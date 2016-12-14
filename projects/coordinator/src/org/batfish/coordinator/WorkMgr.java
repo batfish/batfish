@@ -84,21 +84,6 @@ public class WorkMgr {
    public WorkMgr(BatfishLogger logger) {
       _logger = logger;
       _workQueueMgr = new WorkQueueMgr();
-
-      // for some bizarre reason, this ordering of scheduling checktask before
-      // assignwork, is important
-      // in the other order, assignwork never fires
-      // TODO: track this down
-      // _checkWorkTask = new CheckTaskTask();
-      // _checkService = Executors.newScheduledThreadPool(1);
-      // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
-      // Main.getSettings().getPeriodCheckWorkMs(),
-      // TimeUnit.MILLISECONDS);
-
-      Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
-            new AssignWorkTask(), 0, Main.getSettings().getPeriodAssignWorkMs(),
-            TimeUnit.MILLISECONDS);
-
    }
 
    private void assignWork() {
@@ -762,6 +747,23 @@ public class WorkMgr {
       }
 
       return success;
+   }
+
+   public void startWorkManager() {
+      // for some bizarre reason, this ordering of scheduling checktask before
+      // assignwork, is important
+      // in the other order, assignwork never fires
+      // TODO: track this down
+      // _checkWorkTask = new CheckTaskTask();
+      // _checkService = Executors.newScheduledThreadPool(1);
+      // _checkFuture = _checkService.scheduleAtFixedRate(_checkWorkTask, 0,
+      // Main.getSettings().getPeriodCheckWorkMs(),
+      // TimeUnit.MILLISECONDS);
+
+      Executors.newScheduledThreadPool(1).scheduleAtFixedRate(
+            new AssignWorkTask(), 0, Main.getSettings().getPeriodAssignWorkMs(),
+            TimeUnit.MILLISECONDS);
+
    }
 
    public void uploadEnvironment(String containerName, String testrigName,

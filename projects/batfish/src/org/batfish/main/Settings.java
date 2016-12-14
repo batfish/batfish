@@ -366,7 +366,7 @@ public final class Settings extends BaseSettings {
 
    private static final String ARG_SERIALIZE_TO_TEXT = "stext";
 
-   private static final String ARG_SERVICE_HOST = "servicehost";
+   public static final String ARG_SERVICE_HOST = "servicehost";
 
    public static final String ARG_SERVICE_MODE = "servicemode";
 

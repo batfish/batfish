@@ -122,6 +122,7 @@ public class Main {
       }
 
       _poolManager = new PoolMgr(_logger);
+      _poolManager.startPoolManager();
 
    }
 
@@ -173,6 +174,7 @@ public class Main {
       }
 
       _workManager = new WorkMgr(_logger);
+      _workManager.startWorkManager();
    }
 
    public static void main(String[] args) {
