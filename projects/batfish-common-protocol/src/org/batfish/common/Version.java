@@ -8,15 +8,16 @@ public final class Version {
 
    private static final String VERSION = "0.1.0";
 
-   private Version() {
-   }
-
    public static String getVersion() {
       return VERSION;
    }
-   
+
    public static List<Integer> getVersionBreakdown(String versionStr) {
       List<String> parts = Arrays.asList(versionStr.split("\\."));
-      return parts.stream().map( str -> Integer.parseInt(str) ).collect( Collectors.toList() );
+      return parts.stream().map(str -> Integer.parseInt(str))
+            .collect(Collectors.toList());
+   }
+
+   private Version() {
    }
 }

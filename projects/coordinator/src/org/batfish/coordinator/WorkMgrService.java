@@ -55,7 +55,7 @@ public class WorkMgrService {
 
          checkStringParam(apiKey, "API key");
          checkStringParam(clientVersion, "Client version");
-         
+
          checkClientVersion(clientVersion);
 
          if (Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
@@ -87,26 +87,30 @@ public class WorkMgrService {
       }
    }
 
-   private void checkClientVersion(String clientVersion)
-         throws Exception {
-      
+   private void checkClientVersion(String clientVersion) throws Exception {
+
       List<Integer> myBits = Version.getVersionBreakdown(Version.getVersion());
       List<Integer> clientBits;
 
       try {
          clientBits = Version.getVersionBreakdown(clientVersion);
 
-         if (clientBits.size() != 3) 
-            throw new IllegalArgumentException("Client version " + clientVersion + " does not have 3 subparts");
-      } 
-      catch (Exception e) {
-         throw new IllegalArgumentException("Bad client version format in " + clientVersion);
+         if (clientBits.size() != 3) {
+            throw new IllegalArgumentException("Client version " + clientVersion
+                  + " does not have 3 subparts");
+         }
       }
-      
-      if (myBits.get(0) != clientBits.get(0) ||
-            myBits.get(1) < clientBits.get(1))  {
-         throw new IllegalArgumentException("Client version " + clientVersion + " is not compatible with server version " + Version.getVersion());
-      }      
+      catch (Exception e) {
+         throw new IllegalArgumentException(
+               "Bad client version format in " + clientVersion);
+      }
+
+      if (myBits.get(0) != clientBits.get(0)
+            || myBits.get(1) < clientBits.get(1)) {
+         throw new IllegalArgumentException("Client version " + clientVersion
+               + " is not compatible with server version "
+               + Version.getVersion());
+      }
    }
 
    private void checkContainerAccessibility(String apiKey, String containerName)
@@ -120,7 +124,8 @@ public class WorkMgrService {
 
    private void checkStringParam(String paramStr, String parameterName) {
       if (paramStr == null || paramStr.equals("")) {
-         throw new IllegalArgumentException(parameterName + " is missing or empty");
+         throw new IllegalArgumentException(
+               parameterName + " is missing or empty");
       }
    }
 
@@ -327,7 +332,8 @@ public class WorkMgrService {
    public JSONArray getInfo() {
       _logger.info("WMS:getInfo\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-            "Batfish coordinator v" + Version.getVersion() + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
+            "Batfish coordinator v" + Version.getVersion()
+                  + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    /**
@@ -396,8 +402,8 @@ public class WorkMgrService {
          _logger.info("WMS:getWorkQueueStatus\n");
          JSONObject retObject = Main.getWorkMgr().getStatusJson();
          retObject.put("service-version", Version.getVersion());
-         return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               retObject));
+         return new JSONArray(
+               Arrays.asList(CoordConsts.SVC_SUCCESS_KEY, retObject));
       }
       catch (Exception e) {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
@@ -814,7 +820,7 @@ public class WorkMgrService {
 
          checkApiKeyValidity(apiKey);
          checkClientVersion(clientVersion);
-         
+
          WorkItem workItem = WorkItem.FromJsonString(workItemStr);
 
          checkContainerAccessibility(apiKey, workItem.getContainerName());

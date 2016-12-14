@@ -678,10 +678,10 @@ public class BfCoordWorkHelper {
    public JSONObject postData(WebTarget webTarget, MultiPart multiPart)
          throws Exception {
       try {
-         
+
          addTextMultiPart(multiPart, CoordConsts.SVC_VERSION_KEY,
                Version.getVersion());
-         
+
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 

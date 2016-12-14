@@ -198,9 +198,9 @@ public class Driver {
                .build();
          WebTarget webTarget = client.target(poolRegUrl)
                .queryParam(CoordConsts.SVC_ADD_WORKER_KEY,
-                     _mainSettings.getServiceHost() + ":"  + _mainSettings.getServicePort())
-               .queryParam(CoordConsts.SVC_VERSION_KEY,
-                     Version.getVersion());
+                     _mainSettings.getServiceHost() + ":"
+                           + _mainSettings.getServicePort())
+               .queryParam(CoordConsts.SVC_VERSION_KEY, Version.getVersion());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
