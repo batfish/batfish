@@ -99,55 +99,55 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return out;
    }
 
-   protected final Set<Long> _allStandardCommunities;
+   private final Set<Long> _allStandardCommunities;
 
-   protected final Map<String, BaseApplication> _applications;
+   private final Map<String, BaseApplication> _applications;
 
    private Configuration _c;
 
-   protected final Map<String, CommunityList> _communityLists;
+   private final Map<String, CommunityList> _communityLists;
 
-   protected boolean _defaultAddressSelection;
+   private boolean _defaultAddressSelection;
 
-   protected LineAction _defaultCrossZoneAction;
+   private LineAction _defaultCrossZoneAction;
 
-   protected LineAction _defaultInboundAction;
+   private LineAction _defaultInboundAction;
 
-   protected final RoutingInstance _defaultRoutingInstance;
+   private final RoutingInstance _defaultRoutingInstance;
 
-   protected final Map<String, FirewallFilter> _filters;
+   private final Map<String, FirewallFilter> _filters;
 
-   protected final Map<String, AddressBook> _globalAddressBooks;
+   private final Map<String, AddressBook> _globalAddressBooks;
 
-   protected final Set<String> _ignoredPrefixLists;
+   private final Set<String> _ignoredPrefixLists;
 
-   protected final Map<String, IkeGateway> _ikeGateways;
+   private final Map<String, IkeGateway> _ikeGateways;
 
-   protected final Map<String, IkePolicy> _ikePolicies;
+   private final Map<String, IkePolicy> _ikePolicies;
 
-   protected final Map<String, IkeProposal> _ikeProposals;
+   private final Map<String, IkeProposal> _ikeProposals;
 
-   protected final Map<Interface, Zone> _interfaceZones;
+   private final Map<Interface, Zone> _interfaceZones;
 
-   protected final Map<String, IpsecPolicy> _ipsecPolicies;
+   private final Map<String, IpsecPolicy> _ipsecPolicies;
 
-   protected final Map<String, IpsecProposal> _ipsecProposals;
+   private final Map<String, IpsecProposal> _ipsecProposals;
 
-   protected final Map<String, IpsecVpn> _ipsecVpns;
+   private final Map<String, IpsecVpn> _ipsecVpns;
 
    private transient Interface _lo0;
 
    private transient boolean _lo0Initialized;
 
-   protected final Map<String, PolicyStatement> _policyStatements;
+   private final Map<String, PolicyStatement> _policyStatements;
 
-   protected final Map<String, PrefixList> _prefixLists;
+   private final Map<String, PrefixList> _prefixLists;
 
    private final RoleSet _roles;
 
-   protected final Map<String, RouteFilter> _routeFilters;
+   private final Map<String, RouteFilter> _routeFilters;
 
-   protected final Map<String, RoutingInstance> _routingInstances;
+   private final Map<String, RoutingInstance> _routingInstances;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -155,7 +155,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private ConfigurationFormat _vendor;
 
-   protected final Map<String, Zone> _zones;
+   private final Map<String, Zone> _zones;
 
    public JuniperConfiguration(Set<String> unimplementedFeatures) {
       _allStandardCommunities = new HashSet<>();
