@@ -403,8 +403,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private final boolean _unrecognizedAsRedFlag;
 
-   private CiscoVendorConfiguration _vendorConfiguration;
-
    private final Warnings _w;
 
    public CiscoControlPlaneExtractor(String text,
@@ -544,9 +542,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
-      _vendorConfiguration = new CiscoVendorConfiguration(
-            _unimplementedFeatures);
-      _configuration = _vendorConfiguration;
+      _configuration = new CiscoConfiguration(_unimplementedFeatures);
       _currentVrf = CiscoConfiguration.MASTER_VRF_NAME;
    }
 
@@ -4168,7 +4164,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public VendorConfiguration getVendorConfiguration() {
-      return _vendorConfiguration;
+      return _configuration;
    }
 
    private Ip getWildcard(Access_list_ip_rangeContext ctx) {

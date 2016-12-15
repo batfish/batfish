@@ -121,28 +121,28 @@ public abstract class BgpPeerGroup implements Serializable {
    }
 
    protected final BgpPeerGroup getParentGroup(BgpProcess proc,
-         CiscoVendorConfiguration cv) {
+         CiscoConfiguration cv) {
       BgpPeerGroup parent = null;
       if (_groupName != null) {
          parent = proc.getNamedPeerGroups().get(_groupName);
          if (parent == null) {
             cv.undefined(
                   "Reference to undefined peer-group: '" + _groupName + "'",
-                  CiscoVendorConfiguration.BGP_PEER_GROUP, _groupName);
+                  CiscoConfiguration.BGP_PEER_GROUP, _groupName);
          }
       }
       return parent;
    }
 
    protected final BgpPeerGroup getParentSession(BgpProcess proc,
-         CiscoVendorConfiguration cv) {
+         CiscoConfiguration cv) {
       BgpPeerGroup parent = null;
       if (_peerSession != null) {
          parent = proc.getPeerSessions().get(_peerSession);
          if (parent == null) {
             cv.undefined(
                   "Reference to undefined peer-session: '" + _peerSession + "'",
-                  CiscoVendorConfiguration.BGP_PEER_GROUP, _peerSession);
+                  CiscoConfiguration.BGP_PEER_GROUP, _peerSession);
          }
       }
       if (parent == null) {
@@ -236,8 +236,7 @@ public abstract class BgpPeerGroup implements Serializable {
       }
    }
 
-   public void inheritUnsetFields(BgpProcess proc,
-         CiscoVendorConfiguration cv) {
+   public void inheritUnsetFields(BgpProcess proc, CiscoConfiguration cv) {
       if (_inherited) {
          return;
       }

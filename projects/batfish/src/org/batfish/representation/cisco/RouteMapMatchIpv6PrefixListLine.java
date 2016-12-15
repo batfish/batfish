@@ -39,7 +39,7 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
          }
          else {
             cc.undefined("Reference to undefined ipv6 prefix-list: " + listName,
-                  CiscoVendorConfiguration.PREFIX6_LIST, listName);
+                  CiscoConfiguration.PREFIX6_LIST, listName);
          }
       }
       return d.simplify();

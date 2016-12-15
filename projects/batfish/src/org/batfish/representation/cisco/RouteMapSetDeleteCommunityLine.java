@@ -39,7 +39,7 @@ public class RouteMapSetDeleteCommunityLine extends RouteMapSetLine {
       }
       else {
          cc.undefined("Reference to undefined community-list: " + _listName,
-               CiscoVendorConfiguration.COMMUNITY_LIST, _listName);
+               CiscoConfiguration.COMMUNITY_LIST, _listName);
       }
    }
 
