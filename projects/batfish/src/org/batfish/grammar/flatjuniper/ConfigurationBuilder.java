@@ -92,7 +92,6 @@ import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
@@ -1544,17 +1543,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final Set<String> _unimplementedFeatures;
 
-   private JuniperVendorConfiguration _vendorConfiguration;
-
    private final Warnings _w;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
       _parser = parser;
       _text = text;
-      _vendorConfiguration = new JuniperVendorConfiguration(
-            unimplementedFeatures);
-      _configuration = _vendorConfiguration;
+      _configuration = new JuniperConfiguration(unimplementedFeatures);
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<>();
       _unimplementedFeatures = unimplementedFeatures;
@@ -3686,8 +3681,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentPsThens.add(PsThenReject.INSTANCE);
    }
 
-   public JuniperVendorConfiguration getConfiguration() {
-      return _vendorConfiguration;
+   public JuniperConfiguration getConfiguration() {
+      return _configuration;
    }
 
    private String initIkeProposal(IkeProposal proposal) {
