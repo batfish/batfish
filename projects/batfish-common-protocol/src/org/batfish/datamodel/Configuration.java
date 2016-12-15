@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -25,8 +26,6 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String AS_PATH_ACCESS_LISTS_VAR = "asPathAccessLists";
 
-   private static final String BGP_PROCESS_VAR = "bgpProcess";
-
    private static final String COMMUNITIES_VAR = "communities";
 
    private static final String COMMUNITY_LISTS_VAR = "communityLists";
@@ -37,15 +36,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String DEFAULT_INBOUND_ACTION_VAR = "defaultInboundAction";
 
-   private static final String GENERATED_ROUTES_VAR = "aggregateRoutes";
-
    private static final String IKE_GATEWAYS_VAR = "ikeGateways";
 
    private static final String IKE_POLICIES_VAR = "ikePolicies";
 
    private static final String IKE_PROPOSALS_VAR = "ikeProposals";
-
-   private static final String INTERFACES_VAR = "interfaces";
 
    private static final String IP_ACCESS_LISTS_VAR = "ipAccessLists";
 
@@ -55,11 +50,7 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String IPSEC_VPNS_VAR = "ipsecVpns";
 
-   private static final String ISIS_PROCESS_VAR = "isisProcess";
-
    public static final String NODE_NONE_NAME = "(none)";
-
-   private static final String OSPF_PROCESS_VAR = "ospfProcess";
 
    private static final String ROLES_VAR = "roles";
 
@@ -69,15 +60,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
-   private static final String STATIC_ROUTES_VAR = "staticRoutes";
-
    private static final String ZONES_VAR = "zones";
 
+   public static final String DEFAULT_VRF_NAME = "default";
+
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
-
-   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
-
-   private BgpProcess _bgpProcess;
 
    private NavigableSet<Long> _communities;
 
@@ -91,17 +78,11 @@ public final class Configuration extends ComparableStructure<String> {
 
    private String _domainName;
 
-   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
-
-   private NavigableSet<GeneratedRoute> _generatedRoutes;
-
    private NavigableMap<String, IkeGateway> _ikeGateways;
 
    private NavigableMap<String, IkePolicy> _ikePolicies;
 
    private NavigableMap<String, IkeProposal> _ikeProposals;
-
-   private NavigableMap<String, Interface> _interfaces;
 
    private NavigableMap<String, Ip6AccessList> _ip6AccessLists;
 
@@ -113,41 +94,17 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, IpsecVpn> _ipsecVpns;
 
-   private IsisProcess _isisProcess;
-
-   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
-
-   private OspfProcess _ospfProcess;
-
-   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
-
    private RoleSet _roles;
 
    private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
    private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
-   private transient NavigableSet<Route> _routes;
-
    private NavigableMap<String, RoutingPolicy> _routingPolicies;
 
-   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
-
-   private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
-
-   private NavigableSet<StaticRoute> _staticRoutes;
-
    private VendorFamily _vendorFamily;
+
+   private Map<String, Vrf> _vrfs;
 
    private NavigableMap<String, Zone> _zones;
 
@@ -157,12 +114,9 @@ public final class Configuration extends ComparableStructure<String> {
       _asPathAccessLists = new TreeMap<>();
       _communities = new TreeSet<>();
       _communityLists = new TreeMap<>();
-      _generatedRoutes = new TreeSet<>();
-      _generatedIpv6Routes = new TreeSet<>();
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
       _ikeProposals = new TreeMap<>();
-      _interfaces = new TreeMap<>();
       _ipAccessLists = new TreeMap<>();
       _ip6AccessLists = new TreeMap<>();
       _ipsecPolicies = new TreeMap<>();
@@ -172,8 +126,8 @@ public final class Configuration extends ComparableStructure<String> {
       _routeFilterLists = new TreeMap<>();
       _route6FilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
-      _staticRoutes = new TreeSet<>();
       _vendorFamily = new VendorFamily();
+      _vrfs = new TreeMap<>();
       _zones = new TreeMap<>();
    }
 
@@ -181,16 +135,6 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonPropertyDescription("Ari: Key details go here.")
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
-      return _bgpAdvertisements;
-   }
-
-   @JsonProperty(BGP_PROCESS_VAR)
-   public BgpProcess getBgpProcess() {
-      return _bgpProcess;
    }
 
    @JsonProperty(COMMUNITIES_VAR)
@@ -222,15 +166,6 @@ public final class Configuration extends ComparableStructure<String> {
       return _domainName;
    }
 
-   public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
-      return _generatedIpv6Routes;
-   }
-
-   @JsonProperty(GENERATED_ROUTES_VAR)
-   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
-      return _generatedRoutes;
-   }
-
    @JsonProperty(NAME_VAR)
    public String getHostname() {
       return _key;
@@ -249,11 +184,6 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(IKE_PROPOSALS_VAR)
    public NavigableMap<String, IkeProposal> getIkeProposals() {
       return _ikeProposals;
-   }
-
-   @JsonProperty(INTERFACES_VAR)
-   public NavigableMap<String, Interface> getInterfaces() {
-      return _interfaces;
    }
 
    public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
@@ -280,46 +210,6 @@ public final class Configuration extends ComparableStructure<String> {
       return _ipsecVpns;
    }
 
-   @JsonProperty(ISIS_PROCESS_VAR)
-   public IsisProcess getIsisProcess() {
-      return _isisProcess;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
-      return _originatedAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
-      return _originatedEbgpAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
-      return _originatedIbgpAdvertisements;
-   }
-
-   @JsonProperty(OSPF_PROCESS_VAR)
-   public OspfProcess getOspfProcess() {
-      return _ospfProcess;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
-      return _receivedAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
-      return _receivedEbgpAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
-      return _receivedIbgpAdvertisements;
-   }
-
    @JsonProperty(ROLES_VAR)
    public RoleSet getRoles() {
       return _roles;
@@ -334,38 +224,17 @@ public final class Configuration extends ComparableStructure<String> {
       return _routeFilterLists;
    }
 
-   @JsonIgnore
-   public NavigableSet<Route> getRoutes() {
-      return _routes;
-   }
-
    @JsonProperty(ROUTING_POLICIES_VAR)
    public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
       return _routingPolicies;
    }
 
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
-      return _sentAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
-      return _sentEbgpAdvertisements;
-   }
-
-   @JsonIgnore
-   public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
-      return _sentIbgpAdvertisements;
-   }
-
-   @JsonProperty(STATIC_ROUTES_VAR)
-   public NavigableSet<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
-   }
-
    public VendorFamily getVendorFamily() {
       return _vendorFamily;
+   }
+
+   public Map<String, Vrf> getVrfs() {
+      return _vrfs;
    }
 
    @JsonProperty(ZONES_VAR)
@@ -373,32 +242,10 @@ public final class Configuration extends ComparableStructure<String> {
       return _zones;
    }
 
-   public void initBgpAdvertisements() {
-      _bgpAdvertisements = new TreeSet<>();
-      _originatedAdvertisements = new TreeSet<>();
-      _originatedEbgpAdvertisements = new TreeSet<>();
-      _originatedIbgpAdvertisements = new TreeSet<>();
-      _receivedAdvertisements = new TreeSet<>();
-      _receivedEbgpAdvertisements = new TreeSet<>();
-      _receivedIbgpAdvertisements = new TreeSet<>();
-      _sentAdvertisements = new TreeSet<>();
-      _sentEbgpAdvertisements = new TreeSet<>();
-      _sentIbgpAdvertisements = new TreeSet<>();
-   }
-
-   public void initRoutes() {
-      _routes = new TreeSet<>();
-   }
-
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
    public void setAsPathAccessLists(
          NavigableMap<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = asPathAccessLists;
-   }
-
-   @JsonProperty(BGP_PROCESS_VAR)
-   public void setBgpProcess(BgpProcess process) {
-      _bgpProcess = process;
    }
 
    @JsonProperty(COMMUNITIES_VAR)
@@ -428,17 +275,6 @@ public final class Configuration extends ComparableStructure<String> {
       _domainName = domainName;
    }
 
-   public void setGeneratedIpv6Routes(
-         NavigableSet<GeneratedRoute6> generatedIpv6Routes) {
-      _generatedIpv6Routes = generatedIpv6Routes;
-   }
-
-   @JsonProperty(GENERATED_ROUTES_VAR)
-   public void setGeneratedRoutes(
-         NavigableSet<GeneratedRoute> generatedRoutes) {
-      _generatedRoutes = generatedRoutes;
-   }
-
    @JsonProperty(IKE_GATEWAYS_VAR)
    public void setIkeGateways(NavigableMap<String, IkeGateway> ikeGateways) {
       _ikeGateways = ikeGateways;
@@ -452,11 +288,6 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(IKE_PROPOSALS_VAR)
    public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
       _ikeProposals = ikeProposals;
-   }
-
-   @JsonProperty(INTERFACES_VAR)
-   public void setInterfaces(NavigableMap<String, Interface> interfaces) {
-      _interfaces = interfaces;
    }
 
    public void setIp6AccessLists(
@@ -487,16 +318,6 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecVpns = ipsecVpns;
    }
 
-   @JsonProperty(ISIS_PROCESS_VAR)
-   public void setIsisProcess(IsisProcess process) {
-      _isisProcess = process;
-   }
-
-   @JsonProperty(OSPF_PROCESS_VAR)
-   public void setOspfProcess(OspfProcess process) {
-      _ospfProcess = process;
-   }
-
    public void setRoles(RoleSet roles) {
       _roles = roles;
    }
@@ -518,13 +339,12 @@ public final class Configuration extends ComparableStructure<String> {
       _routingPolicies = routingPolicies;
    }
 
-   @JsonProperty(STATIC_ROUTES_VAR)
-   public void setStaticRoutes(NavigableSet<StaticRoute> staticRoutes) {
-      _staticRoutes = staticRoutes;
-   }
-
    public void setVendorFamily(VendorFamily vendorFamily) {
       _vendorFamily = vendorFamily;
+   }
+
+   public void setVrfs(Map<String, Vrf> vrfs) {
+      _vrfs = vrfs;
    }
 
    @JsonProperty(ZONES_VAR)
@@ -546,4 +366,10 @@ public final class Configuration extends ComparableStructure<String> {
       jObj.put(BfJson.KEY_NODE_NAME, getHostname());
       return jObj;
    }
+
+   @JsonIgnore
+   public Vrf getDefaultVrf() {
+      return _vrfs.get(DEFAULT_VRF_NAME);
+   }
+   
 }

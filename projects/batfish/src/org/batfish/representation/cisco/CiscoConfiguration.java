@@ -93,6 +93,12 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private static final String BGP_NETWORK6_NETWORKS_FILTER_NAME = "~BGP_NETWORK6_NETWORKS_FILTER~";
 
+   private final Map<String, Vrf> _vrfs;
+
+   public Map<String, Vrf> getVrfs() {
+      return _vrfs;
+   }
+
    static final String BGP_PEER_GROUP = "bgp group";
 
    private static final String BGP_PEER_SESSION = "bgp session";
@@ -108,8 +114,6 @@ public class CiscoConfiguration extends VendorConfiguration {
    static final String IPV6_ACCESS_LIST = "ipv6 acl";
 
    public static final String MANAGEMENT_VRF_NAME = "management";
-
-   public static final String MASTER_VRF_NAME = "default";
 
    private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
@@ -132,8 +136,6 @@ public class CiscoConfiguration extends VendorConfiguration {
    }
 
    private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
-   private final Map<String, BgpProcess> _bgpProcesses;
 
    private final Set<String> _bgpVrfAggregateAddressRouteMaps;
 
@@ -177,8 +179,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, Interface> _interfaces;
 
-   private IsisProcess _isisProcess;
-
    private final Set<String> _lineAccessClassLists;
 
    private final Set<String> _lineIpv6AccessClassLists;
@@ -190,8 +190,6 @@ public class CiscoConfiguration extends VendorConfiguration {
    private final Set<String> _msdpPeerSaLists;
 
    private final Set<String> _ntpAccessGroups;
-
-   private OspfProcess _ospfProcess;
 
    private final Set<String> _pimAcls;
 
@@ -221,8 +219,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
 
-   private final Set<StaticRoute> _staticRoutes;
-
    private transient Set<String> _unimplementedFeatures;
 
    private transient Set<String> _unusedPeerGroups;
@@ -235,7 +231,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public CiscoConfiguration(Set<String> unimplementedFeatures) {
       _asPathAccessLists = new TreeMap<>();
-      _bgpProcesses = new TreeMap<>();
       _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
@@ -267,9 +262,9 @@ public class CiscoConfiguration extends VendorConfiguration {
       _standardAccessLists = new TreeMap<>();
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
-      _staticRoutes = new HashSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
+      _vrfs = new TreeMap<>();
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -340,10 +335,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
-   }
-
-   public final Map<String, BgpProcess> getBgpProcesses() {
-      return _bgpProcesses;
    }
 
    private Ip getBgpRouterId(final Configuration c, BgpProcess proc) {
@@ -452,10 +443,6 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _interfaces;
    }
 
-   public IsisProcess getIsisProcess() {
-      return _isisProcess;
-   }
-
    public Set<String> getLineAccessClassLists() {
       return _lineAccessClassLists;
    }
@@ -478,10 +465,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getNtpAccessGroups() {
       return _ntpAccessGroups;
-   }
-
-   public final OspfProcess getOspfProcess() {
-      return _ospfProcess;
    }
 
    public Set<String> getPimAcls() {
@@ -522,11 +505,20 @@ public class CiscoConfiguration extends VendorConfiguration {
       String currentMapName;
       RouteMap currentMap;
       // check ospf policies
-      if (_ospfProcess != null) {
-         OspfProcess oproc = _ospfProcess;
-         for (OspfRedistributionPolicy rp : oproc.getRedistributionPolicies()
-               .values()) {
-            currentMapName = rp.getMap();
+      for (Vrf vrf : _vrfs.values()) {
+         OspfProcess ospfProcess = vrf.getOspfProcess();
+         if (ospfProcess != null) {
+            for (OspfRedistributionPolicy rp : ospfProcess
+                  .getRedistributionPolicies().values()) {
+               currentMapName = rp.getMap();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
+               }
+            }
+            currentMapName = ospfProcess.getDefaultInformationOriginateMap();
             if (currentMapName != null) {
                currentMap = _routeMaps.get(currentMapName);
                if (currentMap != null) {
@@ -534,39 +526,32 @@ public class CiscoConfiguration extends VendorConfiguration {
                }
             }
          }
-         currentMapName = oproc.getDefaultInformationOriginateMap();
-         if (currentMapName != null) {
-            currentMap = _routeMaps.get(currentMapName);
-            if (currentMap != null) {
-               maps.add(currentMap);
-            }
-         }
-      }
-      // check bgp policies
-      for (BgpProcess bgpProcess : _bgpProcesses.values()) {
-         for (BgpRedistributionPolicy rp : bgpProcess
-               .getRedistributionPolicies().values()) {
-            currentMapName = rp.getMap();
-            if (currentMapName != null) {
-               currentMap = _routeMaps.get(currentMapName);
-               if (currentMap != null) {
-                  maps.add(currentMap);
+         // check bgp policies
+         for (BgpProcess bgpProcess : vrf.getBgpProcesses().values()) {
+            for (BgpRedistributionPolicy rp : bgpProcess
+                  .getRedistributionPolicies().values()) {
+               currentMapName = rp.getMap();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
                }
             }
-         }
-         for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-            currentMapName = pg.getInboundRouteMap();
-            if (currentMapName != null) {
-               currentMap = _routeMaps.get(currentMapName);
-               if (currentMap != null) {
-                  maps.add(currentMap);
+            for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
+               currentMapName = pg.getInboundRouteMap();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
                }
-            }
-            currentMapName = pg.getOutboundRouteMap();
-            if (currentMapName != null) {
-               currentMap = _routeMaps.get(currentMapName);
-               if (currentMap != null) {
-                  maps.add(currentMap);
+               currentMapName = pg.getOutboundRouteMap();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
                }
             }
          }
@@ -596,10 +581,6 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
       return _standardIpv6AccessLists;
-   }
-
-   public final Set<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
    }
 
    @Override
@@ -794,14 +775,6 @@ public class CiscoConfiguration extends VendorConfiguration {
    @Override
    public final void setHostname(String hostname) {
       _hostname = hostname;
-   }
-
-   public void setIsisProcess(IsisProcess isisProcess) {
-      _isisProcess = isisProcess;
-   }
-
-   public final void setOspfProcess(OspfProcess proc) {
-      _ospfProcess = proc;
    }
 
    @Override
@@ -1510,6 +1483,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          Map<String, IpAccessList> ipAccessLists, Configuration c) {
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             iface.getName(), c);
+      String vrfName = iface.getVrf();
+      Vrf vrf = _vrfs.get(vrfName);
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
       newIface.setBandwidth(iface.getBandwidth());
@@ -1522,6 +1497,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
       boolean level1 = false;
       boolean level2 = false;
+      IsisProcess _isisProcess = vrf.getIsisProcess();
       if (_isisProcess != null) {
          switch (_isisProcess.getLevel()) {
          case LEVEL_1:
@@ -2566,7 +2542,13 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          org.batfish.datamodel.Interface newInterface = toInterface(iface,
                c.getIpAccessLists(), c);
-         c.getInterfaces().put(newInterface.getName(), newInterface);
+         String vrfName = iface.getVrf();
+         if (vrfName == null) {
+            throw new BatfishException(
+                  "Missing vrf name for iface: '" + iface.getName() + "'");
+         }
+         c.getVrfs().get(vrfName).getInterfaces().put(newInterface.getName(),
+               newInterface);
       }
 
       // convert static routes

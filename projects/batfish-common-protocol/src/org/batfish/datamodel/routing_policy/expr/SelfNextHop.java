@@ -14,7 +14,7 @@ public class SelfNextHop implements NextHopExpr {
    @Override
    public Ip getNextHopIp(Environment environment) {
       // TODO: make work for dynamic sessions
-      return environment.getConfiguration().getBgpProcess().getNeighbors().get(
+      return environment.getVrf().getBgpProcess().getNeighbors().get(
             new Prefix(environment.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH))
             .getLocalIp();
    }

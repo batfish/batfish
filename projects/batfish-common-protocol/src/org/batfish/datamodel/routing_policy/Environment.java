@@ -5,6 +5,7 @@ import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Vrf;
 
 public class Environment {
 
@@ -30,10 +31,17 @@ public class Environment {
 
    private final Ip _peerAddress;
 
-   public Environment(Configuration configuration, AbstractRoute originalRoute,
+   private Vrf _vrf;
+   
+   public Vrf getVrf() {
+      return _vrf;
+   }
+   
+   public Environment(Configuration configuration, String vrf, AbstractRoute originalRoute,
          AbstractRoute6 originalRoute6, AbstractRouteBuilder<?> outputRoute,
          Ip peerAddress) {
       _configuration = configuration;
+      _vrf = configuration.getVrfs().get(vrf);
       _originalRoute = originalRoute;
       _outputRoute = outputRoute;
       _peerAddress = peerAddress;
