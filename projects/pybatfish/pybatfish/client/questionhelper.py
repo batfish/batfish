@@ -52,4 +52,10 @@ def _get_answer(questionJson, parametersJson, doDelta, differential):
     parametersJson["differential"] = str(differential)
     return commands.bf_answer_str(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
     
+def _get_pretty_answer(answerStr):
+    answerJson = json.loads(answerStr)
+    prettyAnswer = "Status: " + answerJson["status"] + "\n"
+    for answerElement in answerJson["answerElements"]:
+        prettyAnswer += answerElement["answer"] + "\n"
+    return prettyAnswer
     

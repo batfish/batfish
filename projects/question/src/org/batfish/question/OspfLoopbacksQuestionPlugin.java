@@ -17,10 +17,12 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
@@ -82,12 +84,34 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          return _running;
       }
 
+      private Object interfacesToString(String indent, String header,
+            SortedMap<String, SortedSet<String>> interfaces) {
+         StringBuilder sb = new StringBuilder(indent + header + "\n");
+         for (String node : interfaces.keySet()) {
+            for (String iface : interfaces.get(node)) {
+               sb.append(indent + indent + node + " : " + iface + "\n");
+            }
+         }
+         return sb.toString();
+      }
+
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");         
+         if (_active != null) 
+            sb.append(interfacesToString("  ", "Active loopbacks", _active));         
+         if (_exported != null) 
+            sb.append(interfacesToString("  ", "Exported loopbacks", _exported));         
+         if (_inactive != null) 
+            sb.append(interfacesToString("  ", "Inactive loopbacks", _inactive));         
+         if (_passive != null) 
+            sb.append(interfacesToString("  ", "Passive loopbacks", _passive));         
+         if (_running != null) 
+            sb.append(interfacesToString("  ", "Running loopbacks", _running));         
+         return sb.toString();
+         
       }
+
 
       public void setActive(SortedMap<String, SortedSet<String>> active) {
          _active = active;

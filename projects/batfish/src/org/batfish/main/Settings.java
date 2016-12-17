@@ -513,6 +513,8 @@ public final class Settings extends BaseSettings {
 
    private List<String> _predicates;
 
+   private boolean _prettyPrintAnswer;
+
    private boolean _printParseTree;
 
    private boolean _printSymmetricEdges;
@@ -987,6 +989,7 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_PRECOMPUTED_IBGP_NEIGHBORS_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATH, null);
       setDefaultProperty(ARG_PRECOMPUTED_ROUTES_PATHS, new String[] {});
+      setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
       setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
       setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
       setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
@@ -1163,6 +1166,8 @@ public final class Settings extends BaseSettings {
       addListOption(ARG_PRECOMPUTED_ROUTES_PATHS,
             "input paths to precomputed routes", ARGNAME_PATHS);
 
+      addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
+
       addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
       addBooleanOption(ARG_PRINT_SYMMETRIC_EDGES,
@@ -1323,6 +1328,7 @@ public final class Settings extends BaseSettings {
       _precomputedRoutesPath = getPathOptionValue(ARG_PRECOMPUTED_ROUTES_PATH);
       _precomputedRoutesPaths = getPathListOptionValue(
             ARG_PRECOMPUTED_ROUTES_PATHS);
+      _prettyPrintAnswer = getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
       _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
       _printSymmetricEdges = getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
       _questionName = getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
@@ -1367,6 +1373,10 @@ public final class Settings extends BaseSettings {
       _writeIbgpNeighbors = getBooleanOptionValue(
             BfConsts.COMMAND_WRITE_IBGP_NEIGHBORS);
       _writeRoutes = getBooleanOptionValue(BfConsts.COMMAND_WRITE_ROUTES);
+   }
+
+   public boolean prettyPrintAnswer() {
+      return _prettyPrintAnswer;
    }
 
    public boolean printParseTree() {

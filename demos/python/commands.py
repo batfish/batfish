@@ -17,13 +17,14 @@ import logging
 from pybatfish.client.commands import *
 
 bf_logger.setLevel(logging.DEBUG)
+bf_set_pretty_print_answers(True)
 
 print "load the testrig"
 print bf_init_testrig("test_rigs/example")
 
 print "################"
 print "# The configurations are converted to JSON using a vendor-independent data model:"
-print bf_answer("nodes", summary=False)
+print bf_answer("nodes", summary=False, nodeRegex="as2border1")
 
 print "# Some checks can be expressed as JsonPath queries on this JSON."
 print "# For instance, to check whether the MTU of each interface is 1500,"

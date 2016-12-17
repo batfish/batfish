@@ -52,4 +52,9 @@ public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
       return _second.getNode();
    }
 
+   @Override
+   public String toString() {
+      return "<" + getNode1() + ":" + getIp1() + ", " + getNode2() + ":"
+            + getIp2() + ">";
+   }
 }
