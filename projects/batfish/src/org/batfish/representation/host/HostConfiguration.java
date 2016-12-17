@@ -193,7 +193,7 @@ public class HostConfiguration extends VendorConfiguration {
 
       // add interfaces
       for (HostInterface hostInterface : _hostInterfaces.values()) {
-         _c.getInterfaces().put(hostInterface.getName(),
+         _c.getDefaultVrf().getInterfaces().put(hostInterface.getName(),
                hostInterface.toInterface(_c, _w));
       }
 
@@ -204,7 +204,7 @@ public class HostConfiguration extends VendorConfiguration {
 
       // apply acls to interfaces
       if (simple()) {
-         for (Interface iface : _c.getInterfaces().values()) {
+         for (Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
             iface.setIncomingFilter(_c.getIpAccessLists().get(FILTER_INPUT));
             iface.setOutgoingFilter(_c.getIpAccessLists().get(FILTER_OUTPUT));
          }
@@ -214,16 +214,16 @@ public class HostConfiguration extends VendorConfiguration {
       }
 
       if (_staticRoutes.isEmpty()) {
-         for (String ifaceName : _c.getInterfaces().keySet()) {
+         for (String ifaceName : _c.getDefaultVrf().getInterfaces().keySet()) {
             StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
                   AbstractRoute.NO_TAG);
             sr.setAdministrativeCost(
                   HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
-            _c.getStaticRoutes().add(sr);
+            _c.getDefaultVrf().getStaticRoutes().add(sr);
          }
       }
       else {
-         _c.getStaticRoutes().addAll(_staticRoutes.stream()
+         _c.getDefaultVrf().getStaticRoutes().addAll(_staticRoutes.stream()
                .map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
       }
       return _c;

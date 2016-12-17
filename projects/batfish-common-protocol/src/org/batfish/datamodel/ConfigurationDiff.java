@@ -36,12 +36,13 @@ public class ConfigurationDiff implements AnswerElement {
             a.getAsPathAccessLists(), b.getAsPathAccessLists());
       _communityListsDiff = new CommunityListsDiff(a.getCommunityLists(),
             b.getCommunityLists());
-      _interfaceListsDiff = new InterfaceListsDiff(a.getDefaultVrf().getInterfaces(),
+      _interfaceListsDiff = new InterfaceListsDiff(a.getInterfaces(),
             b.getDefaultVrf().getInterfaces());
       _ipAccessListsDiff = new IpAccessListsDiff(a.getIpAccessLists(),
             b.getIpAccessLists());
       _neighborListsDiff = new NeighborListsDiff(
-            a.getDefaultVrf().getBgpProcess().getNeighbors(), b.getDefaultVrf().getBgpProcess().getNeighbors());
+            a.getDefaultVrf().getBgpProcess().getNeighbors(),
+            b.getDefaultVrf().getBgpProcess().getNeighbors());
       _routeFilterListsDiff = new RouteFilterListsDiff(a.getRouteFilterLists(),
             b.getRouteFilterLists());
       _routingPolicyListsDiff = new RoutingPolicyListsDiff(

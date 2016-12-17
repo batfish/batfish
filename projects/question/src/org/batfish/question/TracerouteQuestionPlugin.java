@@ -15,7 +15,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
@@ -98,6 +97,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          Set<FlowBuilder> flowBuilders = question.getFlowBuilders();
          Map<String, Configuration> configurations = null;
          for (FlowBuilder flowBuilder : flowBuilders) {
+            // TODO: better automatic source ip, considering VRFs and routing
             if (flowBuilder.getSrcIp().equals(Ip.AUTO)) {
                if (configurations == null) {
                   _batfish.pushBaseEnvironment();
@@ -109,12 +109,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                Configuration node = (hostname == null) ? null
                      : configurations.get(hostname);
                if (node != null) {
-                  Set<Ip> ips = new TreeSet<>();
-                  for (Interface i : node.getInterfaces().values()) {
-                     ips.addAll(i.getAllPrefixes().stream()
-                           .map(prefix -> prefix.getAddress())
-                           .collect(Collectors.toSet()));
-                  }
+                  Set<Ip> ips = new TreeSet<>(node.getVrfs().values().stream()
+                        .flatMap(v -> v.getInterfaces().values().stream())
+                        .flatMap(i -> i.getAllPrefixes().stream())
+                        .map(prefix -> prefix.getAddress())
+                        .collect(Collectors.toSet()));
                   if (!ips.isEmpty()) {
                      Ip lowestIp = ips.toArray(new Ip[] {})[0];
                      flowBuilder.setSrcIp(lowestIp);
@@ -157,6 +156,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     * @param ingressNode
     *           Name of the node where the traceroute should be done from. This
     *           parameter is mandatory and has no default value.
+    * @param ingressVrf
+    *           Name of the VRF to use on the ingress node. If unspecified, uses
+    *           the default VRF.
     * @param dscp
     *           Details coming
     * @param dstIp
@@ -221,6 +223,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
       private static final String INGRESS_NODE_VAR = "ingressNode";
 
+      private static final String INGRESS_VRF_VAR = "ingressVrf";
+
       private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
       private static final String SRC_IP_VAR = "srcIp";
@@ -258,6 +262,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       private Integer _icmpType;
 
       private String _ingressNode;
+
+      private String _ingressVrf;
 
       private IpProtocol _ipProtocol;
 
@@ -308,6 +314,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          }
          if (_ingressNode != null) {
             flowBuilder.setIngressNode(_ingressNode);
+         }
+         if (_ingressVrf != null) {
+            flowBuilder.setIngressVrf(_ingressVrf);
          }
          if (_ipProtocol != null) {
             flowBuilder.setIpProtocol(_ipProtocol);
@@ -396,6 +405,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
          return _ingressNode;
       }
 
+      @JsonProperty(INGRESS_VRF_VAR)
+      public String getIngressVrf() {
+         return _ingressVrf;
+      }
+
       @JsonProperty(IP_PROTOCOL_VAR)
       public IpProtocol getIpProtocol() {
          return _ipProtocol;
@@ -472,6 +486,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             String retString = String.format("traceroute %singressNode=%s",
                   prettyPrintBase(), _ingressNode);
             // we only print "interesting" values
+            if (_ingressVrf != null) {
+               retString += String.format(" | ingressVrf=%s", _ingressVrf);
+            }
             if (_dscp != null) {
                retString += String.format(" | dscp=%s", _dscp);
             }
@@ -572,6 +589,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
+      public void setIngressVrf(String ingressVrf) {
+         _ingressVrf = ingressVrf;
+      }
+
+      @Override
       public void setIpProtocol(IpProtocol ipProtocol) {
          _ipProtocol = ipProtocol;
       }
@@ -608,6 +630,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
                   break;
                case INGRESS_NODE_VAR:
                   setIngressNode(parameters.getString(paramKey));
+                  break;
+               case INGRESS_VRF_VAR:
+                  setIngressVrf(parameters.getString(paramKey));
                   break;
                case IP_PROTOCOL_VAR:
                   setIpProtocol(
@@ -700,6 +725,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       public void setTcpFlagsUrg(Boolean tcpFlagsUrg) {
          _tcpFlagsUrg = tcpFlagsUrg;
       }
+
    }
 
    @Override

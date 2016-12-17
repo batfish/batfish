@@ -32,14 +32,10 @@ public class Environment {
    private final Ip _peerAddress;
 
    private Vrf _vrf;
-   
-   public Vrf getVrf() {
-      return _vrf;
-   }
-   
-   public Environment(Configuration configuration, String vrf, AbstractRoute originalRoute,
-         AbstractRoute6 originalRoute6, AbstractRouteBuilder<?> outputRoute,
-         Ip peerAddress) {
+
+   public Environment(Configuration configuration, String vrf,
+         AbstractRoute originalRoute, AbstractRoute6 originalRoute6,
+         AbstractRouteBuilder<?> outputRoute, Ip peerAddress) {
       _configuration = configuration;
       _vrf = configuration.getVrfs().get(vrf);
       _originalRoute = originalRoute;
@@ -89,6 +85,10 @@ public class Environment {
 
    public Ip getPeerAddress() {
       return _peerAddress;
+   }
+
+   public Vrf getVrf() {
+      return _vrf;
    }
 
    public void setBuffered(boolean buffered) {

@@ -304,6 +304,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
+   private String _vrf;
+
    private Zone _zone;
 
    @SuppressWarnings("unused")
@@ -541,6 +543,10 @@ public final class Interface extends ComparableStructure<String> {
       return _switchportTrunkEncapsulation;
    }
 
+   public String getVrf() {
+      return _vrf;
+   }
+
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(ZONE_VAR)
    public Zone getZone() {
@@ -689,6 +695,10 @@ public final class Interface extends ComparableStructure<String> {
    public void setSwitchportTrunkEncapsulation(
          SwitchportEncapsulationType encapsulation) {
       _switchportTrunkEncapsulation = encapsulation;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
    }
 
    @JsonProperty(ZONE_VAR)

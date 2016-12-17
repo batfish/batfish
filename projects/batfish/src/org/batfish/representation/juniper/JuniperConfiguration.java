@@ -36,6 +36,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -61,10 +62,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private static final int DEFAULT_AGGREGATE_ROUTE_PREFERENCE = 130;
 
-   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
-
-   private static final String DEFAULT_ROUTING_INSTANCE = "<default-routing-instance>";
-
    private static final String FILTER = "filter";
 
    private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
@@ -80,8 +77,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
    private static final String IPSEC_POLICY = "ipsec-policy";
 
    private static final String IPSEC_PROPOSAL = "ipsec-proposal";
-
-   private static final String OSPF_EXPORT_POLICY_NAME = "~OSPF_EXPORT_POLICY~";
 
    private static final String POLICY_STATEMENT = "policy-statement";
 
@@ -162,7 +157,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _applications = new TreeMap<>();
       _communityLists = new TreeMap<>();
       _defaultCrossZoneAction = LineAction.ACCEPT;
-      _defaultRoutingInstance = new RoutingInstance(DEFAULT_ROUTING_INSTANCE);
+      _defaultRoutingInstance = new RoutingInstance(
+            Configuration.DEFAULT_VRF_NAME);
       _filters = new TreeMap<>();
       _globalAddressBooks = new TreeMap<>();
       _ignoredPrefixLists = new HashSet<>();
@@ -178,18 +174,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _roles = new RoleSet();
       _routeFilters = new TreeMap<>();
       _routingInstances = new TreeMap<>();
+      _routingInstances.put(Configuration.DEFAULT_VRF_NAME,
+            _defaultRoutingInstance);
       _unimplementedFeatures = unimplementedFeatures;
       _zones = new TreeMap<>();
    }
 
-   private BgpProcess createBgpProcess() {
+   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
+      String vrfName = routingInstance.getName();
+      Vrf vrf = _c.getVrfs().get(vrfName);
       BgpProcess proc = new BgpProcess();
-      BgpGroup mg = _defaultRoutingInstance.getMasterBgpGroup();
+      BgpGroup mg = routingInstance.getMasterBgpGroup();
 
       // set up default export policy (accept bgp routes)
+      String defaultBgpExportPolicyName = "~DEFAULT_BGP_IMPORT_POLICY:"
+            + vrfName + "~";
       RoutingPolicy defaultBgpExportPolicy = new RoutingPolicy(
-            DEFAULT_BGP_EXPORT_POLICY_NAME);
-      _c.getRoutingPolicies().put(DEFAULT_BGP_EXPORT_POLICY_NAME,
+            defaultBgpExportPolicyName);
+      _c.getRoutingPolicies().put(defaultBgpExportPolicyName,
             defaultBgpExportPolicy);
       If defaultBgpExportPolicyConditional = new If();
       defaultBgpExportPolicy.getStatements()
@@ -203,25 +205,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
       CallExpr callDefaultBgpExportPolicy = new CallExpr(
-            DEFAULT_BGP_EXPORT_POLICY_NAME);
+            defaultBgpExportPolicyName);
 
       if (mg.getLocalAs() == null) {
-         Integer defaultRoutingInstanceAs = _defaultRoutingInstance.getAs();
+         Integer defaultRoutingInstanceAs = routingInstance.getAs();
          if (defaultRoutingInstanceAs == null) {
             _w.redFlag(
                   "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system");
          }
          else {
-            mg.setLocalAs(_defaultRoutingInstance.getAs());
+            mg.setLocalAs(routingInstance.getAs());
          }
       }
-      for (IpBgpGroup ig : _defaultRoutingInstance.getIpBgpGroups().values()) {
+      for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
          ig.cascadeInheritance();
       }
       _unreferencedBgpGroups = new TreeSet<>();
       int fakeIpCounter = 0;
-      for (Entry<String, NamedBgpGroup> e : _defaultRoutingInstance
-            .getNamedBgpGroups().entrySet()) {
+      for (Entry<String, NamedBgpGroup> e : routingInstance.getNamedBgpGroups()
+            .entrySet()) {
          fakeIpCounter++;
          String name = e.getKey();
          NamedBgpGroup group = e.getValue();
@@ -231,10 +233,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             IpBgpGroup dummy = new IpBgpGroup(fakeIp);
             dummy.setParent(group);
             dummy.cascadeInheritance();
-            _defaultRoutingInstance.getIpBgpGroups().put(fakeIp, dummy);
+            routingInstance.getIpBgpGroups().put(fakeIp, dummy);
          }
       }
-      for (Entry<Ip, IpBgpGroup> e : _defaultRoutingInstance.getIpBgpGroups()
+      for (Entry<Ip, IpBgpGroup> e : routingInstance.getIpBgpGroups()
             .entrySet()) {
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
@@ -351,7 +353,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
          if (localAddress == null) {
             // assign the ip of the interface that is likely connected to this
             // peer
-            outerloop: for (org.batfish.datamodel.Interface iface : _c
+            outerloop: for (org.batfish.datamodel.Interface iface : vrf
                   .getInterfaces().values()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
                   if (prefix.contains(ip)) {
@@ -386,7 +388,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return proc;
    }
 
-   private IsisProcess createIsisProcess(IsoAddress netAddress) {
+   private IsisProcess createIsisProcess(RoutingInstance routingInstance,
+         IsoAddress netAddress) {
       IsisProcess newProc = new IsisProcess();
       // newProc.setNetAddress(netAddress);
       // IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
@@ -419,13 +422,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return newProc;
    }
 
-   private OspfProcess createOspfProcess() {
+   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
       OspfProcess newProc = new OspfProcess();
+      String vrfName = routingInstance.getName();
       // export policies
-      RoutingPolicy ospfExportPolicy = new RoutingPolicy(
-            OSPF_EXPORT_POLICY_NAME);
-      _c.getRoutingPolicies().put(OSPF_EXPORT_POLICY_NAME, ospfExportPolicy);
-      newProc.setExportPolicy(OSPF_EXPORT_POLICY_NAME);
+      String ospfExportPolicyName = "~OSPF_EXPORT_POLICY" + vrfName + "~";
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName);
+      _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
+      newProc.setExportPolicy(ospfExportPolicyName);
       If ospfExportPolicyConditional = new If();
       // TODO: set default metric-type based on ospf process setttings
       ospfExportPolicy.getStatements().add(ospfExportPolicyConditional);
@@ -435,8 +439,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .add(Statements.ExitAccept.toStaticStatement());
       ospfExportPolicyConditional.getFalseStatements()
             .add(Statements.ExitReject.toStaticStatement());
-      for (String exportPolicyName : _defaultRoutingInstance
-            .getOspfExportPolicies()) {
+      for (String exportPolicyName : routingInstance.getOspfExportPolicies()) {
          PolicyStatement exportPolicy = _policyStatements.get(exportPolicyName);
          if (exportPolicy == null) {
             undefined(
@@ -446,7 +449,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
          }
          else {
             setPolicyStatementReferent(exportPolicyName,
-                  _defaultRoutingInstance.getOspfExportPolicies(),
+                  routingInstance.getOspfExportPolicies(),
                   "OSPF export policies");
             CallExpr callPolicy = new CallExpr(exportPolicyName);
             matchSomeExportPolicy.getDisjuncts().add(callPolicy);
@@ -454,8 +457,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       // areas
       Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc.getAreas();
-      for (Entry<Ip, OspfArea> e : _defaultRoutingInstance.getOspfAreas()
-            .entrySet()) {
+      for (Entry<Ip, OspfArea> e : routingInstance.getOspfAreas().entrySet()) {
          Ip areaIp = e.getKey();
          long areaLong = areaIp.asLong();
          // OspfArea area = e.getValue();
@@ -464,20 +466,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
          newAreas.put(areaLong, newArea);
       }
       // place interfaces into areas
-      for (Entry<String, Interface> e : _defaultRoutingInstance.getInterfaces()
+      for (Entry<String, Interface> e : routingInstance.getInterfaces()
             .entrySet()) {
          String name = e.getKey();
          Interface iface = e.getValue();
-         placeInterfaceIntoArea(newAreas, name, iface);
+         placeInterfaceIntoArea(newAreas, name, iface, vrfName);
          for (Entry<String, Interface> eUnit : iface.getUnits().entrySet()) {
             String unitName = eUnit.getKey();
             Interface unitIface = eUnit.getValue();
-            placeInterfaceIntoArea(newAreas, unitName, unitIface);
+            placeInterfaceIntoArea(newAreas, unitName, unitIface, vrfName);
          }
       }
-      newProc.setRouterId(_defaultRoutingInstance.getRouterId());
-      newProc.setReferenceBandwidth(
-            _defaultRoutingInstance.getOspfReferenceBandwidth());
+      newProc.setRouterId(routingInstance.getRouterId());
+      newProc
+            .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
       return newProc;
    }
 
@@ -598,8 +600,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private void placeInterfaceIntoArea(
          Map<Long, org.batfish.datamodel.OspfArea> newAreas, String name,
-         Interface iface) {
-      org.batfish.datamodel.Interface newIface = _c.getInterfaces().get(name);
+         Interface iface, String vrfName) {
+      Vrf vrf = _c.getVrfs().get(vrfName);
+      org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(name);
       Ip ospfArea = iface.getOspfActiveArea();
       boolean setCost = false;
       if (ospfArea != null) {
@@ -1518,33 +1521,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
          _c.getIpsecVpns().put(name, newIpsecVpn);
       }
 
-      // static routes
-      for (StaticRoute route : _defaultRoutingInstance.getRibs()
-            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes()
-            .values()) {
-         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(
-               route);
-         _c.getStaticRoutes().add(newStaticRoute);
-      }
-
-      // aggregate routes
-      for (AggregateRoute route : _defaultRoutingInstance.getRibs()
-            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes()
-            .values()) {
-         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(
-               route);
-         _c.getGeneratedRoutes().add(newAggregateRoute);
-      }
-
-      // generated routes
-      for (GeneratedRoute route : _defaultRoutingInstance.getRibs()
-            .get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes()
-            .values()) {
-         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(
-               route);
-         _c.getGeneratedRoutes().add(newGeneratedRoute);
-      }
-
       // zones
       for (Zone zone : _zones.values()) {
          org.batfish.datamodel.Zone newZone = toZone(zone);
@@ -1555,35 +1531,66 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setDefaultCrossZoneAction(_defaultCrossZoneAction);
       _c.setDefaultInboundAction(_defaultInboundAction);
 
-      // create ospf process
-      if (_defaultRoutingInstance.getOspfAreas().size() > 0) {
-         OspfProcess oproc = createOspfProcess();
-         _c.setOspfProcess(oproc);
-      }
+      _routingInstances.forEach((riName, ri) -> {
+         Vrf vrf = _c.getVrfs().get(riName);
 
-      // create is-is process
-      // is-is runs only if iso address is configured on lo0 unit 0
-      Interface loopback0 = _defaultRoutingInstance.getInterfaces()
-            .get(FIRST_LOOPBACK_INTERFACE_NAME);
-      if (loopback0 != null) {
-         Interface loopback0unit0 = loopback0.getUnits()
-               .get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-         if (loopback0unit0 != null) {
-            IsoAddress isisNet = loopback0unit0.getIsoAddress();
-            if (isisNet != null) {
-               // now we should create is-is process
-               IsisProcess proc = createIsisProcess(isisNet);
-               _c.setIsisProcess(proc);
+         // static routes
+         for (StaticRoute route : _defaultRoutingInstance.getRibs()
+               .get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes()
+               .values()) {
+            org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(
+                  route);
+            vrf.getStaticRoutes().add(newStaticRoute);
+         }
+
+         // aggregate routes
+         for (AggregateRoute route : _defaultRoutingInstance.getRibs()
+               .get(RoutingInformationBase.RIB_IPV4_UNICAST)
+               .getAggregateRoutes().values()) {
+            org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(
+                  route);
+            vrf.getGeneratedRoutes().add(newAggregateRoute);
+         }
+
+         // generated routes
+         for (GeneratedRoute route : _defaultRoutingInstance.getRibs()
+               .get(RoutingInformationBase.RIB_IPV4_UNICAST)
+               .getGeneratedRoutes().values()) {
+            org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(
+                  route);
+            vrf.getGeneratedRoutes().add(newGeneratedRoute);
+         }
+
+         // create ospf process
+         if (ri.getOspfAreas().size() > 0) {
+            OspfProcess oproc = createOspfProcess(ri);
+            vrf.setOspfProcess(oproc);
+         }
+
+         // create is-is process
+         // is-is runs only if iso address is configured on lo0 unit 0
+         Interface loopback0 = _defaultRoutingInstance.getInterfaces()
+               .get(FIRST_LOOPBACK_INTERFACE_NAME);
+         if (loopback0 != null) {
+            Interface loopback0unit0 = loopback0.getUnits()
+                  .get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
+            if (loopback0unit0 != null) {
+               IsoAddress isisNet = loopback0unit0.getIsoAddress();
+               if (isisNet != null) {
+                  // now we should create is-is process
+                  IsisProcess proc = createIsisProcess(ri, isisNet);
+                  vrf.setIsisProcess(proc);
+               }
             }
          }
-      }
 
-      // create bgp process
-      if (_defaultRoutingInstance.getNamedBgpGroups().size() > 0
-            || _defaultRoutingInstance.getIpBgpGroups().size() > 0) {
-         BgpProcess proc = createBgpProcess();
-         _c.setBgpProcess(proc);
-      }
+         // create bgp process
+         if (ri.getNamedBgpGroups().size() > 0
+               || ri.getIpBgpGroups().size() > 0) {
+            BgpProcess proc = createBgpProcess(ri);
+            vrf.setBgpProcess(proc);
+         }
+      });
 
       // mark forwarding table export policy if it exists
       String forwardingTableExportPolicyName = _defaultRoutingInstance
@@ -1704,18 +1711,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
    }
 
    private void warnAndDisableUnreferencedStInterfaces() {
-      for (Interface i : _defaultRoutingInstance.getInterfaces().values()) {
-         for (Entry<String, Interface> e : i.getUnits().entrySet()) {
-            String name = e.getKey();
-            Interface iface = e.getValue();
-            if (org.batfish.datamodel.Interface.computeInterfaceType(name,
-                  _vendor) == InterfaceType.VPN && iface.isUnused()) {
-               unused("Unused vpn tunnel interface: '" + name + "'", INTERFACE,
-                     name);
-               _c.getInterfaces().remove(name);
+      _routingInstances.forEach((riName, ri) -> {
+         for (Interface i : ri.getInterfaces().values()) {
+            for (Entry<String, Interface> e : i.getUnits().entrySet()) {
+               String name = e.getKey();
+               Interface iface = e.getValue();
+               if (org.batfish.datamodel.Interface.computeInterfaceType(name,
+                     _vendor) == InterfaceType.VPN && iface.isUnused()) {
+                  unused("Unused vpn tunnel interface: '" + name + "'",
+                        INTERFACE, name);
+                  _c.getVrfs().get(riName).getInterfaces().remove(name);
+               }
             }
          }
-      }
+      });
    }
 
    private void warnEmptyPrefixLists() {

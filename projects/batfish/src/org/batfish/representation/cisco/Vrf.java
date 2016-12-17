@@ -1,45 +1,18 @@
 package org.batfish.representation.cisco;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
 
-public class Vrf extends ComparableStructure<String> {
+public final class Vrf extends ComparableStructure<String> {
 
-   public final Set<StaticRoute> getStaticRoutes() {
-      return _staticRoutes;
-   }
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
 
-   public final Map<String, BgpProcess> getBgpProcesses() {
-      return _bgpProcesses;
-   }
-
-   private final Map<String, BgpProcess> _bgpProcesses;
-
-   public Vrf(String name) {
-      super(name);
-      _bgpProcesses = new TreeMap<>();
-      _staticRoutes = new HashSet<>();
-   }
-
-   public IsisProcess getIsisProcess() {
-      return _isisProcess;
-   }
-
-   public final OspfProcess getOspfProcess() {
-      return _ospfProcess;
-   }
-
-   public void setIsisProcess(IsisProcess isisProcess) {
-      _isisProcess = isisProcess;
-   }
-
-   public final void setOspfProcess(OspfProcess proc) {
-      _ospfProcess = proc;
-   }
+   private BgpProcess _bgpProcess;
 
    private IsisProcess _isisProcess;
 
@@ -47,9 +20,37 @@ public class Vrf extends ComparableStructure<String> {
 
    private final Set<StaticRoute> _staticRoutes;
 
-   /**
-    * 
-    */
-   private static final long serialVersionUID = 1L;
+   public Vrf(String name) {
+      super(name);
+      _staticRoutes = new HashSet<>();
+   }
+
+   public BgpProcess getBgpProcess() {
+      return _bgpProcess;
+   }
+
+   public IsisProcess getIsisProcess() {
+      return _isisProcess;
+   }
+
+   public OspfProcess getOspfProcess() {
+      return _ospfProcess;
+   }
+
+   public Set<StaticRoute> getStaticRoutes() {
+      return _staticRoutes;
+   }
+
+   public void setBgpProcess(BgpProcess bgpProcess) {
+      _bgpProcess = bgpProcess;
+   }
+
+   public void setIsisProcess(IsisProcess isisProcess) {
+      _isisProcess = isisProcess;
+   }
+
+   public void setOspfProcess(OspfProcess proc) {
+      _ospfProcess = proc;
+   }
 
 }

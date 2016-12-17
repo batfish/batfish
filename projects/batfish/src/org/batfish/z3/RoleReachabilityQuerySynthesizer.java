@@ -3,7 +3,7 @@ package org.batfish.z3;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.ExternalDestinationIpExpr;
 import org.batfish.z3.node.ExternalSourceIpExpr;
-import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.QueryExpr;
 import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RoleAcceptExpr;
@@ -14,8 +14,9 @@ import com.microsoft.z3.Z3Exception;
 
 public class RoleReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
-   public RoleReachabilityQuerySynthesizer(String hostname, String role) {
-      OriginateExpr originate = new OriginateExpr(hostname);
+   public RoleReachabilityQuerySynthesizer(String hostname, String vrf,
+         String role) {
+      OriginateVrfExpr originate = new OriginateVrfExpr(hostname, vrf);
       RoleAcceptExpr roleAccept = new RoleAcceptExpr(role);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();

@@ -24,7 +24,7 @@ public class Vrf extends ComparableStructure<String> {
    private static final String OSPF_PROCESS_VAR = "ospfProcess";
 
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 1L;
 

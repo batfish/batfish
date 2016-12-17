@@ -20,6 +20,8 @@ public class RouteBuilder {
 
    private int _tag;
 
+   private String _vrf;
+
    public RouteBuilder() {
       _administrativeCost = Route.UNSET_ROUTE_ADMIN;
       _cost = Route.UNSET_ROUTE_COST;
@@ -30,8 +32,8 @@ public class RouteBuilder {
    }
 
    public Route build() {
-      return new Route(_node, _network, _nextHopIp, _nextHop, _nextHopInterface,
-            _administrativeCost, _cost, _protocol, _tag);
+      return new Route(_node, _vrf, _network, _nextHopIp, _nextHop,
+            _nextHopInterface, _administrativeCost, _cost, _protocol, _tag);
    }
 
    public void setAdministrativeCost(int administrativeCost) {
@@ -68,6 +70,10 @@ public class RouteBuilder {
 
    public void setTag(int tag) {
       _tag = tag;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
    }
 
 }

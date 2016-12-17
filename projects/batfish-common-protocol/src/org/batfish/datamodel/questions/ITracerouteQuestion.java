@@ -7,11 +7,13 @@ public interface ITracerouteQuestion extends IQuestion {
 
    static final String NAME = "traceroute";
 
-   void setDstIp(Ip ip);
+   void setDstIp(Ip dstIp);
 
-   void setDstPort(Integer port);
+   void setDstPort(Integer dstPort);
 
-   void setIngressNode(String srcNode);
+   void setIngressNode(String ingressNode);
+
+   void setIngressVrf(String ingressVrf);
 
    void setIpProtocol(IpProtocol ipProtocol);
 

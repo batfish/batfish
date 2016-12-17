@@ -8,7 +8,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -21,6 +20,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -131,37 +131,36 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
          _batfish.checkConfigurations();
          Map<String, Configuration> configurations = _batfish
                .loadConfigurations();
-         for (Entry<String, Configuration> e : configurations.entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
-            }
-            Configuration c = e.getValue();
-            MultiSet<Prefix> nodePrefixes = new TreeMultiSet<>();
-            for (Interface iface : c.getInterfaces().values()) {
-               Set<Prefix> ifaceBasePrefixes = new HashSet<>();
-               if (iface.getActive()) {
-                  for (Prefix prefix : iface.getAllPrefixes()) {
-                     Prefix basePrefix = prefix.getNetworkPrefix();
-                     if (!ifaceBasePrefixes.contains(basePrefix)) {
-                        ifaceBasePrefixes.add(basePrefix);
-                        nodePrefixes.add(basePrefix);
+         configurations.forEach((hostname, c) -> {
+            if (nodeRegex.matcher(hostname).matches()) {
+               for (Vrf vrf : c.getVrfs().values()) {
+                  MultiSet<Prefix> nodePrefixes = new TreeMultiSet<>();
+                  for (Interface iface : vrf.getInterfaces().values()) {
+                     Set<Prefix> ifaceBasePrefixes = new HashSet<>();
+                     if (iface.getActive()) {
+                        for (Prefix prefix : iface.getAllPrefixes()) {
+                           Prefix basePrefix = prefix.getNetworkPrefix();
+                           if (!ifaceBasePrefixes.contains(basePrefix)) {
+                              ifaceBasePrefixes.add(basePrefix);
+                              nodePrefixes.add(basePrefix);
+                           }
+                        }
+                     }
+                  }
+                  for (Interface iface : vrf.getInterfaces().values()) {
+                     for (Prefix prefix : iface.getAllPrefixes()) {
+                        Prefix basePrefix = prefix.getNetworkPrefix();
+                        if (nodePrefixes.count(basePrefix) > 1) {
+                           Ip address = prefix.getAddress();
+                           String interfaceName = iface.getName();
+                           answerElement.add(hostname, basePrefix,
+                                 interfaceName, address);
+                        }
                      }
                   }
                }
             }
-            for (Interface iface : c.getInterfaces().values()) {
-               for (Prefix prefix : iface.getAllPrefixes()) {
-                  Prefix basePrefix = prefix.getNetworkPrefix();
-                  if (nodePrefixes.count(basePrefix) > 1) {
-                     Ip address = prefix.getAddress();
-                     String interfaceName = iface.getName();
-                     answerElement.add(hostname, basePrefix, interfaceName,
-                           address);
-                  }
-               }
-            }
-         }
+         });
          return answerElement;
       }
    }
@@ -240,6 +239,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
       }
+
    }
 
    @Override

@@ -229,12 +229,13 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
          String externalInterfaceName = "external" + idNum;
          Interface externalInterface = new Interface(externalInterfaceName,
                vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getInterfaces().put(externalInterfaceName,
-               externalInterface);
+         vpnGatewayCfgNode.getDefaultVrf().getInterfaces()
+               .put(externalInterfaceName, externalInterface);
          String vpnInterfaceName = "vpn" + idNum;
          Interface vpnInterface = new Interface(vpnInterfaceName,
                vpnGatewayCfgNode);
-         vpnGatewayCfgNode.getInterfaces().put(vpnInterfaceName, vpnInterface);
+         vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName,
+               vpnInterface);
 
          // Set fields within representation structures
 
@@ -280,10 +281,10 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
          // bgp (if configured)
          if (ipsecTunnel.getVgwBgpAsn() != -1) {
-            BgpProcess proc = vpnGatewayCfgNode.getBgpProcess();
+            BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
             if (proc == null) {
                proc = new BgpProcess();
-               vpnGatewayCfgNode.setBgpProcess(proc);
+               vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
             }
             BgpNeighbor cgBgpNeighbor = new BgpNeighbor(
                   ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
@@ -341,7 +342,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                   ipsecTunnel.getCgwInsideAddress(), null,
                   Route.DEFAULT_STATIC_ROUTE_ADMIN,
                   Route.DEFAULT_STATIC_ROUTE_COST);
-            vpnGatewayCfgNode.getStaticRoutes().add(staticRoute);
+            vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes()
+                  .add(staticRoute);
          }
       }
    }

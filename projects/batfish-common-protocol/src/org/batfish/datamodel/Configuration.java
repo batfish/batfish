@@ -36,6 +36,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String DEFAULT_INBOUND_ACTION_VAR = "defaultInboundAction";
 
+   public static final String DEFAULT_VRF_NAME = "default";
+
    private static final String IKE_GATEWAYS_VAR = "ikeGateways";
 
    private static final String IKE_POLICIES_VAR = "ikePolicies";
@@ -62,9 +64,9 @@ public final class Configuration extends ComparableStructure<String> {
 
    private static final String ZONES_VAR = "zones";
 
-   public static final String DEFAULT_VRF_NAME = "default";
-
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
+
+   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
    private NavigableSet<Long> _communities;
 
@@ -84,6 +86,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, IkeProposal> _ikeProposals;
 
+   private NavigableMap<String, Interface> _interfaces;
+
    private NavigableMap<String, Ip6AccessList> _ip6AccessLists;
 
    private NavigableMap<String, IpAccessList> _ipAccessLists;
@@ -94,13 +98,33 @@ public final class Configuration extends ComparableStructure<String> {
 
    private NavigableMap<String, IpsecVpn> _ipsecVpns;
 
+   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
+
    private RoleSet _roles;
 
    private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
    private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
+   private transient NavigableSet<Route> _routes;
+
    private NavigableMap<String, RoutingPolicy> _routingPolicies;
+
+   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
+
+   private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
    private VendorFamily _vendorFamily;
 
@@ -117,6 +141,7 @@ public final class Configuration extends ComparableStructure<String> {
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
       _ikeProposals = new TreeMap<>();
+      _interfaces = new TreeMap<>();
       _ipAccessLists = new TreeMap<>();
       _ip6AccessLists = new TreeMap<>();
       _ipsecPolicies = new TreeMap<>();
@@ -135,6 +160,11 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonPropertyDescription("Ari: Key details go here.")
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
+      return _bgpAdvertisements;
    }
 
    @JsonProperty(COMMUNITIES_VAR)
@@ -162,6 +192,11 @@ public final class Configuration extends ComparableStructure<String> {
       return _defaultInboundAction;
    }
 
+   @JsonIgnore
+   public Vrf getDefaultVrf() {
+      return _vrfs.get(DEFAULT_VRF_NAME);
+   }
+
    public String getDomainName() {
       return _domainName;
    }
@@ -184,6 +219,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(IKE_PROPOSALS_VAR)
    public NavigableMap<String, IkeProposal> getIkeProposals() {
       return _ikeProposals;
+   }
+
+   public NavigableMap<String, Interface> getInterfaces() {
+      return _interfaces;
    }
 
    public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
@@ -210,6 +249,36 @@ public final class Configuration extends ComparableStructure<String> {
       return _ipsecVpns;
    }
 
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
+      return _originatedAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
+      return _originatedEbgpAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
+      return _originatedIbgpAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
+      return _receivedAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
+      return _receivedEbgpAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
+      return _receivedIbgpAdvertisements;
+   }
+
    @JsonProperty(ROLES_VAR)
    public RoleSet getRoles() {
       return _roles;
@@ -224,9 +293,29 @@ public final class Configuration extends ComparableStructure<String> {
       return _routeFilterLists;
    }
 
+   @JsonIgnore
+   public NavigableSet<Route> getRoutes() {
+      return _routes;
+   }
+
    @JsonProperty(ROUTING_POLICIES_VAR)
    public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
       return _routingPolicies;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
+      return _sentAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
+      return _sentEbgpAdvertisements;
+   }
+
+   @JsonIgnore
+   public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
+      return _sentIbgpAdvertisements;
    }
 
    public VendorFamily getVendorFamily() {
@@ -240,6 +329,23 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(ZONES_VAR)
    public NavigableMap<String, Zone> getZones() {
       return _zones;
+   }
+
+   public void initBgpAdvertisements() {
+      _bgpAdvertisements = new TreeSet<>();
+      _originatedAdvertisements = new TreeSet<>();
+      _originatedEbgpAdvertisements = new TreeSet<>();
+      _originatedIbgpAdvertisements = new TreeSet<>();
+      _receivedAdvertisements = new TreeSet<>();
+      _receivedEbgpAdvertisements = new TreeSet<>();
+      _receivedIbgpAdvertisements = new TreeSet<>();
+      _sentAdvertisements = new TreeSet<>();
+      _sentEbgpAdvertisements = new TreeSet<>();
+      _sentIbgpAdvertisements = new TreeSet<>();
+   }
+
+   public void initRoutes() {
+      _routes = new TreeSet<>();
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
@@ -288,6 +394,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonProperty(IKE_PROPOSALS_VAR)
    public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
       _ikeProposals = ikeProposals;
+   }
+
+   public void setInterfaces(NavigableMap<String, Interface> interfaces) {
+      _interfaces = interfaces;
    }
 
    public void setIp6AccessLists(
@@ -367,9 +477,4 @@ public final class Configuration extends ComparableStructure<String> {
       return jObj;
    }
 
-   @JsonIgnore
-   public Vrf getDefaultVrf() {
-      return _vrfs.get(DEFAULT_VRF_NAME);
-   }
-   
 }

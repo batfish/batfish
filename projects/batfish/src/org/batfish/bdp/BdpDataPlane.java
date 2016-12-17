@@ -54,201 +54,211 @@ public class BdpDataPlane implements Serializable, DataPlane {
       Object fibsMonitor = new Object();
       _nodes.values().parallelStream().forEach((node) -> {
          String hostname = node._c.getHostname();
-         FibSet fibSet = new FibSet();
+         final Map<String, FibSet> vrfToFibSet = new HashMap<>();
          synchronized (fibsMonitor) {
-            fibs.put(hostname, fibSet);
+            fibs.put(hostname, vrfToFibSet);
          }
-         // handle routes
-         Map<AbstractRoute, Set<FibRow>> interfaceRouteRows = new LinkedHashMap<>();
-         List<AbstractRoute> remainingRoutes = new LinkedList<>();
-         for (AbstractRoute route : node._mainRib.getRoutes()) {
-            boolean add = false;
-            Prefix network = route.getNetwork().getNetworkPrefix();
-            switch (route.getProtocol()) {
+         node._virtualRouters.forEach((vrName, vr) -> {
+            FibSet fibSet = new FibSet();
+            vrfToFibSet.put(vrName, fibSet);
+            // handle routes
+            Map<AbstractRoute, Set<FibRow>> interfaceRouteRows = new LinkedHashMap<>();
+            List<AbstractRoute> remainingRoutes = new LinkedList<>();
+            for (AbstractRoute route : vr._mainRib.getRoutes()) {
+               boolean add = false;
+               Prefix network = route.getNetwork().getNetworkPrefix();
+               switch (route.getProtocol()) {
 
-            case CONNECTED: {
-               // do nothing for /32 network
-               if (network.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
-                  continue;
-               }
-               // if flow sink, accept, else drop
-               ConnectedRoute cr = (ConnectedRoute) route;
-               String outInt = cr.getNextHopInterface();
-               FibRow row;
-               if (_flowSinks.contains(outInt)) {
-                  row = new FibRow(network, outInt,
-                        Configuration.NODE_NONE_NAME,
-                        Interface.FLOW_SINK_TERMINATION_NAME);
-               }
-               else {
-                  row = new FibRow(network, Interface.NULL_INTERFACE_NAME,
-                        Configuration.NODE_NONE_NAME,
-                        Interface.NULL_INTERFACE_NAME);
-               }
-               fibSet.add(row);
+               case CONNECTED: {
+                  // do nothing for /32 network
+                  if (network.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+                     continue;
+                  }
+                  // if flow sink, accept, else drop
+                  ConnectedRoute cr = (ConnectedRoute) route;
+                  String outInt = cr.getNextHopInterface();
+                  FibRow row;
+                  if (_flowSinks.contains(outInt)) {
+                     row = new FibRow(network, outInt,
+                           Configuration.NODE_NONE_NAME,
+                           Interface.FLOW_SINK_TERMINATION_NAME);
+                  }
+                  else {
+                     row = new FibRow(network, Interface.NULL_INTERFACE_NAME,
+                           Configuration.NODE_NONE_NAME,
+                           Interface.NULL_INTERFACE_NAME);
+                  }
+                  fibSet.add(row);
 
-               Set<FibRow> currentRows = new HashSet<>();
-               interfaceRouteRows.put(route, currentRows);
-               EdgeSet edges = _topology.getInterfaceEdges()
-                     .get(new NodeInterfacePair(hostname, outInt));
-               if (edges != null) {
-                  for (Edge edge : edges) {
-                     if (edge.getNode1().equals(hostname)) {
-                        // add interface route rows that are non-dropping for
-                        // recursive
-                        // matches to this route (for ips NOT in the connected
-                        // subnet)
-                        String nextHopName = edge.getNode2();
-                        String nextHopInIntName = edge.getInt2();
-                        FibRow currentRow = new FibRow(network, outInt,
-                              nextHopName, nextHopInIntName);
-                        currentRows.add(currentRow);
+                  Set<FibRow> currentRows = new HashSet<>();
+                  interfaceRouteRows.put(route, currentRows);
+                  EdgeSet edges = _topology.getInterfaceEdges()
+                        .get(new NodeInterfacePair(hostname, outInt));
+                  if (edges != null) {
+                     for (Edge edge : edges) {
+                        if (edge.getNode1().equals(hostname)) {
+                           // add interface route rows that are non-dropping for
+                           // recursive
+                           // matches to this route (for ips NOT in the
+                           // connected
+                           // subnet)
+                           String nextHopName = edge.getNode2();
+                           String nextHopInIntName = edge.getInt2();
+                           FibRow currentRow = new FibRow(network, outInt,
+                                 nextHopName, nextHopInIntName);
+                           currentRows.add(currentRow);
 
-                        // handle connected neighbors
-                        Configuration nextHop = _nodes.get(nextHopName)._c;
-                        Interface nextHopInInt = nextHop.getInterfaces()
-                              .get(nextHopInIntName);
-                        for (Prefix prefix : nextHopInInt.getAllPrefixes()) {
-                           Ip address = prefix.getAddress();
-                           if (network.contains(address)) {
-                              Prefix neighborPrefix = new Prefix(address,
-                                    Prefix.MAX_PREFIX_LENGTH);
-                              FibRow neighborRow = new FibRow(neighborPrefix,
-                                    outInt, nextHopName, nextHopInIntName);
-                              fibSet.add(neighborRow);
+                           // handle connected neighbors
+                           Configuration nextHop = _nodes.get(nextHopName)._c;
+                           Interface nextHopInInt = nextHop.getInterfaces()
+                                 .get(nextHopInIntName);
+                           for (Prefix prefix : nextHopInInt.getAllPrefixes()) {
+                              Ip address = prefix.getAddress();
+                              if (network.contains(address)) {
+                                 Prefix neighborPrefix = new Prefix(address,
+                                       Prefix.MAX_PREFIX_LENGTH);
+                                 FibRow neighborRow = new FibRow(neighborPrefix,
+                                       outInt, nextHopName, nextHopInIntName);
+                                 fibSet.add(neighborRow);
+                              }
                            }
                         }
                      }
                   }
+                  break;
                }
-               break;
-            }
 
-            case STATIC: {
-               StaticRoute sr = (StaticRoute) route;
-               Ip srNextHopIp = sr.getNextHopIp();
-               String srNextHopInterface = sr.getNextHopInterface();
-               if (srNextHopIp != null && srNextHopInterface != null) {
-                  // both nextHopIp and nextHopInterface; neighbor must not send
-                  // nextHopIp back out receiving interface
-                  // TODO: implement above condition
-                  if (srNextHopInterface
-                        .equals(Interface.NULL_INTERFACE_NAME)) {
-                     FibRow row = new FibRow(network,
-                           Interface.NULL_INTERFACE_NAME,
-                           Configuration.NODE_NONE_NAME,
-                           Interface.NULL_INTERFACE_NAME);
-                     fibSet.add(row);
-                     interfaceRouteRows.put(route, Collections.singleton(row));
-                  }
-                  else {
-                     Set<FibRow> currentRows = new HashSet<>();
-                     EdgeSet edges = _topology.getInterfaceEdges().get(
-                           new NodeInterfacePair(hostname, srNextHopInterface));
-                     interfaceRouteRows.put(route, currentRows);
-                     for (Edge edge : edges) {
-                        if (edge.getNode1().equals(hostname)) {
-                           String nextHop = edge.getNode2();
-                           String nextHopInInt = edge.getInt2();
-                           FibRow row = new FibRow(network, srNextHopInterface,
-                                 nextHop, nextHopInInt);
-                           fibSet.add(row);
-                           currentRows.add(row);
+               case STATIC: {
+                  StaticRoute sr = (StaticRoute) route;
+                  Ip srNextHopIp = sr.getNextHopIp();
+                  String srNextHopInterface = sr.getNextHopInterface();
+                  if (srNextHopIp != null && srNextHopInterface != null) {
+                     // both nextHopIp and nextHopInterface; neighbor must not
+                     // send
+                     // nextHopIp back out receiving interface
+                     // TODO: implement above condition
+                     if (srNextHopInterface
+                           .equals(Interface.NULL_INTERFACE_NAME)) {
+                        FibRow row = new FibRow(network,
+                              Interface.NULL_INTERFACE_NAME,
+                              Configuration.NODE_NONE_NAME,
+                              Interface.NULL_INTERFACE_NAME);
+                        fibSet.add(row);
+                        interfaceRouteRows.put(route,
+                              Collections.singleton(row));
+                     }
+                     else {
+                        Set<FibRow> currentRows = new HashSet<>();
+                        EdgeSet edges = _topology.getInterfaceEdges()
+                              .get(new NodeInterfacePair(hostname,
+                                    srNextHopInterface));
+                        interfaceRouteRows.put(route, currentRows);
+                        for (Edge edge : edges) {
+                           if (edge.getNode1().equals(hostname)) {
+                              String nextHop = edge.getNode2();
+                              String nextHopInInt = edge.getInt2();
+                              FibRow row = new FibRow(network,
+                                    srNextHopInterface, nextHop, nextHopInInt);
+                              fibSet.add(row);
+                              currentRows.add(row);
+                           }
                         }
                      }
+                     break;
                   }
-                  break;
-               }
-               else if (srNextHopIp == null && srNextHopInterface != null) {
-                  // just nextHopInterface; neighbor must not send dstIp back
-                  // out receiving interface
-                  // TODO: implement above condition
-                  if (srNextHopInterface
-                        .equals(Interface.NULL_INTERFACE_NAME)) {
-                     FibRow row = new FibRow(network,
-                           Interface.NULL_INTERFACE_NAME,
-                           Configuration.NODE_NONE_NAME,
-                           Interface.NULL_INTERFACE_NAME);
-                     fibSet.add(row);
-                     interfaceRouteRows.put(route, Collections.singleton(row));
-                  }
-                  else {
-                     Set<FibRow> currentRows = new HashSet<>();
-                     EdgeSet edges = _topology.getInterfaceEdges().get(
-                           new NodeInterfacePair(hostname, srNextHopInterface));
-                     interfaceRouteRows.put(route, currentRows);
-                     for (Edge edge : edges) {
-                        if (edge.getNode1().equals(hostname)) {
-                           String nextHop = edge.getNode2();
-                           String nextHopInInt = edge.getInt2();
-                           FibRow row = new FibRow(network, srNextHopInterface,
-                                 nextHop, nextHopInInt);
-                           fibSet.add(row);
-                           currentRows.add(row);
+                  else if (srNextHopIp == null && srNextHopInterface != null) {
+                     // just nextHopInterface; neighbor must not send dstIp back
+                     // out receiving interface
+                     // TODO: implement above condition
+                     if (srNextHopInterface
+                           .equals(Interface.NULL_INTERFACE_NAME)) {
+                        FibRow row = new FibRow(network,
+                              Interface.NULL_INTERFACE_NAME,
+                              Configuration.NODE_NONE_NAME,
+                              Interface.NULL_INTERFACE_NAME);
+                        fibSet.add(row);
+                        interfaceRouteRows.put(route,
+                              Collections.singleton(row));
+                     }
+                     else {
+                        Set<FibRow> currentRows = new HashSet<>();
+                        EdgeSet edges = _topology.getInterfaceEdges()
+                              .get(new NodeInterfacePair(hostname,
+                                    srNextHopInterface));
+                        interfaceRouteRows.put(route, currentRows);
+                        for (Edge edge : edges) {
+                           if (edge.getNode1().equals(hostname)) {
+                              String nextHop = edge.getNode2();
+                              String nextHopInInt = edge.getInt2();
+                              FibRow row = new FibRow(network,
+                                    srNextHopInterface, nextHop, nextHopInInt);
+                              fibSet.add(row);
+                              currentRows.add(row);
+                           }
                         }
                      }
+                     break;
                   }
-                  break;
-               }
-               else if (srNextHopIp == null && srNextHopInterface == null) {
-                  throw new BatfishException(
-                        "Invalid static route; must have nextHopIp or nextHopInterface");
-               }
-               // If we get this far, it is a next-hop-ip-only static-route.
-               // Since it is not an interface-route, we add and break.
-               add = true;
-               break;
-            }
-
-            case AGGREGATE: {
-               GeneratedRoute gr = (GeneratedRoute) route;
-               if (gr.getDiscard()) {
-                  FibRow row = new FibRow(network,
-                        Interface.NULL_INTERFACE_NAME,
-                        Configuration.NODE_NONE_NAME,
-                        Interface.NULL_INTERFACE_NAME);
-                  fibSet.add(row);
-                  interfaceRouteRows.put(route, Collections.singleton(row));
-                  break;
-               }
-               else {
+                  else if (srNextHopIp == null && srNextHopInterface == null) {
+                     throw new BatfishException(
+                           "Invalid static route; must have nextHopIp or nextHopInterface");
+                  }
+                  // If we get this far, it is a next-hop-ip-only static-route.
+                  // Since it is not an interface-route, we add and break.
                   add = true;
                   break;
                }
+
+               case AGGREGATE: {
+                  GeneratedRoute gr = (GeneratedRoute) route;
+                  if (gr.getDiscard()) {
+                     FibRow row = new FibRow(network,
+                           Interface.NULL_INTERFACE_NAME,
+                           Configuration.NODE_NONE_NAME,
+                           Interface.NULL_INTERFACE_NAME);
+                     fibSet.add(row);
+                     interfaceRouteRows.put(route, Collections.singleton(row));
+                     break;
+                  }
+                  else {
+                     add = true;
+                     break;
+                  }
+               }
+
+               // $CASES-OMITTED$
+               default: {
+                  // handle all other routes
+                  add = true;
+                  break;
+               }
+               }
+               if (add) {
+                  remainingRoutes.add(route);
+               }
             }
 
-            // $CASES-OMITTED$
-            default: {
-               // handle all other routes
-               add = true;
-               break;
-            }
-            }
-            if (add) {
-               remainingRoutes.add(route);
-            }
-         }
-
-         for (AbstractRoute route : remainingRoutes) {
-            Ip currentNextHopIp = route.getNextHopIp();
-            Map<String, Set<AbstractRoute>> nextHopInterfaces = node._fib
-                  .getNextHopInterfaces(currentNextHopIp);
-            nextHopInterfaces
-                  .forEach((nextHopInterface, nextHopInterfaceRoutes) -> {
-                     for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
-                        Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
-                              .get(nextHopInterfaceRoute);
-                        for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
-                           FibRow row = new FibRow(
-                                 route.getNetwork().getNetworkPrefix(),
-                                 interfaceRouteRow.getInterface(),
-                                 interfaceRouteRow.getNextHop(),
-                                 interfaceRouteRow.getNextHopInterface());
-                           fibSet.add(row);
+            for (AbstractRoute route : remainingRoutes) {
+               Ip currentNextHopIp = route.getNextHopIp();
+               Map<String, Set<AbstractRoute>> nextHopInterfaces = vr._fib
+                     .getNextHopInterfaces(currentNextHopIp);
+               nextHopInterfaces
+                     .forEach((nextHopInterface, nextHopInterfaceRoutes) -> {
+                        for (AbstractRoute nextHopInterfaceRoute : nextHopInterfaceRoutes) {
+                           Set<FibRow> currentInterfaceRouteRows = interfaceRouteRows
+                                 .get(nextHopInterfaceRoute);
+                           for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
+                              FibRow row = new FibRow(
+                                    route.getNetwork().getNetworkPrefix(),
+                                    interfaceRouteRow.getInterface(),
+                                    interfaceRouteRow.getNextHop(),
+                                    interfaceRouteRow.getNextHopInterface());
+                              fibSet.add(row);
+                           }
                         }
-                     }
-                  });
-         }
+                     });
+            }
+         });
       });
 
       return fibs;

@@ -21,7 +21,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
@@ -429,177 +431,193 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
             if (!node1Regex.matcher(c.getHostname()).matches()) {
                continue;
             }
-            if (c.getBgpProcess() != null) {
-               for (BgpNeighbor bgpNeighbor : c.getBgpProcess().getNeighbors()
-                     .values()) {
-                  BgpNeighborSummary bgpNeighborSummary = new BgpNeighborSummary(
-                        bgpNeighbor);
-                  answerElement.add(answerElement.getAllBgpNeighbors(), c,
-                        bgpNeighborSummary);
-                  boolean foreign = bgpNeighbor.getGroup() != null && question
-                        .getForeignBgpGroups().contains(bgpNeighbor.getGroup());
-                  boolean ebgp = bgpNeighbor.getRemoteAs() != bgpNeighbor
-                        .getLocalAs();
-                  boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
-                  Ip localIp = bgpNeighbor.getLocalIp();
-                  Ip remoteIp = bgpNeighbor.getAddress();
-                  if (bgpNeighbor.getPrefix().getPrefixLength() != 32) {
-                     continue;
-                  }
-                  if (ebgp) {
-                     if (!ebgpMultihop && loopbackIps.contains(localIp)) {
-                        answerElement.add(
-                              answerElement.getEbgpLocalIpOnLoopback(), c,
-                              bgpNeighborSummary);
-                     }
-                     if (localIp == null) {
-                        answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getMissingLocalIp(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getEbgpBroken(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getEbgpMissingLocalIp(),
-                              c, bgpNeighborSummary);
-                     }
-                  }
-                  else {
-                     // ibgp
-                     if (!loopbackIps.contains(localIp)) {
-                        answerElement.add(
-                              answerElement.getIbgpLocalIpOnNonLoopback(), c,
-                              bgpNeighborSummary);
-                     }
-                     if (localIp == null) {
-                        answerElement.add(answerElement.getBroken(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getMissingLocalIp(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getIbgpBroken(), c,
-                              bgpNeighborSummary);
-                        answerElement.add(answerElement.getIbgpMissingLocalIp(),
-                              c, bgpNeighborSummary);
-                     }
-                  }
-                  if (foreign) {
-                     answerElement.add(
-                           answerElement.getIgnoredForeignEndpoints(), c,
+            for (Vrf vrf : c.getVrfs().values()) {
+               BgpProcess proc = vrf.getBgpProcess();
+
+               if (proc != null) {
+                  for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                     BgpNeighborSummary bgpNeighborSummary = new BgpNeighborSummary(
+                           bgpNeighbor);
+                     answerElement.add(answerElement.getAllBgpNeighbors(), c,
                            bgpNeighborSummary);
-                  }
-                  else {
-                     // not foreign
+                     boolean foreign = bgpNeighbor.getGroup() != null
+                           && question.getForeignBgpGroups()
+                                 .contains(bgpNeighbor.getGroup());
+                     boolean ebgp = bgpNeighbor.getRemoteAs() != bgpNeighbor
+                           .getLocalAs();
+                     boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
+                     Ip localIp = bgpNeighbor.getLocalIp();
+                     Ip remoteIp = bgpNeighbor.getAddress();
+                     if (bgpNeighbor.getPrefix().getPrefixLength() != 32) {
+                        continue;
+                     }
                      if (ebgp) {
-                        if (localIp != null
-                              && !allInterfaceIps.contains(localIp)) {
+                        if (!ebgpMultihop && loopbackIps.contains(localIp)) {
+                           answerElement.add(
+                                 answerElement.getEbgpLocalIpOnLoopback(), c,
+                                 bgpNeighborSummary);
+                        }
+                        if (localIp == null) {
                            answerElement.add(answerElement.getBroken(), c,
                                  bgpNeighborSummary);
-                           answerElement.add(answerElement.getLocalIpUnknown(),
+                           answerElement.add(answerElement.getMissingLocalIp(),
                                  c, bgpNeighborSummary);
                            answerElement.add(answerElement.getEbgpBroken(), c,
                                  bgpNeighborSummary);
                            answerElement.add(
-                                 answerElement.getEbgpLocalIpUnknown(), c,
+                                 answerElement.getEbgpMissingLocalIp(), c,
                                  bgpNeighborSummary);
-                        }
-                        if (!allInterfaceIps.contains(remoteIp)) {
-                           answerElement.add(answerElement.getBroken(), c,
-                                 bgpNeighborSummary);
-                           answerElement.add(answerElement.getRemoteIpUnknown(),
-                                 c, bgpNeighborSummary);
-                           answerElement.add(answerElement.getEbgpBroken(), c,
-                                 bgpNeighborSummary);
-                           answerElement.add(
-                                 answerElement.getEbgpRemoteIpUnknown(), c,
-                                 bgpNeighborSummary);
-                        }
-                        else {
-                           if (!ebgpMultihop && loopbackIps.contains(remoteIp)
-                                 && node2RegexMatchesIp(remoteIp, ipOwners,
-                                       node2Regex)) {
-                              answerElement.add(
-                                    answerElement.getEbgpRemoteIpOnLoopback(),
-                                    c, bgpNeighborSummary);
-                           }
-                        }
-                        // check half open
-                        if (localIp != null
-                              && allInterfaceIps.contains(remoteIp)
-                              && node2RegexMatchesIp(remoteIp, ipOwners,
-                                    node2Regex)) {
-                           if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
-                              answerElement.add(answerElement.getBroken(), c,
-                                    bgpNeighborSummary);
-                              answerElement.add(answerElement.getHalfOpen(), c,
-                                    bgpNeighborSummary);
-                              answerElement.add(answerElement.getEbgpBroken(),
-                                    c, bgpNeighborSummary);
-                              answerElement.add(answerElement.getEbgpHalfOpen(),
-                                    c, bgpNeighborSummary);
-                           }
-                           else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
-                                 .size() != 1) {
-                              answerElement.add(
-                                    answerElement.getNonUniqueEndpoint(), c,
-                                    bgpNeighborSummary);
-                              answerElement.add(
-                                    answerElement.getEbgpNonUniqueEndpoint(), c,
-                                    bgpNeighborSummary);
-                           }
                         }
                      }
                      else {
                         // ibgp
-                        if (localIp != null
-                              && !allInterfaceIps.contains(localIp)) {
+                        if (!loopbackIps.contains(localIp)) {
+                           answerElement.add(
+                                 answerElement.getIbgpLocalIpOnNonLoopback(), c,
+                                 bgpNeighborSummary);
+                        }
+                        if (localIp == null) {
                            answerElement.add(answerElement.getBroken(), c,
                                  bgpNeighborSummary);
+                           answerElement.add(answerElement.getMissingLocalIp(),
+                                 c, bgpNeighborSummary);
                            answerElement.add(answerElement.getIbgpBroken(), c,
                                  bgpNeighborSummary);
                            answerElement.add(
-                                 answerElement.getIbgpLocalIpUnknown(), c,
+                                 answerElement.getIbgpMissingLocalIp(), c,
                                  bgpNeighborSummary);
                         }
-                        if (!allInterfaceIps.contains(remoteIp)) {
-                           answerElement.add(answerElement.getBroken(), c,
-                                 bgpNeighborSummary);
-                           answerElement.add(answerElement.getIbgpBroken(), c,
-                                 bgpNeighborSummary);
-                           answerElement.add(
-                                 answerElement.getIbgpRemoteIpUnknown(), c,
-                                 bgpNeighborSummary);
-                        }
-                        else {
-                           if (!loopbackIps.contains(remoteIp)
-                                 && node2RegexMatchesIp(remoteIp, ipOwners,
-                                       node2Regex)) {
-                              answerElement.add(
-                                    answerElement
-                                          .getIbgpRemoteIpOnNonLoopback(),
-                                    c, bgpNeighborSummary);
-                           }
-                        }
-                        if (localIp != null
-                              && allInterfaceIps.contains(remoteIp)
-                              && node2RegexMatchesIp(remoteIp, ipOwners,
-                                    node2Regex)) {
-                           if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
+                     }
+                     if (foreign) {
+                        answerElement.add(
+                              answerElement.getIgnoredForeignEndpoints(), c,
+                              bgpNeighborSummary);
+                     }
+                     else {
+                        // not foreign
+                        if (ebgp) {
+                           if (localIp != null
+                                 && !allInterfaceIps.contains(localIp)) {
                               answerElement.add(answerElement.getBroken(), c,
                                     bgpNeighborSummary);
-                              answerElement.add(answerElement.getHalfOpen(), c,
+                              answerElement.add(
+                                    answerElement.getLocalIpUnknown(), c,
+                                    bgpNeighborSummary);
+                              answerElement.add(answerElement.getEbgpBroken(),
+                                    c, bgpNeighborSummary);
+                              answerElement.add(
+                                    answerElement.getEbgpLocalIpUnknown(), c,
+                                    bgpNeighborSummary);
+                           }
+                           if (!allInterfaceIps.contains(remoteIp)) {
+                              answerElement.add(answerElement.getBroken(), c,
+                                    bgpNeighborSummary);
+                              answerElement.add(
+                                    answerElement.getRemoteIpUnknown(), c,
+                                    bgpNeighborSummary);
+                              answerElement.add(answerElement.getEbgpBroken(),
+                                    c, bgpNeighborSummary);
+                              answerElement.add(
+                                    answerElement.getEbgpRemoteIpUnknown(), c,
+                                    bgpNeighborSummary);
+                           }
+                           else {
+                              if (!ebgpMultihop
+                                    && loopbackIps.contains(remoteIp)
+                                    && node2RegexMatchesIp(remoteIp, ipOwners,
+                                          node2Regex)) {
+                                 answerElement.add(
+                                       answerElement
+                                             .getEbgpRemoteIpOnLoopback(),
+                                       c, bgpNeighborSummary);
+                              }
+                           }
+                           // check half open
+                           if (localIp != null
+                                 && allInterfaceIps.contains(remoteIp)
+                                 && node2RegexMatchesIp(remoteIp, ipOwners,
+                                       node2Regex)) {
+                              if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
+                                 answerElement.add(answerElement.getBroken(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(answerElement.getHalfOpen(),
+                                       c, bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getEbgpBroken(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getEbgpHalfOpen(), c,
+                                       bgpNeighborSummary);
+                              }
+                              else if (bgpNeighbor
+                                    .getCandidateRemoteBgpNeighbors()
+                                    .size() != 1) {
+                                 answerElement.add(
+                                       answerElement.getNonUniqueEndpoint(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getEbgpNonUniqueEndpoint(),
+                                       c, bgpNeighborSummary);
+                              }
+                           }
+                        }
+                        else {
+                           // ibgp
+                           if (localIp != null
+                                 && !allInterfaceIps.contains(localIp)) {
+                              answerElement.add(answerElement.getBroken(), c,
                                     bgpNeighborSummary);
                               answerElement.add(answerElement.getIbgpBroken(),
                                     c, bgpNeighborSummary);
-                              answerElement.add(answerElement.getIbgpHalfOpen(),
-                                    c, bgpNeighborSummary);
+                              answerElement.add(
+                                    answerElement.getIbgpLocalIpUnknown(), c,
+                                    bgpNeighborSummary);
                            }
-                           else if (bgpNeighbor.getCandidateRemoteBgpNeighbors()
-                                 .size() != 1) {
-                              answerElement.add(
-                                    answerElement.getNonUniqueEndpoint(), c,
+                           if (!allInterfaceIps.contains(remoteIp)) {
+                              answerElement.add(answerElement.getBroken(), c,
                                     bgpNeighborSummary);
+                              answerElement.add(answerElement.getIbgpBroken(),
+                                    c, bgpNeighborSummary);
                               answerElement.add(
-                                    answerElement.getIbgpNonUniqueEndpoint(), c,
+                                    answerElement.getIbgpRemoteIpUnknown(), c,
                                     bgpNeighborSummary);
+                           }
+                           else {
+                              if (!loopbackIps.contains(remoteIp)
+                                    && node2RegexMatchesIp(remoteIp, ipOwners,
+                                          node2Regex)) {
+                                 answerElement.add(
+                                       answerElement
+                                             .getIbgpRemoteIpOnNonLoopback(),
+                                       c, bgpNeighborSummary);
+                              }
+                           }
+                           if (localIp != null
+                                 && allInterfaceIps.contains(remoteIp)
+                                 && node2RegexMatchesIp(remoteIp, ipOwners,
+                                       node2Regex)) {
+                              if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
+                                 answerElement.add(answerElement.getBroken(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(answerElement.getHalfOpen(),
+                                       c, bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getIbgpBroken(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getIbgpHalfOpen(), c,
+                                       bgpNeighborSummary);
+                              }
+                              else if (bgpNeighbor
+                                    .getCandidateRemoteBgpNeighbors()
+                                    .size() != 1) {
+                                 answerElement.add(
+                                       answerElement.getNonUniqueEndpoint(), c,
+                                       bgpNeighborSummary);
+                                 answerElement.add(
+                                       answerElement.getIbgpNonUniqueEndpoint(),
+                                       c, bgpNeighborSummary);
+                              }
                            }
                         }
                      }

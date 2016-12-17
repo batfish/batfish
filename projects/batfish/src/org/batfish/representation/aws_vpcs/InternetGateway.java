@@ -49,7 +49,8 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          Prefix igwIfacePrefix = awsVpcConfiguration
                .getNextGeneratedLinkSubnet();
          igwIface.setPrefix(igwIfacePrefix);
-         cfgNode.getInterfaces().put(igwIface.getName(), igwIface);
+         cfgNode.getDefaultVrf().getInterfaces().put(igwIface.getName(),
+               igwIface);
 
          // add the interface to the vpc router
          Configuration vpcConfigNode = awsVpcConfiguration
@@ -59,7 +60,8 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp,
                igwIfacePrefix.getPrefixLength());
          vpcIface.setPrefix(vpcIfacePrefix);
-         vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
+         vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIface.getName(),
+               vpcIface);
 
          // associate this gateway with the vpc
          awsVpcConfiguration.getVpcs().get(vpcId)
@@ -70,7 +72,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          StaticRoute igwVpcRoute = new StaticRoute(vpc.getCidrBlock(),
                vpcIfaceIp, null, Route.DEFAULT_STATIC_ROUTE_ADMIN,
                Route.DEFAULT_STATIC_ROUTE_COST);
-         cfgNode.getStaticRoutes().add(igwVpcRoute);
+         cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
 
       }
 

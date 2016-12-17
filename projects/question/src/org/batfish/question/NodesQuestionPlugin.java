@@ -24,6 +24,7 @@ import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.questions.Question;
@@ -120,20 +121,35 @@ public class NodesQuestionPlugin extends QuestionPlugin {
                _routeFilterLists = node.getRouteFilterLists().navigableKeySet();
             }
             _routingProtocols = EnumSet.noneOf(RoutingProtocol.class);
-            if (node.getBgpProcess() != null) {
-               _routingProtocols.add(RoutingProtocol.BGP);
+            for (Vrf vrf : node.getVrfs().values()) {
+               if (vrf.getBgpProcess() != null) {
+                  _routingProtocols.add(RoutingProtocol.BGP);
+                  break;
+               }
             }
-            if (node.getOspfProcess() != null) {
-               _routingProtocols.add(RoutingProtocol.OSPF);
+            for (Vrf vrf : node.getVrfs().values()) {
+               if (vrf.getOspfProcess() != null) {
+                  _routingProtocols.add(RoutingProtocol.OSPF);
+                  break;
+               }
             }
-            if (node.getIsisProcess() != null) {
-               _routingProtocols.add(RoutingProtocol.ISIS);
+            for (Vrf vrf : node.getVrfs().values()) {
+               if (vrf.getIsisProcess() != null) {
+                  _routingProtocols.add(RoutingProtocol.ISIS);
+                  break;
+               }
             }
-            if (!node.getStaticRoutes().isEmpty()) {
-               _routingProtocols.add(RoutingProtocol.STATIC);
+            for (Vrf vrf : node.getVrfs().values()) {
+               if (!vrf.getStaticRoutes().isEmpty()) {
+                  _routingProtocols.add(RoutingProtocol.STATIC);
+                  break;
+               }
             }
-            if (!node.getGeneratedRoutes().isEmpty()) {
-               _routingProtocols.add(RoutingProtocol.AGGREGATE);
+            for (Vrf vrf : node.getVrfs().values()) {
+               if (!vrf.getGeneratedRoutes().isEmpty()) {
+                  _routingProtocols.add(RoutingProtocol.AGGREGATE);
+                  break;
+               }
             }
             if (!node.getZones().isEmpty()) {
                _zones = node.getZones().navigableKeySet();
