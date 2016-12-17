@@ -102,6 +102,11 @@ print bf_answer("reachability", type="reduced")
 print "# --> any lack of fault tolerance is easy to see"
 
 print "##############"
+print "# heuristics to uncover bugs"
+print bf_answer("aclreachability", nodeRegex="as2.*")
+print bf_answer("comparesamename", nodeRegex="as2.*")
+
+print "##############"
 print "# finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)"
 
 print "# a powerful query: multipath consistency. "

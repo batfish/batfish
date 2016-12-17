@@ -98,15 +98,15 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       @Override
       public String prettyPrint() throws JsonProcessingException {
          StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");         
-         if (_active != null) 
+         if (_active.size() > 0) 
             sb.append(interfacesToString("  ", "Active loopbacks", _active));         
-         if (_exported != null) 
+         if (_exported.size() > 0) 
             sb.append(interfacesToString("  ", "Exported loopbacks", _exported));         
-         if (_inactive != null) 
+         if (_inactive.size() > 0) 
             sb.append(interfacesToString("  ", "Inactive loopbacks", _inactive));         
-         if (_passive != null) 
+         if (_passive.size() > 0) 
             sb.append(interfacesToString("  ", "Passive loopbacks", _passive));         
-         if (_running != null) 
+         if (_running.size() > 0) 
             sb.append(interfacesToString("  ", "Running loopbacks", _running));         
          return sb.toString();
          

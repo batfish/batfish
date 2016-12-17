@@ -76,10 +76,10 @@ public class AclLinesAnswerElement implements AnswerElement {
 
       public String prettyPrint(String indent) {
          StringBuilder sb = new StringBuilder();
-         sb.append(String.format("%s[%d] %s\n" , indent, _index, _name));
-         sb.append(String.format("%s  [%d] %s (earliest covering line)\n", 
+         sb.append(String.format("%s[index %d] %s\n" , indent, _index, _name));
+         sb.append(String.format("%s  Earliest covering line: [index %d] %s\n", 
                indent, _earliestMoreGeneralLineIndex, _earliestMoreGeneralLineName));
-         sb.append(String.format("%s  %s (different action)\n", 
+         sb.append(String.format("%s  Is different action: %s\n", 
                indent, _differentAction)); 
          return sb.toString();
       }
@@ -185,7 +185,7 @@ public class AclLinesAnswerElement implements AnswerElement {
       //private SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> _unreachableLines;
       for (String hostname : _unreachableLines.keySet()) {
          for (String aclName : _unreachableLines.get(hostname).keySet()) {
-            sb.append("  " + hostname + " :: " + aclName + "\n");
+            sb.append("\n  " + hostname + " :: " + aclName + "\n");
             for (AclReachabilityEntry arEntry : _unreachableLines.get(hostname).get(aclName)) {
                sb.append(arEntry.prettyPrint("    "));
             }

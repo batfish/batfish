@@ -130,7 +130,7 @@
           "ipAccessLists" : [
             "101",
             "103",
-            "INSIDE_TO_OUTSIDE",
+            "INSIDE_TO_AS1",
             "OUTSIDE_TO_INSIDE"
           ],
           "policySortedMaps" : [
@@ -176,7 +176,7 @@
           "ipAccessLists" : [
             "101",
             "103",
-            "INSIDE_TO_OUTSIDE",
+            "INSIDE_TO_AS3",
             "OUTSIDE_TO_INSIDE"
           ],
           "policySortedMaps" : [
@@ -311,8 +311,8 @@
             "105"
           ],
           "policySortedMaps" : [
-            "as2_to_dept",
-            "dept_to_as2",
+            "as2dist_to_dept",
+            "dept_to_as2dist",
             "~BGP_COMMON_EXPORT_POLICY~",
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
@@ -345,8 +345,8 @@
             "105"
           ],
           "policySortedMaps" : [
-            "as2_to_dept",
-            "dept_to_as2",
+            "as2dist_to_dept",
+            "dept_to_as2dist",
             "~BGP_COMMON_EXPORT_POLICY~",
             "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
             "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
@@ -516,7 +516,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion"
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "summary" : true
   },
   "status" : "SUCCESS"
 }

@@ -2635,9 +2635,9 @@
                 }
               ]
             },
-            "INSIDE_TO_OUTSIDE" : {
+            "INSIDE_TO_AS1" : {
               "@id" : 113,
-              "name" : "INSIDE_TO_OUTSIDE",
+              "name" : "INSIDE_TO_AS1",
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -2835,6 +2835,24 @@
                       }
                     },
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 1
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 2
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -2882,7 +2900,7 @@
                             },
                             "suffix" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                              "value" : 2
+                              "value" : 1
                             }
                           }
                         ]
@@ -2911,7 +2929,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                       "metric" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                        "value" : 100
+                        "value" : 50
                       }
                     },
                     {
@@ -2926,7 +2944,7 @@
                             },
                             "suffix" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                              "value" : 3
+                              "value" : 1
                             }
                           }
                         ]
@@ -3061,6 +3079,24 @@
                       "localPreference" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
                         "value" : 350
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 3
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 2
+                            }
+                          }
+                        ]
                       }
                     },
                     {
@@ -3651,9 +3687,9 @@
                 }
               ]
             },
-            "INSIDE_TO_OUTSIDE" : {
+            "INSIDE_TO_AS3" : {
               "@id" : 154,
-              "name" : "INSIDE_TO_OUTSIDE",
+              "name" : "INSIDE_TO_AS3",
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -5747,23 +5783,20 @@
                 {
                   "action" : "REJECT",
                   "dstIps" : [
-                    "0.0.0.0/0"
+                    "2.128.0.0/16"
                   ],
-                  "name" : "deny ip any any",
+                  "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
                   "negate" : false,
                   "srcIps" : [
-                    "0.0.0.0/0"
+                    "1.128.0.0/16"
                   ]
                 },
                 {
-                  "action" : "ACCEPT",
+                  "action" : "REJECT",
                   "dstIps" : [
                     "0.0.0.0/0"
                   ],
-                  "ipProtocols" : [
-                    "ICMP"
-                  ],
-                  "name" : "permit icmp any any",
+                  "name" : "deny ip any any",
                   "negate" : false,
                   "srcIps" : [
                     "0.0.0.0/0"
@@ -6144,7 +6177,7 @@
                 "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.101.4~",
                 "group" : "dept",
-                "importPolicy" : "dept_to_as2",
+                "importPolicy" : "dept_to_as2dist",
                 "localAs" : 2,
                 "localIp" : "2.34.101.3",
                 "owner" : 270,
@@ -6415,9 +6448,9 @@
             }
           },
           "routingPolicies" : {
-            "as2_to_dept" : {
+            "as2dist_to_dept" : {
               "@id" : 286,
-              "name" : "as2_to_dept",
+              "name" : "as2dist_to_dept",
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -6469,9 +6502,9 @@
                 }
               ]
             },
-            "dept_to_as2" : {
+            "dept_to_as2dist" : {
               "@id" : 287,
-              "name" : "dept_to_as2",
+              "name" : "dept_to_as2dist",
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -6628,7 +6661,7 @@
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                        "calledPolicyName" : "as2_to_dept"
+                        "calledPolicyName" : "as2dist_to_dept"
                       }
                     ]
                   },
@@ -6790,7 +6823,7 @@
                 "ebgpMultihop" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:2.34.201.4~",
                 "group" : "dept",
-                "importPolicy" : "dept_to_as2",
+                "importPolicy" : "dept_to_as2dist",
                 "localAs" : 2,
                 "localIp" : "2.34.201.3",
                 "owner" : 300,
@@ -7061,9 +7094,9 @@
             }
           },
           "routingPolicies" : {
-            "as2_to_dept" : {
+            "as2dist_to_dept" : {
               "@id" : 316,
-              "name" : "as2_to_dept",
+              "name" : "as2dist_to_dept",
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -7115,9 +7148,9 @@
                 }
               ]
             },
-            "dept_to_as2" : {
+            "dept_to_as2dist" : {
               "@id" : 317,
-              "name" : "dept_to_as2",
+              "name" : "dept_to_as2dist",
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -7274,7 +7307,7 @@
                       },
                       {
                         "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                        "calledPolicyName" : "as2_to_dept"
+                        "calledPolicyName" : "as2dist_to_dept"
                       }
                     ]
                   },

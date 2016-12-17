@@ -90,9 +90,9 @@
           }
         },
         "as2border1" : {
-          "INSIDE_TO_OUTSIDE" : {
+          "INSIDE_TO_AS1" : {
             "@id" : 4,
-            "name" : "INSIDE_TO_OUTSIDE",
+            "name" : "INSIDE_TO_AS1",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -159,9 +159,9 @@
           }
         },
         "as2border2" : {
-          "INSIDE_TO_OUTSIDE" : {
+          "INSIDE_TO_AS3" : {
             "@id" : 6,
-            "name" : "INSIDE_TO_OUTSIDE",
+            "name" : "INSIDE_TO_AS3",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -391,23 +391,20 @@
               {
                 "action" : "REJECT",
                 "dstIps" : [
-                  "0.0.0.0/0"
+                  "2.128.0.0/16"
                 ],
-                "name" : "deny ip any any",
+                "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
                 "negate" : false,
                 "srcIps" : [
-                  "0.0.0.0/0"
+                  "1.128.0.0/16"
                 ]
               },
               {
-                "action" : "ACCEPT",
+                "action" : "REJECT",
                 "dstIps" : [
                   "0.0.0.0/0"
                 ],
-                "ipProtocols" : [
-                  "ICMP"
-                ],
-                "name" : "permit icmp any any",
+                "name" : "deny ip any any",
                 "negate" : false,
                 "srcIps" : [
                   "0.0.0.0/0"
@@ -650,10 +647,12 @@
             "as2dist2"
           ]
         },
-        "INSIDE_TO_OUTSIDE" : {
+        "INSIDE_TO_AS1" : {
           "as2border1" : [
             "as2border1"
-          ],
+          ]
+        },
+        "INSIDE_TO_AS3" : {
           "as2border2" : [
             "as2border2"
           ]
@@ -792,7 +791,7 @@
           ]
         },
         "as2border1" : {
-          "INSIDE_TO_OUTSIDE" : [
+          "INSIDE_TO_AS1" : [
             {
               "index" : 0,
               "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
@@ -823,7 +822,7 @@
           ]
         },
         "as2border2" : {
-          "INSIDE_TO_OUTSIDE" : [
+          "INSIDE_TO_AS3" : [
             {
               "index" : 0,
               "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
@@ -916,7 +915,7 @@
               "differentAction" : false
             },
             {
-              "index" : 1,
+              "index" : 2,
               "name" : "deny ip any any",
               "differentAction" : false
             }
@@ -1043,11 +1042,11 @@
           ],
           "RESTRICT_HOST_TRAFFIC_OUT" : [
             {
-              "index" : 2,
-              "name" : "permit icmp any any",
+              "index" : 1,
+              "name" : "deny ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
               "differentAction" : true,
-              "earliestMoreGeneralLineIndex" : 1,
-              "earliestMoreGeneralLineName" : "deny ip any any"
+              "earliestMoreGeneralLineIndex" : 0,
+              "earliestMoreGeneralLineName" : "permit ip any 2.128.0.0 0.0.255.255"
             }
           ]
         }
