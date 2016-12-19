@@ -23,7 +23,7 @@ public class BatfishException extends RuntimeException {
 
    public static class BatfishStackTrace implements AnswerElement {
 
-      private static final String LINES_VAR = "contents";
+      private static final String LINES_VAR = "answer";
 
       private final BatfishException _exception;
 
@@ -54,9 +54,7 @@ public class BatfishException extends RuntimeException {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         return String.join("\n",  _lines);
       }
    }
 

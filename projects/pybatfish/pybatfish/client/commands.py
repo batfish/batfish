@@ -71,7 +71,7 @@ def bf_answer(questionType, doDelta=False, **parameters):
     answer = bf_answer_str(json.dumps(questionJson), doDelta=doDelta)
     
     if (_pretty_print_answer()):
-        return _get_pretty_answer(answer)
+        return _get_pretty_answer(bf_session, answer)
     else:
         return answer
 
@@ -178,7 +178,7 @@ def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
     answer = workhelper.execute(workItem, bf_session)
 
     if (_pretty_print_answer()):
-        return _get_pretty_answer(answer)
+        return _get_pretty_answer(bf_session, answer)
     else:
         return answer
 

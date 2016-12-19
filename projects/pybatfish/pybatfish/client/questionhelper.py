@@ -52,10 +52,20 @@ def _get_answer(questionJson, parametersJson, doDelta, differential):
     parametersJson["differential"] = str(differential)
     return commands.bf_answer_str(json.dumps(questionJson), json.dumps(parametersJson), doDelta)
     
-def _get_pretty_answer(answerStr):
-    answerJson = json.loads(answerStr)
-    prettyAnswer = "Status: " + answerJson["status"] + "\n"
-    for answerElement in answerJson["answerElements"]:
-        prettyAnswer += answerElement["answer"] + "\n"
-    return prettyAnswer
+def _get_pretty_answer(session, answerStr):
+    try: 
+        answerJson = json.loads(answerStr)
+        if ("status" not in answerJson):
+            raise ValueError("'status' is not present")
+        if ("answerElements" not in answerJson):
+            raise ValueError("'answerElements' is not present")
+        prettyAnswer = "Status: " + answerJson["status"] + "\n"
+        for answerElement in answerJson["answerElements"]:
+            if ('answer' not in answerElement):
+                raise ValueError("'answer' is not present inside answerElement")
+            prettyAnswer += answerElement["answer"] + "\n"
+        return prettyAnswer
+    except ValueError as e:
+        raise ValueError("Unexpected JSON in answer: %s.\nGot the following JSON:\n%s\n", e, answerStr)
+        
     

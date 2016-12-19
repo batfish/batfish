@@ -57,7 +57,11 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             NodesPathResult result = _results.get(index);            
             sb.append(String.format("  [%d]: %d results for %s\n", index, result.getNumResults(), result.getPath().toString()));            
             for (String path : result.getResult().keySet()) {
-               sb.append(String.format("    %s : %s\n", path, result.getResult().get(path).toString()));
+               JsonNode suffix = result.getResult().get(path);
+               if (suffix != null)
+                  sb.append(String.format("    %s : %s\n", path, result.getResult().get(path).toString()));
+               else 
+                  sb.append(String.format("    %s\n", path));
             }            
          }
          
