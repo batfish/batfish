@@ -18,6 +18,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -190,12 +191,16 @@ public class HostConfiguration extends VendorConfiguration {
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       _c.setDefaultInboundAction(LineAction.ACCEPT);
       _c.setRoles(_roles);
+      _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME));
 
       // add interfaces
-      for (HostInterface hostInterface : _hostInterfaces.values()) {
-         _c.getDefaultVrf().getInterfaces().put(hostInterface.getName(),
-               hostInterface.toInterface(_c, _w));
-      }
+      _hostInterfaces.forEach((iname, hostInterface) -> {
+         org.batfish.datamodel.Interface newIface = hostInterface
+               .toInterface(_c, _w);
+         _c.getInterfaces().put(iname, newIface);
+         _c.getDefaultVrf().getInterfaces().put(iname, newIface);
+      });
 
       // add iptables
       if (_iptablesVendorConfig != null) {

@@ -288,6 +288,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             }
             BgpNeighbor cgBgpNeighbor = new BgpNeighbor(
                   ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
+            cgBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
             proc.getNeighbors().put(cgBgpNeighbor.getPrefix(), cgBgpNeighbor);
             cgBgpNeighbor.setRemoteAs(ipsecTunnel.getCgwBgpAsn());
             cgBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());

@@ -251,6 +251,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
+      _vrfs.put(Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME));
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -542,7 +544,21 @@ public class CiscoConfiguration extends VendorConfiguration {
                      maps.add(currentMap);
                   }
                }
+               currentMapName = pg.getInboundRoute6Map();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
+               }
                currentMapName = pg.getOutboundRouteMap();
+               if (currentMapName != null) {
+                  currentMap = _routeMaps.get(currentMapName);
+                  if (currentMap != null) {
+                     maps.add(currentMap);
+                  }
+               }
+               currentMapName = pg.getOutboundRoute6Map();
                if (currentMapName != null) {
                   currentMap = _routeMaps.get(currentMapName);
                   if (currentMap != null) {
@@ -1212,6 +1228,9 @@ public class CiscoConfiguration extends VendorConfiguration {
       aggregateRfLists.add(aggregateFilter);
 
       for (LeafBgpPeerGroup lpg : leafGroups) {
+         if (lpg.getName().equals("1.1.1.1")) {
+            assert Boolean.TRUE;
+         }
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
          boolean ipv4 = lpg.getNeighborPrefix() != null;
@@ -1233,6 +1252,26 @@ public class CiscoConfiguration extends VendorConfiguration {
             }
             else {
                RouteMap inboundRouteMap = _routeMaps.get(inboundRouteMapName);
+               inboundRouteMap.getReferers().put(lpg,
+                     "inbound route-map for leaf peer-group: " + lpg.getName());
+            }
+         }
+         String inboundRoute6MapName = lpg.getInboundRoute6Map();
+         RoutingPolicy importPolicy6 = null;
+         if (inboundRoute6MapName != null) {
+            importPolicy6 = c.getRoutingPolicies().get(inboundRoute6MapName);
+            if (importPolicy6 == null) {
+               String msg = "neighbor: '" + lpg.getName() + "': ";
+               String groupName = lpg.getGroupName();
+               if (groupName != null) {
+                  msg += "group: '" + groupName + "': ";
+               }
+               msg += "undefined reference to inbound ipv6 route-map: '"
+                     + inboundRoute6MapName + "'";
+               undefined(msg, ROUTE_MAP, inboundRoute6MapName);
+            }
+            else {
+               RouteMap inboundRouteMap = _routeMaps.get(inboundRoute6MapName);
                inboundRouteMap.getReferers().put(lpg,
                      "inbound route-map for leaf peer-group: " + lpg.getName());
             }
@@ -1267,7 +1306,7 @@ public class CiscoConfiguration extends VendorConfiguration {
                if (groupName != null) {
                   msg += "group: '" + groupName + "': ";
                }
-               msg += "undefined reference to outbound policy map: '"
+               msg += "undefined reference to outbound route-map: '"
                      + outboundRouteMapName + "'";
                undefined(msg, ROUTE_MAP, outboundRouteMapName);
             }
@@ -1277,6 +1316,25 @@ public class CiscoConfiguration extends VendorConfiguration {
                            + lpg.getName());
                peerExportConditions.getConjuncts()
                      .add(new CallExpr(outboundRouteMapName));
+            }
+         }
+         String outboundRoute6MapName = lpg.getOutboundRoute6Map();
+         if (outboundRoute6MapName != null) {
+            RouteMap outboundRoute6Map = _routeMaps.get(outboundRoute6MapName);
+            if (outboundRoute6Map == null) {
+               String msg = "neighbor: '" + lpg.getName() + "': ";
+               String groupName = lpg.getGroupName();
+               if (groupName != null) {
+                  msg += "group: '" + groupName + "': ";
+               }
+               msg += "undefined reference to outbound ipv6 route-map: '"
+                     + outboundRoute6MapName + "'";
+               undefined(msg, ROUTE_MAP, outboundRoute6MapName);
+            }
+            else {
+               outboundRoute6Map.getReferers().put(lpg,
+                     "outbound ipv6 route-map for leaf peer-group: "
+                           + lpg.getName());
             }
          }
 
@@ -1499,6 +1557,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       Vrf vrf = _vrfs.get(vrfName);
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
+      newIface.setVrf(iface.getVrf());
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());
@@ -2446,7 +2505,10 @@ public class CiscoConfiguration extends VendorConfiguration {
       processLines();
       processFailoverSettings();
 
-      // convert Interface MTUs
+      // initialize vrfs
+      for (String vrfName : _vrfs.keySet()) {
+         c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
+      }
 
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
@@ -2705,7 +2767,15 @@ public class CiscoConfiguration extends VendorConfiguration {
                if (containsIpv6AccessList(eaListName, currentMapName)) {
                   return true;
                }
+               currentMapName = pg.getInboundRoute6Map();
+               if (containsIpv6AccessList(eaListName, currentMapName)) {
+                  return true;
+               }
                currentMapName = pg.getOutboundRouteMap();
+               if (containsIpv6AccessList(eaListName, currentMapName)) {
+                  return true;
+               }
+               currentMapName = pg.getOutboundRoute6Map();
                if (containsIpv6AccessList(eaListName, currentMapName)) {
                   return true;
                }

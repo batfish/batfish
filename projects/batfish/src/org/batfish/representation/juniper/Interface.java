@@ -71,6 +71,8 @@ public class Interface extends ComparableStructure<String> {
 
    private Prefix _primaryPrefix;
 
+   private String _routingInstance;
+
    private SwitchportMode _switchportMode;
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
@@ -174,6 +176,10 @@ public class Interface extends ComparableStructure<String> {
       return _primaryPrefix;
    }
 
+   public String getRoutingInstance() {
+      return _routingInstance;
+   }
+
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
@@ -236,6 +242,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setPrimaryPrefix(Prefix prefix) {
       _primaryPrefix = prefix;
+   }
+
+   public void setRoutingInstance(String routingInstance) {
+      _routingInstance = routingInstance;
    }
 
    public void setSwitchportMode(SwitchportMode switchportMode) {

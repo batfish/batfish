@@ -342,10 +342,16 @@ public final class Configuration extends ComparableStructure<String> {
       _sentAdvertisements = new TreeSet<>();
       _sentEbgpAdvertisements = new TreeSet<>();
       _sentIbgpAdvertisements = new TreeSet<>();
+      for (Vrf vrf : _vrfs.values()) {
+         vrf.initBgpAdvertisements();
+      }
    }
 
    public void initRoutes() {
       _routes = new TreeSet<>();
+      for (Vrf vrf : _vrfs.values()) {
+         vrf.initRoutes();
+      }
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)

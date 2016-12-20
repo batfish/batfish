@@ -171,6 +171,7 @@ public class Instance implements AwsVpcEntity, Serializable {
          // apply ACLs to interface
          iface.setIncomingFilter(inAcl);
          iface.setOutgoingFilter(outAcl);
+         cfgNode.getInterfaces().put(interfaceId, iface);
          cfgNode.getDefaultVrf().getInterfaces().put(interfaceId, iface);
 
       }

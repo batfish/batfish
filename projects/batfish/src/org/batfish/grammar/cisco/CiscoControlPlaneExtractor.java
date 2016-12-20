@@ -390,6 +390,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private BgpPeerGroup _dummyPeerGroup;
 
+   private boolean _inIpv6BgpPeer;
+
    private boolean _inNexusNeighbor;
 
    private final BatfishCombinedParser<?, ?> _parser;
@@ -536,6 +538,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          pushPeer(_currentPeerGroup);
+      }
+      if (af.IPV6() != null) {
+         _inIpv6BgpPeer = true;
       }
    }
 
@@ -2341,7 +2346,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitIp_route_tail(Ip_route_tailContext ctx) {
-      Vrf vrf = _configuration.getVrfs().get(_currentVrf);
+      String vrfName = _currentVrf;
+      Vrf vrf = _configuration.getVrfs().get(vrfName);
+      if (vrf == null) {
+         vrf = new Vrf(vrfName);
+         _configuration.getVrfs().put(vrfName, vrf);
+      }
       Prefix prefix;
       if (ctx.prefix != null) {
          prefix = new Prefix(ctx.prefix.getText());
@@ -3560,15 +3570,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return;
       }
       String mapName = ctx.name.getText();
-      if (!_currentVrf.equals(Configuration.DEFAULT_VRF_NAME)) {
-         // for now, this otherwise won't get marked
-         _configuration.getReferencedRouteMaps().add(mapName);
-      }
+      boolean ipv6 = _inIpv6BgpPeer || _currentIpv6PeerGroup != null;
       if (ctx.IN() != null) {
-         _currentPeerGroup.setInboundRouteMap(mapName);
+         if (ipv6) {
+            _currentPeerGroup.setInboundRoute6Map(mapName);
+         }
+         else {
+            _currentPeerGroup.setInboundRouteMap(mapName);
+         }
       }
       else if (ctx.OUT() != null) {
-         _currentPeerGroup.setOutboundRouteMap(mapName);
+         if (ipv6) {
+            _currentPeerGroup.setOutboundRoute6Map(mapName);
+         }
+         else {
+            _currentPeerGroup.setOutboundRouteMap(mapName);
+         }
       }
       else {
          throw new BatfishException("bad direction");
@@ -4262,6 +4279,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int index = _peerGroupStack.size() - 1;
       _currentPeerGroup = _peerGroupStack.get(index);
       _peerGroupStack.remove(index);
+      _inIpv6BgpPeer = false;
    }
 
    @Override

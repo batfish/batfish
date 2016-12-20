@@ -30,6 +30,7 @@ import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.VendorConfiguration;
@@ -184,6 +186,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName = routingInstance.getName();
       Vrf vrf = _c.getVrfs().get(vrfName);
       BgpProcess proc = new BgpProcess();
+      proc.setRouterId(routingInstance.getRouterId());
       BgpGroup mg = routingInstance.getMasterBgpGroup();
 
       // set up default export policy (accept bgp routes)
@@ -241,6 +244,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
          Ip ip = e.getKey();
          IpBgpGroup ig = e.getValue();
          BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+         neighbor.setVrf(vrfName);
          Boolean ebgpMultihop = ig.getEbgpMultihop();
          if (ebgpMultihop == null) {
             ebgpMultihop = false;
@@ -426,12 +430,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       OspfProcess newProc = new OspfProcess();
       String vrfName = routingInstance.getName();
       // export policies
-      String ospfExportPolicyName = "~OSPF_EXPORT_POLICY" + vrfName + "~";
+      String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
       RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName);
       _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
       newProc.setExportPolicy(ospfExportPolicyName);
       If ospfExportPolicyConditional = new If();
-      // TODO: set default metric-type based on ospf process setttings
+      // TODO: set default metric-type for special cases based on ospf process
+      // setttings
+      ospfExportPolicy.getStatements()
+            .add(new SetOspfMetricType(OspfMetricType.E2));
       ospfExportPolicy.getStatements().add(ospfExportPolicyConditional);
       Disjunction matchSomeExportPolicy = new Disjunction();
       ospfExportPolicyConditional.setGuard(matchSomeExportPolicy);
@@ -864,6 +871,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             name, _c);
+      newIface.setVrf(iface.getRoutingInstance());
       Zone zone = _interfaceZones.get(iface);
       if (zone != null) {
          String zoneName = zone.getName();
@@ -1347,6 +1355,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
       _c.setDomainName(_defaultRoutingInstance.getDomainName());
+      for (String riName : _routingInstances.keySet()) {
+         _c.getVrfs().put(riName, new Vrf(riName));
+      }
 
       // convert prefix lists to route filter lists
       for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
@@ -1461,6 +1472,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
          Interface unitIface = eUnit.getValue();
          org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
          _c.getInterfaces().put(unitName, newUnitIface);
+         String vrfName = newUnitIface.getVrf();
+         _c.getVrfs().get(vrfName).getInterfaces().put(unitName, newUnitIface);
       }
 
       // set router-id

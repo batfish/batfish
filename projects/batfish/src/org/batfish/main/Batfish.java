@@ -1968,13 +1968,21 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Configuration node = configurations.get(nodeName);
          String vrfName = route.getVrf();
          if (node != null) {
+            node.getRoutes().add(route);
             Vrf vrf = node.getVrfs().get(vrfName);
-            vrf.getRoutes().add(route);
+            if (vrf != null) {
+               vrf.getRoutes().add(route);
+            }
+            else {
+               throw new BatfishException(
+                     "Precomputed route refers to missing vrf: '" + vrfName
+                           + "' on node: '" + nodeName + "'");
+            }
          }
          else {
             throw new BatfishException(
-                  "Precomputed route refers to missing node: \"" + nodeName
-                        + "\"");
+                  "Precomputed route refers to missing node: '" + nodeName
+                        + "'");
          }
       }
    }

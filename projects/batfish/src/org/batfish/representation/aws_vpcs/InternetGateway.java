@@ -45,22 +45,25 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
       for (String vpcId : _attachmentVpcIds) {
 
-         Interface igwIface = new Interface(vpcId, cfgNode);
+         String igwIfaceName = vpcId;
+         Interface igwIface = new Interface(igwIfaceName, cfgNode);
          Prefix igwIfacePrefix = awsVpcConfiguration
                .getNextGeneratedLinkSubnet();
          igwIface.setPrefix(igwIfacePrefix);
-         cfgNode.getDefaultVrf().getInterfaces().put(igwIface.getName(),
-               igwIface);
+         cfgNode.getInterfaces().put(igwIfaceName, igwIface);
+         cfgNode.getDefaultVrf().getInterfaces().put(igwIfaceName, igwIface);
 
          // add the interface to the vpc router
          Configuration vpcConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(vpcId);
-         Interface vpcIface = new Interface(_internetGatewayId, vpcConfigNode);
+         String vpcIfaceName = _internetGatewayId;
+         Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
          Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
          Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp,
                igwIfacePrefix.getPrefixLength());
          vpcIface.setPrefix(vpcIfacePrefix);
-         vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIface.getName(),
+         vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
+         vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName,
                vpcIface);
 
          // associate this gateway with the vpc

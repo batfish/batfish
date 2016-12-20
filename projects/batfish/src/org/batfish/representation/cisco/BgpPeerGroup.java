@@ -32,11 +32,15 @@ public abstract class BgpPeerGroup implements Serializable {
 
    protected String _inboundPrefixList;
 
+   private String _inboundRoute6Map;
+
    protected String _inboundRouteMap;
 
    private transient boolean _inherited;
 
    protected String _outboundPrefixList;
+
+   private String _outboundRoute6Map;
 
    protected String _outboundRouteMap;
 
@@ -102,6 +106,10 @@ public abstract class BgpPeerGroup implements Serializable {
       return _inboundPrefixList;
    }
 
+   public String getInboundRoute6Map() {
+      return _inboundRoute6Map;
+   }
+
    public String getInboundRouteMap() {
       return _inboundRouteMap;
    }
@@ -114,6 +122,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public String getOutboundPrefixList() {
       return _outboundPrefixList;
+   }
+
+   public String getOutboundRoute6Map() {
+      return _outboundRoute6Map;
    }
 
    public String getOutboundRouteMap() {
@@ -213,11 +225,17 @@ public abstract class BgpPeerGroup implements Serializable {
       if (_inboundRouteMap == null) {
          _inboundRouteMap = pg.getInboundRouteMap();
       }
+      if (_inboundRoute6Map == null) {
+         _inboundRoute6Map = pg.getInboundRoute6Map();
+      }
       if (_outboundPrefixList == null) {
          _outboundPrefixList = pg.getOutboundPrefixList();
       }
       if (_outboundRouteMap == null) {
          _outboundRouteMap = pg.getOutboundRouteMap();
+      }
+      if (_outboundRoute6Map == null) {
+         _outboundRoute6Map = pg.getOutboundRoute6Map();
       }
       if (_remoteAs == null) {
          _remoteAs = pg.getRemoteAs();
@@ -301,12 +319,20 @@ public abstract class BgpPeerGroup implements Serializable {
       _inboundPrefixList = inboundPrefixList;
    }
 
+   public void setInboundRoute6Map(String inboundRoute6Map) {
+      _inboundRoute6Map = inboundRoute6Map;
+   }
+
    public void setInboundRouteMap(String name) {
       _inboundRouteMap = name;
    }
 
    public void setOutboundPrefixList(String listName) {
       _outboundPrefixList = listName;
+   }
+
+   public void setOutboundRoute6Map(String outboundRoute6Map) {
+      _outboundRoute6Map = outboundRoute6Map;
    }
 
    public void setOutboundRouteMap(String name) {
