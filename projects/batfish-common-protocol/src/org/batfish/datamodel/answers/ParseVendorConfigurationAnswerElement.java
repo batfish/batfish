@@ -46,9 +46,33 @@ public class ParseVendorConfigurationAnswerElement
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      // TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
+      StringBuilder retString = new StringBuilder(
+            "Results of parsing vendor configurations\n");
+
+      for (String name : _warnings.keySet()) {
+         retString.append("\n  " + name + "[Parser warnings]\n");
+         for (Warning warning : _warnings.get(name).getRedFlagWarnings()) {
+            retString.append("    RedFlag " + warning.getTag() + " : "
+                  + warning.getText() + "\n");
+         }
+         for (Warning warning : _warnings.get(name)
+               .getUnimplementedWarnings()) {
+            retString.append("    Unimplemented " + warning.getTag() + " : "
+                  + warning.getText() + "\n");
+         }
+         for (Warning warning : _warnings.get(name).getPedanticWarnings()) {
+            retString.append("    Pedantic " + warning.getTag() + " : "
+                  + warning.getText() + "\n");
+         }
+      }
+      for (String name : _parseTrees.keySet()) {
+         retString.append("\n  " + name + " [Parse trees]\n");
+         for (String sentence : _parseTrees.get(name).getSentences()) {
+            retString.append("    ParseTreeSentence : " + sentence + "\n");
+         }
+      }
+
+      return retString.toString();
    }
 
    public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {

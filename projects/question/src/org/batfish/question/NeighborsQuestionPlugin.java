@@ -83,9 +83,30 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder("Results for neighbors\n");
+
+         if (_lanNeighbors != null) {
+            sb.append("  LAN neighbors\n");
+            for (Edge edge : _lanNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_ebgpNeighbors != null) {
+            sb.append("  eBGP Neighbors\n");
+            for (IpEdge ipEdge : _ebgpNeighbors) {
+               sb.append("    " + ipEdge.toString() + "\n");
+            }
+         }
+
+         if (_ibgpNeighbors != null) {
+            sb.append("  iBGP Neighbors\n");
+            for (IpEdge ipEdge : _ibgpNeighbors) {
+               sb.append("    " + ipEdge.toString() + "\n");
+            }
+         }
+
+         return sb.toString();
       }
 
       @JsonProperty(EBGP_NEIGHBORS_VAR)

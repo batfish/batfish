@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -58,6 +57,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
          _equivalenceSets.put(className, sets);
       }
 
+      private String equivalenceSetToString(String indent, String name,
+            NamedStructureEquivalenceSets<?> nseSets) {
+         StringBuilder sb = new StringBuilder(indent + name + "\n");
+         sb.append(nseSets.prettyPrint(indent + indent));
+         return sb.toString();
+      }
+
       @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)
       public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
          return _equivalenceSets;
@@ -65,9 +71,15 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder(
+               "Results for comparing same name structure\n");
+         for (String name : _equivalenceSets.keySet()) {
+            if (_equivalenceSets.get(name).size() > 0) {
+               sb.append(equivalenceSetToString("  ", name,
+                     _equivalenceSets.get(name)));
+            }
+         }
+         return sb.toString();
       }
 
       @JsonProperty(EQUIVALENCE_SETS_MAP_VAR)

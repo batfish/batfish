@@ -64,7 +64,7 @@ public class FlowHistory implements AnswerElement {
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      StringBuilder retString = new StringBuilder();
+      StringBuilder retString = new StringBuilder("\n");
       for (String flowStr : _traces.keySet()) {
          Flow flow = _flowsByText.get(flowStr);
          retString.append(flow.prettyPrint("") + "\n");

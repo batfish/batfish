@@ -280,7 +280,7 @@ public class Driver {
                   batfish.setTerminatedWithException(true);
                   String msg = "FATAL ERROR: " + e.getMessage();
                   logger.error(msg);
-                  answer = Answer.failureAnswer(msg);
+                  answer = Answer.failureAnswer(msg, null);
                }
                catch (QuestionException e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);

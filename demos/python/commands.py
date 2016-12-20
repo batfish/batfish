@@ -17,13 +17,14 @@ import logging
 from pybatfish.client.commands import *
 
 bf_logger.setLevel(logging.DEBUG)
+bf_set_pretty_print_answers(True)
 
 print "load the testrig"
 print bf_init_testrig("test_rigs/example")
 
 print "################"
 print "# The configurations are converted to JSON using a vendor-independent data model:"
-print bf_answer("nodes", summary=False)
+print bf_answer("nodes", summary=False, nodeRegex="as2border1")
 
 print "# Some checks can be expressed as JsonPath queries on this JSON."
 print "# For instance, to check whether the MTU of each interface is 1500,"
@@ -99,6 +100,11 @@ print bf_init_environment(interfaceBlacklist=[{"hostname" : "as2border2", "inter
 print "# we can see if reachability changes at all after this failure"
 print bf_answer("reachability", type="reduced")
 print "# --> any lack of fault tolerance is easy to see"
+
+print "##############"
+print "# heuristics to uncover bugs"
+print bf_answer("aclreachability", nodeRegex="as2.*")
+print bf_answer("comparesamename", nodeRegex="as2.*")
 
 print "##############"
 print "# finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)"
