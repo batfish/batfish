@@ -51,11 +51,25 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         StringBuilder sb = new StringBuilder();
-         ObjectMapper mapper = new BatfishObjectMapper();
-         sb.append(mapper.writeValueAsString(this));
-         String output = sb.toString();
-         return output;
+         StringBuilder sb = new StringBuilder("Results for nodespath\n");
+
+         for (Integer index : _results.keySet()) {
+            NodesPathResult result = _results.get(index);
+            sb.append(String.format("  [%d]: %d results for %s\n", index,
+                  result.getNumResults(), result.getPath().toString()));
+            for (String path : result.getResult().keySet()) {
+               JsonNode suffix = result.getResult().get(path);
+               if (suffix != null) {
+                  sb.append(String.format("    %s : %s\n", path,
+                        result.getResult().get(path).toString()));
+               }
+               else {
+                  sb.append(String.format("    %s\n", path));
+               }
+            }
+         }
+
+         return sb.toString();
       }
 
       public void setResults(SortedMap<Integer, NodesPathResult> results) {

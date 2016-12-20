@@ -2060,17 +2060,22 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    void outputAnswer(Answer answer) {
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
-         String jsonString = mapper.writeValueAsString(answer);
+         String jsonString = mapper
+               .writeValueAsString(_settings.prettyPrintAnswer()
+                     ? answer.prettyPrintAnswer() : answer);
          _logger.debug(jsonString);
          writeJsonAnswer(jsonString);
       }
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
                e);
-         Answer failureAnswer = Answer.failureAnswer(e.getMessage());
+         Answer failureAnswer = Answer.failureAnswer(e.toString(),
+               answer.getQuestion());
          failureAnswer.addAnswerElement(be.getBatfishStackTrace());
          try {
-            String failureJsonString = mapper.writeValueAsString(failureAnswer);
+            String failureJsonString = mapper
+                  .writeValueAsString(_settings.prettyPrintAnswer()
+                        ? failureAnswer.prettyPrintAnswer() : failureAnswer);
             _logger.error(failureJsonString);
             writeJsonAnswer(failureJsonString);
          }

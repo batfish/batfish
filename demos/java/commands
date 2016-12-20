@@ -105,6 +105,12 @@ echo # we can see if reachability changes at all after this failure
 get reachability type=reduced
 echo # --> any lack of fault tolerance is easy to see
 
+echo "##############"
+echo "# heuristics to uncover bugs"
+get aclreachability nodeRegex="as2.*"
+get comparesamename nodeRegex="as2.*"
+
+
 echo ##############
 echo # finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
 
