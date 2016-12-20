@@ -11,12 +11,13 @@ import java.util.Set;
 import org.batfish.job.BatfishJob;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowBuilder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
-import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.collections.NodeVrfSet;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -33,8 +34,8 @@ import com.microsoft.z3.Z3Exception;
 
 public final class NodJob extends BatfishJob<NodJobResult> {
 
-   public static Flow createFlow(String node, Map<String, Long> constraints,
-         String tag) {
+   public static Flow createFlow(String node, String vrf,
+         Map<String, Long> constraints, String tag) {
       FlowBuilder flowBuilder = new FlowBuilder();
       flowBuilder.setIngressNode(node);
       flowBuilder.setTag(tag);
@@ -126,19 +127,19 @@ public final class NodJob extends BatfishJob<NodJobResult> {
 
    private Synthesizer _dataPlaneSynthesizer;
 
-   private final NodeSet _nodeSet;
+   private final NodeVrfSet _nodeVrfSet;
 
    private QuerySynthesizer _querySynthesizer;
 
    private String _tag;
 
    public NodJob(Settings settings, Synthesizer dataPlaneSynthesizer,
-         QuerySynthesizer querySynthesizer, NodeSet nodeSet, String tag) {
+         QuerySynthesizer querySynthesizer, NodeVrfSet nodeVrfSet, String tag) {
       super(settings);
       _dataPlaneSynthesizer = dataPlaneSynthesizer;
       _querySynthesizer = querySynthesizer;
-      _nodeSet = new NodeSet();
-      _nodeSet.addAll(nodeSet);
+      _nodeVrfSet = new NodeVrfSet();
+      _nodeVrfSet.addAll(nodeVrfSet);
       _tag = tag;
    }
 
@@ -220,8 +221,10 @@ public final class NodJob extends BatfishJob<NodJobResult> {
             constraints.put(name, val);
          }
          Set<Flow> flows = new HashSet<>();
-         for (String node : _nodeSet) {
-            Flow flow = createFlow(node, constraints);
+         for (Pair<String, String> nodeVrf : _nodeVrfSet) {
+            String node = nodeVrf.getFirst();
+            String vrf = nodeVrf.getSecond();
+            Flow flow = createFlow(node, vrf, constraints);
             flows.add(flow);
          }
          elapsedTime = System.currentTimeMillis() - startTime;
@@ -235,8 +238,9 @@ public final class NodJob extends BatfishJob<NodJobResult> {
       }
    }
 
-   private Flow createFlow(String node, Map<String, Long> constraints) {
-      return createFlow(node, constraints, _tag);
+   private Flow createFlow(String node, String vrf,
+         Map<String, Long> constraints) {
+      return createFlow(node, vrf, constraints, _tag);
    }
 
 }

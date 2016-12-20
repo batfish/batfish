@@ -49,7 +49,7 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
          }
          else {
             cc.undefined("Reference to undefined community-list: " + listName,
-                  CiscoVendorConfiguration.COMMUNITY_LIST, listName);
+                  CiscoConfiguration.COMMUNITY_LIST, listName);
          }
       }
       return d.simplify();

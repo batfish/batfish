@@ -75,8 +75,8 @@ public class RoutingPolicy extends ComparableStructure<String> {
    }
 
    public boolean process(AbstractRoute inputRoute, AbstractRoute6 inputRoute6,
-         AbstractRouteBuilder<?> outputRoute, Ip peerAddress) {
-      Result result = call(new Environment(_owner, inputRoute, inputRoute6,
+         AbstractRouteBuilder<?> outputRoute, Ip peerAddress, String vrf) {
+      Result result = call(new Environment(_owner, vrf, inputRoute, inputRoute6,
             outputRoute, peerAddress));
       return result.getBooleanValue();
    }

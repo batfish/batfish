@@ -14,7 +14,9 @@
       "med" : 20,
       "originatorIp" : "0.0.0.0",
       "asPath" : [ [ 1239 ], [7018, 7019]],
-      "communities" : [ 262145 ]
+      "communities" : [ 262145 ],
+      "srcVrf":"default",
+      "dstVrf":"default"
     }
 	]
 }

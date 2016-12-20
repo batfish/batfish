@@ -92,7 +92,6 @@ import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
 import org.batfish.representation.juniper.IsisLevelSettings;
 import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperConfiguration;
-import org.batfish.representation.juniper.JuniperVendorConfiguration;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
@@ -1544,17 +1543,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private final Set<String> _unimplementedFeatures;
 
-   private JuniperVendorConfiguration _vendorConfiguration;
-
    private final Warnings _w;
 
    public ConfigurationBuilder(FlatJuniperCombinedParser parser, String text,
          Warnings warnings, Set<String> unimplementedFeatures) {
       _parser = parser;
       _text = text;
-      _vendorConfiguration = new JuniperVendorConfiguration(
-            unimplementedFeatures);
-      _configuration = _vendorConfiguration;
+      _configuration = new JuniperConfiguration(unimplementedFeatures);
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
       _termRouteFilters = new HashMap<>();
       _unimplementedFeatures = unimplementedFeatures;
@@ -1806,8 +1801,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterIntt_named(Intt_namedContext ctx) {
+      Interface currentInterface;
       if (ctx.name == null) {
-         _currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
+         currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
       }
       else {
          String ifaceName = ctx.name.getText();
@@ -1828,14 +1824,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             }
             interfaces = nodeDevice.getInterfaces();
          }
-         _currentInterface = interfaces.get(ifaceName);
-         if (_currentInterface == null) {
+         currentInterface = interfaces.get(ifaceName);
+         if (currentInterface == null) {
             String fullIfaceName = nodeDevicePrefix + ifaceName;
-            _currentInterface = new Interface(fullIfaceName);
-            interfaces.put(fullIfaceName, _currentInterface);
+            currentInterface = new Interface(fullIfaceName);
+            currentInterface
+                  .setRoutingInstance(_currentRoutingInstance.getName());
+            interfaces.put(fullIfaceName, currentInterface);
          }
       }
-      _currentMasterInterface = _currentInterface;
+      _currentInterface = currentInterface;
+      _currentMasterInterface = currentInterface;
    }
 
    @Override
@@ -1900,6 +1899,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentIsisInterface = interfaces.get(name);
       if (_currentIsisInterface == null) {
          _currentIsisInterface = new Interface(name);
+         _currentIsisInterface
+               .setRoutingInstance(_currentRoutingInstance.getName());
          interfaces.put(name, _currentIsisInterface);
       }
       if (unit != null) {
@@ -1907,6 +1908,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentIsisInterface = units.get(unitFullName);
          if (_currentIsisInterface == null) {
             _currentIsisInterface = new Interface(unitFullName);
+            _currentIsisInterface
+                  .setRoutingInstance(_currentRoutingInstance.getName());
             units.put(unitFullName, _currentIsisInterface);
          }
       }
@@ -1938,6 +1941,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterface = units.get(unitFullName);
       if (_currentInterface == null) {
          _currentInterface = new Interface(unitFullName);
+         _currentInterface
+               .setRoutingInstance(_currentRoutingInstance.getName());
          units.put(unitFullName, _currentInterface);
       }
    }
@@ -2536,6 +2541,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Interface iface = interfaces.get(name);
       if (iface == null) {
          iface = new Interface(name);
+         iface.setRoutingInstance(_currentRoutingInstance.getName());
          interfaces.put(name, iface);
       }
       PsFrom from;
@@ -2544,6 +2550,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          iface = units.get(unitFullName);
          if (iface == null) {
             iface = new Interface(unitFullName);
+            iface.setRoutingInstance(_currentRoutingInstance.getName());
             units.put(unitFullName, iface);
          }
          from = new PsFromInterface(unitFullName);
@@ -3686,8 +3693,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentPsThens.add(PsThenReject.INSTANCE);
    }
 
-   public JuniperVendorConfiguration getConfiguration() {
-      return _vendorConfiguration;
+   public JuniperConfiguration getConfiguration() {
+      return _configuration;
    }
 
    private String initIkeProposal(IkeProposal proposal) {
@@ -3739,6 +3746,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Interface iface = interfaces.get(name);
       if (iface == null) {
          iface = new Interface(name);
+         iface.setRoutingInstance(_currentRoutingInstance.getName());
          interfaces.put(name, iface);
       }
       if (unit != null) {
@@ -3746,6 +3754,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          iface = units.get(unitFullName);
          if (iface == null) {
             iface = new Interface(unitFullName);
+            iface.setRoutingInstance(_currentRoutingInstance.getName());
             units.put(unitFullName, iface);
          }
       }

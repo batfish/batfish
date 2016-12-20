@@ -29,7 +29,7 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
       }
       else if (!cc.getPrefix6Lists().containsKey(_name)) {
          cc.undefined("Reference to undefined ipv6 prefix-list: " + _name,
-               CiscoVendorConfiguration.PREFIX6_LIST, _name);
+               CiscoConfiguration.PREFIX6_LIST, _name);
       }
       else {
          Prefix6List list = cc.getPrefix6Lists().get(_name);
@@ -47,7 +47,7 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
       }
       else if (!cc.getPrefixLists().containsKey(_name)) {
          cc.undefined("Reference to undefined ipv4 prefix-list: " + _name,
-               CiscoVendorConfiguration.PREFIX_LIST, _name);
+               CiscoConfiguration.PREFIX_LIST, _name);
       }
       else {
          PrefixList list = cc.getPrefixLists().get(_name);

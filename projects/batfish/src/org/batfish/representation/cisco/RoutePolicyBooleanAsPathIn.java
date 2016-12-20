@@ -36,7 +36,7 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
          if (acl == null) {
             cc.undefined(
                   "Reference to undefined ip as-path access-list: " + name,
-                  CiscoVendorConfiguration.AS_PATH_ACCESS_LIST, name);
+                  CiscoConfiguration.AS_PATH_ACCESS_LIST, name);
             return BooleanExprs.False.toStaticBooleanExpr();
          }
       }

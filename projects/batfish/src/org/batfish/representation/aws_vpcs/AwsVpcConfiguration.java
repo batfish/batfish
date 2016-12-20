@@ -13,6 +13,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.main.Warnings;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -282,8 +283,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
       // TODO: for now, set all interfaces to have the same bandwidth
       for (Configuration cfgNode : _configurationNodes.values()) {
-         for (Interface iface : cfgNode.getInterfaces().values()) {
-            iface.setBandwidth(1E12d);
+         for (Vrf vrf : cfgNode.getVrfs().values()) {
+            for (Interface iface : vrf.getInterfaces().values()) {
+               iface.setBandwidth(1E12d);
+            }
          }
       }
 

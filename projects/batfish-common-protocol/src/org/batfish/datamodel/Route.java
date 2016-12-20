@@ -48,6 +48,8 @@ public class Route implements Comparable<Route>, Serializable {
 
    public static final int UNSET_ROUTE_TAG = -1;
 
+   private static final String VRF_VAR = "vrf";
+
    private final int _administrativeCost;
 
    private transient String _diffSymbol;
@@ -68,8 +70,11 @@ public class Route implements Comparable<Route>, Serializable {
 
    private final int _tag;
 
+   private final String _vrf;
+
    @JsonCreator
    public Route(@JsonProperty(NODE_VAR) String node,
+         @JsonProperty(VRF_VAR) String vrf,
          @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(NEXT_HOP_VAR) String nextHop,
@@ -87,11 +92,16 @@ public class Route implements Comparable<Route>, Serializable {
       _metric = metric;
       _protocol = protocol;
       _tag = tag;
+      _vrf = vrf;
    }
 
    @Override
    public int compareTo(Route rhs) {
       int result = _node.compareTo(rhs._node);
+      if (result != 0) {
+         return result;
+      }
+      result = _vrf.compareTo(rhs._vrf);
       if (result != 0) {
          return result;
       }
@@ -144,6 +154,9 @@ public class Route implements Comparable<Route>, Serializable {
          return false;
       }
       if (_tag != other._tag) {
+         return false;
+      }
+      if (!_vrf.equals(other._vrf)) {
          return false;
       }
       return true;
@@ -199,6 +212,10 @@ public class Route implements Comparable<Route>, Serializable {
       return _tag;
    }
 
+   public String getVrf() {
+      return _vrf;
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;
@@ -210,6 +227,7 @@ public class Route implements Comparable<Route>, Serializable {
       result = prime * result + _network.hashCode();
       result = prime * result + _protocol.hashCode();
       result = prime * result + _tag;
+      result = prime * result + _vrf.hashCode();
       return result;
    }
 

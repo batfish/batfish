@@ -71,6 +71,8 @@ public class BgpAdvertisement
 
    private static final String DST_NODE_VAR = "dstNode";
 
+   private static final String DST_VRF_VAR = "dstVrf";
+
    private static final String LOCAL_PREFERENCE_VAR = "localPreference";
 
    private static final String MED_VAR = "med";
@@ -94,6 +96,8 @@ public class BgpAdvertisement
 
    private static final String SRC_PROTOCOL_VAR = "srcProtocol";
 
+   private static final String SRC_VRF_VAR = "srcVrf";
+
    private static final String TYPE_VAR = "type";
 
    private static final Ip UNSET_ORIGINATOR_IP = new Ip(-1l);
@@ -105,6 +109,8 @@ public class BgpAdvertisement
    private final Ip _dstIp;
 
    private final String _dstNode;
+
+   private final String _dstVrf;
 
    private final int _localPreference;
 
@@ -124,6 +130,8 @@ public class BgpAdvertisement
 
    private final RoutingProtocol _srcProtocol;
 
+   private final String _srcVrf;
+
    private final BgpAdvertisementType _type;
 
    @JsonCreator
@@ -131,8 +139,10 @@ public class BgpAdvertisement
          @JsonProperty(NETWORK_VAR) Prefix network,
          @JsonProperty(NEXT_HOP_IP_VAR) Ip nextHopIp,
          @JsonProperty(SRC_NODE_VAR) String srcNode,
+         @JsonProperty(SRC_VRF_VAR) String srcVrf,
          @JsonProperty(SRC_IP_VAR) Ip srcIp,
          @JsonProperty(DST_NODE_VAR) String dstNode,
+         @JsonProperty(DST_VRF_VAR) String dstVrf,
          @JsonProperty(DST_IP_VAR) Ip dstIp,
          @JsonProperty(SRC_PROTOCOL_VAR) RoutingProtocol srcProtocol,
          @JsonProperty(ORIGIN_TYPE_VAR) OriginType originType,
@@ -145,8 +155,10 @@ public class BgpAdvertisement
       _network = network;
       _nextHopIp = nextHopIp;
       _srcNode = srcNode;
+      _srcVrf = srcVrf;
       _srcIp = srcIp;
       _dstNode = dstNode;
+      _dstVrf = dstVrf;
       _dstIp = dstIp;
       _srcProtocol = srcProtocol;
       _originType = originType;
@@ -165,6 +177,31 @@ public class BgpAdvertisement
          return ret;
       }
       ret = _srcNode.compareTo(rhs._srcNode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _srcVrf.compareTo(rhs._srcVrf);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _dstNode.compareTo(rhs._dstNode);
+      if (ret != 0) {
+         return ret;
+      }
+      if (_dstVrf == null) {
+         if (rhs._dstVrf != null) {
+            ret = -1;
+         }
+         else {
+            ret = 0;
+         }
+      }
+      else if (rhs._dstVrf == null) {
+         ret = 1;
+      }
+      else {
+         ret = _dstVrf.compareTo(rhs._dstVrf);
+      }
       if (ret != 0) {
          return ret;
       }
@@ -232,6 +269,14 @@ public class BgpAdvertisement
       if (!_dstNode.equals(other._dstNode)) {
          return false;
       }
+      if (_dstVrf == null) {
+         if (other._dstVrf != null) {
+            return false;
+         }
+      }
+      else if (!_dstVrf.equals(other._dstVrf)) {
+         return false;
+      }
       if (_localPreference != other._localPreference) {
          return false;
       }
@@ -254,6 +299,9 @@ public class BgpAdvertisement
          return false;
       }
       if (_srcProtocol != other._srcProtocol) {
+         return false;
+      }
+      if (!_srcVrf.equals(other._srcVrf)) {
          return false;
       }
       if (!_type.equals(other._type)) {
@@ -280,6 +328,11 @@ public class BgpAdvertisement
    @JsonProperty(DST_NODE_VAR)
    public String getDstNode() {
       return _dstNode;
+   }
+
+   @JsonProperty(DST_VRF_VAR)
+   public String getDstVrf() {
+      return _dstVrf;
    }
 
    @JsonProperty(LOCAL_PREFERENCE_VAR)
@@ -327,6 +380,11 @@ public class BgpAdvertisement
       return _srcProtocol;
    }
 
+   @JsonProperty(SRC_VRF_VAR)
+   public String getSrcVrf() {
+      return _srcVrf;
+   }
+
    @JsonProperty(TYPE_VAR)
    public BgpAdvertisementType getType() {
       return _type;
@@ -340,6 +398,7 @@ public class BgpAdvertisement
       result = prime * result + _communities.hashCode();
       result = prime * result + _dstIp.hashCode();
       result = prime * result + _dstNode.hashCode();
+      result = prime * result + (_dstVrf != null ? _dstVrf.hashCode() : 0);
       result = prime * result + _localPreference;
       result = prime * result + _med;
       result = prime * result + _network.hashCode();
@@ -349,6 +408,7 @@ public class BgpAdvertisement
       result = prime * result + _srcIp.hashCode();
       result = prime * result + _srcNode.hashCode();
       result = prime * result + _srcProtocol.hashCode();
+      result = prime * result + _srcVrf.hashCode();
       result = prime * result + _type.hashCode();
       return result;
    }
@@ -359,8 +419,9 @@ public class BgpAdvertisement
             : _originatorIp.toString();
       return "BgpAdvert<" + _type + ", " + _network + ", " + _nextHopIp + ", "
             + _srcIp + ", " + _dstIp + ", " + _srcProtocol + ", " + _srcNode
-            + ", " + _dstNode + ", " + _localPreference + ", " + _med + ", "
-            + originatorIp + ", " + _originType + ">";
+            + ", " + _srcVrf + ", " + _dstNode + ", " + _dstVrf + ", "
+            + _localPreference + ", " + _med + ", " + originatorIp + ", "
+            + _originType + ">";
    }
 
 }

@@ -142,8 +142,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Configuration cfgNode = new Configuration(_subnetId);
 
       // add one interface that faces the instances
-      Interface instancesIface = new Interface(_subnetId, cfgNode);
-      cfgNode.getInterfaces().put(_subnetId, instancesIface);
+      String instancesIfaceName = _subnetId;
+      Interface instancesIface = new Interface(instancesIfaceName, cfgNode);
+      cfgNode.getInterfaces().put(instancesIfaceName, instancesIface);
+      cfgNode.getDefaultVrf().getInterfaces().put(instancesIfaceName,
+            instancesIface);
       Prefix instancesIfacePrefix = new Prefix(_cidrBlock.getEndAddress(),
             _cidrBlock.getPrefixLength());
       instancesIface.setPrefix(instancesIfacePrefix);
@@ -157,23 +160,27 @@ public class Subnet implements AwsVpcEntity, Serializable {
             vpcSubnetLinkPrefix.getPrefixLength());
 
       // add an interface that faces the VPC router
-      Interface subnetIface = new Interface(_vpcId, cfgNode);
-      cfgNode.getInterfaces().put(subnetIface.getName(), subnetIface);
+      String subnetIfaceName = _vpcId;
+      Interface subnetIface = new Interface(subnetIfaceName, cfgNode);
+      cfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
+      cfgNode.getDefaultVrf().getInterfaces().put(subnetIfaceName, subnetIface);
       subnetIface.getAllPrefixes().add(subnetIfacePrefix);
       subnetIface.setPrefix(subnetIfacePrefix);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes()
             .get(_vpcId);
-      Interface vpcIface = new Interface(_subnetId, vpcConfigNode);
-      vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
+      String vpcIfaceName = _subnetId;
+      Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
+      vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
+      vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName, vpcIface);
       vpcIface.getAllPrefixes().add(vpcIfacePrefix);
       vpcIface.setPrefix(vpcIfacePrefix);
       // add a static route on the vpc router for this subnet
       StaticRoute vpcToSubnetRoute = new StaticRoute(_cidrBlock,
             subnetIfacePrefix.getAddress(), null,
             Route.DEFAULT_STATIC_ROUTE_ADMIN, Route.DEFAULT_STATIC_ROUTE_COST);
-      vpcConfigNode.getStaticRoutes().add(vpcToSubnetRoute);
+      vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
 
       // attach to igw if it exists
       _internetGatewayId = awsVpcConfiguration.getVpcs().get(_vpcId)
@@ -189,18 +196,25 @@ public class Subnet implements AwsVpcEntity, Serializable {
                igwSubnetLinkPrefix.getPrefixLength());
 
          // add an interface that faces the igw
-         Interface subnetIgwIface = new Interface(_internetGatewayId, cfgNode);
-         cfgNode.getInterfaces().put(_internetGatewayId, subnetIgwIface);
+         String subnetIgwIfaceName = _internetGatewayId;
+         Interface subnetIgwIface = new Interface(subnetIgwIfaceName, cfgNode);
+         cfgNode.getInterfaces().put(subnetIgwIfaceName, subnetIgwIface);
+         cfgNode.getDefaultVrf().getInterfaces().put(subnetIgwIfaceName,
+               subnetIgwIface);
          subnetIgwIface.getAllPrefixes().add(subnetIgwIfacePrefix);
          subnetIgwIface.setPrefix(subnetIgwIfacePrefix);
 
          // add an interface to the igw facing the subnet
          Configuration igwConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(_internetGatewayId);
-         Interface igwSubnetIface = new Interface(_subnetId, igwConfigNode);
+         String igwSubnetIfaceName = _subnetId;
+         Interface igwSubnetIface = new Interface(igwSubnetIfaceName,
+               igwConfigNode);
          igwSubnetIface.setPrefix(igwSubnetIfacePrefix);
          igwSubnetIface.getAllPrefixes().add(igwSubnetIfacePrefix);
-         igwConfigNode.getInterfaces().put(_subnetId, igwSubnetIface);
+         igwConfigNode.getInterfaces().put(igwSubnetIfaceName, igwSubnetIface);
+         igwConfigNode.getDefaultVrf().getInterfaces().put(igwSubnetIfaceName,
+               igwSubnetIface);
          igwAddress = igwSubnetIfacePrefix.getAddress();
       }
 
@@ -218,18 +232,25 @@ public class Subnet implements AwsVpcEntity, Serializable {
                vgwSubnetLinkPrefix.getPrefixLength());
 
          // add an interface that faces the vgw
-         Interface subnetVgwIface = new Interface(_vpnGatewayId, cfgNode);
-         cfgNode.getInterfaces().put(_vpnGatewayId, subnetVgwIface);
+         String subnetVgwIfaceName = _vpnGatewayId;
+         Interface subnetVgwIface = new Interface(subnetVgwIfaceName, cfgNode);
+         cfgNode.getInterfaces().put(subnetVgwIfaceName, subnetVgwIface);
+         cfgNode.getDefaultVrf().getInterfaces().put(subnetVgwIfaceName,
+               subnetVgwIface);
          subnetVgwIface.getAllPrefixes().add(subnetVgwIfacePrefix);
          subnetVgwIface.setPrefix(subnetVgwIfacePrefix);
 
          // add an interface to the igw facing the subnet
          Configuration vgwConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(_vpnGatewayId);
-         Interface vgwSubnetIface = new Interface(_subnetId, vgwConfigNode);
+         String vgwSubnetIfaceName = _subnetId;
+         Interface vgwSubnetIface = new Interface(vgwSubnetIfaceName,
+               vgwConfigNode);
          vgwSubnetIface.setPrefix(vgwSubnetIfacePrefix);
          vgwSubnetIface.getAllPrefixes().add(vgwSubnetIfacePrefix);
-         vgwConfigNode.getInterfaces().put(_subnetId, vgwSubnetIface);
+         vgwConfigNode.getInterfaces().put(vgwSubnetIfaceName, vgwSubnetIface);
+         vgwConfigNode.getDefaultVrf().getInterfaces().put(vgwSubnetIfaceName,
+               vgwSubnetIface);
          igwAddress = vgwSubnetIfacePrefix.getAddress();
       }
 
@@ -247,7 +268,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                vpcIfacePrefix.getAddress(), igwAddress, vgwAddress, this,
                cfgNode);
          if (sRoute != null) {
-            cfgNode.getStaticRoutes().add(sRoute);
+            cfgNode.getDefaultVrf().getStaticRoutes().add(sRoute);
          }
       }
 
@@ -264,8 +285,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       cfgNode.getIpAccessLists().put(inAcl.getName(), inAcl);
       cfgNode.getIpAccessLists().put(outAcl.getName(), outAcl);
 
-      for (Entry<String, Interface> eIface : cfgNode.getInterfaces()
-            .entrySet()) {
+      for (Entry<String, Interface> eIface : cfgNode.getDefaultVrf()
+            .getInterfaces().entrySet()) {
          String ifaceName = eIface.getKey();
          if (awsVpcConfiguration.getVpcs().containsKey(ifaceName)
                || awsVpcConfiguration.getInternetGateways()

@@ -18,6 +18,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -190,12 +191,16 @@ public class HostConfiguration extends VendorConfiguration {
       _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       _c.setDefaultInboundAction(LineAction.ACCEPT);
       _c.setRoles(_roles);
+      _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME,
+            new Vrf(Configuration.DEFAULT_VRF_NAME));
 
       // add interfaces
-      for (HostInterface hostInterface : _hostInterfaces.values()) {
-         _c.getInterfaces().put(hostInterface.getName(),
-               hostInterface.toInterface(_c, _w));
-      }
+      _hostInterfaces.forEach((iname, hostInterface) -> {
+         org.batfish.datamodel.Interface newIface = hostInterface
+               .toInterface(_c, _w);
+         _c.getInterfaces().put(iname, newIface);
+         _c.getDefaultVrf().getInterfaces().put(iname, newIface);
+      });
 
       // add iptables
       if (_iptablesVendorConfig != null) {
@@ -204,7 +209,7 @@ public class HostConfiguration extends VendorConfiguration {
 
       // apply acls to interfaces
       if (simple()) {
-         for (Interface iface : _c.getInterfaces().values()) {
+         for (Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
             iface.setIncomingFilter(_c.getIpAccessLists().get(FILTER_INPUT));
             iface.setOutgoingFilter(_c.getIpAccessLists().get(FILTER_OUTPUT));
          }
@@ -214,16 +219,16 @@ public class HostConfiguration extends VendorConfiguration {
       }
 
       if (_staticRoutes.isEmpty()) {
-         for (String ifaceName : _c.getInterfaces().keySet()) {
+         for (String ifaceName : _c.getDefaultVrf().getInterfaces().keySet()) {
             StaticRoute sr = new StaticRoute(Prefix.ZERO, null, ifaceName,
                   AbstractRoute.NO_TAG);
             sr.setAdministrativeCost(
                   HostStaticRoute.DEFAULT_ADMINISTRATIVE_COST);
-            _c.getStaticRoutes().add(sr);
+            _c.getDefaultVrf().getStaticRoutes().add(sr);
          }
       }
       else {
-         _c.getStaticRoutes().addAll(_staticRoutes.stream()
+         _c.getDefaultVrf().getStaticRoutes().addAll(_staticRoutes.stream()
                .map(hsr -> hsr.toStaticRoute()).collect(Collectors.toSet()));
       }
       return _c;

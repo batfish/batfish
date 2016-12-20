@@ -39,7 +39,7 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
          }
          else {
             cc.undefined("Reference to undefined prefix-list: " + listName,
-                  CiscoVendorConfiguration.PREFIX_LIST, listName);
+                  CiscoConfiguration.PREFIX_LIST, listName);
          }
       }
       return d.simplify();

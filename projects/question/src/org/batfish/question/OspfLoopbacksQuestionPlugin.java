@@ -20,6 +20,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -144,53 +145,57 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                continue;
             }
             Configuration c = e.getValue();
-            for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
-               String interfaceName = e2.getKey();
-               Interface iface = e2.getValue();
-               if (iface.isLoopback(c.getConfigurationFormat())) {
-                  if (iface.getOspfEnabled()) {
-                     // ospf is running either passively or actively
-                     answerElement.add(answerElement.getRunning(), hostname,
-                           interfaceName);
-                     if (iface.getOspfPassive()) {
-                        answerElement.add(answerElement.getPassive(), hostname,
+            for (Vrf vrf : c.getVrfs().values()) {
+               for (Entry<String, Interface> e2 : vrf.getInterfaces()
+                     .entrySet()) {
+                  String interfaceName = e2.getKey();
+                  Interface iface = e2.getValue();
+                  if (iface.isLoopback(c.getConfigurationFormat())) {
+                     if (iface.getOspfEnabled()) {
+                        // ospf is running either passively or actively
+                        answerElement.add(answerElement.getRunning(), hostname,
                               interfaceName);
+                        if (iface.getOspfPassive()) {
+                           answerElement.add(answerElement.getPassive(),
+                                 hostname, interfaceName);
+                        }
+                        else {
+                           answerElement.add(answerElement.getActive(),
+                                 hostname, interfaceName);
+                        }
                      }
                      else {
-                        answerElement.add(answerElement.getActive(), hostname,
-                              interfaceName);
-                     }
-                  }
-                  else {
-                     // check if exported as external ospf route
-                     boolean exported = false;
-                     OspfProcess proc = c.getOspfProcess();
-                     if (proc != null) {
-                        String exportPolicyName = proc.getExportPolicy();
-                        if (exportPolicyName != null) {
-                           RoutingPolicy exportPolicy = c.getRoutingPolicies()
-                                 .get(exportPolicyName);
-                           if (exportPolicy != null) {
-                              for (Prefix prefix : iface.getAllPrefixes()) {
-                                 ConnectedRoute route = new ConnectedRoute(
-                                       prefix, interfaceName);
-                                 if (exportPolicy.process(route, null,
-                                       new OspfExternalRoute.Builder(), null)) {
-                                    exported = true;
+                        // check if exported as external ospf route
+                        boolean exported = false;
+                        OspfProcess proc = vrf.getOspfProcess();
+                        if (proc != null) {
+                           String exportPolicyName = proc.getExportPolicy();
+                           if (exportPolicyName != null) {
+                              RoutingPolicy exportPolicy = c
+                                    .getRoutingPolicies().get(exportPolicyName);
+                              if (exportPolicy != null) {
+                                 for (Prefix prefix : iface.getAllPrefixes()) {
+                                    ConnectedRoute route = new ConnectedRoute(
+                                          prefix, interfaceName);
+                                    if (exportPolicy.process(route, null,
+                                          new OspfExternalRoute.Builder(), null,
+                                          vrf.getName())) {
+                                       exported = true;
+                                    }
                                  }
                               }
                            }
                         }
-                     }
 
-                     if (exported) {
-                        answerElement.add(answerElement.getExported(), hostname,
-                              interfaceName);
-                     }
-                     else {
-                        // not exported, so should be inactive
-                        answerElement.add(answerElement.getInactive(), hostname,
-                              interfaceName);
+                        if (exported) {
+                           answerElement.add(answerElement.getExported(),
+                                 hostname, interfaceName);
+                        }
+                        else {
+                           // not exported, so should be inactive
+                           answerElement.add(answerElement.getInactive(),
+                                 hostname, interfaceName);
+                        }
                      }
                   }
                }

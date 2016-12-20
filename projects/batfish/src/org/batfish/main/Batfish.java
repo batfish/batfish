@@ -71,6 +71,7 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
@@ -98,6 +99,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeRoleMap;
 import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -801,6 +803,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private InterfaceSet computeFlowSinks(
          Map<String, Configuration> configurations, Topology topology) {
+      // TODO: confirm VRFs are handled correctly
       InterfaceSet flowSinks = new InterfaceSet();
       InterfaceSet topologyInterfaces = new InterfaceSet();
       for (Edge edge : topology.getEdges()) {
@@ -825,6 +828,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public Map<Ip, Set<String>> computeIpOwners(
          Map<String, Configuration> configurations) {
+      // TODO: confirm VRFs are handled correctly
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       configurations.forEach((hostname, c) -> {
          for (Interface i : c.getInterfaces().values()) {
@@ -1222,13 +1226,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          // use cisco arbitrarily
          config.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
          OspfProcess proc = new OspfProcess();
-         config.setOspfProcess(proc);
+         config.getDefaultVrf().setOspfProcess(proc);
          proc.setReferenceBandwidth(
                org.batfish.representation.cisco.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH);
          long backboneArea = 0;
          OspfArea area = new OspfArea(backboneArea);
          proc.getAreas().put(backboneArea, area);
-         area.getInterfaces().addAll(config.getInterfaces().values());
+         area.getInterfaces()
+               .addAll(config.getDefaultVrf().getInterfaces().values());
       }
 
       serializeIndependentConfigs(configs, outputPath);
@@ -1651,9 +1656,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .getAdvertisements();
       for (Configuration node : configurations.values()) {
          node.initBgpAdvertisements();
+         for (Vrf vrf : node.getVrfs().values()) {
+            vrf.initBgpAdvertisements();
+         }
       }
       for (BgpAdvertisement bgpAdvertisement : globalBgpAdvertisements) {
          BgpAdvertisementType type = bgpAdvertisement.getType();
+         String srcVrf = bgpAdvertisement.getSrcVrf();
+         String dstVrf = bgpAdvertisement.getDstVrf();
          switch (type) {
          case EBGP_ORIGINATED: {
             String originationNodeName = bgpAdvertisement.getSrcNode();
@@ -1664,6 +1674,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                originationNode.getOriginatedAdvertisements()
                      .add(bgpAdvertisement);
                originationNode.getOriginatedEbgpAdvertisements()
+                     .add(bgpAdvertisement);
+               Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+               originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               originationVrf.getOriginatedAdvertisements()
+                     .add(bgpAdvertisement);
+               originationVrf.getOriginatedEbgpAdvertisements()
                      .add(bgpAdvertisement);
             }
             else {
@@ -1682,7 +1698,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                originationNode.getBgpAdvertisements().add(bgpAdvertisement);
                originationNode.getOriginatedAdvertisements()
                      .add(bgpAdvertisement);
-               originationNode.getOriginatedIbgpAdvertisements()
+               originationNode.getOriginatedEbgpAdvertisements()
+                     .add(bgpAdvertisement);
+               Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+               originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               originationVrf.getOriginatedAdvertisements()
+                     .add(bgpAdvertisement);
+               originationVrf.getOriginatedIbgpAdvertisements()
                      .add(bgpAdvertisement);
             }
             else {
@@ -1701,6 +1723,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
                receivingNode.getReceivedEbgpAdvertisements()
                      .add(bgpAdvertisement);
+               Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+               receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingVrf.getReceivedEbgpAdvertisements()
+                     .add(bgpAdvertisement);
             }
             break;
          }
@@ -1711,7 +1738,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             if (receivingNode != null) {
                receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
                receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-               receivingNode.getReceivedIbgpAdvertisements()
+               receivingNode.getReceivedEbgpAdvertisements()
+                     .add(bgpAdvertisement);
+               Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+               receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+               receivingVrf.getReceivedIbgpAdvertisements()
                      .add(bgpAdvertisement);
             }
             break;
@@ -1724,6 +1756,10 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
                sendingNode.getSentAdvertisements().add(bgpAdvertisement);
                sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+               Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+               sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+               sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
             }
             break;
          }
@@ -1734,7 +1770,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             if (sendingNode != null) {
                sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
                sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-               sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
+               sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+               Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+               sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+               sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+               sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
             }
             break;
          }
@@ -1806,39 +1846,43 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    @Override
    public void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners) {
+      // TODO: handle duplicate ips on different vrfs
       Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
       Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
       for (Configuration node : configurations.values()) {
          String hostname = node.getHostname();
-         BgpProcess proc = node.getBgpProcess();
-         if (proc != null) {
-            for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-               bgpNeighbor.initCandidateRemoteBgpNeighbors();
-               if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
-                  throw new BatfishException(hostname
-                        + ": Do not support dynamic bgp sessions at this time: "
-                        + bgpNeighbor.getPrefix());
+         for (Vrf vrf : node.getVrfs().values()) {
+            BgpProcess proc = vrf.getBgpProcess();
+            if (proc != null) {
+               for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+                  bgpNeighbor.initCandidateRemoteBgpNeighbors();
+                  if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
+                     throw new BatfishException(hostname
+                           + ": Do not support dynamic bgp sessions at this time: "
+                           + bgpNeighbor.getPrefix());
+                  }
+                  Ip remoteAddress = bgpNeighbor.getAddress();
+                  if (remoteAddress == null) {
+                     throw new BatfishException(hostname
+                           + ": Could not determine remote address of bgp neighbor: "
+                           + bgpNeighbor);
+                  }
+                  Ip localAddress = bgpNeighbor.getLocalIp();
+                  if (localAddress == null
+                        || !ipOwners.containsKey(localAddress)
+                        || !ipOwners.get(localAddress).contains(hostname)) {
+                     continue;
+                  }
+                  remoteAddresses.put(bgpNeighbor, remoteAddress);
+                  Set<BgpNeighbor> localAddressOwners = localAddresses
+                        .get(localAddress);
+                  if (localAddressOwners == null) {
+                     localAddressOwners = Collections.newSetFromMap(
+                           new IdentityHashMap<BgpNeighbor, Boolean>());
+                     localAddresses.put(localAddress, localAddressOwners);
+                  }
+                  localAddressOwners.add(bgpNeighbor);
                }
-               Ip remoteAddress = bgpNeighbor.getAddress();
-               if (remoteAddress == null) {
-                  throw new BatfishException(hostname
-                        + ": Could not determine remote address of bgp neighbor: "
-                        + bgpNeighbor);
-               }
-               Ip localAddress = bgpNeighbor.getLocalIp();
-               if (localAddress == null || !ipOwners.containsKey(localAddress)
-                     || !ipOwners.get(localAddress).contains(hostname)) {
-                  continue;
-               }
-               remoteAddresses.put(bgpNeighbor, remoteAddress);
-               Set<BgpNeighbor> localAddressOwners = localAddresses
-                     .get(localAddress);
-               if (localAddressOwners == null) {
-                  localAddressOwners = Collections.newSetFromMap(
-                        new IdentityHashMap<BgpNeighbor, Boolean>());
-                  localAddresses.put(localAddress, localAddressOwners);
-               }
-               localAddressOwners.add(bgpNeighbor);
             }
          }
       }
@@ -1922,13 +1966,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (Route route : globalRoutes) {
          String nodeName = route.getNode();
          Configuration node = configurations.get(nodeName);
+         String vrfName = route.getVrf();
          if (node != null) {
             node.getRoutes().add(route);
+            Vrf vrf = node.getVrfs().get(vrfName);
+            if (vrf != null) {
+               vrf.getRoutes().add(route);
+            }
+            else {
+               throw new BatfishException(
+                     "Precomputed route refers to missing vrf: '" + vrfName
+                           + "' on node: '" + nodeName + "'");
+            }
          }
          else {
             throw new BatfishException(
-                  "Precomputed route refers to missing node: \"" + nodeName
-                        + "\"");
+                  "Precomputed route refers to missing node: '" + nodeName
+                        + "'");
          }
       }
    }
@@ -1983,15 +2037,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Set<Flow> flows = null;
       Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
       List<NodJob> jobs = new ArrayList<>();
-      for (String node : configurations.keySet()) {
-         MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
-               node, headerSpace);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
-               tag);
-         jobs.add(job);
-      }
+      configurations.forEach((node, configuration) -> {
+         for (String vrf : configuration.getVrfs().keySet()) {
+            MultipathInconsistencyQuerySynthesizer query = new MultipathInconsistencyQuerySynthesizer(
+                  node, vrf, headerSpace);
+            NodeVrfSet nodes = new NodeVrfSet();
+            nodes.add(new Pair<>(node, vrf));
+            NodJob job = new NodJob(settings, dataPlaneSynthesizer, query,
+                  nodes, tag);
+            jobs.add(job);
+         }
+      });
 
       flows = computeNodOutput(jobs);
 
@@ -2290,17 +2346,20 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       EdgeSet diffEdges = diffTopology.getEdges();
       for (Edge edge : diffEdges) {
          String ingressNode = edge.getNode1();
+         String outInterface = edge.getInt1();
+         String vrf = diffConfigurations.get(ingressNode).getInterfaces()
+               .get(outInterface).getVrf();
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true, headerSpace);
+               ingressNode, vrf, edge, true, headerSpace);
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
-               ingressNode, edge, true, new HeaderSpace());
+               ingressNode, vrf, edge, true, new HeaderSpace());
          noReachQuery.setNegate(true);
          List<QuerySynthesizer> queries = new ArrayList<>();
          queries.add(reachQuery);
          queries.add(noReachQuery);
          queries.add(blacklistQuery);
-         NodeSet nodes = new NodeSet();
-         nodes.add(ingressNode);
+         NodeVrfSet nodes = new NodeVrfSet();
+         nodes.add(new Pair<>(ingressNode, vrf));
          CompositeNodJob job = new CompositeNodJob(settings,
                commonEdgeSynthesizers, queries, nodes, tag);
          jobs.add(job);
@@ -2320,14 +2379,17 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       missingEdges.removeAll(diffEdges);
       for (Edge missingEdge : missingEdges) {
          String ingressNode = missingEdge.getNode1();
+         String outInterface = missingEdge.getInt1();
+         String vrf = diffConfigurations.get(ingressNode).getInterfaces()
+               .get(outInterface).getVrf();
          if (diffConfigurations.containsKey(ingressNode)) {
             ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
-                  ingressNode, missingEdge, true, headerSpace);
+                  ingressNode, vrf, missingEdge, true, headerSpace);
             List<QuerySynthesizer> queries = new ArrayList<>();
             queries.add(reachQuery);
             queries.add(blacklistQuery);
-            NodeSet nodes = new NodeSet();
-            nodes.add(ingressNode);
+            NodeVrfSet nodes = new NodeVrfSet();
+            nodes.add(new Pair<>(ingressNode, vrf));
             CompositeNodJob job = new CompositeNodJob(settings,
                   missingEdgeSynthesizers, queries, nodes, tag);
             jobs.add(job);
@@ -2618,23 +2680,26 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
       // generate base reachability and diff blackhole and blacklist queries
       for (String node : commonNodes) {
-         ReachabilityQuerySynthesizer acceptQuery = new ReachabilityQuerySynthesizer(
-               Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-               Collections.<String> emptySet(), Collections.singleton(node));
-         ReachabilityQuerySynthesizer notAcceptQuery = new ReachabilityQuerySynthesizer(
-               Collections.singleton(ForwardingAction.ACCEPT),
-               new HeaderSpace(), Collections.<String> emptySet(),
-               Collections.singleton(node));
-         notAcceptQuery.setNegate(true);
-         NodeSet nodes = new NodeSet();
-         nodes.add(node);
-         List<QuerySynthesizer> queries = new ArrayList<>();
-         queries.add(acceptQuery);
-         queries.add(notAcceptQuery);
-         queries.add(blacklistQuery);
-         CompositeNodJob job = new CompositeNodJob(settings, synthesizers,
-               queries, nodes, tag);
-         jobs.add(job);
+         for (String vrf : baseConfigurations.get(node).getVrfs().keySet()) {
+            Map<String, Set<String>> nodeVrfs = new TreeMap<>();
+            nodeVrfs.put(node, Collections.singleton(vrf));
+            ReachabilityQuerySynthesizer acceptQuery = new ReachabilityQuerySynthesizer(
+                  Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
+                  Collections.<String> emptySet(), nodeVrfs);
+            ReachabilityQuerySynthesizer notAcceptQuery = new ReachabilityQuerySynthesizer(
+                  Collections.singleton(ForwardingAction.ACCEPT),
+                  new HeaderSpace(), Collections.<String> emptySet(), nodeVrfs);
+            notAcceptQuery.setNegate(true);
+            NodeVrfSet nodes = new NodeVrfSet();
+            nodes.add(new Pair<>(node, vrf));
+            List<QuerySynthesizer> queries = new ArrayList<>();
+            queries.add(acceptQuery);
+            queries.add(notAcceptQuery);
+            queries.add(blacklistQuery);
+            CompositeNodJob job = new CompositeNodJob(settings, synthesizers,
+                  queries, nodes, tag);
+            jobs.add(job);
+         }
       }
 
       // TODO: maybe do something with nod answer element
@@ -3137,14 +3202,18 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // build query jobs
       List<NodJob> jobs = new ArrayList<>();
       for (String ingressNode : activeIngressNodes) {
-         ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
-               actions, headerSpace, activeFinalNodes,
-               Collections.singleton(ingressNode));
-         NodeSet nodes = new NodeSet();
-         nodes.add(ingressNode);
-         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes,
-               tag);
-         jobs.add(job);
+         for (String ingressVrf : configurations.get(ingressNode).getVrfs()
+               .keySet()) {
+            Map<String, Set<String>> nodeVrfs = new TreeMap<>();
+            nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
+            ReachabilityQuerySynthesizer query = new ReachabilityQuerySynthesizer(
+                  actions, headerSpace, activeFinalNodes, nodeVrfs);
+            NodeVrfSet nodes = new NodeVrfSet();
+            nodes.add(new Pair<>(ingressNode, ingressVrf));
+            NodJob job = new NodJob(settings, dataPlaneSynthesizer, query,
+                  nodes, tag);
+            jobs.add(job);
+         }
       }
 
       // run jobs and get resulting flows

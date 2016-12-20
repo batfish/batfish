@@ -8,11 +8,11 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
-import org.batfish.representation.juniper.JuniperVendorConfiguration;
+import org.batfish.representation.juniper.JuniperConfiguration;
 
 public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
-   private JuniperVendorConfiguration _configuration;
+   private JuniperConfiguration _configuration;
 
    private final FlatJuniperCombinedParser _parser;
 

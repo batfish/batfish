@@ -24,6 +24,8 @@ public final class Flow implements Comparable<Flow> {
 
    private static final String INGRESS_NODE_VAR = "ingressNode";
 
+   private static final String INGRESS_VRF_VAR = "ingressVrf";
+
    private static final String IP_PROTOCOL_VAR = "ipProtocol";
 
    private static final String SRC_IP_VAR = "srcIp";
@@ -66,6 +68,8 @@ public final class Flow implements Comparable<Flow> {
 
    private final String _ingressNode;
 
+   private final String _ingressVrf;
+
    private final IpProtocol _ipProtocol;
 
    private final Ip _srcIp;
@@ -94,6 +98,7 @@ public final class Flow implements Comparable<Flow> {
 
    @JsonCreator
    public Flow(@JsonProperty(INGRESS_NODE_VAR) String ingressNode,
+         @JsonProperty(INGRESS_VRF_VAR) String ingressVrf,
          @JsonProperty(SRC_IP_VAR) Ip srcIp, @JsonProperty(DST_IP_VAR) Ip dstIp,
          @JsonProperty(SRC_PORT_VAR) int srcPort,
          @JsonProperty(DST_PORT_VAR) int dstPort,
@@ -113,6 +118,7 @@ public final class Flow implements Comparable<Flow> {
          @JsonProperty(TCP_FLAGS_FIN_VAR) int tcpFlagsFin,
          @JsonProperty(TAG_VAR) String tag) {
       _ingressNode = ingressNode;
+      _ingressVrf = ingressVrf;
       _srcIp = srcIp;
       _dstIp = dstIp;
       _srcPort = srcPort;
@@ -139,6 +145,10 @@ public final class Flow implements Comparable<Flow> {
    public int compareTo(Flow rhs) {
       int ret;
       ret = _ingressNode.compareTo(rhs._ingressNode);
+      if (ret != 0) {
+         return ret;
+      }
+      ret = _ingressVrf.compareTo(rhs._ingressVrf);
       if (ret != 0) {
          return ret;
       }
@@ -238,6 +248,9 @@ public final class Flow implements Comparable<Flow> {
       if (!_ingressNode.equals(other._ingressNode)) {
          return false;
       }
+      if (!_ingressVrf.equals(other._ingressVrf)) {
+         return false;
+      }
       if (_ipProtocol != other._ipProtocol) {
          return false;
       }
@@ -323,6 +336,11 @@ public final class Flow implements Comparable<Flow> {
       return _ingressNode;
    }
 
+   @JsonProperty(INGRESS_VRF_VAR)
+   public String getIngressVrf() {
+      return _ingressVrf;
+   }
+
    @JsonProperty(IP_PROTOCOL_VAR)
    public IpProtocol getIpProtocol() {
       return _ipProtocol;
@@ -398,6 +416,7 @@ public final class Flow implements Comparable<Flow> {
       result = prime * result + _ecn;
       result = prime * result + _fragmentOffset;
       result = prime * result + _ingressNode.hashCode();
+      result = prime * result + _ingressVrf.hashCode();
       result = prime * result + _ipProtocol.hashCode();
       result = prime * result + _srcIp.hashCode();
       result = prime * result + _srcPort;
@@ -441,10 +460,10 @@ public final class Flow implements Comparable<Flow> {
       String dscpStr = (_dscp != 0) ? " dscp:" + _dscp : "";
       String ecnStr = (_ecn != 0) ? " ecn:" + _ecn : "";
 
-      return prefixString + "Flow: ingress:" + _ingressNode + " " + _srcIp
-            + "->" + _dstIp + " " + _ipProtocol + srcPortStr + dstPortStr
-            + dscpStr + ecnStr + icmpTypeStr + icmpCodeStr + " state:" + _state
-            + tcpFlagsStr;
+      return prefixString + "Flow: ingress:" + _ingressNode + " " + "vrf:"
+            + _ingressVrf + " " + _srcIp + "->" + _dstIp + " " + _ipProtocol
+            + srcPortStr + dstPortStr + dscpStr + ecnStr + icmpTypeStr
+            + icmpCodeStr + " state:" + _state + tcpFlagsStr;
    }
 
    @Override
@@ -470,10 +489,11 @@ public final class Flow implements Comparable<Flow> {
          icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
          icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
       }
-      return "Flow<ingressNode:" + _ingressNode + " srcIp:" + _srcIp + " dstIp:"
-            + _dstIp + " ipProtocol:" + _ipProtocol + srcPortStr + dstPortStr
-            + " dscp: " + _dscp + " ecn:" + _ecn + " fragmentOffset:"
-            + _fragmentOffset + icmpTypeStr + icmpCodeStr + " state:" + _state
-            + tcpFlagsStr + " tag:" + _tag + ">";
+      return "Flow<ingressNode:" + _ingressNode + "ingressVrf:" + _ingressVrf
+            + " srcIp:" + _srcIp + " dstIp:" + _dstIp + " ipProtocol:"
+            + _ipProtocol + srcPortStr + dstPortStr + " dscp: " + _dscp
+            + " ecn:" + _ecn + " fragmentOffset:" + _fragmentOffset
+            + icmpTypeStr + icmpCodeStr + " state:" + _state + tcpFlagsStr
+            + " tag:" + _tag + ">";
    }
 }

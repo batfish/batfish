@@ -57,7 +57,7 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
          }
          if (list == null) {
             cc.undefined("Reference to undefined ipv6 access-list: " + listName,
-                  CiscoVendorConfiguration.IPV6_ACCESS_LIST, listName);
+                  CiscoConfiguration.IPV6_ACCESS_LIST, listName);
          }
          else {
             String msg = "route-map match ipv6 access-list line";

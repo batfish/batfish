@@ -15,6 +15,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
@@ -108,9 +109,16 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
                continue;
             }
             Configuration c1 = e.getValue();
-            BgpProcess proc1 = c1.getBgpProcess();
-            if (proc1 != null) {
-               PrefixSpace space1 = proc1.getOriginationSpace();
+            PrefixSpace space1 = new PrefixSpace();
+            boolean empty1 = true;
+            for (Vrf v1 : c1.getVrfs().values()) {
+               BgpProcess proc1 = v1.getBgpProcess();
+               if (proc1 != null) {
+                  empty1 = false;
+                  space1.addSpace(proc1.getOriginationSpace());
+               }
+            }
+            if (!empty1) {
                answerElement.getPrefixSpaces().put(node1, space1);
                for (Entry<String, Configuration> e2 : configurations
                      .entrySet()) {
@@ -120,9 +128,16 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
                      continue;
                   }
                   Configuration c2 = e2.getValue();
-                  BgpProcess proc2 = c2.getBgpProcess();
-                  if (proc2 != null) {
-                     PrefixSpace space2 = proc2.getOriginationSpace();
+                  PrefixSpace space2 = new PrefixSpace();
+                  boolean empty2 = true;
+                  for (Vrf v2 : c2.getVrfs().values()) {
+                     BgpProcess proc2 = v2.getBgpProcess();
+                     if (proc2 != null) {
+                        empty2 = false;
+                        space2.addSpace(proc2.getOriginationSpace());
+                     }
+                  }
+                  if (!empty2) {
                      if (space1.overlaps(space2)) {
                         PrefixSpace intersection = space1.intersection(space2);
                         answerElement.addIntersection(node1, node2,

@@ -6,7 +6,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.DropExpr;
-import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.QueryExpr;
 import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RuleExpr;
@@ -22,16 +22,19 @@ public class MultipathInconsistencyQuerySynthesizer
 
    private String _hostname;
 
-   public MultipathInconsistencyQuerySynthesizer(String hostname,
+   private String _vrf;
+
+   public MultipathInconsistencyQuerySynthesizer(String hostname, String vrf,
          HeaderSpace headerSpace) {
       _hostname = hostname;
+      _vrf = vrf;
       _headerSpace = headerSpace;
    }
 
    @Override
    public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
       NodProgram program = new NodProgram(baseProgram.getContext());
-      OriginateExpr originate = new OriginateExpr(_hostname);
+      OriginateVrfExpr originate = new OriginateVrfExpr(_hostname, _vrf);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(AcceptExpr.INSTANCE);
