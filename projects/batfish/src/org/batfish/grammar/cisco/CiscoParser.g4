@@ -476,6 +476,14 @@ ip_dhcp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ip_nat_null
+:
+   NO?
+   (
+      RANGE
+   ) ~NEWLINE* NEWLINE
+;
+
 ip_pim_tail
 :
    pim_accept_register
@@ -1611,6 +1619,14 @@ s_ip_domain_name
    IP DOMAIN_NAME name = variable NEWLINE
 ;
 
+s_ip_nat
+:
+   NO? IP NAT ~NEWLINE* NEWLINE
+   (
+      ip_nat_null
+   )*
+;
+
 s_ip_pim
 :
    IP PIM
@@ -2153,6 +2169,7 @@ stanza
    | s_interface
    | s_ip_dhcp
    | s_ip_domain_name
+   | s_ip_nat
    | s_ip_pim
    | s_ip_sla
    | s_ip_source_route

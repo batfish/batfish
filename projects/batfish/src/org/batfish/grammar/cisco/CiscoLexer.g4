@@ -6120,6 +6120,11 @@ QUEUE_LIMIT
    'queue-limit'
 ;
 
+QUEUE_MONITOR
+:
+   'queue-monitor'
+;
+
 QUEUE_SET
 :
    'queue-set'
