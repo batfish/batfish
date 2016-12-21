@@ -328,7 +328,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
                   if (ebgp
                         && transformedOutgoingRoute.getAsPath()
-                              .contains(neighbor.getLocalAs())
+                              .containsAs(neighbor.getLocalAs())
                         && !neighbor.getAllowLocalAsIn()) {
                      // skip routes containing peer's AS unless
                      // disable-peer-as-check (getAllowRemoteAsOut) is set
