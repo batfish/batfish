@@ -300,7 +300,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
                vr._prevIbgpRib = vr._ibgpRib;
                vr._ibgpRib = new BgpRib();
-               vr.importRib(vr._ebgpRib, vr._baseIbgpRib);
+               vr.importRib(vr._ibgpRib, vr._baseIbgpRib);
 
                /*
                 * RIBs not read from
