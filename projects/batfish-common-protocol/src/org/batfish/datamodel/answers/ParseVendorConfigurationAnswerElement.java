@@ -7,10 +7,8 @@ import java.util.TreeMap;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.BatfishObjectMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ParseVendorConfigurationAnswerElement
       implements AnswerElement, Serializable {
