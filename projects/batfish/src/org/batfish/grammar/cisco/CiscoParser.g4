@@ -510,7 +510,6 @@ ip_route_tail
    )
    (
       nexthopip = IP_ADDRESS
-      | nexthopint = interface_name
       | nexthopprefix = IP_PREFIX
       | distance = DEC
       |
@@ -526,6 +525,9 @@ ip_route_tail
       (
          NAME variable
       )
+      // do not move interface_name up
+
+      | nexthopint = interface_name
    )* NEWLINE
 ;
 
