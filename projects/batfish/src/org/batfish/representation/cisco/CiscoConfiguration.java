@@ -2438,17 +2438,17 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          switch (rmClause.getAction()) {
          case ACCEPT:
-            matchStatements.add(Statements.ExitAccept.toStaticStatement());
+            matchStatements.add(Statements.ReturnTrue.toStaticStatement());
             break;
          case REJECT:
-            matchStatements.add(Statements.ExitReject.toStaticStatement());
+            matchStatements.add(Statements.ReturnFalse.toStaticStatement());
             break;
          default:
             throw new BatfishException("Invalid action");
          }
          statements.add(ifExpr);
       }
-      statements.add(Statements.ExitReject.toStaticStatement());
+      statements.add(Statements.ReturnFalse.toStaticStatement());
       return output;
    }
 
