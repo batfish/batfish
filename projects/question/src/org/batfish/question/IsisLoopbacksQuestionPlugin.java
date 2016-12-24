@@ -15,7 +15,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -171,9 +170,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
                continue;
             }
             Configuration c = e.getValue();
-            for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
-               String interfaceName = e2.getKey();
-               Interface iface = e2.getValue();
+            c.getInterfaces().forEach((interfaceName, iface) -> {
                if (iface.isLoopback(c.getConfigurationFormat())) {
                   IsisInterfaceMode l1Mode = iface.getIsisL1InterfaceMode();
                   IsisInterfaceMode l2Mode = iface.getIsisL2InterfaceMode();
@@ -221,7 +218,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
                            interfaceName);
                   }
                }
-            }
+            });
          }
 
          return answerElement;

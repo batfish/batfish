@@ -5,6 +5,7 @@ import org.batfish.common.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.core.Context;
@@ -28,7 +29,8 @@ public class PoolMgrService {
    public JSONArray getInfo() {
       _logger.info("PMS:getInfo\n");
       return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-            "Batfish coordinator: enter ../application.wadl (relative to your URL) to see supported methods"));
+            "Batfish coordinator v" + Version.getVersion()
+                  + ". Enter ../application.wadl (relative to your URL) to see supported methods"));
    }
 
    @GET
@@ -50,42 +52,98 @@ public class PoolMgrService {
       }
    }
 
+   private boolean isCompatibleWorkerVersion(String workerVersion)
+         throws Exception {
+
+      List<Integer> myBits = Version.getVersionBreakdown(Version.getVersion());
+      List<Integer> workerBits;
+
+      try {
+         workerBits = Version.getVersionBreakdown(workerVersion);
+
+         if (workerBits.size() != 3) {
+            throw new IllegalArgumentException("Worker version " + workerVersion
+                  + " does not have 3 subparts");
+         }
+      }
+      catch (Exception e) {
+         throw new IllegalArgumentException(
+               "Bad worker version format in " + workerVersion);
+      }
+
+      return (myBits.get(0) == workerBits.get(0)
+            && myBits.get(1) == workerBits.get(1));
+   }
+
    // functions for pool management
    @GET
    @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
    @Produces(MediaType.APPLICATION_JSON)
    public JSONArray updatePool(@Context UriInfo ui) {
       try {
-         _logger.info("PMS:updatePool " + ui.toString() + "\n");
+         _logger.info("PMS:updatePool got " + ui.toString() + "\n");
          MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
+
+         String workerVersion = null;
+         List<String> workersToAdd = new LinkedList<>();
+         List<String> workersToDelete = new LinkedList<>();
 
          for (MultivaluedMap.Entry<String, List<String>> entry : queryParams
                .entrySet()) {
             _logger.info(String.format("PMS:updatePool: key = %s value = %s\n",
                   entry.getKey(), entry.getValue()));
 
-            if (entry.getKey().equals("add")) {
+            if (entry.getKey().equals(CoordConsts.SVC_ADD_WORKER_KEY)) {
                for (String worker : entry.getValue()) {
-                  // don't add empty values; occurs for options that have no
-                  // value
+                  // don't add empty values; occurs for keys without values
                   if (!worker.equals("")) {
-                     Main.getPoolMgr().addToPool(worker);
+                     workersToAdd.add(worker);
                   }
                }
             }
-            else if (entry.getKey().equals("del")) {
+            else if (entry.getKey().equals(CoordConsts.SVC_DEL_WORKER_KEY)) {
                for (String worker : entry.getValue()) {
-                  // don't add empty values; occurs for options that have no
-                  // value
+                  // don't add empty values; occurs for keys without values
                   if (!worker.equals("")) {
-                     Main.getPoolMgr().deleteFromPool(worker);
+                     workersToDelete.add(worker);
                   }
                }
             }
+            else if (entry.getKey().equals(CoordConsts.SVC_VERSION_KEY)) {
+               if (entry.getValue().size() > 1) {
+                  return new JSONArray(Arrays.asList(
+                        CoordConsts.SVC_FAILURE_KEY,
+                        "Got " + entry.getValue().size() + " version values"));
+               }
+
+               workerVersion = entry.getValue().get(0);
+            }
+
             else {
                return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
-                     "Got unknown command " + entry.getKey()
-                           + ". Other commands may have been applied."));
+                     "Got unknown command " + entry.getKey()));
+            }
+         }
+
+         // we can delete without checking for version
+         for (String worker : workersToDelete) {
+            Main.getPoolMgr().deleteFromPool(worker);
+         }
+
+         if (workersToAdd.size() > 0) {
+            if (workerVersion == null) {
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                     "Worker version not specified"));
+            }
+            if (!isCompatibleWorkerVersion(workerVersion)) {
+               return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
+                     "Worker version " + workerVersion
+                           + "is incompatible with coordinator version "
+                           + Version.getVersion()));
+            }
+
+            for (String worker : workersToAdd) {
+               Main.getPoolMgr().addToPool(worker);
             }
          }
       }

@@ -44,20 +44,6 @@
                 ]
               }
             ],
-            "INSIDE_TO_OUTSIDE" : [
-              {
-                "representativeElement" : "as2border1",
-                "nodes" : [
-                  "as2border1"
-                ]
-              },
-              {
-                "representativeElement" : "as2border2",
-                "nodes" : [
-                  "as2border2"
-                ]
-              }
-            ],
             "OUTSIDE_TO_INSIDE" : [
               {
                 "representativeElement" : "as2border1",
@@ -175,12 +161,7 @@
               {
                 "representativeElement" : "as2border1",
                 "nodes" : [
-                  "as2border1"
-                ]
-              },
-              {
-                "representativeElement" : "as2border2",
-                "nodes" : [
+                  "as2border1",
                   "as2border2"
                 ]
               }
@@ -212,12 +193,7 @@
               {
                 "representativeElement" : "as2border1",
                 "nodes" : [
-                  "as2border1"
-                ]
-              },
-              {
-                "representativeElement" : "as2border2",
-                "nodes" : [
+                  "as2border1",
                   "as2border2"
                 ]
               }
@@ -235,21 +211,6 @@
                 "nodes" : [
                   "as3border1",
                   "as3border2"
-                ]
-              }
-            ],
-            "as2_to_dept" : [
-              {
-                "representativeElement" : "as2dept1",
-                "nodes" : [
-                  "as2dept1"
-                ]
-              },
-              {
-                "representativeElement" : "as2dist1",
-                "nodes" : [
-                  "as2dist1",
-                  "as2dist2"
                 ]
               }
             ],
@@ -273,12 +234,7 @@
               {
                 "representativeElement" : "as2border1",
                 "nodes" : [
-                  "as2border1"
-                ]
-              },
-              {
-                "representativeElement" : "as2border2",
-                "nodes" : [
+                  "as2border1",
                   "as2border2"
                 ]
               },
@@ -292,21 +248,6 @@
                 "representativeElement" : "as3border2",
                 "nodes" : [
                   "as3border2"
-                ]
-              }
-            ],
-            "dept_to_as2" : [
-              {
-                "representativeElement" : "as2dept1",
-                "nodes" : [
-                  "as2dept1"
-                ]
-              },
-              {
-                "representativeElement" : "as2dist1",
-                "nodes" : [
-                  "as2dist1",
-                  "as2dist2"
                 ]
               }
             ]

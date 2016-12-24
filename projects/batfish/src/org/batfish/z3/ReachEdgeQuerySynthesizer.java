@@ -6,7 +6,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AndExpr;
-import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.PreInInterfaceExpr;
 import org.batfish.z3.node.PreOutEdgeExpr;
 import org.batfish.z3.node.QueryExpr;
@@ -23,13 +23,16 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
    private HeaderSpace _headerSpace;
 
+   private String _ingressVrf;
+
    private String _originationNode;
 
    private boolean _requireAcceptance;
 
-   public ReachEdgeQuerySynthesizer(String originationNode, Edge edge,
-         boolean requireAcceptance, HeaderSpace headerSpace) {
+   public ReachEdgeQuerySynthesizer(String originationNode, String ingressVrf,
+         Edge edge, boolean requireAcceptance, HeaderSpace headerSpace) {
       _originationNode = originationNode;
+      _ingressVrf = ingressVrf;
       _edge = edge;
       _requireAcceptance = requireAcceptance;
       _headerSpace = headerSpace;
@@ -38,7 +41,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
    @Override
    public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
       NodProgram program = new NodProgram(baseProgram.getContext());
-      OriginateExpr originate = new OriginateExpr(_originationNode);
+      OriginateVrfExpr originate = new OriginateVrfExpr(_originationNode,
+            _ingressVrf);
       RuleExpr injectSymbolicPackets = new RuleExpr(originate);
       AndExpr queryConditions = new AndExpr();
       queryConditions.addConjunct(new PreOutEdgeExpr(_edge));

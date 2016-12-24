@@ -31,6 +31,7 @@ class BfConsts:
     ARG_PEDANTIC_AS_ERROR = "pedanticerror";
     ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
     ARG_PLUGIN_DIRS = "plugindirs";
+    ARG_PRETTY_PRINT_ANSWER = "ppa";
     ARG_QUESTION_NAME = "questionname";
     ARG_RED_FLAG_AS_ERROR = "redflagerror";
     ARG_RED_FLAG_SUPPRESS = "redflagsuppress";

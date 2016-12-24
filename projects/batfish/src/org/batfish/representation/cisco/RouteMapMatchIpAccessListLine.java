@@ -57,7 +57,7 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
          }
          if (list == null) {
             cc.undefined("Reference to undefined ip access-list: " + listName,
-                  CiscoVendorConfiguration.IP_ACCESS_LIST, listName);
+                  CiscoConfiguration.IP_ACCESS_LIST, listName);
          }
          else {
             String msg = "route-map match ip access-list line";

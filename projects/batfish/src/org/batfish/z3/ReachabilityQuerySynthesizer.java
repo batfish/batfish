@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.batfish.common.BatfishException;
@@ -25,7 +26,7 @@ import org.batfish.z3.node.NodeDropExpr;
 import org.batfish.z3.node.NodeDropNoRouteExpr;
 import org.batfish.z3.node.NodeDropNullRouteExpr;
 import org.batfish.z3.node.OrExpr;
-import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.QueryExpr;
 import org.batfish.z3.node.QueryRelationExpr;
 import org.batfish.z3.node.RuleExpr;
@@ -42,15 +43,15 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
    private HeaderSpace _headerSpace;
 
-   private Set<String> _ingressNodes;
+   private Map<String, Set<String>> _ingressNodeVrfs;
 
    public ReachabilityQuerySynthesizer(Set<ForwardingAction> actions,
          HeaderSpace headerSpace, Set<String> finalNodes,
-         Set<String> ingressNodes) {
+         Map<String, Set<String>> ingressNodeVrfs) {
       _actions = actions;
       _finalNodes = finalNodes;
       _headerSpace = headerSpace;
-      _ingressNodes = ingressNodes;
+      _ingressNodeVrfs = ingressNodeVrfs;
    }
 
    @Override
@@ -59,10 +60,13 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
       // create rules for injecting symbolic packets into ingress node(s)
       List<RuleExpr> originateRules = new ArrayList<>();
-      for (String ingressNode : _ingressNodes) {
-         OriginateExpr originate = new OriginateExpr(ingressNode);
-         RuleExpr originateRule = new RuleExpr(originate);
-         originateRules.add(originateRule);
+      for (String ingressNode : _ingressNodeVrfs.keySet()) {
+         for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
+            OriginateVrfExpr originate = new OriginateVrfExpr(ingressNode,
+                  ingressVrf);
+            RuleExpr originateRule = new RuleExpr(originate);
+            originateRules.add(originateRule);
+         }
       }
 
       AndExpr queryConditions = new AndExpr();

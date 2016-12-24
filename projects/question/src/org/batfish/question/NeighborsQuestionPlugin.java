@@ -14,7 +14,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -22,6 +21,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.questions.Question;
@@ -82,9 +82,30 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder("Results for neighbors\n");
+
+         if (_lanNeighbors != null) {
+            sb.append("  LAN neighbors\n");
+            for (Edge edge : _lanNeighbors) {
+               sb.append("    " + edge.toString() + "\n");
+            }
+         }
+
+         if (_ebgpNeighbors != null) {
+            sb.append("  eBGP Neighbors\n");
+            for (IpEdge ipEdge : _ebgpNeighbors) {
+               sb.append("    " + ipEdge.toString() + "\n");
+            }
+         }
+
+         if (_ibgpNeighbors != null) {
+            sb.append("  iBGP Neighbors\n");
+            for (IpEdge ipEdge : _ibgpNeighbors) {
+               sb.append("    " + ipEdge.toString() + "\n");
+            }
+         }
+
+         return sb.toString();
       }
 
       @JsonProperty(EBGP_NEIGHBORS_VAR)
@@ -157,28 +178,32 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             initRemoteBgpNeighbors(_batfish, configurations);
             for (Configuration c : configurations.values()) {
                String hostname = c.getHostname();
-               BgpProcess proc = c.getBgpProcess();
-               if (proc != null) {
-                  for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-                     BgpNeighbor remoteBgpNeighbor = bgpNeighbor
-                           .getRemoteBgpNeighbor();
-                     if (remoteBgpNeighbor != null) {
-                        boolean ebgp = !bgpNeighbor.getRemoteAs()
-                              .equals(bgpNeighbor.getLocalAs());
-                        if (ebgp) {
-                           Configuration remoteHost = remoteBgpNeighbor
-                                 .getOwner();
-                           String remoteHostname = remoteHost.getHostname();
-                           Matcher node1Matcher = node1Regex.matcher(hostname);
-                           Matcher node2Matcher = node2Regex
-                                 .matcher(remoteHostname);
-                           if (node1Matcher.matches()
-                                 && node2Matcher.matches()) {
-                              Ip localIp = bgpNeighbor.getLocalIp();
-                              Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                              answerElement.getEbgpNeighbors()
-                                    .add(new IpEdge(hostname, localIp,
-                                          remoteHostname, remoteIp));
+               for (Vrf vrf : c.getVrfs().values()) {
+                  BgpProcess proc = vrf.getBgpProcess();
+                  if (proc != null) {
+                     for (BgpNeighbor bgpNeighbor : proc.getNeighbors()
+                           .values()) {
+                        BgpNeighbor remoteBgpNeighbor = bgpNeighbor
+                              .getRemoteBgpNeighbor();
+                        if (remoteBgpNeighbor != null) {
+                           boolean ebgp = !bgpNeighbor.getRemoteAs()
+                                 .equals(bgpNeighbor.getLocalAs());
+                           if (ebgp) {
+                              Configuration remoteHost = remoteBgpNeighbor
+                                    .getOwner();
+                              String remoteHostname = remoteHost.getHostname();
+                              Matcher node1Matcher = node1Regex
+                                    .matcher(hostname);
+                              Matcher node2Matcher = node2Regex
+                                    .matcher(remoteHostname);
+                              if (node1Matcher.matches()
+                                    && node2Matcher.matches()) {
+                                 Ip localIp = bgpNeighbor.getLocalIp();
+                                 Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                                 answerElement.getEbgpNeighbors()
+                                       .add(new IpEdge(hostname, localIp,
+                                             remoteHostname, remoteIp));
+                              }
                            }
                         }
                      }
@@ -192,28 +217,32 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             initRemoteBgpNeighbors(_batfish, configurations);
             for (Configuration c : configurations.values()) {
                String hostname = c.getHostname();
-               BgpProcess proc = c.getBgpProcess();
-               if (proc != null) {
-                  for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-                     BgpNeighbor remoteBgpNeighbor = bgpNeighbor
-                           .getRemoteBgpNeighbor();
-                     if (remoteBgpNeighbor != null) {
-                        boolean ibgp = bgpNeighbor.getRemoteAs()
-                              .equals(bgpNeighbor.getLocalAs());
-                        if (ibgp) {
-                           Configuration remoteHost = remoteBgpNeighbor
-                                 .getOwner();
-                           String remoteHostname = remoteHost.getHostname();
-                           Matcher node1Matcher = node1Regex.matcher(hostname);
-                           Matcher node2Matcher = node2Regex
-                                 .matcher(remoteHostname);
-                           if (node1Matcher.matches()
-                                 && node2Matcher.matches()) {
-                              Ip localIp = bgpNeighbor.getLocalIp();
-                              Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                              answerElement.getIbgpNeighbors()
-                                    .add(new IpEdge(hostname, localIp,
-                                          remoteHostname, remoteIp));
+               for (Vrf vrf : c.getVrfs().values()) {
+                  BgpProcess proc = vrf.getBgpProcess();
+                  if (proc != null) {
+                     for (BgpNeighbor bgpNeighbor : proc.getNeighbors()
+                           .values()) {
+                        BgpNeighbor remoteBgpNeighbor = bgpNeighbor
+                              .getRemoteBgpNeighbor();
+                        if (remoteBgpNeighbor != null) {
+                           boolean ibgp = bgpNeighbor.getRemoteAs()
+                                 .equals(bgpNeighbor.getLocalAs());
+                           if (ibgp) {
+                              Configuration remoteHost = remoteBgpNeighbor
+                                    .getOwner();
+                              String remoteHostname = remoteHost.getHostname();
+                              Matcher node1Matcher = node1Regex
+                                    .matcher(hostname);
+                              Matcher node2Matcher = node2Regex
+                                    .matcher(remoteHostname);
+                              if (node1Matcher.matches()
+                                    && node2Matcher.matches()) {
+                                 Ip localIp = bgpNeighbor.getLocalIp();
+                                 Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+                                 answerElement.getIbgpNeighbors()
+                                       .add(new IpEdge(hostname, localIp,
+                                             remoteHostname, remoteIp));
+                              }
                            }
                         }
                      }

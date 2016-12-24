@@ -45,21 +45,26 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
       for (String vpcId : _attachmentVpcIds) {
 
-         Interface igwIface = new Interface(vpcId, cfgNode);
+         String igwIfaceName = vpcId;
+         Interface igwIface = new Interface(igwIfaceName, cfgNode);
          Prefix igwIfacePrefix = awsVpcConfiguration
                .getNextGeneratedLinkSubnet();
          igwIface.setPrefix(igwIfacePrefix);
-         cfgNode.getInterfaces().put(igwIface.getName(), igwIface);
+         cfgNode.getInterfaces().put(igwIfaceName, igwIface);
+         cfgNode.getDefaultVrf().getInterfaces().put(igwIfaceName, igwIface);
 
          // add the interface to the vpc router
          Configuration vpcConfigNode = awsVpcConfiguration
                .getConfigurationNodes().get(vpcId);
-         Interface vpcIface = new Interface(_internetGatewayId, vpcConfigNode);
+         String vpcIfaceName = _internetGatewayId;
+         Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
          Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
          Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp,
                igwIfacePrefix.getPrefixLength());
          vpcIface.setPrefix(vpcIfacePrefix);
-         vpcConfigNode.getInterfaces().put(vpcIface.getName(), vpcIface);
+         vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
+         vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName,
+               vpcIface);
 
          // associate this gateway with the vpc
          awsVpcConfiguration.getVpcs().get(vpcId)
@@ -70,7 +75,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
          StaticRoute igwVpcRoute = new StaticRoute(vpc.getCidrBlock(),
                vpcIfaceIp, null, Route.DEFAULT_STATIC_ROUTE_ADMIN,
                Route.DEFAULT_STATIC_ROUTE_COST);
-         cfgNode.getStaticRoutes().add(igwVpcRoute);
+         cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
 
       }
 

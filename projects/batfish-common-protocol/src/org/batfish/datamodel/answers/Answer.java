@@ -12,8 +12,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Answer {
 
-   public static Answer failureAnswer(String message) {
+   public static Answer failureAnswer(String message, Question question) {
       Answer answer = new Answer();
+      answer.setQuestion(question);
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(new StringAnswerElement(message));
       return answer;
@@ -71,6 +72,18 @@ public class Answer {
          string.append("\n" + ae.prettyPrint());
       }
       return string.toString();
+   }
+
+   public Answer prettyPrintAnswer() throws JsonProcessingException {
+      Answer answer = new Answer();
+      answer.setQuestion(_question);
+      answer.setStatus(_status);
+
+      for (AnswerElement ae : _answerElements) {
+         answer.addAnswerElement(new StringAnswerElement(ae.prettyPrint()));
+      }
+
+      return answer;
    }
 
    public void setAnswerElements(List<AnswerElement> answerElements) {

@@ -56,9 +56,21 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       }
       else {
          Node currentNode = dp._nodes.get(currentNodeName);
-         Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = currentNode._fib
+         String vrfName;
+         if (hopsSoFar.isEmpty()) {
+            vrfName = flow.getIngressVrf();
+         }
+         else {
+            FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
+            String receivingInterface = lastHop.getEdge().getInt2();
+            vrfName = currentNode._c.getInterfaces().get(receivingInterface)
+                  .getVrf();
+         }
+         VirtualRouter currentVirtualRouter = currentNode._virtualRouters
+               .get(vrfName);
+         Map<AbstractRoute, Set<String>> nextHopInterfacesByRoute = currentVirtualRouter._fib
                .getNextHopInterfacesByRoute(dstIp);
-         Map<String, Set<AbstractRoute>> nextHopInterfacesWithRoutes = currentNode._fib
+         Map<String, Set<AbstractRoute>> nextHopInterfacesWithRoutes = currentVirtualRouter._fib
                .getNextHopInterfaces(dstIp);
          if (!nextHopInterfacesWithRoutes.isEmpty()) {
             for (String nextHopInterfaceName : nextHopInterfacesWithRoutes
@@ -181,7 +193,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       _batfish.initRemoteBgpNeighbors(configurations, dp._ipOwners);
       Map<String, Node> nodes = new TreeMap<>();
       configurations.values()
-            .forEach(c -> nodes.put(c.getHostname(), new Node(c)));
+            .forEach(c -> nodes.put(c.getHostname(), new Node(c, nodes)));
       AdvertisementSet externalAdverts = _batfish
             .processExternalBgpAnnouncements(configurations);
       computeFixedPoint(nodes, topology, dp, externalAdverts, ae);
@@ -198,7 +210,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
    private void computeFibs(Map<String, Node> nodes) {
       nodes.values().parallelStream().forEach(n -> {
-         n.computeFib();
+         for (VirtualRouter vr : n._virtualRouters.values()) {
+            vr.computeFib();
+         }
       });
    }
 
@@ -209,16 +223,18 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       // connected, initial static routes, ospf setup, bgp setup
       nodes.values().parallelStream().forEach(n -> {
          n.initPolicyOwners();
-         n.initConnectedRib();
-         n.importRib(n._independentRib, n._connectedRib);
-         n.importRib(n._mainRib, n._connectedRib);
-         n.initStaticRib();
-         n.importRib(n._independentRib, n._staticInterfaceRib);
-         n.importRib(n._mainRib, n._staticInterfaceRib);
-         n.initOspfInterfaceCosts();
-         n.initBaseOspfRoutes();
-         n.initEbgpTopology(dp);
-         n.initBaseBgpRibs(externalAdverts);
+         for (VirtualRouter vr : n._virtualRouters.values()) {
+            vr.initConnectedRib();
+            vr.importRib(vr._independentRib, vr._connectedRib);
+            vr.importRib(vr._mainRib, vr._connectedRib);
+            vr.initStaticRib();
+            vr.importRib(vr._independentRib, vr._staticInterfaceRib);
+            vr.importRib(vr._mainRib, vr._staticInterfaceRib);
+            vr.initOspfInterfaceCosts();
+            vr.initBaseOspfRoutes();
+            vr.initEbgpTopology(dp);
+            vr.initBaseBgpRibs(externalAdverts);
+         }
       });
 
       final Object routesChangedMonitor = new Object();
@@ -230,20 +246,26 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          ospfInternalIterations++;
          ospfInternalChanged[0] = false;
          nodes.values().parallelStream().forEach(n -> {
-            if (n.propagateOspfInternalRoutes(nodes, topology)) {
-               synchronized (routesChangedMonitor) {
-                  ospfInternalChanged[0] = true;
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               if (vr.propagateOspfInternalRoutes(nodes, topology)) {
+                  synchronized (routesChangedMonitor) {
+                     ospfInternalChanged[0] = true;
+                  }
                }
             }
          });
          nodes.values().parallelStream().forEach(n -> {
-            n.unstageOspfInternalRoutes();
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               vr.unstageOspfInternalRoutes();
+            }
          });
       }
       nodes.values().parallelStream().forEach(n -> {
-         n.importRib(n._ospfRib, n._ospfIntraAreaRib);
-         n.importRib(n._ospfRib, n._ospfInterAreaRib);
-         n.importRib(n._independentRib, n._ospfRib);
+         for (VirtualRouter vr : n._virtualRouters.values()) {
+            vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
+            vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
+            vr.importRib(vr._independentRib, vr._ospfRib);
+         }
       });
       // END DONE ONCE
 
@@ -255,83 +277,93 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          dependentRoutesChanged[0] = false;
          // (Re)initialization of dependent route calculation
          nodes.values().parallelStream().forEach(n -> {
-            /*
-             * RIBs that are read from
-             */
-            n._prevMainRib = n._mainRib;
-            n._mainRib = new Rib();
+            for (VirtualRouter vr : n._virtualRouters.values()) {
 
-            n._prevOspfExternalType1Rib = n._ospfExternalType1Rib;
-            n._ospfExternalType1Rib = new OspfExternalType1Rib();
+               /*
+                * RIBs that are read from
+                */
+               vr._prevMainRib = vr._mainRib;
+               vr._mainRib = new Rib();
 
-            n._prevOspfExternalType2Rib = n._ospfExternalType2Rib;
-            n._ospfExternalType2Rib = new OspfExternalType2Rib();
+               vr._prevOspfExternalType1Rib = vr._ospfExternalType1Rib;
+               vr._ospfExternalType1Rib = new OspfExternalType1Rib();
 
-            n._prevBgpRib = n._bgpRib;
-            n._bgpRib = new BgpRib();
+               vr._prevOspfExternalType2Rib = vr._ospfExternalType2Rib;
+               vr._ospfExternalType2Rib = new OspfExternalType2Rib();
 
-            n._prevEbgpRib = n._ebgpRib;
-            n._ebgpRib = new BgpRib();
-            n.importRib(n._ebgpRib, n._baseEbgpRib);
+               vr._prevBgpRib = vr._bgpRib;
+               vr._bgpRib = new BgpRib();
 
-            n._prevIbgpRib = n._ibgpRib;
-            n._ibgpRib = new BgpRib();
-            n.importRib(n._ebgpRib, n._baseIbgpRib);
+               vr._prevEbgpRib = vr._ebgpRib;
+               vr._ebgpRib = new BgpRib();
+               vr.importRib(vr._ebgpRib, vr._baseEbgpRib);
 
-            /*
-             * RIBs not read from
-             */
-            n._ospfRib = new OspfRib();
+               vr._prevIbgpRib = vr._ibgpRib;
+               vr._ibgpRib = new BgpRib();
+               vr.importRib(vr._ibgpRib, vr._baseIbgpRib);
 
-            /*
-             * Staging RIBs
-             */
-            n._ebgpStagingRib = new BgpRib();
-            n._ibgpStagingRib = new BgpRib();
-            n._ospfExternalType1StagingRib = new OspfExternalType1Rib();
-            n._ospfExternalType2StagingRib = new OspfExternalType2Rib();
+               /*
+                * RIBs not read from
+                */
+               vr._ospfRib = new OspfRib();
 
-            /*
-             * Add routes that cannot change (does not affect below computation)
-             */
-            n.importRib(n._mainRib, n._independentRib);
+               /*
+                * Staging RIBs
+                */
+               vr._ebgpStagingRib = new BgpRib();
+               vr._ibgpStagingRib = new BgpRib();
+               vr._ospfExternalType1StagingRib = new OspfExternalType1Rib();
+               vr._ospfExternalType2StagingRib = new OspfExternalType2Rib();
 
-            /*
-             * Re-add independent OSPF routes to ospfRib for tie-breaking
-             */
-            n.importRib(n._ospfRib, n._ospfIntraAreaRib);
-            n.importRib(n._ospfRib, n._ospfInterAreaRib);
+               /*
+                * Add routes that cannot change (does not affect below
+                * computation)
+                */
+               vr.importRib(vr._mainRib, vr._independentRib);
 
+               /*
+                * Re-add independent OSPF routes to ospfRib for tie-breaking
+                */
+               vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
+               vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
+
+            }
          });
 
          // Static nextHopIp routes
          nodes.values().parallelStream().forEach(n -> {
             boolean staticChanged = true;
             while (staticChanged) {
-               staticChanged = false;
-               if (n.activateStaticRoutes()) {
-                  staticChanged = true;
+               for (VirtualRouter vr : n._virtualRouters.values()) {
+                  staticChanged = false;
+                  if (vr.activateStaticRoutes()) {
+                     staticChanged = true;
+                  }
                }
             }
          });
 
          // Generated/aggregate routes
          nodes.values().parallelStream().forEach(n -> {
-            boolean generatedChanged = true;
-            n._generatedRib = new Rib();
-            while (generatedChanged) {
-               generatedChanged = false;
-               if (n.activateGeneratedRoutes()) {
-                  generatedChanged = true;
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               boolean generatedChanged = true;
+               vr._generatedRib = new Rib();
+               while (generatedChanged) {
+                  generatedChanged = false;
+                  if (vr.activateGeneratedRoutes()) {
+                     generatedChanged = true;
+                  }
                }
+               vr.importRib(vr._mainRib, vr._generatedRib);
             }
-            n.importRib(n._mainRib, n._generatedRib);
          });
 
          // OSPF external routes
          // recompute exports
          nodes.values().parallelStream().forEach(n -> {
-            n.initOspfExports();
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               vr.initOspfExports();
+            }
          });
 
          // repropagate exports
@@ -339,26 +371,34 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          while (ospfExternalChanged[0]) {
             ospfExternalChanged[0] = false;
             nodes.values().parallelStream().forEach(n -> {
-               if (n.propagateOspfExternalRoutes(nodes, topology)) {
-                  synchronized (routesChangedMonitor) {
-                     ospfExternalChanged[0] = true;
+               for (VirtualRouter vr : n._virtualRouters.values()) {
+                  if (vr.propagateOspfExternalRoutes(nodes, topology)) {
+                     synchronized (routesChangedMonitor) {
+                        ospfExternalChanged[0] = true;
+                     }
                   }
                }
             });
             nodes.values().parallelStream().forEach(n -> {
-               n.unstageOspfExternalRoutes();
+               for (VirtualRouter vr : n._virtualRouters.values()) {
+                  vr.unstageOspfExternalRoutes();
+               }
             });
          }
          nodes.values().parallelStream().forEach(n -> {
-            n.importRib(n._ospfRib, n._ospfExternalType1Rib);
-            n.importRib(n._ospfRib, n._ospfExternalType2Rib);
-            n.importRib(n._mainRib, n._ospfRib);
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               vr.importRib(vr._ospfRib, vr._ospfExternalType1Rib);
+               vr.importRib(vr._ospfRib, vr._ospfExternalType2Rib);
+               vr.importRib(vr._mainRib, vr._ospfRib);
+            }
          });
 
          // BGP routes
          // first let's initialize nodes-level generated/aggregate routes
          nodes.values().parallelStream().forEach(n -> {
-            n.initBgpAggregateRoutes();
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               vr.initBgpAggregateRoutes();
+            }
          });
          final boolean[] bgpChanged = new boolean[] { true };
          int currentBgpIterations = 0;
@@ -366,44 +406,52 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             currentBgpIterations++;
             bgpChanged[0] = false;
             nodes.values().parallelStream().forEach(n -> {
-               if (n.propagateBgpRoutes(nodes, topology)) {
-                  synchronized (routesChangedMonitor) {
-                     bgpChanged[0] = true;
+               for (VirtualRouter vr : n._virtualRouters.values()) {
+                  if (vr.propagateBgpRoutes(nodes, topology)) {
+                     synchronized (routesChangedMonitor) {
+                        bgpChanged[0] = true;
+                     }
                   }
                }
             });
             nodes.values().parallelStream().forEach(n -> {
-               n.unstageBgpRoutes();
-               n.importRib(n._bgpRib, n._ebgpRib);
-               n.importRib(n._bgpRib, n._ibgpRib);
-               n.importRib(n._mainRib, n._bgpRib);
+               for (VirtualRouter vr : n._virtualRouters.values()) {
+                  vr.unstageBgpRoutes();
+                  vr.importRib(vr._bgpRib, vr._ebgpRib);
+                  vr.importRib(vr._bgpRib, vr._ibgpRib);
+                  vr.importRib(vr._mainRib, vr._bgpRib);
+               }
             });
          }
          bgpIterations.put(dependentRoutesIterations, currentBgpIterations);
 
          // Check to see if routes have changed
          nodes.values().parallelStream().forEach(n -> {
-            boolean changed = false;
-            if (!n._mainRib.getRoutes().equals(n._prevMainRib.getRoutes())) {
-               changed = true;
-            }
-            if (!n._ospfExternalType1Rib.getRoutes()
-                  .equals(n._prevOspfExternalType1Rib.getRoutes())) {
-               changed = true;
-            }
-            if (!n._ospfExternalType2Rib.getRoutes()
-                  .equals(n._prevOspfExternalType2Rib.getRoutes())) {
-               changed = true;
-            }
-            if (changed) {
-               synchronized (routesChangedMonitor) {
-                  dependentRoutesChanged[0] = true;
+            for (VirtualRouter vr : n._virtualRouters.values()) {
+               boolean changed = false;
+               if (!vr._mainRib.getRoutes()
+                     .equals(vr._prevMainRib.getRoutes())) {
+                  changed = true;
+               }
+               if (!vr._ospfExternalType1Rib.getRoutes()
+                     .equals(vr._prevOspfExternalType1Rib.getRoutes())) {
+                  changed = true;
+               }
+               if (!vr._ospfExternalType2Rib.getRoutes()
+                     .equals(vr._prevOspfExternalType2Rib.getRoutes())) {
+                  changed = true;
+               }
+               if (changed) {
+                  synchronized (routesChangedMonitor) {
+                     dependentRoutesChanged[0] = true;
+                  }
                }
             }
          });
       }
       int totalRoutes = nodes.values().stream()
-            .mapToInt(n -> n._mainRib.getRoutes().size()).sum();
+            .flatMap(n -> n._virtualRouters.values().stream())
+            .mapToInt(vr -> vr._mainRib.getRoutes().size()).sum();
       ae.setOspfInternalIterations(ospfInternalIterations);
       ae.setDependentRoutesIterations(dependentRoutesIterations);
       ae.setBgpIterations(bgpIterations);
@@ -492,36 +540,39 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       Map<Ip, String> ipOwners = dp.getIpOwnersSimple();
       RouteSet outputRoutes = new RouteSet();
       dp.getNodes().forEach((hostname, node) -> {
-         for (AbstractRoute route : node._mainRib.getRoutes()) {
-            RouteBuilder rb = new RouteBuilder();
-            rb.setNode(hostname);
-            rb.setNetwork(route.getNetwork());
-            if (route.getProtocol() == RoutingProtocol.CONNECTED
-                  || (route.getProtocol() == RoutingProtocol.STATIC
-                        && route.getNextHopIp() == null)
-                  || Interface.NULL_INTERFACE_NAME
-                        .equals(route.getNextHopInterface())) {
-               rb.setNextHop(Configuration.NODE_NONE_NAME);
-            }
-            Ip nextHopIp = route.getNextHopIp();
-            if (nextHopIp != null) {
-               rb.setNextHopIp(nextHopIp);
-               String nextHop = ipOwners.get(nextHopIp);
-               if (nextHop != null) {
-                  rb.setNextHop(nextHop);
+         node._virtualRouters.forEach((vrName, vr) -> {
+            for (AbstractRoute route : vr._mainRib.getRoutes()) {
+               RouteBuilder rb = new RouteBuilder();
+               rb.setNode(hostname);
+               rb.setNetwork(route.getNetwork());
+               if (route.getProtocol() == RoutingProtocol.CONNECTED
+                     || (route.getProtocol() == RoutingProtocol.STATIC
+                           && route.getNextHopIp() == null)
+                     || Interface.NULL_INTERFACE_NAME
+                           .equals(route.getNextHopInterface())) {
+                  rb.setNextHop(Configuration.NODE_NONE_NAME);
                }
+               Ip nextHopIp = route.getNextHopIp();
+               if (nextHopIp != null) {
+                  rb.setNextHopIp(nextHopIp);
+                  String nextHop = ipOwners.get(nextHopIp);
+                  if (nextHop != null) {
+                     rb.setNextHop(nextHop);
+                  }
+               }
+               String nextHopInterface = route.getNextHopInterface();
+               if (nextHopInterface != null) {
+                  rb.setNextHopInterface(nextHopInterface);
+               }
+               rb.setAdministrativeCost(route.getAdministrativeCost());
+               rb.setCost(route.getMetric());
+               rb.setProtocol(route.getProtocol());
+               rb.setTag(route.getTag());
+               rb.setVrf(vrName);
+               Route outputRoute = rb.build();
+               outputRoutes.add(outputRoute);
             }
-            String nextHopInterface = route.getNextHopInterface();
-            if (nextHopInterface != null) {
-               rb.setNextHopInterface(nextHopInterface);
-            }
-            rb.setAdministrativeCost(route.getAdministrativeCost());
-            rb.setCost(route.getMetric());
-            rb.setProtocol(route.getProtocol());
-            rb.setTag(route.getTag());
-            Route outputRoute = rb.build();
-            outputRoutes.add(outputRoute);
-         }
+         });
       });
       return outputRoutes;
    }

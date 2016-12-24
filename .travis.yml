@@ -1,8 +1,10 @@
 matrix:
    include:
+      - os: osx
+        install: ./.travis/install.sh
+        script: ./.travis/build.sh
       - os: linux
         dist: trusty
-        group: deprecated
         addons:
            apt:
               packages:
@@ -10,4 +12,3 @@ matrix:
         sudo: true
         install: ./.travis/install.sh
         script: ./.travis/build.sh
-

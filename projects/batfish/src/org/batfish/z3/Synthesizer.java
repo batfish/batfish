@@ -77,11 +77,13 @@ import org.batfish.z3.node.NonInboundSrcZoneExpr;
 import org.batfish.z3.node.NotExpr;
 import org.batfish.z3.node.OrExpr;
 import org.batfish.z3.node.OriginateExpr;
+import org.batfish.z3.node.OriginateVrfExpr;
 import org.batfish.z3.node.PacketRelExpr;
 import org.batfish.z3.node.PolicyDenyExpr;
 import org.batfish.z3.node.PolicyExpr;
 import org.batfish.z3.node.PostInExpr;
 import org.batfish.z3.node.PostInInterfaceExpr;
+import org.batfish.z3.node.PostInVrfExpr;
 import org.batfish.z3.node.PostOutInterfaceExpr;
 import org.batfish.z3.node.PreInInterfaceExpr;
 import org.batfish.z3.node.PreOutEdgeExpr;
@@ -880,111 +882,120 @@ public class Synthesizer {
       statements.add(new Comment(
             "Rules for sending destination routed packets to preoutIface stage"));
       for (String hostname : _fibs.keySet()) {
-         TreeSet<FibRow> fibSet = new TreeSet<>(_fibs.get(hostname));
-         if (fibSet.isEmpty()
-               || !fibSet.first().getPrefix().equals(Prefix.ZERO)) {
-            // no default route, so add one that drops traffic
-            FibRow dropDefaultRow = new FibRow(Prefix.ZERO,
-                  FibRow.DROP_INTERFACE, "", "");
-            fibSet.add(dropDefaultRow);
-         }
-         FibRow[] fib = fibSet.toArray(new FibRow[] {});
-         for (int i = 0; i < fib.length; i++) {
-            FibRow currentRow = fib[i];
-            Set<FibRow> notRows = new TreeSet<>();
-            for (int j = i + 1; j < fib.length; j++) {
-               FibRow specificRow = fib[j];
-               long currentStart = currentRow.getPrefix().getAddress().asLong();
-               long currentEnd = currentRow.getPrefix().getEndAddress()
-                     .asLong();
-               long specificStart = specificRow.getPrefix().getAddress()
-                     .asLong();
-               long specificEnd = specificRow.getPrefix().getEndAddress()
-                     .asLong();
-               // check whether later prefix is contained in this one
-               if (currentStart <= specificStart && specificEnd <= currentEnd) {
-                  if (currentStart == specificStart
-                        && currentEnd == specificEnd) {
-                     // load balancing
-                     continue;
+         Configuration c = _configurations.get(hostname);
+         c.getVrfs().forEach((vrfName, vrf) -> {
+            TreeSet<FibRow> fibSet = new TreeSet<>(
+                  _fibs.get(hostname).get(vrfName));
+            if (fibSet.isEmpty()
+                  || !fibSet.first().getPrefix().equals(Prefix.ZERO)) {
+               // no default route, so add one that drops traffic
+               FibRow dropDefaultRow = new FibRow(Prefix.ZERO,
+                     FibRow.DROP_INTERFACE, "", "");
+               fibSet.add(dropDefaultRow);
+            }
+            FibRow[] fib = fibSet.toArray(new FibRow[] {});
+            for (int i = 0; i < fib.length; i++) {
+               FibRow currentRow = fib[i];
+               Set<FibRow> notRows = new TreeSet<>();
+               for (int j = i + 1; j < fib.length; j++) {
+                  FibRow specificRow = fib[j];
+                  long currentStart = currentRow.getPrefix().getAddress()
+                        .asLong();
+                  long currentEnd = currentRow.getPrefix().getEndAddress()
+                        .asLong();
+                  long specificStart = specificRow.getPrefix().getAddress()
+                        .asLong();
+                  long specificEnd = specificRow.getPrefix().getEndAddress()
+                        .asLong();
+                  // check whether later prefix is contained in this one
+                  if (currentStart <= specificStart
+                        && specificEnd <= currentEnd) {
+                     if (currentStart == specificStart
+                           && currentEnd == specificEnd) {
+                        // load balancing
+                        continue;
+                     }
+                     if (currentRow.getInterface()
+                           .equals(specificRow.getInterface())
+                           && currentRow.getNextHop()
+                                 .equals(specificRow.getNextHop())
+                           && currentRow.getNextHopInterface()
+                                 .equals(specificRow.getNextHopInterface())) {
+                        // no need to exclude packets matching the more specific
+                        // prefix,
+                        // since they would go out same edge
+                        continue;
+                     }
+                     // exclude packets that match a more specific prefix that
+                     // would go out a different interface
+                     notRows.add(specificRow);
                   }
-                  if (currentRow.getInterface()
-                        .equals(specificRow.getInterface())
-                        && currentRow.getNextHop()
-                              .equals(specificRow.getNextHop())
-                        && currentRow.getNextHopInterface()
-                              .equals(specificRow.getNextHopInterface())) {
-                     // no need to exclude packets matching the more specific
-                     // prefix,
-                     // since they would go out same edge
-                     continue;
+                  else {
+                     break;
                   }
-                  // exclude packets that match a more specific prefix that
-                  // would go out a different interface
-                  notRows.add(specificRow);
+               }
+               AndExpr conditions = new AndExpr();
+               PostInVrfExpr postInVrf = new PostInVrfExpr(hostname, vrfName);
+               conditions.addConjunct(postInVrf);
+               DestinationRouteExpr destRoute = new DestinationRouteExpr(
+                     hostname);
+               conditions.addConjunct(destRoute);
+               String ifaceOutName = currentRow.getInterface();
+               PacketRelExpr action;
+               if (isLoopbackInterface(ifaceOutName)
+                     || CommonUtil.isNullInterface(ifaceOutName)) {
+                  action = new NodeDropNullRouteExpr(hostname);
+               }
+               else if (ifaceOutName.equals(FibRow.DROP_INTERFACE)) {
+                  action = new NodeDropNoRouteExpr(hostname);
                }
                else {
-                  break;
+                  String nextHop = currentRow.getNextHop();
+                  String ifaceInName = currentRow.getNextHopInterface();
+                  action = new PreOutEdgeExpr(hostname, ifaceOutName, nextHop,
+                        ifaceInName);
                }
-            }
-            AndExpr conditions = new AndExpr();
-            DestinationRouteExpr destRoute = new DestinationRouteExpr(hostname);
-            conditions.addConjunct(destRoute);
-            String ifaceOutName = currentRow.getInterface();
-            PacketRelExpr action;
-            if (isLoopbackInterface(ifaceOutName)
-                  || CommonUtil.isNullInterface(ifaceOutName)) {
-               action = new NodeDropNullRouteExpr(hostname);
-            }
-            else if (ifaceOutName.equals(FibRow.DROP_INTERFACE)) {
-               action = new NodeDropNoRouteExpr(hostname);
-            }
-            else {
-               String nextHop = currentRow.getNextHop();
-               String ifaceInName = currentRow.getNextHopInterface();
-               action = new PreOutEdgeExpr(hostname, ifaceOutName, nextHop,
-                     ifaceInName);
-            }
 
-            // must not match more specific routes
-            for (FibRow notRow : notRows) {
-               int prefixLength = notRow.getPrefix().getPrefixLength();
-               long prefix = notRow.getPrefix().getAddress().asLong();
+               // must not match more specific routes
+               for (FibRow notRow : notRows) {
+                  int prefixLength = notRow.getPrefix().getPrefixLength();
+                  long prefix = notRow.getPrefix().getAddress().asLong();
+                  int first = IP_BITS - prefixLength;
+                  if (first >= IP_BITS) {
+                     continue;
+                  }
+                  int last = IP_BITS - 1;
+                  LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
+                        last);
+                  IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
+                        last);
+                  NotExpr noPrefixMatch = new NotExpr();
+                  EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                        prefixFragmentLit);
+                  noPrefixMatch.SetArgument(prefixMatch);
+                  conditions.addConjunct(noPrefixMatch);
+               }
+
+               // must match route
+               int prefixLength = currentRow.getPrefix().getPrefixLength();
+               long prefix = currentRow.getPrefix().getAddress().asLong();
                int first = IP_BITS - prefixLength;
-               if (first >= IP_BITS) {
-                  continue;
+               if (first < IP_BITS) {
+                  int last = IP_BITS - 1;
+                  LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
+                        last);
+                  IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
+                        last);
+                  EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
+                        prefixFragmentLit);
+                  conditions.addConjunct(prefixMatch);
                }
-               int last = IP_BITS - 1;
-               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
-                     last);
-               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
-                     last);
-               NotExpr noPrefixMatch = new NotExpr();
-               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
-                     prefixFragmentLit);
-               noPrefixMatch.SetArgument(prefixMatch);
-               conditions.addConjunct(noPrefixMatch);
-            }
 
-            // must match route
-            int prefixLength = currentRow.getPrefix().getPrefixLength();
-            long prefix = currentRow.getPrefix().getAddress().asLong();
-            int first = IP_BITS - prefixLength;
-            if (first < IP_BITS) {
-               int last = IP_BITS - 1;
-               LitIntExpr prefixFragmentLit = new LitIntExpr(prefix, first,
-                     last);
-               IntExpr prefixFragmentExt = newExtractExpr(DST_IP_VAR, first,
-                     last);
-               EqExpr prefixMatch = new EqExpr(prefixFragmentExt,
-                     prefixFragmentLit);
-               conditions.addConjunct(prefixMatch);
+               // then we forward out specified interface (or drop)
+               RuleExpr rule = new RuleExpr(conditions, action);
+               statements.add(rule);
             }
-
-            // then we forward out specified interface (or drop)
-            RuleExpr rule = new RuleExpr(conditions, action);
-            statements.add(rule);
-         }
+         });
       }
       return statements;
    }
@@ -1069,7 +1080,7 @@ public class Synthesizer {
    private List<Statement> getExternalDstIpRules() {
       List<Statement> statements = new ArrayList<>();
       statements.add(new Comment(
-            "Rule for matching external Source IP - one not assigned to an active interface of any provided node"));
+            "Rule for matching external Destination IP - one not assigned to an active interface of any provided node"));
       Set<Ip> interfaceIps = new TreeSet<>();
       for (Entry<String, Configuration> e : _configurations.entrySet()) {
          Configuration c = e.getValue();
@@ -1155,11 +1166,12 @@ public class Synthesizer {
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
          for (Interface i : c.getInterfaces().values()) {
             String ifaceName = i.getName();
+            String vrf = i.getVrf();
             InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
                   hostname, ifaceName);
             // deal with origination totally independently of zone stuff
             AndExpr originateAcceptConditions = new AndExpr();
-            OriginateExpr originate = new OriginateExpr(hostname);
+            OriginateVrfExpr originate = new OriginateVrfExpr(hostname, vrf);
             originateAcceptConditions.addConjunct(inboundInterface);
             originateAcceptConditions.addConjunct(originate);
             RuleExpr originateToNodeAccept = new RuleExpr(
@@ -1524,6 +1536,23 @@ public class Synthesizer {
       return statements;
    }
 
+   private List<Statement> getOriginateVrfToPostInVrfRules() {
+      List<Statement> statements = new ArrayList<>();
+      statements.add(new Comment("Connect originate to post_in_vrf"));
+      for (String hostname : _configurations.keySet()) {
+         OriginateExpr originate = new OriginateExpr(hostname);
+         for (String vrf : _configurations.get(hostname).getVrfs().keySet()) {
+            OriginateVrfExpr originateVrf = new OriginateVrfExpr(hostname, vrf);
+            PostInVrfExpr postInVrf = new PostInVrfExpr(hostname, vrf);
+            RuleExpr rule = new RuleExpr(originateVrf, postInVrf);
+            statements.add(rule);
+            RuleExpr orule = new RuleExpr(originateVrf, originate);
+            statements.add(orule);
+         }
+      }
+      return statements;
+   }
+
    private List<Statement> getPolicyRouteRules() {
       List<Statement> statements = new ArrayList<>();
       statements.add(new Comment("Policy-based routing rules"));
@@ -1749,6 +1778,7 @@ public class Synthesizer {
          Set<Interface> interfaces = e.getValue();
          UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface i : interfaces) {
+            String vrfName = i.getVrf();
             String ifaceName = i.getName();
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
                   ifaceName);
@@ -1756,6 +1786,10 @@ public class Synthesizer {
             RuleExpr postInInterfaceToPostIn = new RuleExpr(postInIface,
                   postIn);
             statements.add(postInInterfaceToPostIn);
+            PostInVrfExpr postInVrf = new PostInVrfExpr(hostname, vrfName);
+            RuleExpr postInInterfaceToPostInVrf = new RuleExpr(postInIface,
+                  postInVrf);
+            statements.add(postInInterfaceToPostInVrf);
             RuleExpr postInInterfaceToUnoriginal = new RuleExpr(postInIface,
                   unoriginal);
             statements.add(postInInterfaceToUnoriginal);
@@ -2285,6 +2319,7 @@ public class Synthesizer {
       List<Statement> sane = getSane();
       List<Statement> flowSinkAcceptRules = getFlowSinkAcceptRules();
       List<Statement> originateToPostInRules = getOriginateToPostInRules();
+      List<Statement> originateVrfToPostInVrfRules = getOriginateVrfToPostInVrfRules();
       List<Statement> postInInterfaceToPostInRules = getPostInInterfaceToPostInRules();
       List<Statement> postInInterfaceToNonInboundSrcInterface = getPostInInterfaceToNonInboundSrcInterface();
       List<Statement> postInToInboundInterface = getPostInToInboundInterface();
@@ -2310,6 +2345,7 @@ public class Synthesizer {
       ruleStatements.addAll(sane);
       ruleStatements.addAll(flowSinkAcceptRules);
       ruleStatements.addAll(originateToPostInRules);
+      ruleStatements.addAll(originateVrfToPostInVrfRules);
       ruleStatements.addAll(postInInterfaceToPostInRules);
       ruleStatements.addAll(postInInterfaceToNonInboundSrcInterface);
       ruleStatements.addAll(postInToInboundInterface);

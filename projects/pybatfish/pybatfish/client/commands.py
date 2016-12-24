@@ -19,11 +19,13 @@ import workhelper
 #suppress the urllib3 warnings due to old version of urllib3 (inside requests)
 import requests.packages.urllib3
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from multiprocessing.connection import answer_challenge
+from pybatfish.client.questionhelper import _get_pretty_answer
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 _bfDebug = True;
 
-bf_logger = logging.getLogger("org.batfish.client")
+bf_logger = logging.getLogger("pybatfish.client")
 bf_session = Session(bf_logger)
 
 if (_bfDebug):
@@ -66,7 +68,12 @@ def bf_answer(questionType, doDelta=False, **parameters):
 
     bf_logger.info("Question: %s", json.dumps(questionJson))
      
-    return bf_answer_str(json.dumps(questionJson), doDelta=doDelta)
+    answer = bf_answer_str(json.dumps(questionJson), doDelta=doDelta)
+
+    if (_pretty_print_answer()):
+        return _get_pretty_answer(bf_session, answer)
+    else:
+        return answer
 
 def bf_generate_dataplane(doDelta=False):
     '''
@@ -170,7 +177,10 @@ def bf_init_testrig(dirOrZipfile, doDelta=False, testrigName=None):
     workItem = workhelper.get_workitem_parse(bf_session, doDelta)
     answer = workhelper.execute(workItem, bf_session)
 
-    return answer
+    if (_pretty_print_answer()):
+        return _get_pretty_answer(bf_session, answer)
+    else:
+        return answer
 
 def bf_list_testrigs(currentContainerOnly=False):
     
@@ -203,6 +213,12 @@ def bf_set_container(containerName):
     bf_session.container = containerName
     bf_logger.info("Container is now set to " + bf_session.container)
 
+def bf_set_pretty_print_answers(prettyPrint):
+    if (type(prettyPrint) != type(True)):
+        raise BatfishException("Function argument is not boolean")
+
+    bf_session.additionalArgs[BfConsts.ARG_PRETTY_PRINT_ANSWER] = prettyPrint
+
 def bf_set_testrig(testrigName):
     bf_session.baseTestrig = testrigName
     bf_session.baseEnvironment = BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME
@@ -227,4 +243,8 @@ def _check_delta_testrig():
 def _check_container():
     if (bf_session.container is None):
         raise BatfishException("Container is not set")
-    
+
+def _pretty_print_answer():
+    return (bf_session.additionalArgs.has_key(BfConsts.ARG_PRETTY_PRINT_ANSWER) and
+            bf_session.additionalArgs[BfConsts.ARG_PRETTY_PRINT_ANSWER])
+

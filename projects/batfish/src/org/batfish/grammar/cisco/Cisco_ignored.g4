@@ -693,7 +693,6 @@ null_single
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
-            | NAT
             | RADIUS
             | RCMD
             | ROUTING //might want to use this eventually
@@ -741,6 +740,7 @@ null_single
       | LDAP_SCOPE
       | LICENSE
       | LLDP
+      | LOAD_INTERVAL
       | LOCATION
       |
       (
@@ -819,6 +819,7 @@ null_single
       | PROMPT
       | PROTOCOL_OBJECT
       | QOS
+      | QUEUE_MONITOR
       | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER

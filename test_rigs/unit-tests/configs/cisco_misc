@@ -43,6 +43,7 @@ load-balance policies
     fields ip protocol dst-ip dst-port src-ip src-port
     distribution symmetric-hash mac-ip
 no lldp run
+load-interval default 5
 ip domain-name my.domain.name
 domain-name my.domain.name
 nv

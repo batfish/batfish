@@ -11,8 +11,9 @@ import java.util.Set;
 import org.batfish.job.BatfishJob;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.collections.NodeSet;
+import org.batfish.datamodel.collections.NodeVrfSet;
 
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -31,7 +32,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
 
    private List<Synthesizer> _dataPlaneSynthesizers;
 
-   private final NodeSet _nodeSet;
+   private final NodeVrfSet _nodeVrfSet;
 
    private int _numPrograms;
 
@@ -41,7 +42,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
 
    public CompositeNodJob(Settings settings,
          List<Synthesizer> dataPlaneSynthesizer,
-         List<QuerySynthesizer> querySynthesizer, NodeSet nodeSet, String tag) {
+         List<QuerySynthesizer> querySynthesizer, NodeVrfSet nodeVrfSet,
+         String tag) {
       super(settings);
       _numPrograms = dataPlaneSynthesizer.size();
       if (_numPrograms != querySynthesizer.size()) {
@@ -50,8 +52,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
       }
       _dataPlaneSynthesizers = dataPlaneSynthesizer;
       _querySynthesizers = querySynthesizer;
-      _nodeSet = new NodeSet();
-      _nodeSet.addAll(nodeSet);
+      _nodeVrfSet = new NodeVrfSet();
+      _nodeVrfSet.addAll(nodeVrfSet);
       _tag = tag;
    }
 
@@ -150,8 +152,10 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
             constraints.put(name, val);
          }
          Set<Flow> flows = new HashSet<>();
-         for (String node : _nodeSet) {
-            Flow flow = createFlow(node, constraints);
+         for (Pair<String, String> nodeVrf : _nodeVrfSet) {
+            String node = nodeVrf.getFirst();
+            String vrf = nodeVrf.getSecond();
+            Flow flow = createFlow(node, vrf, constraints);
             flows.add(flow);
          }
          elapsedTime = System.currentTimeMillis() - startTime;
@@ -165,8 +169,9 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
       }
    }
 
-   private Flow createFlow(String node, Map<String, Long> constraints) {
-      return NodJob.createFlow(node, constraints, _tag);
+   private Flow createFlow(String node, String vrf,
+         Map<String, Long> constraints) {
+      return NodJob.createFlow(node, vrf, constraints, _tag);
    }
 
 }

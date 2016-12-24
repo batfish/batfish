@@ -49,7 +49,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          String name = e.getKey();
          Interface iface = e.getValue();
          org.batfish.datamodel.Interface newIface = toInterface(iface);
-         _c.getInterfaces().put(name, newIface);
+         _c.getDefaultVrf().getInterfaces().put(name, newIface);
       }
    }
 
@@ -101,8 +101,8 @@ public class VyosVendorConfiguration extends VyosConfiguration {
 
          // bind interface
          String bindInterfaceName = ipsecPeer.getBindInterface();
-         org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces()
-               .get(bindInterfaceName);
+         org.batfish.datamodel.Interface newBindInterface = _c.getDefaultVrf()
+               .getInterfaces().get(bindInterfaceName);
          if (newBindInterface != null) {
             Interface bindInterface = _interfaces.get(bindInterfaceName);
             bindInterface.getReferers().put(ipsecPeer,
@@ -308,7 +308,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          Interface iface = ifaceEntry.getValue();
          if (iface.getType() == InterfaceType.VTI && iface.isUnused()) {
             String name = ifaceEntry.getKey();
-            _c.getInterfaces().remove(name);
+            _c.getDefaultVrf().getInterfaces().remove(name);
             _w.redFlag("Disabling unused VTI interface: \"" + name + "\"");
          }
       }

@@ -39,6 +39,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
        */
       private static final long serialVersionUID = 1L;
 
+      private static final String VRF_VAR = "vrf";
+
       private final String _description;
 
       private final String _group;
@@ -53,6 +55,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
       private final Prefix _remotePrefix;
 
+      private final String _vrf;
+
       public BgpNeighborSummary(BgpNeighbor bgpNeighbor) {
          super(bgpNeighbor.getOwner().getName() + ":"
                + (bgpNeighbor.getDynamic() ? bgpNeighbor.getPrefix().toString()
@@ -64,6 +68,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
          _remoteAs = bgpNeighbor._remoteAs;
          _remoteIp = bgpNeighbor.getAddress();
          _remotePrefix = bgpNeighbor._key;
+         _vrf = bgpNeighbor._vrf;
       }
 
       @JsonCreator
@@ -74,7 +79,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
             @JsonProperty(LOCAL_IP_VAR) Ip localIp,
             @JsonProperty(REMOTE_AS_VAR) int remoteAs,
             @JsonProperty(REMOTE_IP_VAR) Ip remoteIp,
-            @JsonProperty(REMOTE_PREFIX_VAR) Prefix remotePrefix) {
+            @JsonProperty(REMOTE_PREFIX_VAR) Prefix remotePrefix,
+            @JsonProperty(VRF_VAR) String vrf) {
          super(name);
          _description = description;
          _group = group;
@@ -83,6 +89,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
          _remoteAs = remoteAs;
          _remoteIp = remoteIp;
          _remotePrefix = remotePrefix;
+         _vrf = vrf;
       }
 
       @JsonProperty(DESCRIPTION_VAR)
@@ -128,6 +135,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       @JsonProperty(REMOTE_PREFIX_VAR)
       public Prefix getRemotePrefix() {
          return _remotePrefix;
+      }
+
+      @JsonProperty(VRF_VAR)
+      public String getVrf() {
+         return _vrf;
       }
 
    }
@@ -245,6 +257,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     * advertisements to this peer
     */
    private boolean _sendCommunity;
+
+   private String _vrf;
 
    @SuppressWarnings("unused")
    private BgpNeighbor() {
@@ -492,6 +506,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return _sendCommunity;
    }
 
+   public String getVrf() {
+      return _vrf;
+   }
+
    public void initCandidateRemoteBgpNeighbors() {
       _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
    }
@@ -635,6 +653,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    @JsonProperty(SEND_COMMUNITY_VAR)
    public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
    }
 
    @Override

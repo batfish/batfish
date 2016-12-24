@@ -25,6 +25,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.Version;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
@@ -70,7 +71,7 @@ public class Driver {
       return false;
    }
 
-   public static boolean getIdle() {
+   public static synchronized boolean getIdle() {
       _lastPollFromCoordinator = new Date();
       return _idle;
    }
@@ -185,7 +186,7 @@ public class Driver {
       }
    }
 
-   private static void makeIdle() {
+   private static synchronized void makeIdle() {
       _idle = true;
    }
 
@@ -195,9 +196,11 @@ public class Driver {
                .getClientBuilder(_mainSettings.getCoordinatorUseSsl(),
                      _mainSettings.getTrustAllSslCerts())
                .build();
-         WebTarget webTarget = client.target(poolRegUrl).queryParam("add",
-               _mainSettings.getServiceHost() + ":"
-                     + _mainSettings.getServicePort());
+         WebTarget webTarget = client.target(poolRegUrl)
+               .queryParam(CoordConsts.SVC_ADD_WORKER_KEY,
+                     _mainSettings.getServiceHost() + ":"
+                           + _mainSettings.getServicePort())
+               .queryParam(CoordConsts.SVC_VERSION_KEY, Version.getVersion());
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .get();
 
@@ -277,7 +280,7 @@ public class Driver {
                   batfish.setTerminatedWithException(true);
                   String msg = "FATAL ERROR: " + e.getMessage();
                   logger.error(msg);
-                  answer = Answer.failureAnswer(msg);
+                  answer = Answer.failureAnswer(msg, null);
                }
                catch (QuestionException e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);

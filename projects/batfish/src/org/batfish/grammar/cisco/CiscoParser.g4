@@ -50,30 +50,6 @@ address_family_multicast_tail
    )*
 ;
 
-address_family_vrfd_stanza
-:
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   (
-      MAX_ROUTE DEC
-   )? NEWLINE afvrfd_stanza*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
-;
-
-afvrfd_stanza
-:
-   null_afvrfd_stanza
-;
-
 aiimgp_stanza
 :
    address_aiimgp_stanza
@@ -500,6 +476,14 @@ ip_dhcp_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ip_nat_null
+:
+   NO?
+   (
+      RANGE
+   ) ~NEWLINE* NEWLINE
+;
+
 ip_pim_tail
 :
    pim_accept_register
@@ -534,7 +518,6 @@ ip_route_tail
    )
    (
       nexthopip = IP_ADDRESS
-      | nexthopint = interface_name
       | nexthopprefix = IP_PREFIX
       | distance = DEC
       |
@@ -550,12 +533,10 @@ ip_route_tail
       (
          NAME variable
       )
-   )* NEWLINE
-;
+      // do not move interface_name up
 
-ip_route_vrfc_stanza
-:
-   IP ROUTE ip_route_tail
+      | nexthopint = interface_name
+   )* NEWLINE
 ;
 
 ip_sla_null
@@ -851,7 +832,6 @@ mgmt_api_stanza
             PROTOCOL HTTPS NEWLINE
          )
          | mgmt_null
-         | vrfd_stanza
       )+
    )
 ;
@@ -1093,9 +1073,12 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
-null_afvrfd_stanza
+vrfd_af_null
 :
-   MAXIMUM ~NEWLINE* NEWLINE
+   NO?
+   (
+      MAXIMUM
+   ) ~NEWLINE* NEWLINE
 ;
 
 null_imgp_stanza
@@ -1103,15 +1086,6 @@ null_imgp_stanza
    NO?
    (
       VRF
-   ) ~NEWLINE* NEWLINE
-;
-
-null_vrfd_stanza
-:
-   (
-      RD
-      | ROUTE_TARGET
-      | NO SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1645,6 +1619,14 @@ s_ip_domain_name
    IP DOMAIN_NAME name = variable NEWLINE
 ;
 
+s_ip_nat
+:
+   NO? IP NAT ~NEWLINE* NEWLINE
+   (
+      ip_nat_null
+   )*
+;
+
 s_ip_pim
 :
    IP PIM
@@ -1993,6 +1975,26 @@ s_vpn
    )*
 ;
 
+s_vrf_context
+:
+   VRF CONTEXT name = variable NEWLINE
+   (
+      vrfc_ip_route
+   )*
+;
+
+s_vrf_definition
+:
+   VRF DEFINITION? name = variable NEWLINE
+   (
+      vrfd_address_family
+      | vrfd_null
+   )*
+   (
+      EXIT_VRF NEWLINE
+   )?
+;
+
 s_webvpn
 :
    NO? WEBVPN ~NEWLINE* NEWLINE
@@ -2167,6 +2169,7 @@ stanza
    | s_interface
    | s_ip_dhcp
    | s_ip_domain_name
+   | s_ip_nat
    | s_ip_pim
    | s_ip_sla
    | s_ip_source_route
@@ -2216,6 +2219,8 @@ stanza
    | s_vpc
    | s_vpdn_group
    | s_vpn
+   | s_vrf_context
+   | s_vrf_definition
    | s_webvpn
    | s_wsma
    | srlg_stanza
@@ -2223,8 +2228,6 @@ stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
    | unrecognized_block_stanza
-   | vrf_context_stanza
-   | vrf_definition_stanza
 ;
 
 statistics_null
@@ -2301,30 +2304,6 @@ vlan_null
    ) ~NEWLINE* NEWLINE
 ;
 
-vrf_context_stanza
-:
-   VRF CONTEXT name = variable NEWLINE vrfc_stanza*
-;
-
-vrf_definition_stanza
-:
-   VRF DEFINITION? name = variable NEWLINE vrfd_stanza*
-   (
-      EXIT_VRF NEWLINE
-   )?
-;
-
-vrfc_stanza
-:
-   ip_route_vrfc_stanza
-;
-
-vrfd_stanza
-:
-   address_family_vrfd_stanza
-   | null_vrfd_stanza
-;
-
 vp_null
 :
    NO?
@@ -2386,6 +2365,46 @@ vpn_null
       | PARTICIPATE
       | PRIORITY
       | REDIRECT_FQDN
+   ) ~NEWLINE* NEWLINE
+;
+
+vrfc_ip_route
+:
+   IP ROUTE ip_route_tail
+;
+
+vrfd_address_family
+:
+   ADDRESS_FAMILY
+   (
+      IPV4
+      | IPV6
+   )
+   (
+      MULTICAST
+      | UNICAST
+   )?
+   (
+      MAX_ROUTE DEC
+   )? NEWLINE
+   (
+      vrfd_af_null
+   )*
+   (
+      EXIT_ADDRESS_FAMILY NEWLINE
+   )?
+;
+
+vrfd_null
+:
+   NO?
+   (
+      RD
+      | ROUTE_TARGET
+      |
+      (
+         NO SHUTDOWN
+      )
    ) ~NEWLINE* NEWLINE
 ;
 

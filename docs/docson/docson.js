@@ -413,23 +413,31 @@ define(["lib/jquery", "lib/handlebars", "lib/highlight", "lib/jsonpointer", "lib
                 });
                 element.find(".expand-button").click(function() {
                     if($(this).attr("expanded")) {
+                        //this spinner show/hide does not work :(
+                        //it only works when stepping through the code; not otherwise :(
+                        $("#spinner").show();
                         $(this).parent().parent().find(".expand-button").html(" + ").attr("title", "Expand all");
                         $(this).parent().parent().find(".signature-type-expandable").removeClass("signature-type-expanded");
                         $(this).parent().parent().find(".box-container").hide( resizeHandler ? 0 : 300);
                         $(this).parent().parent().find(".expand-button").removeAttr("expanded");
                         resized();
+                        $("#spinner").hide();
                     } else {
+                        $("#spinner").show();
                         $(this).parent().parent().find(".expand-button").html(" - ").attr("title", "Collapse all");
                         $(this).parent().parent().find(".signature-type-expandable").addClass("signature-type-expanded");
                         $(this).parent().parent().find(".box-container").show(resizeHandler ? 0 : 300);
                         $(this).parent().parent().find(".expand-button").attr("expanded", true);
                         resized();
+                        $("#spinner").hide();
                     }
                 });
                 element.find(".source-button").click(function() {
+                    $("#spinner").show();
                     $(this).parent().children(".box-body").toggle();
                     $(this).parent().children(".source").toggle();
                     resized();
+                    $("#spinner").hide();
                 });
             };
 

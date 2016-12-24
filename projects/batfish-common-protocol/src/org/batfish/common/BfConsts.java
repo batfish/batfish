@@ -31,6 +31,7 @@ public class BfConsts {
    public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
    public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
    public static final String ARG_PLUGIN_DIRS = "plugindirs";
+   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
    public static final String ARG_QUESTION_NAME = "questionname";
    public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
    public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
@@ -109,5 +110,4 @@ public class BfConsts {
    public static final String SVC_SUCCESS_KEY = "success";
    public static final String SVC_TASK_KEY = "task";
    public static final String SVC_TASKID_KEY = "taskid";
-
 }

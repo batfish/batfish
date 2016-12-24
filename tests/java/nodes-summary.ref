@@ -25,12 +25,12 @@
             "as1_to_as3",
             "as2_to_as1",
             "as3_to_as1",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:10.12.11.2~",
-            "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
-            "~BGP_PEER_EXPORT_POLICY:5.6.7.8~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
@@ -38,8 +38,8 @@
             "103",
             "default_list",
             "inbound_route_filter",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -72,11 +72,11 @@
             "as2_to_as1",
             "as3_to_as1",
             "as4_to_as1",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:1.10.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:10.13.22.3~",
-            "~BGP_PEER_EXPORT_POLICY:10.14.22.4~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.13.22.3~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
@@ -84,8 +84,8 @@
             "103",
             "as4-prefixes",
             "inbound_route_filter",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -100,14 +100,14 @@
             "Loopback0"
           ],
           "policySortedMaps" : [
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:1.1.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:1.2.2.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -130,7 +130,7 @@
           "ipAccessLists" : [
             "101",
             "103",
-            "INSIDE_TO_OUTSIDE",
+            "INSIDE_TO_AS1",
             "OUTSIDE_TO_INSIDE"
           ],
           "policySortedMaps" : [
@@ -138,21 +138,21 @@
             "as2_to_as1",
             "as2_to_as3",
             "as3_to_as2",
-            "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:10.12.11.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
             "103",
             "inbound_route_filter",
             "outbound_routes",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~",
-            "~MATCH_SUPPRESSED_SUMMARY_ONLY~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~",
+            "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
           ],
           "routingProtocols" : [
             "aggregate",
@@ -176,7 +176,7 @@
           "ipAccessLists" : [
             "101",
             "103",
-            "INSIDE_TO_OUTSIDE",
+            "INSIDE_TO_AS3",
             "OUTSIDE_TO_INSIDE"
           ],
           "policySortedMaps" : [
@@ -184,21 +184,21 @@
             "as2_to_as1",
             "as2_to_as3",
             "as3_to_as2",
-            "~AGGREGATE_ROUTE_GEN:2.128.0.0/16~",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:10.23.21.3~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.23.21.3~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
             "103",
             "inbound_route_filter",
             "outbound_routes",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~",
-            "~MATCH_SUPPRESSED_SUMMARY_ONLY~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~",
+            "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~"
           ],
           "routingProtocols" : [
             "aggregate",
@@ -219,16 +219,16 @@
             "blocktelnet"
           ],
           "policySortedMaps" : [
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -245,16 +245,16 @@
             "Loopback0"
           ],
           "policySortedMaps" : [
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.1.2~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.3.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.3.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -282,14 +282,14 @@
           "policySortedMaps" : [
             "as2_to_dept",
             "dept_to_as2",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:2.34.101.3~",
-            "~BGP_PEER_EXPORT_POLICY:2.34.201.3~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.34.101.3~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.34.201.3~"
           ],
           "routeFilterLists" : [
             "102",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp"
@@ -311,18 +311,18 @@
             "105"
           ],
           "policySortedMaps" : [
-            "as2_to_dept",
-            "dept_to_as2",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-            "~BGP_PEER_EXPORT_POLICY:2.34.101.4~",
-            "~OSPF_EXPORT_POLICY~"
+            "as2dist_to_dept",
+            "dept_to_as2dist",
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.34.101.4~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "105",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -345,18 +345,18 @@
             "105"
           ],
           "policySortedMaps" : [
-            "as2_to_dept",
-            "dept_to_as2",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.1~",
-            "~BGP_PEER_EXPORT_POLICY:2.1.2.2~",
-            "~BGP_PEER_EXPORT_POLICY:2.34.201.4~",
-            "~OSPF_EXPORT_POLICY~"
+            "as2dist_to_dept",
+            "dept_to_as2dist",
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:2.34.201.4~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "105",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -385,10 +385,10 @@
             "as2_to_as3",
             "as3_to_as1",
             "as3_to_as2",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:10.23.21.2~",
-            "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.23.21.2~",
+            "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
@@ -396,8 +396,8 @@
             "103",
             "default_list",
             "inbound_route_filter",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -426,18 +426,18 @@
             "as2_to_as3",
             "as3_to_as1",
             "as3_to_as2",
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:10.13.22.1~",
-            "~BGP_PEER_EXPORT_POLICY:3.10.1.1~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:10.13.22.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
             "101",
             "102",
             "103",
             "inbound_route_filter",
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -454,14 +454,14 @@
             "Loopback0"
           ],
           "policySortedMaps" : [
-            "~BGP_COMMON_EXPORT_POLICY~",
-            "~BGP_PEER_EXPORT_POLICY:3.1.1.1~",
-            "~BGP_PEER_EXPORT_POLICY:3.2.2.2~",
-            "~OSPF_EXPORT_POLICY~"
+            "~BGP_COMMON_EXPORT_POLICY:default~",
+            "~BGP_PEER_EXPORT_POLICY:default:3.1.1.1~",
+            "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
+            "~OSPF_EXPORT_POLICY:default~"
           ],
           "routeFilterLists" : [
-            "~BGP_AGGREGATE_NETWORKS_FILTER:~",
-            "~BGP_NETWORK_NETWORKS_FILTER~"
+            "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
+            "~BGP_NETWORK_NETWORKS_FILTER:default~"
           ],
           "routingProtocols" : [
             "bgp",
@@ -516,7 +516,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion"
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*",
+    "summary" : true
   },
   "status" : "SUCCESS"
 }

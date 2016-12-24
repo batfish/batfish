@@ -137,7 +137,8 @@ public class Route implements Serializable {
                Prefix subnetIfacePrefix = instanceLinkPrefix;
                Interface subnetIface = new Interface(subnetIfaceName,
                      subnetCfgNode);
-               subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
+               subnetCfgNode.getDefaultVrf().getInterfaces()
+                     .put(subnetIfaceName, subnetIface);
                subnetIface.setPrefix(subnetIfacePrefix);
                subnetIface.getAllPrefixes().add(subnetIfacePrefix);
 
@@ -151,8 +152,8 @@ public class Route implements Serializable {
                      instanceLinkPrefix.getPrefixLength());
                Interface instanceIface = new Interface(instanceIfaceName,
                      instanceCfgNode);
-               instanceCfgNode.getInterfaces().put(instanceIfaceName,
-                     instanceIface);
+               instanceCfgNode.getDefaultVrf().getInterfaces()
+                     .put(instanceIfaceName, instanceIface);
                instanceIface.setPrefix(instanceIfacePrefix);
                instanceIface.getAllPrefixes().add(instanceIfacePrefix);
                Instance instance = awsVpcConfiguration.getInstances()
@@ -190,7 +191,8 @@ public class Route implements Serializable {
             String subnetIfaceName = remoteVpcId;
             String remoteVpcIfaceName = subnet.getId();
             Ip remoteVpcIfaceAddress;
-            if (!subnetCfgNode.getInterfaces().containsKey(subnetIfaceName)) {
+            if (!subnetCfgNode.getDefaultVrf().getInterfaces()
+                  .containsKey(subnetIfaceName)) {
                // create prefix on which subnet and remote vpc router will
                // connect
                Prefix peeringLinkPrefix = awsVpcConfiguration
@@ -198,7 +200,8 @@ public class Route implements Serializable {
                Prefix subnetIfacePrefix = peeringLinkPrefix;
                Interface subnetIface = new Interface(subnetIfaceName,
                      subnetCfgNode);
-               subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
+               subnetCfgNode.getDefaultVrf().getInterfaces()
+                     .put(subnetIfaceName, subnetIface);
                subnetIface.setPrefix(subnetIfacePrefix);
                subnetIface.getAllPrefixes().add(subnetIfacePrefix);
 
@@ -208,14 +211,15 @@ public class Route implements Serializable {
                      peeringLinkPrefix.getPrefixLength());
                Interface remoteVpcIface = new Interface(remoteVpcIfaceName,
                      remoteVpcCfgNode);
-               remoteVpcCfgNode.getInterfaces().put(remoteVpcIfaceName,
-                     remoteVpcIface);
+               remoteVpcCfgNode.getDefaultVrf().getInterfaces()
+                     .put(remoteVpcIfaceName, remoteVpcIface);
                remoteVpcIface.setPrefix(remoteVpcIfacePrefix);
                remoteVpcIface.getAllPrefixes().add(remoteVpcIfacePrefix);
             }
             // interface pair exists now, so just retrieve existing information
-            remoteVpcIfaceAddress = remoteVpcCfgNode.getInterfaces()
-                  .get(remoteVpcIfaceName).getPrefix().getAddress();
+            remoteVpcIfaceAddress = remoteVpcCfgNode.getDefaultVrf()
+                  .getInterfaces().get(remoteVpcIfaceName).getPrefix()
+                  .getAddress();
 
             // initialize static route on new link
             staticRoute = new StaticRoute(_destinationCidrBlock,

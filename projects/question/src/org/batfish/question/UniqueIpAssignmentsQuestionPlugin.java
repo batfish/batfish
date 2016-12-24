@@ -13,7 +13,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -28,7 +27,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
@@ -62,11 +60,29 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
          return _enabledIps;
       }
 
+      private Object ipsToString(String indent, String header,
+            SortedMap<Ip, SortedSet<NodeInterfacePair>> ips) {
+         StringBuilder sb = new StringBuilder(indent + header + "\n");
+         for (Ip ip : ips.keySet()) {
+            sb.append(indent + indent + ip.toString() + "\n");
+            for (NodeInterfacePair nip : ips.get(ip)) {
+               sb.append(indent + indent + indent + nip.toString() + "\n");
+            }
+         }
+         return sb.toString();
+      }
+
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder(
+               "Results for unique IP assignment check\n");
+         if (_allIps != null) {
+            sb.append(ipsToString("  ", "All IPs", _allIps));
+         }
+         if (_enabledIps != null) {
+            sb.append(ipsToString("  ", "Enabled IPs", _enabledIps));
+         }
+         return sb.toString();
       }
 
       public void setAllIps(

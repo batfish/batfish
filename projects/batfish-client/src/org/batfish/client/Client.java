@@ -40,11 +40,9 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kjetland.jackson.jsonSchema.JsonSchemaConfig;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 
 import jline.console.ConsoleReader;
@@ -371,17 +369,21 @@ public class Client extends AbstractClient implements IClient {
          ObjectMapper mapper = new BatfishObjectMapper();
 
          JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper);
-         JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
+         JsonNode schemaNew = schemaGenNew
+               .generateJsonSchema(Configuration.class);
          _logger.output(mapper.writeValueAsString(schemaNew));
-         
-         // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper, true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
-         // JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);                  
+
+         // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper,
+         // true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
+         // JsonNode schemaNew =
+         // schemaGenNew.generateJsonSchema(Configuration.class);
          // _logger.output(mapper.writeValueAsString(schemaNew));
 
          // _logger.output("\n");
-         // JsonNode schemaNew2 = schemaGenNew.generateJsonSchema(SchemaTest.Parent.class);                  
+         // JsonNode schemaNew2 =
+         // schemaGenNew.generateJsonSchema(SchemaTest.Parent.class);
          // _logger.output(mapper.writeValueAsString(schemaNew2));
-      } 
+      }
       catch (Exception e) {
          _logger.errorf("Could not generate data model: " + e.getMessage());
          e.printStackTrace();
@@ -900,6 +902,10 @@ public class Client extends AbstractClient implements IClient {
             String containerPrefix = (words.length > 1) ? words[1]
                   : DEFAULT_CONTAINER_PREFIX;
             _currContainerName = _workHelper.initContainer(containerPrefix);
+            if (_currContainerName == null) {
+               _logger.errorf("Could not init container\n");
+               return false;
+            }
             _logger.output("Active container is set");
             _logger.infof(" to  %s\n", _currContainerName);
             _logger.output("\n");
@@ -980,6 +986,10 @@ public class Client extends AbstractClient implements IClient {
             if (!isSetContainer(false)) {
                _currContainerName = _workHelper
                      .initContainer(DEFAULT_CONTAINER_PREFIX);
+               if (_currContainerName == null) {
+                  _logger.errorf("Could not init container\n");
+                  return false;
+               }
                _logger.outputf("Init'ed and set active container");
                _logger.infof(" to %s\n", _currContainerName);
                _logger.output("\n");

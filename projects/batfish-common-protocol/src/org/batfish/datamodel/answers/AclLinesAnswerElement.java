@@ -5,13 +5,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpAccessList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
@@ -74,6 +72,17 @@ public class AclLinesAnswerElement implements AnswerElement {
          return _name.hashCode();
       }
 
+      public String prettyPrint(String indent) {
+         StringBuilder sb = new StringBuilder();
+         sb.append(String.format("%s[index %d] %s\n", indent, _index, _name));
+         sb.append(String.format("%s  Earliest covering line: [index %d] %s\n",
+               indent, _earliestMoreGeneralLineIndex,
+               _earliestMoreGeneralLineName));
+         sb.append(String.format("%s  Is different action: %s\n", indent,
+               _differentAction));
+         return sb.toString();
+      }
+
       public void setDifferentAction(boolean differentAction) {
          _differentAction = differentAction;
       }
@@ -87,7 +96,6 @@ public class AclLinesAnswerElement implements AnswerElement {
             String earliestMoreGeneralLineName) {
          _earliestMoreGeneralLineName = earliestMoreGeneralLineName;
       }
-
    }
 
    private SortedMap<String, SortedMap<String, IpAccessList>> _acls;
@@ -171,9 +179,20 @@ public class AclLinesAnswerElement implements AnswerElement {
 
    @Override
    public String prettyPrint() throws JsonProcessingException {
-      // TODO: change this function to pretty print the answer
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
+      StringBuilder sb = new StringBuilder(
+            "Results for unreachable ACL lines\n");
+      // private SortedMap<String, SortedMap<String,
+      // SortedSet<AclReachabilityEntry>>> _unreachableLines;
+      for (String hostname : _unreachableLines.keySet()) {
+         for (String aclName : _unreachableLines.get(hostname).keySet()) {
+            sb.append("\n  " + hostname + " :: " + aclName + "\n");
+            for (AclReachabilityEntry arEntry : _unreachableLines.get(hostname)
+                  .get(aclName)) {
+               sb.append(arEntry.prettyPrint("    "));
+            }
+         }
+      }
+      return sb.toString();
    }
 
    public void setAcls(

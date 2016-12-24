@@ -68,6 +68,17 @@ public class NamedStructureEquivalenceSet<T>
       return _representativeElement.hashCode();
    }
 
+   public String prettyPrint(String indent) {
+      StringBuilder sb = new StringBuilder(indent + _representativeElement);
+      for (String node : _nodes) {
+         if (!node.equals(_representativeElement)) {
+            sb.append(" " + node);
+         }
+      }
+      sb.append("\n");
+      return sb.toString();
+   }
+
    public void setNamedStructure(T namedStructure) {
       _namedStructure = namedStructure;
    }
@@ -75,5 +86,4 @@ public class NamedStructureEquivalenceSet<T>
    public void setNodes(SortedSet<String> nodes) {
       _nodes = nodes;
    }
-
 }

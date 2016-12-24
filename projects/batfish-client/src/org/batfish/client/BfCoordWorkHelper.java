@@ -22,6 +22,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -255,6 +256,8 @@ public class BfCoordWorkHelper {
 
          addTextMultiPart(multiPart, CoordConsts.SVC_API_KEY,
                _settings.getApiKey());
+         addTextMultiPart(multiPart, CoordConsts.SVC_VERSION_KEY,
+               Version.getVersion());
          addTextMultiPart(multiPart, CoordConsts.SVC_CONTAINER_NAME_KEY,
                containerName);
          addTextMultiPart(multiPart, CoordConsts.SVC_TESTRIG_NAME_KEY,
@@ -410,42 +413,6 @@ public class BfCoordWorkHelper {
          return null;
       }
    }
-
-   // public String[] listContainers() {
-   // try {
-   // Client client = getClientBuilder().build();
-   // WebTarget webTarget = getTarget(client,
-   // CoordConsts.SVC_LIST_CONTAINERS_RSC)addTextMultiPart(multiPart,
-   // CoordConsts.SVC_API_KEY, _settings.getApiKey()));
-   //
-   // JSONObject jObj = getJsonResponse(webTarget);
-   // if (jObj == null) {
-   // return null;
-   // }
-   //
-   // if (!jObj.has(CoordConsts.SVC_CONTAINER_LIST_KEY)) {
-   // _logger.errorf("container list key not found in: %s\n",
-   // jObj.toString());
-   // return null;
-   // }
-   //
-   // JSONArray containerArray = jObj
-   // .getJSONArray(CoordConsts.SVC_CONTAINER_LIST_KEY);
-   //
-   // String[] containerList = new String[containerArray.length()];
-   //
-   // for (int index = 0; index < containerArray.length(); index++) {
-   // containerList[index] = containerArray.getString(index);
-   // }
-   //
-   // return containerList;
-   // }
-   // catch (Exception e) {
-   // _logger.errorf("exception: ");
-   // _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
-   // return null;
-   // }
-   // }
 
    public String initContainer(String containerPrefix) {
       try {
@@ -711,6 +678,10 @@ public class BfCoordWorkHelper {
    public JSONObject postData(WebTarget webTarget, MultiPart multiPart)
          throws Exception {
       try {
+
+         addTextMultiPart(multiPart, CoordConsts.SVC_VERSION_KEY,
+               Version.getVersion());
+
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
@@ -918,8 +889,8 @@ public class BfCoordWorkHelper {
          }
          else {
             _logger.errorf(
-                  "Exception when uploading test rig to %s using (%s, %s): %s\n",
-                  _coordWorkMgr, testrigName, zipfileName,
+                  "Exception when uploading test rig to %s using (%s, %s, %s): %s\n",
+                  _coordWorkMgr, containerName, testrigName, zipfileName,
                   ExceptionUtils.getStackTrace(e));
          }
          return false;

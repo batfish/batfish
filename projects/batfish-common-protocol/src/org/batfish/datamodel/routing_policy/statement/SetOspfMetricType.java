@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -22,6 +23,9 @@ public class SetOspfMetricType extends AbstractStatement {
 
    public SetOspfMetricType(OspfMetricType metricType) {
       _metricType = metricType;
+      if (_metricType == null) {
+         throw new BatfishException("Cannot set null ospf metric type");
+      }
    }
 
    @Override

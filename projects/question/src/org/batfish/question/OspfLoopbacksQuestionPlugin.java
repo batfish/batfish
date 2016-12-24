@@ -13,13 +13,13 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -28,7 +28,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -82,11 +81,40 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
          return _running;
       }
 
+      private Object interfacesToString(String indent, String header,
+            SortedMap<String, SortedSet<String>> interfaces) {
+         StringBuilder sb = new StringBuilder(indent + header + "\n");
+         for (String node : interfaces.keySet()) {
+            for (String iface : interfaces.get(node)) {
+               sb.append(indent + indent + node + " : " + iface + "\n");
+            }
+         }
+         return sb.toString();
+      }
+
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder(
+               "Results for OSPF loopbacks check\n");
+         if (_active.size() > 0) {
+            sb.append(interfacesToString("  ", "Active loopbacks", _active));
+         }
+         if (_exported.size() > 0) {
+            sb.append(
+                  interfacesToString("  ", "Exported loopbacks", _exported));
+         }
+         if (_inactive.size() > 0) {
+            sb.append(
+                  interfacesToString("  ", "Inactive loopbacks", _inactive));
+         }
+         if (_passive.size() > 0) {
+            sb.append(interfacesToString("  ", "Passive loopbacks", _passive));
+         }
+         if (_running.size() > 0) {
+            sb.append(interfacesToString("  ", "Running loopbacks", _running));
+         }
+         return sb.toString();
+
       }
 
       public void setActive(SortedMap<String, SortedSet<String>> active) {
@@ -144,53 +172,57 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                continue;
             }
             Configuration c = e.getValue();
-            for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
-               String interfaceName = e2.getKey();
-               Interface iface = e2.getValue();
-               if (iface.isLoopback(c.getConfigurationFormat())) {
-                  if (iface.getOspfEnabled()) {
-                     // ospf is running either passively or actively
-                     answerElement.add(answerElement.getRunning(), hostname,
-                           interfaceName);
-                     if (iface.getOspfPassive()) {
-                        answerElement.add(answerElement.getPassive(), hostname,
+            for (Vrf vrf : c.getVrfs().values()) {
+               for (Entry<String, Interface> e2 : vrf.getInterfaces()
+                     .entrySet()) {
+                  String interfaceName = e2.getKey();
+                  Interface iface = e2.getValue();
+                  if (iface.isLoopback(c.getConfigurationFormat())) {
+                     if (iface.getOspfEnabled()) {
+                        // ospf is running either passively or actively
+                        answerElement.add(answerElement.getRunning(), hostname,
                               interfaceName);
+                        if (iface.getOspfPassive()) {
+                           answerElement.add(answerElement.getPassive(),
+                                 hostname, interfaceName);
+                        }
+                        else {
+                           answerElement.add(answerElement.getActive(),
+                                 hostname, interfaceName);
+                        }
                      }
                      else {
-                        answerElement.add(answerElement.getActive(), hostname,
-                              interfaceName);
-                     }
-                  }
-                  else {
-                     // check if exported as external ospf route
-                     boolean exported = false;
-                     OspfProcess proc = c.getOspfProcess();
-                     if (proc != null) {
-                        String exportPolicyName = proc.getExportPolicy();
-                        if (exportPolicyName != null) {
-                           RoutingPolicy exportPolicy = c.getRoutingPolicies()
-                                 .get(exportPolicyName);
-                           if (exportPolicy != null) {
-                              for (Prefix prefix : iface.getAllPrefixes()) {
-                                 ConnectedRoute route = new ConnectedRoute(
-                                       prefix, interfaceName);
-                                 if (exportPolicy.process(route, null,
-                                       new OspfExternalRoute.Builder(), null)) {
-                                    exported = true;
+                        // check if exported as external ospf route
+                        boolean exported = false;
+                        OspfProcess proc = vrf.getOspfProcess();
+                        if (proc != null) {
+                           String exportPolicyName = proc.getExportPolicy();
+                           if (exportPolicyName != null) {
+                              RoutingPolicy exportPolicy = c
+                                    .getRoutingPolicies().get(exportPolicyName);
+                              if (exportPolicy != null) {
+                                 for (Prefix prefix : iface.getAllPrefixes()) {
+                                    ConnectedRoute route = new ConnectedRoute(
+                                          prefix, interfaceName);
+                                    if (exportPolicy.process(route, null,
+                                          new OspfExternalRoute.Builder(), null,
+                                          vrf.getName())) {
+                                       exported = true;
+                                    }
                                  }
                               }
                            }
                         }
-                     }
 
-                     if (exported) {
-                        answerElement.add(answerElement.getExported(), hostname,
-                              interfaceName);
-                     }
-                     else {
-                        // not exported, so should be inactive
-                        answerElement.add(answerElement.getInactive(), hostname,
-                              interfaceName);
+                        if (exported) {
+                           answerElement.add(answerElement.getExported(),
+                                 hostname, interfaceName);
+                        }
+                        else {
+                           // not exported, so should be inactive
+                           answerElement.add(answerElement.getInactive(),
+                                 hostname, interfaceName);
+                        }
                      }
                   }
                }
