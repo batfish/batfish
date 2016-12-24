@@ -7,20 +7,11 @@
     "name" : {
       "type" : "string"
     },
-    "aggregateRoutes" : {
-      "type" : "array",
-      "items" : {
-        "$ref" : "#/definitions/GeneratedRoute"
-      }
-    },
     "asPathAccessLists" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/AsPathAccessList"
       },
       "description" : "Ari: Key details go here."
-    },
-    "bgpProcess" : {
-      "$ref" : "#/definitions/BgpProcess"
     },
     "communities" : {
       "type" : "array",
@@ -77,12 +68,6 @@
     "domainName" : {
       "type" : "string"
     },
-    "generatedIpv6Routes" : {
-      "type" : "array",
-      "items" : {
-        "$ref" : "#/definitions/GeneratedRoute6"
-      }
-    },
     "ikeGateways" : {
       "additionalProperties" : {
         "$ref" : "#/definitions/IkeGateway"
@@ -128,12 +113,6 @@
         "$ref" : "#/definitions/IpsecVpn"
       }
     },
-    "isisProcess" : {
-      "$ref" : "#/definitions/IsisProcess"
-    },
-    "ospfProcess" : {
-      "$ref" : "#/definitions/OspfProcess"
-    },
     "roles" : {
       "type" : "array",
       "items" : {
@@ -155,14 +134,13 @@
         "$ref" : "#/definitions/RoutingPolicy"
       }
     },
-    "staticRoutes" : {
-      "type" : "array",
-      "items" : {
-        "$ref" : "#/definitions/StaticRoute"
-      }
-    },
     "vendorFamily" : {
       "$ref" : "#/definitions/VendorFamily"
+    },
+    "vrfs" : {
+      "additionalProperties" : {
+        "$ref" : "#/definitions/Vrf"
+      }
     },
     "zones" : {
       "additionalProperties" : {
@@ -171,55 +149,6 @@
     }
   },
   "definitions" : {
-    "GeneratedRoute" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "class" : {
-          "type" : "string",
-          "enum" : [
-            null
-          ],
-          "default" : null
-        },
-        "network" : {
-          "type" : "string"
-        },
-        "administrativeCost" : {
-          "type" : "integer"
-        },
-        "asPath" : {
-          "type" : "array",
-          "items" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer"
-            }
-          }
-        },
-        "attributePolicy" : {
-          "type" : "string"
-        },
-        "discard" : {
-          "type" : "boolean"
-        },
-        "generationPolicy" : {
-          "type" : "string"
-        },
-        "metric" : {
-          "type" : "integer"
-        },
-        "nextHopInterface" : {
-          "type" : "string"
-        }
-      },
-      "title" : null,
-      "required" : [
-        "class",
-        "administrativeCost",
-        "discard"
-      ]
-    },
     "AsPathAccessList" : {
       "type" : "object",
       "additionalProperties" : false,
@@ -248,283 +177,6 @@
         },
         "regex" : {
           "type" : "string"
-        }
-      }
-    },
-    "BgpProcess" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "generatedRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute"
-          }
-        },
-        "neighbors" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/BgpNeighbor"
-          }
-        },
-        "routerId" : {
-          "type" : "string"
-        }
-      }
-    },
-    "BgpNeighbor" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
-        },
-        "address" : {
-          "type" : "string"
-        },
-        "advertiseExternal" : {
-          "type" : "boolean"
-        },
-        "advertiseInactive" : {
-          "type" : "boolean"
-        },
-        "allowLocalAsIn" : {
-          "type" : "boolean"
-        },
-        "allowRemoteAsOut" : {
-          "type" : "boolean"
-        },
-        "clusterId" : {
-          "type" : "integer"
-        },
-        "defaultMetric" : {
-          "type" : "integer"
-        },
-        "description" : {
-          "type" : "string"
-        },
-        "dynamic" : {
-          "type" : "boolean"
-        },
-        "ebgpMultihop" : {
-          "type" : "boolean"
-        },
-        "exportPolicy" : {
-          "type" : "string"
-        },
-        "generatedRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute"
-          }
-        },
-        "group" : {
-          "type" : "string"
-        },
-        "importPolicy" : {
-          "type" : "string"
-        },
-        "localAs" : {
-          "type" : "integer"
-        },
-        "localIp" : {
-          "type" : "string"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration"
-        },
-        "remoteAs" : {
-          "type" : "integer"
-        },
-        "remotePrefix" : {
-          "type" : "string"
-        },
-        "routeReflectorClient" : {
-          "type" : "boolean"
-        },
-        "sendCommunity" : {
-          "type" : "boolean"
-        }
-      },
-      "required" : [
-        "advertiseExternal",
-        "advertiseInactive",
-        "allowLocalAsIn",
-        "allowRemoteAsOut",
-        "defaultMetric",
-        "dynamic",
-        "ebgpMultihop",
-        "routeReflectorClient",
-        "sendCommunity"
-      ]
-    },
-    "Configuration" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "name" : {
-          "type" : "string"
-        },
-        "aggregateRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute"
-          }
-        },
-        "asPathAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/AsPathAccessList"
-          },
-          "description" : "Ari: Key details go here."
-        },
-        "bgpProcess" : {
-          "$ref" : "#/definitions/BgpProcess"
-        },
-        "communities" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          }
-        },
-        "communityLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/CommunityList"
-          }
-        },
-        "configurationFormat" : {
-          "type" : "string",
-          "enum" : [
-            "ALCATEL_AOS",
-            "ARISTA",
-            "AWS_VPC",
-            "BLADENETWORK",
-            "CISCO_IOS",
-            "CISCO_IOS_XR",
-            "CISCO_NX",
-            "EMPTY",
-            "FLAT_JUNIPER",
-            "FLAT_VYOS",
-            "FORCE10",
-            "FOUNDRY",
-            "HOST",
-            "IGNORED",
-            "IPTABLES",
-            "JUNIPER",
-            "JUNIPER_SWITCH",
-            "MRV",
-            "MSS",
-            "UNKNOWN",
-            "VXWORKS",
-            "VYOS"
-          ]
-        },
-        "defaultCrossZoneAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ]
-        },
-        "defaultInboundAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ]
-        },
-        "domainName" : {
-          "type" : "string"
-        },
-        "generatedIpv6Routes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute6"
-          }
-        },
-        "ikeGateways" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeGateway"
-          }
-        },
-        "ikePolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkePolicy"
-          }
-        },
-        "ikeProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeProposal"
-          }
-        },
-        "interfaces" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Interface"
-          }
-        },
-        "ip6AccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Ip6AccessList"
-          }
-        },
-        "ipAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
-          }
-        },
-        "ipsecPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecPolicy"
-          }
-        },
-        "ipsecProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecProposal"
-          }
-        },
-        "ipsecVpns" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecVpn"
-          }
-        },
-        "isisProcess" : {
-          "$ref" : "#/definitions/IsisProcess"
-        },
-        "ospfProcess" : {
-          "$ref" : "#/definitions/OspfProcess"
-        },
-        "roles" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          }
-        },
-        "route6FilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Route6FilterList"
-          }
-        },
-        "routeFilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RouteFilterList"
-          }
-        },
-        "routingPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RoutingPolicy"
-          }
-        },
-        "staticRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/StaticRoute"
-          }
-        },
-        "vendorFamily" : {
-          "$ref" : "#/definitions/VendorFamily"
-        },
-        "zones" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Zone"
-          }
         }
       }
     },
@@ -564,55 +216,6 @@
           "type" : "string"
         }
       }
-    },
-    "GeneratedRoute6" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "class" : {
-          "type" : "string",
-          "enum" : [
-            null
-          ],
-          "default" : null
-        },
-        "network" : {
-          "type" : "string"
-        },
-        "administrativeCost" : {
-          "type" : "integer"
-        },
-        "asPath" : {
-          "type" : "array",
-          "items" : {
-            "type" : "array",
-            "items" : {
-              "type" : "integer"
-            }
-          }
-        },
-        "attributePolicy" : {
-          "type" : "string"
-        },
-        "discard" : {
-          "type" : "boolean"
-        },
-        "generationPolicy" : {
-          "type" : "string"
-        },
-        "metric" : {
-          "type" : "integer"
-        },
-        "nextHopInterface" : {
-          "type" : "string"
-        }
-      },
-      "title" : null,
-      "required" : [
-        "class",
-        "administrativeCost",
-        "discard"
-      ]
     },
     "IkeGateway" : {
       "type" : "object",
@@ -757,6 +360,9 @@
             "ISL",
             "NEGOTIATE"
           ]
+        },
+        "vrf" : {
+          "type" : "string"
         },
         "zone" : {
           "$ref" : "#/definitions/Zone"
@@ -1565,30 +1171,151 @@
         }
       }
     },
-    "Zone" : {
+    "Configuration" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
         "name" : {
           "type" : "string"
         },
-        "fromHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+        "asPathAccessLists" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/AsPathAccessList"
+          },
+          "description" : "Ari: Key details go here."
         },
-        "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
+        "communities" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          }
         },
-        "inboundInterfaceFilters" : {
+        "communityLists" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/CommunityList"
+          }
+        },
+        "configurationFormat" : {
+          "type" : "string",
+          "enum" : [
+            "ALCATEL_AOS",
+            "ARISTA",
+            "AWS_VPC",
+            "BLADENETWORK",
+            "CISCO_IOS",
+            "CISCO_IOS_XR",
+            "CISCO_NX",
+            "EMPTY",
+            "FLAT_JUNIPER",
+            "FLAT_VYOS",
+            "FORCE10",
+            "FOUNDRY",
+            "HOST",
+            "IGNORED",
+            "IPTABLES",
+            "JUNIPER",
+            "JUNIPER_SWITCH",
+            "MRV",
+            "MSS",
+            "UNKNOWN",
+            "VXWORKS",
+            "VYOS"
+          ]
+        },
+        "defaultCrossZoneAction" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "defaultInboundAction" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ]
+        },
+        "domainName" : {
+          "type" : "string"
+        },
+        "ikeGateways" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkeGateway"
+          }
+        },
+        "ikePolicies" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkePolicy"
+          }
+        },
+        "ikeProposals" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IkeProposal"
+          }
+        },
+        "interfaces" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Interface"
+          }
+        },
+        "ip6AccessLists" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Ip6AccessList"
+          }
+        },
+        "ipAccessLists" : {
           "additionalProperties" : {
             "$ref" : "#/definitions/IpAccessList"
           }
         },
-        "toHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList"
-        },
-        "toZonePolicies" : {
+        "ipsecPolicies" : {
           "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
+            "$ref" : "#/definitions/IpsecPolicy"
+          }
+        },
+        "ipsecProposals" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecProposal"
+          }
+        },
+        "ipsecVpns" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpsecVpn"
+          }
+        },
+        "roles" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "route6FilterLists" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Route6FilterList"
+          }
+        },
+        "routeFilterLists" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/RouteFilterList"
+          }
+        },
+        "routingPolicies" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/RoutingPolicy"
+          }
+        },
+        "vendorFamily" : {
+          "$ref" : "#/definitions/VendorFamily"
+        },
+        "vrfs" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Vrf"
+          }
+        },
+        "zones" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Zone"
           }
         }
       }
@@ -2488,65 +2215,6 @@
         }
       }
     },
-    "IsisProcess" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "generatedRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute"
-          }
-        },
-        "level" : {
-          "type" : "string",
-          "enum" : [
-            "LEVEL_1",
-            "LEVEL_1_2",
-            "LEVEL_2"
-          ]
-        },
-        "netAddress" : {
-          "type" : "string"
-        },
-        "policyExportLevels" : {
-          "additionalProperties" : {
-            "type" : "string",
-            "enum" : [
-              "LEVEL_1",
-              "LEVEL_1_2",
-              "LEVEL_2"
-            ]
-          }
-        }
-      }
-    },
-    "OspfProcess" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "areas" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/OspfArea"
-          }
-        },
-        "exportPolicy" : {
-          "type" : "string"
-        },
-        "generatedRoutes" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/GeneratedRoute"
-          }
-        },
-        "referenceBandwidth" : {
-          "type" : "number"
-        },
-        "routerId" : {
-          "type" : "string"
-        }
-      }
-    },
     "Route6FilterList" : {
       "type" : "object",
       "additionalProperties" : false,
@@ -2625,72 +2293,68 @@
         "statements" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Statement"
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
           }
         }
       }
-    },
-    "Statement" : {
-      "properties" : { },
-      "oneOf" : [
-        {
-          "$ref" : "#/definitions/CallStatement"
-        },
-        {
-          "$ref" : "#/definitions/If"
-        },
-        {
-          "$ref" : "#/definitions/RetainCommunity"
-        },
-        {
-          "$ref" : "#/definitions/SetIsisLevel"
-        },
-        {
-          "$ref" : "#/definitions/SetIsisMetricType"
-        },
-        {
-          "$ref" : "#/definitions/SetVarMetricType"
-        },
-        {
-          "$ref" : "#/definitions/BufferedStatement"
-        },
-        {
-          "$ref" : "#/definitions/SetWeight"
-        },
-        {
-          "$ref" : "#/definitions/SetNextHop"
-        },
-        {
-          "$ref" : "#/definitions/SetCommunity"
-        },
-        {
-          "$ref" : "#/definitions/SetOrigin"
-        },
-        {
-          "$ref" : "#/definitions/DeleteCommunity"
-        },
-        {
-          "$ref" : "#/definitions/PrependAsPath"
-        },
-        {
-          "$ref" : "#/definitions/AddCommunity"
-        },
-        {
-          "$ref" : "#/definitions/Comment"
-        },
-        {
-          "$ref" : "#/definitions/SetTag"
-        },
-        {
-          "$ref" : "#/definitions/SetLocalPreference"
-        },
-        {
-          "$ref" : "#/definitions/SetMetric"
-        },
-        {
-          "$ref" : "#/definitions/SetOspfMetricType"
-        }
-      ]
     },
     "CallStatement" : {
       "type" : "object",
@@ -2732,7 +2396,65 @@
         "falseStatements" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Statement"
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
           }
         },
         "guard" : {
@@ -2741,25 +2463,66 @@
         "trueStatements" : {
           "type" : "array",
           "items" : {
-            "$ref" : "#/definitions/Statement"
+            "oneOf" : [
+              {
+                "$ref" : "#/definitions/CallStatement"
+              },
+              {
+                "$ref" : "#/definitions/If"
+              },
+              {
+                "$ref" : "#/definitions/RetainCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisLevel"
+              },
+              {
+                "$ref" : "#/definitions/SetIsisMetricType"
+              },
+              {
+                "$ref" : "#/definitions/SetVarMetricType"
+              },
+              {
+                "$ref" : "#/definitions/BufferedStatement"
+              },
+              {
+                "$ref" : "#/definitions/SetWeight"
+              },
+              {
+                "$ref" : "#/definitions/SetNextHop"
+              },
+              {
+                "$ref" : "#/definitions/SetCommunity"
+              },
+              {
+                "$ref" : "#/definitions/SetOrigin"
+              },
+              {
+                "$ref" : "#/definitions/DeleteCommunity"
+              },
+              {
+                "$ref" : "#/definitions/PrependAsPath"
+              },
+              {
+                "$ref" : "#/definitions/AddCommunity"
+              },
+              {
+                "$ref" : "#/definitions/Comment"
+              },
+              {
+                "$ref" : "#/definitions/SetTag"
+              },
+              {
+                "$ref" : "#/definitions/SetLocalPreference"
+              },
+              {
+                "$ref" : "#/definitions/SetMetric"
+              },
+              {
+                "$ref" : "#/definitions/SetOspfMetricType"
+              }
+            ]
           }
-        }
-      },
-      "title" : null,
-      "required" : [
-        "class"
-      ]
-    },
-    "BooleanExpr" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "class" : {
-          "type" : "string",
-          "enum" : [
-            null
-          ],
-          "default" : null
         }
       },
       "title" : null,
@@ -2914,7 +2677,65 @@
           "type" : "string"
         },
         "statement" : {
-          "$ref" : "#/definitions/Statement"
+          "oneOf" : [
+            {
+              "$ref" : "#/definitions/CallStatement"
+            },
+            {
+              "$ref" : "#/definitions/If"
+            },
+            {
+              "$ref" : "#/definitions/RetainCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisLevel"
+            },
+            {
+              "$ref" : "#/definitions/SetIsisMetricType"
+            },
+            {
+              "$ref" : "#/definitions/SetVarMetricType"
+            },
+            {
+              "$ref" : "#/definitions/BufferedStatement"
+            },
+            {
+              "$ref" : "#/definitions/SetWeight"
+            },
+            {
+              "$ref" : "#/definitions/SetNextHop"
+            },
+            {
+              "$ref" : "#/definitions/SetCommunity"
+            },
+            {
+              "$ref" : "#/definitions/SetOrigin"
+            },
+            {
+              "$ref" : "#/definitions/DeleteCommunity"
+            },
+            {
+              "$ref" : "#/definitions/PrependAsPath"
+            },
+            {
+              "$ref" : "#/definitions/AddCommunity"
+            },
+            {
+              "$ref" : "#/definitions/Comment"
+            },
+            {
+              "$ref" : "#/definitions/SetTag"
+            },
+            {
+              "$ref" : "#/definitions/SetLocalPreference"
+            },
+            {
+              "$ref" : "#/definitions/SetMetric"
+            },
+            {
+              "$ref" : "#/definitions/SetOspfMetricType"
+            }
+          ]
         }
       },
       "title" : null,
@@ -3271,7 +3092,7 @@
         "class"
       ]
     },
-    "StaticRoute" : {
+    "BooleanExpr" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
@@ -3281,28 +3102,11 @@
             null
           ],
           "default" : null
-        },
-        "network" : {
-          "type" : "string"
-        },
-        "nextHopInterface" : {
-          "type" : "string"
-        },
-        "nextHopIp" : {
-          "type" : "string"
-        },
-        "tag" : {
-          "type" : "integer"
-        },
-        "administrativeCost" : {
-          "type" : "integer"
         }
       },
       "title" : null,
       "required" : [
-        "class",
-        "tag",
-        "administrativeCost"
+        "class"
       ]
     },
     "VendorFamily" : {
@@ -3688,6 +3492,375 @@
       "properties" : {
         "version" : {
           "type" : "integer"
+        }
+      }
+    },
+    "Vrf" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "aggregateRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "bgpProcess" : {
+          "$ref" : "#/definitions/BgpProcess"
+        },
+        "generatedIpv6Routes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute6"
+          }
+        },
+        "interfaces" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/Interface"
+          }
+        },
+        "isisProcess" : {
+          "$ref" : "#/definitions/IsisProcess"
+        },
+        "ospfProcess" : {
+          "$ref" : "#/definitions/OspfProcess"
+        },
+        "staticRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/StaticRoute"
+          }
+        }
+      }
+    },
+    "GeneratedRoute" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        },
+        "asPath" : {
+          "type" : "array",
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer"
+            }
+          }
+        },
+        "attributePolicy" : {
+          "type" : "string"
+        },
+        "discard" : {
+          "type" : "boolean"
+        },
+        "generationPolicy" : {
+          "type" : "string"
+        },
+        "metric" : {
+          "type" : "integer"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "administrativeCost",
+        "discard"
+      ]
+    },
+    "BgpProcess" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "neighbors" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/BgpNeighbor"
+          }
+        },
+        "routerId" : {
+          "type" : "string"
+        }
+      }
+    },
+    "BgpNeighbor" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "address" : {
+          "type" : "string"
+        },
+        "advertiseExternal" : {
+          "type" : "boolean"
+        },
+        "advertiseInactive" : {
+          "type" : "boolean"
+        },
+        "allowLocalAsIn" : {
+          "type" : "boolean"
+        },
+        "allowRemoteAsOut" : {
+          "type" : "boolean"
+        },
+        "clusterId" : {
+          "type" : "integer"
+        },
+        "defaultMetric" : {
+          "type" : "integer"
+        },
+        "description" : {
+          "type" : "string"
+        },
+        "dynamic" : {
+          "type" : "boolean"
+        },
+        "ebgpMultihop" : {
+          "type" : "boolean"
+        },
+        "exportPolicy" : {
+          "type" : "string"
+        },
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "group" : {
+          "type" : "string"
+        },
+        "importPolicy" : {
+          "type" : "string"
+        },
+        "localAs" : {
+          "type" : "integer"
+        },
+        "localIp" : {
+          "type" : "string"
+        },
+        "owner" : {
+          "$ref" : "#/definitions/Configuration"
+        },
+        "remoteAs" : {
+          "type" : "integer"
+        },
+        "remotePrefix" : {
+          "type" : "string"
+        },
+        "routeReflectorClient" : {
+          "type" : "boolean"
+        },
+        "sendCommunity" : {
+          "type" : "boolean"
+        },
+        "vrf" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "advertiseExternal",
+        "advertiseInactive",
+        "allowLocalAsIn",
+        "allowRemoteAsOut",
+        "defaultMetric",
+        "dynamic",
+        "ebgpMultihop",
+        "routeReflectorClient",
+        "sendCommunity"
+      ]
+    },
+    "GeneratedRoute6" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        },
+        "asPath" : {
+          "type" : "array",
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer"
+            }
+          }
+        },
+        "attributePolicy" : {
+          "type" : "string"
+        },
+        "discard" : {
+          "type" : "boolean"
+        },
+        "generationPolicy" : {
+          "type" : "string"
+        },
+        "metric" : {
+          "type" : "integer"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "administrativeCost",
+        "discard"
+      ]
+    },
+    "IsisProcess" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "level" : {
+          "type" : "string",
+          "enum" : [
+            "LEVEL_1",
+            "LEVEL_1_2",
+            "LEVEL_2"
+          ]
+        },
+        "netAddress" : {
+          "type" : "string"
+        },
+        "policyExportLevels" : {
+          "additionalProperties" : {
+            "type" : "string",
+            "enum" : [
+              "LEVEL_1",
+              "LEVEL_1_2",
+              "LEVEL_2"
+            ]
+          }
+        }
+      }
+    },
+    "OspfProcess" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "areas" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/OspfArea"
+          }
+        },
+        "exportPolicy" : {
+          "type" : "string"
+        },
+        "generatedRoutes" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/GeneratedRoute"
+          }
+        },
+        "referenceBandwidth" : {
+          "type" : "number"
+        },
+        "routerId" : {
+          "type" : "string"
+        }
+      }
+    },
+    "StaticRoute" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
+        },
+        "network" : {
+          "type" : "string"
+        },
+        "nextHopInterface" : {
+          "type" : "string"
+        },
+        "nextHopIp" : {
+          "type" : "string"
+        },
+        "tag" : {
+          "type" : "integer"
+        },
+        "administrativeCost" : {
+          "type" : "integer"
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class",
+        "tag",
+        "administrativeCost"
+      ]
+    },
+    "Zone" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "string"
+        },
+        "fromHostFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "inboundFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "inboundInterfaceFilters" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpAccessList"
+          }
+        },
+        "toHostFilter" : {
+          "$ref" : "#/definitions/IpAccessList"
+        },
+        "toZonePolicies" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/IpAccessList"
+          }
         }
       }
     }
