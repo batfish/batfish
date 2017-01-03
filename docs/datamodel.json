@@ -423,7 +423,7 @@
             "ISL",
             "NEGOTIATE"
           ],
-          "description" : "The switchport trunk enacpsulation type of this interface. Only relevant when switchport mode is TRUNK"
+          "description" : "The switchport trunk encapsulation type of this interface. Only relevant when switchport mode is TRUNK"
         },
         "vrf" : {
           "type" : "string",
@@ -2459,69 +2459,73 @@
         "statements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
+            "$ref" : "#/definitions/Statement"
           },
           "description" : "The list of routing-policy statements to execute"
         }
       }
+    },
+    "Statement" : {
+      "properties" : { },
+      "oneOf" : [
+        {
+          "$ref" : "#/definitions/CallStatement"
+        },
+        {
+          "$ref" : "#/definitions/If"
+        },
+        {
+          "$ref" : "#/definitions/RetainCommunity"
+        },
+        {
+          "$ref" : "#/definitions/SetIsisLevel"
+        },
+        {
+          "$ref" : "#/definitions/SetIsisMetricType"
+        },
+        {
+          "$ref" : "#/definitions/SetVarMetricType"
+        },
+        {
+          "$ref" : "#/definitions/BufferedStatement"
+        },
+        {
+          "$ref" : "#/definitions/SetWeight"
+        },
+        {
+          "$ref" : "#/definitions/SetNextHop"
+        },
+        {
+          "$ref" : "#/definitions/SetCommunity"
+        },
+        {
+          "$ref" : "#/definitions/SetOrigin"
+        },
+        {
+          "$ref" : "#/definitions/DeleteCommunity"
+        },
+        {
+          "$ref" : "#/definitions/PrependAsPath"
+        },
+        {
+          "$ref" : "#/definitions/AddCommunity"
+        },
+        {
+          "$ref" : "#/definitions/Comment"
+        },
+        {
+          "$ref" : "#/definitions/SetTag"
+        },
+        {
+          "$ref" : "#/definitions/SetLocalPreference"
+        },
+        {
+          "$ref" : "#/definitions/SetMetric"
+        },
+        {
+          "$ref" : "#/definitions/SetOspfMetricType"
+        }
+      ]
     },
     "CallStatement" : {
       "type" : "object",
@@ -2563,65 +2567,7 @@
         "falseStatements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
+            "$ref" : "#/definitions/Statement"
           }
         },
         "guard" : {
@@ -2630,66 +2576,25 @@
         "trueStatements" : {
           "type" : "array",
           "items" : {
-            "oneOf" : [
-              {
-                "$ref" : "#/definitions/CallStatement"
-              },
-              {
-                "$ref" : "#/definitions/If"
-              },
-              {
-                "$ref" : "#/definitions/RetainCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisLevel"
-              },
-              {
-                "$ref" : "#/definitions/SetIsisMetricType"
-              },
-              {
-                "$ref" : "#/definitions/SetVarMetricType"
-              },
-              {
-                "$ref" : "#/definitions/BufferedStatement"
-              },
-              {
-                "$ref" : "#/definitions/SetWeight"
-              },
-              {
-                "$ref" : "#/definitions/SetNextHop"
-              },
-              {
-                "$ref" : "#/definitions/SetCommunity"
-              },
-              {
-                "$ref" : "#/definitions/SetOrigin"
-              },
-              {
-                "$ref" : "#/definitions/DeleteCommunity"
-              },
-              {
-                "$ref" : "#/definitions/PrependAsPath"
-              },
-              {
-                "$ref" : "#/definitions/AddCommunity"
-              },
-              {
-                "$ref" : "#/definitions/Comment"
-              },
-              {
-                "$ref" : "#/definitions/SetTag"
-              },
-              {
-                "$ref" : "#/definitions/SetLocalPreference"
-              },
-              {
-                "$ref" : "#/definitions/SetMetric"
-              },
-              {
-                "$ref" : "#/definitions/SetOspfMetricType"
-              }
-            ]
+            "$ref" : "#/definitions/Statement"
           }
+        }
+      },
+      "title" : null,
+      "required" : [
+        "class"
+      ]
+    },
+    "BooleanExpr" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "class" : {
+          "type" : "string",
+          "enum" : [
+            null
+          ],
+          "default" : null
         }
       },
       "title" : null,
@@ -2844,65 +2749,7 @@
           "type" : "string"
         },
         "statement" : {
-          "oneOf" : [
-            {
-              "$ref" : "#/definitions/CallStatement"
-            },
-            {
-              "$ref" : "#/definitions/If"
-            },
-            {
-              "$ref" : "#/definitions/RetainCommunity"
-            },
-            {
-              "$ref" : "#/definitions/SetIsisLevel"
-            },
-            {
-              "$ref" : "#/definitions/SetIsisMetricType"
-            },
-            {
-              "$ref" : "#/definitions/SetVarMetricType"
-            },
-            {
-              "$ref" : "#/definitions/BufferedStatement"
-            },
-            {
-              "$ref" : "#/definitions/SetWeight"
-            },
-            {
-              "$ref" : "#/definitions/SetNextHop"
-            },
-            {
-              "$ref" : "#/definitions/SetCommunity"
-            },
-            {
-              "$ref" : "#/definitions/SetOrigin"
-            },
-            {
-              "$ref" : "#/definitions/DeleteCommunity"
-            },
-            {
-              "$ref" : "#/definitions/PrependAsPath"
-            },
-            {
-              "$ref" : "#/definitions/AddCommunity"
-            },
-            {
-              "$ref" : "#/definitions/Comment"
-            },
-            {
-              "$ref" : "#/definitions/SetTag"
-            },
-            {
-              "$ref" : "#/definitions/SetLocalPreference"
-            },
-            {
-              "$ref" : "#/definitions/SetMetric"
-            },
-            {
-              "$ref" : "#/definitions/SetOspfMetricType"
-            }
-          ]
+          "$ref" : "#/definitions/Statement"
         }
       },
       "title" : null,
@@ -3252,23 +3099,6 @@
             "E1",
             "E2"
           ]
-        }
-      },
-      "title" : null,
-      "required" : [
-        "class"
-      ]
-    },
-    "BooleanExpr" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "class" : {
-          "type" : "string",
-          "enum" : [
-            null
-          ],
-          "default" : null
         }
       },
       "title" : null,
