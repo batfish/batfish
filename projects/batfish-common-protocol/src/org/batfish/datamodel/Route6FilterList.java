@@ -10,7 +10,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("An access-list used to filter IPV6 routes")
 public class Route6FilterList extends ComparableStructure<String> {
 
    private static final String LINES_VAR = "lines";
@@ -43,6 +46,7 @@ public class Route6FilterList extends ComparableStructure<String> {
    }
 
    @JsonProperty(LINES_VAR)
+   @JsonPropertyDescription("The lines against which to check an IPV6 route")
    public List<Route6FilterLine> getLines() {
       return _lines;
    }

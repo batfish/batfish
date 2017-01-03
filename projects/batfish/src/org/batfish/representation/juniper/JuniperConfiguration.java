@@ -1623,9 +1623,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
          }
       }
 
-      // copy literal standard communities
-      _c.getCommunities().addAll(_allStandardCommunities);
-
       // warn about unreferenced data structures
       warnUnreferencedBgpGroups();
       warnUnreferencedPolicyStatements();

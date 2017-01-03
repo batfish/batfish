@@ -8,7 +8,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute.")
 public final class AsPathAccessList extends ComparableStructure<String>
       implements Serializable {
 
@@ -40,6 +43,7 @@ public final class AsPathAccessList extends ComparableStructure<String>
    }
 
    @JsonProperty(LINES_VAR)
+   @JsonPropertyDescription("The list of lines against which a route's AS-path will be checked in order.")
    public List<AsPathAccessListLine> getLines() {
       return _lines;
    }

@@ -9,6 +9,7 @@ import org.batfish.common.util.ComparableStructure;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public class OspfArea extends ComparableStructure<Long>
       implements Serializable {
@@ -27,13 +28,9 @@ public class OspfArea extends ComparableStructure<Long>
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(INTERFACES_VAR)
+   @JsonPropertyDescription("The interfaces assigned to this OSPF area. Stored as @id")
    public SortedSet<Interface> getInterfaces() {
       return _interfaces;
-   }
-
-   @JsonProperty(NAME_VAR)
-   public Long getNumber() {
-      return _key;
    }
 
    @JsonProperty(INTERFACES_VAR)

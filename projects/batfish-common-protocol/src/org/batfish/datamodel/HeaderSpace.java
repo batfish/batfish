@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
 public class HeaderSpace implements Serializable {
 
    /**
@@ -196,102 +198,127 @@ public class HeaderSpace implements Serializable {
       return true;
    }
 
+   @JsonPropertyDescription("A set of acceptable DSCP values for a packet")
    public SortedSet<Integer> getDscps() {
       return _dscps;
    }
 
+   @JsonPropertyDescription("A space of acceptable destination IP addresses for a packet")
    public SortedSet<IpWildcard> getDstIps() {
       return _dstIps;
    }
 
+   @JsonPropertyDescription("A set of acceptable destination port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getDstPorts() {
       return _dstPorts;
    }
 
+   @JsonPropertyDescription("A set of acceptable ECN values for a packet")
    public SortedSet<Integer> getEcns() {
       return _ecns;
    }
 
+   @JsonPropertyDescription("A set of acceptable fragment offsets for a UDP packet")
    public SortedSet<SubRange> getFragmentOffsets() {
       return _fragmentOffsets;
    }
 
+   @JsonPropertyDescription("A set of acceptable ICMP code ranges for an ICMP packet")
    public SortedSet<SubRange> getIcmpCodes() {
       return _icmpCodes;
    }
 
+   @JsonPropertyDescription("A set of acceptable ICMP type ranges for an ICMP packet")
    public SortedSet<SubRange> getIcmpTypes() {
       return _icmpTypes;
    }
 
+   @JsonPropertyDescription("A set of acceptable IP protocols for a packet")
    public Set<IpProtocol> getIpProtocols() {
       return _ipProtocols;
    }
 
+   @JsonPropertyDescription("Determines whether to match the complement of the stated criteria of this header space")
    public boolean getNegate() {
       return _negate;
    }
 
+   @JsonPropertyDescription("A set of unacceptable DSCP values for a packet")
    public SortedSet<Integer> getNotDscps() {
       return _notDscps;
    }
 
+   @JsonPropertyDescription("A space of unacceptable destination IP addresses for a packet")
    public SortedSet<IpWildcard> getNotDstIps() {
       return _notDstIps;
    }
 
+   @JsonPropertyDescription("A set of unacceptable destination port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getNotDstPorts() {
       return _notDstPorts;
    }
 
+   @JsonPropertyDescription("A set of unacceptable ECN values for a packet")
    public SortedSet<Integer> getNotEcns() {
       return _notEcns;
    }
 
+   @JsonPropertyDescription("A set of unacceptable fragment offsets for a UDP packet")
    public SortedSet<SubRange> getNotFragmentOffsets() {
       return _notFragmentOffsets;
    }
 
+   @JsonPropertyDescription("A set of unacceptable ICMP code ranges for an ICMP packet")
    public SortedSet<SubRange> getNotIcmpCodes() {
       return _notIcmpCodes;
    }
 
+   @JsonPropertyDescription("A set of unacceptable ICMP type ranges for an ICMP packet")
    public SortedSet<SubRange> getNotIcmpTypes() {
       return _notIcmpTypes;
    }
 
+   @JsonPropertyDescription("A set of unacceptable IP protocols for a packet")
    public Set<IpProtocol> getNotIpProtocols() {
       return _notIpProtocols;
    }
 
+   @JsonPropertyDescription("A space of unacceptable source IP addresses for a packet")
    public SortedSet<IpWildcard> getNotSrcIps() {
       return _notSrcIps;
    }
 
+   @JsonPropertyDescription("A set of unacceptable source port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getNotSrcPorts() {
       return _notSrcPorts;
    }
 
+   @JsonPropertyDescription("A space of acceptable source IP addresses for a packet")
    public SortedSet<IpWildcard> getSrcIps() {
       return _srcIps;
    }
 
+   @JsonPropertyDescription("A space of IP addresses within which either the source or the destination IP of a packet must fall for acceptance")
    public SortedSet<IpWildcard> getSrcOrDstIps() {
       return _srcOrDstIps;
    }
 
+   @JsonPropertyDescription("A set of ranges within which either the source or the destination port of a TCP/UDP packet must fall for acceptance")
    public SortedSet<SubRange> getSrcOrDstPorts() {
       return _srcOrDstPorts;
    }
 
+   @JsonPropertyDescription("A set of acceptable source port ranges for a TCP/UDP packet")
    public SortedSet<SubRange> getSrcPorts() {
       return _srcPorts;
    }
 
+   @JsonPropertyDescription("A set of acceptable abstract firewall states for a packet to match")
    public Set<State> getStates() {
       return _states;
    }
 
+   @JsonPropertyDescription("A set of acceptable TCP flag bitmasks for a TCP packet to match")
    public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
    }

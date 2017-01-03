@@ -2,9 +2,9 @@ package org.batfish.common.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -358,13 +358,7 @@ public class CommonUtil {
          throw new BatfishException("Could not initialize md5 hasher", e);
       }
       byte[] plainTextBytes = null;
-      try {
-         plainTextBytes = saltedSecret.getBytes("UTF-8");
-      }
-      catch (UnsupportedEncodingException e) {
-         throw new BatfishException("Could not convert salted secret to bytes",
-               e);
-      }
+      plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
       byte[] digestBytes = digest.digest(plainTextBytes);
       StringBuffer sb = new StringBuffer();
       for (int i = 0; i < digestBytes.length; i++) {
@@ -400,6 +394,29 @@ public class CommonUtil {
                e);
       }
       return text;
+   }
+
+   public static String sha256Digest(String saltedSecret) {
+      MessageDigest digest = null;
+      try {
+         digest = MessageDigest.getInstance("SHA-256");
+      }
+      catch (NoSuchAlgorithmException e) {
+         throw new BatfishException("Could not initialize sha256 hasher", e);
+      }
+      byte[] plainTextBytes = null;
+      plainTextBytes = saltedSecret.getBytes(StandardCharsets.UTF_8);
+      byte[] digestBytes = digest.digest(plainTextBytes);
+      StringBuffer sb = new StringBuffer();
+      for (int i = 0; i < digestBytes.length; i++) {
+         int digestByteAsInt = 0xff & digestBytes[i];
+         if (digestByteAsInt < 0x10) {
+            sb.append('0');
+         }
+         sb.append(Integer.toHexString(digestByteAsInt));
+      }
+      String sha256 = sb.toString();
+      return sha256;
    }
 
    public static SortedMap<Integer, String> toLineMap(String str) {

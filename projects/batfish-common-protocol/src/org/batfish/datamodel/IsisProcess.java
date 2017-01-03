@@ -3,9 +3,11 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+
+@JsonSchemaDescription("An IS-IS routing process")
 public class IsisProcess implements Serializable {
 
    public static final int DEFAULT_ISIS_INTERFACE_COST = 10;
@@ -21,27 +23,23 @@ public class IsisProcess implements Serializable {
 
    private IsoAddress _netAddress;
 
-   private SortedMap<String, IsisLevel> _policyExportLevels;
-
    public IsisProcess() {
       _generatedRoutes = new LinkedHashSet<>();
-      _policyExportLevels = new TreeMap<>();
    }
 
+   @JsonPropertyDescription("Generated IPV4 routes for the purpose of export into IS-IS. These routes are not imported into the main RIB.")
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
+   @JsonPropertyDescription("The IS-IS level(s) for this process")
    public IsisLevel getLevel() {
       return _level;
    }
 
+   @JsonPropertyDescription("The net address is an ISO address representing the IS-IS router ID.")
    public IsoAddress getNetAddress() {
       return _netAddress;
-   }
-
-   public SortedMap<String, IsisLevel> getPolicyExportLevels() {
-      return _policyExportLevels;
    }
 
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
@@ -54,11 +52,6 @@ public class IsisProcess implements Serializable {
 
    public void setNetAddress(IsoAddress netAddress) {
       _netAddress = netAddress;
-   }
-
-   public void setPolicyExportLevels(
-         SortedMap<String, IsisLevel> policyExportLevels) {
-      _policyExportLevels = policyExportLevels;
    }
 
 }

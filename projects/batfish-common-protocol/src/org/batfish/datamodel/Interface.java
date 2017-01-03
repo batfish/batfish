@@ -15,6 +15,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -409,146 +410,174 @@ public final class Interface extends ComparableStructure<String> {
    }
 
    @JsonProperty(ACCESS_VLAN_VAR)
+   @JsonPropertyDescription("Number of access VLAN when switchport mode is ACCESS")
    public int getAccessVlan() {
       return _accessVlan;
    }
 
    @JsonProperty(ACTIVE_VAR)
+   @JsonPropertyDescription("Whether this interface is administratively active (true) or disabled (false)")
    public boolean getActive() {
       return _active;
    }
 
    @JsonProperty(ALLOWED_VLANS_VAR)
+   @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
    public List<SubRange> getAllowedVlans() {
       return _allowedVlans;
    }
 
    @JsonProperty(ALL_PREFIXES_VAR)
+   @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
    public Set<Prefix> getAllPrefixes() {
       return _allPrefixes;
    }
 
    @JsonProperty(BANDWIDTH_VAR)
+   @JsonPropertyDescription("The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
    public Double getBandwidth() {
       return _bandwidth;
    }
 
    @JsonProperty(DESCRIPTION_VAR)
+   @JsonPropertyDescription("Description of this interface")
    public String getDescription() {
       return _description;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(INBOUND_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic destined for this device on this interface. Stored as @id")
    public IpAccessList getInboundFilter() {
       return _inboundFilter;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(INCOMING_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic that arrives on this interface. Stored as @id")
    public IpAccessList getIncomingFilter() {
       return _incomingFilter;
    }
 
    @JsonProperty(ISIS_COST_VAR)
+   @JsonPropertyDescription("The IS-IS cost of this interface")
    public Integer getIsisCost() {
       return _isisCost;
    }
 
    @JsonProperty(ISIS_L1_INTERFACE_MODE_VAR)
+   @JsonPropertyDescription("Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 1")
    public IsisInterfaceMode getIsisL1InterfaceMode() {
       return _isisL1InterfaceMode;
    }
 
    @JsonProperty(ISIS_L2_INTERFACE_MODE_VAR)
+   @JsonPropertyDescription("Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS level 2")
    public IsisInterfaceMode getIsisL2InterfaceMode() {
       return _isisL2InterfaceMode;
    }
 
    @JsonProperty(MTU_VAR)
+   @JsonPropertyDescription("The maximum transmission unit (MTU) of this interface in bytes")
    public int getMtu() {
       return _mtu;
    }
 
    @JsonProperty(NATIVE_VLAN_VAR)
+   @JsonPropertyDescription("The native VLAN of this interface when switchport mode is TRUNK")
    public int getNativeVlan() {
       return _nativeVlan;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(OSPF_AREA_VAR)
+   @JsonPropertyDescription("The OSPF area to which this interface belongs. Stored as @id")
    public OspfArea getOspfArea() {
       return _ospfArea;
    }
 
    @JsonProperty(OSPF_COST_VAR)
+   @JsonPropertyDescription("The explicit OSPF cost of this interface. If unset, the cost is automatically calculated.")
    public Integer getOspfCost() {
       return _ospfCost;
    }
 
    @JsonProperty(OSPF_DEAD_INTERVAL_VAR)
+   @JsonPropertyDescription("Dead-interval in seconds for OSPF updates")
    public int getOspfDeadInterval() {
       return _ospfDeadInterval;
    }
 
    @JsonProperty(OSPF_ENABLED_VAR)
+   @JsonPropertyDescription("Whether or not OSPF is enabled at all on this interface (either actively or passively)")
    public boolean getOspfEnabled() {
       return _ospfEnabled;
    }
 
    @JsonProperty(OSPF_HELLO_MULTIPLIER_VAR)
+   @JsonPropertyDescription("Number of OSPF packets to send out during dead-interval period for fast OSPF updates")
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
    }
 
    @JsonProperty(OSPF_PASSIVE_VAR)
+   @JsonPropertyDescription("Whether or not OSPF is enabled passively on this interface. If passive, this interface is included in the OSPF RIB, but no OSPF packets are sent from it.")
    public boolean getOspfPassive() {
       return _ospfPassive;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(OUTGOING_FILTER_VAR)
+   @JsonPropertyDescription("The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id")
    public IpAccessList getOutgoingFilter() {
       return _outgoingFilter;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(OWNER_VAR)
+   @JsonPropertyDescription("The Configuration to which this interface belongs. Stored as @id")
    public Configuration getOwner() {
       return _owner;
    }
 
    @JsonProperty(PREFIX_VAR)
+   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
    public Prefix getPrefix() {
       return _prefix;
    }
 
+   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
    public Boolean getProxyArp() {
       return _proxyArp;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(ROUTING_POLICY_VAR)
+   @JsonPropertyDescription("The routing policy used on this interface for policy-routing (as opposed to destination-routing). Stored as @id")
    public String getRoutingPolicy() {
       return _routingPolicy;
    }
 
    @JsonProperty(SWITCHPORT_MODE_VAR)
+   @JsonPropertyDescription("The switchport mode (if any) of this interface")
    public SwitchportMode getSwitchportMode() {
       return _switchportMode;
    }
 
    @JsonProperty(SWITCHPORT_TRUNK_ENCAPSULATION_VAR)
+   @JsonPropertyDescription("The switchport trunk encapsulation type of this interface. Only relevant when switchport mode is TRUNK")
    public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
       return _switchportTrunkEncapsulation;
    }
 
+   @JsonPropertyDescription("The name of the VRF to which this interface belongs")
    public String getVrf() {
       return _vrf;
    }
 
    @JsonIdentityReference(alwaysAsId = true)
    @JsonProperty(ZONE_VAR)
+   @JsonPropertyDescription("The firewall zone to which this interface belongs. Stored as @id")
    public Zone getZone() {
       return _zone;
    }

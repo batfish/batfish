@@ -26,8 +26,8 @@ public final class JuniperUtils {
    public static String decryptAndHashJuniper9CipherText(String key) {
       String privateSecret = decryptJuniper9CipherText(key);
       String saltedSecret = privateSecret + SALT;
-      String md5Digest = CommonUtil.md5Digest(saltedSecret);
-      return md5Digest;
+      String sha256Digest = CommonUtil.sha256Digest(saltedSecret);
+      return sha256Digest;
    }
 
    public static String decryptJuniper9CipherText(String key) {

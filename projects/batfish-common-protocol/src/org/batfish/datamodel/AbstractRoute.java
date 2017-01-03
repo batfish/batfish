@@ -7,6 +7,7 @@ import org.batfish.common.BatfishException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class AbstractRoute implements Serializable {
@@ -42,19 +43,24 @@ public abstract class AbstractRoute implements Serializable {
    public abstract boolean equals(Object o);
 
    @JsonProperty(ADMINISTRATIVE_COST_VAR)
+   @JsonPropertyDescription("Administrative cost for this route (usually based on protocol)")
    public abstract int getAdministrativeCost();
 
    @JsonProperty(METRIC_VAR)
+   @JsonPropertyDescription("Protocol-specific cost for this route")
    public abstract Integer getMetric();
 
    @JsonProperty(NETWORK_VAR)
+   @JsonPropertyDescription("IPV4 network of this route")
    public final Prefix getNetwork() {
       return _network;
    }
 
+   @JsonPropertyDescription("The explicit next-hop interface for this route")
    public abstract String getNextHopInterface();
 
    @JsonProperty(NEXT_HOP_IP_VAR)
+   @JsonPropertyDescription("The IPV4 address of the next-hop router for this route")
    public Ip getNextHopIp() {
       return _nextHopIp;
    }
@@ -65,8 +71,10 @@ public abstract class AbstractRoute implements Serializable {
    }
 
    @JsonIgnore
+   @JsonPropertyDescription("The routing protocol that produced this route")
    public abstract RoutingProtocol getProtocol();
 
+   @JsonPropertyDescription("The non-transitive tag attribute of this route")
    public abstract int getTag();
 
    @Override

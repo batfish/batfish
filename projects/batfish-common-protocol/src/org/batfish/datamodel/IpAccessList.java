@@ -6,7 +6,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("An access-list used to filter IPV4 packets")
 public class IpAccessList extends ComparableStructure<String> {
 
    private static final String LINES_VAR = "lines";
@@ -69,6 +72,7 @@ public class IpAccessList extends ComparableStructure<String> {
    }
 
    @JsonProperty(LINES_VAR)
+   @JsonPropertyDescription("The lines against which to check an IPV4 packet")
    public List<IpAccessListLine> getLines() {
       return _lines;
    }

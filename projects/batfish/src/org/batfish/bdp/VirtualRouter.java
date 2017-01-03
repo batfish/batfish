@@ -923,7 +923,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   && !neighborInterface.getOspfPassive() && area != null
                   && neighborArea != null) {
 
-               if (area.getNumber().equals(neighborArea.getNumber())) {
+               if (area.getName().equals(neighborArea.getName())) {
                   /*
                    * We have an ospf intra-area neighbor relationship on this
                    * edge. So we should add all ospf routes from this neighbor
@@ -933,7 +933,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                    */
                   int connectingInterfaceCost = connectingInterface
                         .getOspfCost();
-                  long areaNum = area.getNumber();
+                  long areaNum = area.getName();
                   for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib
                         .getRoutes()) {
                      int newCost = neighborRoute.getMetric()

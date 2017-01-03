@@ -24,5 +24,6 @@
 	<classpathentry kind="lib" path="lib/jsonpath/json-path-assert-2.2.0.jar" sourcepath="lib/jsonpath/json-path-assert-2.2.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j/slf4j-simple-1.7.21.jar"/>
 	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-1.0.11-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
