@@ -12,11 +12,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
-/**
- * Represents a named access-list whose matching criteria is restricted to
- * regexes on community attributes sent with a bgp advertisement
- */
+@JsonSchemaDescription("Represents a named access-list whose matching criteria is restricted to regexes on community attributes sent with a bgp advertisement")
 public class CommunityList extends ComparableStructure<String> {
 
    private static final String LINES_VAR = "lines";
@@ -61,19 +60,15 @@ public class CommunityList extends ComparableStructure<String> {
       return other._lines.equals(_lines);
    }
 
+   @JsonPropertyDescription("Specifies whether or not lines should match the complement of their criteria (does not change whether a line permits or denies).")
    public boolean getInvertMatch() {
       return _invertMatch;
    }
 
    @JsonProperty(LINES_VAR)
+   @JsonPropertyDescription("The list of lines that are checked in order against the community attribute(s) of a bgp advertisement")
    public List<CommunityListLine> getLines() {
       return _lines;
-   }
-
-   @Override
-   @JsonProperty(NAME_VAR)
-   public String getName() {
-      return _key;
    }
 
    private boolean newPermits(long community) {

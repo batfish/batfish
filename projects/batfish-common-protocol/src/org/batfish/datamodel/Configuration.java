@@ -21,12 +21,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A Configuration represents an autonomous network device, such as a router, host, switch, or firewall.")
 public final class Configuration extends ComparableStructure<String> {
 
    private static final String AS_PATH_ACCESS_LISTS_VAR = "asPathAccessLists";
-
-   private static final String COMMUNITIES_VAR = "communities";
 
    private static final String COMMUNITY_LISTS_VAR = "communityLists";
 
@@ -67,8 +67,6 @@ public final class Configuration extends ComparableStructure<String> {
    private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
    private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
-
-   private NavigableSet<Long> _communities;
 
    private NavigableMap<String, CommunityList> _communityLists;
 
@@ -136,7 +134,6 @@ public final class Configuration extends ComparableStructure<String> {
    public Configuration(@JsonProperty(NAME_VAR) String hostname) {
       super(hostname);
       _asPathAccessLists = new TreeMap<>();
-      _communities = new TreeSet<>();
       _communityLists = new TreeMap<>();
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
@@ -157,7 +154,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_VAR)
-   @JsonPropertyDescription("Ari: Key details go here.")
+   @JsonPropertyDescription("Dictionary of all AS-path access-lists for this node.")
    public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
    }
@@ -167,27 +164,26 @@ public final class Configuration extends ComparableStructure<String> {
       return _bgpAdvertisements;
    }
 
-   @JsonProperty(COMMUNITIES_VAR)
-   public NavigableSet<Long> getCommunities() {
-      return _communities;
-   }
-
    @JsonProperty(COMMUNITY_LISTS_VAR)
+   @JsonPropertyDescription("Dictionary of all community-lists for this node.")
    public NavigableMap<String, CommunityList> getCommunityLists() {
       return _communityLists;
    }
 
    @JsonProperty(CONFIGURATION_FORMAT_VAR)
+   @JsonPropertyDescription("Best guess at vendor configuration format. Used for setting default values, protocol costs, etc.")
    public ConfigurationFormat getConfigurationFormat() {
       return _configurationFormat;
    }
 
    @JsonProperty(DEFAULT_CROSS_ZONE_ACTION_VAR)
+   @JsonPropertyDescription("Default forwarding action to take for traffic that crosses firewall zones.")
    public LineAction getDefaultCrossZoneAction() {
       return _defaultCrossZoneAction;
    }
 
    @JsonProperty(DEFAULT_INBOUND_ACTION_VAR)
+   @JsonPropertyDescription("Default forwarding action to take for traffic destined for this device.")
    public LineAction getDefaultInboundAction() {
       return _defaultInboundAction;
    }
@@ -197,54 +193,65 @@ public final class Configuration extends ComparableStructure<String> {
       return _vrfs.get(DEFAULT_VRF_NAME);
    }
 
+   @JsonPropertyDescription("Domain name of this node.")
    public String getDomainName() {
       return _domainName;
    }
 
    @JsonProperty(NAME_VAR)
+   @JsonPropertyDescription("Hostname of this node.")
    public String getHostname() {
       return _key;
    }
 
    @JsonProperty(IKE_GATEWAYS_VAR)
+   @JsonPropertyDescription("Dictionary of all IKE gateways for this node.")
    public NavigableMap<String, IkeGateway> getIkeGateways() {
       return _ikeGateways;
    }
 
    @JsonProperty(IKE_POLICIES_VAR)
+   @JsonPropertyDescription("Dictionary of all IKE policies for this node.")
    public NavigableMap<String, IkePolicy> getIkePolicies() {
       return _ikePolicies;
    }
 
    @JsonProperty(IKE_PROPOSALS_VAR)
+   @JsonPropertyDescription("Dictionary of all IKE proposals for this node.")
    public NavigableMap<String, IkeProposal> getIkeProposals() {
       return _ikeProposals;
    }
 
+   @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")
    public NavigableMap<String, Interface> getInterfaces() {
       return _interfaces;
    }
 
+   @JsonPropertyDescription("Dictionary of all IPV6 access-lists for this node.")
    public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
       return _ip6AccessLists;
    }
 
    @JsonProperty(IP_ACCESS_LISTS_VAR)
+   @JsonPropertyDescription("Dictionary of all IPV4 access-lists for this node.")
    public NavigableMap<String, IpAccessList> getIpAccessLists() {
       return _ipAccessLists;
    }
 
    @JsonProperty(IPSEC_POLICIES_VAR)
+   @JsonPropertyDescription("Dictionary of all IPSEC policies for this node.")
    public NavigableMap<String, IpsecPolicy> getIpsecPolicies() {
       return _ipsecPolicies;
    }
 
    @JsonProperty(IPSEC_PROPOSALS_VAR)
+   @JsonPropertyDescription("Dictionary of all IPSEC proposals for this node.")
    public NavigableMap<String, IpsecProposal> getIpsecProposals() {
       return _ipsecProposals;
    }
 
    @JsonProperty(IPSEC_VPNS_VAR)
+   @JsonPropertyDescription("Dictionary of all IPSEC VPNs for this node.")
    public NavigableMap<String, IpsecVpn> getIpsecVpns() {
       return _ipsecVpns;
    }
@@ -280,15 +287,18 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(ROLES_VAR)
+   @JsonPropertyDescription("Set of all roles in which this node serves.")
    public RoleSet getRoles() {
       return _roles;
    }
 
+   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
    public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
       return _route6FilterLists;
    }
 
    @JsonProperty(ROUTE_FILTER_LISTS_VAR)
+   @JsonPropertyDescription("Dictionary of all IPV4 route filter lists for this node.")
    public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
       return _routeFilterLists;
    }
@@ -299,6 +309,7 @@ public final class Configuration extends ComparableStructure<String> {
    }
 
    @JsonProperty(ROUTING_POLICIES_VAR)
+   @JsonPropertyDescription("Dictionary of all routing policies for this node.")
    public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
       return _routingPolicies;
    }
@@ -318,15 +329,18 @@ public final class Configuration extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   @JsonPropertyDescription("Object containing vendor-specific information for this node.")
    public VendorFamily getVendorFamily() {
       return _vendorFamily;
    }
 
+   @JsonPropertyDescription("Dictionary of all VRFs for this node.")
    public Map<String, Vrf> getVrfs() {
       return _vrfs;
    }
 
    @JsonProperty(ZONES_VAR)
+   @JsonPropertyDescription("Dictionary of all firewall zones for this node.")
    public NavigableMap<String, Zone> getZones() {
       return _zones;
    }
@@ -358,11 +372,6 @@ public final class Configuration extends ComparableStructure<String> {
    public void setAsPathAccessLists(
          NavigableMap<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = asPathAccessLists;
-   }
-
-   @JsonProperty(COMMUNITIES_VAR)
-   public void setCommunities(NavigableSet<Long> communities) {
-      _communities = communities;
    }
 
    @JsonProperty(COMMUNITY_LISTS_VAR)

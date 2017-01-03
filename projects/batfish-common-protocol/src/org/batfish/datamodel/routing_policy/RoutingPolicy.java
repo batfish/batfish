@@ -14,7 +14,10 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
 public class RoutingPolicy extends ComparableStructure<String> {
 
    /**
@@ -70,6 +73,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
    }
 
    @JsonProperty(STATEMENTS_VAR)
+   @JsonPropertyDescription("The list of routing-policy statements to execute")
    public List<Statement> getStatements() {
       return _statements;
    }

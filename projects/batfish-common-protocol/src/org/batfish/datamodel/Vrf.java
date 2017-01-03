@@ -8,9 +8,13 @@ import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A virtual routing and forwarding (VRF) instance on a node.")
 public class Vrf extends ComparableStructure<String> {
 
    private static final String BGP_PROCESS_VAR = "bgpProcess";
@@ -81,25 +85,31 @@ public class Vrf extends ComparableStructure<String> {
    }
 
    @JsonProperty(BGP_PROCESS_VAR)
+   @JsonPropertyDescription("BGP routing process for this VRF")
    public BgpProcess getBgpProcess() {
       return _bgpProcess;
    }
 
+   @JsonPropertyDescription("Generated IPV6 routes for this VRF")
    public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
       return _generatedIpv6Routes;
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
+   @JsonPropertyDescription("Generated IPV4 routes for this VRF")
    public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
    @JsonProperty(INTERFACES_VAR)
+   @JsonIdentityReference(alwaysAsId = true)
+   @JsonPropertyDescription("Interfaces assigned to this VRF. Stored as @id")
    public NavigableMap<String, Interface> getInterfaces() {
       return _interfaces;
    }
 
    @JsonProperty(ISIS_PROCESS_VAR)
+   @JsonPropertyDescription("IS-IS routing process for this VRF")
    public IsisProcess getIsisProcess() {
       return _isisProcess;
    }
@@ -119,6 +129,7 @@ public class Vrf extends ComparableStructure<String> {
       return _originatedIbgpAdvertisements;
    }
 
+   @JsonPropertyDescription("OSPF routing process for this VRF")
    @JsonProperty(OSPF_PROCESS_VAR)
    public OspfProcess getOspfProcess() {
       return _ospfProcess;
@@ -159,6 +170,7 @@ public class Vrf extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   @JsonPropertyDescription("Static routes for this VRF")
    @JsonProperty(STATIC_ROUTES_VAR)
    public NavigableSet<StaticRoute> getStaticRoutes() {
       return _staticRoutes;

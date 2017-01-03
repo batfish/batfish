@@ -10,7 +10,10 @@ import org.batfish.common.util.CommonUtil;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("A line in a CommunityList")
 public class CommunityListLine implements Serializable {
 
    private static final String ACTION_VAR = "action";
@@ -46,6 +49,7 @@ public class CommunityListLine implements Serializable {
    }
 
    @JsonProperty(ACTION_VAR)
+   @JsonPropertyDescription("The action the underlying access-list will take when this line matches a route.")
    public LineAction getAction() {
       return _action;
    }
@@ -80,6 +84,7 @@ public class CommunityListLine implements Serializable {
    }
 
    @JsonProperty(REGEX_VAR)
+   @JsonPropertyDescription("The regex against which a route's communities will be compared")
    public String getRegex() {
       return _regex;
    }

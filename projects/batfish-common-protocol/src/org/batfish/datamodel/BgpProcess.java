@@ -8,10 +8,13 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 /**
  * Represents a bgp process on a router
  */
+@JsonSchemaDescription("A BGP routing process")
 public class BgpProcess implements Serializable {
 
    private static final String GENERATED_ROUTES_VAR = "generatedRoutes";
@@ -54,6 +57,7 @@ public class BgpProcess implements Serializable {
     * @return {@link #_generatedRoutes}
     */
    @JsonProperty(GENERATED_ROUTES_VAR)
+   @JsonPropertyDescription("IPV4 routes generated in the BGP RIB that are not imported into the main RIB for this VRF")
    public Set<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
@@ -62,6 +66,7 @@ public class BgpProcess implements Serializable {
     * @return {@link #_neighbors}
     */
    @JsonProperty(NEIGHBORS_VAR)
+   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
    public Map<Prefix, BgpNeighbor> getNeighbors() {
       return _neighbors;
    }
@@ -72,6 +77,7 @@ public class BgpProcess implements Serializable {
    }
 
    @JsonProperty(ROUTER_ID_VAR)
+   @JsonPropertyDescription("The configured router ID for this BGP process. Note that it can be overridden for individual neighbors.")
    public Ip getRouterId() {
       return _routerId;
    }

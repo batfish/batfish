@@ -7,7 +7,10 @@ import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
+@JsonSchemaDescription("An IPV4 firewall zone")
 public final class Zone extends ComparableStructure<String> {
 
    /**
@@ -65,22 +68,27 @@ public final class Zone extends ComparableStructure<String> {
       return true;
    }
 
+   @JsonPropertyDescription("Filter applied against packets originating from an interface in this zone on this node")
    public IpAccessList getFromHostFilter() {
       return _fromHostFilter;
    }
 
+   @JsonPropertyDescription("Filter applied against packets whose final destination is an interface in this zone that does not have its own inbound filter")
    public IpAccessList getInboundFilter() {
       return _inboundFilter;
    }
 
+   @JsonPropertyDescription("Mapping of interfaces in this zone to their corresponding inbound filters: the filter applied against packets whose final destination is the interface whose name is the key in this mapping")
    public SortedMap<String, IpAccessList> getInboundInterfaceFilters() {
       return _inboundInterfaceFilters;
    }
 
+   @JsonPropertyDescription("Filter applied against packets whose final destination is an interface in this zone. If this filter exists, it is applied IN ADDITION to the interface-specific or default inbound filter.")
    public IpAccessList getToHostFilter() {
       return _toHostFilter;
    }
 
+   @JsonPropertyDescription("Maps names of destination zones to the corresponding filter applied against packets which are received on this zone and routed to the named zone")
    public SortedMap<String, IpAccessList> getToZonePolicies() {
       return _toZonePolicies;
    }

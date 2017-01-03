@@ -1190,7 +1190,7 @@ public class Synthesizer {
                }
                String inboundFilterName;
                IpAccessList inboundInterfaceFilter = inboundZone
-                     .getInboundInterfaceFilters().get(i);
+                     .getInboundInterfaceFilters().get(ifaceName);
                if (inboundInterfaceFilter != null) {
                   inboundFilterName = inboundInterfaceFilter.getName();
                }
@@ -1283,7 +1283,7 @@ public class Synthesizer {
                }
                String inboundFilterName;
                IpAccessList inboundInterfaceFilter = inboundZone
-                     .getInboundInterfaceFilters().get(i);
+                     .getInboundInterfaceFilters().get(ifaceName);
                if (inboundInterfaceFilter != null) {
                   inboundFilterName = inboundInterfaceFilter.getName();
                }
