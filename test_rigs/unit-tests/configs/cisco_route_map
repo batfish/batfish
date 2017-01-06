@@ -22,4 +22,6 @@ route-map MSDP-SA-RP-FILTER deny 10
 route-map next-hop-null deny 15
  match ip next-hop null
 !
-
+route-map mgmt permit 10
+ match route-type internal
+!

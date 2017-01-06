@@ -119,6 +119,11 @@ boolean_rib_has_route_rp_stanza
    RIB_HAS_ROUTE IN rp_prefix_set
 ;
 
+boolean_route_type_is_rp_stanza
+:
+   ROUTE_TYPE IS variable
+;
+
 boolean_rp_stanza
 :
    boolean_and_rp_stanza
@@ -139,6 +144,7 @@ boolean_simple_rp_stanza
    | boolean_med_rp_stanza
    | boolean_next_hop_in_rp_stanza
    | boolean_rib_has_route_rp_stanza
+   | boolean_route_type_is_rp_stanza
    | boolean_tag_is_rp_stanza
 ;
 
@@ -308,6 +314,11 @@ match_policy_list_rm_stanza
    )+ NEWLINE
 ;
 
+match_route_type_rm_stanza
+:
+   MATCH ROUTE_TYPE variable NEWLINE
+;
+
 match_rm_stanza
 :
    match_as_path_access_list_rm_stanza
@@ -323,6 +334,7 @@ match_rm_stanza
    | match_ipv6_prefix_list_rm_stanza
    | match_length_rm_stanza
    | match_policy_list_rm_stanza
+   | match_route_type_rm_stanza
    | match_tag_rm_stanza
 ;
 

@@ -348,6 +348,7 @@ null_inner
          | DEPLOY
          | DESTINATION_PATTERN
          | DESTINATION_SLOT
+         | DESTINATION
          | DIAGNOSTIC
          | DISTRIBUTION
          | DNS_SERVER
@@ -408,6 +409,7 @@ null_inner
          (
             INTERFACE POLICY
          )
+         | INTERWORKING
          | INTERVAL
          |
          (
@@ -444,6 +446,7 @@ null_inner
          | MONITORING
          | MSDP_PEER
          | MSIE_PROXY
+         | MTU
          | NAMESPACE
          | NAT
          | NATPOOL
@@ -454,6 +457,7 @@ null_inner
          | OPEN
          | OPTION
          | OPS
+         | ORIGIN
          | ORIGINATOR_ID
          | OUI
          | PARAMETERS
@@ -520,11 +524,13 @@ null_inner
          | SESSION
          | SEVERITY
          | SHUT
+         | SHUTDOWN
          | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SLOT
          | SORT_BY
+         | SOURCE
          | SPEED
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
@@ -742,6 +748,7 @@ null_single
       | LLDP
       | LOAD_INTERVAL
       | LOCATION
+      | LOCALE
       |
       (
          MAC

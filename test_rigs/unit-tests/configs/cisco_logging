@@ -2,6 +2,7 @@
 hostname cisco_logging
 !
 logging 137.164.80.152
+logging 2001:220::141 vrf default severity info
 logging asdm errors
 logging asdm-buffer-size 512
 logging buffer-size 100000
@@ -46,6 +47,12 @@ logging source-interface loopback0
 logging source-interface Loopback0
 logging source-interface mgmt0
 logging source-interface Vlan1
+logging suppress rule ABC
+ alarm PLATFORM ABC MESSAGE_FAILED
+!
+logging suppress apply rule BCD
+ all-of-router
+!
 logging timestamp milliseconds
 logging trap errors
 logging vrf mgmt host 11.2.3.4

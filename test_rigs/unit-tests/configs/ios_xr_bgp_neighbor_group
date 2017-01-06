@@ -15,6 +15,7 @@ router bgp 5555
   !
  !
  neighbor-group foobar-iBGP_ipv4
+  use neighbor-group BGPMonitor
   remote-as 5555
   update-source Loopback0
   session-open-mode both

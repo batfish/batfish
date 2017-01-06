@@ -52,6 +52,9 @@ interface ethernet 1/11
  ipv4 point-to-point
  ipv4 unnumbered Loopback100
  ipv4 access-group 310-systems egress hardware-count
+ l2transport",
+  propagate remote-status
+ !
  medium broadcast
  no ospfv3 passive-interface
  no spanning-tree bpdufilter
@@ -78,4 +81,16 @@ interface ethernet 1/11
  xconnect 1.2.3.4 649 encapsulation mpls
   remote circuit id 649
 !
+interface Null0",
+ ipv4 icmp unreachables disable",
+ ipv6 icmp unreachables disable",
+!
+interface Loopback0
+ description description-goes-here
+ ip address 13.9.2.2 255.255.255.255
+ ip ospf 1 area 0
+ ipv6 address 2001:60:0:C00::B/128
+ ipv6 ospf 1 area 0
+!
+
 

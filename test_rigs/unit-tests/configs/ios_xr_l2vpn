@@ -14,6 +14,10 @@ l2vpn
    interface HundredGigE0/2/0/0.155
    interface HundredGigE0/2/0/1.155
   !
+  p2p FFHS
+    interface GigabitEthernet0/0/0/4.2399
+    neighbor ipv4 130.59.255.69 pw-id 2
+  !
  !
  xconnect group scidmz_862
   p2p HGE_0-1_862

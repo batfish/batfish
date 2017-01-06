@@ -566,6 +566,17 @@ ip_ssh_null
    ) ~NEWLINE* NEWLINE
 ;
 
+ip_ssh_pubkey_chain
+:
+	PUBKEY_CHAIN NEWLINE
+	(
+		(
+			USERNAME
+			| KEY_HASH
+		) ~NEWLINE* NEWLINE		
+	)+
+;
+
 ip_ssh_version
 :
    VERSION version = DEC NEWLINE
@@ -989,6 +1000,7 @@ ntp_common
    | ntp_logging
    | ntp_max_associations
    | ntp_master
+   | ntp_null
    | ntp_peer
    | ntp_server
    | ntp_source
@@ -1015,6 +1027,14 @@ ntp_max_associations
 ntp_master
 :
    MASTER NEWLINE
+;
+
+ntp_null
+:
+	(
+		AUTHENTICATION_KEY
+		| LOG_INTERNAL_SYNC
+	) ~NEWLINE* NEWLINE
 ;
 
 ntp_peer
@@ -1125,7 +1145,7 @@ of_null
 
 p2p_stanza
 :
-   P2P VARIABLE NEWLINE INTERFACE ~NEWLINE* NEWLINE INTERFACE ~NEWLINE* NEWLINE
+   P2P VARIABLE NEWLINE (INTERFACE|NEIGHBOR) ~NEWLINE* NEWLINE (INTERFACE|NEIGHBOR) ~NEWLINE* NEWLINE
 ;
 
 peer_sa_filter
@@ -1377,6 +1397,30 @@ router_multicast_tail
       | peer_stanza
       | rmc_null
    )*
+;
+
+router_vrrp_stanza
+:
+   ROUTER VRRP NEWLINE router_vrrp_substanza+
+;
+
+router_vrrp_substanza
+:
+   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE VRRP DEC?
+   (
+      VERSION DEC
+   )? NEWLINE router_vrrp_tail+
+;
+
+router_vrrp_tail
+:
+   (
+      ADDRESS IP_ADDRESS
+      | PREEMPT
+      | PRIORITY DEC
+      | TIMERS DEC+
+      | TRACK OBJECT ~NEWLINE+
+   ) NEWLINE
 ;
 
 s_archive
@@ -1652,7 +1696,8 @@ s_ip_ssh
 :
    IP SSH
    (
-      ip_ssh_version
+   	  ip_ssh_pubkey_chain
+      | ip_ssh_version
       | ip_ssh_null
    )
 ;
@@ -2120,6 +2165,7 @@ stanza
    | mgmt_api_stanza
    | mgmt_egress_iface_stanza
    | multicast_routing_stanza
+   | mpls_label_range_stanza
    | mpls_ldp_stanza
    | mpls_traffic_eng_stanza
    | no_aaa_group_server_stanza
@@ -2137,6 +2183,7 @@ stanza
    | router_multicast_stanza
    | router_rip_stanza
    | router_static_stanza
+   | router_vrrp_stanza
    | rsvp_stanza
    | s_aaa
    | s_archive

@@ -9,6 +9,7 @@ router bgp 2152
   bgp client-to-client reflection disable
   maximum-paths ebgp 4 selective
   network 2607:f380::/32 route-policy originate-internal-ipv6
+  redistribute connected route-policy static-connected-to-bgp
  !
  address-family ipv4 multicast
   distance bgp 20 20 1

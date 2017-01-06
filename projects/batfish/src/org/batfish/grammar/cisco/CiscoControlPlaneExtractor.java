@@ -4150,6 +4150,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (_currentIpv6PeerGroup != null) {
          _currentIpv6PeerGroup.setGroupName(groupName);
       }
+      else if (_currentNamedPeerGroup != null) {
+         //Ari: do something here.
+      }
       else {
          throw new BatfishException(
                "Unexpected context for use neighbor group");
@@ -5203,6 +5206,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_route_type_is_rp_stanzaContext ctx) {
+      //Ari: fill in this function
+      return new RoutePolicyBooleanRouteTypeIs();
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_rp_stanzaContext ctx) {
       if (ctx.OR() == null) {
          return toRoutePolicyBoolean(ctx.boolean_and_rp_stanza());
@@ -5279,10 +5288,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyBoolean(nctx);
       }
 
-      Boolean_rib_has_route_rp_stanzaContext rctx = ctx
+      Boolean_rib_has_route_rp_stanzaContext ribctx = ctx
             .boolean_rib_has_route_rp_stanza();
-      if (rctx != null) {
-         return toRoutePolicyBoolean(rctx);
+      if (ribctx != null) {
+         return toRoutePolicyBoolean(ribctx);
+      }
+
+      Boolean_route_type_is_rp_stanzaContext routectx = ctx
+            .boolean_route_type_is_rp_stanza();
+      if (routectx != null) {
+         return toRoutePolicyBoolean(routectx);
       }
 
       Boolean_tag_is_rp_stanzaContext tctx = ctx.boolean_tag_is_rp_stanza();

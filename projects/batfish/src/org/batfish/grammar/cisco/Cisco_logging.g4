@@ -71,6 +71,7 @@ logging_null
       | HISTORY
       | IP_ADDRESS
       | IP
+      | IPV6_ADDRESS
       | LEVEL
       | LINECARD
       | LOGFILE
@@ -82,9 +83,18 @@ logging_null
       | SERVER
       | SERVER_ARP
       | SNMP_AUTHFAIL
+      | SUPPRESS
       | SYNCHRONOUS
       | TIMESTAMP
       | VRF
+   ) ~NEWLINE* NEWLINE logging_null_inner*
+;
+
+logging_null_inner
+:
+   (
+	  ALARM
+	  | ALL_OF_ROUTER
    ) ~NEWLINE* NEWLINE
 ;
 

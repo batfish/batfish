@@ -306,6 +306,7 @@ neighbor_group_rb_stanza
       address_family_rb_stanza
       | remote_as_bgp_tail
       | update_source_bgp_tail
+      | use_neighbor_group_bgp_tail
    )*
 ;
 
@@ -665,6 +666,10 @@ redistribute_connected_bgp_tail
    (
       (
          ROUTE_MAP map = variable
+      )
+      |
+      (
+      	 ROUTE_POLICY policy = variable
       )
       |
       (

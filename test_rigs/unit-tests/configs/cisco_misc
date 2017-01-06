@@ -232,3 +232,18 @@ xml agent tty
 sap cache-timeout 30
 ipv6 enable-acl-cam-sharing
 ipv6 global-mtu 1500
+locale CH
+monitor session 1 type erspan-source
+ shutdown
+ description ntp debugging
+ source cpu rp 
+ destination
+  erspan-id 1
+  mtu 1464
+  ip address 130.59.31.3
+  origin ip address 130.59.32.28
+!
+pseudowire-class atom-eth-iw
+ encapsulation mpls
+ interworking ethernet
+!

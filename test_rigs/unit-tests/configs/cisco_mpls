@@ -1,0 +1,19 @@
+!
+hostname mpls
+!
+mpls ldp
+ router-id 130.59.255.31
+ address-family ipv4
+  label
+   local
+    advertise
+     disable
+     for mpls-ldp
+    !
+   !
+  !
+ !
+ interface GigabitEthernet0/0/0/2
+ !
+!
+mpls label range 16 262143

@@ -8,7 +8,7 @@ options {
 
 ro_address_family
 :
-   ADDRESS_FAMILY IPV4 UNICAST NEWLINE ro_common*
+   ADDRESS_FAMILY IPV4 UNICAST? NEWLINE ro_common*
 ;
 
 ro_area_nssa
@@ -46,6 +46,7 @@ ro_area
    (
       ro_common
       | roa_interface
+      | roa_network_null
       | roa_range
    )*
 ;
@@ -148,9 +149,11 @@ ro_null
       | AUTO_COST
       | BFD
       | COST
+      | DEAD_INTERVAL
       | DISCARD_ROUTE
       | DISTRIBUTE_LIST
       | GRACEFUL_RESTART
+      | HELLO_INTERVAL
       |
       (
          IP
@@ -177,6 +180,7 @@ ro_null
       | NSF
       | NSR
       | RFC1583COMPATIBILITY
+      | SNMP
       | TIMERS
    ) ~NEWLINE* NEWLINE
 ;
@@ -244,6 +248,11 @@ ro_redistribute_connected
 ro_redistribute_rip
 :
    REDISTRIBUTE RIP ~NEWLINE* NEWLINE
+;
+
+ro_redistribute_ospf_null
+:
+   REDISTRIBUTE OSPF ~NEWLINE* NEWLINE
 ;
 
 ro_redistribute_static
@@ -347,6 +356,11 @@ roa_range
    RANGE ~NEWLINE* NEWLINE
 ;
 
+roa_network_null
+:
+	NETWORK POINT_TO_POINT NEWLINE
+;
+
 roi_network
 :
    NETWORK
@@ -377,7 +391,7 @@ roi_priority
 
 rov3_address_family
 :
-   ADDRESS_FAMILY IPV6 UNICAST NEWLINE rov3_common*
+   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE rov3_common*
 ;
 
 rov3_common
@@ -454,6 +468,7 @@ s_router_ospf
       | ro_passive_interface
       | ro_redistribute_bgp
       | ro_redistribute_connected
+      | ro_redistribute_ospf_null
       | ro_redistribute_rip
       | ro_redistribute_static
       | ro_router_id

@@ -109,6 +109,11 @@ if_ip_address_secondary
    ) SECONDARY NEWLINE
 ;
 
+if_ip_ospf_area_null
+:
+   IP OSPF DEC AREA DEC NEWLINE
+;
+
 if_ip_ospf_cost
 :
    IP OSPF COST cost = DEC NEWLINE
@@ -375,7 +380,8 @@ if_null_block
       (
          IPV4
          (
-            MTU
+            ICMP 
+            | MTU
             | POINT_TO_POINT
             | UNNUMBERED
             | UNREACHABLES
@@ -399,6 +405,7 @@ if_null_block
       | KEEPALIVE
       | L2_FILTER
       | L2PROTOCOL_TUNNEL
+      | L2TRANSPORT
       | LANE
       | LAPB
       | LACP
@@ -557,6 +564,7 @@ if_null_inner
    (
       ADDRESS
       | PRIORITY
+      | PROPAGATE
       | RECEIVE
       | REMOTE_PORTS
       | SATELLITE_FABRIC_LINK
@@ -695,6 +703,7 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
+      | if_ip_ospf_area_null
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
       | if_ip_ospf_dead_interval_minimal

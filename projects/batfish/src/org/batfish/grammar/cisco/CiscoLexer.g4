@@ -199,6 +199,11 @@ ACTION
    'action'
 ;
 
+ACTION_TYPE
+:
+   'action-type'
+;
+
 ACTIVATE
 :
    'activate'
@@ -424,6 +429,11 @@ AIS_SHUT
    'ais-shut'
 ;
 
+ALARM
+:
+   'alarm'
+;
+
 ALARM_REPORT
 :
    'alarm-report'
@@ -442,6 +452,11 @@ ALERTS
 ALIAS
 :
    'alias'
+;
+
+ALL_OF_ROUTER
+:
+   'all-of-router'
 ;
 
 ALL
@@ -1424,6 +1439,11 @@ COMMUNITY_LIST
       enableDEC = false;
    }
 
+;
+
+COMMUNITY_MAP
+:
+   'community-map'
 ;
 
 COMMUNITY_SET
@@ -2986,6 +3006,11 @@ FORCE
    'force'
 ;
 
+FOR
+:
+   'for'
+;
+
 FORMAT
 :
    'format'
@@ -3611,6 +3636,11 @@ INFORMATIONAL
    'informational'
 ;
 
+INFORMS
+:
+   'informs'
+;
+
 INGRESS
 :
    'ingress'
@@ -3674,6 +3704,11 @@ INTERVAL
    'interval'
 ;
 
+INTERWORKING
+:
+   'interworking'
+;
+
 INVALID_SPI_RECOVERY
 :
    'invalid-spi-recovery'
@@ -3731,7 +3766,13 @@ IPSLA
 
 IPV4
 :
-   'ipv4'
+   (
+       'ipv4'       
+   )
+   |
+   (
+   		'IPv4'
+   )
 ;
 
 IPV4_L5
@@ -3843,6 +3884,11 @@ KEY
 KEY_EXCHANGE
 :
    'key-exchange'
+;
+
+KEY_HASH
+:
+   'key-hash'
 ;
 
 KEY_SOURCE
@@ -4185,6 +4231,11 @@ LOCATION
    'location' -> pushMode ( M_COMMENT )
 ;
 
+LOCALE
+:
+   'locale'
+;
+
 LOG
 :
    'log'
@@ -4203,6 +4254,11 @@ LOG_ENABLE
 LOG_INPUT
 :
    'log-input'
+;
+
+LOG_INTERNAL_SYNC
+:
+   'log-internal-sync'
 ;
 
 LOG_NEIGHBOR_CHANGES
@@ -6020,6 +6076,11 @@ PROMPT
    'prompt'
 ;
 
+PROPAGATE
+:
+   'propagate'
+;
+
 PROPOSAL
 :
    'proposal'
@@ -6068,6 +6129,11 @@ PSH
 PTP
 :
    'ptp'
+;
+
+PUBKEY_CHAIN
+:
+   'pubkey-chain'
 ;
 
 QOS
@@ -6555,19 +6621,24 @@ ROUTE_POLICY
    'route-policy'
 ;
 
-ROUTE_SOURCE
-:
-   'route-source'
-;
-
 ROUTE_REFLECTOR_CLIENT
 :
    'route-reflector-client'
 ;
 
+ROUTE_SOURCE
+:
+   'route-source'
+;
+
 ROUTE_TARGET
 :
    'route-target'
+;
+
+ROUTE_TYPE
+:
+   'route-type'
 ;
 
 ROUTED
@@ -9807,6 +9878,11 @@ M_Interface_GT
 M_Interface_IP
 :
    'ip' -> type ( IP ) , popMode
+;
+
+M_Interface_IPV4
+:
+   'IPv4' -> type ( IPV4 )
 ;
 
 M_Interface_POINT_TO_POINT
