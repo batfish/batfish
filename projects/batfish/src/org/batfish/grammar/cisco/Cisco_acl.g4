@@ -155,6 +155,7 @@ extended_access_list_additional_feature
    | BEYOND_SCOPE
    | COUNT
    | CWR
+   | DESTINATION_UNREACHABLE
    |
    (
       DSCP dscp_type
@@ -268,25 +269,6 @@ extended_access_list_stanza
    ) exit_line?
 ;
 
-extended_ipv6_access_list_stanza
-:
-   IPV6 ACCESS_LIST EXTENDED? name = variable_permissive
-   (
-      (
-         NEWLINE
-         (
-            extended_ipv6_access_list_tail
-            | extended_access_list_null_tail
-         )*
-      )
-      |
-      (
-         extended_ipv6_access_list_tail
-         | extended_access_list_null_tail
-      )
-   ) exit_line?
-;
-
 extended_access_list_tail
 :
    (
@@ -310,6 +292,25 @@ extended_access_list_tail
    (
       SEQUENCE num = DEC
    )? NEWLINE
+;
+
+extended_ipv6_access_list_stanza
+:
+   IPV6 ACCESS_LIST EXTENDED? name = variable_permissive
+   (
+      (
+         NEWLINE
+         (
+            extended_ipv6_access_list_tail
+            | extended_access_list_null_tail
+         )*
+      )
+      |
+      (
+         extended_ipv6_access_list_tail
+         | extended_access_list_null_tail
+      )
+   ) exit_line?
 ;
 
 extended_ipv6_access_list_tail

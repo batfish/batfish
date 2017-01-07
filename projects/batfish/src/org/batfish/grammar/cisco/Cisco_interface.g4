@@ -282,6 +282,7 @@ if_null_block
       | DESTINATION
       | DIALER
       | DFS
+      | DSL
       |
       (
          DSU BANDWIDTH
@@ -290,6 +291,7 @@ if_null_block
       | ENABLE
       | ENCAPSULATION
       | ENCRYPTION
+      | ETHERNET
       | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
@@ -323,7 +325,12 @@ if_null_block
          IP
          (
             ACCOUNTING
+            | ADDRESS
+               (
+            	   NEGOTIATED
+               )
             | ARP
+            | BGP
             | BROADCAST_ADDRESS
             | CGMP
             | CONTROL_APPS_USE_MGMT_PORT
@@ -343,6 +350,8 @@ if_null_block
             | MTU
             | MULTICAST
             | MULTICAST_BOUNDARY
+            | NAT
+            | NHRP
             |
             (
                OSPF
@@ -350,13 +359,13 @@ if_null_block
                   AUTHENTICATION
                   | AUTHENTICATION_KEY
                   | BFD
+                  | DEMAND_CIRCUIT
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
                   | NETWORK
                   | PRIORITY
                )
             )
-            | NAT
             | PIM
             | PIM_SPARSE
             | PORT_UNREACHABLE
@@ -460,6 +469,7 @@ if_null_block
          (
             BROADCAST
             | DISABLE
+            | MULTICAST
          )
       )
       | NV
@@ -472,9 +482,11 @@ if_null_block
       | PEER
       | PFC PRIORITY
       | PHYSICAL_LAYER
+      | PLATFORM
       | PORT_CHANNEL
       | PORT_CHANNEL_PROTOCOL
       | PORT_NAME
+      | PORT_TYPE
       | PORTMODE
       | POS
       | POWER
@@ -483,18 +495,21 @@ if_null_block
       | PRIORITY
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
+      | PVC
       | QOS
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT
       | RATE_MODE
       | RCV_QUEUE
+      | REDIRECTS
       | REMOTE
       | ROUTE_CACHE
       | ROUTE_ONLY
       | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
+      | SERVICE
       | SERVICE_MODULE
       | SERVICE_POLICY
       | SFLOW
@@ -563,11 +578,20 @@ if_null_inner
    NO?
    (
       ADDRESS
+      | BACKUP
+      | BRIDGE_DOMAIN
+      | DIALER
+      | ENCAPSULATION
+      | L2PROTOCOL
+      | MODE
       | PRIORITY
       | PROPAGATE
+      | PROTOCOL
       | RECEIVE
       | REMOTE_PORTS
+      | REWRITE
       | SATELLITE_FABRIC_LINK
+      | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE

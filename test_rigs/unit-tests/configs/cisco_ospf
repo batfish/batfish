@@ -26,6 +26,7 @@ router ospf 1
     hello-interval 2
 !
 ospf name-lookup
+ospfv3 name-lookup
 router ospfv3 1
   address-family ipv6 unicast
     redistribute direct route-map DIRECT_OSPF
@@ -33,6 +34,7 @@ router ospfv3 1
     distance 110
     maximum-paths 8
   address-family ipv6
+  exit-address-family
   auto-cost reference-bandwidth 40 Gbps
   discard-route external
   discard-route internal
@@ -53,4 +55,8 @@ router ospfv3 1
   timers lsa-arrival 1000
   timers throttle lsa 0 50 5000
 !
-
+ipv6 router ospf 1
+ router-id 10.5.3.4
+ log-adjacency-changes
+ distribute-list prefix-list SWITCHLAN in  
+!

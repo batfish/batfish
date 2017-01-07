@@ -60,10 +60,13 @@ logging_host
 logging_null
 :
    (
-      ASDM
+   	  ALARM
+   	  | ARCHIVE
+      | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
       | DEBUG_TRACE
+      | DISCRIMINATOR
       | ESM
       | EVENT
       | EVENTS
@@ -75,6 +78,7 @@ logging_null
       | LEVEL
       | LINECARD
       | LOGFILE
+      | MESSAGE_COUNTER
       | MONITOR
       | PERMIT_HOSTDOWN
       | QUEUE_LIMIT
@@ -93,8 +97,11 @@ logging_null
 logging_null_inner
 :
    (
-	  ALARM
+   	  ARCHIVE_LENGTH
+	  | ALARM
 	  | ALL_OF_ROUTER
+	  | DEVICE
+	  | FREQUENCY
    ) ~NEWLINE* NEWLINE
 ;
 

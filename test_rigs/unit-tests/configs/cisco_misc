@@ -122,6 +122,7 @@ voice service voip
  allow-connections h323 to h323
  h323
  h225 id-passthru 
+ fax protocol cisco 
 !
 coap http enable
 !
@@ -247,3 +248,31 @@ pseudowire-class atom-eth-iw
  encapsulation mpls
  interworking ethernet
 !
+memory reserve critical 8192
+!
+l2 vfi OPN-EPFL-backup manual
+ vpn id 706
+ neighbor 130.59.255.86 encapsulation mpls
+ neighbor 130.59.255.19 encapsulation mpls
+ neighbor 130.59.255.5 encapsulation mpls
+ bridge-domain 709
+ mtu 9014
+!
+xconnect logging pseudowire status
+no environment-monitor shutdown temperature
+monitor-session RSPAN ethernet
+ destination pseudowire
+!
+lpts pifib hardware police
+  flow snmp rate 500
+!
+pool vrf default ipv4 mgmt-net
+  address-range 130.59.60.189 130.59.60.190
+!
+sip-ua
+mirror location 0/RSP0/CPU0 disk0:disk1:
+map-class dialer swiRZ2
+ dialer idle-timeout 360
+ dialer fast-idle 5
+!
+

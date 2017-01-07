@@ -9,6 +9,7 @@ snmp-server community dummycommunity RW 2
 snmp-server community dummycommunity use-acl snmp-acl
 snmp-server community dummycommunity use-acl snmp-arpa-acl
 snmp-server community dummyconnunity RO SystemOwner IPv4 dummyacl
+snmp-server community dummycommunity RO SystemOwner customer-snmp
 snmp-server community dummycommunity view everything RO ipv6 dummyacl 21
 snmp-server community-map dummycommunity context ospf1
 snmp-server chassis-id FOC1743N1BE
@@ -70,6 +71,7 @@ snmp-server logging threshold oid-processing 1000
 snmp-server manager
 snmp-server max-ifindex-per-module 40
 snmp-server overload-control 0 0
+snmp-server priority high
 snmp-server protocol enable
 snmp-server queue-length 1000
 snmp-server source-interface trap loopback0

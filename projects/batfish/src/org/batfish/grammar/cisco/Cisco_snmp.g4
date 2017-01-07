@@ -42,7 +42,8 @@ ssc_access_control
    )? 
    name = variable? 
    (
-   	   (IPV4|IPV6) aclname = variable? DEC?
+   	   ((IPV4|IPV6) aclname = variable? DEC?)
+   	   | aclname = variable
    )? NEWLINE
 ;
 
@@ -113,6 +114,7 @@ ss_null
       | MANAGER
       | MAX_IFINDEX_PER_MODULE
       | OVERLOAD_CONTROL
+      | PRIORITY
       | PROTOCOL
       | QUEUE_LENGTH
       | SOURCE_INTERFACE

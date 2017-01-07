@@ -254,6 +254,11 @@ ADDRESS_POOLS
    'address-pools'
 ;
 
+ADDRESS_RANGE
+:
+   'address-range'
+;
+
 ADDRESS_TABLE
 :
    'address-table'
@@ -881,6 +886,11 @@ BACKGROUND_ROUTES_ENABLE
    'background-routes-enable'
 ;
 
+BACKUP
+:
+   'backup'
+;
+
 BACKUPCRF
 :
    'backupcrf'
@@ -994,6 +1004,11 @@ BOOT_END_MARKER
 BOOT_START_MARKER
 :
    'boot-start-marker'
+;
+
+BOOTFILE
+:
+   'bootfile'
 ;
 
 BOOTP_RELAY
@@ -1334,6 +1349,16 @@ CLIENT
 CLIENT_GROUP
 :
    'client-group'
+;
+
+CLIENT_IDENTIFIER
+:
+   'client-identifier'
+;
+
+CLIENT_NAME
+:
+   'client-name'
 ;
 
 CLIENT_TO_CLIENT
@@ -1947,6 +1972,11 @@ DELETE_DYNAMIC_LEARN
    'delete-dynamic-learn'
 ;
 
+DEMAND_CIRCUIT
+:
+   'demand-circuit'
+;
+
 DENY
 :
    'deny'
@@ -1997,6 +2027,11 @@ DESTINATION_SLOT
    'destination-slot'
 ;
 
+DESTINATION_UNREACHABLE
+:
+   'destination-unreachable'
+;
+
 DESTINATION_VRF
 :
    'destination-vrf'
@@ -2025,6 +2060,11 @@ DEVICE_SENSOR
 DISABLE_PEER_AS_CHECK
 :
    'disable-peer-as-check'
+;
+
+DISCRIMINATOR
+:
+   'discriminator'
 ;
 
 DISPUTE
@@ -2257,6 +2297,11 @@ DSCP_VALUE
    'dscp-value'
 ;
 
+DSL
+:
+   'dsl'
+;
+  
 DSP
 :
    'dsp'
@@ -2530,6 +2575,11 @@ ENROLLMENT
 ENVIRONMENT
 :
    'environment'
+;
+
+ENVIRONMENT_MONITOR
+:
+   'environment-monitor'
 ;
 
 EOF_LITERAL
@@ -2872,6 +2922,11 @@ FAST_FLOOD
 FAST_REROUTE
 :
    'fast-reroute'
+;
+
+FAX
+:
+   'fax'
 ;
 
 FCOE
@@ -3271,6 +3326,11 @@ HARDWARE
    'hardware'
 ;
 
+HARDWARE_ADDRESS
+:
+   'hardware-address'
+;
+
 HARDWARE_COUNT
 :
    'hardware-count'
@@ -3479,6 +3539,11 @@ ICMP6
 ICMPV6
 :
    'icmpv6'
+;
+
+ID
+:
+   'id'
 ;
 
 ID_MISMATCH
@@ -3934,6 +3999,11 @@ KRON
 KSHELL
 :
    'kshell'
+;
+
+L2
+:
+   'l2'
 ;
 
 L2_FILTER
@@ -4616,6 +4686,11 @@ MESH_GROUP
    'mesh-group'
 ;
 
+MESSAGE_COUNTER
+:
+   'message-counter'
+;
+
 MESSAGE_DIGEST
 :
    'message-digest'
@@ -4699,6 +4774,16 @@ MINIMUM_INTERVAL
 MINIMUM_LINKS
 :
    'minimum-links'
+;
+
+MINPOLL
+:
+   'minpoll'
+;
+
+MIRROR
+:
+   'mirror'
 ;
 
 MLAG
@@ -4786,6 +4871,11 @@ MONITOR_MAP
    'monitor-map'
 ;
 
+MONITOR_SESSION
+:
+   'monitor-session'
+;
+
 MONITORING
 :
    'monitoring'
@@ -4849,6 +4939,11 @@ MSIE_PROXY
 MSRPC
 :
    'msrpc'
+;
+
+MST 
+:
+   'mst'
 ;
 
 MTA
@@ -4996,6 +5091,11 @@ NEGOTIATE
    'negotiate'
 ;
 
+NEGOTIATED
+:
+   'negotiated'
+;
+
 NEGOTIATION
 :
    'negotiation'
@@ -5116,6 +5216,11 @@ NEXT_HOP_THIRD_PARTY
    'next-hop-third-party'
 ;
 
+NEXT_SERVER
+:
+   'next-server'
+;
+
 NEXTHOP
 :
    'nexthop'
@@ -5139,6 +5244,11 @@ NEXTHOP_ATTRIBUTE
 NHOP_ONLY
 :
    'nhop-only'
+;
+
+NHRP
+:
+   'nhrp'
 ;
 
 NLRI
@@ -5821,6 +5931,11 @@ POLICY_MAP_OUTPUT
    'policy-map-output'
 ;
 
+POOL
+:
+   'pool'
+;
+
 POP2
 :
    'pop2'
@@ -5874,6 +5989,11 @@ PORT_PROFILE
 PORT_SECURITY
 :
    'port-security'
+;
+
+PORT_TYPE
+:
+   'port-type'
 ;
 
 PORT_UNREACHABLE
@@ -6116,6 +6236,11 @@ PROXY_SERVER
    'proxy-server'
 ;
 
+PSEUDOWIRE
+:
+   'pseudowire'
+;
+
 PSEUDOWIRE_CLASS
 :
    'pseudowire-class'
@@ -6134,6 +6259,11 @@ PTP
 PUBKEY_CHAIN
 :
    'pubkey-chain'
+;
+
+PVC
+:
+   'pvc'
 ;
 
 QOS
@@ -6521,6 +6651,11 @@ RETRIES
    'retries'
 ;
 
+REVERSE_ACCESS
+:
+   'reverse-access'
+;
+
 REVERSE_PATH
 :
    'reverse-path'
@@ -6539,6 +6674,11 @@ REVISION
 REVOCATION_CHECK
 :
    'revocation-check'
+;
+
+REWRITE
+:
+   'rewrite'
 ;
 
 RFC1583COMPATIBILITY
@@ -7056,6 +7196,11 @@ SESSION_DISCONNECT_WARNING
    'session-disconnect-warning' -> pushMode ( M_COMMENT )
 ;
 
+SESSION_GROUP
+:
+   'session-group'
+;
+
 SESSION_ID
 :
    'session-id'
@@ -7189,6 +7334,11 @@ SINGLE_ROUTER_MODE
 SINGLE_TOPOLOGY
 :
    'single-topology'
+;
+
+SIP_UA
+:
+   'sip-ua'
 ;
 
 SITE_ID
@@ -7556,6 +7706,11 @@ SUBJECT_NAME
 SUBNET
 :
    'subnet'
+;
+
+SUBNET_MASK
+:
+   'subnet-mask'
 ;
 
 SUBNETS
@@ -8403,6 +8558,11 @@ V6
    'v6'
 ;
 
+VACANT_MESSAGE
+:
+   'vacant-message'
+;
+
 VACL
 :
    'vacl'
@@ -8486,6 +8646,11 @@ VIRTUAL_SERVICE
 VIRTUAL_TEMPLATE
 :
    'virtual-template'
+;
+
+VFI
+:
+   'vfi'
 ;
 
 VLAN
@@ -8663,6 +8828,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WATCH_LIST
+:
+   'watch-list'
 ;
 
 WAVELENGTH

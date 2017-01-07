@@ -13,4 +13,5 @@ ip ssh pubkey-chain
    key-hash ssh-rsa AAAAAAAAAA alice@alice
   username bob
    key-hash ssh-rsa BBBBBBBBBB bob
+  quit
 !

@@ -431,6 +431,7 @@ aaa_authorization
       | aaa_authorization_exec
       | aaa_authorization_include
       | aaa_authorization_network
+      | aaa_authorization_reverse_access
       | aaa_authorization_ssh_certificate
       | aaa_authorization_ssh_publickey
    )
@@ -502,6 +503,15 @@ aaa_authorization_method
 aaa_authorization_network
 :
    NETWORK
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_authorization_method
+;
+
+aaa_authorization_reverse_access
+:
+   REVERSE_ACCESS
    (
       DEFAULT
       | list = variable

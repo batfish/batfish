@@ -3,6 +3,12 @@ hostname cisco_logging
 !
 logging 137.164.80.152
 logging 2001:220::141 vrf default severity info
+logging alarm informational
+logging archive
+ device harddisk
+ frequency daily
+ archive-length 25
+!
 logging asdm errors
 logging asdm-buffer-size 512
 logging buffer-size 100000
@@ -14,6 +20,7 @@ logging buffered warnings
 logging console warnings
 logging console disable
 logging debug-trace
+logging discriminator AFLSEC severity drops 6 msg-body drops AFLSEC
 logging enable
 logging esm config
 logging event link-status default
@@ -32,6 +39,7 @@ logging level acllog 6
 logging monitor errors
 logging linecard informational
 logging logfile aclfile 3
+logging message-counter syslog
 logging permit-hostdown
 logging queue-limit 100
 logging rate-limit 100

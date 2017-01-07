@@ -271,9 +271,23 @@ dhcp_stanza
 
 dhcp_substanza
 :
-   PROFILE ~NEWLINE+ NEWLINE
-   | HELPER_ADDRESS ~NEWLINE+ NEWLINE
-   | INTERFACE ~NEWLINE+ NEWLINE
+   ( 
+      INTERFACE
+   	  | PROFILE 
+   ) ~NEWLINE+ NEWLINE dhcp_stanza_inner*
+;
+
+dhcp_stanza_inner
+:
+    (
+       DEFAULT_ROUTER
+       | DOMAIN_NAME
+       | DNS_SERVER
+       | HELPER_ADDRESS
+       | LEASE
+       | POOL
+       | SUBNET_MASK
+    ) ~NEWLINE* NEWLINE
 ;
 
 dspf_null
@@ -374,6 +388,7 @@ flowv_null
    NO?
    (
       OPTIONS
+      | TEMPLATE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -468,11 +483,18 @@ ip_dhcp_null
 :
    NO?
    (
-      DEFAULT_ROUTER
+   	  BOOTFILE
+   	  | CLIENT_IDENTIFIER
+   	  | CLIENT_NAME
+      | DEFAULT_ROUTER
       | DNS_SERVER
       | DOMAIN_NAME
+      | HARDWARE_ADDRESS
+      | HOST
       | LEASE
       | NETWORK
+      | NEXT_SERVER
+      | OPTION
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -553,6 +575,7 @@ ip_sla_null
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
       | TOS
+      | UDP_JITTER
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -571,8 +594,9 @@ ip_ssh_pubkey_chain
 	PUBKEY_CHAIN NEWLINE
 	(
 		(
-			USERNAME
-			| KEY_HASH
+			KEY_HASH
+			| QUIT
+			| USERNAME			
 		) ~NEWLINE* NEWLINE		
 	)+
 ;
@@ -769,6 +793,7 @@ l_null
       | AUTOHANGUP
       | AUTOSELECT
       | DATABITS
+      | ESCAPE_CHARACTER
       | EXEC
       | FLOWCONTROL
       | FLUSH_AT_ACTIVATION
@@ -787,6 +812,7 @@ l_null
       | STOPBITS
       | TERMINAL_TYPE
       | TIMESTAMP
+      | VACANT_MESSAGE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -808,11 +834,24 @@ l2vpn_bridge_group
    )*
 ;
 
+l2vpn_logging
+:
+   LOGGING NEWLINE
+   (
+      (
+      	  BRIDGE_DOMAIN
+          | PSEUDOWIRE
+          | VFI          
+      ) NEWLINE
+   )+
+;
+
 l2vpn_stanza
 :
    L2VPN NEWLINE
    (
       l2vpn_bridge_group
+      | l2vpn_logging
       | xconnect_stanza
    )*
 ;
@@ -830,8 +869,22 @@ lbgbd_null
    NO?
    (
       INTERFACE
+      | MAC
+      | MTU
+      | PSEUDOWIRE
       | ROUTED
-   ) ~NEWLINE* NEWLINE
+      | VFI
+   ) ~NEWLINE* NEWLINE lbgpd_null_inner*
+;
+
+lbgpd_null_inner
+:
+    (
+    	ACTION
+    	| LIMIT
+    	| MAXIMUM
+    	| NEIGHBOR 
+    ) ~NEWLINE* NEWLINE
 ;
 
 mgmt_api_stanza
@@ -1033,6 +1086,7 @@ ntp_null
 :
 	(
 		AUTHENTICATION_KEY
+		| INTERFACE
 		| LOG_INTERNAL_SYNC
 	) ~NEWLINE* NEWLINE
 ;
@@ -1051,6 +1105,10 @@ ntp_server
    (
       (
          KEY key = DEC
+      )
+      | 
+      (
+      	 MINPOLL DEC
       )
       | prefer = PREFER
       |
@@ -1145,7 +1203,21 @@ of_null
 
 p2p_stanza
 :
-   P2P VARIABLE NEWLINE (INTERFACE|NEIGHBOR) ~NEWLINE* NEWLINE (INTERFACE|NEIGHBOR) ~NEWLINE* NEWLINE
+   P2P VARIABLE NEWLINE 
+   p2p_tail+
+;
+
+p2p_tail
+:
+   (
+   	   INTERFACE
+   	   | L2TP
+   	   | LOCAL
+   	   | MONITOR_SESSION
+   	   | NEIGHBOR
+   	   | REMOTE
+   	   | SOURCE
+   ) ~NEWLINE* NEWLINE
 ;
 
 peer_sa_filter
@@ -1349,28 +1421,36 @@ role_null
    ) ~NEWLINE* NEWLINE
 ;
 
+router_hsrp_if
+:
+   INTERFACE interface_name NEWLINE 
+   router_hsrp_if_af+
+;
+
+router_hsrp_if_af
+:
+   ADDRESS_FAMILY (IPV4|IPV6) NEWLINE 
+   HSRP DEC? NEWLINE
+   router_hsrp_if_af_tail+
+;
+
+router_hsrp_if_af_tail
+:
+   (
+      AUTHENTICATION
+      | ADDRESS 
+      | PREEMPT
+      | PRIORITY 
+      | TIMERS
+      | TRACK OBJECT 
+      | VERSION DEC
+   ) ~NEWLINE* NEWLINE
+;
+
 router_hsrp_stanza
 :
-   ROUTER HSRP NEWLINE router_hsrp_substanza+
-;
-
-router_hsrp_substanza
-:
-   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE HSRP DEC?
-   (
-      VERSION DEC
-   )? NEWLINE router_hsrp_tail+
-;
-
-router_hsrp_tail
-:
-   (
-      ADDRESS IP_ADDRESS
-      | PREEMPT
-      | PRIORITY DEC
-      | TIMERS DEC+
-      | TRACK OBJECT ~NEWLINE+
-   ) NEWLINE
+   ROUTER HSRP NEWLINE 
+   router_hsrp_if+
 ;
 
 router_multicast_stanza
@@ -1406,10 +1486,13 @@ router_vrrp_stanza
 
 router_vrrp_substanza
 :
-   INTERFACE interface_name NEWLINE ADDRESS_FAMILY IPV4 NEWLINE VRRP DEC?
+   INTERFACE interface_name NEWLINE 
    (
-      VERSION DEC
-   )? NEWLINE router_vrrp_tail+
+   	  ADDRESS_FAMILY IPV4 NEWLINE VRRP DEC?
+      (
+         VERSION DEC
+      )? NEWLINE router_vrrp_tail+
+   )?
 ;
 
 router_vrrp_tail
@@ -1601,8 +1684,10 @@ s_flow
    (
       EXPORTER
       | EXPORTER_MAP
+      | HARDWARE
       | MONITOR
       | MONITOR_MAP
+      | PLATFORM
       | RECORD
    ) ~NEWLINE* NEWLINE
    (
@@ -1905,6 +1990,20 @@ s_spanning_tree
          | VLAN
       ) ~NEWLINE*
    )? NEWLINE
+;
+
+s_spanning_tree_mst
+:
+   SPANNING_TREE MST ~NEWLINE* NEWLINE s_spanning_tree_mst_tail*
+;
+
+s_spanning_tree_mst_tail
+:
+   (
+   	   INSTANCE
+   	   | NAME
+   	   | REVISION
+   ) ~NEWLINE* NEWLINE
 ;
 
 s_ssh
@@ -2254,6 +2353,7 @@ stanza
    | s_snmp_server
    | s_sntp
    | s_spanning_tree
+   | s_spanning_tree_mst
    | s_ssh
    | s_statistics
    | s_stcapp
@@ -2332,6 +2432,7 @@ vlan_null
       | BACKUPCRF
       | BRIDGE
       | MATCH
+      | MEDIA
       | MTU
       | MULTICAST
       | NAME
