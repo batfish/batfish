@@ -6,7 +6,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
-public final class RouteFilterLineThrough extends RouteFilterLine {
+public final class Route4FilterLineThrough extends Route4FilterLine {
 
    /**
     *
@@ -15,7 +15,7 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
 
    private final Prefix _throughPrefix;
 
-   public RouteFilterLineThrough(Prefix prefix, Prefix throughPrefix) {
+   public Route4FilterLineThrough(Prefix prefix, Prefix throughPrefix) {
       super(prefix);
       _throughPrefix = prefix;
    }
@@ -40,7 +40,7 @@ public final class RouteFilterLineThrough extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineThrough rhs = (RouteFilterLineThrough) o;
+         Route4FilterLineThrough rhs = (Route4FilterLineThrough) o;
          return _prefix.equals(rhs._prefix)
                && _throughPrefix.equals(rhs._throughPrefix);
       }

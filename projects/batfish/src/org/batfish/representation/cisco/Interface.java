@@ -121,11 +121,11 @@ public class Interface extends ComparableStructure<String> {
    public Interface(String name) {
       super(name);
       _active = true;
-      _nativeVlan = 1;
-      _switchportMode = SwitchportMode.NONE;
       _allowedVlans = new ArrayList<>();
-      _secondaryPrefixes = new LinkedHashSet<>();
       _isisInterfaceMode = IsisInterfaceMode.UNSET;
+      _nativeVlan = 1;
+      _secondaryPrefixes = new LinkedHashSet<>();
+      _switchportMode = SwitchportMode.NONE;
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {

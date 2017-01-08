@@ -6,6 +6,8 @@ public class Result {
 
    private boolean _exit;
 
+   private boolean _fallThrough;
+
    private boolean _return;
 
    public boolean getBooleanValue() {
@@ -14,6 +16,10 @@ public class Result {
 
    public boolean getExit() {
       return _exit;
+   }
+
+   public boolean getFallThrough() {
+      return _fallThrough;
    }
 
    public boolean getReturn() {
@@ -26,6 +32,10 @@ public class Result {
 
    public void setExit(boolean exit) {
       _exit = exit;
+   }
+
+   public void setFallThrough(boolean fallThrough) {
+      _fallThrough = fallThrough;
    }
 
    public void setReturn(boolean ret) {

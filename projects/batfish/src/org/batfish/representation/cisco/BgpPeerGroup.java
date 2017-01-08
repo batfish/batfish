@@ -137,6 +137,10 @@ public abstract class BgpPeerGroup implements Serializable {
       BgpPeerGroup parent = null;
       if (_groupName != null) {
          parent = proc.getNamedPeerGroups().get(_groupName);
+         BgpProcess defaultProc = cv.getDefaultVrf().getBgpProcess();
+         if (parent == null) {
+            parent = defaultProc.getNamedPeerGroups().get(_groupName);
+         }
          if (parent == null) {
             cv.undefined(
                   "Reference to undefined peer-group: '" + _groupName + "'",
@@ -151,6 +155,10 @@ public abstract class BgpPeerGroup implements Serializable {
       BgpPeerGroup parent = null;
       if (_peerSession != null) {
          parent = proc.getPeerSessions().get(_peerSession);
+         BgpProcess defaultProc = cv.getDefaultVrf().getBgpProcess();
+         if (parent == null) {
+            parent = defaultProc.getPeerSessions().get(_peerSession);
+         }
          if (parent == null) {
             cv.undefined(
                   "Reference to undefined peer-session: '" + _peerSession + "'",

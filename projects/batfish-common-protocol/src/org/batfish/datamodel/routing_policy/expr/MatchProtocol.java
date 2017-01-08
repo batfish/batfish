@@ -40,4 +40,9 @@ public class MatchProtocol extends AbstractBooleanExpr {
       _protocol = protocol;
    }
 
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _protocol.protocolName() + ">";
+   }
+
 }

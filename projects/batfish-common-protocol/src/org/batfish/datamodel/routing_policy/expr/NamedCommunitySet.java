@@ -36,6 +36,20 @@ public class NamedCommunitySet implements CommunitySetExpr {
       return out;
    }
 
+   @Override
+   public CommunitySet communities(Environment environment,
+         CommunitySet communityCandidates) {
+      CommunitySet matchingCommunities = new CommunitySet();
+      for (Long community : communityCandidates) {
+         CommunityList cl = environment.getConfiguration().getCommunityLists()
+               .get(_name);
+         if (cl.permits(community)) {
+            matchingCommunities.add(community);
+         }
+      }
+      return matchingCommunities;
+   }
+
    public String getName() {
       return _name;
    }

@@ -31,4 +31,14 @@ public abstract class AbstractStatement implements Statement {
       return Collections.singletonList(this);
    }
 
+   @Override
+   public String toString() {
+      if (_comment != null) {
+         return getClass().getSimpleName() + "<" + _comment + ">";
+      }
+      else {
+         return super.toString();
+      }
+   }
+
 }

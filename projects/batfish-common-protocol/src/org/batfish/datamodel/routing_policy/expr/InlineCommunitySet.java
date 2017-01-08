@@ -43,6 +43,17 @@ public class InlineCommunitySet implements CommunitySetExpr {
       return _cachedCommunities;
    }
 
+   @Override
+   public CommunitySet communities(Environment environment,
+         CommunitySet communityCandidates) {
+      if (_cachedCommunities == null) {
+         _cachedCommunities = initCommunities(environment);
+      }
+      CommunitySet matchingCommunities = new CommunitySet(_cachedCommunities);
+      matchingCommunities.retainAll(communityCandidates);
+      return matchingCommunities;
+   }
+
    public List<CommunitySetElem> getCommunities() {
       return _communities;
    }

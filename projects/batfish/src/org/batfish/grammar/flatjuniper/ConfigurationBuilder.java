@@ -35,108 +35,13 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.main.Warnings;
-import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.BgpGroup;
-import org.batfish.representation.juniper.CommunityList;
-import org.batfish.representation.juniper.CommunityListLine;
-import org.batfish.representation.juniper.Family;
-import org.batfish.representation.juniper.FirewallFilter;
-import org.batfish.representation.juniper.FwFrom;
-import org.batfish.representation.juniper.FwFromDestinationAddress;
-import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
-import org.batfish.representation.juniper.FwFromDestinationPort;
-import org.batfish.representation.juniper.FwFromProtocol;
-import org.batfish.representation.juniper.FwFromSourceAddress;
-import org.batfish.representation.juniper.FwFromSourcePort;
-import org.batfish.representation.juniper.FwTerm;
-import org.batfish.representation.juniper.FwThenAccept;
-import org.batfish.representation.juniper.FwThenDiscard;
-import org.batfish.representation.juniper.FwThenNextTerm;
-import org.batfish.representation.juniper.FwThenNop;
-import org.batfish.representation.juniper.GeneratedRoute;
-import org.batfish.representation.juniper.IkeGateway;
-import org.batfish.representation.juniper.IkePolicy;
-import org.batfish.representation.juniper.Interface;
-import org.batfish.representation.juniper.IpBgpGroup;
-import org.batfish.representation.juniper.IpsecPolicy;
-import org.batfish.representation.juniper.AddressAddressBookEntry;
-import org.batfish.representation.juniper.AddressBook;
-import org.batfish.representation.juniper.AddressBookEntry;
-import org.batfish.representation.juniper.AddressSetAddressBookEntry;
-import org.batfish.representation.juniper.AddressSetEntry;
-import org.batfish.representation.juniper.Application;
-import org.batfish.representation.juniper.BaseApplication;
+import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
-import org.batfish.representation.juniper.FwFromDestinationPrefixList;
-import org.batfish.representation.juniper.FwFromDestinationPrefixListExcept;
-import org.batfish.representation.juniper.FwFromFragmentOffset;
-import org.batfish.representation.juniper.FwFromHostProtocol;
-import org.batfish.representation.juniper.FwFromHostService;
-import org.batfish.representation.juniper.FwFromIcmpCode;
-import org.batfish.representation.juniper.FwFromIcmpType;
-import org.batfish.representation.juniper.FwFromPort;
-import org.batfish.representation.juniper.FwFromPrefixList;
-import org.batfish.representation.juniper.FwFromSourceAddressExcept;
-import org.batfish.representation.juniper.FwFromSourcePrefixList;
-import org.batfish.representation.juniper.FwFromSourcePrefixListExcept;
-import org.batfish.representation.juniper.FwFromTcpFlags;
-import org.batfish.representation.juniper.FwThenNextIp;
-import org.batfish.representation.juniper.HostProtocol;
-import org.batfish.representation.juniper.HostSystemService;
-import org.batfish.representation.juniper.IpsecVpn;
-import org.batfish.representation.juniper.IsisInterfaceLevelSettings;
-import org.batfish.representation.juniper.IsisLevelSettings;
-import org.batfish.representation.juniper.IsisSettings;
-import org.batfish.representation.juniper.JuniperConfiguration;
-import org.batfish.representation.juniper.JunosApplication;
-import org.batfish.representation.juniper.NamedBgpGroup;
-import org.batfish.representation.juniper.NodeDevice;
-import org.batfish.representation.juniper.OspfArea;
-import org.batfish.representation.juniper.PolicyStatement;
-import org.batfish.representation.juniper.PrefixList;
-import org.batfish.representation.juniper.PsFrom;
-import org.batfish.representation.juniper.FwFromApplication;
-import org.batfish.representation.juniper.PsFromAsPath;
-import org.batfish.representation.juniper.PsFromColor;
-import org.batfish.representation.juniper.PsFromCommunity;
-import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
-import org.batfish.representation.juniper.PsFromInterface;
-import org.batfish.representation.juniper.PsFromLocalPreference;
-import org.batfish.representation.juniper.PsFromMetric;
-import org.batfish.representation.juniper.PsFromPolicyStatement;
-import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
-import org.batfish.representation.juniper.PsFromPrefixList;
-import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
-import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
-import org.batfish.representation.juniper.PsFromProtocol;
-import org.batfish.representation.juniper.PsFromRouteFilter;
-import org.batfish.representation.juniper.FwFromSourceAddressBookEntry;
-import org.batfish.representation.juniper.PsTerm;
-import org.batfish.representation.juniper.PsThen;
-import org.batfish.representation.juniper.PsThenAccept;
-import org.batfish.representation.juniper.PsThenCommunityAdd;
-import org.batfish.representation.juniper.PsThenCommunityDelete;
-import org.batfish.representation.juniper.PsThenCommunitySet;
-import org.batfish.representation.juniper.PsThenLocalPreference;
-import org.batfish.representation.juniper.PsThenMetric;
-import org.batfish.representation.juniper.PsThenNextHopIp;
-import org.batfish.representation.juniper.PsThenReject;
-import org.batfish.representation.juniper.RouteFilter;
-import org.batfish.representation.juniper.RouteFilterLine;
-import org.batfish.representation.juniper.RouteFilterLineExact;
-import org.batfish.representation.juniper.RouteFilterLineLengthRange;
-import org.batfish.representation.juniper.RouteFilterLineLonger;
-import org.batfish.representation.juniper.RouteFilterLineOrLonger;
-import org.batfish.representation.juniper.RouteFilterLineThrough;
-import org.batfish.representation.juniper.RouteFilterLineUpTo;
-import org.batfish.representation.juniper.RoutingInformationBase;
-import org.batfish.representation.juniper.RoutingInstance;
-import org.batfish.representation.juniper.StaticRoute;
-import org.batfish.representation.juniper.Zone;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
@@ -1511,9 +1416,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private RoutingInformationBase _currentRib;
 
+   private Route6FilterLine _currentRoute6FilterLine;
+
+   private Prefix6 _currentRoute6FilterPrefix;
+
    private RouteFilter _currentRouteFilter;
 
-   private RouteFilterLine _currentRouteFilterLine;
+   private Route4FilterLine _currentRouteFilterLine;
 
    private Prefix _currentRouteFilterPrefix;
 
@@ -1600,8 +1509,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterAt_interface(At_interfaceContext ctx) {
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
+      Map<String, Interface> interfaces = _configuration.getInterfaces();
       String unitFullName = null;
       if (ctx.ALL() != null) {
          _currentOspfInterface = _currentRoutingInstance
@@ -1678,29 +1586,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterFromt_route_filter(Fromt_route_filterContext ctx) {
+      _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
+      if (_currentRouteFilter == null) {
+         String rfName = _currentPolicyStatement.getName() + ":"
+               + _currentPsTerm.getName();
+         _currentRouteFilter = new RouteFilter(rfName);
+         _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
+         _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
+         PsFromRouteFilter from = new PsFromRouteFilter(rfName);
+         _currentPsTerm.getFroms().add(from);
+      }
       if (ctx.IP_PREFIX() != null) {
          _currentRouteFilterPrefix = new Prefix(ctx.IP_PREFIX().getText());
-         _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
-         if (_currentRouteFilter == null) {
-            String rfName = _currentPolicyStatement.getName() + ":"
-                  + _currentPsTerm.getName();
-            _currentRouteFilter = new RouteFilter(rfName);
-            _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
-            _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
-            PsFromRouteFilter from = new PsFromRouteFilter(rfName);
-            _currentPsTerm.getFroms().add(from);
-         }
+         _currentRouteFilter.setIpv4(true);
       }
       else if (ctx.IPV6_PREFIX() != null) {
-         _currentPolicyStatement.setIpv6(true);
+         _currentRoute6FilterPrefix = new Prefix6(ctx.IPV6_PREFIX().getText());
+         _currentRouteFilter.setIpv6(true);
       }
    }
 
    @Override
    public void enterFromt_route_filter_then(
          Fromt_route_filter_thenContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLine line = _currentRouteFilterLine;
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = _currentRouteFilterLine;
+         _currentPsThens = line.getThens();
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = _currentRoute6FilterLine;
          _currentPsThens = line.getThens();
       }
    }
@@ -1803,24 +1717,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void enterIntt_named(Intt_namedContext ctx) {
       Interface currentInterface;
       if (ctx.name == null) {
-         currentInterface = _currentRoutingInstance.getGlobalMasterInterface();
+         currentInterface = _configuration.getGlobalMasterInterface();
       }
       else {
          String ifaceName = ctx.name.getText();
          Map<String, Interface> interfaces;
          String nodeDevicePrefix = "";
          if (ctx.node == null) {
-            interfaces = _currentRoutingInstance.getInterfaces();
+            interfaces = _configuration.getInterfaces();
          }
          else {
             String nodeDeviceName = ctx.node.getText();
             nodeDevicePrefix = nodeDeviceName + ":";
-            NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices()
+            NodeDevice nodeDevice = _configuration.getNodeDevices()
                   .get(nodeDeviceName);
             if (nodeDevice == null) {
                nodeDevice = new NodeDevice(nodeDeviceName);
-               _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
-                     nodeDevice);
+               _configuration.getNodeDevices().put(nodeDeviceName, nodeDevice);
             }
             interfaces = nodeDevice.getInterfaces();
          }
@@ -1887,8 +1800,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterIsist_interface(Isist_interfaceContext ctx) {
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
+      Map<String, Interface> interfaces = _configuration.getInterfaces();
       String unitFullName = null;
       String name = ctx.id.name.getText();
       String unit = null;
@@ -1980,7 +1892,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentPolicyStatement = new PolicyStatement(name);
          policyStatements.put(name, _currentPolicyStatement);
       }
-      _currentPsTerm = _currentPolicyStatement.getSingletonTerm();
+      _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
       _currentPsThens = _currentPsTerm.getThens();
    }
 
@@ -2009,31 +1921,49 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterRft_exact(Rft_exactContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLineExact fromRouteFilterExact = new RouteFilterLineExact(
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = new Route4FilterLineExact(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterExact);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = new Route6FilterLineExact(
+               _currentRoute6FilterPrefix);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
    @Override
    public void enterRft_longer(Rft_longerContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLineLonger fromRouteFilterOrLonger = new RouteFilterLineLonger(
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = new Route4FilterLineLonger(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterOrLonger);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = new Route6FilterLineLonger(
+               _currentRoute6FilterPrefix);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
    @Override
    public void enterRft_orlonger(Rft_orlongerContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLineOrLonger fromRouteFilterOrLonger = new RouteFilterLineOrLonger(
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = new Route4FilterLineOrLonger(
                _currentRouteFilterPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterOrLonger);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = new Route6FilterLineOrLonger(
+               _currentRoute6FilterPrefix);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
@@ -2042,33 +1972,52 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          Rft_prefix_length_rangeContext ctx) {
       int minPrefixLength = toInt(ctx.low);
       int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLineLengthRange fromRouteFilterLengthRange = new RouteFilterLineLengthRange(
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = new Route4FilterLineLengthRange(
                _currentRouteFilterPrefix, minPrefixLength, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterLengthRange);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = new Route6FilterLineLengthRange(
+               _currentRoute6FilterPrefix, minPrefixLength, maxPrefixLength);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
    @Override
    public void enterRft_through(Rft_throughContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // not ipv6
+      if (_currentRouteFilterPrefix != null) { // ipv4
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
-         RouteFilterLineThrough fromRouteFilterThrough = new RouteFilterLineThrough(
+         Route4FilterLine line = new Route4FilterLineThrough(
                _currentRouteFilterPrefix, throughPrefix);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterThrough);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Prefix6 throughPrefix6 = new Prefix6(ctx.IPV6_PREFIX().getText());
+         Route6FilterLine line = new Route6FilterLineThrough(
+               _currentRoute6FilterPrefix, throughPrefix6);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
    @Override
    public void enterRft_upto(Rft_uptoContext ctx) {
       int maxPrefixLength = toInt(ctx.high);
-      if (_currentRouteFilterPrefix != null) { // not ipv6
-         RouteFilterLineUpTo fromRouteFilterUpTo = new RouteFilterLineUpTo(
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = new Route4FilterLineUpTo(
                _currentRouteFilterPrefix, maxPrefixLength);
-         _currentRouteFilterLine = _currentRouteFilter
-               .insertLine(fromRouteFilterUpTo);
+         _currentRouteFilterLine = _currentRouteFilter.insertLine(line,
+               Route4FilterLine.class);
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = new Route6FilterLineUpTo(
+               _currentRoute6FilterPrefix, maxPrefixLength);
+         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line,
+               Route6FilterLine.class);
       }
    }
 
@@ -2529,6 +2478,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitFromt_family(Fromt_familyContext ctx) {
+      PsFrom from;
+      if (ctx.INET() != null) {
+         from = new PsFromFamilyInet();
+      }
+      else if (ctx.INET6() != null) {
+         from = new PsFromFamilyInet6();
+      }
+      else {
+         throw new BatfishException("Unsupported family: " + ctx.getText());
+      }
+      _currentPsTerm.getFroms().add(from);
+   }
+
+   @Override
    public void exitFromt_interface(Fromt_interfaceContext ctx) {
       String name = ctx.id.name.getText();
       String unit = null;
@@ -2536,8 +2500,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          unit = ctx.id.unit.getText();
       }
       String unitFullName = name + "." + unit;
-      Map<String, Interface> interfaces = _currentRoutingInstance
-            .getInterfaces();
+      Map<String, Interface> interfaces = _configuration.getInterfaces();
       Interface iface = interfaces.get(name);
       if (iface == null) {
          iface = new Interface(name);
@@ -2621,8 +2584,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitFromt_route_filter(Fromt_route_filterContext ctx) {
       _currentRouteFilterPrefix = null;
+      _currentRoute6FilterPrefix = null;
       _currentRouteFilter = null;
       _currentRouteFilterLine = null;
+      _currentRoute6FilterLine = null;
    }
 
    @Override
@@ -3387,6 +3352,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitRit_interface(Rit_interfaceContext ctx) {
+      Interface iface = initInterface(ctx.id);
+      iface.setRoutingInstance(_currentRoutingInstance.getName());
+   }
+
+   @Override
    public void exitRit_named_routing_instance(
          Rit_named_routing_instanceContext ctx) {
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
@@ -3689,6 +3660,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitTht_next_policy(Tht_next_policyContext ctx) {
+      _currentPsThens.add(PsThenNextPolicy.INSTANCE);
+   }
+
+   @Override
    public void exitTht_reject(Tht_rejectContext ctx) {
       _currentPsThens.add(PsThenReject.INSTANCE);
    }
@@ -3722,20 +3698,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    private Interface initInterface(Interface_idContext id) {
+      String currentRoutingInstance = _currentRoutingInstance.getName();
       Map<String, Interface> interfaces;
       if (id.node != null) {
          String nodeDeviceName = id.node.getText();
-         NodeDevice nodeDevice = _currentRoutingInstance.getNodeDevices()
+         NodeDevice nodeDevice = _configuration.getNodeDevices()
                .get(nodeDeviceName);
          if (nodeDevice == null) {
             nodeDevice = new NodeDevice(nodeDeviceName);
-            _currentRoutingInstance.getNodeDevices().put(nodeDeviceName,
-                  nodeDevice);
+            _configuration.getNodeDevices().put(nodeDeviceName, nodeDevice);
          }
          interfaces = nodeDevice.getInterfaces();
       }
       else {
-         interfaces = _currentRoutingInstance.getInterfaces();
+         interfaces = _configuration.getInterfaces();
       }
       String name = id.name.getText();
       String unit = null;
@@ -3746,7 +3722,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Interface iface = interfaces.get(name);
       if (iface == null) {
          iface = new Interface(name);
-         iface.setRoutingInstance(_currentRoutingInstance.getName());
+         iface.setRoutingInstance(currentRoutingInstance);
          interfaces.put(name, iface);
       }
       if (unit != null) {
@@ -3754,7 +3730,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          iface = units.get(unitFullName);
          if (iface == null) {
             iface = new Interface(unitFullName);
-            iface.setRoutingInstance(_currentRoutingInstance.getName());
+            iface.setRoutingInstance(currentRoutingInstance);
             units.put(unitFullName, iface);
          }
       }
@@ -3849,7 +3825,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _conjunctionPolicyIndex++;
          PolicyStatement conjunctionPolicy = new PolicyStatement(
                conjunctionPolicyName);
-         PsTerm conjunctionPolicyTerm = conjunctionPolicy.getSingletonTerm();
+         PsTerm conjunctionPolicyTerm = conjunctionPolicy.getDefaultTerm();
          PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(
                conjuncts);
          conjunctionPolicyTerm.getFroms().add(from);
@@ -3870,7 +3846,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _disjunctionPolicyIndex++;
          PolicyStatement disjunctionPolicy = new PolicyStatement(
                disjunctionPolicyName);
-         PsTerm disjunctionPolicyTerm = disjunctionPolicy.getSingletonTerm();
+         PsTerm disjunctionPolicyTerm = disjunctionPolicy.getDefaultTerm();
          for (String disjunct : disjuncts) {
             PsFromPolicyStatement from = new PsFromPolicyStatement(disjunct);
             disjunctionPolicyTerm.getFroms().add(from);

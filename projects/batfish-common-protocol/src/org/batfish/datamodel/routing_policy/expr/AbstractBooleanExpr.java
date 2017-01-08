@@ -22,4 +22,14 @@ public abstract class AbstractBooleanExpr implements BooleanExpr {
       return this;
    }
 
+   @Override
+   public String toString() {
+      if (_comment != null) {
+         return getClass().getSimpleName() + "<" + _comment + ">";
+      }
+      else {
+         return super.toString();
+      }
+   }
+
 }
