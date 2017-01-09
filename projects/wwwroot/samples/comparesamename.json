@@ -1,8 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.CompareSameNameQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "namedStructType" : [ ],
-  "nodeBlacklist" : [ ],
-  "nodeRegex" : ".*"
-}
