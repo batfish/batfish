@@ -4,6 +4,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
@@ -19,6 +20,8 @@ public class Environment {
 
    private boolean _defaultAction;
 
+   private String _defaultPolicy;
+
    private boolean _error;
 
    private boolean _localDefaultAction;
@@ -31,6 +34,8 @@ public class Environment {
 
    private final Ip _peerAddress;
 
+   private final boolean _useOutputAttributes;
+
    private Vrf _vrf;
 
    public Environment(Configuration configuration, String vrf,
@@ -41,6 +46,10 @@ public class Environment {
       _originalRoute = originalRoute;
       _outputRoute = outputRoute;
       _peerAddress = peerAddress;
+      ConfigurationFormat format = _configuration.getConfigurationFormat();
+      _useOutputAttributes = format == ConfigurationFormat.JUNIPER
+            || format == ConfigurationFormat.JUNIPER_SWITCH
+            || format == ConfigurationFormat.FLAT_JUNIPER;
    }
 
    public boolean getBuffered() {
@@ -61,6 +70,10 @@ public class Environment {
 
    public boolean getDefaultAction() {
       return _defaultAction;
+   }
+
+   public String getDefaultPolicy() {
+      return _defaultPolicy;
    }
 
    public boolean getError() {
@@ -87,6 +100,10 @@ public class Environment {
       return _peerAddress;
    }
 
+   public boolean getUseOutputAttributes() {
+      return _useOutputAttributes;
+   }
+
    public Vrf getVrf() {
       return _vrf;
    }
@@ -105,6 +122,10 @@ public class Environment {
 
    public void setDefaultAction(boolean defaultAction) {
       _defaultAction = defaultAction;
+   }
+
+   public void setDefaultPolicy(String defaultPolicy) {
+      _defaultPolicy = defaultPolicy;
    }
 
    public void setError(boolean error) {

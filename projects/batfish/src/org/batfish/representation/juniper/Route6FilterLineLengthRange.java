@@ -1,11 +1,11 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.SubRange;
 
-public final class RouteFilterLineLengthRange extends RouteFilterLine {
+public final class Route6FilterLineLengthRange extends Route6FilterLine {
 
    /**
     *
@@ -16,17 +16,17 @@ public final class RouteFilterLineLengthRange extends RouteFilterLine {
 
    private final int _minPrefixLength;
 
-   public RouteFilterLineLengthRange(Prefix prefix, int minPrefixLength,
+   public Route6FilterLineLengthRange(Prefix6 prefix6, int minPrefixLength,
          int maxPrefixLength) {
-      super(prefix);
+      super(prefix6);
       _minPrefixLength = minPrefixLength;
       _maxPrefixLength = maxPrefixLength;
    }
 
    @Override
-   public void applyTo(RouteFilterList rfl) {
-      org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix,
+   public void applyTo(Route6FilterList rfl) {
+      org.batfish.datamodel.Route6FilterLine line = new org.batfish.datamodel.Route6FilterLine(
+            LineAction.ACCEPT, _prefix6,
             new SubRange(_minPrefixLength, _maxPrefixLength));
       rfl.addLine(line);
    }
@@ -37,8 +37,8 @@ public final class RouteFilterLineLengthRange extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineLengthRange rhs = (RouteFilterLineLengthRange) o;
-         return _prefix.equals(rhs._prefix)
+         Route6FilterLineLengthRange rhs = (Route6FilterLineLengthRange) o;
+         return _prefix6.equals(rhs._prefix6)
                && _minPrefixLength == rhs._minPrefixLength
                && _maxPrefixLength == rhs._maxPrefixLength;
       }
@@ -58,7 +58,7 @@ public final class RouteFilterLineLengthRange extends RouteFilterLine {
       int result = 1;
       result = prime * result + _maxPrefixLength;
       result = prime * result + _minPrefixLength;
-      result = prime * result + _prefix.hashCode();
+      result = prime * result + _prefix6.hashCode();
       return result;
    }
 

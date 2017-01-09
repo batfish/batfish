@@ -5,14 +5,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
-public class RouteFilterLineOrLonger extends RouteFilterLine {
+public class Route4FilterLineOrLonger extends Route4FilterLine {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public RouteFilterLineOrLonger(Prefix prefix) {
+   public Route4FilterLineOrLonger(Prefix prefix) {
       super(prefix);
    }
 
@@ -30,7 +30,7 @@ public class RouteFilterLineOrLonger extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineOrLonger rhs = (RouteFilterLineOrLonger) o;
+         Route4FilterLineOrLonger rhs = (Route4FilterLineOrLonger) o;
          return _prefix.equals(rhs._prefix);
       }
    }

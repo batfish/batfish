@@ -36,15 +36,17 @@ public class If extends AbstractStatement {
       if (exprResult.getExit()) {
          return exprResult;
       }
-      List<Statement> toExecute = exprResult.getBooleanValue() ? _trueStatements
-            : _falseStatements;
+      boolean guardVal = exprResult.getBooleanValue();
+      List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
       for (Statement statement : toExecute) {
          Result result = statement.execute(environment);
          if (result.getExit() || result.getReturn()) {
             return result;
          }
       }
-      return new Result();
+      Result fallThroughResult = new Result();
+      fallThroughResult.setFallThrough(true);
+      return fallThroughResult;
    }
 
    public List<Statement> getFalseStatements() {

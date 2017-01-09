@@ -32,6 +32,7 @@ public final class PsThenReject extends PsThen {
             .singletonList(Statements.ReturnFalse.toStaticStatement()));
       ifStatement.setFalseStatements(Collections
             .singletonList(Statements.ExitReject.toStaticStatement()));
+      statements.add(ifStatement);
    }
 
 }

@@ -1,27 +1,31 @@
 package org.batfish.representation.juniper;
 
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
-public final class RouteFilterLineExact extends RouteFilterLine {
+public class Route4FilterLineLonger extends Route4FilterLine {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public RouteFilterLineExact(Prefix prefix) {
+   public Route4FilterLineLonger(Prefix prefix) {
       super(prefix);
    }
 
    @Override
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
+      if (prefixLength >= 32) {
+         throw new BatfishException(
+               "Route filter prefix length cannot be 'longer' than 32");
+      }
       org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix,
-            new SubRange(prefixLength, prefixLength));
+            LineAction.ACCEPT, _prefix, new SubRange(prefixLength + 1, 32));
       rfl.addLine(line);
    }
 
@@ -31,7 +35,7 @@ public final class RouteFilterLineExact extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineExact rhs = (RouteFilterLineExact) o;
+         Route4FilterLineLonger rhs = (Route4FilterLineLonger) o;
          return _prefix.equals(rhs._prefix);
       }
    }

@@ -1,31 +1,30 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 
-public class RouteFilterLineLonger extends RouteFilterLine {
+public final class Route4FilterLineUpTo extends Route4FilterLine {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
 
-   public RouteFilterLineLonger(Prefix prefix) {
+   private final int _maxPrefixLength;
+
+   public Route4FilterLineUpTo(Prefix prefix, int maxPrefixLength) {
       super(prefix);
+      _maxPrefixLength = maxPrefixLength;
    }
 
    @Override
    public void applyTo(RouteFilterList rfl) {
       int prefixLength = _prefix.getPrefixLength();
-      if (prefixLength >= 32) {
-         throw new BatfishException(
-               "Route filter prefix length cannot be 'longer' than 32");
-      }
       org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix, new SubRange(prefixLength + 1, 32));
+            LineAction.ACCEPT, _prefix,
+            new SubRange(prefixLength, _maxPrefixLength));
       rfl.addLine(line);
    }
 
@@ -35,14 +34,23 @@ public class RouteFilterLineLonger extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineLonger rhs = (RouteFilterLineLonger) o;
-         return _prefix.equals(rhs._prefix);
+         Route4FilterLineUpTo rhs = (Route4FilterLineUpTo) o;
+         return _prefix.equals(rhs._prefix)
+               && _maxPrefixLength == rhs._maxPrefixLength;
       }
+   }
+
+   public int getMaxPrefixLength() {
+      return _maxPrefixLength;
    }
 
    @Override
    public int hashCode() {
-      return _prefix.hashCode();
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _maxPrefixLength;
+      result = prime * result + _prefix.hashCode();
+      return result;
    }
 
 }

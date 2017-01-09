@@ -80,4 +80,9 @@ public class Conjunction extends AbstractBooleanExpr {
       }
    }
 
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _conjuncts.toString() + ">";
+   }
+
 }

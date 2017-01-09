@@ -383,6 +383,10 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _controlPlaneAccessGroups;
    }
 
+   public Vrf getDefaultVrf() {
+      return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+   }
+
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
       return _expandedCommunityLists;
    }
@@ -1228,9 +1232,6 @@ public class CiscoConfiguration extends VendorConfiguration {
       aggregateRfLists.add(aggregateFilter);
 
       for (LeafBgpPeerGroup lpg : leafGroups) {
-         if (lpg.getName().equals("1.1.1.1")) {
-            assert Boolean.TRUE;
-         }
          // update source
          String updateSourceInterface = lpg.getUpdateSource();
          boolean ipv4 = lpg.getNeighborPrefix() != null;
@@ -1555,6 +1556,10 @@ public class CiscoConfiguration extends VendorConfiguration {
             iface.getName(), c);
       String vrfName = iface.getVrf();
       Vrf vrf = _vrfs.get(vrfName);
+      if (vrf == null) {
+         vrf = new Vrf(vrfName);
+         _vrfs.put(vrfName, vrf);
+      }
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
       newIface.setVrf(iface.getVrf());

@@ -12,6 +12,9 @@ public interface CommunitySetExpr extends Serializable {
 
    CommunitySet communities(Environment environment);
 
+   CommunitySet communities(Environment environment,
+         CommunitySet communityCandidates);
+
    boolean matchSingleCommunity(Environment environment,
          CommunitySet communities);
 
