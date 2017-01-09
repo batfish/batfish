@@ -280,7 +280,13 @@ Description: network configuration analysis tool
 EOF
 
    gzip --best > $CHANGELOG_P <<EOF
-batfish ($VERSION) trusty; urgency=low
+batfish (0.2.0-ubuntu${UBUNTU_VERSION}) trusty; urgency=low
+
+  * Second Release: second release
+
+ -- Ari Fogel <ari@intentionet.com>  Mon, 09 Jan 2017 15:36:00 -0700
+
+batfish (0.1.0-ubuntu${UBUNTU_VERSION}) trusty; urgency=low
 
   * Initial Release: initial release
 
@@ -292,7 +298,7 @@ EOF
 Name: batfish
 Maintainer: Ari Fogel <ari@intentionet.com>
 Source: https://github.com/arifogel/batfish
-Copyright: 2013-2016 Ari Fogel <ari@intentionet.com>
+Copyright: 2013-2017 Ari Fogel <ari@intentionet.com>
 License: Apache-2.0
  Internal components may have different licenses. Their license
  files may be extracted from the included jar files.
