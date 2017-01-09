@@ -41,11 +41,11 @@ Batfish supports many types of correctness checks, including
   - Planned ACL changes have no collateral damage, e.g., relative to the current configuration, only flows that are intended to be (un)blocked are (un)blocked; no other flow is impacted.
   - Two configurations, potentially from different vendors, are semantically equivalent
 
-These checks are performed by asking questions about configruations. See [here] (https://github.com/intentionet/batfish/wiki/Questions) for the list of questions.
+These checks are performed by asking questions about configurations. See [here] (https://github.com/batfish/batfish/wiki/Questions) for the list of questions.
 
 ## How do I get started?
 
-If you are a DIYer, go to [Batfish Wiki] (https://github.com/arifogel/batfish/wiki)
+If you are a DIYer, go to [Batfish Wiki] (https://github.com/batfish/batfish/wiki)
 
 If you'd like a hosted service, drop a line to info@intentionet.com.
 

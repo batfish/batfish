@@ -51,7 +51,7 @@ Coming soon ....
 Generating the questions wiki 
 -----------------------------
 
-The page https://github.com/intentionet/batfish/wiki/Questions has documentation on the questions we currently have. 
+The page https://github.com/batfish/batfish/wiki/Questions has documentation on the questions we currently have. 
 
 It is automatically generated from comments in question files using the script in projects/pybatfish/org/batfish/questions_page/questions_page.py. The comment format is at the top of the script.
 
@@ -65,8 +65,8 @@ Generating the datamodel documentation
 --------------------------------------
 
 Two pages that document the datamodel
-   https://github.com/intentionet/batfish/wiki/Datamodel
-   http://intentionet.github.io/batfish/docson/#../datamodel.json
+   https://github.com/batfish/batfish/wiki/Datamodel
+   http://batfish.github.io/batfish/docson/#../datamodel.json
 Both are automatically generated
 
 To generate them, run 'batfish_datamodel' (after sourcing tools/batfish_functions.sh). This command runs 'batfish_client -runmode gendatamodel' to get the datamodel in json. And it then runs datamodel_page.py to generate the Datamodel.md file.

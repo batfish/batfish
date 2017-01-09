@@ -34,8 +34,6 @@ export COMMON_JAR="$COMMON_PATH/out/batfish-common-protocol.jar"
 export QUESTION_PATH="$BATFISH_ROOT/projects/question"
 export BATFISH_QUESTION_PLUGIN_DIR="$BATFISH_ROOT/projects/question/out"
 
-export PYBATFISH_PATH="$BATFISH_ROOT/projects/pybatfish"
-
 batfish() {
    # if cygwin, shift and replace each parameter
    if batfish_cygwin; then
@@ -582,11 +580,6 @@ _batfish_replace_symlink() {
    cp -a "$ABSOLUTE_TARGET" "$SYMLINK" || return 1
 }
 export -f _batfish_replace_symlink
-
-batfish_scrubber() {
-   $BATFISH_ROOT/projects/pybatfish/bin/batfish_scrubber "$@"
-}
-export -f batfish_scrubber
 
 batfish_serialize_independent() {
    batfish_date
