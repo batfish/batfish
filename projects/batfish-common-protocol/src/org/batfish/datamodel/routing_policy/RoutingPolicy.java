@@ -49,6 +49,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
          }
       }
       Result result = new Result();
+      result.setFallThrough(true);
       result.setBooleanValue(environment.getDefaultAction());
       return result;
    }

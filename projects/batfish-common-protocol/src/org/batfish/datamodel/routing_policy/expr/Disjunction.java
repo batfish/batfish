@@ -81,4 +81,9 @@ public class Disjunction extends AbstractBooleanExpr {
       }
    }
 
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _disjuncts.toString() + ">";
+   }
+
 }

@@ -1,11 +1,11 @@
 package org.batfish.representation.juniper;
 
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.SubRange;
 
-public final class RouteFilterLineUpTo extends RouteFilterLine {
+public final class Route6FilterLineUpTo extends Route6FilterLine {
 
    /**
     *
@@ -14,16 +14,16 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
 
    private final int _maxPrefixLength;
 
-   public RouteFilterLineUpTo(Prefix prefix, int maxPrefixLength) {
-      super(prefix);
+   public Route6FilterLineUpTo(Prefix6 prefix6, int maxPrefixLength) {
+      super(prefix6);
       _maxPrefixLength = maxPrefixLength;
    }
 
    @Override
-   public void applyTo(RouteFilterList rfl) {
-      int prefixLength = _prefix.getPrefixLength();
-      org.batfish.datamodel.RouteFilterLine line = new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix,
+   public void applyTo(Route6FilterList rfl) {
+      int prefixLength = _prefix6.getPrefixLength();
+      org.batfish.datamodel.Route6FilterLine line = new org.batfish.datamodel.Route6FilterLine(
+            LineAction.ACCEPT, _prefix6,
             new SubRange(prefixLength, _maxPrefixLength));
       rfl.addLine(line);
    }
@@ -34,8 +34,8 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
          return false;
       }
       else {
-         RouteFilterLineUpTo rhs = (RouteFilterLineUpTo) o;
-         return _prefix.equals(rhs._prefix)
+         Route6FilterLineUpTo rhs = (Route6FilterLineUpTo) o;
+         return _prefix6.equals(rhs._prefix6)
                && _maxPrefixLength == rhs._maxPrefixLength;
       }
    }
@@ -49,7 +49,7 @@ public final class RouteFilterLineUpTo extends RouteFilterLine {
       final int prime = 31;
       int result = 1;
       result = prime * result + _maxPrefixLength;
-      result = prime * result + _prefix.hashCode();
+      result = prime * result + _prefix6.hashCode();
       return result;
    }
 

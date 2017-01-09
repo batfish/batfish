@@ -11,6 +11,7 @@ public enum Statements {
    DeleteAllCommunities,
    ExitAccept,
    ExitReject,
+   FallThrough,
    Return,
    ReturnFalse,
    ReturnLocalDefaultAction,
@@ -65,6 +66,11 @@ public enum Statements {
             result.setBooleanValue(false);
             break;
 
+         case FallThrough:
+            result.setReturn(true);
+            result.setFallThrough(true);
+            break;
+
          case Return:
             result.setReturn(true);
             break;
@@ -98,6 +104,9 @@ public enum Statements {
 
          case SetLocalDefaultActionReject:
             environment.setLocalDefaultAction(false);
+            break;
+
+         default:
             break;
          }
          return result;

@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 
 public abstract class RouteFilterLine implements Serializable {
@@ -14,23 +14,18 @@ public abstract class RouteFilterLine implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   protected final Prefix _prefix;
-
    private final Set<PsThen> _thens;
 
-   public RouteFilterLine(Prefix prefix) {
-      _prefix = prefix;
+   public RouteFilterLine() {
       _thens = new HashSet<>();
    }
+
+   public abstract void applyTo(Route6FilterList rfl);
 
    public abstract void applyTo(RouteFilterList rfl);
 
    @Override
    public abstract boolean equals(Object o);
-
-   public final Prefix getPrefix() {
-      return _prefix;
-   }
 
    public Set<PsThen> getThens() {
       return _thens;

@@ -38,10 +38,12 @@ public class CallExpr extends AbstractBooleanExpr {
       }
       else {
          boolean oldCallExprContext = environment.getCallExprContext();
+         boolean oldLocalDefaultAction = environment.getLocalDefaultAction();
          environment.setCallExprContext(true);
          result = policy.call(environment);
          result.setReturn(false);
          environment.setCallExprContext(oldCallExprContext);
+         environment.setLocalDefaultAction(oldLocalDefaultAction);
       }
       return result;
    }
@@ -54,6 +56,11 @@ public class CallExpr extends AbstractBooleanExpr {
    @JsonProperty(CALLED_POLICY_NAME_VAR)
    public void setCalledPolicyName(String calledPolicyName) {
       _calledPolicyName = calledPolicyName;
+   }
+
+   @Override
+   public String toString() {
+      return getClass().getSimpleName() + "<" + _calledPolicyName + ">";
    }
 
 }
