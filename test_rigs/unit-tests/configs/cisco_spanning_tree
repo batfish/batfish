@@ -19,4 +19,12 @@ no spanning-tree
 no spanning-tree dispute
 no spanning-tree optimize bpdu transmission
 !
+spanning-tree mst configuration
+ name test-setup-rz
+ revision 10
+ instance 1 vlan 300
+ instance 2 vlan 501-502, 512, 703
+!
+spanning-tree mst 2 priority 24576
+!
 

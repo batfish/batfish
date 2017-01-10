@@ -199,6 +199,11 @@ ACTION
    'action'
 ;
 
+ACTION_TYPE
+:
+   'action-type'
+;
+
 ACTIVATE
 :
    'activate'
@@ -247,6 +252,11 @@ ADDRESS_POOL
 ADDRESS_POOLS
 :
    'address-pools'
+;
+
+ADDRESS_RANGE
+:
+   'address-range'
 ;
 
 ADDRESS_TABLE
@@ -424,6 +434,11 @@ AIS_SHUT
    'ais-shut'
 ;
 
+ALARM
+:
+   'alarm'
+;
+
 ALARM_REPORT
 :
    'alarm-report'
@@ -442,6 +457,11 @@ ALERTS
 ALIAS
 :
    'alias'
+;
+
+ALL_OF_ROUTER
+:
+   'all-of-router'
 ;
 
 ALL
@@ -866,6 +886,11 @@ BACKGROUND_ROUTES_ENABLE
    'background-routes-enable'
 ;
 
+BACKUP
+:
+   'backup'
+;
+
 BACKUPCRF
 :
    'backupcrf'
@@ -979,6 +1004,11 @@ BOOT_END_MARKER
 BOOT_START_MARKER
 :
    'boot-start-marker'
+;
+
+BOOTFILE
+:
+   'bootfile'
 ;
 
 BOOTP_RELAY
@@ -1321,6 +1351,16 @@ CLIENT_GROUP
    'client-group'
 ;
 
+CLIENT_IDENTIFIER
+:
+   'client-identifier'
+;
+
+CLIENT_NAME
+:
+   'client-name'
+;
+
 CLIENT_TO_CLIENT
 :
    'client-to-client'
@@ -1424,6 +1464,11 @@ COMMUNITY_LIST
       enableDEC = false;
    }
 
+;
+
+COMMUNITY_MAP
+:
+   'community-map'
 ;
 
 COMMUNITY_SET
@@ -1927,6 +1972,11 @@ DELETE_DYNAMIC_LEARN
    'delete-dynamic-learn'
 ;
 
+DEMAND_CIRCUIT
+:
+   'demand-circuit'
+;
+
 DENY
 :
    'deny'
@@ -1977,6 +2027,11 @@ DESTINATION_SLOT
    'destination-slot'
 ;
 
+DESTINATION_UNREACHABLE
+:
+   'destination-unreachable'
+;
+
 DESTINATION_VRF
 :
    'destination-vrf'
@@ -2005,6 +2060,11 @@ DEVICE_SENSOR
 DISABLE_PEER_AS_CHECK
 :
    'disable-peer-as-check'
+;
+
+DISCRIMINATOR
+:
+   'discriminator'
 ;
 
 DISPUTE
@@ -2237,6 +2297,11 @@ DSCP_VALUE
    'dscp-value'
 ;
 
+DSL
+:
+   'dsl'
+;
+  
 DSP
 :
    'dsp'
@@ -2510,6 +2575,11 @@ ENROLLMENT
 ENVIRONMENT
 :
    'environment'
+;
+
+ENVIRONMENT_MONITOR
+:
+   'environment-monitor'
 ;
 
 EOF_LITERAL
@@ -2854,6 +2924,11 @@ FAST_REROUTE
    'fast-reroute'
 ;
 
+FAX
+:
+   'fax'
+;
+
 FCOE
 :
    'fcoe'
@@ -2984,6 +3059,11 @@ FLUSH_AT_ACTIVATION
 FORCE
 :
    'force'
+;
+
+FOR
+:
+   'for'
 ;
 
 FORMAT
@@ -3246,6 +3326,11 @@ HARDWARE
    'hardware'
 ;
 
+HARDWARE_ADDRESS
+:
+   'hardware-address'
+;
+
 HARDWARE_COUNT
 :
    'hardware-count'
@@ -3456,6 +3541,11 @@ ICMPV6
    'icmpv6'
 ;
 
+ID
+:
+   'id'
+;
+
 ID_MISMATCH
 :
    'id-mismatch'
@@ -3611,6 +3701,11 @@ INFORMATIONAL
    'informational'
 ;
 
+INFORMS
+:
+   'informs'
+;
+
 INGRESS
 :
    'ingress'
@@ -3674,6 +3769,11 @@ INTERVAL
    'interval'
 ;
 
+INTERWORKING
+:
+   'interworking'
+;
+
 INVALID_SPI_RECOVERY
 :
    'invalid-spi-recovery'
@@ -3731,7 +3831,13 @@ IPSLA
 
 IPV4
 :
-   'ipv4'
+   (
+       'ipv4'       
+   )
+   |
+   (
+   		'IPv4'
+   )
 ;
 
 IPV4_L5
@@ -3845,6 +3951,11 @@ KEY_EXCHANGE
    'key-exchange'
 ;
 
+KEY_HASH
+:
+   'key-hash'
+;
+
 KEY_SOURCE
 :
    'key-source'
@@ -3888,6 +3999,11 @@ KRON
 KSHELL
 :
    'kshell'
+;
+
+L2
+:
+   'l2'
 ;
 
 L2_FILTER
@@ -4185,6 +4301,11 @@ LOCATION
    'location' -> pushMode ( M_COMMENT )
 ;
 
+LOCALE
+:
+   'locale'
+;
+
 LOG
 :
    'log'
@@ -4203,6 +4324,11 @@ LOG_ENABLE
 LOG_INPUT
 :
    'log-input'
+;
+
+LOG_INTERNAL_SYNC
+:
+   'log-internal-sync'
 ;
 
 LOG_NEIGHBOR_CHANGES
@@ -4560,6 +4686,11 @@ MESH_GROUP
    'mesh-group'
 ;
 
+MESSAGE_COUNTER
+:
+   'message-counter'
+;
+
 MESSAGE_DIGEST
 :
    'message-digest'
@@ -4643,6 +4774,16 @@ MINIMUM_INTERVAL
 MINIMUM_LINKS
 :
    'minimum-links'
+;
+
+MINPOLL
+:
+   'minpoll'
+;
+
+MIRROR
+:
+   'mirror'
 ;
 
 MLAG
@@ -4730,6 +4871,11 @@ MONITOR_MAP
    'monitor-map'
 ;
 
+MONITOR_SESSION
+:
+   'monitor-session'
+;
+
 MONITORING
 :
    'monitoring'
@@ -4793,6 +4939,11 @@ MSIE_PROXY
 MSRPC
 :
    'msrpc'
+;
+
+MST 
+:
+   'mst'
 ;
 
 MTA
@@ -4940,6 +5091,11 @@ NEGOTIATE
    'negotiate'
 ;
 
+NEGOTIATED
+:
+   'negotiated'
+;
+
 NEGOTIATION
 :
    'negotiation'
@@ -5060,6 +5216,11 @@ NEXT_HOP_THIRD_PARTY
    'next-hop-third-party'
 ;
 
+NEXT_SERVER
+:
+   'next-server'
+;
+
 NEXTHOP
 :
    'nexthop'
@@ -5083,6 +5244,11 @@ NEXTHOP_ATTRIBUTE
 NHOP_ONLY
 :
    'nhop-only'
+;
+
+NHRP
+:
+   'nhrp'
 ;
 
 NLRI
@@ -5765,6 +5931,11 @@ POLICY_MAP_OUTPUT
    'policy-map-output'
 ;
 
+POOL
+:
+   'pool'
+;
+
 POP2
 :
    'pop2'
@@ -5818,6 +5989,11 @@ PORT_PROFILE
 PORT_SECURITY
 :
    'port-security'
+;
+
+PORT_TYPE
+:
+   'port-type'
 ;
 
 PORT_UNREACHABLE
@@ -6020,6 +6196,11 @@ PROMPT
    'prompt'
 ;
 
+PROPAGATE
+:
+   'propagate'
+;
+
 PROPOSAL
 :
    'proposal'
@@ -6055,6 +6236,11 @@ PROXY_SERVER
    'proxy-server'
 ;
 
+PSEUDOWIRE
+:
+   'pseudowire'
+;
+
 PSEUDOWIRE_CLASS
 :
    'pseudowire-class'
@@ -6068,6 +6254,16 @@ PSH
 PTP
 :
    'ptp'
+;
+
+PUBKEY_CHAIN
+:
+   'pubkey-chain'
+;
+
+PVC
+:
+   'pvc'
 ;
 
 QOS
@@ -6455,6 +6651,11 @@ RETRIES
    'retries'
 ;
 
+REVERSE_ACCESS
+:
+   'reverse-access'
+;
+
 REVERSE_PATH
 :
    'reverse-path'
@@ -6473,6 +6674,11 @@ REVISION
 REVOCATION_CHECK
 :
    'revocation-check'
+;
+
+REWRITE
+:
+   'rewrite'
 ;
 
 RFC1583COMPATIBILITY
@@ -6555,19 +6761,24 @@ ROUTE_POLICY
    'route-policy'
 ;
 
-ROUTE_SOURCE
-:
-   'route-source'
-;
-
 ROUTE_REFLECTOR_CLIENT
 :
    'route-reflector-client'
 ;
 
+ROUTE_SOURCE
+:
+   'route-source'
+;
+
 ROUTE_TARGET
 :
    'route-target'
+;
+
+ROUTE_TYPE
+:
+   'route-type'
 ;
 
 ROUTED
@@ -6985,6 +7196,11 @@ SESSION_DISCONNECT_WARNING
    'session-disconnect-warning' -> pushMode ( M_COMMENT )
 ;
 
+SESSION_GROUP
+:
+   'session-group'
+;
+
 SESSION_ID
 :
    'session-id'
@@ -7118,6 +7334,11 @@ SINGLE_ROUTER_MODE
 SINGLE_TOPOLOGY
 :
    'single-topology'
+;
+
+SIP_UA
+:
+   'sip-ua'
 ;
 
 SITE_ID
@@ -7485,6 +7706,11 @@ SUBJECT_NAME
 SUBNET
 :
    'subnet'
+;
+
+SUBNET_MASK
+:
+   'subnet-mask'
 ;
 
 SUBNETS
@@ -8332,6 +8558,11 @@ V6
    'v6'
 ;
 
+VACANT_MESSAGE
+:
+   'vacant-message'
+;
+
 VACL
 :
    'vacl'
@@ -8415,6 +8646,11 @@ VIRTUAL_SERVICE
 VIRTUAL_TEMPLATE
 :
    'virtual-template'
+;
+
+VFI
+:
+   'vfi'
 ;
 
 VLAN
@@ -8592,6 +8828,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WATCH_LIST
+:
+   'watch-list'
 ;
 
 WAVELENGTH
@@ -9807,6 +10048,11 @@ M_Interface_GT
 M_Interface_IP
 :
    'ip' -> type ( IP ) , popMode
+;
+
+M_Interface_IPV4
+:
+   'IPv4' -> type ( IPV4 )
 ;
 
 M_Interface_POINT_TO_POINT

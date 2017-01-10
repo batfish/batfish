@@ -296,6 +296,7 @@ neighbor_rb_stanza
       | inherit_peer_policy_bgp_tail
       | filter_list_bgp_tail
       | remote_as_bgp_tail
+      | use_session_group_bgp_tail
    )
 ;
 
@@ -306,6 +307,7 @@ neighbor_group_rb_stanza
       address_family_rb_stanza
       | remote_as_bgp_tail
       | update_source_bgp_tail
+      | use_neighbor_group_bgp_tail
    )*
 ;
 
@@ -499,6 +501,7 @@ null_bgp_tail
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
+            | FAST_EXTERNAL_FALLOVER
             | GRACEFUL_RESTART
             |
             (
@@ -668,6 +671,10 @@ redistribute_connected_bgp_tail
       )
       |
       (
+      	 ROUTE_POLICY policy = variable
+      )
+      |
+      (
          METRIC metric = DEC
       )
    )* NEWLINE
@@ -744,6 +751,7 @@ router_bgp_stanza_tail
    | peer_group_assignment_rb_stanza
    | peer_group_creation_rb_stanza
    | router_id_rb_stanza
+   | session_group_rb_stanza
    | template_peer_rb_stanza
    | template_peer_policy_rb_stanza
    | template_peer_session_rb_stanza
@@ -771,6 +779,16 @@ send_community_bgp_tail
       | SEND_COMMUNITY_EBGP
       | SEND_EXTENDED_COMMUNITY_EBGP
    ) NEWLINE
+;
+
+session_group_rb_stanza
+:
+   SESSION_GROUP name = variable NEWLINE
+   (
+      description_bgp_tail
+      | remote_as_bgp_tail
+      | use_session_group_bgp_tail
+   )*
 ;
 
 shutdown_bgp_tail
@@ -872,6 +890,11 @@ update_source_bgp_tail
 use_neighbor_group_bgp_tail
 :
    USE NEIGHBOR_GROUP name = VARIABLE NEWLINE
+;
+
+use_session_group_bgp_tail
+:
+   USE SESSION_GROUP name = VARIABLE NEWLINE
 ;
 
 weight_bgp_tail

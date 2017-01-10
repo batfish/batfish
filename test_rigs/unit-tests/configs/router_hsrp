@@ -10,7 +10,14 @@ router hsrp
     track object 1 2
    !
   !
+  address-family ipv6
+   hsrp 132
+   preempt
+   priority 95
+   address global 2001:67c:13c0:132::2
+   address linklocal autoconfig legacy-compatible
  !
+!
  interface TenGigE0/0/2/2
   address-family ipv4
    hsrp 1
@@ -18,6 +25,7 @@ router hsrp
     priority 105
     address 1.2.3.4
     track object StaticOriginationRoutes
+    authentication SwiMCH15
    !
   !
  !

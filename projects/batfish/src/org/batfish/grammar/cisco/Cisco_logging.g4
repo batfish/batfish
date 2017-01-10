@@ -60,10 +60,13 @@ logging_host
 logging_null
 :
    (
-      ASDM
+   	  ALARM
+   	  | ARCHIVE
+      | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
       | DEBUG_TRACE
+      | DISCRIMINATOR
       | ESM
       | EVENT
       | EVENTS
@@ -71,9 +74,11 @@ logging_null
       | HISTORY
       | IP_ADDRESS
       | IP
+      | IPV6_ADDRESS
       | LEVEL
       | LINECARD
       | LOGFILE
+      | MESSAGE_COUNTER
       | MONITOR
       | PERMIT_HOSTDOWN
       | QUEUE_LIMIT
@@ -82,9 +87,21 @@ logging_null
       | SERVER
       | SERVER_ARP
       | SNMP_AUTHFAIL
+      | SUPPRESS
       | SYNCHRONOUS
       | TIMESTAMP
       | VRF
+   ) ~NEWLINE* NEWLINE logging_null_inner*
+;
+
+logging_null_inner
+:
+   (
+   	  ARCHIVE_LENGTH
+	  | ALARM
+	  | ALL_OF_ROUTER
+	  | DEVICE
+	  | FREQUENCY
    ) ~NEWLINE* NEWLINE
 ;
 

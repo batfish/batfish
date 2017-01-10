@@ -19,6 +19,7 @@ no vlan dot1Q tag native
 vlan 1054 name fuiwehguiowhgoiuw
  name SysEng.Fusion
  backupcrf enable
+ media fddi
  parent 1005
  private-vlan community
  remote-span
