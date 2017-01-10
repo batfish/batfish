@@ -3,7 +3,7 @@
 
 Batfish is a network configuration analysis tool that can find bugs and guarantee the correctness of (planned or current) network configurations. It enables network engineers to rapidly and safely evolve their network, without fear of outages or security breaches.
 
-**Batfish does not require access to network devices.** It only needs off line configuration files, e.g., pulled from RANCID or template authoring tools.
+**Batfish does not require access to network devices.** It only needs offline configuration files, e.g., pulled from RANCID or template authoring tools.
 
 The developers of Batfish include researchers from Intentionet, University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org] (http://www.batfish.org) for technical information on how it works.
 
