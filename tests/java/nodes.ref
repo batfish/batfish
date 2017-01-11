@@ -4,11 +4,9 @@
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
       "nodes" : {
         "as1border1" : {
-          "@id" : 1,
           "name" : "as1border1",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 2,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -19,7 +17,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 3,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -30,7 +27,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 4,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -46,7 +42,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 5,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -58,19 +53,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 6,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 1,
               "prefix" : "1.0.1.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 7,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -86,14 +79,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 1,
               "prefix" : "10.12.11.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 8,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -105,12 +96,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 6,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 1,
               "prefix" : "1.1.1.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -119,7 +109,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 9,
               "name" : "101",
               "lines" : [
                 {
@@ -147,7 +136,6 @@
               ]
             },
             "102" : {
-              "@id" : 10,
               "name" : "102",
               "lines" : [
                 {
@@ -175,7 +163,6 @@
               ]
             },
             "103" : {
-              "@id" : 11,
               "name" : "103",
               "lines" : [
                 {
@@ -205,13 +192,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 12,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 13,
               "name" : "101",
               "lines" : [
                 {
@@ -227,7 +212,6 @@
               ]
             },
             "102" : {
-              "@id" : 14,
               "name" : "102",
               "lines" : [
                 {
@@ -243,7 +227,6 @@
               ]
             },
             "103" : {
-              "@id" : 15,
               "name" : "103",
               "lines" : [
                 {
@@ -259,7 +242,6 @@
               ]
             },
             "default_list" : {
-              "@id" : 16,
               "name" : "default_list",
               "lines" : [
                 {
@@ -270,7 +252,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 17,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -286,11 +267,9 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 18,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 19,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -308,7 +287,6 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 20,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -450,7 +428,6 @@
               ]
             },
             "as1_to_as3" : {
-              "@id" : 21,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -548,7 +525,6 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 22,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -581,7 +557,6 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 23,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -614,7 +589,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 24,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -666,7 +640,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~" : {
-              "@id" : 25,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
               "statements" : [
                 {
@@ -692,7 +665,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~" : {
-              "@id" : 26,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
               "statements" : [
                 {
@@ -727,7 +699,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~" : {
-              "@id" : 27,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
               "statements" : [
                 {
@@ -753,7 +724,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~" : {
-              "@id" : 28,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
               "statements" : [
                 {
@@ -779,7 +749,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 29,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -815,35 +784,28 @@
               "hostname" : "as1border1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 30,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 31,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 32,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 33,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 34,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 35,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 36,
                   "name" : "vty4"
                 }
               },
@@ -887,12 +849,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 37,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "3.2.2.2/32" : {
-                    "@id" : 38,
                     "name" : "3.2.2.2/32",
                     "address" : "3.2.2.2",
                     "advertiseExternal" : false,
@@ -906,7 +866,6 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
                     "group" : "bad-ebgp",
                     "localAs" : 1,
-                    "owner" : 1,
                     "remoteAs" : 666,
                     "remotePrefix" : "3.2.2.2/32",
                     "routeReflectorClient" : false,
@@ -914,7 +873,6 @@
                     "vrf" : "default"
                   },
                   "5.6.7.8/32" : {
-                    "@id" : 39,
                     "name" : "5.6.7.8/32",
                     "address" : "5.6.7.8",
                     "advertiseExternal" : false,
@@ -928,7 +886,6 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
                     "group" : "xanadu",
                     "localAs" : 1,
-                    "owner" : 1,
                     "remoteAs" : 555,
                     "remotePrefix" : "5.6.7.8/32",
                     "routeReflectorClient" : false,
@@ -936,7 +893,6 @@
                     "vrf" : "default"
                   },
                   "1.10.1.1/32" : {
-                    "@id" : 40,
                     "name" : "1.10.1.1/32",
                     "address" : "1.10.1.1",
                     "advertiseExternal" : false,
@@ -951,7 +907,6 @@
                     "group" : "as1",
                     "localAs" : 1,
                     "localIp" : "1.1.1.1",
-                    "owner" : 1,
                     "remoteAs" : 1,
                     "remotePrefix" : "1.10.1.1/32",
                     "routeReflectorClient" : false,
@@ -959,7 +914,6 @@
                     "vrf" : "default"
                   },
                   "10.12.11.2/32" : {
-                    "@id" : 41,
                     "name" : "10.12.11.2/32",
                     "address" : "10.12.11.2",
                     "advertiseExternal" : false,
@@ -975,7 +929,6 @@
                     "importPolicy" : "as2_to_as1",
                     "localAs" : 1,
                     "localIp" : "10.12.11.1",
-                    "owner" : 1,
                     "remoteAs" : 2,
                     "remotePrefix" : "10.12.11.2/32",
                     "routeReflectorClient" : false,
@@ -985,19 +938,18 @@
                 },
                 "routerId" : "1.1.1.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 5,
-                "FastEthernet0/1" : 7,
-                "Loopback0" : 8
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 6,
                     "name" : 1,
                     "interfaces" : [
-                      5,
-                      8
+                      "FastEthernet0/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -1009,11 +961,9 @@
           }
         },
         "as1border2" : {
-          "@id" : 42,
           "name" : "as1border2",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 43,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -1024,7 +974,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 44,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -1035,7 +984,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 45,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -1046,7 +994,6 @@
               "invertMatch" : false
             },
             "as4_community" : {
-              "@id" : 46,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -1062,7 +1009,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 47,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -1074,19 +1020,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 48,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 42,
               "prefix" : "1.0.2.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 49,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -1102,14 +1046,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 42,
               "prefix" : "10.13.22.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/2" : {
-              "@id" : 50,
               "name" : "FastEthernet0/2",
               "accessVlan" : 0,
               "active" : true,
@@ -1125,14 +1067,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 42,
               "prefix" : "10.14.22.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 51,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -1144,12 +1084,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 48,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 42,
               "prefix" : "1.2.2.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1158,7 +1097,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 52,
               "name" : "101",
               "lines" : [
                 {
@@ -1186,7 +1124,6 @@
               ]
             },
             "102" : {
-              "@id" : 53,
               "name" : "102",
               "lines" : [
                 {
@@ -1214,7 +1151,6 @@
               ]
             },
             "103" : {
-              "@id" : 54,
               "name" : "103",
               "lines" : [
                 {
@@ -1244,13 +1180,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 55,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 56,
               "name" : "101",
               "lines" : [
                 {
@@ -1266,7 +1200,6 @@
               ]
             },
             "102" : {
-              "@id" : 57,
               "name" : "102",
               "lines" : [
                 {
@@ -1282,7 +1215,6 @@
               ]
             },
             "103" : {
-              "@id" : 58,
               "name" : "103",
               "lines" : [
                 {
@@ -1298,7 +1230,6 @@
               ]
             },
             "as4-prefixes" : {
-              "@id" : 59,
               "name" : "as4-prefixes",
               "lines" : [
                 {
@@ -1309,7 +1240,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 60,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -1325,11 +1255,9 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 61,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 62,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -1347,7 +1275,6 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 63,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -1445,7 +1372,6 @@
               ]
             },
             "as1_to_as3" : {
-              "@id" : 64,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -1543,7 +1469,6 @@
               ]
             },
             "as1_to_as4" : {
-              "@id" : 65,
               "name" : "as1_to_as4",
               "statements" : [
                 {
@@ -1582,7 +1507,6 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 66,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -1615,7 +1539,6 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 67,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -1648,7 +1571,6 @@
               ]
             },
             "as4_to_as1" : {
-              "@id" : 68,
               "name" : "as4_to_as1",
               "statements" : [
                 {
@@ -1696,7 +1618,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 69,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -1748,7 +1669,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~" : {
-              "@id" : 70,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
               "statements" : [
                 {
@@ -1774,7 +1694,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.13.22.3~" : {
-              "@id" : 71,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.13.22.3~",
               "statements" : [
                 {
@@ -1809,7 +1728,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~" : {
-              "@id" : 72,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
               "statements" : [
                 {
@@ -1844,7 +1762,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 73,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -1880,35 +1797,28 @@
               "hostname" : "as1border2",
               "lines" : {
                 "aux0" : {
-                  "@id" : 74,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 75,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 76,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 77,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 78,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 79,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 80,
                   "name" : "vty4"
                 }
               },
@@ -1952,12 +1862,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 81,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "1.10.1.1/32" : {
-                    "@id" : 82,
                     "name" : "1.10.1.1/32",
                     "address" : "1.10.1.1",
                     "advertiseExternal" : false,
@@ -1972,7 +1880,6 @@
                     "group" : "as1",
                     "localAs" : 1,
                     "localIp" : "1.2.2.2",
-                    "owner" : 42,
                     "remoteAs" : 1,
                     "remotePrefix" : "1.10.1.1/32",
                     "routeReflectorClient" : false,
@@ -1980,7 +1887,6 @@
                     "vrf" : "default"
                   },
                   "10.14.22.4/32" : {
-                    "@id" : 83,
                     "name" : "10.14.22.4/32",
                     "address" : "10.14.22.4",
                     "advertiseExternal" : false,
@@ -1996,7 +1902,6 @@
                     "importPolicy" : "as4_to_as1",
                     "localAs" : 1,
                     "localIp" : "10.14.22.1",
-                    "owner" : 42,
                     "remoteAs" : 4,
                     "remotePrefix" : "10.14.22.4/32",
                     "routeReflectorClient" : false,
@@ -2004,7 +1909,6 @@
                     "vrf" : "default"
                   },
                   "10.13.22.3/32" : {
-                    "@id" : 84,
                     "name" : "10.13.22.3/32",
                     "address" : "10.13.22.3",
                     "advertiseExternal" : false,
@@ -2020,7 +1924,6 @@
                     "importPolicy" : "as3_to_as1",
                     "localAs" : 1,
                     "localIp" : "10.13.22.1",
-                    "owner" : 42,
                     "remoteAs" : 3,
                     "remotePrefix" : "10.13.22.3/32",
                     "routeReflectorClient" : false,
@@ -2030,20 +1933,19 @@
                 },
                 "routerId" : "1.2.2.2"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 47,
-                "FastEthernet0/1" : 49,
-                "FastEthernet0/2" : 50,
-                "Loopback0" : 51
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet0/2",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 48,
                     "name" : 1,
                     "interfaces" : [
-                      47,
-                      51
+                      "FastEthernet0/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -2055,14 +1957,12 @@
           }
         },
         "as1core1" : {
-          "@id" : 85,
           "name" : "as1core1",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 86,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -2074,19 +1974,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 87,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 85,
               "prefix" : "1.0.1.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 88,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -2098,19 +1996,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 87,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 85,
               "prefix" : "1.0.2.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 89,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -2122,12 +2018,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 87,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 85,
               "prefix" : "1.10.1.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2136,23 +2031,19 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 90,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 91,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 92,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 93,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -2204,7 +2095,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
-              "@id" : 94,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
               "statements" : [
                 {
@@ -2230,7 +2120,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~" : {
-              "@id" : 95,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~",
               "statements" : [
                 {
@@ -2256,7 +2145,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 96,
               "name" : "~OSPF_EXPORT_POLICY:default~"
             }
           },
@@ -2265,35 +2153,28 @@
               "hostname" : "as1core1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 97,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 98,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 99,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 100,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 101,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 102,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 103,
                   "name" : "vty4"
                 }
               },
@@ -2337,12 +2218,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 104,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "1.2.2.2/32" : {
-                    "@id" : 105,
                     "name" : "1.2.2.2/32",
                     "address" : "1.2.2.2",
                     "advertiseExternal" : false,
@@ -2357,7 +2236,6 @@
                     "group" : "as1",
                     "localAs" : 1,
                     "localIp" : "1.10.1.1",
-                    "owner" : 85,
                     "remoteAs" : 1,
                     "remotePrefix" : "1.2.2.2/32",
                     "routeReflectorClient" : true,
@@ -2365,7 +2243,6 @@
                     "vrf" : "default"
                   },
                   "1.1.1.1/32" : {
-                    "@id" : 106,
                     "name" : "1.1.1.1/32",
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
@@ -2380,7 +2257,6 @@
                     "group" : "as1",
                     "localAs" : 1,
                     "localIp" : "1.10.1.1",
-                    "owner" : 85,
                     "remoteAs" : 1,
                     "remotePrefix" : "1.1.1.1/32",
                     "routeReflectorClient" : true,
@@ -2390,20 +2266,19 @@
                 },
                 "routerId" : "1.10.1.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 86,
-                "FastEthernet0/1" : 88,
-                "Loopback0" : 89
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 87,
                     "name" : 1,
                     "interfaces" : [
-                      86,
-                      88,
-                      89
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -2415,11 +2290,9 @@
           }
         },
         "as2border1" : {
-          "@id" : 107,
           "name" : "as2border1",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 108,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -2430,7 +2303,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 109,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -2441,7 +2313,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 110,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -2457,7 +2328,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 111,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -2465,7 +2335,7 @@
                 "10.12.11.2/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 112,
+              "incomingFilter" : "OUTSIDE_TO_INSIDE",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2474,15 +2344,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "outgoingFilter" : 113,
-              "owner" : 107,
+              "outgoingFilter" : "INSIDE_TO_AS1",
               "prefix" : "10.12.11.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 114,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -2494,19 +2362,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 115,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 107,
               "prefix" : "2.12.11.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 116,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -2518,19 +2384,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 115,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 107,
               "prefix" : "2.12.12.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 117,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -2542,12 +2406,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 115,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 107,
               "prefix" : "2.1.1.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2556,7 +2419,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 118,
               "name" : "101",
               "lines" : [
                 {
@@ -2584,7 +2446,6 @@
               ]
             },
             "103" : {
-              "@id" : 119,
               "name" : "103",
               "lines" : [
                 {
@@ -2612,7 +2473,6 @@
               ]
             },
             "INSIDE_TO_AS1" : {
-              "@id" : 113,
               "name" : "INSIDE_TO_AS1",
               "lines" : [
                 {
@@ -2640,7 +2500,6 @@
               ]
             },
             "OUTSIDE_TO_INSIDE" : {
-              "@id" : 112,
               "name" : "OUTSIDE_TO_INSIDE",
               "lines" : [
                 {
@@ -2681,13 +2540,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 120,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 121,
               "name" : "101",
               "lines" : [
                 {
@@ -2703,7 +2560,6 @@
               ]
             },
             "103" : {
-              "@id" : 122,
               "name" : "103",
               "lines" : [
                 {
@@ -2719,7 +2575,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 123,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -2735,7 +2590,6 @@
               ]
             },
             "outbound_routes" : {
-              "@id" : 124,
               "name" : "outbound_routes",
               "lines" : [
                 {
@@ -2746,7 +2600,6 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 125,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -2757,11 +2610,9 @@
               ]
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 126,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             },
             "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
-              "@id" : 127,
               "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
               "lines" : [
                 {
@@ -2774,7 +2625,6 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 128,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -2825,7 +2675,6 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 129,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -2923,7 +2772,6 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 130,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -3021,7 +2869,6 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 131,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -3072,7 +2919,6 @@
               ]
             },
             "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~" : {
-              "@id" : 132,
               "name" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
               "statements" : [
                 {
@@ -3099,7 +2945,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 133,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -3171,7 +3016,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~" : {
-              "@id" : 134,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
               "statements" : [
                 {
@@ -3206,7 +3050,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~" : {
-              "@id" : 135,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
               "statements" : [
                 {
@@ -3232,7 +3075,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~" : {
-              "@id" : 136,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
               "statements" : [
                 {
@@ -3258,7 +3100,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 137,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -3302,35 +3143,28 @@
               "hostname" : "as2border1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 138,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 139,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 140,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 141,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 142,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 143,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 144,
                   "name" : "vty4"
                 }
               },
@@ -3374,7 +3208,6 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 145,
               "name" : "default",
               "aggregateRoutes" : [
                 {
@@ -3388,7 +3221,6 @@
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.2.2/32" : {
-                    "@id" : 146,
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
@@ -3403,7 +3235,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.1.1",
-                    "owner" : 107,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.2/32",
                     "routeReflectorClient" : false,
@@ -3411,7 +3242,6 @@
                     "vrf" : "default"
                   },
                   "10.12.11.1/32" : {
-                    "@id" : 147,
                     "name" : "10.12.11.1/32",
                     "address" : "10.12.11.1",
                     "advertiseExternal" : false,
@@ -3427,7 +3257,6 @@
                     "importPolicy" : "as1_to_as2",
                     "localAs" : 2,
                     "localIp" : "10.12.11.2",
-                    "owner" : 107,
                     "remoteAs" : 1,
                     "remotePrefix" : "10.12.11.1/32",
                     "routeReflectorClient" : false,
@@ -3435,7 +3264,6 @@
                     "vrf" : "default"
                   },
                   "2.1.2.1/32" : {
-                    "@id" : 148,
                     "name" : "2.1.2.1/32",
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
@@ -3450,7 +3278,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.1.1",
-                    "owner" : 107,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
@@ -3460,21 +3287,20 @@
                 },
                 "routerId" : "2.1.1.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 111,
-                "FastEthernet0/1" : 114,
-                "FastEthernet1/0" : 116,
-                "Loopback0" : 117
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 115,
                     "name" : 1,
                     "interfaces" : [
-                      114,
-                      116,
-                      117
+                      "FastEthernet0/1",
+                      "FastEthernet1/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -3486,11 +3312,9 @@
           }
         },
         "as2border2" : {
-          "@id" : 149,
           "name" : "as2border2",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 150,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3501,7 +3325,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 151,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3512,7 +3335,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 152,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3528,7 +3350,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 153,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -3536,7 +3357,7 @@
                 "10.23.21.2/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 154,
+              "incomingFilter" : "OUTSIDE_TO_INSIDE",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -3545,15 +3366,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "outgoingFilter" : 155,
-              "owner" : 149,
+              "outgoingFilter" : "INSIDE_TO_AS3",
               "prefix" : "10.23.21.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 156,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -3565,19 +3384,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 157,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 149,
               "prefix" : "2.12.21.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 158,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -3589,19 +3406,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 157,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 149,
               "prefix" : "2.12.22.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 159,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -3613,12 +3428,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 157,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 149,
               "prefix" : "2.1.1.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3627,7 +3441,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 160,
               "name" : "101",
               "lines" : [
                 {
@@ -3655,7 +3468,6 @@
               ]
             },
             "103" : {
-              "@id" : 161,
               "name" : "103",
               "lines" : [
                 {
@@ -3683,7 +3495,6 @@
               ]
             },
             "INSIDE_TO_AS3" : {
-              "@id" : 155,
               "name" : "INSIDE_TO_AS3",
               "lines" : [
                 {
@@ -3711,7 +3522,6 @@
               ]
             },
             "OUTSIDE_TO_INSIDE" : {
-              "@id" : 154,
               "name" : "OUTSIDE_TO_INSIDE",
               "lines" : [
                 {
@@ -3741,13 +3551,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 162,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 163,
               "name" : "101",
               "lines" : [
                 {
@@ -3763,7 +3571,6 @@
               ]
             },
             "103" : {
-              "@id" : 164,
               "name" : "103",
               "lines" : [
                 {
@@ -3779,7 +3586,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 165,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -3795,7 +3601,6 @@
               ]
             },
             "outbound_routes" : {
-              "@id" : 166,
               "name" : "outbound_routes",
               "lines" : [
                 {
@@ -3806,7 +3611,6 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 167,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -3817,11 +3621,9 @@
               ]
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 168,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             },
             "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
-              "@id" : 169,
               "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~",
               "lines" : [
                 {
@@ -3834,7 +3636,6 @@
           },
           "routingPolicies" : {
             "as1_to_as2" : {
-              "@id" : 170,
               "name" : "as1_to_as2",
               "statements" : [
                 {
@@ -3885,7 +3686,6 @@
               ]
             },
             "as2_to_as1" : {
-              "@id" : 171,
               "name" : "as2_to_as1",
               "statements" : [
                 {
@@ -3983,7 +3783,6 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 172,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -4081,7 +3880,6 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 173,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -4132,7 +3930,6 @@
               ]
             },
             "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~" : {
-              "@id" : 174,
               "name" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
               "statements" : [
                 {
@@ -4159,7 +3956,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 175,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -4231,7 +4027,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.23.21.3~" : {
-              "@id" : 176,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.23.21.3~",
               "statements" : [
                 {
@@ -4266,7 +4061,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~" : {
-              "@id" : 177,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
               "statements" : [
                 {
@@ -4292,7 +4086,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~" : {
-              "@id" : 178,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
               "statements" : [
                 {
@@ -4318,7 +4111,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 179,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -4354,35 +4146,28 @@
               "hostname" : "as2border2",
               "lines" : {
                 "aux0" : {
-                  "@id" : 180,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 181,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 182,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 183,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 184,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 185,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 186,
                   "name" : "vty4"
                 }
               },
@@ -4426,7 +4211,6 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 187,
               "name" : "default",
               "aggregateRoutes" : [
                 {
@@ -4440,7 +4224,6 @@
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.2.2/32" : {
-                    "@id" : 188,
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
@@ -4455,7 +4238,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.1.2",
-                    "owner" : 149,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.2/32",
                     "routeReflectorClient" : false,
@@ -4463,7 +4245,6 @@
                     "vrf" : "default"
                   },
                   "10.23.21.3/32" : {
-                    "@id" : 189,
                     "name" : "10.23.21.3/32",
                     "address" : "10.23.21.3",
                     "advertiseExternal" : false,
@@ -4479,7 +4260,6 @@
                     "importPolicy" : "as3_to_as2",
                     "localAs" : 2,
                     "localIp" : "10.23.21.2",
-                    "owner" : 149,
                     "remoteAs" : 3,
                     "remotePrefix" : "10.23.21.3/32",
                     "routeReflectorClient" : false,
@@ -4487,7 +4267,6 @@
                     "vrf" : "default"
                   },
                   "2.1.2.1/32" : {
-                    "@id" : 190,
                     "name" : "2.1.2.1/32",
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
@@ -4502,7 +4281,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.1.2",
-                    "owner" : 149,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
@@ -4512,21 +4290,20 @@
                 },
                 "routerId" : "2.1.1.2"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 153,
-                "FastEthernet0/1" : 156,
-                "FastEthernet1/0" : 158,
-                "Loopback0" : 159
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 157,
                     "name" : 1,
                     "interfaces" : [
-                      156,
-                      158,
-                      159
+                      "FastEthernet0/1",
+                      "FastEthernet1/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -4538,14 +4315,12 @@
           }
         },
         "as2core1" : {
-          "@id" : 191,
           "name" : "as2core1",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 192,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -4557,19 +4332,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 193,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 191,
               "prefix" : "2.12.11.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 194,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -4581,19 +4354,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 193,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 191,
               "prefix" : "2.12.21.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 195,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -4601,24 +4372,22 @@
                 "2.23.12.2/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 196,
+              "incomingFilter" : "blocktelnet",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 193,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 191,
               "prefix" : "2.23.12.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet2/0" : {
-              "@id" : 197,
               "name" : "FastEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
@@ -4626,24 +4395,22 @@
                 "2.23.11.2/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 196,
+              "incomingFilter" : "blocktelnet",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 193,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 191,
               "prefix" : "2.23.11.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 198,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -4655,12 +4422,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 193,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 191,
               "prefix" : "2.1.2.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4669,7 +4435,6 @@
           },
           "ipAccessLists" : {
             "blocktelnet" : {
-              "@id" : 196,
               "name" : "blocktelnet",
               "lines" : [
                 {
@@ -4705,23 +4470,19 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 199,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 200,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 201,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 202,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -4773,7 +4534,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~" : {
-              "@id" : 203,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~",
               "statements" : [
                 {
@@ -4799,7 +4559,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~" : {
-              "@id" : 204,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
               "statements" : [
                 {
@@ -4825,7 +4584,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~" : {
-              "@id" : 205,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~",
               "statements" : [
                 {
@@ -4851,7 +4609,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~" : {
-              "@id" : 206,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
               "statements" : [
                 {
@@ -4877,7 +4634,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 207,
               "name" : "~OSPF_EXPORT_POLICY:default~"
             }
           },
@@ -4886,35 +4642,28 @@
               "hostname" : "as2core1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 208,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 209,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 210,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 211,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 212,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 213,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 214,
                   "name" : "vty4"
                 }
               },
@@ -4958,12 +4707,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 215,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.1.2/32" : {
-                    "@id" : 216,
                     "name" : "2.1.1.2/32",
                     "address" : "2.1.1.2",
                     "advertiseExternal" : false,
@@ -4978,7 +4725,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.1",
-                    "owner" : 191,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.1.2/32",
                     "routeReflectorClient" : true,
@@ -4986,7 +4732,6 @@
                     "vrf" : "default"
                   },
                   "2.1.3.2/32" : {
-                    "@id" : 217,
                     "name" : "2.1.3.2/32",
                     "address" : "2.1.3.2",
                     "advertiseExternal" : false,
@@ -5001,7 +4746,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.1",
-                    "owner" : 191,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.2/32",
                     "routeReflectorClient" : true,
@@ -5009,7 +4753,6 @@
                     "vrf" : "default"
                   },
                   "2.1.1.1/32" : {
-                    "@id" : 218,
                     "name" : "2.1.1.1/32",
                     "address" : "2.1.1.1",
                     "advertiseExternal" : false,
@@ -5024,7 +4767,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.1",
-                    "owner" : 191,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.1.1/32",
                     "routeReflectorClient" : true,
@@ -5032,7 +4774,6 @@
                     "vrf" : "default"
                   },
                   "2.1.3.1/32" : {
-                    "@id" : 219,
                     "name" : "2.1.3.1/32",
                     "address" : "2.1.3.1",
                     "advertiseExternal" : false,
@@ -5047,7 +4788,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.1",
-                    "owner" : 191,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.1/32",
                     "routeReflectorClient" : true,
@@ -5057,24 +4797,23 @@
                 },
                 "routerId" : "2.1.2.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 192,
-                "FastEthernet0/1" : 194,
-                "FastEthernet1/0" : 195,
-                "FastEthernet2/0" : 197,
-                "Loopback0" : 198
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "FastEthernet2/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 193,
                     "name" : 1,
                     "interfaces" : [
-                      192,
-                      194,
-                      195,
-                      197,
-                      198
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "FastEthernet1/0",
+                      "FastEthernet2/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -5086,14 +4825,12 @@
           }
         },
         "as2core2" : {
-          "@id" : 220,
           "name" : "as2core2",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 221,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -5105,19 +4842,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1300,
               "nativeVlan" : 1,
-              "ospfArea" : 222,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 220,
               "prefix" : "2.12.22.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 223,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -5129,19 +4864,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1100,
               "nativeVlan" : 1,
-              "ospfArea" : 222,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 220,
               "prefix" : "2.12.12.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 224,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -5153,19 +4886,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 222,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 220,
               "prefix" : "2.23.21.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet2/0" : {
-              "@id" : 225,
               "name" : "FastEthernet2/0",
               "accessVlan" : 0,
               "active" : true,
@@ -5177,19 +4908,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1200,
               "nativeVlan" : 1,
-              "ospfArea" : 222,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 220,
               "prefix" : "2.23.22.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 226,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -5201,12 +4930,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 222,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 220,
               "prefix" : "2.1.2.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5215,23 +4943,19 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 227,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 228,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 229,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 230,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -5283,7 +5007,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~" : {
-              "@id" : 231,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.1~",
               "statements" : [
                 {
@@ -5309,7 +5032,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~" : {
-              "@id" : 232,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
               "statements" : [
                 {
@@ -5335,7 +5057,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~" : {
-              "@id" : 233,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~",
               "statements" : [
                 {
@@ -5361,7 +5082,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~" : {
-              "@id" : 234,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
               "statements" : [
                 {
@@ -5387,7 +5107,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 235,
               "name" : "~OSPF_EXPORT_POLICY:default~"
             }
           },
@@ -5396,35 +5115,28 @@
               "hostname" : "as2core2",
               "lines" : {
                 "aux0" : {
-                  "@id" : 236,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 237,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 238,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 239,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 240,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 241,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 242,
                   "name" : "vty4"
                 }
               },
@@ -5468,12 +5180,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 243,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.1.2/32" : {
-                    "@id" : 244,
                     "name" : "2.1.1.2/32",
                     "address" : "2.1.1.2",
                     "advertiseExternal" : false,
@@ -5488,7 +5198,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.2",
-                    "owner" : 220,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.1.2/32",
                     "routeReflectorClient" : true,
@@ -5496,7 +5205,6 @@
                     "vrf" : "default"
                   },
                   "2.1.3.2/32" : {
-                    "@id" : 245,
                     "name" : "2.1.3.2/32",
                     "address" : "2.1.3.2",
                     "advertiseExternal" : false,
@@ -5511,7 +5219,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.2",
-                    "owner" : 220,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.2/32",
                     "routeReflectorClient" : true,
@@ -5519,7 +5226,6 @@
                     "vrf" : "default"
                   },
                   "2.1.1.1/32" : {
-                    "@id" : 246,
                     "name" : "2.1.1.1/32",
                     "address" : "2.1.1.1",
                     "advertiseExternal" : false,
@@ -5534,7 +5240,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.2",
-                    "owner" : 220,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.1.1/32",
                     "routeReflectorClient" : true,
@@ -5542,7 +5247,6 @@
                     "vrf" : "default"
                   },
                   "2.1.3.1/32" : {
-                    "@id" : 247,
                     "name" : "2.1.3.1/32",
                     "address" : "2.1.3.1",
                     "advertiseExternal" : false,
@@ -5557,7 +5261,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.2.2",
-                    "owner" : 220,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.1/32",
                     "routeReflectorClient" : true,
@@ -5567,24 +5270,23 @@
                 },
                 "routerId" : "2.1.2.2"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 221,
-                "FastEthernet0/1" : 223,
-                "FastEthernet1/0" : 224,
-                "FastEthernet2/0" : 225,
-                "Loopback0" : 226
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "FastEthernet2/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 222,
                     "name" : 1,
                     "interfaces" : [
-                      221,
-                      223,
-                      224,
-                      225,
-                      226
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "FastEthernet1/0",
+                      "FastEthernet2/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -5596,11 +5298,9 @@
           }
         },
         "as2dept1" : {
-          "@id" : 248,
           "name" : "as2dept1",
           "communityLists" : {
             "as2_community" : {
-              "@id" : 249,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -5616,7 +5316,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 250,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -5632,14 +5331,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 248,
               "prefix" : "2.34.101.4/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 251,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -5655,14 +5352,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 248,
               "prefix" : "2.34.201.4/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 252,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -5670,7 +5365,7 @@
                 "2.128.0.1/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 253,
+              "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5679,14 +5374,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 248,
               "prefix" : "2.128.0.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/1" : {
-              "@id" : 254,
               "name" : "FastEthernet1/1",
               "accessVlan" : 0,
               "active" : true,
@@ -5694,7 +5387,7 @@
                 "2.128.1.1/24"
               ],
               "bandwidth" : 1.0E8,
-              "incomingFilter" : 253,
+              "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5703,14 +5396,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 248,
               "prefix" : "2.128.1.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 255,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -5726,7 +5417,6 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 248,
               "prefix" : "2.1.1.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5735,7 +5425,6 @@
           },
           "ipAccessLists" : {
             "102" : {
-              "@id" : 256,
               "name" : "102",
               "lines" : [
                 {
@@ -5763,7 +5452,6 @@
               ]
             },
             "105" : {
-              "@id" : 257,
               "name" : "105",
               "lines" : [
                 {
@@ -5813,7 +5501,6 @@
               ]
             },
             "RESTRICT_HOST_TRAFFIC_IN" : {
-              "@id" : 253,
               "name" : "RESTRICT_HOST_TRAFFIC_IN",
               "lines" : [
                 {
@@ -5855,7 +5542,6 @@
               ]
             },
             "RESTRICT_HOST_TRAFFIC_OUT" : {
-              "@id" : 258,
               "name" : "RESTRICT_HOST_TRAFFIC_OUT",
               "lines" : [
                 {
@@ -5896,13 +5582,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 259,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "102" : {
-              "@id" : 260,
               "name" : "102",
               "lines" : [
                 {
@@ -5918,11 +5602,9 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 261,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 262,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -5940,7 +5622,6 @@
           },
           "routingPolicies" : {
             "as2_to_dept" : {
-              "@id" : 263,
               "name" : "as2_to_dept",
               "statements" : [
                 {
@@ -5973,7 +5654,6 @@
               ]
             },
             "dept_to_as2" : {
-              "@id" : 264,
               "name" : "dept_to_as2",
               "statements" : [
                 {
@@ -6027,7 +5707,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 265,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6079,7 +5758,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.34.101.3~" : {
-              "@id" : 266,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.34.101.3~",
               "statements" : [
                 {
@@ -6114,7 +5792,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.34.201.3~" : {
-              "@id" : 267,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.34.201.3~",
               "statements" : [
                 {
@@ -6154,35 +5831,28 @@
               "hostname" : "as2dept1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 268,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 269,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 270,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 271,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 272,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 273,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 274,
                   "name" : "vty4"
                 }
               },
@@ -6226,12 +5896,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 275,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "2.34.101.3/32" : {
-                    "@id" : 276,
                     "name" : "2.34.101.3/32",
                     "address" : "2.34.101.3",
                     "advertiseExternal" : false,
@@ -6247,7 +5915,6 @@
                     "importPolicy" : "as2_to_dept",
                     "localAs" : 65001,
                     "localIp" : "2.34.101.4",
-                    "owner" : 248,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.34.101.3/32",
                     "routeReflectorClient" : false,
@@ -6255,7 +5922,6 @@
                     "vrf" : "default"
                   },
                   "2.34.201.3/32" : {
-                    "@id" : 277,
                     "name" : "2.34.201.3/32",
                     "address" : "2.34.201.3",
                     "advertiseExternal" : false,
@@ -6271,7 +5937,6 @@
                     "importPolicy" : "as2_to_dept",
                     "localAs" : 65001,
                     "localIp" : "2.34.201.4",
-                    "owner" : 248,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.34.201.3/32",
                     "routeReflectorClient" : false,
@@ -6281,22 +5946,20 @@
                 },
                 "routerId" : "2.1.4.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 250,
-                "FastEthernet0/1" : 251,
-                "FastEthernet1/0" : 252,
-                "FastEthernet1/1" : 254,
-                "Loopback0" : 255
-              }
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "FastEthernet1/1",
+                "Loopback0"
+              ]
             }
           }
         },
         "as2dist1" : {
-          "@id" : 278,
           "name" : "as2dist1",
           "communityLists" : {
             "dept_community" : {
-              "@id" : 279,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -6312,7 +5975,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 280,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -6324,19 +5986,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 281,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 278,
               "prefix" : "2.23.21.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 282,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -6348,19 +6008,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 281,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 278,
               "prefix" : "2.23.11.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 283,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -6376,14 +6034,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 278,
               "prefix" : "2.34.101.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 284,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -6395,12 +6051,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 281,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 278,
               "prefix" : "2.1.3.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6409,7 +6064,6 @@
           },
           "ipAccessLists" : {
             "102" : {
-              "@id" : 285,
               "name" : "102",
               "lines" : [
                 {
@@ -6426,7 +6080,6 @@
               ]
             },
             "105" : {
-              "@id" : 286,
               "name" : "105",
               "lines" : [
                 {
@@ -6478,13 +6131,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 287,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "105" : {
-              "@id" : 288,
               "name" : "105",
               "lines" : [
                 {
@@ -6510,17 +6161,14 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 289,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 290,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "as2dist_to_dept" : {
-              "@id" : 291,
               "name" : "as2dist_to_dept",
               "statements" : [
                 {
@@ -6574,7 +6222,6 @@
               ]
             },
             "dept_to_as2dist" : {
-              "@id" : 292,
               "name" : "dept_to_as2dist",
               "statements" : [
                 {
@@ -6607,7 +6254,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 293,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6659,7 +6305,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~" : {
-              "@id" : 294,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
               "statements" : [
                 {
@@ -6685,7 +6330,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~" : {
-              "@id" : 295,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
               "statements" : [
                 {
@@ -6711,7 +6355,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.34.101.4~" : {
-              "@id" : 296,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.34.101.4~",
               "statements" : [
                 {
@@ -6746,7 +6389,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 297,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6782,35 +6424,28 @@
               "hostname" : "as2dist1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 298,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 299,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 300,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 301,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 302,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 303,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 304,
                   "name" : "vty4"
                 }
               },
@@ -6854,12 +6489,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 305,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.2.2/32" : {
-                    "@id" : 306,
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
@@ -6874,7 +6507,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.3.1",
-                    "owner" : 278,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.2/32",
                     "routeReflectorClient" : false,
@@ -6882,7 +6514,6 @@
                     "vrf" : "default"
                   },
                   "2.34.101.4/32" : {
-                    "@id" : 307,
                     "name" : "2.34.101.4/32",
                     "address" : "2.34.101.4",
                     "advertiseExternal" : false,
@@ -6898,7 +6529,6 @@
                     "importPolicy" : "dept_to_as2dist",
                     "localAs" : 2,
                     "localIp" : "2.34.101.3",
-                    "owner" : 278,
                     "remoteAs" : 65001,
                     "remotePrefix" : "2.34.101.4/32",
                     "routeReflectorClient" : false,
@@ -6906,7 +6536,6 @@
                     "vrf" : "default"
                   },
                   "2.1.2.1/32" : {
-                    "@id" : 308,
                     "name" : "2.1.2.1/32",
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
@@ -6921,7 +6550,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.3.1",
-                    "owner" : 278,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
@@ -6931,21 +6559,20 @@
                 },
                 "routerId" : "2.1.3.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 280,
-                "FastEthernet0/1" : 282,
-                "FastEthernet1/0" : 283,
-                "Loopback0" : 284
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 281,
                     "name" : 1,
                     "interfaces" : [
-                      280,
-                      282,
-                      284
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -6957,11 +6584,9 @@
           }
         },
         "as2dist2" : {
-          "@id" : 309,
           "name" : "as2dist2",
           "communityLists" : {
             "dept_community" : {
-              "@id" : 310,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -6977,7 +6602,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 311,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -6989,19 +6613,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 312,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 309,
               "prefix" : "2.23.22.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 313,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -7013,19 +6635,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 312,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 309,
               "prefix" : "2.23.12.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 314,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -7041,14 +6661,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 309,
               "prefix" : "2.34.201.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 315,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -7060,12 +6678,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 312,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 309,
               "prefix" : "2.1.3.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7074,7 +6691,6 @@
           },
           "ipAccessLists" : {
             "102" : {
-              "@id" : 316,
               "name" : "102",
               "lines" : [
                 {
@@ -7091,7 +6707,6 @@
               ]
             },
             "105" : {
-              "@id" : 317,
               "name" : "105",
               "lines" : [
                 {
@@ -7143,13 +6758,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 318,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "105" : {
-              "@id" : 319,
               "name" : "105",
               "lines" : [
                 {
@@ -7175,17 +6788,14 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 320,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 321,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "as2dist_to_dept" : {
-              "@id" : 322,
               "name" : "as2dist_to_dept",
               "statements" : [
                 {
@@ -7239,7 +6849,6 @@
               ]
             },
             "dept_to_as2dist" : {
-              "@id" : 323,
               "name" : "dept_to_as2dist",
               "statements" : [
                 {
@@ -7272,7 +6881,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 324,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7324,7 +6932,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~" : {
-              "@id" : 325,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
               "statements" : [
                 {
@@ -7350,7 +6957,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~" : {
-              "@id" : 326,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
               "statements" : [
                 {
@@ -7376,7 +6982,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:2.34.201.4~" : {
-              "@id" : 327,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:2.34.201.4~",
               "statements" : [
                 {
@@ -7411,7 +7016,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 328,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7447,35 +7051,28 @@
               "hostname" : "as2dist2",
               "lines" : {
                 "aux0" : {
-                  "@id" : 329,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 330,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 331,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 332,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 333,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 334,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 335,
                   "name" : "vty4"
                 }
               },
@@ -7519,12 +7116,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 336,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "2.1.2.2/32" : {
-                    "@id" : 337,
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
                     "advertiseExternal" : false,
@@ -7539,7 +7134,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.3.2",
-                    "owner" : 309,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.2/32",
                     "routeReflectorClient" : false,
@@ -7547,7 +7141,6 @@
                     "vrf" : "default"
                   },
                   "2.34.201.4/32" : {
-                    "@id" : 338,
                     "name" : "2.34.201.4/32",
                     "address" : "2.34.201.4",
                     "advertiseExternal" : false,
@@ -7563,7 +7156,6 @@
                     "importPolicy" : "dept_to_as2dist",
                     "localAs" : 2,
                     "localIp" : "2.34.201.3",
-                    "owner" : 309,
                     "remoteAs" : 65001,
                     "remotePrefix" : "2.34.201.4/32",
                     "routeReflectorClient" : false,
@@ -7571,7 +7163,6 @@
                     "vrf" : "default"
                   },
                   "2.1.2.1/32" : {
-                    "@id" : 339,
                     "name" : "2.1.2.1/32",
                     "address" : "2.1.2.1",
                     "advertiseExternal" : false,
@@ -7586,7 +7177,6 @@
                     "group" : "as2",
                     "localAs" : 2,
                     "localIp" : "2.1.3.2",
-                    "owner" : 309,
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
@@ -7596,21 +7186,20 @@
                 },
                 "routerId" : "2.1.3.2"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 311,
-                "FastEthernet0/1" : 313,
-                "FastEthernet1/0" : 314,
-                "Loopback0" : 315
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 312,
                     "name" : 1,
                     "interfaces" : [
-                      311,
-                      313,
-                      315
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -7622,11 +7211,9 @@
           }
         },
         "as3border1" : {
-          "@id" : 340,
           "name" : "as3border1",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 341,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -7637,7 +7224,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 342,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -7648,7 +7234,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 343,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -7664,7 +7249,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 344,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -7680,14 +7264,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 340,
               "prefix" : "10.23.21.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 345,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -7699,19 +7281,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 346,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 340,
               "prefix" : "3.0.1.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 347,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -7723,12 +7303,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 346,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 340,
               "prefix" : "3.1.1.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7737,7 +7316,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 348,
               "name" : "101",
               "lines" : [
                 {
@@ -7765,7 +7343,6 @@
               ]
             },
             "102" : {
-              "@id" : 349,
               "name" : "102",
               "lines" : [
                 {
@@ -7793,7 +7370,6 @@
               ]
             },
             "103" : {
-              "@id" : 350,
               "name" : "103",
               "lines" : [
                 {
@@ -7823,13 +7399,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 351,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 352,
               "name" : "101",
               "lines" : [
                 {
@@ -7845,7 +7419,6 @@
               ]
             },
             "102" : {
-              "@id" : 353,
               "name" : "102",
               "lines" : [
                 {
@@ -7861,7 +7434,6 @@
               ]
             },
             "103" : {
-              "@id" : 354,
               "name" : "103",
               "lines" : [
                 {
@@ -7877,7 +7449,6 @@
               ]
             },
             "default_list" : {
-              "@id" : 355,
               "name" : "default_list",
               "lines" : [
                 {
@@ -7888,7 +7459,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 356,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -7904,11 +7474,9 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 357,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 358,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7926,7 +7494,6 @@
           },
           "routingPolicies" : {
             "as1_to_as3" : {
-              "@id" : 359,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -7959,7 +7526,6 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 360,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -7992,7 +7558,6 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 361,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -8090,7 +7655,6 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 362,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -8232,7 +7796,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 363,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -8284,7 +7847,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.23.21.2~" : {
-              "@id" : 364,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.23.21.2~",
               "statements" : [
                 {
@@ -8319,7 +7881,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~" : {
-              "@id" : 365,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
               "statements" : [
                 {
@@ -8345,7 +7906,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 366,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -8381,35 +7941,28 @@
               "hostname" : "as3border1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 367,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 368,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 369,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 370,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 371,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 372,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 373,
                   "name" : "vty4"
                 }
               },
@@ -8453,12 +8006,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 374,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "10.23.21.2/32" : {
-                    "@id" : 375,
                     "name" : "10.23.21.2/32",
                     "address" : "10.23.21.2",
                     "advertiseExternal" : false,
@@ -8474,7 +8025,6 @@
                     "importPolicy" : "as2_to_as3",
                     "localAs" : 3,
                     "localIp" : "10.23.21.3",
-                    "owner" : 340,
                     "remoteAs" : 2,
                     "remotePrefix" : "10.23.21.2/32",
                     "routeReflectorClient" : false,
@@ -8482,7 +8032,6 @@
                     "vrf" : "default"
                   },
                   "3.10.1.1/32" : {
-                    "@id" : 376,
                     "name" : "3.10.1.1/32",
                     "address" : "3.10.1.1",
                     "advertiseExternal" : false,
@@ -8497,7 +8046,6 @@
                     "group" : "as3",
                     "localAs" : 3,
                     "localIp" : "3.1.1.1",
-                    "owner" : 340,
                     "remoteAs" : 3,
                     "remotePrefix" : "3.10.1.1/32",
                     "routeReflectorClient" : false,
@@ -8507,19 +8055,18 @@
                 },
                 "routerId" : "3.1.1.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 344,
-                "FastEthernet0/1" : 345,
-                "Loopback0" : 347
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 346,
                     "name" : 1,
                     "interfaces" : [
-                      345,
-                      347
+                      "FastEthernet0/1",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -8531,11 +8078,9 @@
           }
         },
         "as3border2" : {
-          "@id" : 377,
           "name" : "as3border2",
           "communityLists" : {
             "as1_community" : {
-              "@id" : 378,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -8546,7 +8091,6 @@
               "invertMatch" : false
             },
             "as2_community" : {
-              "@id" : 379,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -8557,7 +8101,6 @@
               "invertMatch" : false
             },
             "as3_community" : {
-              "@id" : 380,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -8573,7 +8116,6 @@
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 381,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -8585,19 +8127,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 382,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 377,
               "prefix" : "3.0.2.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 383,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -8613,14 +8153,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 377,
               "prefix" : "10.13.22.3/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 384,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -8632,12 +8170,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 382,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 377,
               "prefix" : "3.2.2.2/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8646,7 +8183,6 @@
           },
           "ipAccessLists" : {
             "101" : {
-              "@id" : 385,
               "name" : "101",
               "lines" : [
                 {
@@ -8674,7 +8210,6 @@
               ]
             },
             "102" : {
-              "@id" : 386,
               "name" : "102",
               "lines" : [
                 {
@@ -8702,7 +8237,6 @@
               ]
             },
             "103" : {
-              "@id" : 387,
               "name" : "103",
               "lines" : [
                 {
@@ -8732,13 +8266,11 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 388,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "101" : {
-              "@id" : 389,
               "name" : "101",
               "lines" : [
                 {
@@ -8754,7 +8286,6 @@
               ]
             },
             "102" : {
-              "@id" : 390,
               "name" : "102",
               "lines" : [
                 {
@@ -8770,7 +8301,6 @@
               ]
             },
             "103" : {
-              "@id" : 391,
               "name" : "103",
               "lines" : [
                 {
@@ -8786,7 +8316,6 @@
               ]
             },
             "inbound_route_filter" : {
-              "@id" : 392,
               "name" : "inbound_route_filter",
               "lines" : [
                 {
@@ -8802,11 +8331,9 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 393,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 394,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -8824,7 +8351,6 @@
           },
           "routingPolicies" : {
             "as1_to_as3" : {
-              "@id" : 395,
               "name" : "as1_to_as3",
               "statements" : [
                 {
@@ -8857,7 +8383,6 @@
               ]
             },
             "as2_to_as3" : {
-              "@id" : 396,
               "name" : "as2_to_as3",
               "statements" : [
                 {
@@ -8890,7 +8415,6 @@
               ]
             },
             "as3_to_as1" : {
-              "@id" : 397,
               "name" : "as3_to_as1",
               "statements" : [
                 {
@@ -8988,7 +8512,6 @@
               ]
             },
             "as3_to_as2" : {
-              "@id" : 398,
               "name" : "as3_to_as2",
               "statements" : [
                 {
@@ -9086,7 +8609,6 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 399,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -9138,7 +8660,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.13.22.1~" : {
-              "@id" : 400,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.13.22.1~",
               "statements" : [
                 {
@@ -9173,7 +8694,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~" : {
-              "@id" : 401,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
               "statements" : [
                 {
@@ -9199,7 +8719,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 402,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -9235,35 +8754,28 @@
               "hostname" : "as3border2",
               "lines" : {
                 "aux0" : {
-                  "@id" : 403,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 404,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 405,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 406,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 407,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 408,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 409,
                   "name" : "vty4"
                 }
               },
@@ -9307,12 +8819,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 410,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "10.13.22.1/32" : {
-                    "@id" : 411,
                     "name" : "10.13.22.1/32",
                     "address" : "10.13.22.1",
                     "advertiseExternal" : false,
@@ -9328,7 +8838,6 @@
                     "importPolicy" : "as1_to_as3",
                     "localAs" : 3,
                     "localIp" : "10.13.22.3",
-                    "owner" : 377,
                     "remoteAs" : 1,
                     "remotePrefix" : "10.13.22.1/32",
                     "routeReflectorClient" : false,
@@ -9336,7 +8845,6 @@
                     "vrf" : "default"
                   },
                   "3.10.1.1/32" : {
-                    "@id" : 412,
                     "name" : "3.10.1.1/32",
                     "address" : "3.10.1.1",
                     "advertiseExternal" : false,
@@ -9351,7 +8859,6 @@
                     "group" : "as3",
                     "localAs" : 3,
                     "localIp" : "3.2.2.2",
-                    "owner" : 377,
                     "remoteAs" : 3,
                     "remotePrefix" : "3.10.1.1/32",
                     "routeReflectorClient" : false,
@@ -9361,19 +8868,18 @@
                 },
                 "routerId" : "3.2.2.2"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 381,
-                "FastEthernet0/1" : 383,
-                "Loopback0" : 384
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 382,
                     "name" : 1,
                     "interfaces" : [
-                      381,
-                      384
+                      "FastEthernet0/0",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -9385,14 +8891,12 @@
           }
         },
         "as3core1" : {
-          "@id" : 413,
           "name" : "as3core1",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 414,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -9404,19 +8908,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 415,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 413,
               "prefix" : "3.0.2.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet0/1" : {
-              "@id" : 416,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -9428,19 +8930,17 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 415,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 413,
               "prefix" : "3.0.1.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/0" : {
-              "@id" : 417,
               "name" : "FastEthernet1/0",
               "accessVlan" : 0,
               "active" : true,
@@ -9456,14 +8956,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 413,
               "prefix" : "90.90.90.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "FastEthernet1/1" : {
-              "@id" : 418,
               "name" : "FastEthernet1/1",
               "accessVlan" : 0,
               "active" : true,
@@ -9479,14 +8977,12 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 413,
               "prefix" : "90.90.90.2/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 419,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -9498,12 +8994,11 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 415,
+              "ospfArea" : 1,
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 413,
               "prefix" : "3.10.1.1/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9512,17 +9007,14 @@
           },
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 420,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 421,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 422,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -9540,7 +9032,6 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 423,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -9592,7 +9083,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.1.1.1~" : {
-              "@id" : 424,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.1.1.1~",
               "statements" : [
                 {
@@ -9618,7 +9108,6 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~" : {
-              "@id" : 425,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
               "statements" : [
                 {
@@ -9644,7 +9133,6 @@
               ]
             },
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 426,
               "name" : "~OSPF_EXPORT_POLICY:default~"
             }
           },
@@ -9653,35 +9141,28 @@
               "hostname" : "as3core1",
               "lines" : {
                 "aux0" : {
-                  "@id" : 427,
                   "name" : "aux0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "con0" : {
-                  "@id" : 428,
                   "name" : "con0",
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 },
                 "vty0" : {
-                  "@id" : 429,
                   "name" : "vty0"
                 },
                 "vty1" : {
-                  "@id" : 430,
                   "name" : "vty1"
                 },
                 "vty2" : {
-                  "@id" : 431,
                   "name" : "vty2"
                 },
                 "vty3" : {
-                  "@id" : 432,
                   "name" : "vty3"
                 },
                 "vty4" : {
-                  "@id" : 433,
                   "name" : "vty4"
                 }
               },
@@ -9725,12 +9206,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 434,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "3.2.2.2/32" : {
-                    "@id" : 435,
                     "name" : "3.2.2.2/32",
                     "address" : "3.2.2.2",
                     "advertiseExternal" : false,
@@ -9745,7 +9224,6 @@
                     "group" : "as3",
                     "localAs" : 3,
                     "localIp" : "3.10.1.1",
-                    "owner" : 413,
                     "remoteAs" : 3,
                     "remotePrefix" : "3.2.2.2/32",
                     "routeReflectorClient" : true,
@@ -9753,7 +9231,6 @@
                     "vrf" : "default"
                   },
                   "3.1.1.1/32" : {
-                    "@id" : 436,
                     "name" : "3.1.1.1/32",
                     "address" : "3.1.1.1",
                     "advertiseExternal" : false,
@@ -9768,7 +9245,6 @@
                     "group" : "as3",
                     "localAs" : 3,
                     "localIp" : "3.10.1.1",
-                    "owner" : 413,
                     "remoteAs" : 3,
                     "remotePrefix" : "3.1.1.1/32",
                     "routeReflectorClient" : true,
@@ -9778,22 +9254,21 @@
                 },
                 "routerId" : "3.10.1.1"
               },
-              "interfaces" : {
-                "FastEthernet0/0" : 414,
-                "FastEthernet0/1" : 416,
-                "FastEthernet1/0" : 417,
-                "FastEthernet1/1" : 418,
-                "Loopback0" : 419
-              },
+              "interfaces" : [
+                "FastEthernet0/0",
+                "FastEthernet0/1",
+                "FastEthernet1/0",
+                "FastEthernet1/1",
+                "Loopback0"
+              ],
               "ospfProcess" : {
                 "areas" : {
                   "1" : {
-                    "@id" : 415,
                     "name" : 1,
                     "interfaces" : [
-                      414,
-                      416,
-                      419
+                      "FastEthernet0/0",
+                      "FastEthernet0/1",
+                      "Loopback0"
                     ]
                   }
                 },
@@ -9805,14 +9280,12 @@
           }
         },
         "host1" : {
-          "@id" : 437,
           "name" : "host1",
           "configurationFormat" : "HOST",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "eth0" : {
-              "@id" : 438,
               "name" : "eth0",
               "accessVlan" : 0,
               "active" : true,
@@ -9820,7 +9293,7 @@
                 "2.128.0.101/24"
               ],
               "bandwidth" : 1.0E9,
-              "incomingFilter" : 439,
+              "incomingFilter" : "filter::INPUT",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9829,8 +9302,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "outgoingFilter" : 440,
-              "owner" : 437,
+              "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.0.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q"
@@ -9838,7 +9310,6 @@
           },
           "ipAccessLists" : {
             "filter::FORWARD" : {
-              "@id" : 441,
               "name" : "filter::FORWARD",
               "lines" : [
                 {
@@ -9848,7 +9319,6 @@
               ]
             },
             "filter::INPUT" : {
-              "@id" : 439,
               "name" : "filter::INPUT",
               "lines" : [
                 {
@@ -9878,7 +9348,6 @@
               ]
             },
             "filter::OUTPUT" : {
-              "@id" : 440,
               "name" : "filter::OUTPUT",
               "lines" : [
                 {
@@ -9888,7 +9357,6 @@
               ]
             },
             "mangle::FORWARD" : {
-              "@id" : 442,
               "name" : "mangle::FORWARD",
               "lines" : [
                 {
@@ -9898,7 +9366,6 @@
               ]
             },
             "mangle::INPUT" : {
-              "@id" : 443,
               "name" : "mangle::INPUT",
               "lines" : [
                 {
@@ -9908,7 +9375,6 @@
               ]
             },
             "mangle::OUTPUT" : {
-              "@id" : 444,
               "name" : "mangle::OUTPUT",
               "lines" : [
                 {
@@ -9918,7 +9384,6 @@
               ]
             },
             "mangle::POSTROUTING" : {
-              "@id" : 445,
               "name" : "mangle::POSTROUTING",
               "lines" : [
                 {
@@ -9928,7 +9393,6 @@
               ]
             },
             "mangle::PREROUTING" : {
-              "@id" : 446,
               "name" : "mangle::PREROUTING",
               "lines" : [
                 {
@@ -9938,7 +9402,6 @@
               ]
             },
             "nat::OUTPUT" : {
-              "@id" : 447,
               "name" : "nat::OUTPUT",
               "lines" : [
                 {
@@ -9948,7 +9411,6 @@
               ]
             },
             "nat::POSTROUTING" : {
-              "@id" : 448,
               "name" : "nat::POSTROUTING",
               "lines" : [
                 {
@@ -9958,7 +9420,6 @@
               ]
             },
             "nat::PREROUTING" : {
-              "@id" : 449,
               "name" : "nat::PREROUTING",
               "lines" : [
                 {
@@ -9971,11 +9432,10 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 450,
               "name" : "default",
-              "interfaces" : {
-                "eth0" : 438
-              },
+              "interfaces" : [
+                "eth0"
+              ],
               "staticRoutes" : [
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
@@ -9989,14 +9449,12 @@
           }
         },
         "host2" : {
-          "@id" : 451,
           "name" : "host2",
           "configurationFormat" : "HOST",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "eth0" : {
-              "@id" : 452,
               "name" : "eth0",
               "accessVlan" : 0,
               "active" : true,
@@ -10004,7 +9462,7 @@
                 "2.128.1.101/24"
               ],
               "bandwidth" : 1.0E9,
-              "incomingFilter" : 453,
+              "incomingFilter" : "filter::INPUT",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10013,8 +9471,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "outgoingFilter" : 454,
-              "owner" : 451,
+              "outgoingFilter" : "filter::OUTPUT",
               "prefix" : "2.128.1.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q"
@@ -10022,7 +9479,6 @@
           },
           "ipAccessLists" : {
             "filter::FORWARD" : {
-              "@id" : 455,
               "name" : "filter::FORWARD",
               "lines" : [
                 {
@@ -10032,7 +9488,6 @@
               ]
             },
             "filter::INPUT" : {
-              "@id" : 453,
               "name" : "filter::INPUT",
               "lines" : [
                 {
@@ -10052,7 +9507,6 @@
               ]
             },
             "filter::OUTPUT" : {
-              "@id" : 454,
               "name" : "filter::OUTPUT",
               "lines" : [
                 {
@@ -10069,7 +9523,6 @@
               ]
             },
             "mangle::FORWARD" : {
-              "@id" : 456,
               "name" : "mangle::FORWARD",
               "lines" : [
                 {
@@ -10079,7 +9532,6 @@
               ]
             },
             "mangle::INPUT" : {
-              "@id" : 457,
               "name" : "mangle::INPUT",
               "lines" : [
                 {
@@ -10089,7 +9541,6 @@
               ]
             },
             "mangle::OUTPUT" : {
-              "@id" : 458,
               "name" : "mangle::OUTPUT",
               "lines" : [
                 {
@@ -10099,7 +9550,6 @@
               ]
             },
             "mangle::POSTROUTING" : {
-              "@id" : 459,
               "name" : "mangle::POSTROUTING",
               "lines" : [
                 {
@@ -10109,7 +9559,6 @@
               ]
             },
             "mangle::PREROUTING" : {
-              "@id" : 460,
               "name" : "mangle::PREROUTING",
               "lines" : [
                 {
@@ -10119,7 +9568,6 @@
               ]
             },
             "nat::OUTPUT" : {
-              "@id" : 461,
               "name" : "nat::OUTPUT",
               "lines" : [
                 {
@@ -10129,7 +9577,6 @@
               ]
             },
             "nat::POSTROUTING" : {
-              "@id" : 462,
               "name" : "nat::POSTROUTING",
               "lines" : [
                 {
@@ -10139,7 +9586,6 @@
               ]
             },
             "nat::PREROUTING" : {
-              "@id" : 463,
               "name" : "nat::PREROUTING",
               "lines" : [
                 {
@@ -10152,11 +9598,10 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 464,
               "name" : "default",
-              "interfaces" : {
-                "eth0" : 452
-              },
+              "interfaces" : [
+                "eth0"
+              ],
               "staticRoutes" : [
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",

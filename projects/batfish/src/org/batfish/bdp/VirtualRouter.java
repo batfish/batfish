@@ -841,7 +841,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);
-            String neighborVrfName = neighborInterface.getVrf();
+            String neighborVrfName = neighborInterface.getVrfName();
             VirtualRouter neighborVirtualRouter = _nodes
                   .get(neighborName)._virtualRouters.get(neighborVrfName);
 
@@ -913,7 +913,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             Configuration nc = neighbor._c;
             Interface neighborInterface = nc.getInterfaces()
                   .get(neighborInterfaceName);
-            String neighborVrfName = neighborInterface.getVrf();
+            String neighborVrfName = neighborInterface.getVrfName();
             VirtualRouter neighborVirtualRouter = _nodes
                   .get(neighborName)._virtualRouters.get(neighborVrfName);
             OspfArea neighborArea = neighborInterface.getOspfArea();

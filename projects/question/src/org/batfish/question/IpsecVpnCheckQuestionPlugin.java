@@ -239,9 +239,9 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
                            answerElement.getIncompatibleIpsecProposals(), c,
                            ipsecVpn, remoteIpsecVpn);
                   }
-                  if (!ipsecVpn.getGateway().getIkePolicy()
+                  if (!ipsecVpn.getIkeGateway().getIkePolicy()
                         .getPreSharedKeyHash()
-                        .equals(remoteIpsecVpn.getGateway().getIkePolicy()
+                        .equals(remoteIpsecVpn.getIkeGateway().getIkePolicy()
                               .getPreSharedKeyHash())) {
                      answerElement.addIpsecVpnPair(
                            answerElement.getPreSharedKeyMismatch(), c, ipsecVpn,

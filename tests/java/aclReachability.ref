@@ -5,7 +5,6 @@
       "acls" : {
         "as1border1" : {
           "101" : {
-            "@id" : 1,
             "name" : "101",
             "lines" : [
               {
@@ -33,7 +32,6 @@
             ]
           },
           "102" : {
-            "@id" : 2,
             "name" : "102",
             "lines" : [
               {
@@ -61,7 +59,6 @@
             ]
           },
           "103" : {
-            "@id" : 3,
             "name" : "103",
             "lines" : [
               {
@@ -91,7 +88,6 @@
         },
         "as2border1" : {
           "INSIDE_TO_AS1" : {
-            "@id" : 4,
             "name" : "INSIDE_TO_AS1",
             "lines" : [
               {
@@ -119,7 +115,6 @@
             ]
           },
           "OUTSIDE_TO_INSIDE" : {
-            "@id" : 5,
             "name" : "OUTSIDE_TO_INSIDE",
             "lines" : [
               {
@@ -160,7 +155,6 @@
         },
         "as2border2" : {
           "INSIDE_TO_AS3" : {
-            "@id" : 6,
             "name" : "INSIDE_TO_AS3",
             "lines" : [
               {
@@ -188,7 +182,6 @@
             ]
           },
           "OUTSIDE_TO_INSIDE" : {
-            "@id" : 7,
             "name" : "OUTSIDE_TO_INSIDE",
             "lines" : [
               {
@@ -218,7 +211,6 @@
         },
         "as2core1" : {
           "blocktelnet" : {
-            "@id" : 8,
             "name" : "blocktelnet",
             "lines" : [
               {
@@ -254,7 +246,6 @@
         },
         "as2dept1" : {
           "102" : {
-            "@id" : 9,
             "name" : "102",
             "lines" : [
               {
@@ -282,7 +273,6 @@
             ]
           },
           "105" : {
-            "@id" : 10,
             "name" : "105",
             "lines" : [
               {
@@ -332,7 +322,6 @@
             ]
           },
           "RESTRICT_HOST_TRAFFIC_IN" : {
-            "@id" : 11,
             "name" : "RESTRICT_HOST_TRAFFIC_IN",
             "lines" : [
               {
@@ -374,7 +363,6 @@
             ]
           },
           "RESTRICT_HOST_TRAFFIC_OUT" : {
-            "@id" : 12,
             "name" : "RESTRICT_HOST_TRAFFIC_OUT",
             "lines" : [
               {
@@ -415,7 +403,6 @@
         },
         "as2dist1" : {
           "102" : {
-            "@id" : 13,
             "name" : "102",
             "lines" : [
               {
@@ -434,7 +421,6 @@
         },
         "host1" : {
           "filter::FORWARD" : {
-            "@id" : 14,
             "name" : "filter::FORWARD",
             "lines" : [
               {
@@ -444,7 +430,6 @@
             ]
           },
           "filter::INPUT" : {
-            "@id" : 15,
             "name" : "filter::INPUT",
             "lines" : [
               {
@@ -474,7 +459,6 @@
             ]
           },
           "filter::OUTPUT" : {
-            "@id" : 16,
             "name" : "filter::OUTPUT",
             "lines" : [
               {
@@ -484,7 +468,6 @@
             ]
           },
           "mangle::FORWARD" : {
-            "@id" : 17,
             "name" : "mangle::FORWARD",
             "lines" : [
               {
@@ -494,7 +477,6 @@
             ]
           },
           "mangle::INPUT" : {
-            "@id" : 18,
             "name" : "mangle::INPUT",
             "lines" : [
               {
@@ -504,7 +486,6 @@
             ]
           },
           "mangle::OUTPUT" : {
-            "@id" : 19,
             "name" : "mangle::OUTPUT",
             "lines" : [
               {
@@ -514,7 +495,6 @@
             ]
           },
           "mangle::POSTROUTING" : {
-            "@id" : 20,
             "name" : "mangle::POSTROUTING",
             "lines" : [
               {
@@ -524,7 +504,6 @@
             ]
           },
           "mangle::PREROUTING" : {
-            "@id" : 21,
             "name" : "mangle::PREROUTING",
             "lines" : [
               {
@@ -534,7 +513,6 @@
             ]
           },
           "nat::OUTPUT" : {
-            "@id" : 22,
             "name" : "nat::OUTPUT",
             "lines" : [
               {
@@ -544,7 +522,6 @@
             ]
           },
           "nat::POSTROUTING" : {
-            "@id" : 23,
             "name" : "nat::POSTROUTING",
             "lines" : [
               {
@@ -554,7 +531,6 @@
             ]
           },
           "nat::PREROUTING" : {
-            "@id" : 24,
             "name" : "nat::PREROUTING",
             "lines" : [
               {
@@ -566,7 +542,6 @@
         },
         "host2" : {
           "filter::INPUT" : {
-            "@id" : 25,
             "name" : "filter::INPUT",
             "lines" : [
               {
@@ -586,7 +561,6 @@
             ]
           },
           "filter::OUTPUT" : {
-            "@id" : 26,
             "name" : "filter::OUTPUT",
             "lines" : [
               {

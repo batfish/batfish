@@ -1911,9 +1911,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
       for (Configuration c : configurations.values()) {
          for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-            Ip remoteAddress = ipsecVpn.getGateway().getAddress();
+            Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
             remoteAddresses.put(ipsecVpn, remoteAddress);
-            Set<Prefix> externalPrefixes = ipsecVpn.getGateway()
+            Set<Prefix> externalPrefixes = ipsecVpn.getIkeGateway()
                   .getExternalInterface().getAllPrefixes();
             for (Prefix externalPrefix : externalPrefixes) {
                Ip externalAddress = externalPrefix.getAddress();
@@ -1937,7 +1937,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (remoteIpsecVpnCandidates != null) {
             for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
                Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate
-                     .getGateway().getLocalAddress();
+                     .getIkeGateway().getLocalAddress();
                if (remoteIpsecVpnLocalAddress != null
                      && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
                   continue;
@@ -2353,7 +2353,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String ingressNode = edge.getNode1();
          String outInterface = edge.getInt1();
          String vrf = diffConfigurations.get(ingressNode).getInterfaces()
-               .get(outInterface).getVrf();
+               .get(outInterface).getVrf().getName();
          ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                ingressNode, vrf, edge, true, headerSpace);
          ReachEdgeQuerySynthesizer noReachQuery = new ReachEdgeQuerySynthesizer(
@@ -2386,7 +2386,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          String ingressNode = missingEdge.getNode1();
          String outInterface = missingEdge.getInt1();
          String vrf = diffConfigurations.get(ingressNode).getInterfaces()
-               .get(outInterface).getVrf();
+               .get(outInterface).getVrf().getName();
          if (diffConfigurations.containsKey(ingressNode)) {
             ReachEdgeQuerySynthesizer reachQuery = new ReachEdgeQuerySynthesizer(
                   ingressNode, vrf, missingEdge, true, headerSpace);

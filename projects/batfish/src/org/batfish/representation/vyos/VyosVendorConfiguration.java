@@ -83,7 +83,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
          _c.getIpsecVpns().put(newIpsecVpnName, newIpsecVpn);
          IkeGateway newIkeGateway = new IkeGateway(newIkeGatewayName);
          _c.getIkeGateways().put(newIkeGatewayName, newIkeGateway);
-         newIpsecVpn.setGateway(newIkeGateway);
+         newIpsecVpn.setIkeGateway(newIkeGateway);
          newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
          newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
          newIkeGateway.setAddress(peerAddress);
