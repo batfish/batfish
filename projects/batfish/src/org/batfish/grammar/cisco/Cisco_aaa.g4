@@ -14,7 +14,8 @@ aaa_accounting
       | aaa_accounting_connection
       | aaa_accounting_default
       | aaa_accounting_delay_start
-      | aaa_accounting_exec
+      | aaa_accounting_exec_line
+      | aaa_accounting_exec_stanza
       | aaa_accounting_nested
       | aaa_accounting_network
       | aaa_accounting_send
@@ -79,13 +80,24 @@ aaa_accounting_delay_start
    )? NEWLINE
 ;
 
-aaa_accounting_exec
+aaa_accounting_exec_line
 :
    EXEC
    (
       DEFAULT
       | list = variable
    ) aaa_accounting_method NEWLINE
+;
+
+aaa_accounting_exec_stanza
+:
+   EXEC DEFAULT NEWLINE
+   (
+      (
+         ACTION_TYPE
+         | GROUP
+      ) ~NEWLINE* NEWLINE
+   )+
 ;
 
 aaa_accounting_method
@@ -419,6 +431,7 @@ aaa_authorization
       | aaa_authorization_exec
       | aaa_authorization_include
       | aaa_authorization_network
+      | aaa_authorization_reverse_access
       | aaa_authorization_ssh_certificate
       | aaa_authorization_ssh_publickey
    )
@@ -490,6 +503,15 @@ aaa_authorization_method
 aaa_authorization_network
 :
    NETWORK
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_authorization_method
+;
+
+aaa_authorization_reverse_access
+:
+   REVERSE_ACCESS
    (
       DEFAULT
       | list = variable

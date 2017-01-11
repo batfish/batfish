@@ -103,10 +103,6 @@ null_block
             | INSPECT
             | INTERNAL
             | NAME_SERVER
-            |
-            (
-               OSPF NAME_LOOKUP
-            )
             | PIM
             | POLICY_LIST
             | RATE_LIMIT
@@ -164,12 +160,10 @@ null_block
       | MAC_LEARN
       | MACRO
       | MANAGEMENT_ACCESS
-      | MAP_CLASS
       | MAP_LIST
       | MENU
       | MLAG
       | MODULE
-      | MONITOR
       | MONITOR_INTERFACE
       |
       (
@@ -204,6 +198,7 @@ null_block
       | PLATFORM
       | POLICY_MAP_INPUT
       | POLICY_MAP_OUTPUT
+      | POOL
       | PORT_PROFILE
       | POWEROFF
       | POWER_MGR
@@ -302,6 +297,7 @@ null_inner
          | ADD_VLAN
          | ADDRESS
          | ADDRESS_POOLS
+         | ADDRESS_RANGE
          | ADMINISTRATIVE_WEIGHT
          | ADVERTISE
          | AESA
@@ -359,7 +355,6 @@ null_inner
          | EGRESS
          | ENABLED
          | ENCAPSULATION
-         | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXIT
          | EXPECT
@@ -368,6 +363,7 @@ null_inner
          | FAILED
          | FAIR_QUEUE
          | FALLBACK_DN
+         | FAX
          | FIELDS
          | FILE_BROWSING
          | FILE_ENTRY
@@ -409,6 +405,7 @@ null_inner
             INTERFACE POLICY
          )
          | INTERVAL
+         | INTERWORKING
          |
          (
             (
@@ -630,6 +627,7 @@ null_single
       | DSP
       | DSS
       | ENVIRONMENT
+      | ENVIRONMENT_MONITOR
       | ERRDISABLE
       | ESCAPE_CHARACTER
       | EXCEPTION
@@ -741,6 +739,7 @@ null_single
       | LICENSE
       | LLDP
       | LOAD_INTERVAL
+      | LOCALE
       | LOCATION
       |
       (
@@ -750,9 +749,11 @@ null_single
          )
       )
       | MAC_ADDRESS_TABLE
+      | MEMORY
       | MEMORY_SIZE
       | MGCP
       | MICROCODE
+      | MIRROR
       | MLS
       | MODEM
       | MON
@@ -804,6 +805,20 @@ null_single
             | SSH
          )
       )
+      |
+      (
+         OSPF
+         (
+            NAME_LOOKUP
+         )
+      )
+      |
+      (
+         OSPFV3
+         (
+            NAME_LOOKUP
+         )
+      )
       | OWNER
       | PAGER
       | PARSER
@@ -840,6 +855,7 @@ null_single
       | SERVICE_POLICY
       | SETUP
       | SHELL
+      | SIP_UA
       | SMTP_SERVER
       | SNMP
       | SPD

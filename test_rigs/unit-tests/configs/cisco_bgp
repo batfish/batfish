@@ -3,5 +3,6 @@ hostname cisco_bgp
 !
 router bgp 1
  reconnect-interval 30
+ no bgp fast-external-fallover
 !
 

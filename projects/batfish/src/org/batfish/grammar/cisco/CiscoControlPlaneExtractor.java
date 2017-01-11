@@ -76,10 +76,13 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.LiteralRouteType;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
+import org.batfish.datamodel.routing_policy.expr.RouteType;
+import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
@@ -87,6 +90,7 @@ import org.batfish.datamodel.routing_policy.expr.VarCommunitySetElemHalf;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
+import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccounting;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
@@ -719,101 +723,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterNeighbor_group_rb_stanza(
-         Neighbor_group_rb_stanzaContext ctx) {
-      BgpProcess proc = currentVrf().getBgpProcess();
-      String name = ctx.name.getText();
-      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-      if (_currentNamedPeerGroup == null) {
-         proc.addNamedPeerGroup(name);
-         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-      }
-      pushPeer(_currentNamedPeerGroup);
-   }
-
-   @Override
-   public void enterNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
-      // do no further processing for unsupported address families / containers
-      if (_currentPeerGroup == _dummyPeerGroup) {
-         pushPeer(_dummyPeerGroup);
-         return;
-      }
-      BgpProcess proc = currentVrf().getBgpProcess();
-      // we must create peer group if it does not exist and this is a remote_as
-      // declaration
-      boolean create = ctx.remote_as_bgp_tail() != null
-            || ctx.inherit_peer_session_bgp_tail() != null;
-      if (ctx.ip != null) {
-         Ip ip = toIp(ctx.ip);
-         _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-         if (_currentIpPeerGroup == null) {
-            if (create) {
-               proc.addIpPeerGroup(ip);
-               _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-               pushPeer(_currentIpPeerGroup);
-            }
-            else {
-               String message = "reference to undeclared peer group: '"
-                     + ip.toString() + "'";
-               _w.redFlag(message);
-               pushPeer(_dummyPeerGroup);
-            }
-         }
-         else {
-            pushPeer(_currentIpPeerGroup);
-         }
-      }
-      else if (ctx.ip6 != null) {
-         Ip6 ip6 = toIp6(ctx.ip6);
-         Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
-         if (pg6 == null) {
-            if (create) {
-               proc.addIpv6PeerGroup(ip6);
-               pg6 = proc.getIpv6PeerGroups().get(ip6);
-               pushPeer(pg6);
-            }
-            else {
-               String message = "reference to undeclared peer group: '"
-                     + ip6.toString() + "'";
-               _w.redFlag(message);
-               pushPeer(_dummyPeerGroup);
-            }
-         }
-         else {
-            pushPeer(pg6);
-         }
-         _currentIpv6PeerGroup = pg6;
-      }
-      else if (ctx.peergroup != null) {
-         String name = ctx.peergroup.getText();
-         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-         if (_currentNamedPeerGroup == null) {
-            if (create) {
-               proc.addNamedPeerGroup(name);
-               _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
-            }
-            else {
-               throw new BatfishException(
-                     "reference to undeclared peer group: '" + name + "'");
-            }
-         }
-         pushPeer(_currentNamedPeerGroup);
-      }
-      else {
-         throw new BatfishException("unknown neighbor type");
-      }
-   }
-
-   @Override
-   public void enterNet_is_stanza(Net_is_stanzaContext ctx) {
-      IsisProcess proc = currentVrf().getIsisProcess();
-      IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
-      proc.setNetAddress(isoAddress);
-   }
-
-   @Override
-   public void enterNexus_neighbor_rb_stanza(
-         Nexus_neighbor_rb_stanzaContext ctx) {
+   public void enterNeighbor_block_rb_stanza(
+         Neighbor_block_rb_stanzaContext ctx) {
       _currentNexusNeighborAddressFamilies.clear();
       _inNexusNeighbor = true;
       // do no further processing for unsupported address families / containers
@@ -887,15 +798,97 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void enterNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
-      _currentVrf = ctx.name.getText();
-      int procNum = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME)
-            .getBgpProcess().getName();
-      BgpProcess proc = new BgpProcess(procNum);
-      currentVrf().setBgpProcess(proc);
-      pushPeer(proc.getMasterBgpPeerGroup());
-      _currentNexusNeighborAddressFamilies.clear();
-      _inNexusNeighbor = false;
+   public void enterNeighbor_flat_rb_stanza(
+         Neighbor_flat_rb_stanzaContext ctx) {
+      // do no further processing for unsupported address families / containers
+      if (_currentPeerGroup == _dummyPeerGroup) {
+         pushPeer(_dummyPeerGroup);
+         return;
+      }
+      BgpProcess proc = currentVrf().getBgpProcess();
+      // we must create peer group if it does not exist and this is a remote_as
+      // declaration
+      boolean create = ctx.remote_as_bgp_tail() != null
+            || ctx.inherit_peer_session_bgp_tail() != null;
+      if (ctx.ip != null) {
+         Ip ip = toIp(ctx.ip);
+         _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
+         if (_currentIpPeerGroup == null) {
+            if (create) {
+               proc.addIpPeerGroup(ip);
+               _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
+               pushPeer(_currentIpPeerGroup);
+            }
+            else {
+               String message = "reference to undeclared peer group: '"
+                     + ip.toString() + "'";
+               _w.redFlag(message);
+               pushPeer(_dummyPeerGroup);
+            }
+         }
+         else {
+            pushPeer(_currentIpPeerGroup);
+         }
+      }
+      else if (ctx.ip6 != null) {
+         Ip6 ip6 = toIp6(ctx.ip6);
+         Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
+         if (pg6 == null) {
+            if (create) {
+               proc.addIpv6PeerGroup(ip6);
+               pg6 = proc.getIpv6PeerGroups().get(ip6);
+               pushPeer(pg6);
+            }
+            else {
+               String message = "reference to undeclared peer group: '"
+                     + ip6.toString() + "'";
+               _w.redFlag(message);
+               pushPeer(_dummyPeerGroup);
+            }
+         }
+         else {
+            pushPeer(pg6);
+         }
+         _currentIpv6PeerGroup = pg6;
+      }
+      else if (ctx.peergroup != null) {
+         String name = ctx.peergroup.getText();
+         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+         if (_currentNamedPeerGroup == null) {
+            if (create) {
+               proc.addNamedPeerGroup(name);
+               _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+            }
+            else {
+               throw new BatfishException(
+                     "reference to undeclared peer group: '" + name + "'");
+            }
+         }
+         pushPeer(_currentNamedPeerGroup);
+      }
+      else {
+         throw new BatfishException("unknown neighbor type");
+      }
+   }
+
+   @Override
+   public void enterNeighbor_group_rb_stanza(
+         Neighbor_group_rb_stanzaContext ctx) {
+      BgpProcess proc = currentVrf().getBgpProcess();
+      String name = ctx.name.getText();
+      _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      if (_currentNamedPeerGroup == null) {
+         proc.addNamedPeerGroup(name);
+         _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
+      }
+      pushPeer(_currentNamedPeerGroup);
+   }
+
+   @Override
+   public void enterNet_is_stanza(Net_is_stanzaContext ctx) {
+      IsisProcess proc = currentVrf().getIsisProcess();
+      IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
+      proc.setNetAddress(isoAddress);
    }
 
    @Override
@@ -1302,6 +1295,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterUse_session_group_bgp_tail(
+         Use_session_group_bgp_tailContext ctx) {
+      String name = ctx.name.getText();
+      BgpProcess proc = currentVrf().getBgpProcess();
+      _currentPeerSession = proc.getPeerSessions().get(name);
+      if (_currentPeerSession == null) {
+         proc.addPeerSession(name);
+         _currentPeerSession = proc.getPeerSessions().get(name);
+      }
+      pushPeer(_currentPeerSession);
+   }
+
+   @Override
+   public void enterVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
+      _currentVrf = ctx.name.getText();
+      int procNum = _configuration.getVrfs().get(Configuration.DEFAULT_VRF_NAME)
+            .getBgpProcess().getName();
+      BgpProcess proc = new BgpProcess(procNum);
+      currentVrf().setBgpProcess(proc);
+      pushPeer(proc.getMasterBgpPeerGroup());
+      _currentNexusNeighborAddressFamilies.clear();
+      _inNexusNeighbor = false;
+   }
+
+   @Override
    public void exitAaa_accounting_commands(Aaa_accounting_commandsContext ctx) {
       _currentAaaAccountingCommands = null;
    }
@@ -1566,8 +1584,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitEmpty_nexus_neighbor_address_family(
-         Empty_nexus_neighbor_address_familyContext ctx) {
+   public void exitEmpty_neighbor_block_address_family(
+         Empty_neighbor_block_address_familyContext ctx) {
       popPeer();
    }
 
@@ -2690,8 +2708,58 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNeighbor_group_rb_stanza(
-         Neighbor_group_rb_stanzaContext ctx) {
+   public void exitNeighbor_block_address_family(
+         Neighbor_block_address_familyContext ctx) {
+      if (_inNexusNeighbor) {
+         popPeer();
+      }
+      else {
+         _currentNexusNeighborAddressFamilies.clear();
+      }
+   }
+
+   @Override
+   public void exitNeighbor_block_inherit(Neighbor_block_inheritContext ctx) {
+      BgpProcess proc = currentVrf().getBgpProcess();
+      String groupName = ctx.name.getText();
+      if (_currentIpPeerGroup != null) {
+         _currentIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentIpv6PeerGroup != null) {
+         _currentIpv6PeerGroup.setGroupName(groupName);
+      }
+      else if (_currentDynamicIpPeerGroup != null) {
+         _currentDynamicIpPeerGroup.setGroupName(groupName);
+      }
+      else if (_currentDynamicIpv6PeerGroup != null) {
+         _currentDynamicIpv6PeerGroup.setGroupName(groupName);
+      }
+      else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+         throw new BatfishException("Invalid peer context for inheritance");
+      }
+      else {
+         todo(ctx, F_BGP_INHERIT_PEER_OTHER);
+      }
+   }
+
+   @Override
+   public void exitNeighbor_block_rb_stanza(
+         Neighbor_block_rb_stanzaContext ctx) {
+      _currentDynamicIpPeerGroup = null;
+      _currentIpPeerGroup = null;
+      _currentIpv6PeerGroup = null;
+      _currentNamedPeerGroup = null;
+      if (_inNexusNeighbor) {
+         popPeer();
+      }
+      else {
+         _inNexusNeighbor = false;
+      }
+   }
+
+   @Override
+   public void exitNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
+      _currentDynamicIpPeerGroup = null;
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
@@ -2699,8 +2767,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
-   public void exitNeighbor_rb_stanza(Neighbor_rb_stanzaContext ctx) {
-      _currentDynamicIpPeerGroup = null;
+   public void exitNeighbor_group_rb_stanza(
+         Neighbor_group_rb_stanzaContext ctx) {
       _currentIpPeerGroup = null;
       _currentIpv6PeerGroup = null;
       _currentNamedPeerGroup = null;
@@ -2742,62 +2810,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
       todo(ctx, F_BGP_NEXT_HOP_SELF);
       // note that this rule matches "no next-hop-self"
-   }
-
-   @Override
-   public void exitNexus_neighbor_address_family(
-         Nexus_neighbor_address_familyContext ctx) {
-      if (_inNexusNeighbor) {
-         popPeer();
-      }
-      else {
-         _currentNexusNeighborAddressFamilies.clear();
-      }
-   }
-
-   @Override
-   public void exitNexus_neighbor_inherit(Nexus_neighbor_inheritContext ctx) {
-      BgpProcess proc = currentVrf().getBgpProcess();
-      String groupName = ctx.name.getText();
-      if (_currentIpPeerGroup != null) {
-         _currentIpPeerGroup.setGroupName(groupName);
-      }
-      else if (_currentIpv6PeerGroup != null) {
-         _currentIpv6PeerGroup.setGroupName(groupName);
-      }
-      else if (_currentDynamicIpPeerGroup != null) {
-         _currentDynamicIpPeerGroup.setGroupName(groupName);
-      }
-      else if (_currentDynamicIpv6PeerGroup != null) {
-         _currentDynamicIpv6PeerGroup.setGroupName(groupName);
-      }
-      else if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-         throw new BatfishException("Invalid peer context for inheritance");
-      }
-      else {
-         todo(ctx, F_BGP_INHERIT_PEER_OTHER);
-      }
-   }
-
-   @Override
-   public void exitNexus_neighbor_rb_stanza(
-         Nexus_neighbor_rb_stanzaContext ctx) {
-      _currentDynamicIpPeerGroup = null;
-      _currentIpPeerGroup = null;
-      _currentIpv6PeerGroup = null;
-      _currentNamedPeerGroup = null;
-      if (_inNexusNeighbor) {
-         popPeer();
-      }
-      else {
-         _inNexusNeighbor = false;
-      }
-   }
-
-   @Override
-   public void exitNexus_vrf_rb_stanza(Nexus_vrf_rb_stanzaContext ctx) {
-      _currentVrf = Configuration.DEFAULT_VRF_NAME;
-      popPeer();
    }
 
    @Override
@@ -3320,7 +3332,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentPeerGroup.setRemoteAs(as);
       }
       else {
-         throw new BatfishException("no peer or peer group in context");
+         throw new BatfishException(
+               "no peer or peer group in context: " + getFullText(ctx));
       }
    }
 
@@ -3706,6 +3719,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSend_community_bgp_tail(Send_community_bgp_tailContext ctx) {
       _currentPeerGroup.setSendCommunity(true);
+   }
+
+   @Override
+   public void exitSession_group_rb_stanza(Session_group_rb_stanzaContext ctx) {
+      _currentIpPeerGroup = null;
+      _currentIpv6PeerGroup = null;
+      _currentNamedPeerGroup = null;
+      _currentPeerSession = null;
+      popPeer();
    }
 
    @Override
@@ -4121,10 +4143,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else if (_currentIpv6PeerGroup != null) {
          _currentIpv6PeerGroup.setGroupName(groupName);
       }
+      else if (_currentNamedPeerGroup != null) {
+         _currentNamedPeerGroup.setGroupName(groupName);
+      }
       else {
          throw new BatfishException(
                "Unexpected context for use neighbor group");
       }
+   }
+
+   @Override
+   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
+      _currentVrf = Configuration.DEFAULT_VRF_NAME;
+      popPeer();
    }
 
    @Override
@@ -5183,6 +5214,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private RoutePolicyBoolean toRoutePolicyBoolean(
+         Boolean_route_type_is_rp_stanzaContext ctx) {
+      RouteTypeExpr type = toRouteType(ctx.type);
+      return new RoutePolicyBooleanRouteTypeIs(type);
+   }
+
+   private RoutePolicyBoolean toRoutePolicyBoolean(
          Boolean_rp_stanzaContext ctx) {
       if (ctx.OR() == null) {
          return toRoutePolicyBoolean(ctx.boolean_and_rp_stanza());
@@ -5259,10 +5296,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          return toRoutePolicyBoolean(nctx);
       }
 
-      Boolean_rib_has_route_rp_stanzaContext rctx = ctx
+      Boolean_rib_has_route_rp_stanzaContext ribctx = ctx
             .boolean_rib_has_route_rp_stanza();
-      if (rctx != null) {
-         return toRoutePolicyBoolean(rctx);
+      if (ribctx != null) {
+         return toRoutePolicyBoolean(ribctx);
+      }
+
+      Boolean_route_type_is_rp_stanzaContext routectx = ctx
+            .boolean_route_type_is_rp_stanza();
+      if (routectx != null) {
+         return toRoutePolicyBoolean(routectx);
       }
 
       Boolean_tag_is_rp_stanzaContext tctx = ctx.boolean_tag_is_rp_stanza();
@@ -5639,6 +5682,57 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          }
       }
       return stmts;
+   }
+
+   private RouteTypeExpr toRouteType(Rp_route_typeContext ctx) {
+      if (ctx.INTERAREA() != null) {
+         return new LiteralRouteType(RouteType.INTERAREA);
+      }
+      else if (ctx.INTERNAL() != null) {
+         return new LiteralRouteType(RouteType.INTERNAL);
+      }
+      else if (ctx.LEVEL_1() != null) {
+         return new LiteralRouteType(RouteType.LEVEL_1);
+      }
+      else if (ctx.LEVEL_1_2() != null) {
+         return new LiteralRouteType(RouteType.INTERAREA); // not a typo
+      }
+      else if (ctx.LEVEL_2() != null) {
+         return new LiteralRouteType(RouteType.LEVEL_2);
+      }
+      else if (ctx.LOCAL() != null) {
+         return new LiteralRouteType(RouteType.LOCAL);
+      }
+      else if (ctx.OSPF_EXTERNAL_TYPE_1() != null) {
+         return new LiteralRouteType(RouteType.OSPF_EXTERNAL_TYPE_1);
+      }
+      else if (ctx.OSPF_EXTERNAL_TYPE_2() != null) {
+         return new LiteralRouteType(RouteType.OSPF_EXTERNAL_TYPE_2);
+      }
+      else if (ctx.OSPF_INTER_AREA() != null) {
+         return new LiteralRouteType(RouteType.OSPF_INTER_AREA);
+      }
+      else if (ctx.OSPF_INTRA_AREA() != null) {
+         return new LiteralRouteType(RouteType.OSPF_INTRA_AREA);
+      }
+      else if (ctx.OSPF_NSSA_TYPE_1() != null) {
+         return new LiteralRouteType(RouteType.OSPF_NSSA_TYPE_1);
+      }
+      else if (ctx.OSPF_NSSA_TYPE_2() != null) {
+         return new LiteralRouteType(RouteType.OSPF_NSSA_TYPE_2);
+      }
+      else if (ctx.RP_VARIABLE() != null) {
+         return new VarRouteType(ctx.RP_VARIABLE().getText());
+      }
+      else if (ctx.TYPE_1() != null) {
+         return new LiteralRouteType(RouteType.TYPE_1);
+      }
+      else if (ctx.TYPE_2() != null) {
+         return new LiteralRouteType(RouteType.TYPE_2);
+      }
+      else {
+         throw convError(RouteTypeExpr.class, ctx);
+      }
    }
 
    private SubRangeExpr toSubRangeExpr(Rp_subrangeContext ctx) {

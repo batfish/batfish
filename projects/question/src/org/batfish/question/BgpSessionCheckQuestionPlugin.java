@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -41,51 +42,51 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _allBgpNeighborSummarys;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _broken;
+      private SortedMap<String, SortedSet<Prefix>> _broken;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpBroken;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpBroken;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpHalfOpen;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpHalfOpen;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpLocalIpOnLoopback;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpLocalIpOnLoopback;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpLocalIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpLocalIpUnknown;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpMissingLocalIp;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpMissingLocalIp;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpNonUniqueEndpoint;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpNonUniqueEndpoint;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpRemoteIpOnLoopback;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpRemoteIpOnLoopback;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ebgpRemoteIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _ebgpRemoteIpUnknown;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _halfOpen;
+      private SortedMap<String, SortedSet<Prefix>> _halfOpen;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpBroken;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpBroken;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpHalfOpen;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpHalfOpen;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpLocalIpOnNonLoopback;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpLocalIpOnNonLoopback;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpLocalIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpLocalIpUnknown;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpMissingLocalIp;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpMissingLocalIp;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpNonUniqueEndpoint;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpNonUniqueEndpoint;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpRemoteIpOnNonLoopback;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpRemoteIpOnNonLoopback;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ibgpRemoteIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _ibgpRemoteIpUnknown;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _ignoredForeignEndpoints;
+      private SortedMap<String, SortedSet<Prefix>> _ignoredForeignEndpoints;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _localIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _localIpUnknown;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _missingLocalIp;
+      private SortedMap<String, SortedSet<Prefix>> _missingLocalIp;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _nonUniqueEndpoint;
+      private SortedMap<String, SortedSet<Prefix>> _nonUniqueEndpoint;
 
-      private SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> _remoteIpUnknown;
+      private SortedMap<String, SortedSet<Prefix>> _remoteIpUnknown;
 
       public BgpSessionCheckAnswerElement() {
          _allBgpNeighborSummarys = new TreeMap<>();
@@ -114,7 +115,19 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
          _remoteIpUnknown = new TreeMap<>();
       }
 
-      public void add(
+      public void add(SortedMap<String, SortedSet<Prefix>> neighborsByHostname,
+            Configuration c, BgpNeighborSummary bgpNeighbor) {
+         String hostname = c.getHostname();
+         SortedSet<Prefix> neighbors = neighborsByHostname.get(hostname);
+         if (neighbors == null) {
+            neighbors = new TreeSet<>();
+            neighborsByHostname.put(hostname, neighbors);
+         }
+         Prefix prefix = bgpNeighbor.getPrefix();
+         neighbors.add(prefix);
+      }
+
+      public void addToAll(
             SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> neighborsByHostname,
             Configuration c, BgpNeighborSummary bgpNeighbor) {
          String hostname = c.getHostname();
@@ -133,117 +146,117 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getBroken() {
+      public SortedMap<String, SortedSet<Prefix>> getBroken() {
          return _broken;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpBroken() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpBroken() {
          return _ebgpBroken;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpHalfOpen() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpHalfOpen() {
          return _ebgpHalfOpen;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpLocalIpOnLoopback() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpLocalIpOnLoopback() {
          return _ebgpLocalIpOnLoopback;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpLocalIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpLocalIpUnknown() {
          return _ebgpLocalIpUnknown;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpMissingLocalIp() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpMissingLocalIp() {
          return _ebgpMissingLocalIp;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpNonUniqueEndpoint() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpNonUniqueEndpoint() {
          return _ebgpNonUniqueEndpoint;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpRemoteIpOnLoopback() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpRemoteIpOnLoopback() {
          return _ebgpRemoteIpOnLoopback;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getEbgpRemoteIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getEbgpRemoteIpUnknown() {
          return _ebgpRemoteIpUnknown;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getHalfOpen() {
+      public SortedMap<String, SortedSet<Prefix>> getHalfOpen() {
          return _halfOpen;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpBroken() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpBroken() {
          return _ibgpBroken;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpHalfOpen() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpHalfOpen() {
          return _ibgpHalfOpen;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpLocalIpOnNonLoopback() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpLocalIpOnNonLoopback() {
          return _ibgpLocalIpOnNonLoopback;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpLocalIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpLocalIpUnknown() {
          return _ibgpLocalIpUnknown;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpMissingLocalIp() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpMissingLocalIp() {
          return _ibgpMissingLocalIp;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpNonUniqueEndpoint() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpNonUniqueEndpoint() {
          return _ibgpNonUniqueEndpoint;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpRemoteIpOnNonLoopback() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpRemoteIpOnNonLoopback() {
          return _ibgpRemoteIpOnNonLoopback;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIbgpRemoteIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getIbgpRemoteIpUnknown() {
          return _ibgpRemoteIpUnknown;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getIgnoredForeignEndpoints() {
+      public SortedMap<String, SortedSet<Prefix>> getIgnoredForeignEndpoints() {
          return _ignoredForeignEndpoints;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getLocalIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getLocalIpUnknown() {
          return _localIpUnknown;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getMissingLocalIp() {
+      public SortedMap<String, SortedSet<Prefix>> getMissingLocalIp() {
          return _missingLocalIp;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getNonUniqueEndpoint() {
+      public SortedMap<String, SortedSet<Prefix>> getNonUniqueEndpoint() {
          return _nonUniqueEndpoint;
       }
 
       @JsonIdentityReference(alwaysAsId = true)
-      public SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> getRemoteIpUnknown() {
+      public SortedMap<String, SortedSet<Prefix>> getRemoteIpUnknown() {
          return _remoteIpUnknown;
       }
 
@@ -259,118 +272,116 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
          _allBgpNeighborSummarys = allBgpNeighborSummarys;
       }
 
-      public void setBroken(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> broken) {
+      public void setBroken(SortedMap<String, SortedSet<Prefix>> broken) {
          _broken = broken;
       }
 
       public void setEbgpBroken(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpBroken) {
+            SortedMap<String, SortedSet<Prefix>> ebgpBroken) {
          _ebgpBroken = ebgpBroken;
       }
 
       public void setEbgpHalfOpen(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpHalfOpen) {
+            SortedMap<String, SortedSet<Prefix>> ebgpHalfOpen) {
          _ebgpHalfOpen = ebgpHalfOpen;
       }
 
       public void setEbgpLocalIpOnLoopback(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpLocalIpOnLoopback) {
+            SortedMap<String, SortedSet<Prefix>> ebgpLocalIpOnLoopback) {
          _ebgpLocalIpOnLoopback = ebgpLocalIpOnLoopback;
       }
 
       public void setEbgpLocalIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpLocalIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> ebgpLocalIpUnknown) {
          _ebgpLocalIpUnknown = ebgpLocalIpUnknown;
       }
 
       public void setEbgpMissingLocalIp(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpMissingLocalIp) {
+            SortedMap<String, SortedSet<Prefix>> ebgpMissingLocalIp) {
          _ebgpMissingLocalIp = ebgpMissingLocalIp;
       }
 
       public void setEbgpNonUniqueEndpoint(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpNonUniqueEndpoint) {
+            SortedMap<String, SortedSet<Prefix>> ebgpNonUniqueEndpoint) {
          _ebgpNonUniqueEndpoint = ebgpNonUniqueEndpoint;
       }
 
       public void setEbgpRemoteIpOnLoopback(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpRemoteIpOnLoopback) {
+            SortedMap<String, SortedSet<Prefix>> ebgpRemoteIpOnLoopback) {
          _ebgpRemoteIpOnLoopback = ebgpRemoteIpOnLoopback;
       }
 
       public void setEbgpRemoteIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ebgpRemoteIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> ebgpRemoteIpUnknown) {
          _ebgpRemoteIpUnknown = ebgpRemoteIpUnknown;
       }
 
-      public void setHalfOpen(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> halfOpen) {
+      public void setHalfOpen(SortedMap<String, SortedSet<Prefix>> halfOpen) {
          _halfOpen = halfOpen;
       }
 
       public void setIbgpBroken(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpBroken) {
+            SortedMap<String, SortedSet<Prefix>> ibgpBroken) {
          _ibgpBroken = ibgpBroken;
       }
 
       public void setIbgpHalfOpen(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpHalfOpen) {
+            SortedMap<String, SortedSet<Prefix>> ibgpHalfOpen) {
          _ibgpHalfOpen = ibgpHalfOpen;
       }
 
       public void setIbgpLocalIpOnNonLoopback(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpLocalIpOnNonLoopback) {
+            SortedMap<String, SortedSet<Prefix>> ibgpLocalIpOnNonLoopback) {
          _ibgpLocalIpOnNonLoopback = ibgpLocalIpOnNonLoopback;
       }
 
       public void setIbgpLocalIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpLocalIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> ibgpLocalIpUnknown) {
          _ibgpLocalIpUnknown = ibgpLocalIpUnknown;
       }
 
       public void setIbgpMissingLocalIp(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpMissingLocalIp) {
+            SortedMap<String, SortedSet<Prefix>> ibgpMissingLocalIp) {
          _ibgpMissingLocalIp = ibgpMissingLocalIp;
       }
 
       public void setIbgpNonUniqueEndpoint(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpNonUniqueEndpoint) {
+            SortedMap<String, SortedSet<Prefix>> ibgpNonUniqueEndpoint) {
          _ibgpNonUniqueEndpoint = ibgpNonUniqueEndpoint;
       }
 
       public void setIbgpRemoteIpOnNonLoopback(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpRemoteIpOnNonLoopback) {
+            SortedMap<String, SortedSet<Prefix>> ibgpRemoteIpOnNonLoopback) {
          _ibgpRemoteIpOnNonLoopback = ibgpRemoteIpOnNonLoopback;
       }
 
       public void setIbgpRemoteIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ibgpRemoteIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> ibgpRemoteIpUnknown) {
          _ibgpRemoteIpUnknown = ibgpRemoteIpUnknown;
       }
 
       public void setIgnoredForeignEndpoints(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> ignoredForeignEndpoints) {
+            SortedMap<String, SortedSet<Prefix>> ignoredForeignEndpoints) {
          _ignoredForeignEndpoints = ignoredForeignEndpoints;
       }
 
       public void setLocalIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> localIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> localIpUnknown) {
          _localIpUnknown = localIpUnknown;
       }
 
       public void setMissingLocalIp(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> missingLocalIp) {
+            SortedMap<String, SortedSet<Prefix>> missingLocalIp) {
          _missingLocalIp = missingLocalIp;
       }
 
       public void setNonUniqueEndpoint(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> nonUniqueEndpoint) {
+            SortedMap<String, SortedSet<Prefix>> nonUniqueEndpoint) {
          _nonUniqueEndpoint = nonUniqueEndpoint;
       }
 
       public void setRemoteIpUnknown(
-            SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>> remoteIpUnknown) {
+            SortedMap<String, SortedSet<Prefix>> remoteIpUnknown) {
          _remoteIpUnknown = remoteIpUnknown;
       }
    }
@@ -438,8 +449,8 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
                      BgpNeighborSummary bgpNeighborSummary = new BgpNeighborSummary(
                            bgpNeighbor);
-                     answerElement.add(answerElement.getAllBgpNeighbors(), c,
-                           bgpNeighborSummary);
+                     answerElement.addToAll(answerElement.getAllBgpNeighbors(),
+                           c, bgpNeighborSummary);
                      boolean foreign = bgpNeighbor.getGroup() != null
                            && question.getForeignBgpGroups()
                                  .contains(bgpNeighbor.getGroup());

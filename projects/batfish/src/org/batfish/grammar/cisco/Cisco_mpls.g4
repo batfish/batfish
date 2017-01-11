@@ -25,6 +25,11 @@ mpls_ldp_stanza
    )? LDP NEWLINE mplsl_stanza*
 ;
 
+mpls_label_range_stanza
+:
+   MPLS LABEL RANGE DEC+ NEWLINE
+;
+
 mpls_traffic_eng_stanza
 :
    MPLS TRAFFIC_ENG NEWLINE mplst_stanza*
@@ -59,10 +64,13 @@ null_mplsl_stanza
    (
       ADJACENCY
       | ADDRESS_FAMILY
+      | ADVERTISE
       | ALLOCATE
+      | DISABLE
       | DISCOVERY
       | IGP
       | INTERFACE
+      | FOR
       | LABEL
       | LOCAL
       | LOG

@@ -68,7 +68,11 @@ cmm_any
 
 cmm_cos
 :
-   COS range NEWLINE
+   COS
+   (
+      DEC+
+      | range
+   ) NEWLINE
 ;
 
 cmm_default_inspection_traffic

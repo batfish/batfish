@@ -21,6 +21,9 @@ flow exporter FLOW_EXPORTER_1
  export-protocol netflow-v5
  source Loopback0
  transport udp 9807
+ version v9
+  options interface-table timeout 60
+  options sampler-table timeout 60
 flow exporter-map bbbbbb
  transport udp 9901
  source Loopback0
@@ -39,4 +42,7 @@ flow monitor-map ddddddddddddd
  cache timeout active 290
  cache timeout inactive 280
 !
-
+flow platform cache timeout inactive 60
+!
+flow hardware export threshold 70 linecard 90
+!

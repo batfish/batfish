@@ -1562,7 +1562,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
-      newIface.setVrf(iface.getVrf());
+      newIface.setVrf(c.getVrfs().get(vrfName));
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());

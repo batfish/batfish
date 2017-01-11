@@ -9,6 +9,10 @@ public abstract class BatfishParser extends Parser {
       super(input);
    }
 
+   public String getStateInfo() {
+      return null;
+   }
+
    public void initErrorListener(BatfishCombinedParser<?, ?> parser) {
       BatfishParserErrorListener errorListener = new BatfishParserErrorListener(
             this.getClass().getSimpleName(), parser);

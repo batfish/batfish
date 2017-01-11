@@ -83,6 +83,10 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
          sb.append("Lexer mode at EOF: " + _combinedParser.getLexer().getMode()
                + "\n");
       }
+      String stateInfo = parser.getStateInfo();
+      if (stateInfo != null) {
+         sb.append("Parser state info:\n" + stateInfo + "\n");
+      }
 
       // collect context from text
       String text = _combinedParser.getInput();

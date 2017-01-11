@@ -38,6 +38,7 @@ aaa authorization exec default tacacs+ none
 aaa authorization exec ffffff none
 aaa authorization include telnet outside 1.2.3.4 255.255.255.255 0.0.0.0 0.0.0.0 User_Telnet
 aaa authorization network default group tacacs+ 
+aaa authorization reverse-access default none
 aaa group server radius fguiwrego
  server 1.2.3.4 auth-port 1812 acct-port 1813
  no source-interface

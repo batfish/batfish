@@ -1,5 +1,5 @@
 !
-hostname lcoal_v6_addr
+hostname local_v6_addr
 !
 router bgp 1
    neighbor NEIGH peer-group

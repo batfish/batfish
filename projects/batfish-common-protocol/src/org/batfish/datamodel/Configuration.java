@@ -108,6 +108,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
 
+   private transient boolean _resolved;
+
    private RoleSet _roles;
 
    private NavigableMap<String, Route6FilterList> _route6FilterLists;
@@ -365,6 +367,43 @@ public final class Configuration extends ComparableStructure<String> {
       _routes = new TreeSet<>();
       for (Vrf vrf : _vrfs.values()) {
          vrf.initRoutes();
+      }
+   }
+
+   public void resolveReferences() {
+      if (_resolved) {
+         return;
+      }
+      _resolved = true;
+      for (IkeGateway gateway : _ikeGateways.values()) {
+         gateway.resolveReferences(this);
+      }
+      for (IkePolicy ikePolicy : _ikePolicies.values()) {
+         ikePolicy.resolveReferences(this);
+      }
+      for (Interface iface : _interfaces.values()) {
+         iface.resolveReferences(this);
+      }
+      for (IpsecPolicy ipsecPolicy : _ipsecPolicies.values()) {
+         ipsecPolicy.resolveReferences(this);
+      }
+      for (IpsecVpn ipsecVpn : _ipsecVpns.values()) {
+         ipsecVpn.resolveReferences(this);
+      }
+      for (Vrf vrf : _vrfs.values()) {
+         vrf.resolveReferences(this);
+         BgpProcess bgpProc = vrf.getBgpProcess();
+         if (bgpProc != null) {
+            for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
+               neighbor.resolveReferences(this);
+            }
+         }
+         OspfProcess ospfProc = vrf.getOspfProcess();
+         if (ospfProc != null) {
+            for (OspfArea area : ospfProc.getAreas().values()) {
+               area.resolveReferences(this);
+            }
+         }
       }
    }
 

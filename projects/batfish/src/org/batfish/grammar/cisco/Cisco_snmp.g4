@@ -34,9 +34,21 @@ ss_community
 ssc_access_control
 :
    (
+      VIEW variable
+   )?
+   (
       RO
       | RW
-   )? name = variable? NEWLINE
+   )? name = variable?
+   (
+      (
+         (
+            IPV4
+            | IPV6
+         ) aclname = variable? DEC?
+      )
+      | aclname = variable
+   )? NEWLINE
 ;
 
 ss_enable_mib_null
@@ -72,7 +84,8 @@ ss_host
 ss_host_null
 :
    (
-      TRAPS
+      INFORMS
+      | TRAPS
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -93,7 +106,9 @@ ss_null
       AAA
       | AAA_USER
       | CHASSIS_ID
+      | COMMUNITY_MAP
       | CONTACT
+      | CONTEXT
       | ENGINEID
       | GLOBALENFORCEPRIV
       | GROUP
@@ -103,10 +118,12 @@ ss_null
       | MANAGER
       | MAX_IFINDEX_PER_MODULE
       | OVERLOAD_CONTROL
+      | PRIORITY
       | PROTOCOL
       | QUEUE_LENGTH
       | SOURCE_INTERFACE
       | TCP_SESSION
+      | TRAP
       | TRAPS
       | USER
       | VIEW
@@ -116,7 +133,7 @@ ss_null
 
 ss_trap_source
 :
-   TRAP_SOURCE interface_name NEWLINE
+   TRAP_SOURCE IPV4? interface_name NEWLINE
 ;
 
 ssc_group

@@ -2,13 +2,13 @@ package org.batfish.datamodel;
 
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -41,6 +41,8 @@ public class Vrf extends ComparableStructure<String> {
    private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
 
    private NavigableSet<GeneratedRoute> _generatedRoutes;
+
+   private transient SortedSet<String> _interfaceNames;
 
    private NavigableMap<String, Interface> _interfaces;
 
@@ -102,8 +104,17 @@ public class Vrf extends ComparableStructure<String> {
    }
 
    @JsonProperty(INTERFACES_VAR)
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonPropertyDescription("Interfaces assigned to this VRF. Stored as @id")
+   @JsonPropertyDescription("Interfaces assigned to this VRF")
+   public SortedSet<String> getInterfaceNames() {
+      if (_interfaces != null && !_interfaces.isEmpty()) {
+         return new TreeSet<>(_interfaces.keySet());
+      }
+      else {
+         return _interfaceNames;
+      }
+   }
+
+   @JsonIgnore
    public NavigableMap<String, Interface> getInterfaces() {
       return _interfaces;
    }
@@ -193,6 +204,14 @@ public class Vrf extends ComparableStructure<String> {
       _routes = new TreeSet<>();
    }
 
+   public void resolveReferences(Configuration owner) {
+      if (_interfaceNames != null) {
+         for (String ifaceName : _interfaceNames) {
+            _interfaces.put(ifaceName, owner.getInterfaces().get(ifaceName));
+         }
+      }
+   }
+
    @JsonProperty(BGP_PROCESS_VAR)
    public void setBgpProcess(BgpProcess process) {
       _bgpProcess = process;
@@ -210,6 +229,11 @@ public class Vrf extends ComparableStructure<String> {
    }
 
    @JsonProperty(INTERFACES_VAR)
+   public void setInterfaceNames(SortedSet<String> interfaceNames) {
+      _interfaceNames = interfaceNames;
+   }
+
+   @JsonIgnore
    public void setInterfaces(NavigableMap<String, Interface> interfaces) {
       _interfaces = interfaces;
    }
