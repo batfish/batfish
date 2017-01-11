@@ -1,5 +1,5 @@
 !
-hostname xrBGP_Neighbor_Group
+hostname ios_xr_bgp_neighbor_group
 !
 router bgp 5555
  neighbor-group BGPMonitor

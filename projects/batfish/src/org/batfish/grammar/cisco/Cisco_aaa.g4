@@ -93,10 +93,10 @@ aaa_accounting_exec_stanza
 :
    EXEC DEFAULT NEWLINE
    (
-   	   (
-   	   	  ACTION_TYPE
-   	      | GROUP
-   	   ) ~NEWLINE* NEWLINE
+      (
+         ACTION_TYPE
+         | GROUP
+      ) ~NEWLINE* NEWLINE
    )+
 ;
 

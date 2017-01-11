@@ -34,16 +34,20 @@ ss_community
 ssc_access_control
 :
    (
-   	   VIEW variable
+      VIEW variable
    )?
    (
       RO
       | RW
-   )? 
-   name = variable? 
+   )? name = variable?
    (
-   	   ((IPV4|IPV6) aclname = variable? DEC?)
-   	   | aclname = variable
+      (
+         (
+            IPV4
+            | IPV6
+         ) aclname = variable? DEC?
+      )
+      | aclname = variable
    )? NEWLINE
 ;
 

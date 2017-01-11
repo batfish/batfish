@@ -326,9 +326,9 @@ if_null_block
          (
             ACCOUNTING
             | ADDRESS
-               (
-            	   NEGOTIATED
-               )
+            (
+               NEGOTIATED
+            )
             | ARP
             | BGP
             | BROADCAST_ADDRESS
@@ -389,7 +389,7 @@ if_null_block
       (
          IPV4
          (
-            ICMP 
+            ICMP
             | MTU
             | POINT_TO_POINT
             | UNNUMBERED

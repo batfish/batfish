@@ -121,7 +121,7 @@ boolean_rib_has_route_rp_stanza
 
 boolean_route_type_is_rp_stanza
 :
-   ROUTE_TYPE IS variable
+   ROUTE_TYPE IS type = rp_route_type
 ;
 
 boolean_rp_stanza
@@ -457,6 +457,26 @@ rp_prefix_set
    (
       COMMA elems += prefix_set_elem
    )* PAREN_RIGHT
+;
+
+rp_route_type
+:
+   LOCAL
+   | INTERAREA
+   | INTERNAL
+   | LEVEL_1
+   | LEVEL_1_2
+   | LEVEL_2
+   | LOCAL
+   | OSPF_EXTERNAL_TYPE_1
+   | OSPF_EXTERNAL_TYPE_2
+   | OSPF_INTER_AREA
+   | OSPF_INTRA_AREA
+   | OSPF_NSSA_TYPE_1
+   | OSPF_NSSA_TYPE_2
+   | RP_VARIABLE
+   | TYPE_1
+   | TYPE_2
 ;
 
 rp_stanza

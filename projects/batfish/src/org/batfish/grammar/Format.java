@@ -1,4 +1,4 @@
-package org.batfish.job;
+package org.batfish.grammar;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,10 +71,13 @@ public final class Format {
       Matcher nexusCommitLine = Pattern.compile("(?m)^ *commit *$")
             .matcher(_fileText);
       Matcher neighborActivateMatcher = Pattern
-            .compile("(?m)^neighbor.*activate$").matcher(_fileText);
+            .compile("(?m)^ *neighbor.*activate$").matcher(_fileText);
+      Matcher neighborPeerGroupMatcher = Pattern
+            .compile("(?m)^ *neighbor.*peer-group$").matcher(_fileText);
       if (ciscoLike.find() || _firstChar == '!' || ciscoStyleAcl.find()) {
          if (_fileText.contains("exit-address-family")
-               || neighborActivateMatcher.find()) {
+               || neighborActivateMatcher.find()
+               || neighborPeerGroupMatcher.find()) {
             return ConfigurationFormat.CISCO_IOS;
          }
          else {

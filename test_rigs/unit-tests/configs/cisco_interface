@@ -57,7 +57,7 @@ interface ethernet 1/11
  ipv4 point-to-point
  ipv4 unnumbered Loopback100
  ipv4 access-group 310-systems egress hardware-count
- l2transport",
+ l2transport
   propagate remote-status
  !
  medium broadcast
@@ -103,9 +103,9 @@ interface ethernet 1/11
  !
  ntp multicast key 12 ttl 1
 !
-interface Null0",
- ipv4 icmp unreachables disable",
- ipv6 icmp unreachables disable",
+interface Null0
+ ipv4 icmp unreachables disable
+ ipv6 icmp unreachables disable
 !
 interface Loopback0
  description description-goes-here

@@ -313,7 +313,11 @@ ro6_distance
 
 ro6_distribute_list
 :
-   DISTRIBUTE_LIST PREFIX_LIST variable (IN|OUT) NEWLINE
+   DISTRIBUTE_LIST PREFIX_LIST variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 ro6_log_adjacency_changes
@@ -365,7 +369,7 @@ roa_range
 
 roa_network_null
 :
-	NETWORK POINT_TO_POINT NEWLINE
+   NETWORK POINT_TO_POINT NEWLINE
 ;
 
 roi_network
@@ -398,9 +402,10 @@ roi_priority
 
 rov3_address_family
 :
-   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE 
-   rov3_common* 
-   (EXIT_ADDRESS_FAMILY NEWLINE)?
+   ADDRESS_FAMILY IPV6 UNICAST? NEWLINE rov3_common*
+   (
+      EXIT_ADDRESS_FAMILY NEWLINE
+   )?
 ;
 
 rov3_common

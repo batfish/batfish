@@ -2301,7 +2301,7 @@ DSL
 :
    'dsl'
 ;
-  
+
 DSP
 :
    'dsp'
@@ -3746,6 +3746,11 @@ INTEGRITY
    'integrity'
 ;
 
+INTERAREA
+:
+   'interarea'
+;
+
 INTERFACE
 :
    'interface'
@@ -3832,11 +3837,11 @@ IPSLA
 IPV4
 :
    (
-       'ipv4'       
+      'ipv4'
    )
    |
    (
-   		'IPv4'
+      'IPv4'
    )
 ;
 
@@ -4941,7 +4946,7 @@ MSRPC
    'msrpc'
 ;
 
-MST 
+MST
 :
    'mst'
 ;
@@ -5519,6 +5524,36 @@ ORIGINATOR_ID
 OSPF
 :
    'ospf'
+;
+
+OSPF_EXTERNAL_TYPE_1
+:
+   'ospf-external-type-1'
+;
+
+OSPF_EXTERNAL_TYPE_2
+:
+   'ospf-external-type-2'
+;
+
+OSPF_INTER_AREA
+:
+   'ospf-inter-area'
+;
+
+OSPF_INTRA_AREA
+:
+   'ospf-intra-area'
+;
+
+OSPF_NSSA_TYPE_1
+:
+   'ospf-nssa-type-1'
+;
+
+OSPF_NSSA_TYPE_2
+:
+   'ospf-nssa-type-2'
 ;
 
 OSPFV3

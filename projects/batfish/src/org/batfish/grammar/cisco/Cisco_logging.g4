@@ -6,6 +6,24 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+logging_archive
+:
+   ARCHIVE ~NEWLINE* NEWLINE
+   (
+      logging_archive_null
+   )*
+;
+
+logging_archive_null
+:
+   NO?
+   (
+      ARCHIVE_LENGTH
+      | DEVICE
+      | FREQUENCY
+   ) ~NEWLINE* NEWLINE
+;
+
 logging_buffered
 :
    BUFFERED size = DEC? logging_severity? NEWLINE
@@ -60,8 +78,7 @@ logging_host
 logging_null
 :
    (
-   	  ALARM
-   	  | ARCHIVE
+      ALARM
       | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
@@ -87,21 +104,9 @@ logging_null
       | SERVER
       | SERVER_ARP
       | SNMP_AUTHFAIL
-      | SUPPRESS
       | SYNCHRONOUS
       | TIMESTAMP
       | VRF
-   ) ~NEWLINE* NEWLINE logging_null_inner*
-;
-
-logging_null_inner
-:
-   (
-   	  ARCHIVE_LENGTH
-	  | ALARM
-	  | ALL_OF_ROUTER
-	  | DEVICE
-	  | FREQUENCY
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -131,6 +136,23 @@ logging_source_interface
    )? NEWLINE
 ;
 
+logging_suppress
+:
+   SUPPRESS ~NEWLINE* NEWLINE
+   (
+      logging_suppress_null
+   )*
+;
+
+logging_suppress_null
+:
+   NO?
+   (
+      ALARM
+      | ALL_OF_ROUTER
+   ) ~NEWLINE* NEWLINE
+;
+
 logging_trap
 :
    TRAP logging_severity? NEWLINE
@@ -140,7 +162,8 @@ s_logging
 :
    LOGGING
    (
-      logging_buffered
+      logging_archive
+      | logging_buffered
       | logging_console
       | logging_enable
       | logging_format
@@ -148,6 +171,7 @@ s_logging
       | logging_null
       | logging_on
       | logging_source_interface
+      | logging_suppress
       | logging_trap
    )
 ;

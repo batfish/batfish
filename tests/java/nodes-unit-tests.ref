@@ -1339,6 +1339,10 @@
                     "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                     "disjuncts" : [
                       {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "connected"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
@@ -1876,6 +1880,49 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
+            },
+            "Loopback0" : {
+              "@id" : 129,
+              "name" : "Loopback0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "13.9.2.2/32"
+              ],
+              "bandwidth" : 1.0E12,
+              "description" : "description-goes-here",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 124,
+              "prefix" : "13.9.2.2/32",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
+            "Null0" : {
+              "@id" : 130,
+              "name" : "Null0",
+              "accessVlan" : 0,
+              "active" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "owner" : 124,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
             }
           },
           "vendorFamily" : {
@@ -1885,19 +1932,21 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 129,
+              "@id" : 131,
               "name" : "default",
               "interfaces" : {
                 "Async1" : 125,
                 "Crypto-Engine1/2/3" : 126,
                 "Dot11Radio0" : 127,
-                "Ethernet1/11" : 128
+                "Ethernet1/11" : 128,
+                "Loopback0" : 129,
+                "Null0" : 130
               }
             }
           }
         },
         "cisco_ip" : {
-          "@id" : 130,
+          "@id" : 132,
           "name" : "cisco_ip",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -1909,13 +1958,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 131,
+              "@id" : 133,
               "name" : "default"
             }
           }
         },
         "cisco_ip_nat" : {
-          "@id" : 132,
+          "@id" : 134,
           "name" : "cisco_ip_nat",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -1927,13 +1976,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 133,
+              "@id" : 135,
               "name" : "default"
             }
           }
         },
         "cisco_ip_route" : {
-          "@id" : 134,
+          "@id" : 136,
           "name" : "cisco_ip_route",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -1945,7 +1994,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 135,
+              "@id" : 137,
               "name" : "default",
               "staticRoutes" : [
                 {
@@ -1996,7 +2045,7 @@
           }
         },
         "cisco_ipsla" : {
-          "@id" : 136,
+          "@id" : 138,
           "name" : "cisco_ipsla",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2008,13 +2057,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 137,
+              "@id" : 139,
               "name" : "default"
             }
           }
         },
         "cisco_ipv6" : {
-          "@id" : 138,
+          "@id" : 140,
           "name" : "cisco_ipv6",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2026,20 +2075,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 139,
+              "@id" : 141,
               "name" : "default"
             }
           }
         },
         "cisco_isis" : {
-          "@id" : 140,
+          "@id" : 142,
           "name" : "cisco_isis",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "GigabitEthernet0/0/1" : {
-              "@id" : 141,
+              "@id" : 143,
               "name" : "GigabitEthernet0/0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -2056,14 +2105,14 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 140,
+              "owner" : 142,
               "prefix" : "137.164.25.57/30",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "GigabitEthernet0/1" : {
-              "@id" : 142,
+              "@id" : 144,
               "name" : "GigabitEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -2076,13 +2125,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 140,
+              "owner" : 142,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/0/0/0.2302" : {
-              "@id" : 143,
+              "@id" : 145,
               "name" : "HundredGigabitEthernet0/0/0/0.2302",
               "accessVlan" : 0,
               "active" : true,
@@ -2095,13 +2144,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 140,
+              "owner" : 142,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Serial4/0" : {
-              "@id" : 144,
+              "@id" : 146,
               "name" : "Serial4/0",
               "accessVlan" : 0,
               "active" : true,
@@ -2114,7 +2163,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 140,
+              "owner" : 142,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2127,13 +2176,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 145,
+              "@id" : 147,
               "name" : "default",
               "interfaces" : {
-                "GigabitEthernet0/0/1" : 141,
-                "GigabitEthernet0/1" : 142,
-                "HundredGigabitEthernet0/0/0/0.2302" : 143,
-                "Serial4/0" : 144
+                "GigabitEthernet0/0/1" : 143,
+                "GigabitEthernet0/1" : 144,
+                "HundredGigabitEthernet0/0/0/0.2302" : 145,
+                "Serial4/0" : 146
               },
               "isisProcess" : {
                 "level" : "LEVEL_2",
@@ -2143,7 +2192,7 @@
           }
         },
         "cisco_line" : {
-          "@id" : 146,
+          "@id" : 148,
           "name" : "cisco_line",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2153,7 +2202,7 @@
               "hostname" : "cisco_line",
               "lines" : {
                 "<UNNAMED>0/0/0" : {
-                  "@id" : 147,
+                  "@id" : 149,
                   "name" : "<UNNAMED>0/0/0",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2168,7 +2217,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/1" : {
-                  "@id" : 148,
+                  "@id" : 150,
                   "name" : "<UNNAMED>0/0/1",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2183,7 +2232,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/10" : {
-                  "@id" : 149,
+                  "@id" : 151,
                   "name" : "<UNNAMED>0/0/10",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2198,7 +2247,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/11" : {
-                  "@id" : 150,
+                  "@id" : 152,
                   "name" : "<UNNAMED>0/0/11",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2213,7 +2262,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/12" : {
-                  "@id" : 151,
+                  "@id" : 153,
                   "name" : "<UNNAMED>0/0/12",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2228,7 +2277,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/13" : {
-                  "@id" : 152,
+                  "@id" : 154,
                   "name" : "<UNNAMED>0/0/13",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2243,7 +2292,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/14" : {
-                  "@id" : 153,
+                  "@id" : 155,
                   "name" : "<UNNAMED>0/0/14",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2258,7 +2307,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/15" : {
-                  "@id" : 154,
+                  "@id" : 156,
                   "name" : "<UNNAMED>0/0/15",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2273,7 +2322,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/2" : {
-                  "@id" : 155,
+                  "@id" : 157,
                   "name" : "<UNNAMED>0/0/2",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2288,7 +2337,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/3" : {
-                  "@id" : 156,
+                  "@id" : 158,
                   "name" : "<UNNAMED>0/0/3",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2303,7 +2352,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/4" : {
-                  "@id" : 157,
+                  "@id" : 159,
                   "name" : "<UNNAMED>0/0/4",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2318,7 +2367,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/5" : {
-                  "@id" : 158,
+                  "@id" : 160,
                   "name" : "<UNNAMED>0/0/5",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2333,7 +2382,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/6" : {
-                  "@id" : 159,
+                  "@id" : 161,
                   "name" : "<UNNAMED>0/0/6",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2348,7 +2397,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/7" : {
-                  "@id" : 160,
+                  "@id" : 162,
                   "name" : "<UNNAMED>0/0/7",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2363,7 +2412,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/8" : {
-                  "@id" : 161,
+                  "@id" : 163,
                   "name" : "<UNNAMED>0/0/8",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2378,7 +2427,7 @@
                   ]
                 },
                 "<UNNAMED>0/0/9" : {
-                  "@id" : 162,
+                  "@id" : 164,
                   "name" : "<UNNAMED>0/0/9",
                   "inputAccessList" : "40",
                   "loginAuthentication" : "SecurID",
@@ -2393,7 +2442,7 @@
                   ]
                 },
                 "<UNNAMED>2" : {
-                  "@id" : 163,
+                  "@id" : 165,
                   "name" : "<UNNAMED>2",
                   "execTimeoutMinutes" : 1,
                   "execTimeoutSeconds" : 0,
@@ -2403,116 +2452,116 @@
                   ]
                 },
                 "<UNNAMED>35" : {
-                  "@id" : 164,
+                  "@id" : 166,
                   "name" : "<UNNAMED>35",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>36" : {
-                  "@id" : 165,
+                  "@id" : 167,
                   "name" : "<UNNAMED>36",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>37" : {
-                  "@id" : 166,
+                  "@id" : 168,
                   "name" : "<UNNAMED>37",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>38" : {
-                  "@id" : 167,
+                  "@id" : 169,
                   "name" : "<UNNAMED>38",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>39" : {
-                  "@id" : 168,
+                  "@id" : 170,
                   "name" : "<UNNAMED>39",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>40" : {
-                  "@id" : 169,
+                  "@id" : 171,
                   "name" : "<UNNAMED>40",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>41" : {
-                  "@id" : 170,
+                  "@id" : 172,
                   "name" : "<UNNAMED>41",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>42" : {
-                  "@id" : 171,
+                  "@id" : 173,
                   "name" : "<UNNAMED>42",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>43" : {
-                  "@id" : 172,
+                  "@id" : 174,
                   "name" : "<UNNAMED>43",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>44" : {
-                  "@id" : 173,
+                  "@id" : 175,
                   "name" : "<UNNAMED>44",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>45" : {
-                  "@id" : 174,
+                  "@id" : 176,
                   "name" : "<UNNAMED>45",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>46" : {
-                  "@id" : 175,
+                  "@id" : 177,
                   "name" : "<UNNAMED>46",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>47" : {
-                  "@id" : 176,
+                  "@id" : 178,
                   "name" : "<UNNAMED>47",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>48" : {
-                  "@id" : 177,
+                  "@id" : 179,
                   "name" : "<UNNAMED>48",
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "console" : {
-                  "@id" : 178,
+                  "@id" : 180,
                   "name" : "console",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0
                 },
                 "vty" : {
-                  "@id" : 179,
+                  "@id" : 181,
                   "name" : "vty",
                   "inputAccessList" : "vty-acl"
                 },
                 "vty0" : {
-                  "@id" : 180,
+                  "@id" : 182,
                   "name" : "vty0",
                   "execTimeoutMinutes" : 60,
                   "execTimeoutSeconds" : 0,
@@ -2524,7 +2573,7 @@
                   ]
                 },
                 "vty1" : {
-                  "@id" : 181,
+                  "@id" : 183,
                   "name" : "vty1",
                   "execTimeoutMinutes" : 60,
                   "execTimeoutSeconds" : 0,
@@ -2536,7 +2585,7 @@
                   ]
                 },
                 "vty10" : {
-                  "@id" : 182,
+                  "@id" : 184,
                   "name" : "vty10",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2544,7 +2593,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty11" : {
-                  "@id" : 183,
+                  "@id" : 185,
                   "name" : "vty11",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2552,7 +2601,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty12" : {
-                  "@id" : 184,
+                  "@id" : 186,
                   "name" : "vty12",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2560,7 +2609,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty13" : {
-                  "@id" : 185,
+                  "@id" : 187,
                   "name" : "vty13",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2568,7 +2617,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty14" : {
-                  "@id" : 186,
+                  "@id" : 188,
                   "name" : "vty14",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2576,7 +2625,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty15" : {
-                  "@id" : 187,
+                  "@id" : 189,
                   "name" : "vty15",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2584,7 +2633,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty2" : {
-                  "@id" : 188,
+                  "@id" : 190,
                   "name" : "vty2",
                   "execTimeoutMinutes" : 60,
                   "execTimeoutSeconds" : 0,
@@ -2596,7 +2645,7 @@
                   ]
                 },
                 "vty3" : {
-                  "@id" : 189,
+                  "@id" : 191,
                   "name" : "vty3",
                   "execTimeoutMinutes" : 60,
                   "execTimeoutSeconds" : 0,
@@ -2608,7 +2657,7 @@
                   ]
                 },
                 "vty4" : {
-                  "@id" : 190,
+                  "@id" : 192,
                   "name" : "vty4",
                   "execTimeoutMinutes" : 60,
                   "execTimeoutSeconds" : 0,
@@ -2620,7 +2669,7 @@
                   ]
                 },
                 "vty5" : {
-                  "@id" : 191,
+                  "@id" : 193,
                   "name" : "vty5",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2628,7 +2677,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty6" : {
-                  "@id" : 192,
+                  "@id" : 194,
                   "name" : "vty6",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2636,7 +2685,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty7" : {
-                  "@id" : 193,
+                  "@id" : 195,
                   "name" : "vty7",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2644,7 +2693,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty8" : {
-                  "@id" : 194,
+                  "@id" : 196,
                   "name" : "vty8",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2652,7 +2701,7 @@
                   "loginAuthentication" : "blah"
                 },
                 "vty9" : {
-                  "@id" : 195,
+                  "@id" : 197,
                   "name" : "vty9",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
@@ -2664,13 +2713,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 196,
+              "@id" : 198,
               "name" : "default"
             }
           }
         },
         "cisco_logging" : {
-          "@id" : 197,
+          "@id" : 199,
           "name" : "cisco_logging",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2686,15 +2735,15 @@
                 "console" : { },
                 "hosts" : {
                   "10.246.131.130" : {
-                    "@id" : 198,
+                    "@id" : 200,
                     "name" : "10.246.131.130"
                   },
                   "10.246.131.138" : {
-                    "@id" : 199,
+                    "@id" : 201,
                     "name" : "10.246.131.138"
                   },
                   "137.164.80.152" : {
-                    "@id" : 200,
+                    "@id" : 202,
                     "name" : "137.164.80.152"
                   }
                 },
@@ -2708,13 +2757,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 201,
+              "@id" : 203,
               "name" : "default"
             }
           }
         },
         "cisco_mac_acl" : {
-          "@id" : 202,
+          "@id" : 204,
           "name" : "cisco_mac_acl",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2726,13 +2775,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 203,
+              "@id" : 205,
               "name" : "default"
             }
           }
         },
         "cisco_misc" : {
-          "@id" : 204,
+          "@id" : 206,
           "name" : "cisco_misc",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2747,7 +2796,7 @@
               "sntp" : {
                 "servers" : {
                   "1.2.3.4" : {
-                    "@id" : 205,
+                    "@id" : 207,
                     "name" : "1.2.3.4"
                   }
                 }
@@ -2756,13 +2805,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 206,
+              "@id" : 208,
               "name" : "default"
             }
           }
         },
         "cisco_multicast" : {
-          "@id" : 207,
+          "@id" : 209,
           "name" : "cisco_multicast",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2774,20 +2823,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 208,
+              "@id" : 210,
               "name" : "default"
             }
           }
         },
         "cisco_ospf" : {
-          "@id" : 209,
+          "@id" : 211,
           "name" : "cisco_ospf",
-          "configurationFormat" : "CISCO_NX",
+          "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 210,
+              "@id" : 212,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -2825,7 +2874,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 211,
+              "@id" : 213,
               "name" : "default",
               "ospfProcess" : {
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -2836,7 +2885,7 @@
           }
         },
         "cisco_platform" : {
-          "@id" : 212,
+          "@id" : 214,
           "name" : "cisco_platform",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2848,13 +2897,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 213,
+              "@id" : 215,
               "name" : "default"
             }
           }
         },
         "cisco_privilege" : {
-          "@id" : 214,
+          "@id" : 216,
           "name" : "cisco_privilege",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2866,13 +2915,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 215,
+              "@id" : 217,
               "name" : "default"
             }
           }
         },
         "cisco_qos" : {
-          "@id" : 216,
+          "@id" : 218,
           "name" : "cisco_qos",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2884,13 +2933,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 217,
+              "@id" : 219,
               "name" : "default"
             }
           }
         },
         "cisco_queue_monitor" : {
-          "@id" : 218,
+          "@id" : 220,
           "name" : "cisco_queue_monitor",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2902,13 +2951,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 219,
+              "@id" : 221,
               "name" : "default"
             }
           }
         },
         "cisco_redundancy" : {
-          "@id" : 220,
+          "@id" : 222,
           "name" : "cisco_redundancy",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2920,13 +2969,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 221,
+              "@id" : 223,
               "name" : "default"
             }
           }
         },
         "cisco_role" : {
-          "@id" : 222,
+          "@id" : 224,
           "name" : "cisco_role",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2938,13 +2987,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 223,
+              "@id" : 225,
               "name" : "default"
             }
           }
         },
         "cisco_sccp" : {
-          "@id" : 224,
+          "@id" : 226,
           "name" : "cisco_sccp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2956,13 +3005,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 225,
+              "@id" : 227,
               "name" : "default"
             }
           }
         },
         "cisco_snmp" : {
-          "@id" : 226,
+          "@id" : 228,
           "name" : "cisco_snmp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -2973,16 +3022,23 @@
               "snmpServer" : {
                 "communities" : {
                   "dummycommunity" : {
-                    "@id" : 227,
+                    "@id" : 229,
                     "name" : "dummycommunity",
-                    "accessList" : "snmp-arpa-acl",
+                    "accessList" : "SystemOwner",
                     "ro" : true,
                     "rw" : true
+                  },
+                  "dummyconnunity" : {
+                    "@id" : 230,
+                    "name" : "dummyconnunity",
+                    "accessList" : "SystemOwner",
+                    "ro" : true,
+                    "rw" : false
                   }
                 },
                 "hosts" : {
                   "10.1.2.3" : {
-                    "@id" : 228,
+                    "@id" : 231,
                     "name" : "10.1.2.3"
                   }
                 },
@@ -3072,13 +3128,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 229,
+              "@id" : 232,
               "name" : "default"
             }
           }
         },
         "cisco_spanning_tree" : {
-          "@id" : 230,
+          "@id" : 233,
           "name" : "cisco_spanning_tree",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3090,13 +3146,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 231,
+              "@id" : 234,
               "name" : "default"
             }
           }
         },
         "cisco_ssh" : {
-          "@id" : 232,
+          "@id" : 235,
           "name" : "cisco_ssh",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3105,19 +3161,19 @@
             "cisco" : {
               "hostname" : "cisco_ssh",
               "ssh" : {
-                "version" : 1
+                "version" : 2
               }
             }
           },
           "vrfs" : {
             "default" : {
-              "@id" : 233,
+              "@id" : 236,
               "name" : "default"
             }
           }
         },
         "cisco_stcapp" : {
-          "@id" : 234,
+          "@id" : 237,
           "name" : "cisco_stcapp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3129,20 +3185,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 235,
+              "@id" : 238,
               "name" : "default"
             }
           }
         },
         "cisco_style_acl1" : {
-          "@id" : 236,
+          "@id" : 239,
           "name" : "cisco_style_acl1",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "blah" : {
-              "@id" : 237,
+              "@id" : 240,
               "name" : "blah",
               "lines" : [
                 {
@@ -3164,20 +3220,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 238,
+              "@id" : 241,
               "name" : "default"
             }
           }
         },
         "cisco_style_acl2" : {
-          "@id" : 239,
+          "@id" : 242,
           "name" : "cisco_style_acl2",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "1" : {
-              "@id" : 240,
+              "@id" : 243,
               "name" : "1",
               "lines" : [
                 {
@@ -3199,13 +3255,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 241,
+              "@id" : 244,
               "name" : "default"
             }
           }
         },
         "cisco_track" : {
-          "@id" : 242,
+          "@id" : 245,
           "name" : "cisco_track",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3217,13 +3273,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 243,
+              "@id" : 246,
               "name" : "default"
             }
           }
         },
         "cisco_vdc" : {
-          "@id" : 244,
+          "@id" : 247,
           "name" : "cisco_vdc",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3235,13 +3291,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 245,
+              "@id" : 248,
               "name" : "default"
             }
           }
         },
         "cisco_vlan" : {
-          "@id" : 246,
+          "@id" : 249,
           "name" : "cisco_vlan",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3253,13 +3309,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 247,
+              "@id" : 250,
               "name" : "default"
             }
           }
         },
         "cisco_voice_port" : {
-          "@id" : 248,
+          "@id" : 251,
           "name" : "cisco_voice_port",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3271,13 +3327,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 249,
+              "@id" : 252,
               "name" : "default"
             }
           }
         },
         "cisco_vpdn" : {
-          "@id" : 250,
+          "@id" : 253,
           "name" : "cisco_vpdn",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3289,13 +3345,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 251,
+              "@id" : 254,
               "name" : "default"
             }
           }
         },
         "cisco_vpn" : {
-          "@id" : 252,
+          "@id" : 255,
           "name" : "cisco_vpn",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3307,13 +3363,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 253,
+              "@id" : 256,
               "name" : "default"
             }
           }
         },
         "cisco_webvpn" : {
-          "@id" : 254,
+          "@id" : 257,
           "name" : "cisco_webvpn",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3325,13 +3381,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 255,
+              "@id" : 258,
               "name" : "default"
             }
           }
         },
         "cisco_wsma" : {
-          "@id" : 256,
+          "@id" : 259,
           "name" : "cisco_wsma",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3343,36 +3399,36 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 257,
+              "@id" : 260,
               "name" : "default"
             }
           }
         },
         "colon_in_vrf" : {
-          "@id" : 258,
+          "@id" : 261,
           "name" : "colon_in_vrf",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 259,
+              "@id" : 262,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 260,
+              "@id" : 263,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 261,
+              "@id" : 264,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 262,
+              "@id" : 265,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -3435,7 +3491,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 263,
+              "@id" : 266,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -3444,7 +3500,7 @@
           }
         },
         "commSet" : {
-          "@id" : 264,
+          "@id" : 267,
           "name" : "commSet",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3456,17 +3512,17 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 265,
+              "@id" : 268,
               "name" : "default"
             }
           }
         },
         "community-name-numbers" : {
-          "@id" : 266,
+          "@id" : 269,
           "name" : "community-name-numbers",
           "communityLists" : {
             "9999-RRR" : {
-              "@id" : 267,
+              "@id" : 270,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3482,7 +3538,7 @@
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "AAA1-BBB-CCC" : {
-              "@id" : 268,
+              "@id" : 271,
               "name" : "AAA1-BBB-CCC",
               "statements" : [
                 {
@@ -3533,17 +3589,17 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 269,
+              "@id" : 272,
               "name" : "default"
             }
           }
         },
         "community-name-numbers_dos" : {
-          "@id" : 270,
+          "@id" : 273,
           "name" : "community-name-numbers_dos",
           "communityLists" : {
             "9999-RRR" : {
-              "@id" : 271,
+              "@id" : 274,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3559,7 +3615,7 @@
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "AAA1-BBB-CCC" : {
-              "@id" : 272,
+              "@id" : 275,
               "name" : "AAA1-BBB-CCC",
               "statements" : [
                 {
@@ -3610,17 +3666,17 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 273,
+              "@id" : 276,
               "name" : "default"
             }
           }
         },
         "community_list_named" : {
-          "@id" : 274,
+          "@id" : 277,
           "name" : "community_list_named",
           "communityLists" : {
             "COMM_LIST_NAME" : {
-              "@id" : 275,
+              "@id" : 278,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -3636,7 +3692,7 @@
           "defaultInboundAction" : "ACCEPT",
           "routeFilterLists" : {
             "PFX_LIST" : {
-              "@id" : 276,
+              "@id" : 279,
               "name" : "PFX_LIST",
               "lines" : [
                 {
@@ -3649,7 +3705,7 @@
           },
           "routingPolicies" : {
             "TO_NEIGHBOR" : {
-              "@id" : 277,
+              "@id" : 280,
               "name" : "TO_NEIGHBOR",
               "statements" : [
                 {
@@ -3703,13 +3759,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 278,
+              "@id" : 281,
               "name" : "default"
             }
           }
         },
         "community_set" : {
-          "@id" : 279,
+          "@id" : 282,
           "name" : "community_set",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -3721,20 +3777,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 280,
+              "@id" : 283,
               "name" : "default"
             }
           }
         },
         "eigrp" : {
-          "@id" : 281,
+          "@id" : 284,
           "name" : "eigrp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "bippety" : {
-              "@id" : 282,
+              "@id" : 285,
               "name" : "bippety",
               "lines" : [
                 {
@@ -3825,7 +3881,7 @@
               ]
             },
             "bloop_blop" : {
-              "@id" : 283,
+              "@id" : 286,
               "name" : "bloop_blop",
               "lines" : [
                 {
@@ -3855,20 +3911,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 284,
+              "@id" : 287,
               "name" : "default"
             }
           }
         },
         "foundry_access_list" : {
-          "@id" : 285,
+          "@id" : 288,
           "name" : "foundry_access_list",
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ip6AccessLists" : {
             "RT404888-Caltech" : {
-              "@id" : 286,
+              "@id" : 289,
               "name" : "RT404888-Caltech",
               "lines" : [
                 {
@@ -4007,36 +4063,36 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 287,
+              "@id" : 290,
               "name" : "default"
             }
           }
         },
         "foundry_bgp" : {
-          "@id" : 288,
+          "@id" : 291,
           "name" : "foundry_bgp",
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 289,
+              "@id" : 292,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 290,
+              "@id" : 293,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 291,
+              "@id" : 294,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 292,
+              "@id" : 295,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -4095,7 +4151,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 293,
+              "@id" : 296,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -4104,14 +4160,14 @@
           }
         },
         "foundry_interface" : {
-          "@id" : 294,
+          "@id" : 297,
           "name" : "foundry_interface",
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "Ethernet1/15" : {
-              "@id" : 295,
+              "@id" : 298,
               "name" : "Ethernet1/15",
               "accessVlan" : 0,
               "active" : true,
@@ -4124,7 +4180,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 294,
+              "owner" : 297,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4137,16 +4193,16 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 296,
+              "@id" : 299,
               "name" : "default",
               "interfaces" : {
-                "Ethernet1/15" : 295
+                "Ethernet1/15" : 298
               }
             }
           }
         },
         "foundry_misc" : {
-          "@id" : 297,
+          "@id" : 300,
           "name" : "foundry_misc",
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -4163,7 +4219,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 298,
+              "@id" : 301,
               "name" : "default",
               "staticRoutes" : [
                 {
@@ -4178,7 +4234,7 @@
           }
         },
         "foundry_vlan_group" : {
-          "@id" : 299,
+          "@id" : 302,
           "name" : "foundry_vlan_group",
           "configurationFormat" : "FOUNDRY",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -4190,20 +4246,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 300,
+              "@id" : 303,
               "name" : "default"
             }
           }
         },
         "host1" : {
-          "@id" : 301,
+          "@id" : 304,
           "name" : "host1",
           "configurationFormat" : "HOST",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "eth0" : {
-              "@id" : 302,
+              "@id" : 305,
               "name" : "eth0",
               "accessVlan" : 0,
               "active" : true,
@@ -4211,7 +4267,7 @@
                 "2.128.0.101/24"
               ],
               "bandwidth" : 1.0E9,
-              "incomingFilter" : 303,
+              "incomingFilter" : 306,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4220,8 +4276,8 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "outgoingFilter" : 304,
-              "owner" : 301,
+              "outgoingFilter" : 307,
+              "owner" : 304,
               "prefix" : "2.128.0.101/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q"
@@ -4229,7 +4285,7 @@
           },
           "ipAccessLists" : {
             "filter::FORWARD" : {
-              "@id" : 305,
+              "@id" : 308,
               "name" : "filter::FORWARD",
               "lines" : [
                 {
@@ -4239,7 +4295,7 @@
               ]
             },
             "filter::INPUT" : {
-              "@id" : 303,
+              "@id" : 306,
               "name" : "filter::INPUT",
               "lines" : [
                 {
@@ -4314,7 +4370,7 @@
               ]
             },
             "filter::OUTPUT" : {
-              "@id" : 304,
+              "@id" : 307,
               "name" : "filter::OUTPUT",
               "lines" : [
                 {
@@ -4324,7 +4380,7 @@
               ]
             },
             "mangle::FORWARD" : {
-              "@id" : 306,
+              "@id" : 309,
               "name" : "mangle::FORWARD",
               "lines" : [
                 {
@@ -4334,7 +4390,7 @@
               ]
             },
             "mangle::INPUT" : {
-              "@id" : 307,
+              "@id" : 310,
               "name" : "mangle::INPUT",
               "lines" : [
                 {
@@ -4344,7 +4400,7 @@
               ]
             },
             "mangle::OUTPUT" : {
-              "@id" : 308,
+              "@id" : 311,
               "name" : "mangle::OUTPUT",
               "lines" : [
                 {
@@ -4354,7 +4410,7 @@
               ]
             },
             "mangle::POSTROUTING" : {
-              "@id" : 309,
+              "@id" : 312,
               "name" : "mangle::POSTROUTING",
               "lines" : [
                 {
@@ -4364,7 +4420,7 @@
               ]
             },
             "mangle::PREROUTING" : {
-              "@id" : 310,
+              "@id" : 313,
               "name" : "mangle::PREROUTING",
               "lines" : [
                 {
@@ -4374,7 +4430,7 @@
               ]
             },
             "nat::OUTPUT" : {
-              "@id" : 311,
+              "@id" : 314,
               "name" : "nat::OUTPUT",
               "lines" : [
                 {
@@ -4384,7 +4440,7 @@
               ]
             },
             "nat::POSTROUTING" : {
-              "@id" : 312,
+              "@id" : 315,
               "name" : "nat::POSTROUTING",
               "lines" : [
                 {
@@ -4394,7 +4450,7 @@
               ]
             },
             "nat::PREROUTING" : {
-              "@id" : 313,
+              "@id" : 316,
               "name" : "nat::PREROUTING",
               "lines" : [
                 {
@@ -4407,10 +4463,10 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 314,
+              "@id" : 317,
               "name" : "default",
               "interfaces" : {
-                "eth0" : 302
+                "eth0" : 305
               },
               "staticRoutes" : [
                 {
@@ -4425,14 +4481,14 @@
           }
         },
         "if_tag_is" : {
-          "@id" : 315,
+          "@id" : 318,
           "name" : "if_tag_is",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "FOO" : {
-              "@id" : 316,
+              "@id" : 319,
               "name" : "FOO",
               "statements" : [
                 {
@@ -4689,20 +4745,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 317,
+              "@id" : 320,
               "name" : "default"
             }
           }
         },
         "interface_exit" : {
-          "@id" : 318,
+          "@id" : 321,
           "name" : "interface_exit",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "Vlan303" : {
-              "@id" : 319,
+              "@id" : 322,
               "name" : "Vlan303",
               "accessVlan" : 0,
               "active" : true,
@@ -4718,14 +4774,14 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 318,
+              "owner" : 321,
               "prefix" : "10.22.33.10/29",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Vlan803" : {
-              "@id" : 320,
+              "@id" : 323,
               "name" : "Vlan803",
               "accessVlan" : 0,
               "active" : true,
@@ -4741,7 +4797,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 318,
+              "owner" : 321,
               "prefix" : "10.12.12.1/23",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4755,24 +4811,24 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 321,
+              "@id" : 324,
               "name" : "default",
               "interfaces" : {
-                "Vlan303" : 319,
-                "Vlan803" : 320
+                "Vlan303" : 322,
+                "Vlan803" : 323
               }
             }
           }
         },
         "interface_name" : {
-          "@id" : 322,
+          "@id" : 325,
           "name" : "interface_name",
           "configurationFormat" : "CISCO_IOS_XR",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet12/13" : {
-              "@id" : 323,
+              "@id" : 326,
               "name" : "FastEthernet12/13",
               "accessVlan" : 0,
               "active" : true,
@@ -4785,13 +4841,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 322,
+              "owner" : 325,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/6/0/8" : {
-              "@id" : 324,
+              "@id" : 327,
               "name" : "HundredGigabitEthernet0/6/0/8",
               "accessVlan" : 0,
               "active" : false,
@@ -4804,13 +4860,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 322,
+              "owner" : 325,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Port-channel1" : {
-              "@id" : 325,
+              "@id" : 328,
               "name" : "Port-channel1",
               "accessVlan" : 0,
               "active" : true,
@@ -4823,13 +4879,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 322,
+              "owner" : 325,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Vlan100" : {
-              "@id" : 326,
+              "@id" : 329,
               "name" : "Vlan100",
               "accessVlan" : 0,
               "active" : true,
@@ -4842,7 +4898,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 322,
+              "owner" : 325,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4855,26 +4911,26 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 327,
+              "@id" : 330,
               "name" : "default",
               "interfaces" : {
-                "FastEthernet12/13" : 323,
-                "HundredGigabitEthernet0/6/0/8" : 324,
-                "Port-channel1" : 325,
-                "Vlan100" : 326
+                "FastEthernet12/13" : 326,
+                "HundredGigabitEthernet0/6/0/8" : 327,
+                "Port-channel1" : 328,
+                "Vlan100" : 329
               }
             }
           }
         },
         "interface_sdr" : {
-          "@id" : 328,
+          "@id" : 331,
           "name" : "interface_sdr",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "Loopback0" : {
-              "@id" : 329,
+              "@id" : 332,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -4891,7 +4947,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 328,
+              "owner" : 331,
               "prefix" : "137.164.16.80/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4905,16 +4961,16 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 330,
+              "@id" : 333,
               "name" : "default",
               "interfaces" : {
-                "Loopback0" : 329
+                "Loopback0" : 332
               }
             }
           }
         },
         "ios_xr_acl" : {
-          "@id" : 331,
+          "@id" : 334,
           "name" : "ios_xr_acl",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -4926,20 +4982,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 332,
+              "@id" : 335,
               "name" : "default"
             }
           }
         },
         "ios_xr_isis" : {
-          "@id" : 333,
+          "@id" : 336,
           "name" : "ios_xr_isis",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "GigabitEthernet0/2/1/6" : {
-              "@id" : 334,
+              "@id" : 337,
               "name" : "GigabitEthernet0/2/1/6",
               "accessVlan" : 0,
               "active" : true,
@@ -4952,7 +5008,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 333,
+              "owner" : 336,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4965,10 +5021,10 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 335,
+              "@id" : 338,
               "name" : "default",
               "interfaces" : {
-                "GigabitEthernet0/2/1/6" : 334
+                "GigabitEthernet0/2/1/6" : 337
               },
               "isisProcess" : {
                 "level" : "LEVEL_1_2"
@@ -4977,7 +5033,7 @@
           }
         },
         "ios_xr_multipart" : {
-          "@id" : 336,
+          "@id" : 339,
           "name" : "ios_xr_multipart",
           "configurationFormat" : "CISCO_IOS_XR",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -4992,13 +5048,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 337,
+              "@id" : 340,
               "name" : "default"
             }
           }
         },
         "ios_xr_ntp" : {
-          "@id" : 338,
+          "@id" : 341,
           "name" : "ios_xr_ntp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -5009,7 +5065,7 @@
               "ntp" : {
                 "servers" : {
                   "1.2.3.4" : {
-                    "@id" : 339,
+                    "@id" : 342,
                     "name" : "1.2.3.4"
                   }
                 }
@@ -5018,20 +5074,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 340,
+              "@id" : 343,
               "name" : "default"
             }
           }
         },
         "ios_xr_ospf" : {
-          "@id" : 341,
+          "@id" : 344,
           "name" : "ios_xr_ospf",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "Bundle-Ethernet101" : {
-              "@id" : 342,
+              "@id" : 345,
               "name" : "Bundle-Ethernet101",
               "accessVlan" : 0,
               "active" : true,
@@ -5044,13 +5100,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Bundle-Ethernet103" : {
-              "@id" : 343,
+              "@id" : 346,
               "name" : "Bundle-Ethernet103",
               "accessVlan" : 0,
               "active" : true,
@@ -5063,13 +5119,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Bundle-Ethernet201" : {
-              "@id" : 344,
+              "@id" : 347,
               "name" : "Bundle-Ethernet201",
               "accessVlan" : 0,
               "active" : true,
@@ -5082,13 +5138,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/0.292" : {
-              "@id" : 345,
+              "@id" : 348,
               "name" : "HundredGigabitEthernet0/2/0/0.292",
               "accessVlan" : 0,
               "active" : true,
@@ -5101,13 +5157,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "HundredGigabitEthernet0/2/0/3" : {
-              "@id" : 346,
+              "@id" : 349,
               "name" : "HundredGigabitEthernet0/2/0/3",
               "accessVlan" : 0,
               "active" : true,
@@ -5120,13 +5176,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "Loopback0" : {
-              "@id" : 347,
+              "@id" : 350,
               "name" : "Loopback0",
               "accessVlan" : 0,
               "active" : true,
@@ -5139,13 +5195,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/2" : {
-              "@id" : 348,
+              "@id" : 351,
               "name" : "TenGigabitEthernet0/0/0/2",
               "accessVlan" : 0,
               "active" : true,
@@ -5158,13 +5214,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/4" : {
-              "@id" : 349,
+              "@id" : 352,
               "name" : "TenGigabitEthernet0/0/0/4",
               "accessVlan" : 0,
               "active" : true,
@@ -5177,13 +5233,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "TenGigabitEthernet0/0/0/5" : {
-              "@id" : 350,
+              "@id" : 353,
               "name" : "TenGigabitEthernet0/0/0/5",
               "accessVlan" : 0,
               "active" : true,
@@ -5196,7 +5252,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 341,
+              "owner" : 344,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5204,7 +5260,7 @@
           },
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
-              "@id" : 351,
+              "@id" : 354,
               "name" : "~OSPF_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -5250,18 +5306,18 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 352,
+              "@id" : 355,
               "name" : "default",
               "interfaces" : {
-                "Bundle-Ethernet101" : 342,
-                "Bundle-Ethernet103" : 343,
-                "Bundle-Ethernet201" : 344,
-                "HundredGigabitEthernet0/2/0/0.292" : 345,
-                "HundredGigabitEthernet0/2/0/3" : 346,
-                "Loopback0" : 347,
-                "TenGigabitEthernet0/0/0/2" : 348,
-                "TenGigabitEthernet0/0/0/4" : 349,
-                "TenGigabitEthernet0/0/0/5" : 350
+                "Bundle-Ethernet101" : 345,
+                "Bundle-Ethernet103" : 346,
+                "Bundle-Ethernet201" : 347,
+                "HundredGigabitEthernet0/2/0/0.292" : 348,
+                "HundredGigabitEthernet0/2/0/3" : 349,
+                "Loopback0" : 350,
+                "TenGigabitEthernet0/0/0/2" : 351,
+                "TenGigabitEthernet0/0/0/4" : 352,
+                "TenGigabitEthernet0/0/0/5" : 353
               },
               "ospfProcess" : {
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -5272,7 +5328,7 @@
           }
         },
         "ios_xr_router_static" : {
-          "@id" : 353,
+          "@id" : 356,
           "name" : "ios_xr_router_static",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -5284,13 +5340,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 354,
+              "@id" : 357,
               "name" : "default"
             }
           }
         },
         "ios_xr_ssh" : {
-          "@id" : 355,
+          "@id" : 358,
           "name" : "ios_xr_ssh",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -5302,13 +5358,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 356,
+              "@id" : 359,
               "name" : "default"
             }
           }
         },
         "ios_xr_taskgroup" : {
-          "@id" : 357,
+          "@id" : 360,
           "name" : "ios_xr_taskgroup",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -5320,20 +5376,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 358,
+              "@id" : 361,
               "name" : "default"
             }
           }
         },
         "ip_access_list_with_seq" : {
-          "@id" : 359,
+          "@id" : 362,
           "name" : "ip_access_list_with_seq",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "BLAH-BLAH" : {
-              "@id" : 360,
+              "@id" : 363,
               "name" : "BLAH-BLAH",
               "lines" : [
                 {
@@ -5599,20 +5655,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 361,
+              "@id" : 364,
               "name" : "default"
             }
           }
         },
         "ip_prefix_list_single_line" : {
-          "@id" : 362,
+          "@id" : 365,
           "name" : "ip_prefix_list_single_line",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routeFilterLists" : {
             "DENY-IPV4-ANY-IN" : {
-              "@id" : 363,
+              "@id" : 366,
               "name" : "DENY-IPV4-ANY-IN",
               "lines" : [
                 {
@@ -5630,20 +5686,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 364,
+              "@id" : 367,
               "name" : "default"
             }
           }
         },
         "ipv6_access_list" : {
-          "@id" : 365,
+          "@id" : 368,
           "name" : "ipv6_access_list",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ip6AccessLists" : {
             "RT404888-XO" : {
-              "@id" : 366,
+              "@id" : 369,
               "name" : "RT404888-XO",
               "lines" : [
                 {
@@ -5817,7 +5873,7 @@
               ]
             },
             "abcdefg" : {
-              "@id" : 367,
+              "@id" : 370,
               "name" : "abcdefg",
               "lines" : [
                 {
@@ -5886,20 +5942,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 368,
+              "@id" : 371,
               "name" : "default"
             }
           }
         },
         "juniper-tcpflags" : {
-          "@id" : 369,
+          "@id" : 372,
           "name" : "juniper-tcpflags",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "foo" : {
-              "@id" : 370,
+              "@id" : 373,
               "name" : "foo",
               "lines" : [
                 {
@@ -5933,13 +5989,13 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 371,
+              "@id" : 374,
               "name" : "default"
             }
           }
         },
         "juniper_apply_macro" : {
-          "@id" : 372,
+          "@id" : 375,
           "name" : "juniper_apply_macro",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -5947,17 +6003,17 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 373,
+              "@id" : 376,
               "name" : "default"
             }
           }
         },
         "juniper_extended_community" : {
-          "@id" : 374,
+          "@id" : 377,
           "name" : "juniper_extended_community",
           "communityLists" : {
             "COMM_ALL" : {
-              "@id" : 375,
+              "@id" : 378,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -5968,7 +6024,7 @@
               "invertMatch" : false
             },
             "COMM_NON_CUST" : {
-              "@id" : 376,
+              "@id" : 379,
               "lines" : [
                 {
                   "action" : "ACCEPT",
@@ -5985,20 +6041,20 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 377,
+              "@id" : 380,
               "name" : "default"
             }
           }
         },
         "juniper_firewall" : {
-          "@id" : 378,
+          "@id" : 381,
           "name" : "juniper_firewall",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "blah" : {
-              "@id" : 379,
+              "@id" : 382,
               "name" : "blah",
               "lines" : [
                 {
@@ -6016,20 +6072,20 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 380,
+              "@id" : 383,
               "name" : "default"
             }
           }
         },
         "juniper_interfaces" : {
-          "@id" : 381,
+          "@id" : 384,
           "name" : "juniper_interfaces",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "ae0.0" : {
-              "@id" : 382,
+              "@id" : 385,
               "name" : "ae0.0",
               "accessVlan" : 0,
               "active" : true,
@@ -6042,13 +6098,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 381,
+              "owner" : 384,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "irb.5" : {
-              "@id" : 383,
+              "@id" : 386,
               "name" : "irb.5",
               "accessVlan" : 0,
               "active" : true,
@@ -6065,14 +6121,14 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 381,
+              "owner" : 384,
               "prefix" : "10.0.0.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "xe-0/0/0:0.0" : {
-              "@id" : 384,
+              "@id" : 387,
               "name" : "xe-0/0/0:0.0",
               "accessVlan" : 0,
               "active" : true,
@@ -6085,13 +6141,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 381,
+              "owner" : 384,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
             "xe-0/0/5:0.0" : {
-              "@id" : 385,
+              "@id" : 388,
               "name" : "xe-0/0/5:0.0",
               "accessVlan" : 0,
               "active" : true,
@@ -6104,7 +6160,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 381,
+              "owner" : 384,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6113,19 +6169,19 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 386,
+              "@id" : 389,
               "name" : "default",
               "interfaces" : {
-                "ae0.0" : 382,
-                "irb.5" : 383,
-                "xe-0/0/0:0.0" : 384,
-                "xe-0/0/5:0.0" : 385
+                "ae0.0" : 385,
+                "irb.5" : 386,
+                "xe-0/0/0:0.0" : 387,
+                "xe-0/0/5:0.0" : 388
               }
             }
           }
         },
         "juniper_misc" : {
-          "@id" : 387,
+          "@id" : 390,
           "name" : "juniper_misc",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6134,13 +6190,13 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 388,
+              "@id" : 391,
               "name" : "default"
             }
           }
         },
         "juniper_routing_options" : {
-          "@id" : 389,
+          "@id" : 392,
           "name" : "juniper_routing_options",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6148,13 +6204,13 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 390,
+              "@id" : 393,
               "name" : "default"
             }
           }
         },
         "juniper_snmp" : {
-          "@id" : 391,
+          "@id" : 394,
           "name" : "juniper_snmp",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6162,13 +6218,13 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 392,
+              "@id" : 395,
               "name" : "default"
             }
           }
         },
         "juniper_system" : {
-          "@id" : 393,
+          "@id" : 396,
           "name" : "juniper_system",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6176,36 +6232,36 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "@id" : 394,
+              "@id" : 397,
               "name" : "default"
             }
           }
         },
-        "lcoal_v6_addr" : {
-          "@id" : 395,
-          "name" : "lcoal_v6_addr",
-          "configurationFormat" : "CISCO_NX",
+        "local_v6_addr" : {
+          "@id" : 398,
+          "name" : "local_v6_addr",
+          "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 396,
+              "@id" : 399,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 397,
+              "@id" : 400,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 398,
+              "@id" : 401,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 399,
+              "@id" : 402,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6259,12 +6315,12 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "lcoal_v6_addr"
+              "hostname" : "local_v6_addr"
             }
           },
           "vrfs" : {
             "default" : {
-              "@id" : 400,
+              "@id" : 403,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -6273,7 +6329,7 @@
           }
         },
         "mac_access_list" : {
-          "@id" : 401,
+          "@id" : 404,
           "name" : "mac_access_list",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6285,13 +6341,31 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 402,
+              "@id" : 405,
+              "name" : "default"
+            }
+          }
+        },
+        "mpls" : {
+          "@id" : 406,
+          "name" : "mpls",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "mpls"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "@id" : 407,
               "name" : "default"
             }
           }
         },
         "msdp_originator_id" : {
-          "@id" : 403,
+          "@id" : 408,
           "name" : "msdp_originator_id",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -6303,20 +6377,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 404,
+              "@id" : 409,
               "name" : "default"
             }
           }
         },
         "named_and_numbered_lists" : {
-          "@id" : 405,
+          "@id" : 410,
           "name" : "named_and_numbered_lists",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "foo" : {
-              "@id" : 406,
+              "@id" : 411,
               "name" : "foo",
               "statements" : [
                 {
@@ -6333,36 +6407,36 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 407,
+              "@id" : 412,
               "name" : "default"
             }
           }
         },
         "neighbor" : {
-          "@id" : 408,
+          "@id" : 413,
           "name" : "neighbor",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 409,
+              "@id" : 414,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 410,
+              "@id" : 415,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 411,
+              "@id" : 416,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 412,
+              "@id" : 417,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6414,7 +6488,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~" : {
-              "@id" : 413,
+              "@id" : 418,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
               "statements" : [
                 {
@@ -6440,7 +6514,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1:1:0:0:0:0:0:0~" : {
-              "@id" : 414,
+              "@id" : 419,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1:1:0:0:0:0:0:0~",
               "statements" : [
                 {
@@ -6466,7 +6540,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:a1:1:0:0:0:0:0:0~" : {
-              "@id" : 415,
+              "@id" : 420,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:a1:1:0:0:0:0:0:0~",
               "statements" : [
                 {
@@ -6499,12 +6573,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 416,
+              "@id" : 421,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "123.123.123.123/32" : {
-                    "@id" : 417,
+                    "@id" : 422,
                     "name" : "123.123.123.123/32",
                     "address" : "123.123.123.123",
                     "advertiseExternal" : false,
@@ -6517,7 +6591,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                     "localAs" : 1,
-                    "owner" : 408,
+                    "owner" : 413,
                     "remoteAs" : 1,
                     "remotePrefix" : "123.123.123.123/32",
                     "routeReflectorClient" : false,
@@ -6531,30 +6605,30 @@
           }
         },
         "neighbor-name-numbers" : {
-          "@id" : 418,
+          "@id" : 423,
           "name" : "neighbor-name-numbers",
-          "configurationFormat" : "CISCO_NX",
+          "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 419,
+              "@id" : 424,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 420,
+              "@id" : 425,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 421,
+              "@id" : 426,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 422,
+              "@id" : 427,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6613,7 +6687,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 423,
+              "@id" : 428,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "207.46.160.15"
@@ -6622,30 +6696,30 @@
           }
         },
         "neighbor_dos" : {
-          "@id" : 424,
+          "@id" : 429,
           "name" : "neighbor_dos",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 425,
+              "@id" : 430,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 426,
+              "@id" : 431,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 427,
+              "@id" : 432,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 428,
+              "@id" : 433,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6697,7 +6771,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~" : {
-              "@id" : 429,
+              "@id" : 434,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
               "statements" : [
                 {
@@ -6723,7 +6797,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1:1:0:0:0:0:0:0~" : {
-              "@id" : 430,
+              "@id" : 435,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1:1:0:0:0:0:0:0~",
               "statements" : [
                 {
@@ -6749,7 +6823,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:a1:1:0:0:0:0:0:0~" : {
-              "@id" : 431,
+              "@id" : 436,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:a1:1:0:0:0:0:0:0~",
               "statements" : [
                 {
@@ -6782,12 +6856,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 432,
+              "@id" : 437,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "123.123.123.123/32" : {
-                    "@id" : 433,
+                    "@id" : 438,
                     "name" : "123.123.123.123/32",
                     "address" : "123.123.123.123",
                     "advertiseExternal" : false,
@@ -6800,7 +6874,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                     "localAs" : 1,
-                    "owner" : 424,
+                    "owner" : 429,
                     "remoteAs" : 1,
                     "remotePrefix" : "123.123.123.123/32",
                     "routeReflectorClient" : false,
@@ -6814,24 +6888,24 @@
           }
         },
         "neighbor_mix" : {
-          "@id" : 434,
+          "@id" : 439,
           "name" : "neighbor_mix",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 435,
+              "@id" : 440,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 436,
+              "@id" : 441,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 437,
+              "@id" : 442,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -6844,7 +6918,7 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 438,
+              "@id" : 443,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -6896,7 +6970,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
-              "@id" : 439,
+              "@id" : 444,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
               "statements" : [
                 {
@@ -6922,7 +6996,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~" : {
-              "@id" : 440,
+              "@id" : 445,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
               "statements" : [
                 {
@@ -6948,7 +7022,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~" : {
-              "@id" : 441,
+              "@id" : 446,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
               "statements" : [
                 {
@@ -6981,12 +7055,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 442,
+              "@id" : 447,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "4.4.4.4/32" : {
-                    "@id" : 443,
+                    "@id" : 448,
                     "name" : "4.4.4.4/32",
                     "address" : "4.4.4.4",
                     "advertiseExternal" : false,
@@ -7000,7 +7074,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                     "localAs" : 1,
-                    "owner" : 434,
+                    "owner" : 439,
                     "remoteAs" : 4,
                     "remotePrefix" : "4.4.4.4/32",
                     "routeReflectorClient" : false,
@@ -7008,7 +7082,7 @@
                     "vrf" : "default"
                   },
                   "3.3.3.3/32" : {
-                    "@id" : 444,
+                    "@id" : 449,
                     "name" : "3.3.3.3/32",
                     "address" : "3.3.3.3",
                     "advertiseExternal" : false,
@@ -7022,7 +7096,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                     "localAs" : 1,
-                    "owner" : 434,
+                    "owner" : 439,
                     "remoteAs" : 3,
                     "remotePrefix" : "3.3.3.3/32",
                     "routeReflectorClient" : false,
@@ -7030,7 +7104,7 @@
                     "vrf" : "default"
                   },
                   "1.1.1.1/32" : {
-                    "@id" : 445,
+                    "@id" : 450,
                     "name" : "1.1.1.1/32",
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
@@ -7044,7 +7118,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "localAs" : 1,
-                    "owner" : 434,
+                    "owner" : 439,
                     "remoteAs" : 1,
                     "remotePrefix" : "1.1.1.1/32",
                     "routeReflectorClient" : false,
@@ -7058,30 +7132,30 @@
           }
         },
         "neighbor_nxos" : {
-          "@id" : 446,
+          "@id" : 451,
           "name" : "neighbor_nxos",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 447,
+              "@id" : 452,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 448,
+              "@id" : 453,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 449,
+              "@id" : 454,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 450,
+              "@id" : 455,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7133,7 +7207,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.1.1.0/25~" : {
-              "@id" : 451,
+              "@id" : 456,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.1.1.0/25~",
               "statements" : [
                 {
@@ -7166,7 +7240,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 452,
+              "@id" : 457,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -7175,14 +7249,14 @@
           }
         },
         "network6" : {
-          "@id" : 453,
+          "@id" : 458,
           "name" : "network6",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 454,
+              "@id" : 459,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7195,17 +7269,17 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 455,
+              "@id" : 460,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 456,
+              "@id" : 461,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 457,
+              "@id" : 462,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7264,7 +7338,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 458,
+              "@id" : 463,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -7273,7 +7347,7 @@
           }
         },
         "nexus" : {
-          "@id" : 459,
+          "@id" : 464,
           "name" : "nexus",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7285,36 +7359,36 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 460,
+              "@id" : 465,
               "name" : "default"
             }
           }
         },
         "nexus-arista-router-bgp" : {
-          "@id" : 461,
+          "@id" : 466,
           "name" : "nexus-arista-router-bgp",
-          "configurationFormat" : "CISCO_NX",
+          "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 462,
+              "@id" : 467,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 463,
+              "@id" : 468,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 464,
+              "@id" : 469,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 465,
+              "@id" : 470,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7373,7 +7447,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 466,
+              "@id" : 471,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -7382,14 +7456,14 @@
           }
         },
         "nexus_bgp" : {
-          "@id" : 467,
+          "@id" : 472,
           "name" : "nexus_bgp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 468,
+              "@id" : 473,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7402,11 +7476,11 @@
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 469,
+              "@id" : 474,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 470,
+              "@id" : 475,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7419,7 +7493,7 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 471,
+              "@id" : 476,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7482,7 +7556,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 472,
+              "@id" : 477,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -7491,7 +7565,7 @@
           }
         },
         "nexus_ntp" : {
-          "@id" : 473,
+          "@id" : 478,
           "name" : "nexus_ntp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7501,8 +7575,12 @@
               "hostname" : "nexus_ntp",
               "ntp" : {
                 "servers" : {
+                  "1.2.3.4" : {
+                    "@id" : 479,
+                    "name" : "1.2.3.4"
+                  },
                   "10.1.2.3" : {
-                    "@id" : 474,
+                    "@id" : 480,
                     "name" : "10.1.2.3",
                     "vrf" : "management"
                   }
@@ -7512,17 +7590,17 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 475,
+              "@id" : 481,
               "name" : "default"
             },
             "management" : {
-              "@id" : 476,
+              "@id" : 482,
               "name" : "management"
             }
           }
         },
         "nexus_ssh" : {
-          "@id" : 477,
+          "@id" : 483,
           "name" : "nexus_ssh",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7534,13 +7612,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 478,
+              "@id" : 484,
               "name" : "default"
             }
           }
         },
         "no_aaa_group_server" : {
-          "@id" : 479,
+          "@id" : 485,
           "name" : "no_aaa_group_server",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7552,30 +7630,30 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 480,
+              "@id" : 486,
               "name" : "default"
             }
           }
         },
         "non_nexus_neighbor_af" : {
-          "@id" : 481,
+          "@id" : 487,
           "name" : "non_nexus_neighbor_af",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 482,
+              "@id" : 488,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 483,
+              "@id" : 489,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 484,
+              "@id" : 490,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7588,7 +7666,7 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 485,
+              "@id" : 491,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7640,7 +7718,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~" : {
-              "@id" : 486,
+              "@id" : 492,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
               "statements" : [
                 {
@@ -7673,12 +7751,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 487,
+              "@id" : 493,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "10.0.0.0/32" : {
-                    "@id" : 488,
+                    "@id" : 494,
                     "name" : "10.0.0.0/32",
                     "address" : "10.0.0.0",
                     "advertiseExternal" : false,
@@ -7691,7 +7769,7 @@
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                     "localAs" : 2,
-                    "owner" : 481,
+                    "owner" : 487,
                     "remoteAs" : 1,
                     "remotePrefix" : "10.0.0.0/32",
                     "routeReflectorClient" : false,
@@ -7705,7 +7783,7 @@
           }
         },
         "openflow" : {
-          "@id" : 489,
+          "@id" : 495,
           "name" : "openflow",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7717,30 +7795,30 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 490,
+              "@id" : 496,
               "name" : "default"
             }
           }
         },
         "peer_template" : {
-          "@id" : 491,
+          "@id" : 497,
           "name" : "peer_template",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 492,
+              "@id" : 498,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 493,
+              "@id" : 499,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 494,
+              "@id" : 500,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~",
               "lines" : [
                 {
@@ -7768,7 +7846,7 @@
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 495,
+              "@id" : 501,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -7820,7 +7898,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~" : {
-              "@id" : 496,
+              "@id" : 502,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
               "statements" : [
                 {
@@ -7846,7 +7924,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~" : {
-              "@id" : 497,
+              "@id" : 503,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
               "statements" : [
                 {
@@ -7879,12 +7957,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 498,
+              "@id" : 504,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "10.98.25.0/25" : {
-                    "@id" : 499,
+                    "@id" : 505,
                     "name" : "10.98.25.0/25",
                     "advertiseExternal" : false,
                     "advertiseInactive" : false,
@@ -7898,7 +7976,7 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
                     "group" : "RAAS",
                     "localAs" : 64601,
-                    "owner" : 491,
+                    "owner" : 497,
                     "remoteAs" : 65511,
                     "remotePrefix" : "10.98.25.0/25",
                     "routeReflectorClient" : false,
@@ -7906,7 +7984,7 @@
                     "vrf" : "default"
                   },
                   "100.93.100.16/32" : {
-                    "@id" : 500,
+                    "@id" : 506,
                     "name" : "100.93.100.16/32",
                     "address" : "100.93.100.16",
                     "advertiseExternal" : false,
@@ -7921,7 +7999,7 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
                     "group" : "SPINE",
                     "localAs" : 64601,
-                    "owner" : 491,
+                    "owner" : 497,
                     "remoteAs" : 64802,
                     "remotePrefix" : "100.93.100.16/32",
                     "routeReflectorClient" : false,
@@ -7935,14 +8013,14 @@
           }
         },
         "pim" : {
-          "@id" : 501,
+          "@id" : 507,
           "name" : "pim",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "Loopback1" : {
-              "@id" : 502,
+              "@id" : 508,
               "name" : "Loopback1",
               "accessVlan" : 0,
               "active" : true,
@@ -7958,7 +8036,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 501,
+              "owner" : 507,
               "prefix" : "137.164.17.8/32",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7972,16 +8050,16 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 503,
+              "@id" : 509,
               "name" : "default",
               "interfaces" : {
-                "Loopback1" : 502
+                "Loopback1" : 508
               }
             }
           }
         },
         "pim_snooping" : {
-          "@id" : 504,
+          "@id" : 510,
           "name" : "pim_snooping",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -7993,20 +8071,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 505,
+              "@id" : 511,
               "name" : "default"
             }
           }
         },
         "preSet" : {
-          "@id" : 506,
+          "@id" : 512,
           "name" : "preSet",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routeFilterLists" : {
             "default_route" : {
-              "@id" : 507,
+              "@id" : 513,
               "name" : "default_route",
               "lines" : [
                 {
@@ -8017,7 +8095,7 @@
               ]
             },
             "ucla_networks" : {
-              "@id" : 508,
+              "@id" : 514,
               "name" : "ucla_networks",
               "lines" : [
                 {
@@ -8070,20 +8148,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 509,
+              "@id" : 515,
               "name" : "default"
             }
           }
         },
         "prefix_list_ipv4" : {
-          "@id" : 510,
+          "@id" : 516,
           "name" : "prefix_list_ipv4",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routeFilterLists" : {
             "default" : {
-              "@id" : 511,
+              "@id" : 517,
               "name" : "default",
               "lines" : [
                 {
@@ -8094,7 +8172,7 @@
               ]
             },
             "test" : {
-              "@id" : 512,
+              "@id" : 518,
               "name" : "test",
               "lines" : [
                 {
@@ -8107,7 +8185,7 @@
           },
           "routingPolicies" : {
             "to_elacc" : {
-              "@id" : 513,
+              "@id" : 519,
               "name" : "to_elacc",
               "statements" : [
                 {
@@ -8143,20 +8221,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 514,
+              "@id" : 520,
               "name" : "default"
             }
           }
         },
         "rP" : {
-          "@id" : 515,
+          "@id" : 521,
           "name" : "rP",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
-              "@id" : 516,
+              "@id" : 522,
               "name" : "EBGP-PEER-AS2828-LAX-PNI-OUT",
               "statements" : [
                 {
@@ -8271,7 +8349,7 @@
               ]
             },
             "EBGP-PEER-AS6461-LAX-PNI-IN" : {
-              "@id" : 517,
+              "@id" : 523,
               "name" : "EBGP-PEER-AS6461-LAX-PNI-IN",
               "statements" : [
                 {
@@ -8363,7 +8441,7 @@
               ]
             },
             "EBGP-PEER-SANITY-IN" : {
-              "@id" : 518,
+              "@id" : 524,
               "name" : "EBGP-PEER-SANITY-IN",
               "statements" : [
                 {
@@ -8475,7 +8553,7 @@
               ]
             },
             "aaaa" : {
-              "@id" : 519,
+              "@id" : 525,
               "name" : "aaaa",
               "statements" : [
                 {
@@ -8494,7 +8572,7 @@
               ]
             },
             "barbar_to_fooey_community_ipv4" : {
-              "@id" : 520,
+              "@id" : 526,
               "name" : "barbar_to_fooey_community_ipv4",
               "statements" : [
                 {
@@ -8593,7 +8671,7 @@
               ]
             },
             "doodlepop" : {
-              "@id" : 521,
+              "@id" : 527,
               "name" : "doodlepop",
               "statements" : [
                 {
@@ -8707,7 +8785,7 @@
               ]
             },
             "drop_community_5555" : {
-              "@id" : 522,
+              "@id" : 528,
               "name" : "drop_community_5555",
               "statements" : [
                 {
@@ -8773,7 +8851,7 @@
               ]
             },
             "fooey_blackhole" : {
-              "@id" : 523,
+              "@id" : 529,
               "name" : "fooey_blackhole",
               "statements" : [
                 {
@@ -8914,7 +8992,7 @@
               ]
             },
             "fooey_to_barbar_ipv4" : {
-              "@id" : 524,
+              "@id" : 530,
               "name" : "fooey_to_barbar_ipv4",
               "statements" : [
                 {
@@ -8973,7 +9051,7 @@
               ]
             },
             "fooey_to_barbar_ipv6" : {
-              "@id" : 525,
+              "@id" : 531,
               "name" : "fooey_to_barbar_ipv6",
               "statements" : [
                 {
@@ -9046,7 +9124,7 @@
               ]
             },
             "ospf_default_ipv4" : {
-              "@id" : 526,
+              "@id" : 532,
               "name" : "ospf_default_ipv4",
               "statements" : [
                 {
@@ -9085,7 +9163,7 @@
               ]
             },
             "perfsonar_andsn_ipv4" : {
-              "@id" : 527,
+              "@id" : 533,
               "name" : "perfsonar_andsn_ipv4",
               "statements" : [
                 {
@@ -9183,7 +9261,7 @@
               ]
             },
             "redistribute-static-isis" : {
-              "@id" : 528,
+              "@id" : 534,
               "name" : "redistribute-static-isis",
               "statements" : [
                 {
@@ -9293,8 +9371,51 @@
                 }
               ]
             },
+            "routetype" : {
+              "@id" : 535,
+              "name" : "routetype",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchRouteType",
+                    "type" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralRouteType",
+                      "type" : "local"
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                      "falseStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetDefaultActionAccept"
+                        }
+                      ],
+                      "guard" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "CallExprContext"
+                      },
+                      "trueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetLocalDefaultActionAccept"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
             "to_chillmap" : {
-              "@id" : 529,
+              "@id" : 536,
               "name" : "to_chillmap",
               "statements" : [
                 {
@@ -10001,20 +10122,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 530,
+              "@id" : 537,
               "name" : "default"
             }
           }
         },
         "route_map" : {
-          "@id" : 531,
+          "@id" : 538,
           "name" : "route_map",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "MSDP-SA-RP-FILTER" : {
-              "@id" : 532,
+              "@id" : 539,
               "name" : "MSDP-SA-RP-FILTER",
               "statements" : [
                 {
@@ -10028,7 +10149,7 @@
               ]
             },
             "connected-to-bgp" : {
-              "@id" : 533,
+              "@id" : 540,
               "name" : "connected-to-bgp",
               "statements" : [
                 {
@@ -10038,7 +10159,7 @@
               ]
             },
             "ijfw$%^&****(((([]grr" : {
-              "@id" : 534,
+              "@id" : 541,
               "name" : "ijfw$%^&****(((([]grr",
               "statements" : [
                 {
@@ -10051,8 +10172,22 @@
                 }
               ]
             },
+            "mgmt" : {
+              "@id" : 542,
+              "name" : "mgmt",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            },
             "next-hop-null" : {
-              "@id" : 535,
+              "@id" : 543,
               "name" : "next-hop-null",
               "statements" : [
                 {
@@ -10066,7 +10201,7 @@
               ]
             },
             "to_svl-hub-router" : {
-              "@id" : 536,
+              "@id" : 544,
               "name" : "to_svl-hub-router",
               "statements" : [
                 {
@@ -10094,20 +10229,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 537,
+              "@id" : 545,
               "name" : "default"
             }
           }
         },
         "route_map_sub" : {
-          "@id" : 538,
+          "@id" : 546,
           "name" : "route_map_sub",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "ABC" : {
-              "@id" : 539,
+              "@id" : 547,
               "name" : "ABC",
               "statements" : [
                 {
@@ -10128,20 +10263,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 540,
+              "@id" : 548,
               "name" : "default"
             }
           }
         },
         "route_maps_in_two_address_families" : {
-          "@id" : 541,
+          "@id" : 549,
           "name" : "route_maps_in_two_address_families",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "v6_list" : {
-              "@id" : 542,
+              "@id" : 550,
               "name" : "v6_list",
               "lines" : [
                 {
@@ -10152,13 +10287,13 @@
               ]
             },
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 543,
+              "@id" : 551,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "v4_list" : {
-              "@id" : 544,
+              "@id" : 552,
               "name" : "v4_list",
               "lines" : [
                 {
@@ -10169,17 +10304,17 @@
               ]
             },
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 545,
+              "@id" : 553,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 546,
+              "@id" : 554,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "FROM_ABC_V4" : {
-              "@id" : 547,
+              "@id" : 555,
               "name" : "FROM_ABC_V4",
               "statements" : [
                 {
@@ -10208,7 +10343,7 @@
               ]
             },
             "FROM_ABC_V6" : {
-              "@id" : 548,
+              "@id" : 556,
               "name" : "FROM_ABC_V6",
               "statements" : [
                 {
@@ -10237,7 +10372,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 549,
+              "@id" : 557,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -10289,7 +10424,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~" : {
-              "@id" : 550,
+              "@id" : 558,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
               "statements" : [
                 {
@@ -10322,12 +10457,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 551,
+              "@id" : 559,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "1.1.1.1/32" : {
-                    "@id" : 552,
+                    "@id" : 560,
                     "name" : "1.1.1.1/32",
                     "address" : "1.1.1.1",
                     "advertiseExternal" : false,
@@ -10342,7 +10477,7 @@
                     "group" : "ABC",
                     "importPolicy" : "FROM_ABC_V4",
                     "localAs" : 1,
-                    "owner" : 541,
+                    "owner" : 549,
                     "remoteAs" : 2,
                     "remotePrefix" : "1.1.1.1/32",
                     "routeReflectorClient" : false,
@@ -10356,14 +10491,14 @@
           }
         },
         "route_policy_as_path_set" : {
-          "@id" : 553,
+          "@id" : 561,
           "name" : "route_policy_as_path_set",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "erick-test" : {
-              "@id" : 554,
+              "@id" : 562,
               "name" : "erick-test",
               "statements" : [
                 {
@@ -10445,7 +10580,7 @@
               ]
             },
             "to_fooey" : {
-              "@id" : 555,
+              "@id" : 563,
               "name" : "to_fooey",
               "statements" : [
                 {
@@ -10853,20 +10988,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 556,
+              "@id" : 564,
               "name" : "default"
             }
           }
         },
         "route_policy_igp_cost" : {
-          "@id" : 557,
+          "@id" : 565,
           "name" : "route_policy_igp_cost",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "EBGP_CUST_FULL_v4" : {
-              "@id" : 558,
+              "@id" : 566,
               "name" : "EBGP_CUST_FULL_v4",
               "statements" : [
                 {
@@ -10979,20 +11114,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 559,
+              "@id" : 567,
               "name" : "default"
             }
           }
         },
         "route_policy_metric_type" : {
-          "@id" : 560,
+          "@id" : 568,
           "name" : "route_policy_metric_type",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "to_csuchico" : {
-              "@id" : 561,
+              "@id" : 569,
               "name" : "to_csuchico",
               "statements" : [
                 {
@@ -11088,20 +11223,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 562,
+              "@id" : 570,
               "name" : "default"
             }
           }
         },
         "route_policy_param" : {
-          "@id" : 563,
+          "@id" : 571,
           "name" : "route_policy_param",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "cust_v4_in" : {
-              "@id" : 564,
+              "@id" : 572,
               "name" : "cust_v4_in",
               "statements" : [
                 {
@@ -11144,7 +11279,7 @@
               ]
             },
             "global_cust_v4" : {
-              "@id" : 565,
+              "@id" : 573,
               "name" : "global_cust_v4",
               "statements" : [
                 {
@@ -11321,13 +11456,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 566,
+              "@id" : 574,
               "name" : "default"
             }
           }
         },
         "router_hsrp" : {
-          "@id" : 567,
+          "@id" : 575,
           "name" : "router_hsrp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11339,13 +11474,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 568,
+              "@id" : 576,
               "name" : "default"
             }
           }
         },
         "router_msdp" : {
-          "@id" : 569,
+          "@id" : 577,
           "name" : "router_msdp",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11357,20 +11492,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 570,
+              "@id" : 578,
               "name" : "default"
             }
           }
         },
         "set_inline_community" : {
-          "@id" : 571,
+          "@id" : 579,
           "name" : "set_inline_community",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "FOOBAR" : {
-              "@id" : 572,
+              "@id" : 580,
               "name" : "FOOBAR",
               "statements" : [
                 {
@@ -11423,13 +11558,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 573,
+              "@id" : 581,
               "name" : "default"
             }
           }
         },
         "statistics" : {
-          "@id" : 574,
+          "@id" : 582,
           "name" : "statistics",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11441,20 +11576,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 575,
+              "@id" : 583,
               "name" : "default"
             }
           }
         },
         "switchport_range" : {
-          "@id" : 576,
+          "@id" : 584,
           "name" : "switchport_range",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/1" : {
-              "@id" : 577,
+              "@id" : 585,
               "name" : "FastEthernet0/1",
               "accessVlan" : 0,
               "active" : true,
@@ -11473,7 +11608,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 576,
+              "owner" : 584,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11486,16 +11621,16 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 578,
+              "@id" : 586,
               "name" : "default",
               "interfaces" : {
-                "FastEthernet0/1" : 577
+                "FastEthernet0/1" : 585
               }
             }
           }
         },
         "syslog_source_interface" : {
-          "@id" : 579,
+          "@id" : 587,
           "name" : "syslog_source_interface",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11507,13 +11642,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 580,
+              "@id" : 588,
               "name" : "default"
             }
           }
         },
         "taskgroup" : {
-          "@id" : 581,
+          "@id" : 589,
           "name" : "taskgroup",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11525,20 +11660,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 582,
+              "@id" : 590,
               "name" : "default"
             }
           }
         },
         "tcpflags" : {
-          "@id" : 583,
+          "@id" : 591,
           "name" : "tcpflags",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "ipAccessLists" : {
             "100" : {
-              "@id" : 584,
+              "@id" : 592,
               "name" : "100",
               "lines" : [
                 {
@@ -11847,13 +11982,13 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 585,
+              "@id" : 593,
               "name" : "default"
             }
           }
         },
         "test" : {
-          "@id" : 586,
+          "@id" : 594,
           "name" : "test",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -11865,20 +12000,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 587,
+              "@id" : 595,
               "name" : "default"
             }
           }
         },
         "underscore_variable" : {
-          "@id" : 588,
+          "@id" : 596,
           "name" : "underscore_variable",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "routingPolicies" : {
             "JKL_MNO_PQR" : {
-              "@id" : 589,
+              "@id" : 597,
               "name" : "JKL_MNO_PQR",
               "statements" : [
                 {
@@ -11895,20 +12030,20 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 590,
+              "@id" : 598,
               "name" : "default"
             }
           }
         },
         "variables" : {
-          "@id" : 591,
+          "@id" : 599,
           "name" : "variables",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 592,
+              "@id" : 600,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -11921,7 +12056,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 591,
+              "owner" : 599,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11934,23 +12069,23 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 593,
+              "@id" : 601,
               "name" : "default",
               "interfaces" : {
-                "FastEthernet0/0" : 592
+                "FastEthernet0/0" : 600
               }
             }
           }
         },
         "variables_dos" : {
-          "@id" : 594,
+          "@id" : 602,
           "name" : "variables_dos",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
             "FastEthernet0/0" : {
-              "@id" : 595,
+              "@id" : 603,
               "name" : "FastEthernet0/0",
               "accessVlan" : 0,
               "active" : true,
@@ -11963,7 +12098,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "owner" : 594,
+              "owner" : 602,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11976,39 +12111,39 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 596,
+              "@id" : 604,
               "name" : "default",
               "interfaces" : {
-                "FastEthernet0/0" : 595
+                "FastEthernet0/0" : 603
               }
             }
           }
         },
         "vlan_access_map4" : {
-          "@id" : 597,
+          "@id" : 605,
           "name" : "vlan_access_map4",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 598,
+              "@id" : 606,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 599,
+              "@id" : 607,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 600,
+              "@id" : 608,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "EBGP-PEER" : {
-              "@id" : 601,
+              "@id" : 609,
               "name" : "EBGP-PEER",
               "statements" : [
                 {
@@ -12073,7 +12208,7 @@
               ]
             },
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 602,
+              "@id" : 610,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -12132,7 +12267,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 603,
+              "@id" : 611,
               "name" : "default",
               "bgpProcess" : {
                 "routerId" : "0.0.0.0"
@@ -12141,7 +12276,7 @@
           }
         },
         "vrf_context" : {
-          "@id" : 604,
+          "@id" : 612,
           "name" : "vrf_context",
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -12153,7 +12288,7 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 605,
+              "@id" : 613,
               "name" : "default",
               "staticRoutes" : [
                 {
@@ -12166,7 +12301,7 @@
               ]
             },
             "management" : {
-              "@id" : 606,
+              "@id" : 614,
               "name" : "management",
               "staticRoutes" : [
                 {
@@ -12180,8 +12315,26 @@
             }
           }
         },
+        "vrrp" : {
+          "@id" : 615,
+          "name" : "vrrp",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "vrrp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "@id" : 616,
+              "name" : "default"
+            }
+          }
+        },
         "vxlan" : {
-          "@id" : 607,
+          "@id" : 617,
           "name" : "vxlan",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
@@ -12193,36 +12346,36 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 608,
+              "@id" : 618,
               "name" : "default"
             }
           }
         },
         "xrBGP_Neighbor_Group" : {
-          "@id" : 609,
+          "@id" : 619,
           "name" : "xrBGP_Neighbor_Group",
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-              "@id" : 610,
+              "@id" : 620,
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
             }
           },
           "routeFilterLists" : {
             "~BGP_AGGREGATE_NETWORKS_FILTER:default~" : {
-              "@id" : 611,
+              "@id" : 621,
               "name" : "~BGP_AGGREGATE_NETWORKS_FILTER:default~"
             },
             "~BGP_NETWORK_NETWORKS_FILTER:default~" : {
-              "@id" : 612,
+              "@id" : 622,
               "name" : "~BGP_NETWORK_NETWORKS_FILTER:default~"
             }
           },
           "routingPolicies" : {
             "~BGP_COMMON_EXPORT_POLICY:default~" : {
-              "@id" : 613,
+              "@id" : 623,
               "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
               "statements" : [
                 {
@@ -12274,7 +12427,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~" : {
-              "@id" : 614,
+              "@id" : 624,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
               "statements" : [
                 {
@@ -12300,7 +12453,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~" : {
-              "@id" : 615,
+              "@id" : 625,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
               "statements" : [
                 {
@@ -12326,7 +12479,7 @@
               ]
             },
             "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~" : {
-              "@id" : 616,
+              "@id" : 626,
               "name" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
               "statements" : [
                 {
@@ -12359,12 +12512,12 @@
           },
           "vrfs" : {
             "default" : {
-              "@id" : 617,
+              "@id" : 627,
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
                   "1.2.1.3/32" : {
-                    "@id" : 618,
+                    "@id" : 628,
                     "name" : "1.2.1.3/32",
                     "address" : "1.2.1.3",
                     "advertiseExternal" : false,
@@ -12373,21 +12526,20 @@
                     "allowRemoteAsOut" : false,
                     "clusterId" : 0,
                     "defaultMetric" : 0,
-                    "description" : "bafjewoifj",
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
                     "group" : "foobar-iBGP_border_ipv4",
                     "localAs" : 5555,
-                    "owner" : 609,
-                    "remoteAs" : 5555,
+                    "owner" : 619,
+                    "remoteAs" : 21,
                     "remotePrefix" : "1.2.1.3/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : false,
                     "vrf" : "default"
                   },
                   "1.2.1.2/32" : {
-                    "@id" : 619,
+                    "@id" : 629,
                     "name" : "1.2.1.2/32",
                     "address" : "1.2.1.2",
                     "advertiseExternal" : false,
@@ -12402,7 +12554,7 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
                     "group" : "foobar-iBGP_ipv4",
                     "localAs" : 5555,
-                    "owner" : 609,
+                    "owner" : 619,
                     "remoteAs" : 5555,
                     "remotePrefix" : "1.2.1.2/32",
                     "routeReflectorClient" : false,
@@ -12410,7 +12562,7 @@
                     "vrf" : "default"
                   },
                   "1.2.1.1/32" : {
-                    "@id" : 620,
+                    "@id" : 630,
                     "name" : "1.2.1.1/32",
                     "address" : "1.2.1.1",
                     "advertiseExternal" : false,
@@ -12425,7 +12577,7 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
                     "group" : "foobar-iBGP_ipv4",
                     "localAs" : 5555,
-                    "owner" : 609,
+                    "owner" : 619,
                     "remoteAs" : 5555,
                     "remotePrefix" : "1.2.1.1/32",
                     "routeReflectorClient" : false,
