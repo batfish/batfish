@@ -13,6 +13,8 @@ public class SnmpCommunity extends ComparableStructure<String> {
 
    private String _accessList;
 
+   private String _accessList6;
+
    private boolean _ro;
 
    private boolean _rw;
@@ -25,6 +27,10 @@ public class SnmpCommunity extends ComparableStructure<String> {
       return _accessList;
    }
 
+   public String getAccessList6() {
+      return _accessList6;
+   }
+
    public boolean getRo() {
       return _ro;
    }
@@ -35,6 +41,10 @@ public class SnmpCommunity extends ComparableStructure<String> {
 
    public void setAccessList(String accessList) {
       _accessList = accessList;
+   }
+
+   public void setAccessList6(String accessList6) {
+      _accessList6 = accessList6;
    }
 
    public void setRo(boolean ro) {

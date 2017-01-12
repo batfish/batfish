@@ -13,6 +13,8 @@ l2vpn
    mtu 9014
    interface Bundle-Ether9.1
    !
+   neighbor 1.2.3.4 pw-id 123
+   !
    vfi HES-SO-VPLS-full-mesh
     neighbor 1.5.5.5 pw-id 707
     !

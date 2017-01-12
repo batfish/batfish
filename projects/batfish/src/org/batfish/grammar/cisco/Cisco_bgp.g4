@@ -65,6 +65,11 @@ address_family_rb_stanza
    )* address_family_footer
 ;
 
+af_group_rb_stanza
+:
+   AF_GROUP name = variable ADDRESS_FAMILY bgp_address_family NEWLINE bgp_tail*
+;
+
 aggregate_address_rb_stanza
 :
    AGGREGATE_ADDRESS
@@ -229,6 +234,11 @@ ebgp_multihop_bgp_tail
    )? NEWLINE
 ;
 
+empty_neighbor_block_address_family
+:
+   address_family_header address_family_footer
+;
+
 filter_list_bgp_tail
 :
    FILTER_LIST num = DEC
@@ -282,78 +292,13 @@ maximum_prefix_bgp_tail
    MAXIMUM_PREFIX DEC NEWLINE
 ;
 
-neighbor_flat_rb_stanza
-:
-   NEIGHBOR
-   (
-      ip = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
-   )
-   (
-      bgp_tail
-      | inherit_peer_session_bgp_tail
-      | inherit_peer_policy_bgp_tail
-      | filter_list_bgp_tail
-      | remote_as_bgp_tail
-   )
-;
-
-neighbor_group_rb_stanza
-:
-   NEIGHBOR_GROUP name = variable NEWLINE
-   (
-      address_family_rb_stanza
-      | remote_as_bgp_tail
-      | update_source_bgp_tail
-      | use_neighbor_group_bgp_tail
-   )*
-;
-
-network_bgp_tail
-:
-   NETWORK
-   (
-      (
-         ip = IP_ADDRESS
-         (
-            MASK mask = IP_ADDRESS
-         )?
-      )
-      | prefix = IP_PREFIX
-   )?
-   (
-      ROUTE_MAP mapname = variable
-   )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
-;
-
-network6_bgp_tail
-:
-   NETWORK prefix = IPV6_PREFIX
-   (
-      ROUTE_MAP mapname = variable
-   )?
-   (
-      ROUTE_POLICY policyname = VARIABLE
-   )? NEWLINE
-;
-
-next_hop_self_bgp_tail
-:
-   NO? NEXT_HOP_SELF NEWLINE
-;
-
 neighbor_block_address_family
 :
-   address_family_header bgp_tail+ address_family_footer
-;
-
-empty_neighbor_block_address_family
-:
-   address_family_header address_family_footer
+   address_family_header
+   (
+      bgp_tail
+      | use_af_group_bgp_tail
+   )+ address_family_footer
 ;
 
 neighbor_block_inherit
@@ -393,6 +338,71 @@ locals
          | neighbor_block_address_family
       )* neighbor_block_address_family
    )?
+;
+
+neighbor_flat_rb_stanza
+:
+   NEIGHBOR
+   (
+      ip = IP_ADDRESS
+      | ip6 = IPV6_ADDRESS
+      | peergroup = ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
+   )
+   (
+      bgp_tail
+      | inherit_peer_session_bgp_tail
+      | inherit_peer_policy_bgp_tail
+      | filter_list_bgp_tail
+      | remote_as_bgp_tail
+   )
+;
+
+neighbor_group_rb_stanza
+:
+   NEIGHBOR_GROUP name = variable NEWLINE
+   (
+      address_family_rb_stanza
+      | remote_as_bgp_tail
+      | update_source_bgp_tail
+      | use_neighbor_group_bgp_tail
+      | use_session_group_bgp_tail
+   )*
+;
+
+network_bgp_tail
+:
+   NETWORK
+   (
+      (
+         ip = IP_ADDRESS
+         (
+            MASK mask = IP_ADDRESS
+         )?
+      )
+      | prefix = IP_PREFIX
+   )?
+   (
+      ROUTE_MAP mapname = variable
+   )?
+   (
+      ROUTE_POLICY policyname = VARIABLE
+   )? NEWLINE
+;
+
+network6_bgp_tail
+:
+   NETWORK prefix = IPV6_PREFIX
+   (
+      ROUTE_MAP mapname = variable
+   )?
+   (
+      ROUTE_POLICY policyname = VARIABLE
+   )? NEWLINE
+;
+
+next_hop_self_bgp_tail
+:
+   NO? NEXT_HOP_SELF NEWLINE
 ;
 
 vrf_block_rb_stanza
@@ -563,7 +573,13 @@ null_bgp_tail
       | TABLE_MAP
       | TIMERS
       | TRANSPORT
-      | USE NEXTHOP_ATTRIBUTE
+      |
+      (
+         USE
+         (
+            NEXTHOP_ATTRIBUTE
+         )
+      )
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -727,6 +743,7 @@ router_bgp_stanza
 router_bgp_stanza_tail
 :
    address_family_rb_stanza
+   | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
    | bgp_advertise_inactive_rb_stanza
@@ -774,9 +791,14 @@ router_id_rb_stanza
 send_community_bgp_tail
 :
    (
-      SEND_COMMUNITY EXTENDED? BOTH?
+      (
+         SEND_COMMUNITY EXTENDED? BOTH?
+      )
       | SEND_COMMUNITY_EBGP
-      | SEND_EXTENDED_COMMUNITY_EBGP
+      |
+      (
+         SEND_EXTENDED_COMMUNITY_EBGP INHERITANCE_DISABLE?
+      )
    ) NEWLINE
 ;
 
@@ -886,14 +908,19 @@ update_source_bgp_tail
    UPDATE_SOURCE source = interface_name NEWLINE
 ;
 
+use_af_group_bgp_tail
+:
+   USE AF_GROUP name = variable NEWLINE
+;
+
 use_neighbor_group_bgp_tail
 :
-   USE NEIGHBOR_GROUP name = VARIABLE NEWLINE
+   USE NEIGHBOR_GROUP name = variable NEWLINE
 ;
 
 use_session_group_bgp_tail
 :
-   USE SESSION_GROUP name = VARIABLE NEWLINE
+   USE SESSION_GROUP name = variable NEWLINE
 ;
 
 weight_bgp_tail

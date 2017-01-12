@@ -149,6 +149,7 @@ logging_suppress_null
    NO?
    (
       ALARM
+      | ALL_ALARMS
       | ALL_OF_ROUTER
    ) ~NEWLINE* NEWLINE
 ;

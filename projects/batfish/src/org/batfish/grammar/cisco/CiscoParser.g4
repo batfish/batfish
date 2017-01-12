@@ -908,6 +908,7 @@ lbgbd_null
    (
       INTERFACE
       | MTU
+      | NEIGHBOR
       | ROUTED
    ) ~NEWLINE* NEWLINE
 ;
@@ -1615,33 +1616,6 @@ router_multicast_tail
    )*
 ;
 
-router_vrrp_stanza
-:
-   ROUTER VRRP NEWLINE router_vrrp_substanza+
-;
-
-router_vrrp_substanza
-:
-   INTERFACE interface_name NEWLINE
-   (
-      ADDRESS_FAMILY IPV4 NEWLINE VRRP DEC?
-      (
-         VERSION DEC
-      )? NEWLINE router_vrrp_tail+
-   )?
-;
-
-router_vrrp_tail
-:
-   (
-      ADDRESS IP_ADDRESS
-      | PREEMPT
-      | PRIORITY DEC
-      | TIMERS DEC+
-      | TRACK OBJECT ~NEWLINE+
-   ) NEWLINE
-;
-
 s_archive
 :
    ARCHIVE ~NEWLINE* NEWLINE
@@ -2143,6 +2117,14 @@ s_role
    )*
 ;
 
+s_router_vrrp
+:
+   NO? ROUTER VRRP NEWLINE
+   (
+      vrrp_interface
+   )*
+;
+
 s_sccp
 :
    NO? SCCP ~NEWLINE* NEWLINE
@@ -2250,6 +2232,14 @@ s_vlan
    ) ~NEWLINE* NEWLINE
    (
       vlan_null
+   )*
+;
+
+s_voice
+:
+   NO? VOICE ~NEWLINE* NEWLINE
+   (
+      voice_null
    )*
 ;
 
@@ -2472,9 +2462,6 @@ stanza
    | mgmt_api_stanza
    | mgmt_egress_iface_stanza
    | multicast_routing_stanza
-   | mpls_label_range_stanza
-   | mpls_ldp_stanza
-   | mpls_traffic_eng_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
@@ -2490,7 +2477,6 @@ stanza
    | router_multicast_stanza
    | router_rip_stanza
    | router_static_stanza
-   | router_vrrp_stanza
    | rsvp_stanza
    | s_aaa
    | s_archive
@@ -2544,6 +2530,9 @@ stanza
    | s_media_termination
    | s_monitor
    | s_monitor_session
+   | s_mpls_label_range
+   | s_mpls_ldp
+   | s_mpls_traffic_eng
    | s_mtu
    | s_name
    | s_no_access_list_extended
@@ -2563,6 +2552,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_vrrp
    | s_sccp
    | s_service
    | s_snmp_server
@@ -2576,6 +2566,7 @@ stanza
    | s_track
    | s_tunnel_group
    | s_vlan
+   | s_voice
    | s_voice_port
    | s_vpc
    | s_vpdn_group
@@ -2639,6 +2630,34 @@ track_null
    ) ~NEWLINE* NEWLINE
 ;
 
+vi_address_family
+:
+   NO? ADDRESS_FAMILY ~NEWLINE* NEWLINE
+   (
+      viaf_vrrp
+   )*
+;
+
+viaf_vrrp
+:
+   NO? VRRP ~NEWLINE* NEWLINE
+   (
+      viafv_null
+   )*
+;
+
+viafv_null
+:
+   NO?
+   (
+      ADDRESS
+      | PREEMPT
+      | PRIORITY
+      | TIMERS
+      | TRACK
+   ) ~NEWLINE* NEWLINE
+;
+
 vlan_null
 :
    NO?
@@ -2664,6 +2683,19 @@ vlan_null
       | TB_VLAN1
       | TB_VLAN2
       | UNTAGGED
+   ) ~NEWLINE* NEWLINE
+;
+
+voice_null
+:
+   NO?
+   (
+      ALLOW_CONNECTIONS
+      | FAX
+      | H225
+      | H323
+      | RULE
+      | SHUTDOWN
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2769,6 +2801,14 @@ vrfd_null
          NO SHUTDOWN
       )
    ) ~NEWLINE* NEWLINE
+;
+
+vrrp_interface
+:
+   NO? INTERFACE interface_name NEWLINE
+   (
+      vi_address_family
+   )* NEWLINE?
 ;
 
 webvpn_null

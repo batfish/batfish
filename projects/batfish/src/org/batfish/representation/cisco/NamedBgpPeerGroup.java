@@ -12,8 +12,6 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
 
    private static final long serialVersionUID = 1L;
 
-   private boolean _created;
-
    private String _name;
 
    private Set<Ip> _neighborIpAddresses;
@@ -48,17 +46,9 @@ public class NamedBgpPeerGroup extends BgpPeerGroup {
       _neighborIpv6Prefixes.add(prefix6);
    }
 
-   public boolean getCreated() {
-      return _created;
-   }
-
    @Override
    public String getName() {
       return _name;
-   }
-
-   public void setCreated(boolean b) {
-      _created = b;
    }
 
 }

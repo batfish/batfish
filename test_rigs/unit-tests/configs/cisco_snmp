@@ -11,6 +11,7 @@ snmp-server community dummycommunity use-acl snmp-arpa-acl
 snmp-server community dummyconnunity RO SystemOwner IPv4 dummyacl
 snmp-server community dummycommunity RO SystemOwner customer-snmp
 snmp-server community dummycommunity view everything RO ipv6 dummyacl 21
+snmp-server community dummycommunity RO SystemOwner IPv4 to-VTY IPv6 to-VTY
 snmp-server community-map dummycommunity context ospf1
 snmp-server chassis-id FOC1743N1BE
 snmp-server contact CENIC Core Engineering

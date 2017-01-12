@@ -466,7 +466,7 @@ s_ipv6_router_ospf
 
 s_router_ospf
 :
-   ROUTER OSPF procnum = DEC
+   ROUTER OSPF name = variable
    (
       VRF vrf = variable
    )? NEWLINE

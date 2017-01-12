@@ -1,12 +1,12 @@
 !
-hostname ipv6_access_list
+hostname cisco_ipv6_access_list
 !
 ipv6 access-list RT404888-XO
  permit ipv6 host 2610:18:10:1000::15 any
  permit ipv6 fe80::/64 fe80::/64
  permit ipv6 fe80::/64 ff02::/64
  permit ipv6 fe80::/64 host 2610:18:10:1000::15
- deny icmpv6 any any router
+ deny icmpv6 any any router hoplimit
  deny icmpv6 any any router
  deny icmpv6 any any nd
  deny icmpv6 any any nd
