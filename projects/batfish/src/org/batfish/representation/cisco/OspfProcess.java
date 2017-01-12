@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -9,12 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
-public class OspfProcess implements Serializable {
+public class OspfProcess extends ComparableStructure<String> {
 
    private static final int DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
 
@@ -28,24 +28,35 @@ public class OspfProcess implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private int _defaultInformationMetric;
+
    private OspfMetricType _defaultInformationMetricType;
+
    private boolean _defaultInformationOriginate;
+
    private boolean _defaultInformationOriginateAlways;
+
    private String _defaultInformationOriginateMap;
+
    private Set<String> _interfaceBlacklist;
+
    private Set<String> _interfaceWhitelist;
+
    private Set<OspfNetwork> _networks;
+
    private Map<Integer, Boolean> _nssas;
+
    private boolean _passiveInterfaceDefault;
-   private int _pid;
+
    private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
+
    private double _referenceBandwidth;
+
    private Ip _routerId;
 
    private Set<OspfWildcardNetwork> _wildcardNetworks;
 
-   public OspfProcess(int procnum) {
-      _pid = procnum;
+   public OspfProcess(String name) {
+      super(name);
       _referenceBandwidth = DEFAULT_REFERENCE_BANDWIDTH;
       _networks = new TreeSet<>();
       _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
@@ -121,10 +132,6 @@ public class OspfProcess implements Serializable {
 
    public boolean getPassiveInterfaceDefault() {
       return _passiveInterfaceDefault;
-   }
-
-   public int getPid() {
-      return _pid;
    }
 
    public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {

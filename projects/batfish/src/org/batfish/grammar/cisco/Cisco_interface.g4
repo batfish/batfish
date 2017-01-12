@@ -281,6 +281,7 @@ if_null_block
       | DELAY
       | DESTINATION
       | DIALER
+      | DIALER_GROUP
       | DFS
       | DSL
       |

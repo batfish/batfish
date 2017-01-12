@@ -339,6 +339,11 @@ AESA
    'aesa'
 ;
 
+AF_GROUP
+:
+   'af-group'
+;
+
 AF11
 :
    'af11'
@@ -457,6 +462,11 @@ ALERTS
 ALIAS
 :
    'alias'
+;
+
+ALL_ALARMS
+:
+   'all-alarms'
 ;
 
 ALL_OF_ROUTER
@@ -2117,6 +2127,11 @@ DIALER
    'dialer'
 ;
 
+DIALER_GROUP
+:
+   'dialer-group'
+;
+
 DIALER_LIST
 :
    'dialer-list'
@@ -2765,6 +2780,11 @@ EXIT_VRF
 EXPECT
 :
    'expect'
+;
+
+EXPLICIT_NULL
+:
+   'explicit-null'
 ;
 
 EXPORT
@@ -3431,6 +3451,11 @@ HOP_LIMIT
    'hop-limit'
 ;
 
+HOPLIMIT
+:
+   'hoplimit'
+;
+
 HOPS_OF_STATISTICS_KEPT
 :
    'hops-of-statistics-kept'
@@ -3716,6 +3741,11 @@ INHERIT
    'inherit'
 ;
 
+INHERITANCE_DISABLE
+:
+   'inheritance-disable'
+;
+
 INPUT
 :
    'input'
@@ -3836,13 +3866,7 @@ IPSLA
 
 IPV4
 :
-   (
-      'ipv4'
-   )
-   |
-   (
-      'IPv4'
-   )
+   [iI][pP][vV]'4'
 ;
 
 IPV4_L5
@@ -3852,13 +3876,7 @@ IPV4_L5
 
 IPV6
 :
-   (
-      'ipv6'
-   )
-   |
-   (
-      'IPV6'
-   )
+   [iI][pP][vV]'6'
 ;
 
 IPV6_ADDRESS_POOL
@@ -7041,6 +7059,11 @@ SDR
    'sdr'
 ;
 
+SDROWNER
+:
+   'SDROwner'
+;
+
 SECONDARY
 :
    'secondary'
@@ -7926,6 +7949,11 @@ SYSTEM_MAX
 SYSTEM_PRIORITY
 :
    'system-priority'
+;
+
+SYSTEMOWNER
+:
+   'SystemOwner'
 ;
 
 TABLE_MAP

@@ -211,10 +211,12 @@ null_block
       | REMOVED
       | RMON
       | ROUTE_ONLY
-      | ROUTER
+      |
       (
-         LOG
-         | VRRP
+         ROUTER
+         (
+            LOG
+         )
       )
       | RP
       | RX_COS_SLOT
@@ -302,7 +304,6 @@ null_inner
          | ADVERTISE
          | AESA
          | ALLOCATE
-         | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
          | APPLICATION
          | ARCHIVE_LENGTH
@@ -363,7 +364,6 @@ null_inner
          | FAILED
          | FAIR_QUEUE
          | FALLBACK_DN
-         | FAX
          | FIELDS
          | FILE_BROWSING
          | FILE_ENTRY
@@ -374,11 +374,10 @@ null_inner
          | FT
          | GATEWAY
          | GID
+         | GROUP
          | GROUP_ALIAS
          | GROUP_LOCK
          | GROUP_POLICY
-         | H225
-         | H323
          | HA_POLICY
          |
          (
@@ -502,7 +501,6 @@ null_inner
          | ROUTE
          | ROUTE_TARGET
          | RP_ADDRESS
-         | RULE
          | SA_FILTER
          | SATELLITE
          | SECRET
@@ -606,6 +604,7 @@ null_single
       | BOOT_END_MARKER
       | BOOT_START_MARKER
       | BRIDGE
+      | BRIDGE_DOMAIN
       | CALL
       | CARD
       | CCM_MANAGER
@@ -620,6 +619,13 @@ null_single
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
+      |
+      (
+         DIALER
+         (
+            WATCH_LIST
+         )
+      )
       | DIALER_LIST
       | DNS
       | DNS_GUARD
@@ -691,6 +697,13 @@ null_single
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
+            |
+            (
+               OSPF
+               (
+                  NAME_LOOKUP
+               )
+            )
             | RADIUS
             | RCMD
             | ROUTING //might want to use this eventually
@@ -803,13 +816,6 @@ null_single
                )
             )
             | SSH
-         )
-      )
-      |
-      (
-         OSPF
-         (
-            NAME_LOOKUP
          )
       )
       |

@@ -28,6 +28,7 @@ callhome
 no call-home reporting anonymous
 call-home reporting anonymous
  alert-group configuration
+ contact abcdefg
  contact-email-addr a@support.ccc
  contact-name fewrgbefw
  contract-id 12345
@@ -37,6 +38,7 @@ call-home reporting anonymous
  phone-number +123455677
  sender from asfad@ggesg.gwf
  sender reply-to hrteg@hrtg.fewf
+ service active
  site-id rgtrfff
  source-interface Vlan156
  source-ip-address "1.2.3.4"

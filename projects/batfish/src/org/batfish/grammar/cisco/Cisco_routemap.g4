@@ -98,6 +98,11 @@ boolean_destination_rp_stanza
    DESTINATION IN rp_prefix_set
 ;
 
+boolean_local_preference_rp_stanza
+:
+   LOCAL_PREFERENCE int_comp rhs = int_expr
+;
+
 boolean_med_rp_stanza
 :
    MED int_comp rhs = int_expr
@@ -141,6 +146,7 @@ boolean_simple_rp_stanza
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza
+   | boolean_local_preference_rp_stanza
    | boolean_med_rp_stanza
    | boolean_next_hop_in_rp_stanza
    | boolean_rib_has_route_rp_stanza

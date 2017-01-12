@@ -21,6 +21,8 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    private static final long serialVersionUID = 1L;
 
+   private Map<String, NamedBgpPeerGroup> _afGroups;
+
    private Map<Prefix6, BgpAggregateIpv6Network> _aggregateIpv6Networks;
 
    private Map<Prefix, BgpAggregateIpv4Network> _aggregateNetworks;
@@ -59,6 +61,7 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
    public BgpProcess(int procnum) {
       super(procnum);
+      _afGroups = new HashMap<>();
       _aggregateNetworks = new HashMap<>();
       _aggregateIpv6Networks = new HashMap<>();
       _allPeerGroups = new HashSet<>();
@@ -154,6 +157,10 @@ public class BgpProcess extends ComparableStructure<Integer> {
       NamedBgpPeerGroup pg = new NamedBgpPeerGroup(name);
       _peerSessions.put(name, pg);
       _allPeerGroups.add(pg);
+   }
+
+   public Map<String, NamedBgpPeerGroup> getAfGroups() {
+      return _afGroups;
    }
 
    public Map<Prefix6, BgpAggregateIpv6Network> getAggregateIpv6Networks() {
