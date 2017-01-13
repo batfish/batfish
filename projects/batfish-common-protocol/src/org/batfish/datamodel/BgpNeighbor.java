@@ -316,7 +316,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
             other._candidateRemoteBgpNeighbors)) {
          return false;
       }
-      if (!this._clusterId.equals(other._clusterId)) {
+      if (_clusterId == null) {
+         if (other._clusterId != null) {
+            return false;
+         }
+      }
+      else if (!this._clusterId.equals(other._clusterId)) {
          return false;
       }
       if (this._defaultMetric != other._defaultMetric) {
