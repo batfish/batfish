@@ -222,7 +222,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       // BEGIN DONE ONCE (except main rib)
       // connected, initial static routes, ospf setup, bgp setup
       nodes.values().parallelStream().forEach(n -> {
-         n.initPolicyOwners();
          for (VirtualRouter vr : n._virtualRouters.values()) {
             vr.initConnectedRib();
             vr.importRib(vr._independentRib, vr._connectedRib);

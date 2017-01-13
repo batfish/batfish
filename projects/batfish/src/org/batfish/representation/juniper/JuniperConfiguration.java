@@ -272,7 +272,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                + ig.getRemoteAddress().toString() + "~";
          neighbor.setImportPolicy(peerImportPolicyName);
          RoutingPolicy peerImportPolicy = new RoutingPolicy(
-               peerImportPolicyName);
+               peerImportPolicyName, _c);
          _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
          // default import policy is to accept
          peerImportPolicy.getStatements()
@@ -310,7 +310,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                + ig.getRemoteAddress().toString() + "~";
          neighbor.setExportPolicy(peerExportPolicyName);
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
-               peerExportPolicyName);
+               peerExportPolicyName, _c);
          _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
          peerExportPolicy.getStatements()
                .add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
@@ -441,7 +441,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName = routingInstance.getName();
       // export policies
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
-      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName);
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
+            _c);
       _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
       newProc.setExportPolicy(ospfExportPolicyName);
       If ospfExportPolicyConditional = new If();
@@ -604,7 +605,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       // set up default export policy (accept bgp routes)
       RoutingPolicy defaultBgpExportPolicy = new RoutingPolicy(
-            DEFAULT_BGP_EXPORT_POLICY_NAME);
+            DEFAULT_BGP_EXPORT_POLICY_NAME, _c);
       _c.getRoutingPolicies().put(DEFAULT_BGP_EXPORT_POLICY_NAME,
             defaultBgpExportPolicy);
 
@@ -632,7 +633,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       // set up default import policy (accept all routes)
       RoutingPolicy defaultBgpImportPolicy = new RoutingPolicy(
-            DEFAULT_BGP_IMPORT_POLICY_NAME);
+            DEFAULT_BGP_IMPORT_POLICY_NAME, _c);
       _c.getRoutingPolicies().put(DEFAULT_BGP_IMPORT_POLICY_NAME,
             defaultBgpImportPolicy);
       PsThenAccept.INSTANCE.applyTo(defaultBgpImportPolicy.getStatements(),
@@ -772,7 +773,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String policyNameSuffix = route.getPrefix().toString().replace('/', '_')
             .replace('.', '_');
       String policyName = "~AGGREGATE_" + policyNameSuffix + "~";
-      RoutingPolicy routingPolicy = new RoutingPolicy(policyName);
+      RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
       If routingPolicyConditional = new If();
       routingPolicy.getStatements().add(routingPolicyConditional);
       routingPolicyConditional.getTrueStatements()
@@ -828,7 +829,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
          generationPolicyName = "~GENERATED_ROUTE_POLICY:" + prefix.toString()
                + "~";
          RoutingPolicy generationPolicy = new RoutingPolicy(
-               generationPolicyName);
+               generationPolicyName, _c);
          _c.getRoutingPolicies().put(generationPolicyName, generationPolicy);
          If generationPolicyConditional = new If();
          Disjunction matchSomeGenerationPolicy = new Disjunction();
@@ -1224,7 +1225,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
       String name = filter.getName();
-      RoutingPolicy routingPolicy = new RoutingPolicy(name);
+      RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
       // for (Entry<String, FwTerm> e : filter.getTerms().entrySet()) {
       // String termName = e.getKey();
       // FwTerm term = e.getValue();
@@ -1320,7 +1321,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
       String name = ps.getName();
-      RoutingPolicy routingPolicy = new RoutingPolicy(name);
+      RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
       List<Statement> statements = routingPolicy.getStatements();
       boolean hasDefaultTerm = ps.getDefaultTerm().getFroms().size() > 0
             || ps.getDefaultTerm().getThens().size() > 0;

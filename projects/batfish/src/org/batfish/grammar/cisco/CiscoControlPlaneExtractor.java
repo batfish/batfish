@@ -3947,12 +3947,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.acl4 != null) {
          String name = ctx.acl4.getText();
          _configuration.getSnmpAccessLists().add(name);
-         _currentSnmpCommunity.setAccessList(name);         
+         _currentSnmpCommunity.setAccessList(name);
       }
       if (ctx.acl6 != null) {
          String name = ctx.acl6.getText();
          _configuration.getSnmpAccessLists().add(name);
-         _currentSnmpCommunity.setAccessList6(name);         
+         _currentSnmpCommunity.setAccessList6(name);
       }
       if (ctx.RO() != null) {
          _currentSnmpCommunity.setRo(true);
