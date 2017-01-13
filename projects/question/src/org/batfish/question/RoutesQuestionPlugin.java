@@ -1,5 +1,7 @@
 package org.batfish.question;
 
+import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -19,6 +21,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
@@ -28,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RoutesQuestionPlugin extends QuestionPlugin {
@@ -41,7 +45,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       }
 
       public RoutesAnswerElement(Map<String, Configuration> configurations,
-            Pattern nodeRegex) {
+            Pattern nodeRegex, Set<RoutingProtocol> protocols) {
          _routesByHostname = new TreeMap<>();
          for (Entry<String, Configuration> e : configurations.entrySet()) {
             String hostname = e.getKey();
@@ -50,6 +54,15 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             }
             Configuration c = e.getValue();
             SortedSet<Route> routes = c.getRoutes();
+            if (!protocols.isEmpty()) {
+               SortedSet<Route> filteredRoutes = new TreeSet<>();
+               for (Route route : routes) {
+                  if (protocols.contains(route.getProtocol())) {
+                     filteredRoutes.add(route);
+                  }
+               }
+               routes = filteredRoutes;
+            }
             _routesByHostname.put(hostname, routes);
          }
       }
@@ -136,7 +149,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                .loadConfigurations();
          _batfish.initRoutes(configurations);
          RoutesAnswerElement answerElement = new RoutesAnswerElement(
-               configurations, nodeRegex);
+               configurations, nodeRegex, question.getProtocols());
          return answerElement;
       }
 
@@ -173,10 +186,15 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE_REGEX_VAR = "nodeRegex";
 
+      private static final String PROTOCOLS_VAR = "protocols";
+
       private String _nodeRegex;
+
+      private Set<RoutingProtocol> _protocols;
 
       public RoutesQuestion() {
          _nodeRegex = ".*";
+         _protocols = EnumSet.noneOf(RoutingProtocol.class);
       }
 
       @Override
@@ -192,6 +210,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       @JsonProperty(NODE_REGEX_VAR)
       public String getNodeRegex() {
          return _nodeRegex;
+      }
+
+      public Set<RoutingProtocol> getProtocols() {
+         return _protocols;
       }
 
       @Override
@@ -213,12 +235,18 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
                case NODE_REGEX_VAR:
                   setNodeRegex(parameters.getString(paramKey));
                   break;
+               case PROTOCOLS_VAR:
+                  setProtocols(
+                        new ObjectMapper().<Set<RoutingProtocol>> readValue(
+                              parameters.getString(paramKey),
+                              new TypeReference<Set<RoutingProtocol>>() {
+                              }));
                default:
                   throw new BatfishException("Unknown key in "
                         + getClass().getSimpleName() + ": " + paramKey);
                }
             }
-            catch (JSONException e) {
+            catch (JSONException | IOException e) {
                throw new BatfishException("JSONException in parameters", e);
             }
          }
@@ -226,6 +254,10 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public void setNodeRegex(String nodeRegex) {
          _nodeRegex = nodeRegex;
+      }
+
+      private void setProtocols(Set<RoutingProtocol> protocols) {
+         _protocols = protocols;
       }
 
    }
