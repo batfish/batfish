@@ -57,6 +57,7 @@ logging source-interface mgmt0
 logging source-interface Vlan1
 logging suppress rule ABC
  alarm PLATFORM ABC MESSAGE_FAILED
+ all-alarms
 !
 logging suppress apply rule BCD
  all-of-router

@@ -27,7 +27,6 @@ null_block
       | BSD_CLIENT
       | BSD_USERNAME
       | BUFFERS
-      | CALL_HOME
       | CAM_ACL
       | CAM_PROFILE
       | CEF
@@ -104,10 +103,6 @@ null_block
             | INSPECT
             | INTERNAL
             | NAME_SERVER
-            |
-            (
-               OSPF NAME_LOOKUP
-            )
             | PIM
             | POLICY_LIST
             | RATE_LIMIT
@@ -156,25 +151,20 @@ null_block
       | KEY
       | KEYSTORE
       | KRON
-      | L2
       | L2TP_CLASS
       | LACP
       | LAG
       | LINECARD
       | LOAD_BALANCE
       | LOGIN
-      | LPTS
       | MAC_LEARN
       | MACRO
       | MANAGEMENT_ACCESS
-      | MAP_CLASS
       | MAP_LIST
       | MENU
       | MLAG
       | MODULE
-      | MONITOR
       | MONITOR_INTERFACE
-      | MONITOR_SESSION
       |
       (
          MPLS
@@ -203,13 +193,6 @@ null_block
             NAME_LOOKUP
          )
       )
-      |
-      (
-         OSPFV3
-         (
-            NAME_LOOKUP
-         )
-      )      
       | PASSWORD_POLICY
       | PLAT
       | PLATFORM
@@ -228,10 +211,12 @@ null_block
       | REMOVED
       | RMON
       | ROUTE_ONLY
-      | ROUTER
+      |
       (
-         LOG
-         | VRRP
+         ROUTER
+         (
+            LOG
+         )
       )
       | RP
       | RX_COS_SLOT
@@ -319,7 +304,6 @@ null_inner
          | ADVERTISE
          | AESA
          | ALLOCATE
-         | ALLOW_CONNECTIONS
          | ALWAYS_ON_VPN
          | APPLICATION
          | ARCHIVE_LENGTH
@@ -338,7 +322,6 @@ null_inner
                | VALUE
             )
          )
-         | BRIDGE_DOMAIN
          | BRIDGE_PRIORITY
          | CACHE_TIMEOUT
          | CALL
@@ -350,7 +333,6 @@ null_inner
          | CLOCK
          | COMMAND
          | CONNECT_SOURCE
-         | CONTACT
          | CONTEXT
          | CPU_SHARE
          | CREDENTIALS
@@ -363,9 +345,7 @@ null_inner
          | DEPLOY
          | DESTINATION_PATTERN
          | DESTINATION_SLOT
-         | DESTINATION
          | DIAGNOSTIC
-         | DIALER
          | DISTRIBUTION
          | DNS_SERVER
          | DOMAIN_ID
@@ -376,7 +356,6 @@ null_inner
          | EGRESS
          | ENABLED
          | ENCAPSULATION
-         | ERSPAN_ID
          | ESCAPE_CHARACTER
          | EXIT
          | EXPECT
@@ -385,23 +364,20 @@ null_inner
          | FAILED
          | FAIR_QUEUE
          | FALLBACK_DN
-         | FAX
          | FIELDS
          | FILE_BROWSING
          | FILE_ENTRY
          | FILE_SIZE
-         | FLOW
          | FLUSH_AT_ACTIVATION
          | FORWARD_DIGITS
          | FRAMING
          | FT
          | GATEWAY
          | GID
+         | GROUP
          | GROUP_ALIAS
          | GROUP_LOCK
          | GROUP_POLICY
-         | H225
-         | H323
          | HA_POLICY
          |
          (
@@ -427,8 +403,8 @@ null_inner
          (
             INTERFACE POLICY
          )
-         | INTERWORKING
          | INTERVAL
+         | INTERWORKING
          |
          (
             (
@@ -464,19 +440,16 @@ null_inner
          | MONITORING
          | MSDP_PEER
          | MSIE_PROXY
-         | MTU
          | NAMESPACE
          | NAT
          | NATPOOL
          | NEGOTIATE
-         | NEIGHBOR
          | NETWORK
          | NODE
          | NOTIFY
          | OPEN
          | OPTION
          | OPS
-         | ORIGIN
          | ORIGINATOR_ID
          | OUI
          | PARAMETERS
@@ -505,7 +478,6 @@ null_inner
          | PRIMARY_PORT
          | PRIMARY_PRIORITY
          | PROBE
-         | PROFILE
          | PROPOSAL
          | PROVISION
          | RANDOM
@@ -529,7 +501,6 @@ null_inner
          | ROUTE
          | ROUTE_TARGET
          | RP_ADDRESS
-         | RULE
          | SA_FILTER
          | SATELLITE
          | SECRET
@@ -538,21 +509,17 @@ null_inner
          | SERVER
          | SERVERFARM
          | SERVER_PRIVATE
-         | SERVICE
          | SERVICE_POLICY
          | SERVICE_QUEUE
          | SERVICE_TYPE
          | SESSION
          | SEVERITY
-         | SOURCE_INTERFACE
          | SHUT
-         | SHUTDOWN
          | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
          | SLOT
          | SORT_BY
-         | SOURCE
          | SPEED
          | SPLIT_TUNNEL_NETWORK_LIST
          | SPLIT_TUNNEL_POLICY
@@ -580,7 +547,6 @@ null_inner
          | TYPE
          | UDP_JITTER
          | UID
-         | USE
          | USE_VRF
          | USERS
          | VERSION
@@ -588,7 +554,6 @@ null_inner
          | VIRTUAL_ROUTER
          | VM_CPU
          | VM_MEMORY
-         | VPN ID
          | VPN_FILTER
          | VPN_GROUP_POLICY
          | VPN_IDLE_TIMEOUT
@@ -654,10 +619,13 @@ null_single
       | DEVICE_SENSOR
       | DHCPD
       | DIAGNOSTIC
-      | DIALER 
+      |
+      (
+         DIALER
          (
-         	WATCH_LIST
+            WATCH_LIST
          )
+      )
       | DIALER_LIST
       | DNS
       | DNS_GUARD
@@ -729,6 +697,13 @@ null_single
             | MSDP
             | MULTICAST
             | MULTICAST_ROUTING
+            |
+            (
+               OSPF
+               (
+                  NAME_LOOKUP
+               )
+            )
             | RADIUS
             | RCMD
             | ROUTING //might want to use this eventually
@@ -777,8 +752,8 @@ null_single
       | LICENSE
       | LLDP
       | LOAD_INTERVAL
-      | LOCATION
       | LOCALE
+      | LOCATION
       |
       (
          MAC
@@ -787,8 +762,8 @@ null_single
          )
       )
       | MAC_ADDRESS_TABLE
-      | MEMORY_SIZE
       | MEMORY
+      | MEMORY_SIZE
       | MGCP
       | MICROCODE
       | MIRROR
@@ -841,6 +816,13 @@ null_single
                )
             )
             | SSH
+         )
+      )
+      |
+      (
+         OSPFV3
+         (
+            NAME_LOOKUP
          )
       )
       | OWNER
@@ -926,7 +908,6 @@ null_single
       | WRR_QUEUE
       | X25
       | X29
-      | XCONNECT
       | XLATE
       | XML SERVER
    )

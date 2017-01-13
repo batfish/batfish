@@ -1,8 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.UniqueIpAssignmentsQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "nodeBlacklist" : [ ],
-  "nodeRegex" : ".*",
-  "verbose" : false
-}

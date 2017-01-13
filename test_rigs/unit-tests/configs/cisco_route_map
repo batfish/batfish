@@ -1,5 +1,5 @@
 !
-hostname route_map
+hostname cisco_route_map
 !
 route-map connected-to-bgp permit 10
  match ip address prefix-list hpr-connector-subnets

@@ -64,7 +64,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
             String receivingInterface = lastHop.getEdge().getInt2();
             vrfName = currentNode._c.getInterfaces().get(receivingInterface)
-                  .getVrf();
+                  .getVrf().getName();
          }
          VirtualRouter currentVirtualRouter = currentNode._virtualRouters
                .get(vrfName);

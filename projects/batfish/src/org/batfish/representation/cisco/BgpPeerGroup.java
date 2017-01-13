@@ -1,6 +1,8 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.batfish.datamodel.Ip;
 
@@ -11,6 +13,8 @@ public abstract class BgpPeerGroup implements Serializable {
    protected Boolean _active;
 
    protected Boolean _advertiseInactive;
+
+   private Map<String, String> _afGroups;
 
    protected Boolean _allowAsIn;
 
@@ -54,9 +58,15 @@ public abstract class BgpPeerGroup implements Serializable {
 
    protected Boolean _sendCommunity;
 
+   private boolean _sendExtendedCommunity;
+
    protected Boolean _shutdown;
 
    protected String _updateSource;
+
+   public BgpPeerGroup() {
+      _afGroups = new TreeMap<>();
+   }
 
    public Boolean getActive() {
       return _active;
@@ -64,6 +74,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public Boolean getAdvertiseInactive() {
       return _advertiseInactive;
+   }
+
+   public Map<String, String> getAfGroups() {
+      return _afGroups;
    }
 
    public Boolean getAllowAsIn() {
@@ -189,6 +203,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public Boolean getSendCommunity() {
       return _sendCommunity;
+   }
+
+   public boolean getSendExtendedCommunity() {
+      return _sendExtendedCommunity;
    }
 
    public Boolean getShutdown() {
@@ -365,6 +383,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
    public void setSendCommunity(boolean sendCommunity) {
       _sendCommunity = sendCommunity;
+   }
+
+   public void setSendExtendedCommunity(boolean sendExtendedCommunity) {
+      _sendExtendedCommunity = sendExtendedCommunity;
    }
 
    public void setShutdown(boolean shutdown) {

@@ -1166,7 +1166,7 @@ public class Synthesizer {
          NodeAcceptExpr nodeAccept = new NodeAcceptExpr(hostname);
          for (Interface i : c.getInterfaces().values()) {
             String ifaceName = i.getName();
-            String vrf = i.getVrf();
+            String vrf = i.getVrfName();
             InboundInterfaceExpr inboundInterface = new InboundInterfaceExpr(
                   hostname, ifaceName);
             // deal with origination totally independently of zone stuff
@@ -1359,7 +1359,7 @@ public class Synthesizer {
                if (iface.getPrefix() != null) {
                   IpAccessList aclIn = iface.getIncomingFilter();
                   IpAccessList aclOut = iface.getOutgoingFilter();
-                  String routePolicy = iface.getRoutingPolicy();
+                  String routePolicy = iface.getRoutingPolicyName();
                   if (aclIn != null) {
                      String name = aclIn.getName();
                      aclMap.put(name, aclIn);
@@ -1566,7 +1566,7 @@ public class Synthesizer {
             String ifaceName = iface.getName();
             // PostInInterfaceExpr postInInterface = new PostInInterfaceExpr(
             // hostname, ifaceName);
-            String p = iface.getRoutingPolicy();
+            String p = iface.getRoutingPolicyName();
             if (p != null) {
                throw new BatfishException(
                      "Currently do not support interface routing-policy: '"
@@ -1778,7 +1778,7 @@ public class Synthesizer {
          Set<Interface> interfaces = e.getValue();
          UnoriginalExpr unoriginal = new UnoriginalExpr(hostname);
          for (Interface i : interfaces) {
-            String vrfName = i.getVrf();
+            String vrfName = i.getVrfName();
             String ifaceName = i.getName();
             PostInInterfaceExpr postInIface = new PostInInterfaceExpr(hostname,
                   ifaceName);
@@ -2140,7 +2140,7 @@ public class Synthesizer {
             AndExpr receivedDestRouteConditions = new AndExpr();
             receivedDestRouteConditions.addConjunct(postInInterface);
             receivedDestRouteConditions.addConjunct(preOut);
-            String policyName = i.getRoutingPolicy();
+            String policyName = i.getRoutingPolicyName();
             if (policyName != null) {
                PolicyDenyExpr policyDeny = new PolicyDenyExpr(hostname,
                      policyName);

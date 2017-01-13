@@ -176,6 +176,7 @@ extended_access_list_additional_feature
    | FIN
    | FRAGMENTS
    | HOP_LIMIT
+   | HOPLIMIT
    | HOST_UNKNOWN
    | HOST_UNREACHABLE
    | LOG

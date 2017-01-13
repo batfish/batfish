@@ -7,7 +7,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -486,9 +485,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return _localIp;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonProperty(OWNER_VAR)
-   @JsonPropertyDescription("The configuration that owns this peering. Stored as @id")
+   @JsonIgnore
    public Configuration getOwner() {
       return _owner;
    }
@@ -537,6 +534,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
    public void initCandidateRemoteBgpNeighbors() {
       _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
+   }
+
+   public void resolveReferences(Configuration owner) {
+      _owner = owner;
    }
 
    @JsonProperty(ADDRESS_VAR)

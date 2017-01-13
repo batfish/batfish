@@ -339,6 +339,11 @@ AESA
    'aesa'
 ;
 
+AF_GROUP
+:
+   'af-group'
+;
+
 AF11
 :
    'af11'
@@ -457,6 +462,11 @@ ALERTS
 ALIAS
 :
    'alias'
+;
+
+ALL_ALARMS
+:
+   'all-alarms'
 ;
 
 ALL_OF_ROUTER
@@ -2117,6 +2127,11 @@ DIALER
    'dialer'
 ;
 
+DIALER_GROUP
+:
+   'dialer-group'
+;
+
 DIALER_LIST
 :
    'dialer-list'
@@ -2301,7 +2316,7 @@ DSL
 :
    'dsl'
 ;
-  
+
 DSP
 :
    'dsp'
@@ -2765,6 +2780,11 @@ EXIT_VRF
 EXPECT
 :
    'expect'
+;
+
+EXPLICIT_NULL
+:
+   'explicit-null'
 ;
 
 EXPORT
@@ -3431,6 +3451,11 @@ HOP_LIMIT
    'hop-limit'
 ;
 
+HOPLIMIT
+:
+   'hoplimit'
+;
+
 HOPS_OF_STATISTICS_KEPT
 :
    'hops-of-statistics-kept'
@@ -3716,6 +3741,11 @@ INHERIT
    'inherit'
 ;
 
+INHERITANCE_DISABLE
+:
+   'inheritance-disable'
+;
+
 INPUT
 :
    'input'
@@ -3744,6 +3774,11 @@ INSTANCE
 INTEGRITY
 :
    'integrity'
+;
+
+INTERAREA
+:
+   'interarea'
 ;
 
 INTERFACE
@@ -3831,13 +3866,7 @@ IPSLA
 
 IPV4
 :
-   (
-       'ipv4'       
-   )
-   |
-   (
-   		'IPv4'
-   )
+   [iI][pP][vV]'4'
 ;
 
 IPV4_L5
@@ -3847,13 +3876,7 @@ IPV4_L5
 
 IPV6
 :
-   (
-      'ipv6'
-   )
-   |
-   (
-      'IPV6'
-   )
+   [iI][pP][vV]'6'
 ;
 
 IPV6_ADDRESS_POOL
@@ -4941,7 +4964,7 @@ MSRPC
    'msrpc'
 ;
 
-MST 
+MST
 :
    'mst'
 ;
@@ -5519,6 +5542,36 @@ ORIGINATOR_ID
 OSPF
 :
    'ospf'
+;
+
+OSPF_EXTERNAL_TYPE_1
+:
+   'ospf-external-type-1'
+;
+
+OSPF_EXTERNAL_TYPE_2
+:
+   'ospf-external-type-2'
+;
+
+OSPF_INTER_AREA
+:
+   'ospf-inter-area'
+;
+
+OSPF_INTRA_AREA
+:
+   'ospf-intra-area'
+;
+
+OSPF_NSSA_TYPE_1
+:
+   'ospf-nssa-type-1'
+;
+
+OSPF_NSSA_TYPE_2
+:
+   'ospf-nssa-type-2'
 ;
 
 OSPFV3
@@ -7006,6 +7059,11 @@ SDR
    'sdr'
 ;
 
+SDROWNER
+:
+   'SDROwner'
+;
+
 SECONDARY
 :
    'secondary'
@@ -7891,6 +7949,11 @@ SYSTEM_MAX
 SYSTEM_PRIORITY
 :
    'system-priority'
+;
+
+SYSTEMOWNER
+:
+   'SystemOwner'
 ;
 
 TABLE_MAP

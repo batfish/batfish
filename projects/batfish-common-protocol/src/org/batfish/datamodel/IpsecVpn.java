@@ -9,8 +9,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public final class IpsecVpn extends ComparableStructure<String> {
+
+   private static final String BIND_INTERFACE_VAR = "bindInterface";
+
+   private static final String IKE_GATEWAY_VAR = "ikeGateway";
+
+   private static final String IPSEC_POLICY_VAR = "ipsecPolicy";
 
    /**
     *
@@ -19,11 +26,17 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
    private Interface _bindInterface;
 
+   private transient String _bindInterfaceName;
+
    private transient Set<IpsecVpn> _candidateRemoteIpsecVpns;
 
-   private IkeGateway _gateway;
+   private IkeGateway _ikeGateway;
+
+   private transient String _ikeGatewayName;
 
    private IpsecPolicy _ipsecPolicy;
+
+   private transient String _ipsecPolicyName;
 
    private Configuration _owner;
 
@@ -79,8 +92,9 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
    @JsonIgnore
    private IkeProposal getActiveIkeProposal(IpsecVpn remoteIpsecVpn) {
-      for (IkeProposal lhs : _gateway.getIkePolicy().getProposals().values()) {
-         for (IkeProposal rhs : remoteIpsecVpn.getGateway().getIkePolicy()
+      for (IkeProposal lhs : _ikeGateway.getIkePolicy().getProposals()
+            .values()) {
+         for (IkeProposal rhs : remoteIpsecVpn.getIkeGateway().getIkePolicy()
                .getProposals().values()) {
             if (lhs.compatibleWith(rhs)) {
                return lhs;
@@ -90,9 +104,20 @@ public final class IpsecVpn extends ComparableStructure<String> {
       return null;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
+   @JsonIgnore
    public Interface getBindInterface() {
       return _bindInterface;
+   }
+
+   @JsonProperty(BIND_INTERFACE_VAR)
+   @JsonPropertyDescription("Tunnel interface on which the VPN will be bound")
+   public String getBindInterfaceName() {
+      if (_bindInterface != null) {
+         return _bindInterface.getName();
+      }
+      else {
+         return _bindInterfaceName;
+      }
    }
 
    @JsonIdentityReference(alwaysAsId = true)
@@ -100,17 +125,39 @@ public final class IpsecVpn extends ComparableStructure<String> {
       return _candidateRemoteIpsecVpns;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   public IkeGateway getGateway() {
-      return _gateway;
+   @JsonIgnore
+   public IkeGateway getIkeGateway() {
+      return _ikeGateway;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(IKE_GATEWAY_VAR)
+   @JsonPropertyDescription("Remote VPN gateway configuration")
+   public String getIkeGatewayName() {
+      if (_ikeGateway != null) {
+         return _ikeGateway.getName();
+      }
+      else {
+         return _ikeGatewayName;
+      }
+   }
+
+   @JsonIgnore
    public IpsecPolicy getIpsecPolicy() {
       return _ipsecPolicy;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
+   @JsonProperty(IPSEC_POLICY_VAR)
+   @JsonPropertyDescription("IPSEC policy for this VPN")
+   public String getIpsecPolicyName() {
+      if (_ipsecPolicy != null) {
+         return _ipsecPolicy.getName();
+      }
+      else {
+         return _ipsecPolicyName;
+      }
+   }
+
+   @JsonIgnore
    public Configuration getOwner() {
       return _owner;
    }
@@ -124,16 +171,47 @@ public final class IpsecVpn extends ComparableStructure<String> {
       _candidateRemoteIpsecVpns = new TreeSet<>();
    }
 
-   public void setBindInterface(Interface iface) {
-      _bindInterface = iface;
+   public void resolveReferences(Configuration owner) {
+      _owner = owner;
+      if (_bindInterfaceName != null) {
+         _bindInterface = owner.getInterfaces().get(_bindInterfaceName);
+      }
+      if (_ikeGatewayName != null) {
+         _ikeGateway = owner.getIkeGateways().get(_ikeGatewayName);
+      }
+      if (_ipsecPolicyName != null) {
+         _ipsecPolicy = owner.getIpsecPolicies().get(_ipsecPolicyName);
+      }
    }
 
-   public void setGateway(IkeGateway gateway) {
-      _gateway = gateway;
+   @JsonIgnore
+   public void setBindInterface(Interface bindInterface) {
+      _bindInterface = bindInterface;
    }
 
+   @JsonProperty(BIND_INTERFACE_VAR)
+   public void setBindInterfaceName(String bindInterfaceName) {
+      _bindInterfaceName = bindInterfaceName;
+   }
+
+   @JsonIgnore
+   public void setIkeGateway(IkeGateway ikeGateway) {
+      _ikeGateway = ikeGateway;
+   }
+
+   @JsonProperty(IKE_GATEWAY_VAR)
+   public void setIkeGatewayName(String ikeGatewayName) {
+      _ikeGatewayName = ikeGatewayName;
+   }
+
+   @JsonIgnore
    public void setIpsecPolicy(IpsecPolicy ipsecPolicy) {
       _ipsecPolicy = ipsecPolicy;
+   }
+
+   @JsonProperty(IPSEC_POLICY_VAR)
+   public void setIpsecPolicyName(String ipsecPolicyName) {
+      _ipsecPolicyName = ipsecPolicyName;
    }
 
    public void setOwner(Configuration owner) {

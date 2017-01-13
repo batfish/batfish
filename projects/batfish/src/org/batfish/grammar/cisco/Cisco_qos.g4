@@ -68,10 +68,10 @@ cmm_any
 
 cmm_cos
 :
-   COS 
+   COS
    (
-   	  DEC+
-   	  | range
+      DEC+
+      | range
    ) NEWLINE
 ;
 

@@ -2,10 +2,13 @@ package org.batfish.datamodel;
 
 import org.batfish.common.util.ComparableStructure;
 
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 public class IkeGateway extends ComparableStructure<String> {
+
+   private static final String IKE_POLICY_VAR = "ikePolicy";
 
    /**
     *
@@ -17,6 +20,8 @@ public class IkeGateway extends ComparableStructure<String> {
    private Interface _externalInterface;
 
    private IkePolicy _ikePolicy;
+
+   private transient String _ikePolicyName;
 
    private Ip _localAddress;
 
@@ -65,10 +70,20 @@ public class IkeGateway extends ComparableStructure<String> {
       return _externalInterface;
    }
 
-   @JsonIdentityReference(alwaysAsId = true)
-   @JsonPropertyDescription("IKE policy to be used with this IKE gateway. Stored as @id.")
+   @JsonIgnore
    public IkePolicy getIkePolicy() {
       return _ikePolicy;
+   }
+
+   @JsonProperty(IKE_POLICY_VAR)
+   @JsonPropertyDescription("IKE policy to be used with this IKE gateway.")
+   public String getIkePolicyName() {
+      if (_ikePolicy != null) {
+         return _ikePolicy.getName();
+      }
+      else {
+         return _ikePolicyName;
+      }
    }
 
    @JsonPropertyDescription("Local IP address from which to connect to IKE gateway. Used instead of external interface.")
@@ -86,6 +101,12 @@ public class IkeGateway extends ComparableStructure<String> {
       return _remoteId;
    }
 
+   public void resolveReferences(Configuration owner) {
+      if (_ikePolicyName != null) {
+         _ikePolicy = owner.getIkePolicies().get(_ikePolicyName);
+      }
+   }
+
    public void setAddress(Ip address) {
       _address = address;
    }
@@ -94,8 +115,14 @@ public class IkeGateway extends ComparableStructure<String> {
       _externalInterface = externalInterface;
    }
 
+   @JsonIgnore
    public void setIkePolicy(IkePolicy ikePolicy) {
       _ikePolicy = ikePolicy;
+   }
+
+   @JsonProperty(IKE_POLICY_VAR)
+   public void setIkePolicyName(String ikePolicyName) {
+      _ikePolicyName = ikePolicyName;
    }
 
    public void setLocalAddress(Ip localAddress) {

@@ -941,7 +941,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             name, _c);
-      newIface.setVrf(iface.getRoutingInstance());
+      newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
       Zone zone = _interfaceZones.get(iface);
       if (zone != null) {
          String zoneName = zone.getName();
@@ -1200,7 +1200,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       else {
          _ikeGateways.get(ikeGatewayName).getReferers().put(oldIpsecVpn,
                "IKE gateway for IPSEC VPN: " + name);
-         newIpsecVpn.setGateway(ikeGateway);
+         newIpsecVpn.setIkeGateway(ikeGateway);
       }
 
       // ipsec policy
@@ -1569,8 +1569,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
          Interface unitIface = eUnit.getValue();
          org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
          _c.getInterfaces().put(unitName, newUnitIface);
-         String vrfName = newUnitIface.getVrf();
-         _c.getVrfs().get(vrfName).getInterfaces().put(unitName, newUnitIface);
+         org.batfish.datamodel.Vrf vrf = newUnitIface.getVrf();
+         String vrfName = vrf.getName();
+         vrf.getInterfaces().put(unitName, newUnitIface);
          _routingInstances.get(vrfName).getInterfaces().put(unitName,
                unitIface);
       }

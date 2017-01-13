@@ -1562,7 +1562,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setDescription(iface.getDescription());
       newIface.setActive(iface.getActive());
-      newIface.setVrf(iface.getVrf());
+      newIface.setVrf(c.getVrfs().get(vrfName));
       newIface.setBandwidth(iface.getBandwidth());
       newIface.setMtu(iface.getMtu());
       newIface.setProxyArp(iface.getProxyArp());
@@ -2312,7 +2312,8 @@ public class CiscoConfiguration extends VendorConfiguration {
          for (Entry<String, Interface> e : allInterfaces.entrySet()) {
             String ifaceName = e.getKey();
             Interface iface = e.getValue();
-            if (ifaceName.toLowerCase().startsWith("loopback")) {
+            if (ifaceName.toLowerCase().startsWith("loopback")
+                  && iface.getActive() && iface.getPrefix() != null) {
                loopbackInterfaces.put(ifaceName, iface);
             }
          }
@@ -2324,13 +2325,14 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
          Ip highestIp = Ip.ZERO;
          for (Interface iface : interfacesToCheck.values()) {
-            Prefix prefix = iface.getPrefix();
-            if (prefix == null) {
+            if (!iface.getActive()) {
                continue;
             }
-            Ip ip = prefix.getAddress();
-            if (highestIp.asLong() < ip.asLong()) {
-               highestIp = ip;
+            for (Prefix prefix : iface.getAllPrefixes()) {
+               Ip ip = prefix.getAddress();
+               if (highestIp.asLong() < ip.asLong()) {
+                  highestIp = ip;
+               }
             }
          }
          if (highestIp == Ip.ZERO) {
@@ -2495,6 +2497,16 @@ public class CiscoConfiguration extends VendorConfiguration {
       tag = oldTag != null ? oldTag : -1;
       return new org.batfish.datamodel.StaticRoute(prefix, nextHopIp,
             nextHopInterface, staticRoute.getDistance(), tag);
+   }
+
+   @Override
+   public String toString() {
+      if (_hostname != null) {
+         return getClass().getSimpleName() + "<" + _hostname + ">";
+      }
+      else {
+         return super.toString();
+      }
    }
 
    @Override

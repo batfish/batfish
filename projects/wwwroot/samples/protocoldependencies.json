@@ -1,6 +1,0 @@
-{
-  "class" : "org.batfish.datamodel.questions.ProtocolDependenciesQuestion",
-  "differential" : false,
-  "interfaceBlacklist" : [ ],
-  "nodeBlacklist" : [ ]
-}

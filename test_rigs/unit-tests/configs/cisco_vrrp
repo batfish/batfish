@@ -1,0 +1,27 @@
+!
+hostname cisco_vrrp
+!
+router vrrp
+ interface GigabitEthernet0/0/0/19
+  address-family ipv4
+   vrrp 1
+    priority 90
+    address 130.59.54.193
+   !
+  !
+ !
+!
+router vrrp
+ interface MgmtEth0/RSP0/CPU0/0
+ !
+ interface MgmtEth0/RSP1/CPU0/0
+  address-family ipv4
+   vrrp 1
+    priority 90
+    address 130.59.51.65
+   !
+  !
+ !
+!
+!
+

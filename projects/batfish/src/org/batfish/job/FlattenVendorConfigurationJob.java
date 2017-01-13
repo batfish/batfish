@@ -6,6 +6,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.grammar.Format;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
 

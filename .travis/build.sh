@@ -8,9 +8,6 @@ fi
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
-# Build and install pybatfish
-pip install projects/pybatfish || exit 1
-
 . tools/batfish_functions.sh
 batfish_build_all || exit 1
 
@@ -20,24 +17,14 @@ allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
 echo -e "\n  ..... Running java client tests"
 allinone -cmdfile tests/java/commands || exit 1
 
-echo -e "\n  ..... Running python client tests"
+#Test running separately
 coordinator &
 batfish -servicemode -register -coordinatorhost localhost -loglevel output &
-python tests/python/commands.py || exit 1
 
 echo -e "\n  ..... Running java demo tests"
-#using batfish_client since the coordinator is running due to python client testing
 batfish_client -cmdfile demos/java/commands -coordinatorhost localhost > demos/java/commands.ref.testout || exit 1
 rm demos/java/commands.ref.testout
-#export diffcount=`diff demos/java/commands.{ref,ref.testout}`
-#if [ $diffcount == 100]; then 
-#	rm demos/java/commands.ref.testout
-#fi
 
-echo -e "\n  ..... Running python demo tests"
-#coordinator should be running due to python client testing
-python demos/python/commands.py > demos/python/commands.ref.testout || exit 1
-rm demos/python/commands.ref.testout
 echo -e "\n .... Failed tests: "
 $GNU_FIND -name *.testout
 

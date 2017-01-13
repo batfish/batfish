@@ -214,6 +214,8 @@ $USR/lib64/*
 $USR/include/*
 
 %changelog
+* Mon Jan 9 2017  Ari Fogel <ari@intentionet.com> 0.2.0-1
+- Second Build
 * Tue Dec 6 2016  Ari Fogel <ari@intentionet.com> 0.1.0-1
 - First Build
 EOF
@@ -222,7 +224,7 @@ EOF
 Name: batfish
 Maintainer: Ari Fogel <ari@intentionet.com>
 Source: https://github.com/arifogel/batfish
-Copyright: 2013-2016 Ari Fogel <ari@intentionet.com>
+Copyright: 2013-2017 Ari Fogel <ari@intentionet.com>
 License: Apache-2.0
  Internal components may have different licenses. Their license
  files may be extracted from the included jar files.

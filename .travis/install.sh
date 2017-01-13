@@ -15,29 +15,16 @@ if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    sudo cp bin/z3 /usr/bin/ || exit 1
    sudo cp include/* /usr/include/ || exit 1
    z3 --version || exit 1
-   ### install python packages
-   echo -e "\n   ............. Installing pip"
-   sudo -H apt-get -y install python-pip || exit 1
-   ### dependencies should now be installed automatically when pip installing pybatfish
-   #echo -e "\n   ............. Installing requests"
-   #pip install requests || exit 1
-   #echo -e "\n   ............. Installing requests_toolbelt"
-   #pip install requests_toolbelt || exit 1
 elif [[ $TRAVIS_OS_NAME == 'osx' ]]; then
    sudo $TRAVIS_BUILD_DIR/tools/install_z3_osx.sh || exit 1
    brew update || exit 1
    which gfind || brew install findutils || exit 1
    gfind --version || exit 1
-   which python2.7 || brew install python || exit 1
-   python2.7 --version || exit 1
    which ant || brew install ant || exit 1
    ant -version || exit 1
    echo $PATH
-   export PATH=/usr/local/share/python:$PATH
    java -version || exit 1
    javac -version || exit 1
-   which pip || easy_install pip || exit 1
-   pip --version || exit 1
 else
    echo "Unsupported TRAVIS_OS_NAME: $TRAVIS_OS_NAME"
    exit 1 # CI not supported in this case
