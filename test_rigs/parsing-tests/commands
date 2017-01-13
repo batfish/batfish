@@ -3,40 +3,40 @@
 add-batfish-option ppt
 
 #dc-as-reuse
-test test_rigs/parsing-tests/dc-as-reuse.ref init-testrig -nodataplane test_rigs/dc-as-reuse
+test test_rigs/parsing-tests/dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
 
 #disable-as-suppression
-test test_rigs/parsing-tests/disable-as-suppression.ref init-testrig -nodataplane test_rigs/disable-as-suppression
+test test_rigs/parsing-tests/disable-as-suppression.ref init-testrig test_rigs/disable-as-suppression
 
 #example
-test test_rigs/parsing-tests/example.ref init-testrig -nodataplane test_rigs/example
+test test_rigs/parsing-tests/example.ref init-testrig test_rigs/example
 
 #example-isp-switchover-1
-test test_rigs/parsing-tests/example-isp-switchover-1.ref init-testrig -nodataplane test_rigs/example-isp-switchover-1
+test test_rigs/parsing-tests/example-isp-switchover-1.ref init-testrig test_rigs/example-isp-switchover-1
 
 #example-isp-switchover-2
-test test_rigs/parsing-tests/example-isp-switchover-2.ref init-testrig -nodataplane test_rigs/example-isp-switchover-2
+test test_rigs/parsing-tests/example-isp-switchover-2.ref init-testrig test_rigs/example-isp-switchover-2
 
 #example-juniper
-test test_rigs/parsing-tests/example-juniper.ref init-testrig -nodataplane test_rigs/example-juniper
+test test_rigs/parsing-tests/example-juniper.ref init-testrig test_rigs/example-juniper
 
 #example-nsdi
-test test_rigs/parsing-tests/example-nsdi.ref init-testrig -nodataplane test_rigs/example-nsdi
+test test_rigs/parsing-tests/example-nsdi.ref init-testrig test_rigs/example-nsdi
 
 #example-with-delta
-#test test_rigs/parsing-tests/example-with-delta.ref init-testrig -nodataplane test_rigs/example-with-delta
+#test test_rigs/parsing-tests/example-with-delta.ref init-testrig test_rigs/example-with-delta
 
 #indirection
-test test_rigs/parsing-tests/indirection.ref init-testrig -nodataplane test_rigs/indirection
+test test_rigs/parsing-tests/indirection.ref init-testrig test_rigs/indirection
 
 #isis
-test test_rigs/parsing-tests/isis.ref init-testrig -nodataplane test_rigs/isis
+test test_rigs/parsing-tests/isis.ref init-testrig test_rigs/isis
 
 #policy-routing
-test test_rigs/parsing-tests/policy-routing.ref init-testrig -nodataplane test_rigs/policy-routing
+test test_rigs/parsing-tests/policy-routing.ref init-testrig test_rigs/policy-routing
 
 #srx-testbed
-test test_rigs/parsing-tests/srx-testbed.ref init-testrig -nodataplane test_rigs/srx-testbed
+test test_rigs/parsing-tests/srx-testbed.ref init-testrig test_rigs/srx-testbed
 
 #unit-tests
-test test_rigs/parsing-tests/unit-tests.ref init-testrig -nodataplane test_rigs/unit-tests
+test test_rigs/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-tests
