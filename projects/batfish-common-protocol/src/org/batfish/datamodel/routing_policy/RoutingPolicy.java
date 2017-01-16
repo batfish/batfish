@@ -27,14 +27,19 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
    private static final String STATEMENTS_VAR = "statements";
 
-   private transient Configuration _owner;
+   private Configuration _owner;
 
    private List<Statement> _statements;
 
    @JsonCreator
-   public RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
+   private RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _statements = new ArrayList<>();
+   }
+
+   public RoutingPolicy(String name, Configuration owner) {
+      this(name);
+      _owner = owner;
    }
 
    public Result call(Environment environment) {
@@ -86,10 +91,6 @@ public class RoutingPolicy extends ComparableStructure<String> {
       return result.getBooleanValue();
    }
 
-   public void setOwner(Configuration owner) {
-      _owner = owner;
-   }
-
    @JsonProperty(STATEMENTS_VAR)
    public void setStatements(List<Statement> statements) {
       _statements = statements;
@@ -100,7 +101,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
       for (Statement statement : _statements) {
          simpleStatements.addAll(statement.simplify());
       }
-      RoutingPolicy simple = new RoutingPolicy(_key);
+      RoutingPolicy simple = new RoutingPolicy(_key, _owner);
       simple.setStatements(simpleStatements);
       return simple;
    }

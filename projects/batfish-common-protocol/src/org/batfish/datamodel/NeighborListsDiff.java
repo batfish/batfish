@@ -22,22 +22,33 @@ public class NeighborListsDiff extends ConfigDiffElement {
       _diff = new TreeSet<>();
 
       for (Prefix aPrefix : a.keySet()) {
+         BgpNeighbor aNeighbor = a.get(aPrefix);
+         String aDescription = aNeighbor.getDescription();
+         if (aDescription == null) {
+            aDescription = aPrefix.toString();
+         }
          if (b.containsKey(aPrefix)) {
-            if (a.get(aPrefix).equals(b.get(aPrefix))) {
-               super._identical.add(a.get(aPrefix).getDescription());
+            BgpNeighbor bNeighbor = b.get(aPrefix);
+            if (aNeighbor.equals(bNeighbor)) {
+               super._identical.add(aDescription);
             }
             else {
-               _diff.add(a.get(aPrefix).getDescription());
+               _diff.add(aDescription);
             }
          }
          else {
-            super._inAOnly.add(a.get(aPrefix).getDescription());
+            super._inAOnly.add(aDescription);
          }
       }
 
       for (Prefix bPrefix : b.keySet()) {
+         BgpNeighbor bNeighbor = b.get(bPrefix);
          if (!a.containsKey(bPrefix)) {
-            super._inBOnly.add(b.get(bPrefix).getDescription());
+            String bDescription = bNeighbor.getDescription();
+            if (bDescription == null) {
+               bDescription = bPrefix.toString();
+            }
+            super._inBOnly.add(bDescription);
          }
       }
 

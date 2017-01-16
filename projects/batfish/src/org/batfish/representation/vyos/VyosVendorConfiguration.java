@@ -253,7 +253,7 @@ public class VyosVendorConfiguration extends VyosConfiguration {
 
    private RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
       String name = routeMap.getName();
-      RoutingPolicy routingPolicy = new RoutingPolicy(name);
+      RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
       List<Statement> statements = routingPolicy.getStatements();
       for (Entry<Integer, RouteMapRule> e : routeMap.getRules().entrySet()) {
          String ruleName = Integer.toString(e.getKey());

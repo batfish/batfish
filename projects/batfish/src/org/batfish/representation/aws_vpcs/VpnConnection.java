@@ -311,7 +311,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
             String originationPolicyName = vpnId + "_origination";
             RoutingPolicy originationRoutingPolicy = new RoutingPolicy(
-                  originationPolicyName);
+                  originationPolicyName, vpnGatewayCfgNode);
             vpnGatewayCfgNode.getRoutingPolicies().put(originationPolicyName,
                   originationRoutingPolicy);
             cgBgpNeighbor.setExportPolicy(originationPolicyName);

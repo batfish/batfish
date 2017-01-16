@@ -901,7 +901,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":"
                + prefix.toString() + "~";
          RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
-               generationPolicyName);
+               generationPolicyName, c);
          If currentGeneratedRouteConditional = new If();
          currentGeneratedRoutePolicy.getStatements()
                .add(currentGeneratedRouteConditional);
@@ -954,7 +954,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":"
                + prefix6.toString() + "~";
          RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(
-               generationPolicyName);
+               generationPolicyName, c);
          If currentGeneratedRouteConditional = new If();
          currentGeneratedRoutePolicy.getStatements()
                .add(currentGeneratedRouteConditional);
@@ -999,7 +999,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       String bgpCommonExportPolicyName = "~BGP_COMMON_EXPORT_POLICY:" + vrfName
             + "~";
       RoutingPolicy bgpCommonExportPolicy = new RoutingPolicy(
-            bgpCommonExportPolicyName);
+            bgpCommonExportPolicyName, c);
       c.getRoutingPolicies().put(bgpCommonExportPolicyName,
             bgpCommonExportPolicy);
       List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy
@@ -1280,7 +1280,7 @@ public class CiscoConfiguration extends VendorConfiguration {
          String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:" + vrfName
                + ":" + lpg.getName() + "~";
          RoutingPolicy peerExportPolicy = new RoutingPolicy(
-               peerExportPolicyName);
+               peerExportPolicyName, c);
          if (lpg.getActive() && !lpg.getShutdown()) {
             c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
          }
@@ -1378,7 +1378,7 @@ public class CiscoConfiguration extends VendorConfiguration {
                String defaultRouteGenerationPolicyName = "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:"
                      + vrfName + ":" + lpg.getName() + "~";
                RoutingPolicy defaultRouteGenerationPolicy = new RoutingPolicy(
-                     defaultRouteGenerationPolicyName);
+                     defaultRouteGenerationPolicyName, c);
                If defaultRouteGenerationConditional = new If();
                defaultRouteGenerationPolicy.getStatements()
                      .add(defaultRouteGenerationConditional);
@@ -2105,7 +2105,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       }
 
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
-      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName);
+      RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
+            c);
       c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
       List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
       newProcess.setExportPolicy(ospfExportPolicyName);
@@ -2429,7 +2430,7 @@ public class CiscoConfiguration extends VendorConfiguration {
    }
 
    private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
-      RoutingPolicy output = new RoutingPolicy(map.getName());
+      RoutingPolicy output = new RoutingPolicy(map.getName(), c);
       List<Statement> statements = output.getStatements();
       for (RouteMapClause rmClause : map.getClauses().values()) {
          Conjunction conj = new Conjunction();
@@ -2462,7 +2463,7 @@ public class CiscoConfiguration extends VendorConfiguration {
    private RoutingPolicy toRoutingPolicy(Configuration c,
          RoutePolicy routePolicy) {
       String name = routePolicy.getName();
-      RoutingPolicy rp = new RoutingPolicy(name);
+      RoutingPolicy rp = new RoutingPolicy(name, c);
       List<Statement> statements = rp.getStatements();
       for (RoutePolicyStatement routePolicyStatement : routePolicy
             .getStatements()) {
