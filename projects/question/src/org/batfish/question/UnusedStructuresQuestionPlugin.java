@@ -11,7 +11,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -20,7 +19,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
@@ -38,9 +36,17 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         final StringBuilder sb = new StringBuilder();
+         _unusedStructures.forEach((node, types) -> {
+            sb.append(node + ":\n");
+            types.forEach((type, members) -> {
+               sb.append("  " + type + ":\n");
+               for (String member : members) {
+                  sb.append("    " + member + "\n");
+               }
+            });
+         });
+         return sb.toString();
       }
 
       public void setUnusedStructures(

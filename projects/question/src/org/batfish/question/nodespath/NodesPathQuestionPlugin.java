@@ -57,14 +57,14 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             NodesPathResult result = _results.get(index);
             sb.append(String.format("  [%d]: %d results for %s\n", index,
                   result.getNumResults(), result.getPath().toString()));
-            for (String path : result.getResult().keySet()) {
+            for (ConcretePath path : result.getResult().keySet()) {
                JsonNode suffix = result.getResult().get(path);
                if (suffix != null) {
-                  sb.append(String.format("    %s : %s\n", path,
+                  sb.append(String.format("    %s : %s\n", path.toString(),
                         result.getResult().get(path).toString()));
                }
                else {
-                  sb.append(String.format("    %s\n", path));
+                  sb.append(String.format("    %s\n", path.toString()));
                }
             }
          }
@@ -159,7 +159,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             nodePathResult.setNumResults(numResults);
             boolean includeSuffix = nodesPath.getSuffix();
             if (!nodesPath.getSummary()) {
-               SortedMap<String, JsonNode> result = new TreeMap<>();
+               SortedMap<ConcretePath, JsonNode> result = new TreeMap<>();
                Iterator<JsonNode> p = prefixes.iterator();
                Iterator<JsonNode> s = suffixes.iterator();
                while (p.hasNext()) {
@@ -169,7 +169,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   if (prefixStr == null) {
                      throw new BatfishException("Did not expect null value");
                   }
-                  result.put(prefixStr, suffix);
+                  ConcretePath concretePath = new ConcretePath(prefixStr);
+                  result.put(concretePath, suffix);
                }
                nodePathResult.setResult(result);
             }
