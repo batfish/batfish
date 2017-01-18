@@ -4989,8 +4989,8 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
-            "Port-channel1" : {
-              "name" : "Port-channel1",
+            "Port-Channel1" : {
+              "name" : "Port-Channel1",
               "accessVlan" : 0,
               "active" : true,
               "bandwidth" : 1.0E12,
@@ -5035,7 +5035,7 @@
               "interfaces" : [
                 "FastEthernet12/13",
                 "HundredGigabitEthernet0/6/0/8",
-                "Port-channel1",
+                "Port-Channel1",
                 "Vlan100"
               ]
             }
