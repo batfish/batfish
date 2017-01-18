@@ -1,6 +1,5 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -32,12 +31,14 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
       if (_asExpr instanceof NamedAsPathSet) {
          NamedAsPathSet named = (NamedAsPathSet) _asExpr;
          String name = named.getName();
-         AsPathAccessList acl = c.getAsPathAccessLists().get(name);
-         if (acl == null) {
-            cc.undefined(
-                  "Reference to undefined ip as-path access-list: " + name,
-                  CiscoConfiguration.AS_PATH_ACCESS_LIST, name);
+         AsPathSet asPathSet = cc.getAsPathSets().get(name);
+         if (asPathSet == null) {
+            cc.undefined("Reference to undefined as-path-set: " + name,
+                  CiscoConfiguration.AS_PATH_SET, name);
             return BooleanExprs.False.toStaticBooleanExpr();
+         }
+         else {
+            asPathSet.getReferers().put(this, "as-path in");
          }
       }
       MatchAsPath match = new MatchAsPath(_asExpr);

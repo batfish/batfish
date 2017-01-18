@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -82,17 +84,20 @@ public class Route6FilterList extends ComparableStructure<String> {
    }
 
    public boolean permits(Prefix6 prefix) {
-      if (_permittedCache == null) {
-         _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-         _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-      }
-      else if (_deniedCache.contains(prefix)) {
+      if (_deniedCache.contains(prefix)) {
          return false;
       }
       else if (_permittedCache.contains(prefix)) {
          return true;
       }
       return newPermits(prefix);
+   }
+
+   private void readObject(ObjectInputStream in)
+         throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+      _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
    }
 
    @JsonProperty(LINES_VAR)

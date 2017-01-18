@@ -9,13 +9,13 @@ public class RouteMapContinueLine implements Serializable {
     */
    private static final long serialVersionUID = 1L;
 
-   private int _target;
+   private Integer _target;
 
-   public RouteMapContinueLine(int target) {
+   public RouteMapContinueLine(Integer target) {
       _target = target;
    }
 
-   public int getTarget() {
+   public Integer getTarget() {
       return _target;
    }
 

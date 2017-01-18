@@ -18,4 +18,6 @@ public abstract class AsPathSetElem implements Serializable {
    @Override
    public abstract int hashCode();
 
+   public abstract String regex();
+
 }

@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -59,7 +61,18 @@ public class NamedAsPathSet extends AsPathSetExpr {
 
    @Override
    public boolean matches(Environment environment) {
-      throw new BatfishException("unimplemented");
+      AsPathAccessList list = environment.getConfiguration()
+            .getAsPathAccessLists().get(_name);
+      if (list != null) {
+         BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+         AsPath asPath = bgpRoute.getAsPath();
+         boolean match = list.permits(asPath);
+         return match;
+      }
+      else {
+         environment.setError(true);
+         return false;
+      }
    }
 
    public void setName(String name) {

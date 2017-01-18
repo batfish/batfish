@@ -24,7 +24,8 @@ public class IpAsPathAccessListLine implements Serializable {
       List<AsPathAccessListLine> lines = newList.getLines();
       AsPathAccessListLine line = new AsPathAccessListLine();
       line.setAction(_action);
-      line.setRegex(_regex);
+      String regex = CiscoConfiguration.toJavaRegex(_regex);
+      line.setRegex(regex);
       lines.add(line);
    }
 

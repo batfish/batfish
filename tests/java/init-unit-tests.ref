@@ -94,6 +94,7 @@
         },
         "cisco_route_map" : {
           "ipv4 prefix-list" : [
+            "bobble",
             "hpr-connector-subnets"
           ]
         },
@@ -182,7 +183,7 @@
           ]
         },
         "rP" : {
-          "as-path acl" : [
+          "as-path-set" : [
             "chill-as-path",
             "chill_aspath_141_deny",
             "chill_aspath_141_permit",
@@ -271,6 +272,7 @@
         "cisco_route_map" : {
           "route-map" : [
             "MSDP-SA-RP-FILTER",
+            "beeble",
             "connected-to-bgp",
             "ijfw$%^&****(((([]grr",
             "mgmt",
@@ -407,6 +409,13 @@
             "to_elacc"
           ]
         },
+        "route_policy_as_path_set" : {
+          "as-path-set" : [
+            "ama-coe-as-path",
+            "ama-coe-as-path2",
+            "ama-coe-as-path3"
+          ]
+        },
         "tcpflags" : {
           "ip acl" : [
             "100"
@@ -506,13 +515,15 @@
         },
         "cisco_route_map" : {
           "Red flags" : {
-            "1" : "UNDEFINED: Reference to undefined prefix-list: hpr-connector-subnets",
-            "2" : "UNUSED: Unused route-map: 'MSDP-SA-RP-FILTER'",
-            "3" : "UNUSED: Unused route-map: 'connected-to-bgp'",
-            "4" : "UNUSED: Unused route-map: 'ijfw$%^&****(((([]grr'",
-            "5" : "UNUSED: Unused route-map: 'mgmt'",
-            "6" : "UNUSED: Unused route-map: 'next-hop-null'",
-            "7" : "UNUSED: Unused route-map: 'to_svl-hub-router'"
+            "1" : "UNDEFINED: Reference to undefined prefix-list: bobble",
+            "2" : "UNDEFINED: Reference to undefined prefix-list: hpr-connector-subnets",
+            "3" : "UNUSED: Unused route-map: 'MSDP-SA-RP-FILTER'",
+            "4" : "UNUSED: Unused route-map: 'beeble'",
+            "5" : "UNUSED: Unused route-map: 'connected-to-bgp'",
+            "6" : "UNUSED: Unused route-map: 'ijfw$%^&****(((([]grr'",
+            "7" : "UNUSED: Unused route-map: 'mgmt'",
+            "8" : "UNUSED: Unused route-map: 'next-hop-null'",
+            "9" : "UNUSED: Unused route-map: 'to_svl-hub-router'"
           }
         },
         "cisco_snmp" : {
@@ -727,7 +738,7 @@
         },
         "rP" : {
           "Red flags" : {
-            "1" : "UNDEFINED: Reference to undefined ip as-path access-list: xo-deny-as",
+            "1" : "UNDEFINED: Reference to undefined as-path-set: xo-deny-as",
             "2" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-BOGONS",
             "3" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-OTHER-UNDESIRABLES",
             "4" : "UNDEFINED: Reference to undefined ipv4 prefix-list: EBGP-PEER-TOO-SPECIFIC",
@@ -740,10 +751,10 @@
             "11" : "UNDEFINED: Reference to undefined ipv4 prefix-list: remote-router-loopbacks",
             "12" : "UNDEFINED: Reference to undefined ipv4 prefix-list: local-peer-aggregates",
             "13" : "UNDEFINED: Reference to undefined ipv4 prefix-list: null",
-            "14" : "UNDEFINED: Reference to undefined ip as-path access-list: chill-as-path",
-            "15" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_deny",
-            "16" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_permit",
-            "17" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_142_permit"
+            "14" : "UNDEFINED: Reference to undefined as-path-set: chill-as-path",
+            "15" : "UNDEFINED: Reference to undefined as-path-set: chill_aspath_141_deny",
+            "16" : "UNDEFINED: Reference to undefined as-path-set: chill_aspath_141_permit",
+            "17" : "UNDEFINED: Reference to undefined as-path-set: chill_aspath_142_permit"
           }
         },
         "route_maps_in_two_address_families" : {
@@ -754,7 +765,10 @@
         "route_policy_as_path_set" : {
           "Red flags" : {
             "1" : "UNDEFINED: Reference to undefined ipv4 prefix-list: classful_default",
-            "2" : "UNDEFINED: Reference to undefined ipv4 prefix-list: CENIC_DC_Internal"
+            "2" : "UNDEFINED: Reference to undefined ipv4 prefix-list: CENIC_DC_Internal",
+            "3" : "UNUSED: Unused as-path-set: 'ama-coe-as-path'",
+            "4" : "UNUSED: Unused as-path-set: 'ama-coe-as-path2'",
+            "5" : "UNUSED: Unused as-path-set: 'ama-coe-as-path3'"
           }
         },
         "route_policy_metric_type" : {

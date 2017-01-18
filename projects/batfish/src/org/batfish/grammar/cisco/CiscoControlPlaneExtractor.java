@@ -1486,6 +1486,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
+      if (asPathSet != null) {
+         _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
+      }
+      asPathSet = new AsPathSet(name);
+      _configuration.getAsPathSets().put(name, asPathSet);
+      for (As_path_set_elemContext elemCtx : ctx.elems) {
+         AsPathSetElem elem = toAsPathSetElem(elemCtx);
+         asPathSet.getElements().add(elem);
+      }
+   }
+
+   @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx, F_BGP_AUTO_SUMMARY);
    }
@@ -1565,7 +1580,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
-      int target = toInteger(ctx.DEC());
+      Integer target = null;
+      if (ctx.DEC() != null) {
+         target = toInteger(ctx.DEC());
+      }
       RouteMapContinueLine continueLine = new RouteMapContinueLine(target);
       _currentRouteMapClause.setContinueLine(continueLine);
    }
@@ -2330,7 +2348,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_as_path_access_list_tail(
          Ip_as_path_access_list_tailContext ctx) {
       LineAction action = toLineAction(ctx.action);
-      String regex = ctx.as_path_regex.getText();
+      String regex = ctx.as_path_regex.getText().trim();
       IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
       _currentAsPathAcl.addLine(line);
    }

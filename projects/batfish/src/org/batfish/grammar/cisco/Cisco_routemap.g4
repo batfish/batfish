@@ -161,7 +161,7 @@ boolean_tag_is_rp_stanza
 
 continue_rm_stanza
 :
-   CONTINUE DEC NEWLINE
+   CONTINUE DEC? NEWLINE
 ;
 
 delete_rp_stanza

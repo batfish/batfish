@@ -54,6 +54,11 @@ public class RegexAsPathSetElem extends AsPathSetElem {
       return result;
    }
 
+   @Override
+   public String regex() {
+      return _regex;
+   }
+
    public void setRegex(String regex) {
       _regex = regex;
    }

@@ -3111,6 +3111,29 @@
                 }
               ]
             },
+            "beeble" : {
+              "name" : "beeble",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 0
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            },
             "connected-to-bgp" : {
               "name" : "connected-to-bgp",
               "statements" : [
@@ -10182,6 +10205,47 @@
         },
         "route_policy_as_path_set" : {
           "name" : "route_policy_as_path_set",
+          "asPathAccessLists" : {
+            "ama-coe-as-path" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path"
+            },
+            "ama-coe-as-path2" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path2"
+            },
+            "ama-coe-as-path3" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^$"
+                }
+              ],
+              "name" : "ama-coe-as-path3"
+            }
+          },
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",

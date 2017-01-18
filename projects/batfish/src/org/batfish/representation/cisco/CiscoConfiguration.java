@@ -19,6 +19,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -56,6 +57,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.RoleSet;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -84,6 +86,8 @@ import org.batfish.representation.VendorConfiguration;
 public class CiscoConfiguration extends VendorConfiguration {
 
    static final String AS_PATH_ACCESS_LIST = "as-path acl";
+
+   public static final String AS_PATH_SET = "as-path-set";
 
    static final String BGP_PEER_GROUP = "bgp group";
 
@@ -123,13 +127,15 @@ public class CiscoConfiguration extends VendorConfiguration {
       return clausePolicyName;
    }
 
-   private static String toJavaRegex(String ciscoRegex) {
+   static String toJavaRegex(String ciscoRegex) {
       String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
       String output = ciscoRegex.replaceAll("_", underscoreReplacement);
       return output;
    }
 
    private final Map<String, IpAsPathAccessList> _asPathAccessLists;
+
+   private final Map<String, AsPathSet> _asPathSets;
 
    private final Set<String> _bgpVrfAggregateAddressRouteMaps;
 
@@ -227,6 +233,7 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public CiscoConfiguration(Set<String> unimplementedFeatures) {
       _asPathAccessLists = new TreeMap<>();
+      _asPathSets = new TreeMap<>();
       _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
@@ -333,6 +340,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
       return _asPathAccessLists;
+   }
+
+   public Map<String, AsPathSet> getAsPathSets() {
+      return _asPathSets;
    }
 
    private Ip getBgpRouterId(final Configuration c, String vrfName,
@@ -865,6 +876,16 @@ public class CiscoConfiguration extends VendorConfiguration {
       _vendor = format;
    }
 
+   private AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
+      String name = asPathSet.getName();
+      AsPathAccessList list = new AsPathAccessList(name);
+      for (AsPathSetElem elem : asPathSet.getElements()) {
+         AsPathAccessListLine line = toAsPathAccessListLine(elem);
+         list.getLines().add(line);
+      }
+      return list;
+   }
+
    private AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
       String name = pathList.getName();
       AsPathAccessList newList = new AsPathAccessList(name);
@@ -872,6 +893,15 @@ public class CiscoConfiguration extends VendorConfiguration {
          fromLine.applyTo(newList);
       }
       return newList;
+   }
+
+   private AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
+      String rawRegex = elem.regex();
+      String regex = toJavaRegex(rawRegex);
+      AsPathAccessListLine line = new AsPathAccessListLine();
+      line.setAction(LineAction.ACCEPT);
+      line.setRegex(regex);
+      return line;
    }
 
    private org.batfish.datamodel.BgpProcess toBgpProcess(final Configuration c,
@@ -2469,6 +2499,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       Map<Integer, If> clauses = new HashMap<>();
       // descend map so continue targets are available
       If followingClause = null;
+      Integer followingClauseNumber = null;
       for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap()
             .entrySet()) {
          int clauseNumber = e.getKey();
@@ -2493,15 +2524,24 @@ public class CiscoConfiguration extends VendorConfiguration {
          If continueTargetIf = null;
          if (continueLine != null) {
             continueTarget = continueLine.getTarget();
-            if (continueTarget <= clauseNumber) {
-               throw new BatfishException("Can only continue to later clause");
+            if (continueTarget == null) {
+               continueTarget = followingClauseNumber;
             }
-            continueTargetIf = clauses.get(continueTarget);
-            if (continueTargetIf == null) {
-               String name = "clause: '" + continueTarget + "' in route-map: '"
-                     + map.getName() + "'";
-               undefined("Reference to undefined continue target: " + name,
-                     ROUTE_MAP_CLAUSE, name);
+            if (continueTarget != null) {
+               if (continueTarget <= clauseNumber) {
+                  throw new BatfishException(
+                        "Can only continue to later clause");
+               }
+               continueTargetIf = clauses.get(continueTarget);
+               if (continueTargetIf == null) {
+                  String name = "clause: '" + continueTarget
+                        + "' in route-map: '" + map.getName() + "'";
+                  undefined("Reference to undefined continue target: " + name,
+                        ROUTE_MAP_CLAUSE, name);
+                  continueLine = null;
+               }
+            }
+            else {
                continueLine = null;
             }
          }
@@ -2532,6 +2572,7 @@ public class CiscoConfiguration extends VendorConfiguration {
                   .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
          }
          followingClause = ifExpr;
+         followingClauseNumber = clauseNumber;
       }
       statements.add(followingClause);
       return output;
@@ -2608,6 +2649,12 @@ public class CiscoConfiguration extends VendorConfiguration {
       // convert as path access lists to vendor independent format
       for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
          AsPathAccessList apList = toAsPathAccessList(pathList);
+         c.getAsPathAccessLists().put(apList.getName(), apList);
+      }
+
+      // convert as-path-sets to vendor independent format
+      for (AsPathSet asPathSet : _asPathSets.values()) {
+         AsPathAccessList apList = toAsPathAccessList(asPathSet);
          c.getAsPathAccessLists().put(apList.getName(), apList);
       }
 
@@ -2775,6 +2822,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       warnUnusedPrefixLists();
       warnUnusedPrefix6Lists();
       warnUnusedIpAsPathAccessLists();
+      warnUnusedAsPathSets();
       warnUnusedCommunityLists();
       c.simplifyRoutingPolicies();
       return c;
@@ -2882,6 +2930,19 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       }
       return false;
+   }
+
+   private void warnUnusedAsPathSets() {
+      for (Entry<String, AsPathSet> e : _asPathSets.entrySet()) {
+         String name = e.getKey();
+         if (name.startsWith("~")) {
+            continue;
+         }
+         AsPathSet asPathSet = e.getValue();
+         if (asPathSet.isUnused()) {
+            unused("Unused as-path-set: '" + name + "'", AS_PATH_SET, name);
+         }
+      }
    }
 
    private void warnUnusedCommunityLists() {
