@@ -4,7 +4,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class LiteralRouteType implements RouteTypeExpr {
+public class LiteralRouteType extends RouteTypeExpr {
 
    /**
     *
@@ -14,11 +14,29 @@ public class LiteralRouteType implements RouteTypeExpr {
    private RouteType _type;
 
    @JsonCreator
-   public LiteralRouteType() {
+   private LiteralRouteType() {
    }
 
    public LiteralRouteType(RouteType type) {
       _type = type;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      LiteralRouteType other = (LiteralRouteType) obj;
+      if (_type != other._type) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -28,6 +46,14 @@ public class LiteralRouteType implements RouteTypeExpr {
 
    public RouteType getType() {
       return _type;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_type == null) ? 0 : _type.hashCode());
+      return result;
    }
 
    public void setType(RouteType type) {

@@ -407,11 +407,6 @@
             "to_elacc"
           ]
         },
-        "route_map_sub" : {
-          "route-map" : [
-            "ABC"
-          ]
-        },
         "tcpflags" : {
           "ip acl" : [
             "100"
@@ -486,7 +481,8 @@
         "cisco_interface" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'",
-            "2" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
+            "2" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process",
+            "3" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
           }
         },
         "cisco_ipv6_access_list" : {
@@ -748,11 +744,6 @@
             "15" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_deny",
             "16" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_141_permit",
             "17" : "UNDEFINED: Reference to undefined ip as-path access-list: chill_aspath_142_permit"
-          }
-        },
-        "route_map_sub" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused route-map: 'ABC'"
           }
         },
         "route_maps_in_two_address_families" : {

@@ -4,6 +4,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,67 +12,92 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ConfigurationDiff implements AnswerElement {
 
    private static final String AS_PATH_ACCESS_LISTS_DIFF_VAR = "asPathAccessListsDiff";
+
    private static final String COMMUNITY_LISTS_DIFF_VAR = "comunityListsDiff";
-   private static final String INTERFACE_LISTS_DIFF_VAR = "interfaceListstDiff";
-   private static final String IP_ACCESS_LISTS_DSIFF_VAR = "ipAccessListstDiff";
-   private static final String NEIGHBOR_LISTS_DIFF_VAR = "neighborListstDiff";
+
+   private static final String INTERFACES_DIFF_VAR = "interfacesDiff";
+
+   private static final String IP_ACCESS_LISTS_DIFF_VAR = "ipAccessListsDiff";
+
    private static final String ROUTE_FILTER_LISTS_DIFF_VAR = "routeFilterListsDiff";
-   private static final String ROUTING_POLICY_LISTS_DIFF_VAR = "routingPolicyListsDiff";
+
+   private static final String ROUTING_POLICIES_DIFF_VAR = "routingPoliciesDiff";
+
+   private static final String VRFS_DIFF_VAR = "vrfsDiff";
 
    private AsPathAccessListsDiff _asPathAccessListsDiff;
+
    private CommunityListsDiff _communityListsDiff;
-   private InterfaceListsDiff _interfaceListsDiff;
+
+   private InterfacesDiff _interfacesDiff;
+
    private IpAccessListsDiff _ipAccessListsDiff;
-   private NeighborListsDiff _neighborListsDiff;
+
    private RouteFilterListsDiff _routeFilterListsDiff;
-   private RoutingPolicyListsDiff _routingPolicyListsDiff;
+
+   private RoutingPoliciesDiff _routingPoliciesDiff;
+
+   private VrfsDiff _vrfsDiff;
 
    @JsonCreator()
-   public ConfigurationDiff() {
-
+   private ConfigurationDiff() {
    }
 
-   public ConfigurationDiff(Configuration a, Configuration b) {
+   public ConfigurationDiff(Configuration before, Configuration after) {
       _asPathAccessListsDiff = new AsPathAccessListsDiff(
-            a.getAsPathAccessLists(), b.getAsPathAccessLists());
-      _communityListsDiff = new CommunityListsDiff(a.getCommunityLists(),
-            b.getCommunityLists());
-      _interfaceListsDiff = new InterfaceListsDiff(a.getInterfaces(),
-            b.getDefaultVrf().getInterfaces());
-      _ipAccessListsDiff = new IpAccessListsDiff(a.getIpAccessLists(),
-            b.getIpAccessLists());
-      _neighborListsDiff = new NeighborListsDiff(
-            a.getDefaultVrf().getBgpProcess().getNeighbors(),
-            b.getDefaultVrf().getBgpProcess().getNeighbors());
-      _routeFilterListsDiff = new RouteFilterListsDiff(a.getRouteFilterLists(),
-            b.getRouteFilterLists());
-      _routingPolicyListsDiff = new RoutingPolicyListsDiff(
-            a.getRoutingPolicies(), b.getRoutingPolicies());
+            before.getAsPathAccessLists(), after.getAsPathAccessLists());
+      if (_asPathAccessListsDiff.isEmpty()) {
+         _asPathAccessListsDiff = null;
+      }
+      _communityListsDiff = new CommunityListsDiff(before.getCommunityLists(),
+            after.getCommunityLists());
+      if (_communityListsDiff.isEmpty()) {
+         _communityListsDiff = null;
+      }
+      _interfacesDiff = new InterfacesDiff(before.getInterfaces(),
+            after.getInterfaces());
+      if (_interfacesDiff.isEmpty()) {
+         _interfacesDiff = null;
+      }
+      _ipAccessListsDiff = new IpAccessListsDiff(before.getIpAccessLists(),
+            after.getIpAccessLists());
+      if (_ipAccessListsDiff.isEmpty()) {
+         _ipAccessListsDiff = null;
+      }
+      _vrfsDiff = new VrfsDiff(before.getVrfs(), after.getVrfs());
+      if (_vrfsDiff.isEmpty()) {
+         _vrfsDiff = null;
+      }
+      _routeFilterListsDiff = new RouteFilterListsDiff(
+            before.getRouteFilterLists(), after.getRouteFilterLists());
+      if (_routeFilterListsDiff.isEmpty()) {
+         _routeFilterListsDiff = null;
+      }
+      _routingPoliciesDiff = new RoutingPoliciesDiff(
+            before.getRoutingPolicies(), after.getRoutingPolicies());
+      if (_routingPoliciesDiff.isEmpty()) {
+         _routingPoliciesDiff = null;
+      }
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
-   public AsPathAccessListsDiff getAsPathAccessListDiff() {
+   public AsPathAccessListsDiff getAsPathAccessListsDiff() {
       return _asPathAccessListsDiff;
    }
 
    @JsonProperty(COMMUNITY_LISTS_DIFF_VAR)
-   public CommunityListsDiff getCommunityListDiff() {
+   public CommunityListsDiff getCommunityListsDiff() {
       return _communityListsDiff;
    }
 
-   @JsonProperty(INTERFACE_LISTS_DIFF_VAR)
-   public InterfaceListsDiff getInterfaceListsDiff() {
-      return _interfaceListsDiff;
+   @JsonProperty(INTERFACES_DIFF_VAR)
+   public InterfacesDiff getInterfacesDiff() {
+      return _interfacesDiff;
    }
 
-   @JsonProperty(IP_ACCESS_LISTS_DSIFF_VAR)
-   public IpAccessListsDiff getIpAccessListListDiff() {
+   @JsonProperty(IP_ACCESS_LISTS_DIFF_VAR)
+   public IpAccessListsDiff getIpAccessListsDiff() {
       return _ipAccessListsDiff;
-   }
-
-   @JsonProperty(NEIGHBOR_LISTS_DIFF_VAR)
-   public NeighborListsDiff getNeighborListsDiff() {
-      return _neighborListsDiff;
    }
 
    @JsonProperty(ROUTE_FILTER_LISTS_DIFF_VAR)
@@ -79,9 +105,22 @@ public class ConfigurationDiff implements AnswerElement {
       return _routeFilterListsDiff;
    }
 
-   @JsonProperty(ROUTING_POLICY_LISTS_DIFF_VAR)
-   public RoutingPolicyListsDiff getRoutingPolicyListsDiff() {
-      return _routingPolicyListsDiff;
+   @JsonProperty(ROUTING_POLICIES_DIFF_VAR)
+   public RoutingPoliciesDiff getRoutingPoliciesDiff() {
+      return _routingPoliciesDiff;
+   }
+
+   @JsonProperty(VRFS_DIFF_VAR)
+   public VrfsDiff getVrfsDiff() {
+      return _vrfsDiff;
+   }
+
+   @JsonIgnore
+   public boolean isEmpty() {
+      return _asPathAccessListsDiff == null && _communityListsDiff == null
+            && _interfacesDiff == null && _ipAccessListsDiff == null
+            && _vrfsDiff == null && _routeFilterListsDiff == null
+            && _routingPoliciesDiff == null;
    }
 
    @Override
@@ -90,33 +129,41 @@ public class ConfigurationDiff implements AnswerElement {
       return mapper.writeValueAsString(this);
    }
 
-   public void setAsPathAccessListDiff(AsPathAccessListsDiff d) {
-      _asPathAccessListsDiff = d;
+   @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)
+   public void setAsPathAccessListsDiff(
+         AsPathAccessListsDiff asPathAccessListsDiff) {
+      _asPathAccessListsDiff = asPathAccessListsDiff;
    }
 
-   public void setCommunityListDiff(CommunityListsDiff _communityListsDiff) {
-      this._communityListsDiff = _communityListsDiff;
+   @JsonProperty(COMMUNITY_LISTS_DIFF_VAR)
+   public void setCommunityListsDiff(CommunityListsDiff communityListsDiff) {
+      _communityListsDiff = communityListsDiff;
    }
 
-   public void setInterfaceListsDiff(InterfaceListsDiff interfaceListsDiff) {
-      _interfaceListsDiff = interfaceListsDiff;
+   @JsonProperty(INTERFACES_DIFF_VAR)
+   public void setInterfacesDiff(InterfacesDiff interfacesDiff) {
+      _interfacesDiff = interfacesDiff;
    }
 
-   public void setIpAccessListListDiff(IpAccessListsDiff _ipAccessListsDiff) {
-      this._ipAccessListsDiff = _ipAccessListsDiff;
+   @JsonProperty(IP_ACCESS_LISTS_DIFF_VAR)
+   public void setIpAccessListsDiff(IpAccessListsDiff ipAccessListsDiff) {
+      _ipAccessListsDiff = ipAccessListsDiff;
    }
 
-   public void setNeighborListsDiff(NeighborListsDiff neighborListsDiff) {
-      _neighborListsDiff = neighborListsDiff;
-   }
-
+   @JsonProperty(ROUTE_FILTER_LISTS_DIFF_VAR)
    public void setRouteFilterListsDiff(
          RouteFilterListsDiff routeFilterListsDiff) {
       _routeFilterListsDiff = routeFilterListsDiff;
    }
 
-   public void setRoutingPolicyListsDiff(
-         RoutingPolicyListsDiff routingPolicyListsDiff) {
-      _routingPolicyListsDiff = routingPolicyListsDiff;
+   @JsonProperty(ROUTING_POLICIES_DIFF_VAR)
+   public void setRoutingPoliciesDiff(RoutingPoliciesDiff routingPoliciesDiff) {
+      _routingPoliciesDiff = routingPoliciesDiff;
    }
+
+   @JsonProperty(VRFS_DIFF_VAR)
+   public void setVrfsDiff(VrfsDiff vrfsDiff) {
+      _vrfsDiff = vrfsDiff;
+   }
+
 }

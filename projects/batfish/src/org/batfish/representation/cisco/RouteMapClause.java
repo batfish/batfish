@@ -11,10 +11,17 @@ public class RouteMapClause implements Serializable {
    private static final long serialVersionUID = 1L;
 
    private LineAction _action;
+
+   private RouteMapContinueLine _continueLine;
+
    private boolean _ignore;
+
    private String _mapName;
+
    private List<RouteMapMatchLine> _matchList;
+
    private int _seqNum;
+
    private List<RouteMapSetLine> _setList;
 
    public RouteMapClause(LineAction action, String name, int num) {
@@ -37,6 +44,10 @@ public class RouteMapClause implements Serializable {
       return _action;
    }
 
+   public RouteMapContinueLine getContinueLine() {
+      return _continueLine;
+   }
+
    public boolean getIgnore() {
       return _ignore;
    }
@@ -55,6 +66,10 @@ public class RouteMapClause implements Serializable {
 
    public List<RouteMapSetLine> getSetList() {
       return _setList;
+   }
+
+   public void setContinueLine(RouteMapContinueLine continueLine) {
+      _continueLine = continueLine;
    }
 
    public void setIgnore(boolean b) {

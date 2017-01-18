@@ -241,9 +241,28 @@ public class Prefix6Space implements Serializable {
       return _trie.containsPrefix6Range(prefix6Range);
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      return getPrefix6Ranges().equals(((Prefix6Space) obj).getPrefix6Ranges());
+   }
+
    @JsonValue
    public Set<Prefix6Range> getPrefix6Ranges() {
       return _trie.getPrefix6Ranges();
+   }
+
+   @Override
+   public int hashCode() {
+      return getPrefix6Ranges().hashCode();
    }
 
    public Prefix6Space intersection(Prefix6Space intersectSpace) {

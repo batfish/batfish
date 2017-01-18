@@ -92,11 +92,17 @@ public class Interface extends ComparableStructure<String> {
 
    private int _nativeVlan;
 
+   private boolean _ospfActive;
+
+   private Long _ospfArea;
+
    private Integer _ospfCost;
 
    private int _ospfDeadInterval;
 
    private int _ospfHelloMultiplier;
+
+   private boolean _ospfPassive;
 
    private String _outgoingFilter;
 
@@ -181,6 +187,14 @@ public class Interface extends ComparableStructure<String> {
       return _nativeVlan;
    }
 
+   public boolean getOspfActive() {
+      return _ospfActive;
+   }
+
+   public Long getOspfArea() {
+      return _ospfArea;
+   }
+
    public Integer getOspfCost() {
       return _ospfCost;
    }
@@ -191,6 +205,10 @@ public class Interface extends ComparableStructure<String> {
 
    public int getOspfHelloMultiplier() {
       return _ospfHelloMultiplier;
+   }
+
+   public boolean getOspfPassive() {
+      return _ospfPassive;
    }
 
    public String getOutgoingFilter() {
@@ -269,6 +287,14 @@ public class Interface extends ComparableStructure<String> {
       _nativeVlan = vlan;
    }
 
+   public void setOspfActive(boolean ospfActive) {
+      _ospfActive = ospfActive;
+   }
+
+   public void setOspfArea(Long ospfArea) {
+      _ospfArea = ospfArea;
+   }
+
    public void setOspfCost(int ospfCost) {
       _ospfCost = ospfCost;
    }
@@ -279,6 +305,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setOspfHelloMultiplier(int multiplier) {
       _ospfHelloMultiplier = multiplier;
+   }
+
+   public void setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
    }
 
    public void setOutgoingFilter(String accessListName) {

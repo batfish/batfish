@@ -109,9 +109,9 @@ if_ip_address_secondary
    ) SECONDARY NEWLINE
 ;
 
-if_ip_ospf_area_null
+if_ip_ospf_area
 :
-   IP OSPF DEC AREA DEC NEWLINE
+   IP OSPF procnum = DEC AREA area = DEC NEWLINE
 ;
 
 if_ip_ospf_cost
@@ -152,6 +152,11 @@ if_ip_proxy_arp
 if_ip_router_isis
 :
    IP ROUTER ISIS NEWLINE
+;
+
+if_ip_router_ospf_area
+:
+   IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
 ;
 
 if_ip_verify
@@ -374,7 +379,6 @@ if_null_block
             | REDIRECTS
             | RIP
             | ROUTE_CACHE
-            | ROUTER
             | RSVP
             | SDR
             | TCP
@@ -728,7 +732,7 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
-      | if_ip_ospf_area_null
+      | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
       | if_ip_ospf_dead_interval_minimal
@@ -736,6 +740,7 @@ s_interface
       | if_ip_ospf_passive_interface
       | if_ip_policy
       | if_ip_router_isis
+      | if_ip_router_ospf_area
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval

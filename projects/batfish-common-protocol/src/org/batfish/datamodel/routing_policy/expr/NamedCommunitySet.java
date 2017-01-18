@@ -7,7 +7,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class NamedCommunitySet implements CommunitySetExpr {
+public class NamedCommunitySet extends CommunitySetExpr {
 
    /**
     *
@@ -17,7 +17,7 @@ public class NamedCommunitySet implements CommunitySetExpr {
    private String _name;
 
    @JsonCreator
-   public NamedCommunitySet() {
+   private NamedCommunitySet() {
    }
 
    public NamedCommunitySet(String name) {
@@ -50,8 +50,39 @@ public class NamedCommunitySet implements CommunitySetExpr {
       return matchingCommunities;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      NamedCommunitySet other = (NamedCommunitySet) obj;
+      if (_name == null) {
+         if (other._name != null) {
+            return false;
+         }
+      }
+      else if (!_name.equals(other._name)) {
+         return false;
+      }
+      return true;
+   }
+
    public String getName() {
       return _name;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_name == null) ? 0 : _name.hashCode());
+      return result;
    }
 
    @Override

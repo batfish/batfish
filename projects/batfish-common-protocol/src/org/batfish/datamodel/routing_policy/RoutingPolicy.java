@@ -65,12 +65,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
          return true;
       }
       RoutingPolicy other = (RoutingPolicy) o;
-      if (this.getStatements().equals(other.getStatements())) {
-         return true;
-      }
-      else {
-         return false;
-      }
+      return _statements.equals(other._statements);
    }
 
    @JsonIgnore

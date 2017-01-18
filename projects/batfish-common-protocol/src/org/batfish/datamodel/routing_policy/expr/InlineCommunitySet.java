@@ -10,7 +10,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class InlineCommunitySet implements CommunitySetExpr {
+public class InlineCommunitySet extends CommunitySetExpr {
 
    /**
     *
@@ -22,7 +22,7 @@ public class InlineCommunitySet implements CommunitySetExpr {
    private List<CommunitySetElem> _communities;
 
    @JsonCreator
-   public InlineCommunitySet() {
+   private InlineCommunitySet() {
    }
 
    public InlineCommunitySet(Collection<Long> communities) {
@@ -54,8 +54,40 @@ public class InlineCommunitySet implements CommunitySetExpr {
       return matchingCommunities;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      InlineCommunitySet other = (InlineCommunitySet) obj;
+      if (_communities == null) {
+         if (other._communities != null) {
+            return false;
+         }
+      }
+      else if (!_communities.equals(other._communities)) {
+         return false;
+      }
+      return true;
+   }
+
    public List<CommunitySetElem> getCommunities() {
       return _communities;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_communities == null) ? 0 : _communities.hashCode());
+      return result;
    }
 
    private synchronized CommunitySet initCommunities(Environment environment) {

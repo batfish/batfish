@@ -108,7 +108,7 @@ public final class JuniperUtils {
    }
 
    private char[] initAllCharacters() {
-      String allCharacters = CommonUtil.joinStrings("", _characterFamilies);
+      String allCharacters = String.join("", _characterFamilies);
       int len = allCharacters.length();
       char[] numAlpha = new char[len];
       allCharacters.getChars(0, len, numAlpha, 0);
@@ -148,7 +148,7 @@ public final class JuniperUtils {
    }
 
    private Pattern initValidationRegex() {
-      String allCharacters = CommonUtil.joinStrings("", _characterFamilies);
+      String allCharacters = String.join("", _characterFamilies);
       String allCharactersAdjusted = allCharacters.replaceAll("-", "") + "-";
       String regexText = "^\\$9\\$[" + allCharactersAdjusted + "]{4,}$";
       return Pattern.compile(regexText);

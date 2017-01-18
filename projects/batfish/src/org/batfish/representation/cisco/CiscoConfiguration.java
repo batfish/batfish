@@ -109,9 +109,19 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private static final String ROUTE_MAP = "route-map";
 
+   private static final String ROUTE_MAP_CLAUSE = "route-map-clause";
+
    private static final long serialVersionUID = 1L;
 
    public static final String VENDOR_NAME = "cisco";
+
+   private static String getRouteMapClausePolicyName(RouteMap map,
+         int continueTarget) {
+      String mapName = map.getName();
+      String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget
+            + "~";
+      return clausePolicyName;
+   }
 
    private static String toJavaRegex(String ciscoRegex) {
       String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
@@ -1552,8 +1562,9 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private org.batfish.datamodel.Interface toInterface(Interface iface,
          Map<String, IpAccessList> ipAccessLists, Configuration c) {
+      String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
-            iface.getName(), c);
+            name, c);
       String vrfName = iface.getVrf();
       Vrf vrf = _vrfs.get(vrfName);
       if (vrf == null) {
@@ -1571,6 +1582,29 @@ public class CiscoConfiguration extends VendorConfiguration {
          newIface.getAllPrefixes().add(iface.getPrefix());
       }
       newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
+      Long ospfAreaLong = iface.getOspfArea();
+
+      if (ospfAreaLong != null) {
+         OspfProcess proc = vrf.getOspfProcess();
+         if (iface.getOspfActive()) {
+            proc.getActiveInterfaceList().add(name);
+         }
+         if (iface.getOspfPassive()) {
+            proc.getPassiveInterfaceList().add(name);
+         }
+         if (proc != null) {
+            for (Prefix prefix : newIface.getAllPrefixes()) {
+               Prefix networkPrefix = prefix.getNetworkPrefix();
+               OspfNetwork ospfNetwork = new OspfNetwork(networkPrefix,
+                     ospfAreaLong);
+               proc.getNetworks().add(ospfNetwork);
+            }
+         }
+         else {
+            _w.redFlag("Interface: '" + name
+                  + "' contains OSPF settings, but there is no OSPF process");
+         }
+      }
       boolean level1 = false;
       boolean level2 = false;
       IsisProcess _isisProcess = vrf.getIsisProcess();
@@ -2094,10 +2128,10 @@ public class CiscoConfiguration extends VendorConfiguration {
                newArea.getInterfaces().add(i);
                i.setOspfArea(newArea);
                i.setOspfEnabled(true);
-               boolean passive = proc.getInterfaceBlacklist()
+               boolean passive = proc.getPassiveInterfaceList()
                      .contains(i.getName())
                      || (proc.getPassiveInterfaceDefault() && !proc
-                           .getInterfaceWhitelist().contains(i.getName()));
+                           .getActiveInterfaceList().contains(i.getName()));
                i.setOspfPassive(passive);
                break;
             }
@@ -2432,31 +2466,74 @@ public class CiscoConfiguration extends VendorConfiguration {
    private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
       RoutingPolicy output = new RoutingPolicy(map.getName(), c);
       List<Statement> statements = output.getStatements();
-      for (RouteMapClause rmClause : map.getClauses().values()) {
+      Map<Integer, If> clauses = new HashMap<>();
+      // descend map so continue targets are available
+      If followingClause = null;
+      for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap()
+            .entrySet()) {
+         int clauseNumber = e.getKey();
+         RouteMapClause rmClause = e.getValue();
+         String clausePolicyName = getRouteMapClausePolicyName(map,
+               clauseNumber);
          Conjunction conj = new Conjunction();
          for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
             BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
             conj.getConjuncts().add(matchExpr);
          }
          If ifExpr = new If();
+         clauses.put(clauseNumber, ifExpr);
+         ifExpr.setComment(clausePolicyName);
          ifExpr.setGuard(conj);
          List<Statement> matchStatements = ifExpr.getTrueStatements();
          for (RouteMapSetLine rmSet : rmClause.getSetList()) {
             rmSet.applyTo(matchStatements, this, c, _w);
          }
+         RouteMapContinueLine continueLine = rmClause.getContinueLine();
+         Integer continueTarget = null;
+         If continueTargetIf = null;
+         if (continueLine != null) {
+            continueTarget = continueLine.getTarget();
+            if (continueTarget <= clauseNumber) {
+               throw new BatfishException("Can only continue to later clause");
+            }
+            continueTargetIf = clauses.get(continueTarget);
+            if (continueTargetIf == null) {
+               String name = "clause: '" + continueTarget + "' in route-map: '"
+                     + map.getName() + "'";
+               undefined("Reference to undefined continue target: " + name,
+                     ROUTE_MAP_CLAUSE, name);
+               continueLine = null;
+            }
+         }
          switch (rmClause.getAction()) {
          case ACCEPT:
-            matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+            if (continueLine == null) {
+               matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+            }
+            else {
+               matchStatements.add(Statements.SetLocalDefaultActionAccept
+                     .toStaticStatement());
+               matchStatements.add(continueTargetIf);
+            }
             break;
+
          case REJECT:
             matchStatements.add(Statements.ReturnFalse.toStaticStatement());
             break;
+
          default:
             throw new BatfishException("Invalid action");
          }
-         statements.add(ifExpr);
+         if (followingClause != null) {
+            ifExpr.getFalseStatements().add(followingClause);
+         }
+         else {
+            ifExpr.getFalseStatements()
+                  .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
+         }
+         followingClause = ifExpr;
       }
-      statements.add(Statements.ReturnFalse.toStaticStatement());
+      statements.add(followingClause);
       return output;
    }
 

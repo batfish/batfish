@@ -663,7 +663,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitS2sat_pre_shared_secret(S2sat_pre_shared_secretContext ctx) {
       String secret = ctx.secret.getText();
       String saltedSecret = secret + SALT;
-      String secretHash = CommonUtil.md5Digest(saltedSecret);
+      String secretHash = CommonUtil.sha256Digest(saltedSecret);
       _currentIpsecPeer.setAuthenticationPreSharedSecretHash(secretHash);
    }
 

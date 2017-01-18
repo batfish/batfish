@@ -198,7 +198,7 @@ public class JsonDiff {
    }
 
    @JsonCreator
-   public JsonDiff(SortedMap<String, Object> data) {
+   private JsonDiff(SortedMap<String, Object> data) {
       _data = data;
    }
 

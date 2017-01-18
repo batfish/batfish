@@ -12,7 +12,7 @@ public enum BooleanExprs {
    False,
    True;
 
-   public static class StaticBooleanExpr extends AbstractBooleanExpr {
+   public static class StaticBooleanExpr extends BooleanExpr {
       /**
        *
        */

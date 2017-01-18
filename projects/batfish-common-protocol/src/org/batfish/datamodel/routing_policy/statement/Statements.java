@@ -21,7 +21,7 @@ public enum Statements {
    SetLocalDefaultActionAccept,
    SetLocalDefaultActionReject;
 
-   public static class StaticStatement extends AbstractStatement {
+   public static class StaticStatement extends Statement {
       /**
        *
        */

@@ -1,6 +1,0 @@
-!
-hostname route_map_sub
-!
-route-map ABC permit 1234 
-	sub-route-map XYZ 
-	Continue

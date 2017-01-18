@@ -11,7 +11,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class If extends AbstractStatement {
+public class If extends Statement {
 
    /**
     *
@@ -28,6 +28,45 @@ public class If extends AbstractStatement {
    public If() {
       _falseStatements = new ArrayList<>();
       _trueStatements = new ArrayList<>();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      If other = (If) obj;
+      if (_falseStatements == null) {
+         if (other._falseStatements != null) {
+            return false;
+         }
+      }
+      else if (!_falseStatements.equals(other._falseStatements)) {
+         return false;
+      }
+      if (_guard == null) {
+         if (other._guard != null) {
+            return false;
+         }
+      }
+      else if (!_guard.equals(other._guard)) {
+         return false;
+      }
+      if (_trueStatements == null) {
+         if (other._trueStatements != null) {
+            return false;
+         }
+      }
+      else if (!_trueStatements.equals(other._trueStatements)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -59,6 +98,18 @@ public class If extends AbstractStatement {
 
    public List<Statement> getTrueStatements() {
       return _trueStatements;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_falseStatements == null) ? 0 : _falseStatements.hashCode());
+      result = prime * result + ((_guard == null) ? 0 : _guard.hashCode());
+      result = prime * result
+            + ((_trueStatements == null) ? 0 : _trueStatements.hashCode());
+      return result;
    }
 
    public void setFalseStatements(List<Statement> falseStatements) {

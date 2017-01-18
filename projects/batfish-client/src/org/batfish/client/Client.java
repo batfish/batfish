@@ -639,7 +639,7 @@ public class Client extends AbstractClient implements IClient {
          // }
          case ADD_BATFISH_OPTION: {
             String optionKey = parameters.get(0);
-            String optionValue = CommonUtil.joinStrings(" ",
+            String optionValue = String.join(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
             _additionalBatfishOptions.put(optionKey, optionValue);
             return true;
@@ -650,7 +650,7 @@ public class Client extends AbstractClient implements IClient {
             }
 
             String questionFile = parameters.get(0);
-            String paramsLine = CommonUtil.joinStrings(" ",
+            String paramsLine = String.join(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
             return answerFile(questionFile, paramsLine, false, outWriter);
@@ -662,7 +662,7 @@ public class Client extends AbstractClient implements IClient {
             }
 
             String questionFile = parameters.get(0);
-            String paramsLine = CommonUtil.joinStrings(" ",
+            String paramsLine = String.join(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
             return answerFile(questionFile, paramsLine, true, outWriter);
@@ -744,8 +744,8 @@ public class Client extends AbstractClient implements IClient {
             return true;
          }
          case ECHO: {
-            _logger.outputf("%s\n", CommonUtil.joinStrings(" ",
-                  Arrays.copyOfRange(words, 1, words.length)));
+            _logger.outputf("%s\n",
+                  String.join(" ", Arrays.copyOfRange(words, 1, words.length)));
             return true;
          }
          case EXIT:
@@ -769,7 +769,7 @@ public class Client extends AbstractClient implements IClient {
             }
 
             String qTypeStr = parameters.get(0).toLowerCase();
-            String paramsLine = CommonUtil.joinStrings(" ",
+            String paramsLine = String.join(" ",
                   Arrays.copyOfRange(words, 2 + options.size(), words.length));
 
             // TODO: make environment creation a command, not a question

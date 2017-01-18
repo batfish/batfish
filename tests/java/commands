@@ -16,6 +16,7 @@ test tests/java/neighbors.ref get neighbors
 test tests/java/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
 test tests/java/nodes-summary.ref get nodes summary=true
 test tests/java/nodes.ref get nodes summary=false
+test tests/java/nodes-diff.ref get nodes summary=false | differential=true
 test tests/java/ospfLoopbacks.ref get ospfLoopbacks
 test tests/java/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/java/routes.ref get routes
