@@ -130,12 +130,10 @@ public enum Command {
                   "<environment zipfile or directory> [<environment-name>]",
                   "Initialize the delta environment"));
       descs.put(INIT_DELTA_TESTRIG,
-            new Pair<>(
-                  "<testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<environment name>]",
                   "Initialize the delta testrig with default environment"));
       descs.put(INIT_TESTRIG,
-            new Pair<>(
-                  "<testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<environment name>]",
                   "Initialize the testrig with default environment"));
       descs.put(LIST_CONTAINERS,
             new Pair<>("", "List the containers to which you have access"));
