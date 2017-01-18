@@ -106,7 +106,7 @@ public class WorkMgrService {
       }
 
       if (myBits.get(0) != clientBits.get(0)
-            || myBits.get(1) < clientBits.get(1)) {
+            || myBits.get(1) != clientBits.get(1)) {
          throw new IllegalArgumentException("Client version " + clientVersion
                + " is not compatible with server version "
                + Version.getVersion());
