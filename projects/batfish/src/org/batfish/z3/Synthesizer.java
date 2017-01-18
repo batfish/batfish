@@ -1619,7 +1619,7 @@ public class Synthesizer {
                // forwardConditions.addConjunct(postInInterface);
                // forwardConditions.addConjunct(preOut);
                // forwardConditions.addConjunct(match);
-               // if (CommonUtil.isNullInterface(outInterface)) {
+               // if (isNullInterface(outInterface)) {
                // NodeDropExpr nodeDrop = new NodeDropExpr(
                // hostname);
                // RuleExpr dropRule = new RuleExpr(

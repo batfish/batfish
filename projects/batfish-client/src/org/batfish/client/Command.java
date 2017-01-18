@@ -127,15 +127,13 @@ public enum Command {
             "Initialize a new container"));
       descs.put(INIT_DELTA_ENV,
             new Pair<>(
-                  "[-nodataplane] <environment zipfile or directory> [<environment-name>]",
+                  "<environment zipfile or directory> [<environment-name>]",
                   "Initialize the delta environment"));
       descs.put(INIT_DELTA_TESTRIG,
-            new Pair<>(
-                  "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<environment name>]",
                   "Initialize the delta testrig with default environment"));
       descs.put(INIT_TESTRIG,
-            new Pair<>(
-                  "[-nodataplane] <testrig zipfile or directory> [<environment name>]",
+            new Pair<>("<testrig zipfile or directory> [<environment name>]",
                   "Initialize the testrig with default environment"));
       descs.put(LIST_CONTAINERS,
             new Pair<>("", "List the containers to which you have access"));
@@ -148,9 +146,9 @@ public enum Command {
       descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
       descs.put(PWD, new Pair<>("", "Prints the working directory"));
       descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
-      descs.put(REINIT_DELTA_TESTRIG, new Pair<>("[-nodataplane]",
+      descs.put(REINIT_DELTA_TESTRIG, new Pair<>("",
             "Reinitialize the delta testrig with default environment"));
-      descs.put(REINIT_TESTRIG, new Pair<>("[-nodataplane]",
+      descs.put(REINIT_TESTRIG, new Pair<>("",
             "Reinitialize the testrig with default environment"));
       descs.put(SET_BATFISH_LOGLEVEL,
             new Pair<>("<debug|info|output|warn|error>",

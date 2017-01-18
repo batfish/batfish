@@ -2,7 +2,6 @@ package org.batfish.question;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +31,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -348,7 +348,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
+      public NodesAnswerElement answer() {
          NodesQuestion question = (NodesQuestion) _question;
 
          _batfish.checkConfigurations();
@@ -388,6 +388,10 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answerDiff() {
+         NodesQuestion question = (NodesQuestion) _question;
+         if (question.getSummary()) {
+            return super.answerDiff();
+         }
          _batfish.pushBaseEnvironment();
          _batfish.checkEnvironmentExists();
          _batfish.popEnvironment();
@@ -395,12 +399,14 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          _batfish.checkEnvironmentExists();
          _batfish.popEnvironment();
          _batfish.pushBaseEnvironment();
-         NodesAnswerElement before = (NodesAnswerElement) create(_question,
-               _batfish).answer();
+         NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question,
+               _batfish);
+         NodesAnswerElement before = beforeAnswerer.answer();
          _batfish.popEnvironment();
          _batfish.pushDeltaEnvironment();
-         NodesAnswerElement after = (NodesAnswerElement) create(_question,
-               _batfish).answer();
+         NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question,
+               _batfish);
+         NodesAnswerElement after = afterAnswerer.answer();
          _batfish.popEnvironment();
          return new NodesDiffAnswerElement(before, after);
       }
@@ -408,39 +414,91 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
    public static class NodesDiffAnswerElement implements AnswerElement {
 
-      private static final String CONFIG_DIFF_MAP_VAR = "configDiff";
-      private final NodesAnswerElement _after;
-      private final NodesAnswerElement _before;
-      private Map<String, ConfigurationDiff> _configDiff;
+      private static final String CONFIG_DIFF_VAR = "configDiff";
+
+      // private static final String IDENTICAL_VAR = "identical";
+
+      private static final String IN_AFTER_ONLY_VAR = "inAfterOnly";
+
+      private static final String IN_BEFORE_ONLY_VAR = "inBeforeOnly";
+
+      private static final int MAX_IDENTICAL = 10;
+
+      private transient NodesAnswerElement _after;
+
+      private transient NodesAnswerElement _before;
+
+      private SortedMap<String, ConfigurationDiff> _configDiff;
+
+      private SortedSet<String> _identical;
+
+      private SortedSet<String> _inAfterOnly;
+
+      private SortedSet<String> _inBeforeOnly;
 
       @JsonCreator
-      public NodesDiffAnswerElement() {
-         _before = null;
-         _after = null;
+      private NodesDiffAnswerElement() {
       }
 
       public NodesDiffAnswerElement(NodesAnswerElement before,
             NodesAnswerElement after) {
          _before = before;
          _after = after;
-         _configDiff = new HashMap<>();
-         GenerateDiff();
+         _configDiff = new TreeMap<>();
+         _identical = new TreeSet<>();
+         generateDiff();
       }
 
-      private void GenerateDiff() {
-         for (String node : CommonUtil.intersection(_before._nodes.keySet(),
-               _after._nodes.keySet())) {
-            _configDiff.put(node, new ConfigurationDiff(
-                  _before._nodes.get(node), _after._nodes.get(node)));
+      private void generateDiff() {
+         Set<String> beforeNodes = _before._nodes.keySet();
+         Set<String> afterNodes = _after._nodes.keySet();
+         _inBeforeOnly = CommonUtil.difference(beforeNodes, afterNodes,
+               TreeSet::new);
+         _inAfterOnly = CommonUtil.difference(afterNodes, beforeNodes,
+               TreeSet::new);
+         Set<String> commonNodes = CommonUtil.intersection(beforeNodes,
+               afterNodes, TreeSet::new);
+         for (String node : commonNodes) {
+            Configuration before = _before._nodes.get(node);
+            Configuration after = _after._nodes.get(node);
+            ConfigurationDiff currentDiff = new ConfigurationDiff(before,
+                  after);
+            if (!currentDiff.isEmpty()) {
+               _configDiff.put(node, currentDiff);
+            }
+            else {
+               _identical.add(node);
+            }
+         }
+         summarizeIdentical();
+         if (_configDiff.isEmpty() && _inBeforeOnly.isEmpty()
+               && _inAfterOnly.isEmpty()) {
+            _identical = null;
          }
       }
 
       /**
        * @return the _configDiff
        */
-      @JsonProperty(CONFIG_DIFF_MAP_VAR)
-      public Map<String, ConfigurationDiff> get_configDiff() {
+      @JsonProperty(CONFIG_DIFF_VAR)
+      public SortedMap<String, ConfigurationDiff> getConfigDiff() {
          return _configDiff;
+      }
+
+      // @JsonProperty(IDENTICAL_VAR)
+      @JsonIgnore
+      public SortedSet<String> getIdentical() {
+         return _identical;
+      }
+
+      @JsonProperty(IN_AFTER_ONLY_VAR)
+      public SortedSet<String> getInAfterOnly() {
+         return _inAfterOnly;
+      }
+
+      @JsonProperty(IN_BEFORE_ONLY_VAR)
+      public SortedSet<String> getInBeforeOnly() {
+         return _inBeforeOnly;
       }
 
       @Override
@@ -448,6 +506,37 @@ public class NodesQuestionPlugin extends QuestionPlugin {
          // TODO Auto-generated method stub
          ObjectMapper mapper = new BatfishObjectMapper();
          return mapper.writeValueAsString(this);
+      }
+
+      @JsonProperty(CONFIG_DIFF_VAR)
+      public void setConfigDiff(
+            SortedMap<String, ConfigurationDiff> configDiff) {
+         _configDiff = configDiff;
+      }
+
+      // @JsonProperty(IDENTICAL_VAR)
+      @JsonIgnore
+      public void setIdentical(SortedSet<String> identical) {
+         _identical = identical;
+      }
+
+      @JsonProperty(IN_AFTER_ONLY_VAR)
+      public void setInAfterOnly(SortedSet<String> inAfterOnly) {
+         _inAfterOnly = inAfterOnly;
+      }
+
+      @JsonProperty(IN_BEFORE_ONLY_VAR)
+      public void setInBeforeOnly(SortedSet<String> inBeforeOnly) {
+         _inBeforeOnly = inBeforeOnly;
+      }
+
+      private void summarizeIdentical() {
+         int numIdentical = _identical.size();
+         if (numIdentical > MAX_IDENTICAL) {
+            _identical = new TreeSet<>();
+            _identical.add(numIdentical
+                  + " identical elements not shown for readability.");
+         }
       }
    }
 

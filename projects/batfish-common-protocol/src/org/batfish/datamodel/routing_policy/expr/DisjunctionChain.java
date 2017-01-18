@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 /**
  * Juniper subroutine chain
  */
-public class DisjunctionChain extends AbstractBooleanExpr {
+public class DisjunctionChain extends BooleanExpr {
 
    /**
     *
@@ -21,11 +21,34 @@ public class DisjunctionChain extends AbstractBooleanExpr {
    private List<BooleanExpr> _subroutines;
 
    @JsonCreator
-   public DisjunctionChain() {
+   private DisjunctionChain() {
    }
 
    public DisjunctionChain(List<BooleanExpr> subroutines) {
       _subroutines = subroutines;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      DisjunctionChain other = (DisjunctionChain) obj;
+      if (_subroutines == null) {
+         if (other._subroutines != null) {
+            return false;
+         }
+      }
+      else if (!_subroutines.equals(other._subroutines)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -63,6 +86,15 @@ public class DisjunctionChain extends AbstractBooleanExpr {
 
    public List<BooleanExpr> getSubroutines() {
       return _subroutines;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_subroutines == null) ? 0 : _subroutines.hashCode());
+      return result;
    }
 
    public void setSubroutines(List<BooleanExpr> subroutines) {

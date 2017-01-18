@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class Ip6Prefix implements Prefix6Expr {
+public class Ip6Prefix extends Prefix6Expr {
 
    /**
     *
@@ -18,12 +18,43 @@ public class Ip6Prefix implements Prefix6Expr {
    private IntExpr _prefixLength;
 
    @JsonCreator
-   public Ip6Prefix() {
+   private Ip6Prefix() {
    }
 
    public Ip6Prefix(Ip6Expr ip6, IntExpr prefixLength) {
       _ip6 = ip6;
       _prefixLength = prefixLength;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      Ip6Prefix other = (Ip6Prefix) obj;
+      if (_ip6 == null) {
+         if (other._ip6 != null) {
+            return false;
+         }
+      }
+      else if (!_ip6.equals(other._ip6)) {
+         return false;
+      }
+      if (_prefixLength == null) {
+         if (other._prefixLength != null) {
+            return false;
+         }
+      }
+      else if (!_prefixLength.equals(other._prefixLength)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -39,6 +70,16 @@ public class Ip6Prefix implements Prefix6Expr {
 
    public IntExpr getPrefixLength() {
       return _prefixLength;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_ip6 == null) ? 0 : _ip6.hashCode());
+      result = prime * result
+            + ((_prefixLength == null) ? 0 : _prefixLength.hashCode());
+      return result;
    }
 
    public void setIp6(Ip6Expr ip6) {

@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchPrefixSet extends AbstractBooleanExpr {
+public class MatchPrefixSet extends BooleanExpr {
 
    /**
     *
@@ -18,12 +18,43 @@ public class MatchPrefixSet extends AbstractBooleanExpr {
    private PrefixSetExpr _prefixSet;
 
    @JsonCreator
-   public MatchPrefixSet() {
+   private MatchPrefixSet() {
    }
 
    public MatchPrefixSet(PrefixExpr prefix, PrefixSetExpr prefixSet) {
       _prefix = prefix;
       _prefixSet = prefixSet;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchPrefixSet other = (MatchPrefixSet) obj;
+      if (_prefix == null) {
+         if (other._prefix != null) {
+            return false;
+         }
+      }
+      else if (!_prefix.equals(other._prefix)) {
+         return false;
+      }
+      if (_prefixSet == null) {
+         if (other._prefixSet != null) {
+            return false;
+         }
+      }
+      else if (!_prefixSet.equals(other._prefixSet)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -41,6 +72,16 @@ public class MatchPrefixSet extends AbstractBooleanExpr {
 
    public PrefixSetExpr getPrefixSet() {
       return _prefixSet;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_prefix == null) ? 0 : _prefix.hashCode());
+      result = prime * result
+            + ((_prefixSet == null) ? 0 : _prefixSet.hashCode());
+      return result;
    }
 
    public void setPrefix(PrefixExpr prefix) {

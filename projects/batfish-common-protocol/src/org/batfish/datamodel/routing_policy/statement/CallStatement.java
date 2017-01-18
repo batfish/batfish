@@ -7,7 +7,7 @@ import org.batfish.datamodel.routing_policy.Result;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CallStatement extends AbstractStatement {
+public class CallStatement extends Statement {
 
    private static final String CALLED_POLICY_NAME_VAR = "calledPolicyName";
 
@@ -19,11 +19,34 @@ public class CallStatement extends AbstractStatement {
    private String _calledPolicyName;
 
    @JsonCreator
-   public CallStatement() {
+   private CallStatement() {
    }
 
    public CallStatement(String includedPolicyName) {
       _calledPolicyName = includedPolicyName;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      CallStatement other = (CallStatement) obj;
+      if (_calledPolicyName == null) {
+         if (other._calledPolicyName != null) {
+            return false;
+         }
+      }
+      else if (!_calledPolicyName.equals(other._calledPolicyName)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -50,6 +73,15 @@ public class CallStatement extends AbstractStatement {
    @JsonProperty(CALLED_POLICY_NAME_VAR)
    public String getCalledPolicyName() {
       return _calledPolicyName;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_calledPolicyName == null) ? 0 : _calledPolicyName.hashCode());
+      return result;
    }
 
    @JsonProperty(CALLED_POLICY_NAME_VAR)

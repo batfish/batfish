@@ -222,7 +222,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
       prefixes.put("MgmtEth", "ManagementEthernet");
       prefixes.put("Null", "Null");
-      prefixes.put("Port-channel", "Port-channel");
+      prefixes.put("Port-channel", "Port-Channel");
       prefixes.put("POS", "POS");
       prefixes.put("PTP", "PTP");
       prefixes.put("Serial", "Serial");
@@ -945,7 +945,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // might cause problems if interfaces are declared after ospf, but
       // whatever
       for (Prefix prefix : iface.getAllPrefixes()) {
-         OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
+         Prefix networkPrefix = prefix.getNetworkPrefix();
+         OspfNetwork network = new OspfNetwork(networkPrefix, _currentOspfArea);
          _currentOspfProcess.getNetworks().add(network);
       }
       _currentOspfInterface = iface.getName();
@@ -1485,6 +1486,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
+      if (asPathSet != null) {
+         _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
+      }
+      asPathSet = new AsPathSet(name);
+      _configuration.getAsPathSets().put(name, asPathSet);
+      for (As_path_set_elemContext elemCtx : ctx.elems) {
+         AsPathSetElem elem = toAsPathSetElem(elemCtx);
+         asPathSet.getElements().add(elem);
+      }
+   }
+
+   @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx, F_BGP_AUTO_SUMMARY);
    }
@@ -1560,6 +1576,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          name = ctx.num.getText();
       }
       _configuration.getClassMapAccessGroups().add(name);
+   }
+
+   @Override
+   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
+      Integer target = null;
+      if (ctx.DEC() != null) {
+         target = toInteger(ctx.DEC());
+      }
+      RouteMapContinueLine continueLine = new RouteMapContinueLine(target);
+      _currentRouteMapClause.setContinueLine(continueLine);
    }
 
    @Override
@@ -2055,6 +2081,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
+      long area = toInteger(ctx.area);
+      for (Interface iface : _currentInterfaces) {
+         iface.setOspfArea(area);
+      }
+   }
+
+   @Override
    public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
       int cost = toInteger(ctx.cost);
       for (Interface currentInterface : _currentInterfaces) {
@@ -2083,6 +2117,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_ospf_passive_interface(
+         If_ip_ospf_passive_interfaceContext ctx) {
+      boolean active = ctx.NO() != null;
+      if (active) {
+         for (Interface iface : _currentInterfaces) {
+            iface.setOspfActive(true);
+         }
+      }
+      else {
+         for (Interface iface : _currentInterfaces) {
+            iface.setOspfPassive(true);
+         }
+      }
+   }
+
+   @Override
    public void exitIf_ip_policy(If_ip_policyContext ctx) {
       String policyName = ctx.name.getText();
       for (Interface currentInterface : _currentInterfaces) {
@@ -2102,6 +2152,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
       for (Interface iface : _currentInterfaces) {
          iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
+      long area = new Ip(ctx.area.getText()).asLong();
+      for (Interface iface : _currentInterfaces) {
+         iface.setOspfArea(area);
       }
    }
 
@@ -2290,7 +2348,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_as_path_access_list_tail(
          Ip_as_path_access_list_tailContext ctx) {
       LineAction action = toLineAction(ctx.action);
-      String regex = ctx.as_path_regex.getText();
+      String regex = ctx.as_path_regex.getText().trim();
       IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
       _currentAsPathAcl.addLine(line);
    }
@@ -3438,10 +3496,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String iname = ctx.i.getText();
       OspfProcess proc = _currentOspfProcess;
       if (passive) {
-         proc.getInterfaceBlacklist().add(iname);
+         proc.getPassiveInterfaceList().add(iname);
       }
       else {
-         proc.getInterfaceWhitelist().add(iname);
+         proc.getActiveInterfaceList().add(iname);
       }
    }
 
@@ -3560,7 +3618,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRoi_passive(Roi_passiveContext ctx) {
       if (ctx.ENABLE() != null) {
-         _currentOspfProcess.getInterfaceBlacklist().add(_currentOspfInterface);
+         _currentOspfProcess.getPassiveInterfaceList()
+               .add(_currentOspfInterface);
       }
    }
 

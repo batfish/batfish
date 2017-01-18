@@ -94,6 +94,10 @@ public class OspfProcess extends ComparableStructure<String> {
       }
    }
 
+   public Set<String> getActiveInterfaceList() {
+      return _interfaceWhitelist;
+   }
+
    public int getDefaultInformationMetric() {
       return _defaultInformationMetric;
    }
@@ -114,14 +118,6 @@ public class OspfProcess extends ComparableStructure<String> {
       return _defaultInformationOriginateMap;
    }
 
-   public Set<String> getInterfaceBlacklist() {
-      return _interfaceBlacklist;
-   }
-
-   public Set<String> getInterfaceWhitelist() {
-      return _interfaceWhitelist;
-   }
-
    public Set<OspfNetwork> getNetworks() {
       return _networks;
    }
@@ -132,6 +128,10 @@ public class OspfProcess extends ComparableStructure<String> {
 
    public boolean getPassiveInterfaceDefault() {
       return _passiveInterfaceDefault;
+   }
+
+   public Set<String> getPassiveInterfaceList() {
+      return _interfaceBlacklist;
    }
 
    public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {

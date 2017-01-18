@@ -1,8 +1,8 @@
 #this file assumes that we are running from top-level source directory
 
 # example testrig
-test tests/java/init.ref init-testrig -nodataplane test_rigs/example
-test tests/java/init-delta.ref init-delta-testrig -nodataplane test_rigs/example-with-delta
+test tests/java/init.ref init-testrig test_rigs/example
+test tests/java/init-delta.ref init-delta-testrig test_rigs/example-with-delta
 test tests/java/genDp.ref generate-dataplane
 test tests/java/genDp-delta.ref generate-delta-dataplane
 test tests/java/aclReachability.ref get aclReachability
@@ -16,6 +16,7 @@ test tests/java/neighbors.ref get neighbors
 test tests/java/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
 test tests/java/nodes-summary.ref get nodes summary=true
 test tests/java/nodes.ref get nodes summary=false
+test tests/java/nodes-diff.ref get nodes summary=false | differential=true
 test tests/java/ospfLoopbacks.ref get ospfLoopbacks
 test tests/java/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/java/routes.ref get routes
@@ -34,5 +35,5 @@ test tests/java/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse
 test tests/java/routes-dc-as-reuse.ref get routes
 
 # parsing unit-tests through nodes question
-test tests/java/init-unit-tests.ref init-testrig -nodataplane test_rigs/unit-tests
+test tests/java/init-unit-tests.ref init-testrig test_rigs/unit-tests
 test tests/java/nodes-unit-tests.ref get nodes summary=false

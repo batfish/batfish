@@ -4,12 +4,26 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class DestinationNetwork6 implements Prefix6Expr {
+public class DestinationNetwork6 extends Prefix6Expr {
 
    /**
     *
     */
    private static final long serialVersionUID = 1L;
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      return true;
+   }
 
    @Override
    public Prefix6 evaluate(Environment env) {
@@ -22,6 +36,14 @@ public class DestinationNetwork6 implements Prefix6Expr {
       else {
          return null;
       }
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + 0x12345678;
+      return result;
    }
 
 }

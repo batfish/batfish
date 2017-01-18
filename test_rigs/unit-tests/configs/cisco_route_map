@@ -25,3 +25,13 @@ route-map next-hop-null deny 15
 route-map mgmt permit 10
  match route-type internal
 !
+route-map beeble permit 5
+ match ip address prefix-list bobble
+ continue
+ set community no-export additive
+!
+route-map beeble permit 10
+ set metric 0
+ set local-preference 100
+!
+

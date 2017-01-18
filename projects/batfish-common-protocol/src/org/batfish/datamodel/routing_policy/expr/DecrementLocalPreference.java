@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class DecrementLocalPreference implements IntExpr {
+public class DecrementLocalPreference extends IntExpr {
 
    /**
     *
@@ -15,11 +15,29 @@ public class DecrementLocalPreference implements IntExpr {
    private int _subtrahend;
 
    @JsonCreator
-   public DecrementLocalPreference() {
+   private DecrementLocalPreference() {
    }
 
    public DecrementLocalPreference(int subtrahend) {
       _subtrahend = subtrahend;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      DecrementLocalPreference other = (DecrementLocalPreference) obj;
+      if (_subtrahend != other._subtrahend) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -32,6 +50,14 @@ public class DecrementLocalPreference implements IntExpr {
 
    public int getSubtrahend() {
       return _subtrahend;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + _subtrahend;
+      return result;
    }
 
    public void setSubtrahend(int subtrahend) {

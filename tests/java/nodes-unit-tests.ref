@@ -603,10 +603,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -2900,6 +2896,28 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "3.3.3.0/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "3.3.3.0/24",
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
             "Loopback0" : {
               "name" : "Loopback0",
               "accessVlan" : 0,
@@ -2963,9 +2981,18 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
+                "Ethernet0/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
+                "areas" : {
+                  "0" : {
+                    "name" : 0,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ]
+                  }
+                },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "1.2.3.4"
@@ -3081,10 +3108,29 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnFalse"
+                }
+              ]
+            },
+            "beeble" : {
+              "name" : "beeble",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 0
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnTrue"
                 }
               ]
             },
@@ -3093,7 +3139,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             },
@@ -3103,10 +3149,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -3116,20 +3158,12 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
             "next-hop-null" : {
               "name" : "next-hop-null",
               "statements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
-                },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnFalse"
@@ -3149,10 +3183,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3690,6 +3720,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~AAA1-BBB-CCC~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                     "expr" : {
@@ -3721,10 +3758,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3763,6 +3796,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~AAA1-BBB-CCC~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                     "expr" : {
@@ -3794,10 +3834,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3848,6 +3884,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~TO_NEIGHBOR~30~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -3882,10 +3925,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -4950,8 +4989,8 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
-            "Port-channel1" : {
-              "name" : "Port-channel1",
+            "Port-Channel1" : {
+              "name" : "Port-Channel1",
               "accessVlan" : 0,
               "active" : true,
               "bandwidth" : 1.0E12,
@@ -4996,7 +5035,7 @@
               "interfaces" : [
                 "FastEthernet12/13",
                 "HundredGigabitEthernet0/6/0/8",
-                "Port-channel1",
+                "Port-Channel1",
                 "Vlan100"
               ]
             }
@@ -6336,7 +6375,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             }
@@ -8014,6 +8053,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~to_elacc~10~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -8030,10 +8076,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -9946,37 +9988,6 @@
             }
           }
         },
-        "route_map_sub" : {
-          "name" : "route_map_sub",
-          "configurationFormat" : "CISCO_NX",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "routingPolicies" : {
-            "ABC" : {
-              "name" : "ABC",
-              "statements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
-                }
-              ]
-            }
-          },
-          "vendorFamily" : {
-            "cisco" : {
-              "hostname" : "route_map_sub"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default"
-            }
-          }
-        },
         "route_maps_in_two_address_families" : {
           "name" : "route_maps_in_two_address_families",
           "configurationFormat" : "CISCO_NX",
@@ -10021,6 +10032,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~FROM_ABC_V4~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -10037,10 +10055,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -10049,6 +10063,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~FROM_ABC_V6~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set",
                     "prefix" : {
@@ -10065,10 +10086,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -10188,6 +10205,47 @@
         },
         "route_policy_as_path_set" : {
           "name" : "route_policy_as_path_set",
+          "asPathAccessLists" : {
+            "ama-coe-as-path" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path"
+            },
+            "ama-coe-as-path2" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path2"
+            },
+            "ama-coe-as-path3" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^$"
+                }
+              ],
+              "name" : "ama-coe-as-path3"
+            }
+          },
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -11676,7 +11734,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             }

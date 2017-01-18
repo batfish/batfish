@@ -32,8 +32,7 @@ public final class StandardCommunityList extends ComparableStructure<String> {
          else {
             regex = "(";
             for (Long l : standardCommunities) {
-               regex += org.batfish.common.util.CommonUtil.longToCommunity(l)
-                     + "|";
+               regex += CommonUtil.longToCommunity(l) + "|";
             }
             regex = regex.substring(0, regex.length() - 1) + ")";
          }

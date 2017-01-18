@@ -7,8 +7,19 @@ import org.batfish.datamodel.routing_policy.Environment;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface IntExpr extends Serializable {
+public abstract class IntExpr implements Serializable {
 
-   int evaluate(Environment environment);
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
+
+   @Override
+   public abstract boolean equals(Object obj);
+
+   public abstract int evaluate(Environment environment);
+
+   @Override
+   public abstract int hashCode();
 
 }

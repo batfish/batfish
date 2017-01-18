@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class ExplicitPrefixSet implements PrefixSetExpr {
+public class ExplicitPrefixSet extends PrefixSetExpr {
 
    /**
     *
@@ -16,15 +16,47 @@ public class ExplicitPrefixSet implements PrefixSetExpr {
    private PrefixSpace _prefixSpace;
 
    @JsonCreator
-   public ExplicitPrefixSet() {
+   private ExplicitPrefixSet() {
    }
 
    public ExplicitPrefixSet(PrefixSpace prefixSpace) {
       _prefixSpace = prefixSpace;
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      ExplicitPrefixSet other = (ExplicitPrefixSet) obj;
+      if (_prefixSpace == null) {
+         if (other._prefixSpace != null) {
+            return false;
+         }
+      }
+      else if (!_prefixSpace.equals(other._prefixSpace)) {
+         return false;
+      }
+      return true;
+   }
+
    public PrefixSpace getPrefixSpace() {
       return _prefixSpace;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_prefixSpace == null) ? 0 : _prefixSpace.hashCode());
+      return result;
    }
 
    @Override

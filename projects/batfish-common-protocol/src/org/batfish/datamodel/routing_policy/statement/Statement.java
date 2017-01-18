@@ -1,11 +1,13 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -29,10 +31,47 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
       @JsonSubTypes.Type(value = SetTag.class),
       @JsonSubTypes.Type(value = SetVarMetricType.class),
       @JsonSubTypes.Type(value = SetWeight.class) })
-public interface Statement extends Serializable {
+public abstract class Statement implements Serializable {
 
-   Result execute(Environment environment);
+   private static final String COMMENT_VAR = "comment";
 
-   List<Statement> simplify();
+   /**
+    *
+    */
+   private static final long serialVersionUID = 1L;
+
+   private String _comment;
+
+   @Override
+   public abstract boolean equals(Object obj);
+
+   public abstract Result execute(Environment environment);
+
+   @JsonProperty(COMMENT_VAR)
+   public final String getComment() {
+      return _comment;
+   }
+
+   @Override
+   public abstract int hashCode();
+
+   @JsonProperty(COMMENT_VAR)
+   public final void setComment(String comment) {
+      _comment = comment;
+   }
+
+   public List<Statement> simplify() {
+      return Collections.singletonList(this);
+   }
+
+   @Override
+   public String toString() {
+      if (_comment != null) {
+         return getClass().getSimpleName() + "<" + _comment + ">";
+      }
+      else {
+         return super.toString();
+      }
+   }
 
 }

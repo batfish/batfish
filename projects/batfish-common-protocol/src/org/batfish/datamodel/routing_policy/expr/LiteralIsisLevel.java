@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class LiteralIsisLevel implements IsisLevelExpr {
+public class LiteralIsisLevel extends IsisLevelExpr {
 
    /**
     *
@@ -15,11 +15,29 @@ public class LiteralIsisLevel implements IsisLevelExpr {
    private IsisLevel _level;
 
    @JsonCreator
-   public LiteralIsisLevel() {
+   private LiteralIsisLevel() {
    }
 
    public LiteralIsisLevel(IsisLevel level) {
       _level = level;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      LiteralIsisLevel other = (LiteralIsisLevel) obj;
+      if (_level != other._level) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -29,6 +47,14 @@ public class LiteralIsisLevel implements IsisLevelExpr {
 
    public IsisLevel getLevel() {
       return _level;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_level == null) ? 0 : _level.hashCode());
+      return result;
    }
 
    public void setLevel(IsisLevel level) {

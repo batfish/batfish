@@ -233,9 +233,28 @@ public class PrefixSpace implements Serializable {
       return _trie.containsPrefixRange(prefixRange);
    }
 
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      return getPrefixRanges().equals(((PrefixSpace) obj).getPrefixRanges());
+   }
+
    @JsonValue
    public Set<PrefixRange> getPrefixRanges() {
       return _trie.getPrefixRanges();
+   }
+
+   @Override
+   public int hashCode() {
+      return getPrefixRanges().hashCode();
    }
 
    public PrefixSpace intersection(PrefixSpace intersectSpace) {
