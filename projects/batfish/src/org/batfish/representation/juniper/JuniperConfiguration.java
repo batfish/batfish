@@ -1404,7 +1404,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (PsThen then : thens) {
          if (then instanceof PsThenAccept || then instanceof PsThenReject
                || then instanceof PsThenDefaultActionAccept
-               || then instanceof PsThenDefaultActionReject) {
+               || then instanceof PsThenDefaultActionReject
+               || then instanceof PsThenNextPolicy) {
             reorderedThens.add(then);
          }
          else {

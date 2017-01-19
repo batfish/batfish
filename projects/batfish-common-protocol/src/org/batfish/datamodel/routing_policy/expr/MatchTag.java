@@ -53,7 +53,16 @@ public class MatchTag extends BooleanExpr {
 
    @Override
    public Result evaluate(Environment environment) {
-      int lhs = environment.getOriginalRoute().getTag();
+      int lhs;
+      if (environment.getReadFromIntermediateBgpAttributes()) {
+         lhs = environment.getIntermediateBgpAttributes().getTag();
+      }
+      else if (environment.getUseOutputAttributes()) {
+         lhs = environment.getOutputRoute().getTag();
+      }
+      else {
+         lhs = environment.getOriginalRoute().getTag();
+      }
       int rhs = _tag.evaluate(environment);
       return _cmp.apply(lhs, rhs);
    }

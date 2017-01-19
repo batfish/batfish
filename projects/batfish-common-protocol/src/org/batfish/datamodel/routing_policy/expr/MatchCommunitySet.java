@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.collections.CommunitySet;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -50,17 +51,23 @@ public class MatchCommunitySet extends BooleanExpr {
    public Result evaluate(Environment environment) {
       Result result = new Result();
       boolean match = false;
+      CommunitySet inputCommunities = null;
       if (environment.getUseOutputAttributes()
             && environment.getOutputRoute() instanceof BgpRoute.Builder) {
          BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
                .getOutputRoute();
-         match = _expr.matchSingleCommunity(environment,
-               bgpRouteBuilder.getCommunities());
+         inputCommunities = bgpRouteBuilder.getCommunities();
+      }
+      else if (environment.getReadFromIntermediateBgpAttributes()) {
+         inputCommunities = environment.getIntermediateBgpAttributes()
+               .getCommunities();
       }
       else if (environment.getOriginalRoute() instanceof BgpRoute) {
          BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
-         match = _expr.matchSingleCommunity(environment,
-               bgpRoute.getCommunities());
+         inputCommunities = bgpRoute.getCommunities();
+      }
+      if (inputCommunities != null) {
+         match = _expr.matchSingleCommunity(environment, inputCommunities);
       }
       result.setBooleanValue(match);
       return result;

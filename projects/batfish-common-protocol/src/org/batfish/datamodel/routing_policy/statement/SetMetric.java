@@ -51,6 +51,9 @@ public class SetMetric extends Statement {
       Result result = new Result();
       int metric = _metric.evaluate(environment);
       environment.getOutputRoute().setMetric(metric);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes().setMetric(metric);
+      }
       return result;
    }
 

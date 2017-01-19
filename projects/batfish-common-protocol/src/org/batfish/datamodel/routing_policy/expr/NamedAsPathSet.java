@@ -64,9 +64,25 @@ public class NamedAsPathSet extends AsPathSetExpr {
       AsPathAccessList list = environment.getConfiguration()
             .getAsPathAccessLists().get(_name);
       if (list != null) {
-         BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
-         AsPath asPath = bgpRoute.getAsPath();
-         boolean match = list.permits(asPath);
+         boolean match = false;
+         AsPath inputAsPath = null;
+         if (environment.getUseOutputAttributes()
+               && environment.getOutputRoute() instanceof BgpRoute.Builder) {
+            BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
+                  .getOutputRoute();
+            inputAsPath = bgpRouteBuilder.getAsPath();
+         }
+         else if (environment.getReadFromIntermediateBgpAttributes()) {
+            inputAsPath = environment.getIntermediateBgpAttributes()
+                  .getAsPath();
+         }
+         else if (environment.getOriginalRoute() instanceof BgpRoute) {
+            BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+            inputAsPath = bgpRoute.getAsPath();
+         }
+         if (inputAsPath != null) {
+            match = list.permits(inputAsPath);
+         }
          return match;
       }
       else {
