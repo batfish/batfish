@@ -179,6 +179,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, Interface> _interfaces;
 
+   private final Set<String> _ipNatSourceAccessLists;
+
+   private final Set<String> _ipPimNeighborFilters;
+
    private final Set<String> _lineAccessClassLists;
 
    private final Set<String> _lineIpv6AccessClassLists;
@@ -245,6 +249,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       _failoverPrimaryPrefixes = new TreeMap<>();
       _failoverStandbyPrefixes = new TreeMap<>();
       _interfaces = new TreeMap<>();
+      _ipNatSourceAccessLists = new TreeSet<>();
+      _ipPimNeighborFilters = new TreeSet<>();
       _lineAccessClassLists = new TreeSet<>();
       _lineIpv6AccessClassLists = new TreeSet<>();
       _macAccessLists = new TreeSet<>();
@@ -463,6 +469,14 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public final Map<String, Interface> getInterfaces() {
       return _interfaces;
+   }
+
+   public Set<String> getIpNatSourceAccessLists() {
+      return _ipNatSourceAccessLists;
+   }
+
+   public Set<String> getIpPimNeighborFilters() {
+      return _ipPimNeighborFilters;
    }
 
    public Set<String> getLineAccessClassLists() {
@@ -2795,6 +2809,10 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       });
 
+      markIpv4Acls(_ipNatSourceAccessLists, "ip nat source dynamic access-list",
+            c);
+      markIpv4Acls(_ipPimNeighborFilters, "interface ip pim neighbor-filter",
+            c);
       markIpv4Acls(_lineAccessClassLists, "line access-class list", c);
       markIpv6Acls(_lineIpv6AccessClassLists, "line access-class list", c);
       markAcls(_classMapAccessGroups, "class-map access-group", c);

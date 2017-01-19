@@ -404,6 +404,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private boolean _inIpv6BgpPeer;
 
+   private boolean _no;
+
    private final BatfishCombinedParser<?, ?> _parser;
 
    private List<BgpPeerGroup> _peerGroupStack;
@@ -1052,6 +1054,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.MULTIPOINT() != null) {
          todo(ctx, F_INTERFACE_MULTIPOINT);
       }
+   }
+
+   @Override
+   public void enterS_ip_pim(S_ip_pimContext ctx) {
+      _no = ctx.NO() != null;
    }
 
    @Override
@@ -2081,6 +2088,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
+      String acl = ctx.acl.getText();
+      _configuration.getIpNatSourceAccessLists().add(acl);
+   }
+
+   @Override
    public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
       long area = toInteger(ctx.area);
       for (Interface iface : _currentInterfaces) {
@@ -2130,6 +2143,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             iface.setOspfPassive(true);
          }
       }
+   }
+
+   @Override
+   public void exitIf_ip_pim_neighbor_filter(
+         If_ip_pim_neighbor_filterContext ctx) {
+      String acl = ctx.acl.getText();
+      _configuration.getIpPimNeighborFilters().add(acl);
    }
 
    @Override
@@ -3123,9 +3143,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-      if (ctx.name != null) {
-         String name = ctx.name.getText();
-         _configuration.getPimAcls().add(name);
+      if (!_no) {
+         if (ctx.name != null) {
+            String name = ctx.name.getText();
+            _configuration.getPimAcls().add(name);
+         }
       }
    }
 
@@ -3724,6 +3746,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitS_ip_domain_name(S_ip_domain_nameContext ctx) {
       String name = ctx.name.getText();
       _configuration.setDomainName(name);
+   }
+
+   @Override
+   public void exitS_ip_pim(S_ip_pimContext ctx) {
+      _no = false;
    }
 
    @Override

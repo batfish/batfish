@@ -3000,6 +3000,22 @@
             }
           }
         },
+        "cisco_pim" : {
+          "name" : "cisco_pim",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_pim"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "cisco_platform" : {
           "name" : "cisco_platform",
           "configurationFormat" : "CISCO_NX",

@@ -1409,7 +1409,7 @@
             "    (extended_access_list_stanza",
             "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
             "      (variable_permissive",
-            "        VARIABLE:'outside'  <== mode:DEFAULT_MODE)",
+            "        OUTSIDE:'outside'  <== mode:DEFAULT_MODE)",
             "      EXTENDED:'extended'  <== mode:DEFAULT_MODE",
             "      (extended_access_list_tail",
             "        (access_list_action",
@@ -1452,7 +1452,7 @@
             "      (ssh_null",
             "        IP_ADDRESS:'1.2.3.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.0'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'inside'  <== mode:DEFAULT_MODE",
+            "        INSIDE:'inside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_ssh",
@@ -2542,7 +2542,7 @@
             "          (variable",
             "            TELNET:'telnet'  <== mode:DEFAULT_MODE)",
             "          (variable",
-            "            VARIABLE:'outside'  <== mode:DEFAULT_MODE)",
+            "            OUTSIDE:'outside'  <== mode:DEFAULT_MODE)",
             "          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'255.255.255.255'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE",
@@ -2783,7 +2783,7 @@
             "          (variable",
             "            TELNET:'telnet'  <== mode:DEFAULT_MODE)",
             "          (variable",
-            "            VARIABLE:'outside'  <== mode:DEFAULT_MODE)",
+            "            OUTSIDE:'outside'  <== mode:DEFAULT_MODE)",
             "          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'255.255.255.255'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE",
@@ -3981,7 +3981,7 @@
             "        DHCPRELAY:'dhcprelay'  <== mode:DEFAULT_MODE",
             "        SERVER:'server'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'outside'  <== mode:DEFAULT_MODE",
+            "        OUTSIDE:'outside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
@@ -3989,14 +3989,14 @@
             "        DHCPRELAY:'dhcprelay'  <== mode:DEFAULT_MODE",
             "        SERVER:'server'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'1.2.3.5'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'outside'  <== mode:DEFAULT_MODE",
+            "        OUTSIDE:'outside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
             "      (null_block",
             "        DHCPRELAY:'dhcprelay'  <== mode:DEFAULT_MODE",
             "        ENABLE:'enable'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'inside'  <== mode:DEFAULT_MODE",
+            "        INSIDE:'inside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
@@ -4748,6 +4748,38 @@
             "        VARIABLE:'aes-ccm'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'tkip'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAT:'nat'  <== mode:DEFAULT_MODE",
+            "        INSIDE:'inside'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAT:'nat'  <== mode:DEFAULT_MODE",
+            "        OUTSIDE:'outside'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_nat_source",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAT:'nat'  <== mode:DEFAULT_MODE",
+            "        SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "        DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
+            "        ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'def'  <== mode:DEFAULT_MODE)",
+            "        OVERLOAD:'overload'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_nat_source",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NAT:'nat'  <== mode:DEFAULT_MODE",
+            "        SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "        DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
+            "        ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'abc'  <== mode:DEFAULT_MODE)",
+            "        POOL:'pool'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'beeble'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_ip_verify",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        VERIFY:'verify'  <== mode:DEFAULT_MODE",
@@ -4944,6 +4976,11 @@
             "        VARIABLE:'neg-off'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PIM:'pim'  <== mode:DEFAULT_MODE",
+            "        SPARSE_MODE:'sparse-mode'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_block",
             "        IPV4:'ipv4'  <== mode:DEFAULT_MODE",
             "        POINT_TO_POINT:'point-to-point'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -5058,6 +5095,13 @@
             "          VARIABLE:'pool-member'  <== mode:DEFAULT_MODE",
             "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_null_block",
+            "        QUEUE_MONITOR:'queue-monitor'  <== mode:DEFAULT_MODE",
+            "        LENGTH:'length'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'thresholds'  <== mode:DEFAULT_MODE",
+            "        DEC:'12'  <== mode:DEFAULT_MODE",
+            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        SERVICE:'service'  <== mode:DEFAULT_MODE",
             "        INSTANCE:'instance'  <== mode:DEFAULT_MODE",
@@ -6453,7 +6497,7 @@
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        PIM:'pim'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'border'  <== mode:DEFAULT_MODE",
+            "        BORDER:'border'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -8178,7 +8222,7 @@
             "    (s_null",
             "      (null_block",
             "        MANAGEMENT_ACCESS:'management-access'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'inside'  <== mode:DEFAULT_MODE",
+            "        INSIDE:'inside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_vpc",
@@ -9807,6 +9851,30 @@
             "          VARIABLE:'SWITCHLAN'  <== mode:DEFAULT_MODE)",
             "        IN:'in'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "cisco_pim" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'cisco_pim'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_ip_pim",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      PIM:'pim'  <== mode:DEFAULT_MODE",
+            "      (ip_pim_tail",
+            "        (pim_rp_address",
+            "          RP_ADDRESS:'rp-address'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "          ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'foobar'  <== mode:DEFAULT_MODE)",
+            "          OVERRIDE:'override'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -13239,7 +13307,7 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (webvpn_null",
             "        ENABLE:'enable'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'outside'  <== mode:DEFAULT_MODE",
+            "        OUTSIDE:'outside'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (webvpn_null",
             "        ERROR_RECOVERY:'error-recovery'  <== mode:DEFAULT_MODE",
@@ -15737,7 +15805,7 @@
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        PIM:'pim'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'sparse-mode'  <== mode:DEFAULT_MODE",
+            "        SPARSE_MODE:'sparse-mode'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -19986,14 +20054,15 @@
             "          SNOOPING:'snooping'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_block",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
-            "        PIM:'pim'  <== mode:DEFAULT_MODE",
-            "        SNOOPING:'snooping'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'dr-flood'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "    (s_ip_pim",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      PIM:'pim'  <== mode:DEFAULT_MODE",
+            "      (ip_pim_tail",
+            "        (pim_null",
+            "          SNOOPING:'snooping'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dr-flood'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -23635,6 +23704,10 @@
         "cisco_interface" : {
           "interface ip verify access-list" : [
             "167"
+          ],
+          "ip nat source dynamic access-list" : [
+            "abc",
+            "def"
           ]
         },
         "cisco_line" : {
@@ -23648,6 +23721,11 @@
         "cisco_ospf" : {
           "route-map" : [
             "DIRECT_OSPF"
+          ]
+        },
+        "cisco_pim" : {
+          "pim acl" : [
+            "foobar"
           ]
         },
         "cisco_route_map" : {
@@ -24049,7 +24127,9 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'",
             "2" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process",
-            "3" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
+            "3" : "UNDEFINED: Reference to undefined ip nat source dynamic access-list: abc",
+            "4" : "UNDEFINED: Reference to undefined ip nat source dynamic access-list: def",
+            "5" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
           }
         },
         "cisco_ipv6_access_list" : {
@@ -24069,6 +24149,11 @@
         "cisco_ospf" : {
           "Red flags" : {
             "1" : "UNDEFINED: undefined reference to route-map: DIRECT_OSPF"
+          }
+        },
+        "cisco_pim" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined pim acl: foobar"
           }
         },
         "cisco_route_map" : {

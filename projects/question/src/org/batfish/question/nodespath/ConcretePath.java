@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class ConcretePath implements Comparable<ConcretePath> {
 
-   private List<String> _parts;
+   private final List<String> _parts;
 
    @JsonCreator
    private ConcretePath(List<String> parts) {
@@ -20,7 +20,7 @@ public class ConcretePath implements Comparable<ConcretePath> {
       String endsCut = text.substring(3, text.length() - 2);
       _parts = Arrays.asList(endsCut.split("'\\]\\['"));
    }
-   
+
    @Override
    public int compareTo(ConcretePath o) {
       Iterator<String> iLhs = _parts.iterator();

@@ -103,7 +103,6 @@ null_block
             | INSPECT
             | INTERNAL
             | NAME_SERVER
-            | PIM
             | POLICY_LIST
             | RATE_LIMIT
             | RECEIVE
