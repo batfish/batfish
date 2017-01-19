@@ -77,6 +77,10 @@
         "cisco_interface" : {
           "interface ip verify access-list" : [
             "167"
+          ],
+          "ip nat source dynamic access-list" : [
+            "abc",
+            "def"
           ]
         },
         "cisco_line" : {
@@ -90,6 +94,11 @@
         "cisco_ospf" : {
           "route-map" : [
             "DIRECT_OSPF"
+          ]
+        },
+        "cisco_pim" : {
+          "pim acl" : [
+            "foobar"
           ]
         },
         "cisco_route_map" : {
@@ -491,7 +500,9 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: Interface: 'Ethernet1/11' configured with non-existent outgoing acl '310-systems'",
             "2" : "MISCELLANEOUS: Interface: 'Loopback0' contains OSPF settings, but there is no OSPF process",
-            "3" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
+            "3" : "UNDEFINED: Reference to undefined ip nat source dynamic access-list: abc",
+            "4" : "UNDEFINED: Reference to undefined ip nat source dynamic access-list: def",
+            "5" : "UNDEFINED: Reference to undefined interface ip verify access-list: 167"
           }
         },
         "cisco_ipv6_access_list" : {
@@ -511,6 +522,11 @@
         "cisco_ospf" : {
           "Red flags" : {
             "1" : "UNDEFINED: undefined reference to route-map: DIRECT_OSPF"
+          }
+        },
+        "cisco_pim" : {
+          "Red flags" : {
+            "1" : "UNDEFINED: Reference to undefined pim acl: foobar"
           }
         },
         "cisco_route_map" : {

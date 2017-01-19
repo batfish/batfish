@@ -1041,6 +1041,16 @@ BOOTPS
    'bootps'
 ;
 
+BORDER
+:
+   'border'
+;
+
+BORDER_ROUTER
+:
+   'border-router'
+;
+
 BOTH
 :
    'both'
@@ -3756,6 +3766,11 @@ INSERVICE
    'inservice'
 ;
 
+INSIDE
+:
+   'inside'
+;
+
 INSPECT
 :
    'inspect'
@@ -3866,7 +3881,7 @@ IPSLA
 
 IPV4
 :
-   [iI][pP][vV]'4'
+   [iI] [pP] [vV] '4'
 ;
 
 IPV4_L5
@@ -3876,7 +3891,7 @@ IPV4_L5
 
 IPV6
 :
-   [iI][pP][vV]'6'
+   [iI] [pP] [vV] '6'
 ;
 
 IPV6_ADDRESS_POOL
@@ -5134,6 +5149,11 @@ NEIGHBOR_DOWN
    'neighbor-down'
 ;
 
+NEIGHBOR_FILTER
+:
+   'neighbor-filter'
+;
+
 NEIGHBOR_GROUP
 :
    'neighbor-group'
@@ -5602,6 +5622,16 @@ OUT_OF_BAND
 OUTPUT
 :
    'output'
+;
+
+OUTSIDE
+:
+   'outside'
+;
+
+OVERLOAD
+:
+   'overload'
 ;
 
 OVERLOAD_CONTROL
@@ -6342,6 +6372,11 @@ QOS_POLICY
 QOS_POLICY_OUTPUT
 :
    'qos-policy-output'
+;
+
+QUERY_INTERVAL
+:
+   'query-interval'
 ;
 
 QUERY_ONLY
@@ -7534,6 +7569,16 @@ SPANNING_TREE
    'spanning-tree'
 ;
 
+SPARSE_DENSE_MODE
+:
+   'sparse-dense-mode'
+;
+
+SPARSE_MODE
+:
+   'sparse-mode'
+;
+
 SPD
 :
    'spd'
@@ -8269,6 +8314,11 @@ TRANSCEIVER_TYPE_CHECK
 TRANSLATE
 :
    'translate'
+;
+
+TRANSLATION
+:
+   'translation'
 ;
 
 TRANSLATION_PROFILE
