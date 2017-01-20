@@ -18,8 +18,8 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -37,6 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RoutesQuestionPlugin extends QuestionPlugin {
 
    public static class RoutesAnswerElement implements AnswerElement {
+
+      private transient boolean _diff;
 
       private SortedMap<String, SortedSet<Route>> _routesByHostname;
 
@@ -69,6 +71,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       public RoutesAnswerElement(RoutesAnswerElement base,
             RoutesAnswerElement delta) {
+         _diff = true;
          _routesByHostname = new TreeMap<>();
          Set<String> hosts = new LinkedHashSet<>();
          hosts.addAll(base.getRoutesByHostname().keySet());
@@ -113,9 +116,47 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
+         StringBuilder sb = new StringBuilder();
+
+         for (Entry<String, SortedSet<Route>> e : _routesByHostname
+               .entrySet()) {
+            String node = e.getKey();
+            SortedSet<Route> routes = e.getValue();
+            for (Route route : routes) {
+               String nhnode = route.getNextHop();
+               Ip nextHopIp = route.getNextHopIp();
+               String nhip;
+               String tag;
+               int tagInt = route.getTag();
+               if (tagInt == Route.UNSET_ROUTE_TAG) {
+                  tag = "none";
+               }
+               else {
+                  tag = Integer.toString(tagInt);
+               }
+               String nhint = route.getNextHopInterface();
+               if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)) {
+                  // static interface
+                  if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                     nhnode = "N/A";
+                     nhip = "N/A";
+                  }
+               }
+               nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
+               String vrf = route.getVrf();
+               String net = route.getNetwork().toString();
+               String admin = Integer.toString(route.getAdministrativeCost());
+               String cost = Integer.toString(route.getMetric());
+               String prot = route.getProtocol().protocolName();
+               String diff = _diff ? route.getDiffSymbol() + " " : "";
+               String routeStr = String.format(
+                     "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
+                     diff, node, vrf, net, nhip, nhint, nhnode, admin, cost,
+                     tag, prot);
+               sb.append(routeStr);
+            }
+         }
+         return sb.toString();
       }
 
       public void setRoutesByHostname(
