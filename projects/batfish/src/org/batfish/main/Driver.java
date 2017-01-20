@@ -297,7 +297,7 @@ public class Driver {
                   answer.addAnswerElement(e.getAnswerElement());
                   batfish.setTerminatedWithException(true);
                }
-               catch (Exception e) {
+               catch (Exception | StackOverflowError e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
                   answer = new Answer();

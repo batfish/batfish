@@ -722,9 +722,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
+                  Ip remoteLocalIp = remoteBgpNeighbor.getLocalIp();
                   if (remoteExportPolicy.process(remoteRoute, null,
-                        transformedOutgoingRouteBuilder,
-                        remoteBgpNeighbor.getLocalIp(), remoteVrfName)) {
+                        transformedOutgoingRouteBuilder, remoteLocalIp,
+                        remoteVrfName)) {
                      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder
                            .build();
                      BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
