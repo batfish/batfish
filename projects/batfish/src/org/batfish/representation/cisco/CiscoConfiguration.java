@@ -287,7 +287,8 @@ public class CiscoConfiguration extends VendorConfiguration {
             new Vrf(Configuration.DEFAULT_VRF_NAME));
    }
 
-   private BooleanExpr bgpRedistributeWithEnvironmentExpr(BooleanExpr expr) {
+   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+         BooleanExpr expr) {
       WithEnvironmentExpr we = new WithEnvironmentExpr();
       we.setExpr(expr);
       we.getPreStatements().add(
@@ -960,6 +961,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
       Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
 
+      List<BooleanExpr> attributeMapPrefilters = new ArrayList<>();
+
       // add generated routes for aggregate ipv4 addresses
       for (Entry<Prefix, BgpAggregateIpv4Network> e : proc
             .getAggregateNetworks().entrySet()) {
@@ -999,6 +1002,21 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (attributeMapName != null) {
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
+               // need to apply attribute changes if this specific route is
+               // matched
+               Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
+               applyCurrentAggregateAttributesConditions.getConjuncts()
+                     .add(new MatchPrefixSet(new DestinationNetwork(),
+                           new ExplicitPrefixSet(
+                                 new PrefixSpace(Collections.singleton(
+                                       new PrefixRange(prefix.toString()))))));
+               applyCurrentAggregateAttributesConditions.getConjuncts()
+                     .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(attributeMapName));
+               applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
+               attributeMapPrefilters
+                     .add(applyCurrentAggregateAttributesConditions);
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
                gr.setAttributePolicy(attributeMapName);
@@ -1113,6 +1131,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       preFilter.setGuard(preFilterConditions);
       preFilter.getTrueStatements()
             .add(Statements.ReturnTrue.toStaticStatement());
+
+      preFilterConditions.getDisjuncts().addAll(attributeMapPrefilters);
 
       // create redistribution origination policies
       // redistribute static

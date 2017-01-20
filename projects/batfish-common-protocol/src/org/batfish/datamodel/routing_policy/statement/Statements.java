@@ -146,6 +146,11 @@ public enum Statements {
          return _type.hashCode();
       }
 
+      @Override
+      public String toString() {
+         return _type.toString();
+      }
+
    }
 
    public StaticStatement toStaticStatement() {
