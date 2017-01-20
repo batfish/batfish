@@ -2,12 +2,13 @@
 
 NUMARGS=$#
 
-if [ ${NUMARGS} != 1 ]; then
-   echo "Provide exactly one argument: The name of the binary (batfish/coordinator)";
+if [ ${NUMARGS} != 2 ]; then
+   echo "Provide exactly two argument: The remote site and the name of the binary (batfish/coordinator)";
    exit 1
 fi
 
-BINARY=$1
+TARGET_HOST=$1
+BINARY=$2
 
 if [[ $(uname) == *"Darwin"* ]]; then
    export GNU_READLINK=greadlink
@@ -25,8 +26,6 @@ export SRC_OUTDIR="${BATFISH_TOOLS_PATH}/../projects/${BINARY}/out/"
 # the person doing ssh should have access to this directory
 # i have set this directory to be writeable by everyone for now 
 export DST_OUTDIR="/home/batfish_services/batfish/projects/${BINARY}/out/"
-
-TARGET_HOST="www.batfish.org"
 
 # copy the pieces to the target host
 rsync -rvzL ${SRC_OUTDIR} ${TARGET_HOST}:${DST_OUTDIR} 
