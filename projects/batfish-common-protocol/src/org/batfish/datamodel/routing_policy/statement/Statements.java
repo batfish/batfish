@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -19,7 +21,10 @@ public enum Statements {
    SetDefaultActionAccept,
    SetDefaultActionReject,
    SetLocalDefaultActionAccept,
-   SetLocalDefaultActionReject;
+   SetLocalDefaultActionReject,
+   SetReadIntermediateBgpAttributes,
+   SetWriteIntermediateBgpAttributes,
+   UnsetWriteIntermediateBgpAttributes;
 
    public static class StaticStatement extends Statement {
       /**
@@ -106,6 +111,25 @@ public enum Statements {
             environment.setLocalDefaultAction(false);
             break;
 
+         case SetReadIntermediateBgpAttributes:
+            environment.setReadFromIntermediateBgpAttributes(true);
+            break;
+
+         case SetWriteIntermediateBgpAttributes:
+            if (environment.getIntermediateBgpAttributes() == null) {
+               BgpRoute.Builder ir = new BgpRoute.Builder();
+               environment.setIntermediateBgpAttributes(ir);
+               AbstractRoute or = environment.getOriginalRoute();
+               ir.setMetric(or.getMetric());
+               ir.setTag(or.getTag());
+            }
+            environment.setWriteToIntermediateBgpAttributes(true);
+            break;
+
+         case UnsetWriteIntermediateBgpAttributes:
+            environment.setWriteToIntermediateBgpAttributes(false);
+            break;
+
          default:
             break;
          }
@@ -120,6 +144,11 @@ public enum Statements {
       @Override
       public int hashCode() {
          return _type.hashCode();
+      }
+
+      @Override
+      public String toString() {
+         return _type.toString();
       }
 
    }

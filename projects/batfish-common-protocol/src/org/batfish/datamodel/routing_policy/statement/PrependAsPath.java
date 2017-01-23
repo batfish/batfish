@@ -57,10 +57,18 @@ public class PrependAsPath extends Statement {
       BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment
             .getOutputRoute();
       AsPath asPath = bgpRouteBuilder.getAsPath();
+      AsPath iAsPath = null;
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+         iAsPath = ir.getAsPath();
+      }
       for (Integer as : toPrepend) {
          AsSet asSet = new AsSet();
          asSet.add(as);
          asPath.add(0, asSet);
+         if (iAsPath != null) {
+            iAsPath.add(0, asSet);
+         }
       }
       Result result = new Result();
       return result;

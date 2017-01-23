@@ -54,6 +54,10 @@ public class AddCommunity extends Statement {
             .getOutputRoute();
       CommunitySet communities = _expr.communities(environment);
       bgpRoute.getCommunities().addAll(communities);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes().getCommunities()
+               .addAll(communities);
+      }
       Result result = new Result();
       return result;
    }

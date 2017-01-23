@@ -73,6 +73,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -128,8 +129,16 @@ public class CiscoConfiguration extends VendorConfiguration {
    }
 
    static String toJavaRegex(String ciscoRegex) {
+      String withoutQuotes;
+      if (ciscoRegex.charAt(0) == '"'
+            && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+         withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+      }
+      else {
+         withoutQuotes = ciscoRegex;
+      }
       String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-      String output = ciscoRegex.replaceAll("_", underscoreReplacement);
+      String output = withoutQuotes.replaceAll("_", underscoreReplacement);
       return output;
    }
 
@@ -276,6 +285,19 @@ public class CiscoConfiguration extends VendorConfiguration {
       _vrfs = new TreeMap<>();
       _vrfs.put(Configuration.DEFAULT_VRF_NAME,
             new Vrf(Configuration.DEFAULT_VRF_NAME));
+   }
+
+   private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+         BooleanExpr expr) {
+      WithEnvironmentExpr we = new WithEnvironmentExpr();
+      we.setExpr(expr);
+      we.getPreStatements().add(
+            Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
+      we.getPostTrueStatements().add(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
+      we.getPostStatements().add(
+            Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
+      return we;
    }
 
    private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -939,6 +961,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
       Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
 
+      List<BooleanExpr> attributeMapPrefilters = new ArrayList<>();
+
       // add generated routes for aggregate ipv4 addresses
       for (Entry<Prefix, BgpAggregateIpv4Network> e : proc
             .getAggregateNetworks().entrySet()) {
@@ -978,6 +1002,21 @@ public class CiscoConfiguration extends VendorConfiguration {
          if (attributeMapName != null) {
             RouteMap attributeMap = _routeMaps.get(attributeMapName);
             if (attributeMap != null) {
+               // need to apply attribute changes if this specific route is
+               // matched
+               Conjunction applyCurrentAggregateAttributesConditions = new Conjunction();
+               applyCurrentAggregateAttributesConditions.getConjuncts()
+                     .add(new MatchPrefixSet(new DestinationNetwork(),
+                           new ExplicitPrefixSet(
+                                 new PrefixSpace(Collections.singleton(
+                                       new PrefixRange(prefix.toString()))))));
+               applyCurrentAggregateAttributesConditions.getConjuncts()
+                     .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(attributeMapName));
+               applyCurrentAggregateAttributesConditions.getConjuncts().add(we);
+               attributeMapPrefilters
+                     .add(applyCurrentAggregateAttributesConditions);
                attributeMap.getReferers().put(aggNet,
                      "attribute-map of aggregate route: " + prefix.toString());
                gr.setAttributePolicy(attributeMapName);
@@ -1093,6 +1132,8 @@ public class CiscoConfiguration extends VendorConfiguration {
       preFilter.getTrueStatements()
             .add(Statements.ReturnTrue.toStaticStatement());
 
+      preFilterConditions.getDisjuncts().addAll(attributeMapPrefilters);
+
       // create redistribution origination policies
       // redistribute static
       BgpRedistributionPolicy redistributeStaticPolicy = proc
@@ -1109,7 +1150,9 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (redistributeStaticRouteMap != null) {
                redistributeStaticRouteMap.getReferers().put(proc,
                      "static redistribution route-map");
-               exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               exportStaticConditions.getConjuncts().add(we);
             }
             else {
                undefined(
@@ -1136,8 +1179,9 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (redistributeConnectedRouteMap != null) {
                redistributeConnectedRouteMap.getReferers().put(proc,
                      "connected redistribution route-map");
-               exportConnectedConditions.getConjuncts()
-                     .add(new CallExpr(mapName));
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               exportConnectedConditions.getConjuncts().add(we);
             }
             else {
                undefined(
@@ -2521,9 +2565,22 @@ public class CiscoConfiguration extends VendorConfiguration {
          String clausePolicyName = getRouteMapClausePolicyName(map,
                clauseNumber);
          Conjunction conj = new Conjunction();
+         // match ipv4s must be disjoined with match ipv6
+         Disjunction matchIpOrPrefix = new Disjunction();
          for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
             BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
-            conj.getConjuncts().add(matchExpr);
+            if (rmMatch instanceof RouteMapMatchIpAccessListLine
+                  || rmMatch instanceof RouteMapMatchIpPrefixListLine
+                  || rmMatch instanceof RouteMapMatchIpv6AccessListLine
+                  || rmMatch instanceof RouteMapMatchIpv6PrefixListLine) {
+               matchIpOrPrefix.getDisjuncts().add(matchExpr);
+            }
+            else {
+               conj.getConjuncts().add(matchExpr);
+            }
+         }
+         if (!matchIpOrPrefix.getDisjuncts().isEmpty()) {
+            conj.getConjuncts().add(matchIpOrPrefix);
          }
          If ifExpr = new If();
          clauses.put(clauseNumber, ifExpr);

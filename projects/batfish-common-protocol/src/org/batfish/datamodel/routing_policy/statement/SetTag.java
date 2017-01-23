@@ -51,6 +51,9 @@ public class SetTag extends Statement {
       Result result = new Result();
       int tag = _tag.evaluate(environment);
       environment.getOutputRoute().setTag(tag);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes().setTag(tag);
+      }
       return result;
    }
 

@@ -54,6 +54,10 @@ public class SetLocalPreference extends Statement {
             .getOutputRoute();
       int localPreference = _localPreference.evaluate(environment);
       bgpBuilder.setLocalPreference(localPreference);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes()
+               .setLocalPreference(localPreference);
+      }
       return result;
    }
 

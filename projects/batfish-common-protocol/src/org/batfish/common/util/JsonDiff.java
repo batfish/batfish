@@ -16,18 +16,21 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonDiff {
 
    public static final String ADDED_ITEM_CODE = "ADDED :: ";
    public static final String CHANGED_ITEM_BASE = "BASE";
-   public static final String CHANGED_ITEM_DELTA = "DELTA";
    public static final String CHANGED_ITEM_CODE = "CHANGED :: ";
+   public static final String CHANGED_ITEM_DELTA = "DELTA";
    public static final String COMMON_ITEM_CODE = "COMMON :: ";
    public static final String REMOVED_ITEM_CODE = "REMOVED :: ";
-   
+
+   public static String getStringWithoutCode(String key) {
+      String[] words = key.split(" :: ");
+      return words[1];
+   }
+
    private final SortedMap<String, Object> _data;
 
    public JsonDiff(JSONArray lhsArray, JSONArray rhsArray)
@@ -90,15 +93,15 @@ public class JsonDiff {
                            + rhsClass.getCanonicalName() + "'");
             }
             if (!lhsCurrentElem.equals(rhsCurrentElem)) {
-//               String removedIndex = CHANGED_ITEM_BASE_CODE + i;
-//               String addedIndex = CHANGED_ITEM_DELTA_CODE + i;
-//               _data.put(removedIndex, lhsCurrentElem);
-//               _data.put(addedIndex, rhsCurrentElem);
+               // String removedIndex = CHANGED_ITEM_BASE_CODE + i;
+               // String addedIndex = CHANGED_ITEM_DELTA_CODE + i;
+               // _data.put(removedIndex, lhsCurrentElem);
+               // _data.put(addedIndex, rhsCurrentElem);
                String key = CHANGED_ITEM_CODE + i;
                SortedMap<String, Object> value = new TreeMap<>();
                value.put(CHANGED_ITEM_BASE, lhsCurrentElem);
                value.put(CHANGED_ITEM_DELTA, rhsCurrentElem);
-               _data.put(key, value);               
+               _data.put(key, value);
             }
          }
       }
@@ -198,15 +201,15 @@ public class JsonDiff {
                               + rhsClass.getCanonicalName() + "'");
                }
                if (!lhsValue.equals(rhsValue)) {
-//                  String removedKey = CHANGED_ITEM_BASE_CODE + commonKey;
-//                  String addedKey = CHANGED_ITEM_DELTA_CODE + commonKey;
-//                  _data.put(removedKey, lhsValue);
-//                  _data.put(addedKey, rhsValue);
+                  // String removedKey = CHANGED_ITEM_BASE_CODE + commonKey;
+                  // String addedKey = CHANGED_ITEM_DELTA_CODE + commonKey;
+                  // _data.put(removedKey, lhsValue);
+                  // _data.put(addedKey, rhsValue);
                   String key = CHANGED_ITEM_CODE + commonKey;
                   SortedMap<String, Object> value = new TreeMap<>();
                   value.put(CHANGED_ITEM_BASE, lhsValue);
                   value.put(CHANGED_ITEM_DELTA, rhsValue);
-                  _data.put(key, value);               
+                  _data.put(key, value);
                }
             }
          }
@@ -255,11 +258,6 @@ public class JsonDiff {
 
    public String prettyPrint(String prefixStr) {
       return PrettyPrinter.print(prefixStr, this);
-   }
-   
-   public static String getStringWithoutCode(String key) {
-      String[] words = key.split(" :: ");
-      return words[1];
    }
 
 }

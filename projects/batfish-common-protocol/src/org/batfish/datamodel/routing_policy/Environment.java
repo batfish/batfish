@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -24,6 +25,8 @@ public class Environment {
 
    private boolean _error;
 
+   private BgpRoute.Builder _intermediateBgpAttributes;
+
    private boolean _localDefaultAction;
 
    private final AbstractRoute _originalRoute;
@@ -34,9 +37,13 @@ public class Environment {
 
    private final Ip _peerAddress;
 
+   private boolean _readFromIntermediateBgpAttributes;
+
    private final boolean _useOutputAttributes;
 
    private Vrf _vrf;
+
+   private boolean _writeToIntermediateBgpAttributes;
 
    public Environment(Configuration configuration, String vrf,
          AbstractRoute originalRoute, AbstractRoute6 originalRoute6,
@@ -80,6 +87,10 @@ public class Environment {
       return _error;
    }
 
+   public BgpRoute.Builder getIntermediateBgpAttributes() {
+      return _intermediateBgpAttributes;
+   }
+
    public boolean getLocalDefaultAction() {
       return _localDefaultAction;
    }
@@ -100,12 +111,20 @@ public class Environment {
       return _peerAddress;
    }
 
+   public boolean getReadFromIntermediateBgpAttributes() {
+      return _readFromIntermediateBgpAttributes;
+   }
+
    public boolean getUseOutputAttributes() {
       return _useOutputAttributes;
    }
 
    public Vrf getVrf() {
       return _vrf;
+   }
+
+   public boolean getWriteToIntermediateBgpAttributes() {
+      return _writeToIntermediateBgpAttributes;
    }
 
    public void setBuffered(boolean buffered) {
@@ -132,8 +151,23 @@ public class Environment {
       _error = error;
    }
 
+   public void setIntermediateBgpAttributes(
+         BgpRoute.Builder intermediateBgpAttributes) {
+      _intermediateBgpAttributes = intermediateBgpAttributes;
+   }
+
    public void setLocalDefaultAction(boolean localDefaultAction) {
       _localDefaultAction = localDefaultAction;
+   }
+
+   public void setReadFromIntermediateBgpAttributes(
+         boolean readFromIntermediateBgpAttributes) {
+      _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
+   }
+
+   public void setWriteToIntermediateBgpAttributes(
+         boolean writeToIntermediateBgpAttributes) {
+      _writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
    }
 
 }

@@ -55,6 +55,9 @@ public class SetCommunity extends Statement {
             .getOutputRoute();
       CommunitySet communities = _expr.communities(environment);
       bgpRoute.setCommunities(communities);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes().setCommunities(communities);
+      }
       return result;
    }
 
