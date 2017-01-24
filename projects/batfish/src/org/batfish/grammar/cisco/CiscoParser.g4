@@ -814,6 +814,7 @@ l_null
       | LOGOUT_WARNING
       | MODEM
       | NOTIFY
+      | PASSWORD
       | PRIVILEGE
       | ROTARY
       | SESSION_DISCONNECT_WARNING

@@ -3009,6 +3009,11 @@ FILE_SIZE
    'file-size'
 ;
 
+FILE_TRANSFER
+:
+    'file-transfer'
+;
+
 FILTER_LIST
 :
    'filter-list'
@@ -8145,6 +8150,11 @@ TFTP_SERVER
 :
    'tftp-server'
 ;
+
+TFTP_SERVER_LIST
+:
+    'tftp-server-list'
+; 
 
 THEN
 :

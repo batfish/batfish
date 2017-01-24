@@ -54,7 +54,7 @@ ss_host
       ip4 = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
       | host = variable
-   )
+   )   
    (
       ss_host_null
       | ss_host_use_vrf
@@ -67,6 +67,7 @@ ss_host_null
       INFORMS
       | TRAPS
       | VERSION
+      | variable
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -90,6 +91,7 @@ ss_null
       | CONTACT
       | CONTEXT
       | ENGINEID
+      | FILE_TRANSFER
       | GLOBALENFORCEPRIV
       | GROUP
       | IFINDEX
@@ -103,6 +105,7 @@ ss_null
       | QUEUE_LENGTH
       | SOURCE_INTERFACE
       | TCP_SESSION
+      | TFTP_SERVER_LIST
       | TRAP
       | TRAPS
       | USER
