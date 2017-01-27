@@ -39,12 +39,17 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.main.Warnings;
 import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
+
+   private static final boolean DEFAULT_VRRP_PREEMPT = true;
+
+   private static final int DEFAULT_VRRP_PRIORITY = 100;
 
    private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(
          Prefix.ZERO);
@@ -1432,6 +1437,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Zone _currentToZone;
 
+   private VrrpGroup _currentVrrpGroup;
+
    private Zone _currentZone;
 
    private FirewallFilter _currentZoneInboundFilter;
@@ -1598,6 +1605,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       allPrefixes.add(prefix);
       Ip ip = prefix.getAddress();
       _currentInterface.getAllPrefixIps().add(ip);
+   }
+
+   @Override
+   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
+      int group = toInt(ctx.number);
+      VrrpGroup currentVrrpGroup = _currentInterface.getVrrpGroups().get(group);
+      if (currentVrrpGroup == null) {
+         currentVrrpGroup = new VrrpGroup(group);
+         currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
+         currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
+         _currentInterface.getVrrpGroups().put(group, currentVrrpGroup);
+      }
+      _currentVrrpGroup = currentVrrpGroup;
    }
 
    @Override
@@ -2728,6 +2748,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitIfia_primary(Ifia_primaryContext ctx) {
       _currentInterface.setPrimaryPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
+   public void exitIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
+      _currentVrrpGroup = null;
+   }
+
+   @Override
+   public void exitIfiav_preempt(Ifiav_preemptContext ctx) {
+      _currentVrrpGroup.setPreempt(true);
+   }
+
+   @Override
+   public void exitIfiav_priority(Ifiav_priorityContext ctx) {
+      int priority = toInt(ctx.priority);
+      _currentVrrpGroup.setPriority(priority);
+   }
+
+   @Override
+   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
+      Ip virtualAddress = new Ip(ctx.IP_ADDRESS().getText());
+      int prefixLength = _currentInterfacePrefix.getPrefixLength();
+      _currentVrrpGroup
+            .setVirtualAddress(new Prefix(virtualAddress, prefixLength));
    }
 
    @Override

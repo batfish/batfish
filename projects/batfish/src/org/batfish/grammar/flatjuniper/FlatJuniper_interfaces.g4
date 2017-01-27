@@ -448,8 +448,9 @@ ifia_vrrp_group
 :
    VRRP_GROUP
    (
-      name = variable
+      number = DEC
       | WILDCARD
+      | name = variable
    )
    (
       ifiav_accept_data
@@ -494,7 +495,7 @@ ifiav_preempt
 
 ifiav_priority
 :
-   PRIORITY DEC
+   PRIORITY priority = DEC
 ;
 
 ifiav_track

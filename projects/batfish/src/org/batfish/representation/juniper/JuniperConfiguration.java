@@ -942,6 +942,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             name, _c);
+      newIface.setVrrpGroups(iface.getVrrpGroups());
       newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
       Zone zone = _interfaceZones.get(iface);
       if (zone != null) {
