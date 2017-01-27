@@ -6,114 +6,91 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-ait_apply_groups
+o_area
 :
-   s_apply_groups
+   AREA
+   (
+      area = IP_ADDRESS
+      | WILDCARD
+   )
+   (
+      apply
+      | oa_area_range
+      | oa_interface
+      | oa_label_switched_path
+      | oa_nssa
+      | oa_null
+      | oa_stub
+   )
 ;
 
-ait_apply_groups_except
+o_common
 :
-   s_apply_groups_except
+   apply
+   | o_area
+   | o_export
+   | o_external_preference
+   | o_import
+   | o_no_active_backbone
+   | o_null
+   | o_rib_group
+   | o_traffic_engineering
 ;
 
-ait_dead_interval
+o_export
 :
-   DEAD_INTERVAL DEC
+   EXPORT name = variable
 ;
 
-ait_disable
+o_external_preference
 :
-   DISABLE
+   EXTERNAL_PREFERENCE DEC
 ;
 
-ait_hello_interval
+o_import
 :
-   HELLO_INTERVAL DEC
+   IMPORT name = variable
 ;
 
-ait_interface_type
+o_no_active_backbone
 :
-   INTERFACE_TYPE P2P
+   NO_ACTIVE_BACKBONE
 ;
 
-ait_ldp_synchronization
-:
-   LDP_SYNCHRONIZATION
-;
-
-ait_link_protection
-:
-   LINK_PROTECTION
-;
-
-ait_metric
-:
-   METRIC DEC
-;
-
-ait_null
+o_null
 :
    (
-      AUTHENTICATION
-      | BFD_LIVENESS_DETECTION
-      | NO_NEIGHBOR_DOWN_NOTIFICATION
-      | POLL_INTERVAL
-   ) s_null_filler
+      OVERLOAD
+      | REFERENCE_BANDWIDTH
+      | TRACEOPTIONS
+   ) null_filler
 ;
 
-ait_passive
+o_rib_group
 :
-   PASSIVE
+   RIB_GROUP name = variable
 ;
 
-ait_priority
+o_traffic_engineering
 :
-   PRIORITY DEC
+   TRAFFIC_ENGINEERING
+   (
+      apply
+      | ot_credibility_protocol_preference
+      | ot_shortcuts
+   )
 ;
 
-ait_te_metric
+oa_area_range
 :
-   TE_METRIC DEC
+   AREA_RANGE IP_PREFIX
+   (
+      apply
+      | oaa_restrict
+   )
 ;
 
-alt_metric
-:
-   METRIC DEC
-;
-
-art_restrict
-:
-   RESTRICT
-;
-
-ast_no_summaries
-:
-   NO_SUMMARIES
-;
-
-at_apply_groups
-:
-   s_apply_groups
-;
-
-at_apply_groups_except
-:
-   s_apply_groups_except
-;
-
-at_area_range
-:
-   AREA_RANGE IP_PREFIX at_area_range_tail
-;
-
-at_area_range_tail
-:
-// intentional blank
-
-   | art_restrict
-;
-
-at_interface
+oa_interface
 :
    INTERFACE
    (
@@ -121,81 +98,158 @@ at_interface
       | id = interface_id
       | ip = IP_ADDRESS
       | WILDCARD
-   ) at_interface_tail
+   )
+   (
+      apply
+      | oai_dead_interval
+      | oai_disable
+      | oai_hello_interval
+      | oai_interface_type
+      | oai_ldp_synchronization
+      | oai_link_protection
+      | oai_metric
+      | oai_null
+      | oai_passive
+      | oai_priority
+      | oai_te_metric
+   )
 ;
 
-at_interface_tail
-:
-// intentional blank
-
-   | ait_apply_groups
-   | ait_apply_groups_except
-   | ait_dead_interval
-   | ait_disable
-   | ait_hello_interval
-   | ait_interface_type
-   | ait_ldp_synchronization
-   | ait_link_protection
-   | ait_metric
-   | ait_null
-   | ait_passive
-   | ait_priority
-   | ait_te_metric
-;
-
-at_label_switched_path
+oa_label_switched_path
 :
    LABEL_SWITCHED_PATH
    (
       name = variable
       | WILDCARD
-   ) at_label_switched_path_tail
+   )
+   (
+      apply
+      | oal_metric
+   )
 ;
 
-at_label_switched_path_tail
+oa_nssa
 :
-// intentional blank
-
-   | alt_metric
+   NSSA
+   (
+      apply
+      | oan_area_range
+      | oan_default_lsa
+      | oan_no_summaries
+   )
 ;
 
-at_nssa
-:
-   NSSA at_nssa_tail
-;
-
-at_nssa_tail
-:
-// intentional blank
-
-   | nssat_area_range
-   | nssat_default_lsa
-   | nssat_no_summaries
-;
-
-at_null
+oa_null
 :
    (
       AUTHENTICATION_TYPE
-   ) s_null_filler
+   ) null_filler
 ;
 
-at_stub
+oa_stub
 :
-   STUB at_stub_tail
+   STUB
+   (
+      oas_no_summaries
+   )
 ;
 
-at_stub_tail
+oaa_restrict
 :
-   ast_no_summaries
+   RESTRICT
 ;
 
-dlsat_default_metric
+oai_dead_interval
+:
+   DEAD_INTERVAL DEC
+;
+
+oai_disable
+:
+   DISABLE
+;
+
+oai_hello_interval
+:
+   HELLO_INTERVAL DEC
+;
+
+oai_interface_type
+:
+   INTERFACE_TYPE P2P
+;
+
+oai_ldp_synchronization
+:
+   LDP_SYNCHRONIZATION
+;
+
+oai_link_protection
+:
+   LINK_PROTECTION
+;
+
+oai_metric
+:
+   METRIC DEC
+;
+
+oai_null
+:
+   (
+      AUTHENTICATION
+      | BFD_LIVENESS_DETECTION
+      | NO_NEIGHBOR_DOWN_NOTIFICATION
+      | POLL_INTERVAL
+   ) null_filler
+;
+
+oai_passive
+:
+   PASSIVE
+;
+
+oai_priority
+:
+   PRIORITY DEC
+;
+
+oai_te_metric
+:
+   TE_METRIC DEC
+;
+
+oal_metric
+:
+   METRIC DEC
+;
+
+oan_area_range
+:
+   oa_area_range
+;
+
+oan_default_lsa
+:
+   DEFAULT_LSA
+   (
+      oand_default_metric
+      | oand_metric_type
+      | oand_type_7
+   )
+;
+
+oan_no_summaries
+:
+   NO_SUMMARIES
+;
+
+oand_default_metric
 :
    DEFAULT_METRIC DEC
 ;
 
-dlsat_metric_type
+oand_metric_type
 :
    METRIC_TYPE
    (
@@ -204,135 +258,32 @@ dlsat_metric_type
    )
 ;
 
-dlsat_type_7
+oand_type_7
 :
    TYPE_7
 ;
 
-nssat_area_range
-:
-   at_area_range
-;
-
-nssat_default_lsa
-:
-   DEFAULT_LSA nssat_default_lsa_tail
-;
-
-nssat_default_lsa_tail
-:
-   dlsat_default_metric
-   | dlsat_metric_type
-   | dlsat_type_7
-;
-
-nssat_no_summaries
+oas_no_summaries
 :
    NO_SUMMARIES
 ;
 
-ot_apply_groups
-:
-   s_apply_groups
-;
-
-ot_area
-:
-   AREA
-   (
-      area = IP_ADDRESS
-      | WILDCARD
-   ) ot_area_tail
-;
-
-ot_area_tail
-:
-   at_apply_groups
-   | at_apply_groups_except
-   | at_area_range
-   | at_interface
-   | at_label_switched_path
-   | at_nssa
-   | at_null
-   | at_stub
-;
-
-ot_export
-:
-   EXPORT name = variable
-;
-
-ot_external_preference
-:
-   EXTERNAL_PREFERENCE DEC
-;
-
-ot_import
-:
-   IMPORT name = variable
-;
-
-ot_no_active_backbone
-:
-   NO_ACTIVE_BACKBONE
-;
-
-ot_null
-:
-   (
-      OVERLOAD
-      | REFERENCE_BANDWIDTH
-      | TRACEOPTIONS
-   ) s_null_filler
-;
-
-ot_rib_group
-:
-   RIB_GROUP name = variable
-;
-
-ot_traffic_engineering
-:
-   TRAFFIC_ENGINEERING ot_traffic_engineering_tail
-;
-
-ot_traffic_engineering_tail
-:
-// intentional blank
-
-   | otet_credibility_protocol_preference
-   | otet_shortcuts
-;
-
-otet_credibility_protocol_preference
+ot_credibility_protocol_preference
 :
    CREDIBILITY_PROTOCOL_PREFERENCE
 ;
 
-otet_shortcuts
+ot_shortcuts
 :
    SHORTCUTS
 ;
 
-s_protocols_ospf
+p_ospf
 :
-   OSPF s_protocols_ospf_tail
+   OSPF o_common
 ;
 
-s_protocols_ospf_tail
+p_ospf3
 :
-   ot_apply_groups
-   | ot_area
-   | ot_export
-   | ot_external_preference
-   | ot_import
-   | ot_no_active_backbone
-   | ot_null
-   | ot_rib_group
-   | ot_traffic_engineering
-;
-
-s_protocols_ospf3
-:
-   OSPF3 s_protocols_ospf_tail
+   OSPF3 o_common
 ;

@@ -52,7 +52,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPlt_apply_path(Plt_apply_pathContext ctx) {
+   public void enterPoplt_apply_path(Poplt_apply_pathContext ctx) {
       HierarchyPath applyPathPath = new HierarchyPath();
       String pathQuoted = ctx.path.getText();
       String pathWithoutQuotes = pathQuoted.substring(1,

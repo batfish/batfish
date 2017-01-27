@@ -3286,7 +3286,7 @@ PER_PACKET
    'per-packet'
 ;
 
-PER__UNIT_SCHEDULER
+PER_UNIT_SCHEDULER
 :
    'per-unit-scheduler'
 ;
