@@ -6,50 +6,12 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-abast_address
-:
-   ADDRESS name = variable
-;
-
-abast_address_set
-:
-   ADDRESS_SET name = variable
-;
-
-abt_address
-:
-   ADDRESS name = variable abt_address_tail
-;
-
-abt_address_tail
-:
-   apply
-   | IP_PREFIX
-;
-
-abt_address_set
-:
-   ADDRESS_SET name = variable abt_address_set_tail
-;
-
-abt_address_set_tail
-:
-   apply
-   | abast_address
-   | abast_address_set
-;
-
 address_specifier
 :
    ANY
    | ANY_IPV4
    | ANY_IPV6
    | name = variable
-;
-
-certt_local
-:
-   LOCAL name = variable cert = DOUBLE_QUOTED_STRING
 ;
 
 dh_group
@@ -67,25 +29,6 @@ encryption_algorithm
    | AES_192_CBC
    | AES_256_CBC
    | DES_CBC
-;
-
-gdt_connections_limit
-:
-   CONNECTIONS_LIMIT limit = DEC
-;
-
-gdt_hostname
-:
-   HOSTNAME name = variable
-;
-
-gdt_ike_user_type
-:
-   IKE_USER_TYPE
-   (
-      GROUP_IKE_ID
-      | SHARED_IKE_ID
-   )
 ;
 
 hib_protocol
@@ -143,16 +86,6 @@ hib_system_service
    | XNM_SSL
 ;
 
-hibt_protocols
-:
-   PROTOCOLS hib_protocol
-;
-
-hibt_system_services
-:
-   SYSTEM_SERVICES hib_system_service
-;
-
 ike_authentication_algorithm
 :
    MD5
@@ -168,176 +101,6 @@ ike_authentication_method
    | RSA_SIGNATURES
 ;
 
-ikegt_address
-:
-   ADDRESS IP_ADDRESS
-;
-
-ikegt_dead_peer_detection
-:
-   DEAD_PEER_DETECTION ALWAYS_SEND?
-;
-
-ikegt_dynamic
-:
-   DYNAMIC ikegt_dynamic_tail
-;
-
-ikegt_dynamic_tail
-:
-   apply
-   | gdt_connections_limit
-   | gdt_hostname
-   | gdt_ike_user_type
-;
-
-ikegt_external_interface
-:
-   EXTERNAL_INTERFACE interface_id
-;
-
-ikegt_ike_policy
-:
-   IKE_POLICY name = variable
-;
-
-ikegt_local_address
-:
-   LOCAL_ADDRESS IP_ADDRESS
-;
-
-ikegt_local_identity
-:
-   LOCAL_IDENTITY ikegt_local_identity_tail
-;
-
-ikegt_local_identity_tail
-:
-   lit_inet
-;
-
-ikegt_no_nat_traversal
-:
-   NO_NAT_TRAVERSAL
-;
-
-ikegt_version
-:
-   VERSION V1_ONLY
-;
-
-ikegt_xauth
-:
-   XAUTH ACCESS_PROFILE name = variable
-;
-
-ikeprt_authentication_algorithm
-:
-   AUTHENTICATION_ALGORITHM ike_authentication_algorithm
-;
-
-ikeprt_authentication_method
-:
-   AUTHENTICATION_METHOD ike_authentication_method
-;
-
-ikeprt_description
-:
-   DESCRIPTION s_null_filler
-;
-
-ikeprt_dh_group
-:
-   DH_GROUP dh_group
-;
-
-ikeprt_encryption_algorithm
-:
-   ENCRYPTION_ALGORITHM encryption_algorithm
-;
-
-ikeprt_lifetime_seconds
-:
-   LIFETIME_SECONDS seconds = DEC
-;
-
-ikept_description
-:
-   DESCRIPTION s_null_filler
-;
-
-ikept_mode
-:
-   MODE
-   (
-      AGGRESSIVE
-      | MAIN
-   )
-;
-
-ikept_pre_shared_key
-:
-   PRE_SHARED_KEY ASCII_TEXT key = DOUBLE_QUOTED_STRING
-;
-
-ikept_proposal_set
-:
-   PROPOSAL_SET proposal_set_type
-;
-
-ikept_proposals
-:
-   PROPOSALS name = variable
-;
-
-iket_gateway
-:
-   GATEWAY name = variable iket_gateway_tail
-;
-
-iket_gateway_tail
-:
-   ikegt_address
-   | ikegt_dead_peer_detection
-   | ikegt_dynamic
-   | ikegt_external_interface
-   | ikegt_ike_policy
-   | ikegt_local_address
-   | ikegt_local_identity
-   | ikegt_no_nat_traversal
-   | ikegt_version
-   | ikegt_xauth
-;
-
-iket_policy
-:
-   POLICY name = variable iket_policy_tail
-;
-
-iket_policy_tail
-:
-   ikept_description
-   | ikept_mode
-   | ikept_pre_shared_key
-   | ikept_proposal_set
-   | ikept_proposals
-;
-
-iket_proposal
-:
-   PROPOSAL name = variable iket_proposal_tail
-;
-
-iket_proposal_tail
-:
-   ikeprt_authentication_algorithm
-   | ikeprt_authentication_method
-   | ikeprt_description
-   | ikeprt_dh_group
-   | ikeprt_encryption_algorithm
-   | ikeprt_lifetime_seconds
-;
-
 ipsec_authentication_algorithm
 :
    HMAC_MD5_96
@@ -348,173 +111,6 @@ ipsec_protocol
 :
    AH
    | ESP
-;
-
-ipsecprt_authentication_algorithm
-:
-   AUTHENTICATION_ALGORITHM ipsec_authentication_algorithm
-;
-
-ipsecprt_description
-:
-   DESCRIPTION s_null_filler
-;
-
-ipsecprt_encryption_algorithm
-:
-   ENCRYPTION_ALGORITHM encryption_algorithm
-;
-
-ipsecprt_lifetime_kilobytes
-:
-   LIFETIME_KILOBYTES kilobytes = DEC
-;
-
-ipsecprt_lifetime_seconds
-:
-   LIFETIME_SECONDS seconds = DEC
-;
-
-ipsecprt_protocol
-:
-   PROTOCOL ipsec_protocol
-;
-
-ipsecpt_perfect_forward_secrecy
-:
-   PERFECT_FORWARD_SECRECY KEYS dh_group
-;
-
-ipsecpt_proposal_set
-:
-   PROPOSAL_SET proposal_set_type
-;
-
-ipsecpt_proposals
-:
-   PROPOSALS name = variable
-;
-
-ipsect_policy
-:
-   POLICY name = variable ipsect_policy_tail
-;
-
-ipsect_policy_tail
-:
-   ipsecpt_perfect_forward_secrecy
-   | ipsecpt_proposal_set
-   | ipsecpt_proposals
-;
-
-ipsect_proposal
-:
-   PROPOSAL name = variable ipsect_proposal_tail
-;
-
-ipsect_proposal_tail
-:
-   apply
-   | ipsecprt_authentication_algorithm
-   | ipsecprt_description
-   | ipsecprt_encryption_algorithm
-   | ipsecprt_lifetime_kilobytes
-   | ipsecprt_lifetime_seconds
-   | ipsecprt_protocol
-;
-
-ipsect_vpn
-:
-   VPN name = variable ipsect_vpn_tail
-;
-
-ipsect_vpn_tail
-:
-   ipsecvt_bind_interface
-   | ipsecvt_df_bit
-   | ipsecvt_establish_tunnels
-   | ipsecvt_ike
-   | ipsecvt_vpn_monitor
-;
-
-ipsecvit_gateway
-:
-   GATEWAY name = variable
-;
-
-ipsecvit_ipsec_policy
-:
-   IPSEC_POLICY name = variable
-;
-
-ipsecvit_null
-:
-   (
-      NO_ANTI_REPLAY
-   ) s_null_filler
-;
-
-ipsecvit_proxy_identity
-:
-   PROXY_IDENTITY ipsecvit_proxy_identity_tail
-;
-
-ipsecvit_proxy_identity_tail
-:
-   pit_local
-   | pit_remote
-   | pit_service
-;
-
-ipsecvmt_destination_ip
-:
-   DESTINATION_IP IP_ADDRESS
-;
-
-ipsecvmt_source_interface
-:
-   SOURCE_INTERFACE interface_id
-;
-
-ipsecvt_bind_interface
-:
-   BIND_INTERFACE interface_id
-;
-
-ipsecvt_df_bit
-:
-   DF_BIT CLEAR
-;
-
-ipsecvt_establish_tunnels
-:
-   ESTABLISH_TUNNELS IMMEDIATELY
-;
-
-ipsecvt_ike
-:
-   IKE ipsecvt_ike_tail
-;
-
-ipsecvt_ike_tail
-:
-   ipsecvit_gateway
-   | ipsecvit_ipsec_policy
-   | ipsecvit_null
-   | ipsecvit_proxy_identity
-;
-
-ipsecvt_vpn_monitor
-:
-   VPN_MONITOR ipsecvt_vpn_monitor_tail
-;
-
-ipsecvt_vpn_monitor_tail
-:
-// intentional blank
-
-   | ipsecvmt_destination_ip
-   | ipsecvmt_source_interface
 ;
 
 junos_application
@@ -712,39 +308,83 @@ junos_application
    | JUNOS_YMSG
 ;
 
-lit_inet
-:
-   INET name = variable
-;
-
 nat_rule_set
 :
-   RULE_SET nat_rule_set_named
+   RULE_SET name = variable
+   (
+      rs_from
+      | rs_rule
+      | rs_to
+   )
 ;
 
-nat_rule_set_named
+proposal_set_type
 :
-   name = variable nat_rule_set_tail
+   BASIC
+   | COMPATIBLE
+   | STANDARD
 ;
 
-nat_rule_set_tail
+rs_from
 :
-   natrst_from
-   | natrst_rule
-   | natrst_to
+   FROM rsf_common
 ;
 
-natrsfromt_zone
+rs_rule
+:
+   RULE name = variable
+   (
+      rsr_description
+      | rsr_match
+      | rsr_then
+   )
+;
+
+rs_to
+:
+   TO rsf_common
+;
+
+rsf_common
+:
+   rsf_zone
+;
+
+rsf_zone
 :
    ZONE name = variable
 ;
 
-natrsrmt_destination_address
+rsr_description
+:
+   DESCRIPTION null_filler
+;
+
+rsr_match
+:
+   MATCH
+   (
+      rsrm_destination_address
+      | rsrm_destination_port
+      | rsrm_source_address
+   )
+;
+
+rsr_then
+:
+   THEN
+   (
+      rsrt_source_nat
+      | rsrt_static_nat
+   )
+;
+
+rsrm_destination_address
 :
    DESTINATION_ADDRESS IP_PREFIX
 ;
 
-natrsrmt_destination_port
+rsrm_destination_port
 :
    DESTINATION_PORT from = DEC
    (
@@ -752,185 +392,590 @@ natrsrmt_destination_port
    )?
 ;
 
-natrsrmt_source_address
+rsrm_source_address
 :
    SOURCE_ADDRESS IP_PREFIX
 ;
 
-natrsrt_description
+rsrt_source_nat
 :
-   DESCRIPTION s_null_filler
+   SOURCE_NAT
+   (
+      rsrts_interface
+      | rsrts_off
+      | rsrts_pool
+   )
 ;
 
-natrsrt_match
+rsrt_static_nat
 :
-   MATCH natrsrt_match_tail
+   STATIC_NAT
+   (
+      rsrtst_prefix
+   )
 ;
 
-natrsrt_match_tail
+rsrts_interface
 :
-   natrsrmt_destination_address
-   | natrsrmt_destination_port
-   | natrsrmt_source_address
+   INTERFACE
 ;
 
-natrsrt_then
+rsrts_off
 :
-   THEN natrsrt_then_tail
+   OFF
 ;
 
-natrsrt_then_tail
+rsrts_pool
 :
-   natrsrtt_source_nat
-   | natrsrtt_static_nat
+   POOL
+   (
+      rsrtsp_common
+      | rsrtsp_named
+   )
 ;
 
-natrsrtt_source_nat
-:
-   SOURCE_NAT natrsrtt_source_nat_tail
-;
-
-natrsrtt_source_nat_tail
-:
-   tsnt_interface
-   | tsnt_off
-   | tsnt_pool
-;
-
-natrsrtt_static_nat
-:
-   STATIC_NAT natrsrtt_static_nat_tail
-;
-
-natrsrtt_static_nat_tail
-:
-   stnt_prefix
-;
-
-natrst_from
-:
-   FROM natrst_from_tail
-;
-
-natrst_from_tail
-:
-   natrsfromt_zone
-;
-
-natrst_rule
-:
-   RULE natrst_rule_named
-;
-
-natrst_rule_named
-:
-   name = variable natrst_rule_tail
-;
-
-natrst_rule_tail
-:
-   natrsrt_description
-   | natrsrt_match
-   | natrsrt_then
-;
-
-natrst_to
-:
-   TO natrst_from_tail
-;
-
-natrst_to_tail
-:
-   natrstot_zone
-;
-
-natrstot_zone
-:
-   ZONE name = variable
-;
-
-natsoit_port_overloading
-:
-   PORT_OVERLOADING OFF
-;
-
-natsoit_port_overloading_factor
-:
-   PORT_OVERLOADING_FACTOR factor = DEC
-;
-
-natsot_interface
-:
-   INTERFACE natsot_interface_tail
-;
-
-natsot_interface_tail
-:
-   natsoit_port_overloading
-   | natsoit_port_overloading_factor
-;
-
-natsot_pool
-:
-   POOL name = variable natsot_pool_tail
-;
-
-natsot_pool_tail
-:
-   poolt_address
-   | poolt_description
-;
-
-natsot_port_randomization
-:
-   PORT_RANDOMIZATION DISABLE
-;
-
-natsot_rule_set
-:
-   nat_rule_set
-;
-
-natstt_rule_set
-:
-   nat_rule_set
-;
-
-natt_proxy_arp
-:
-   PROXY_ARP natt_proxy_arp_tail
-;
-
-natt_proxy_arp_tail
+rsrtsp_common
 :
    apply
-   | pat_interface
+   | rsrtsp_persistent_nat
 ;
 
-natt_source
+rsrtsp_named
 :
-   SOURCE natt_source_tail
+   name = variable rsrtsp_common
 ;
 
-natt_source_tail
+rsrtsp_persistent_nat
 :
-   natsot_interface
-   | natsot_pool
-   | natsot_port_randomization
-   | natsot_rule_set
+   PERSISTENT_NAT
+   (
+      apply
+      | rsrtspp_inactivity_timeout
+      | rsrtspp_max_session_number
+      | rsrtspp_permit
+   )
 ;
 
-natt_static
+rsrtspp_inactivity_timeout
 :
-   STATIC natt_static_tail
+   INACTIVITY_TIMEOUT seconds = DEC
 ;
 
-natt_static_tail
+rsrtspp_max_session_number
 :
-   natstt_rule_set
+   MAX_SESSION_NUMBER max = DEC
 ;
 
-pait_address
+rsrtspp_permit
+:
+   PERMIT
+   (
+      ANY_REMOTE_HOST
+      | TARGET_HOST
+      | TARGET_HOST_PORT
+   )
+;
+
+rsrtst_prefix
+:
+   PREFIX
+   (
+      rsrtstp_mapped_port
+      | rsrtstp_prefix
+   )
+;
+
+rsrtstp_mapped_port
+:
+   MAPPED_PORT low = DEC
+   (
+      TO high = DEC
+   )?
+;
+
+rsrtstp_prefix
+:
+   IP_PREFIX
+;
+
+s_security
+:
+   SECURITY
+   (
+      se_certificates
+      | se_ike
+      | se_ipsec
+      | se_nat
+      | se_null
+      | se_policies
+      | se_zones
+   )
+;
+
+se_certificates
+:
+   CERTIFICATES
+   (
+      sec_local
+   )
+;
+
+se_ike
+:
+   IKE
+   (
+      seik_gateway
+      | seik_policy
+      | seik_proposal
+   )
+;
+
+se_ipsec
+:
+   IPSEC
+   (
+      seip_policy
+      | seip_proposal
+      | seip_vpn
+   )
+;
+
+se_nat
+:
+   NAT
+   (
+      sen_proxy_arp
+      | sen_source
+      | sen_static
+   )
+;
+
+se_null
+:
+   (
+      ALG
+      | APPLICATION_TRACKING
+      | FLOW
+      | LOG
+      | SCREEN
+   ) null_filler
+;
+
+se_policies
+:
+   POLICIES
+   (
+      sep_default_policy
+      | sep_from_zone
+   )
+;
+
+se_zones
+:
+   ZONES
+   (
+      apply
+      | sez_security_zone
+   )
+;
+
+sec_local
+:
+   LOCAL name = variable cert = DOUBLE_QUOTED_STRING
+;
+
+seik_gateway
+:
+   GATEWAY name = variable
+   (
+      seikg_address
+      | seikg_dead_peer_detection
+      | seikg_dynamic
+      | seikg_external_interface
+      | seikg_ike_policy
+      | seikg_local_address
+      | seikg_local_identity
+      | seikg_no_nat_traversal
+      | seikg_version
+      | seikg_xauth
+   )
+;
+
+seik_policy
+:
+   POLICY name = variable
+   (
+      seikp_description
+      | seikp_mode
+      | seikp_pre_shared_key
+      | seikp_proposal_set
+      | seikp_proposals
+   )
+;
+
+seik_proposal
+:
+   PROPOSAL name = variable
+   (
+      seikpr_authentication_algorithm
+      | seikpr_authentication_method
+      | seikpr_description
+      | seikpr_dh_group
+      | seikpr_encryption_algorithm
+      | seikpr_lifetime_seconds
+   )
+;
+
+seikg_address
+:
+   ADDRESS IP_ADDRESS
+;
+
+seikg_dead_peer_detection
+:
+   DEAD_PEER_DETECTION ALWAYS_SEND?
+;
+
+seikg_dynamic
+:
+   DYNAMIC
+   (
+      apply
+      | seikgd_connections_limit
+      | seikgd_hostname
+      | seikgd_ike_user_type
+   )
+;
+
+seikg_external_interface
+:
+   EXTERNAL_INTERFACE interface_id
+;
+
+seikg_ike_policy
+:
+   IKE_POLICY name = variable
+;
+
+seikg_local_address
+:
+   LOCAL_ADDRESS IP_ADDRESS
+;
+
+seikg_local_identity
+:
+   LOCAL_IDENTITY
+   (
+      seikgl_inet
+   )
+;
+
+seikg_no_nat_traversal
+:
+   NO_NAT_TRAVERSAL
+;
+
+seikg_version
+:
+   VERSION V1_ONLY
+;
+
+seikg_xauth
+:
+   XAUTH ACCESS_PROFILE name = variable
+;
+
+seikgd_connections_limit
+:
+   CONNECTIONS_LIMIT limit = DEC
+;
+
+seikgd_hostname
+:
+   HOSTNAME name = variable
+;
+
+seikgd_ike_user_type
+:
+   IKE_USER_TYPE
+   (
+      GROUP_IKE_ID
+      | SHARED_IKE_ID
+   )
+;
+
+seikgl_inet
+:
+   INET name = variable
+;
+
+seikp_description
+:
+   DESCRIPTION null_filler
+;
+
+seikp_mode
+:
+   MODE
+   (
+      AGGRESSIVE
+      | MAIN
+   )
+;
+
+seikp_pre_shared_key
+:
+   PRE_SHARED_KEY ASCII_TEXT key = DOUBLE_QUOTED_STRING
+;
+
+seikp_proposal_set
+:
+   PROPOSAL_SET proposal_set_type
+;
+
+seikp_proposals
+:
+   PROPOSALS name = variable
+;
+
+seikpr_authentication_algorithm
+:
+   AUTHENTICATION_ALGORITHM ike_authentication_algorithm
+;
+
+seikpr_authentication_method
+:
+   AUTHENTICATION_METHOD ike_authentication_method
+;
+
+seikpr_description
+:
+   DESCRIPTION null_filler
+;
+
+seikpr_dh_group
+:
+   DH_GROUP dh_group
+;
+
+seikpr_encryption_algorithm
+:
+   ENCRYPTION_ALGORITHM encryption_algorithm
+;
+
+seikpr_lifetime_seconds
+:
+   LIFETIME_SECONDS seconds = DEC
+;
+
+seip_policy
+:
+   POLICY name = variable
+   (
+      seipp_perfect_forward_secrecy
+      | seipp_proposal_set
+      | seipp_proposals
+   )
+;
+
+seip_proposal
+:
+   PROPOSAL name = variable
+   (
+      apply
+      | seippr_authentication_algorithm
+      | seippr_description
+      | seippr_encryption_algorithm
+      | seippr_lifetime_kilobytes
+      | seippr_lifetime_seconds
+      | seippr_protocol
+   )
+;
+
+seip_vpn
+:
+   VPN name = variable
+   (
+      seipv_bind_interface
+      | seipv_df_bit
+      | seipv_establish_tunnels
+      | seipv_ike
+      | seipv_vpn_monitor
+   )
+;
+
+seipp_perfect_forward_secrecy
+:
+   PERFECT_FORWARD_SECRECY KEYS dh_group
+;
+
+seipp_proposal_set
+:
+   PROPOSAL_SET proposal_set_type
+;
+
+seipp_proposals
+:
+   PROPOSALS name = variable
+;
+
+seippr_authentication_algorithm
+:
+   AUTHENTICATION_ALGORITHM ipsec_authentication_algorithm
+;
+
+seippr_description
+:
+   DESCRIPTION null_filler
+;
+
+seippr_encryption_algorithm
+:
+   ENCRYPTION_ALGORITHM encryption_algorithm
+;
+
+seippr_lifetime_kilobytes
+:
+   LIFETIME_KILOBYTES kilobytes = DEC
+;
+
+seippr_lifetime_seconds
+:
+   LIFETIME_SECONDS seconds = DEC
+;
+
+seippr_protocol
+:
+   PROTOCOL ipsec_protocol
+;
+
+seipv_bind_interface
+:
+   BIND_INTERFACE interface_id
+;
+
+seipv_df_bit
+:
+   DF_BIT CLEAR
+;
+
+seipv_establish_tunnels
+:
+   ESTABLISH_TUNNELS IMMEDIATELY
+;
+
+seipv_ike
+:
+   IKE
+   (
+      seipvi_gateway
+      | seipvi_ipsec_policy
+      | seipvi_null
+      | seipvi_proxy_identity
+   )
+;
+
+seipv_vpn_monitor
+:
+   VPN_MONITOR
+   (
+      apply
+      | seipvv_destination_ip
+      | seipvv_source_interface
+   )
+;
+
+seipvi_gateway
+:
+   GATEWAY name = variable
+;
+
+seipvi_ipsec_policy
+:
+   IPSEC_POLICY name = variable
+;
+
+seipvi_null
+:
+   (
+      NO_ANTI_REPLAY
+   ) null_filler
+;
+
+seipvi_proxy_identity
+:
+   PROXY_IDENTITY
+   (
+      seipvip_local
+      | seipvip_remote
+      | seipvip_service
+   )
+;
+
+seipvip_local
+:
+   LOCAL IP_PREFIX
+;
+
+seipvip_remote
+:
+   REMOTE IP_PREFIX
+;
+
+seipvip_service
+:
+   SERVICE
+   (
+      ANY
+      | name = variable
+   )
+;
+
+seipvv_destination_ip
+:
+   DESTINATION_IP IP_ADDRESS
+;
+
+seipvv_source_interface
+:
+   SOURCE_INTERFACE interface_id
+;
+
+sen_proxy_arp
+:
+   PROXY_ARP
+   (
+      apply
+      | senp_interface
+   )
+;
+
+sen_source
+:
+   SOURCE
+   (
+      nat_rule_set
+      | sens_interface
+      | sens_pool
+      | sens_port_randomization
+   )
+;
+
+sen_static
+:
+   STATIC nat_rule_set
+;
+
+senp_interface
+:
+   INTERFACE interface_id
+   (
+      apply
+      | senpi_address
+   )
+;
+
+senpi_address
 :
    ADDRESS
    (
@@ -946,57 +991,40 @@ pait_address
    )?
 ;
 
-pat_interface
+sens_interface
 :
-   INTERFACE interface_id pat_interface_tail
-;
-
-pat_interface_tail
-:
-   apply
-   | pait_address
-;
-
-pit_local
-:
-   LOCAL IP_PREFIX
-;
-
-pit_remote
-:
-   REMOTE IP_PREFIX
-;
-
-pit_service
-:
-   SERVICE
+   INTERFACE
    (
-      ANY
-      | name = variable
+      sensi_port_overloading
+      | sensi_port_overloading_factor
    )
 ;
 
-pnt_inactivity_timeout
+sens_pool
 :
-   INACTIVITY_TIMEOUT seconds = DEC
-;
-
-pnt_max_session_number
-:
-   MAX_SESSION_NUMBER max = DEC
-;
-
-pnt_permit
-:
-   PERMIT
+   POOL name = variable
    (
-      ANY_REMOTE_HOST
-      | TARGET_HOST
-      | TARGET_HOST_PORT
+      sensp_address
+      | sensp_description
    )
 ;
 
-poolt_address
+sens_port_randomization
+:
+   PORT_RANDOMIZATION DISABLE
+;
+
+sensi_port_overloading
+:
+   PORT_OVERLOADING OFF
+;
+
+sensi_port_overloading_factor
+:
+   PORT_OVERLOADING_FACTOR factor = DEC
+;
+
+sensp_address
 :
    ADDRESS IP_PREFIX
    (
@@ -1004,149 +1032,68 @@ poolt_address
    )?
 ;
 
-poolt_description
+sensp_description
 :
-   DESCRIPTION s_null_filler
+   DESCRIPTION null_filler
 ;
 
-proposal_set_type
+sep_default_policy
 :
-   BASIC
-   | COMPATIBLE
-   | STANDARD
-;
-
-ptt_ipsec_vpn
-:
-   IPSEC_VPN name = variable
-;
-
-s_security
-:
-   SECURITY s_security_tail
-;
-
-s_security_tail
-:
-   sect_certificates
-   | sect_ike
-   | sect_ipsec
-   | sect_nat
-   | sect_null
-   | sect_policies
-   | sect_zones
-;
-
-sect_certificates
-:
-   CERTIFICATES sect_certificates_tail
-;
-
-sect_certificates_tail
-:
-   certt_local
-;
-
-sect_ike
-:
-   IKE sect_ike_tail
-;
-
-sect_ike_tail
-:
-   iket_gateway
-   | iket_policy
-   | iket_proposal
-;
-
-sect_ipsec
-:
-   IPSEC sect_ipsec_tail
-;
-
-sect_ipsec_tail
-:
-   ipsect_policy
-   | ipsect_proposal
-   | ipsect_vpn
-;
-
-sect_nat
-:
-   NAT sect_nat_tail
-;
-
-sect_nat_tail
-:
-   natt_proxy_arp
-   | natt_source
-   | natt_static
-;
-
-sect_null
-:
+   DEFAULT_POLICY
    (
-      ALG
-      | APPLICATION_TRACKING
-      | FLOW
-      | LOG
-      | SCREEN
-   ) s_null_filler
+      apply
+      | DENY_ALL
+      | PERMIT_ALL
+   )
 ;
 
-sect_policies
+sep_from_zone
 :
-   POLICIES sect_policies_tail
+   FROM_ZONE from = zone TO_ZONE to = zone
+   (
+      apply
+      | sepf_policy
+   )
 ;
 
-sect_policies_tail
+sepf_policy
 :
-   spt_default_policy
-   | spt_from_zone
+   POLICY name = variable
+   (
+      apply
+      | sepfp_description
+      | sepfp_match
+      | sepfp_then
+   )
 ;
 
-sect_zones
+sepfp_description
 :
-   ZONES sect_zones_tail
+   DESCRIPTION null_filler
 ;
 
-sect_zones_tail
+sepfp_match
 :
-   apply
-   | szt_security_zone
+   MATCH
+   (
+      sepfpm_application
+      | sepfpm_destination_address
+      | sepfpm_source_address
+      | sepfpm_source_identity
+   )
 ;
 
-sp_description
+sepfp_then
 :
-   DESCRIPTION s_null_filler
+   THEN
+   (
+      sepfpt_deny
+      | sepfpt_log
+      | sepfpt_permit
+   )
 ;
 
-sp_match
-:
-   MATCH sp_match_tail
-;
-
-sp_match_tail
-:
-   spmt_application
-   | spmt_destination_address
-   | spmt_source_address
-   | spmt_source_identity
-;
-
-sp_then
-:
-   THEN sp_then_tail
-;
-
-sp_then_tail
-:
-   sptt_deny
-   | sptt_log
-   | sptt_permit
-;
-
-spmt_application
+sepfpm_application
 :
    APPLICATION
    (
@@ -1156,17 +1103,17 @@ spmt_application
    )
 ;
 
-spmt_destination_address
+sepfpm_destination_address
 :
    DESTINATION_ADDRESS address_specifier
 ;
 
-spmt_source_address
+sepfpm_source_address
 :
    SOURCE_ADDRESS address_specifier
 ;
 
-spmt_source_identity
+sepfpm_source_identity
 :
    SOURCE_IDENTITY
    (
@@ -1175,140 +1122,89 @@ spmt_source_identity
    )
 ;
 
-spt_default_policy
-:
-   DEFAULT_POLICY spt_default_policy_tail
-;
-
-spt_default_policy_tail
-:
-   apply
-   | DENY_ALL
-   | PERMIT_ALL
-;
-
-spt_from_zone
-:
-   FROM_ZONE from = zone TO_ZONE to = zone spt_from_zone_tail
-;
-
-spt_from_zone_tail
-:
-   apply
-   | spt_policy
-;
-
-spt_policy
-:
-   POLICY name = variable spt_policy_tail
-;
-
-spt_policy_tail
-:
-   apply
-   | sp_description
-   | sp_match
-   | sp_then
-;
-
-sptpt_tunnel
-:
-   TUNNEL sptpt_tunnel_tail
-;
-
-sptpt_tunnel_tail
-:
-   apply
-   | ptt_ipsec_vpn
-;
-
-sptt_deny
+sepfpt_deny
 :
    DENY
    | REJECT
 ;
 
-sptt_log
+sepfpt_log
 :
-   LOG s_null_filler
+   LOG null_filler
 ;
 
-sptt_permit
+sepfpt_permit
 :
-   PERMIT sptt_permit_tail
-;
-
-sptt_permit_tail
-:
-   apply
-   | sptpt_tunnel
-;
-
-stnpt_mapped_port
-:
-   MAPPED_PORT low = DEC
+   PERMIT
    (
-      TO high = DEC
-   )?
+      apply
+      | sepfptp_tunnel
+   )
 ;
 
-stnpt_prefix
+sepfptp_tunnel
 :
-   IP_PREFIX
+   TUNNEL
+   (
+      apply
+      | sepfptpt_ipsec_vpn
+   )
 ;
 
-stnt_prefix
+sepfptpt_ipsec_vpn
 :
-   PREFIX stnt_prefix_tail
+   IPSEC_VPN name = variable
 ;
 
-stnt_prefix_tail
+sez_security_zone
 :
-   stnpt_mapped_port
-   | stnpt_prefix
+   SECURITY_ZONE zone
+   (
+      apply
+      | sezs_address_book
+      | sezs_application_tracking
+      | sezs_host_inbound_traffic
+      | sezs_interfaces
+      | sezs_screen
+      | sezs_tcp_rst
+   )
 ;
 
-szszt_address_book
+sezs_address_book
 :
-   ADDRESS_BOOK szszt_address_book_tail
+   ADDRESS_BOOK
+   (
+      apply
+      | sezsa_address
+      | sezsa_address_set
+   )
 ;
 
-szszt_address_book_tail
-:
-   apply
-   | abt_address
-   | abt_address_set
-;
-
-szszt_application_tracking
+sezs_application_tracking
 :
    APPLICATION_TRACKING
 ;
 
-szszt_host_inbound_traffic
+sezs_host_inbound_traffic
 :
-   HOST_INBOUND_TRAFFIC szszt_host_inbound_traffic_tail
+   HOST_INBOUND_TRAFFIC
+   (
+      apply
+      | sezsh_protocols
+      | sezsh_system_services
+   )
 ;
 
-szszt_host_inbound_traffic_tail
+sezs_interfaces
 :
-   apply
-   | hibt_protocols
-   | hibt_system_services
+   INTERFACES interface_id
+   (
+      apply
+      | sezs_host_inbound_traffic
+   )
 ;
 
-szszt_interfaces
-:
-   INTERFACES interface_id szszt_interfaces_tail
-;
-
-szszt_interfaces_tail
-:
-   apply
-   | szszt_host_inbound_traffic
-;
-
-szszt_screen
+sezs_screen
 :
    SCREEN
    (
@@ -1317,70 +1213,48 @@ szszt_screen
    )
 ;
 
-szszt_tcp_rst
+sezs_tcp_rst
 :
    TCP_RST
 ;
 
-szt_security_zone
+sezsa_address
 :
-   SECURITY_ZONE zone szt_security_zone_tail
+   ADDRESS name = variable
+   (
+      apply
+      | IP_PREFIX
+   )
 ;
 
-szt_security_zone_tail
+sezsa_address_set
 :
-   apply
-   | szszt_address_book
-   | szszt_application_tracking
-   | szszt_host_inbound_traffic
-   | szszt_interfaces
-   | szszt_screen
-   | szszt_tcp_rst
+   ADDRESS_SET name = variable
+   (
+      apply
+      | sezsaa_address
+      | sezsaa_address_set
+   )
 ;
 
-tsnpt_common
+sezsaa_address
 :
-   apply
-   | tsnpt_persistent_nat
+   ADDRESS name = variable
 ;
 
-tsnpt_named
+sezsaa_address_set
 :
-   name = variable tsnpt_common
+   ADDRESS_SET name = variable
 ;
 
-tsnpt_persistent_nat
+sezsh_protocols
 :
-   PERSISTENT_NAT tsnpt_persistent_nat_tail
+   PROTOCOLS hib_protocol
 ;
 
-tsnpt_persistent_nat_tail
+sezsh_system_services
 :
-   apply
-   | pnt_inactivity_timeout
-   | pnt_max_session_number
-   | pnt_permit
-;
-
-tsnt_interface
-:
-   INTERFACE
-;
-
-tsnt_off
-:
-   OFF
-;
-
-tsnt_pool
-:
-   POOL tsnt_pool_tail
-;
-
-tsnt_pool_tail
-:
-   tsnpt_common
-   | tsnpt_named
+   SYSTEM_SERVICES hib_system_service
 ;
 
 zone

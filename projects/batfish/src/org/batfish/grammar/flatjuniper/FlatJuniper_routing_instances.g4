@@ -6,177 +6,19 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-agast_origin
+ri_common
 :
-   ORIGIN IGP
+   apply
+   | ri_description
+   | s_routing_options
 ;
 
-agast_path
+ri_description
 :
-   PATH path = as_path_expr
+   description
 ;
 
-agt_as_path
-:
-   AS_PATH agt_as_path_tail
-;
-
-agt_as_path_tail
-:
-   agast_origin
-   | agast_path
-;
-
-agt_community
-:
-   COMMUNITY community = COMMUNITY_LITERAL
-;
-
-agt_preference
-:
-   PREFERENCE preference = DEC
-;
-
-agt_tag
-:
-   TAG tag = DEC
-;
-
-bmpt_station_address
-:
-   STATION_ADDRESS IP_ADDRESS
-;
-
-bmpt_station_port
-:
-   STATION_PORT DEC
-;
-
-gt_discard
-:
-   DISCARD
-;
-
-gt_metric
-:
-   METRIC metric = DEC
-;
-
-gt_policy
-:
-   POLICY policy = variable
-;
-
-irfit_export
-:
-   EXPORT
-   (
-      LAN
-      | POINT_TO_POINT
-   )
-;
-
-irft_inet
-:
-   INET irft_inet_tail
-;
-
-irft_inet_tail
-:
-   irfit_export
-;
-
-irft_null
-:
-   INET6 s_null_filler
-;
-
-irrgt_inet
-:
-   INET name = variable
-;
-
-irrgt_null
-:
-   INET6 s_null_filler
-;
-
-irt_family
-:
-   FAMILY irt_family_tail
-;
-
-irt_family_tail
-:
-   irft_inet
-   | irft_null
-;
-
-irt_rib_group
-:
-   RIB_GROUP irt_rib_group_tail
-;
-
-irt_rib_group_tail
-:
-   irrgt_inet
-   | irrgt_null
-;
-
-rgt_export_rib
-:
-   EXPORT_RIB rib = variable
-;
-
-rgt_import_policy
-:
-   IMPORT_POLICY name = variable
-;
-
-rgt_import_rib
-:
-   IMPORT_RIB rib = variable
-;
-
-ribt_aggregate
-:
-   rot_aggregate
-;
-
-ribt_generate
-:
-   rot_generate
-;
-
-ribt_static
-:
-   rot_static
-;
-
-rit_apply_groups
-:
-   s_apply_groups
-;
-
-rit_apply_groups_except
-:
-   s_apply_groups_except
-;
-
-rit_common
-:
-   rit_apply_groups
-   | rit_apply_groups_except
-   | rit_description
-   | rit_routing_options
-;
-
-rit_description
-:
-   s_description
-;
-
-rit_instance_type
+ri_instance_type
 :
    INSTANCE_TYPE
    (
@@ -187,34 +29,32 @@ rit_instance_type
    )
 ;
 
-rit_interface
+ri_interface
 :
    INTERFACE id = interface_id
 ;
 
-rit_named_routing_instance
+ri_named_routing_instance
 :
    (
       WILDCARD
       | name = variable
-   ) rit_named_routing_instance_tail
+   )
+   (
+      ri_common
+      | ri_instance_type
+      | ri_interface
+      | ri_null
+      | ri_protocols
+      | ri_route_distinguisher
+      | ri_vrf_export
+      | ri_vrf_import
+      | ri_vrf_table_label
+      | ri_vrf_target
+   )
 ;
 
-rit_named_routing_instance_tail
-:
-   rit_common
-   | rit_instance_type
-   | rit_interface
-   | rit_null
-   | rit_protocols
-   | rit_route_distinguisher
-   | rit_vrf_export
-   | rit_vrf_import
-   | rit_vrf_table_label
-   | rit_vrf_target
-;
-
-rit_null
+ri_null
 :
    (
       BRIDGE_DOMAINS
@@ -225,15 +65,15 @@ rit_null
       | PROVIDER_TUNNEL
       | SERVICES
       | SNMP
-   ) s_null_filler
+   ) null_filler
 ;
 
-rit_protocols
+ri_protocols
 :
    s_protocols
 ;
 
-rit_route_distinguisher
+ri_route_distinguisher
 :
    ROUTE_DISTINGUISHER
    (
@@ -242,153 +82,124 @@ rit_route_distinguisher
    ) COLON DEC
 ;
 
-rit_routing_options
-:
-   s_routing_options
-;
-
-rit_vrf_export
+ri_vrf_export
 :
    VRF_EXPORT name = variable
 ;
 
-rit_vrf_import
+ri_vrf_import
 :
    VRF_IMPORT name = variable
 ;
 
-rit_vrf_table_label
+ri_vrf_table_label
 :
    VRF_TABLE_LABEL
 ;
 
-rit_vrf_target
+ri_vrf_target
 :
-   VRF_TARGET rit_vrf_target_tail
-;
-
-rit_vrf_target_tail
-:
-   vtt_community
-   | vtt_export
-   | vtt_import
-;
-
-roast_loops
-:
-   LOOPS DEC
-;
-
-roftt_export
-:
-   EXPORT name = variable
-;
-
-roftt_no_ecmp_fast_reroute
-:
-   NO_ECMP_FAST_REROUTE
-;
-
-roftt_null
-:
+   VRF_TARGET
    (
-      INDIRECT_NEXT_HOP
-      | INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
-   ) s_null_filler
+      riv_community
+      | riv_export
+      | riv_import
+   )
 ;
 
-rot_aggregate
+riv_community
+:
+   extended_community
+;
+
+riv_export
+:
+   EXPORT extended_community
+;
+
+riv_import
+:
+   IMPORT extended_community
+;
+
+ro_aggregate
 :
    AGGREGATE ROUTE
    (
       prefix = IP_PREFIX
       | prefix6 = IPV6_PREFIX
-   ) rot_aggregate_tail
+   )
+   (
+      apply
+      | roa_as_path
+      | roa_community
+      | roa_preference
+      | roa_tag
+   )
 ;
 
-rot_aggregate_tail
-:
-// intentional blank
-
-   | agt_as_path
-   | agt_as_path_tail
-   | agt_community
-   | agt_preference
-   | agt_tag
-;
-
-rot_auto_export
+ro_auto_export
 :
    AUTO_EXPORT
 ;
 
-rot_autonomous_system
+ro_autonomous_system
 :
-   AUTONOMOUS_SYSTEM as = DEC? rot_autonomous_system_tail
+   AUTONOMOUS_SYSTEM as = DEC?
+   (
+      apply
+      | roas_loops
+   )
 ;
 
-rot_autonomous_system_tail
+ro_bmp
 :
-   apply
-   | roast_loops
+   BMP
+   (
+      rob_station_address
+      | rob_station_port
+   )
 ;
 
-rot_martians
+ro_forwarding_table
 :
-   MARTIANS s_null_filler
+   FORWARDING_TABLE
+   (
+      rof_export
+      | rof_no_ecmp_fast_reroute
+      | rof_null
+   )
 ;
 
-rot_bmp
-:
-   BMP rot_bmp_tail
-;
-
-rot_bmp_tail
-:
-   bmpt_station_address
-   | bmpt_station_port
-;
-
-rot_forwarding_table
-:
-   FORWARDING_TABLE rot_forwarding_table_tail
-;
-
-rot_forwarding_table_tail
-:
-   roftt_export
-   | roftt_no_ecmp_fast_reroute
-   | roftt_null
-;
-
-rot_generate
+ro_generate
 :
    GENERATE ROUTE
    (
       IP_PREFIX
       | IPV6_PREFIX
-   ) rot_generate_tail
+   )
+   (
+      rog_discard
+      | rog_metric
+      | rog_policy
+   )
 ;
 
-rot_generate_tail
+ro_interface_routes
 :
-   gt_discard
-   | gt_metric
-   | gt_policy
+   INTERFACE_ROUTES
+   (
+      roi_family
+      | roi_rib_group
+   )
 ;
 
-rot_interface_routes
+ro_martians
 :
-   INTERFACE_ROUTES rot_interface_routes_tail
+   MARTIANS null_filler
 ;
 
-rot_interface_routes_tail
-:
-   irt_family
-   | irt_rib_group
-;
-
-rot_null
+ro_null
 :
    (
       GRACEFUL_RESTART
@@ -399,145 +210,238 @@ rot_null
       | PPM
       | RESOLUTION
       | TRACEOPTIONS
-   ) s_null_filler
+   ) null_filler
 ;
 
-rot_rib_groups
-:
-   RIB_GROUPS name = variable rot_rib_groups_tail
-;
-
-rot_rib_groups_tail
-:
-   rgt_export_rib
-   | rgt_import_policy
-   | rgt_import_rib
-;
-
-rot_rib
+ro_rib
 :
    RIB
    (
       name = VARIABLE
       | WILDCARD
-   ) rot_rib_tail
+   )
+   (
+      apply
+      | ro_aggregate
+      | ro_generate
+      | ro_static
+   )
 ;
 
-rot_rib_tail
+ro_rib_groups
 :
-   apply
-   | ribt_aggregate
-   | ribt_generate
-   | ribt_static
+   RIB_GROUPS name = variable
+   (
+      ror_export_rib
+      | ror_import_policy
+      | ror_import_rib
+   )
 ;
 
-rot_router_id
+ro_router_id
 :
    ROUTER_ID id = IP_ADDRESS
 ;
 
-rot_static
+ro_srlg
 :
-   STATIC rot_static_tail
+   SRLG name = variable
+   (
+      roslrg_srlg_cost
+      | roslrg_srlg_value
+   )
 ;
 
-rot_static_tail
+ro_static
 :
-   rst_rib_group
-   | rst_route
+   STATIC
+   (
+      ros_rib_group
+      | ros_route
+   )
 ;
 
-rot_srlg
+roa_as_path
 :
-   SRLG rot_srlg_tail
+   AS_PATH?
+   (
+      roaa_origin
+      | roaa_path
+   )
 ;
 
-rot_srlg_tail
+roa_community
 :
-   srlgt_named
+   COMMUNITY community = COMMUNITY_LITERAL
 ;
 
-rst_rib_group
+roa_preference
+:
+   PREFERENCE preference = DEC
+;
+
+roa_tag
+:
+   TAG tag = DEC
+;
+
+roaa_origin
+:
+   ORIGIN IGP
+;
+
+roaa_path
+:
+   PATH path = as_path_expr
+;
+
+roas_loops
+:
+   LOOPS DEC
+;
+
+rob_station_address
+:
+   STATION_ADDRESS IP_ADDRESS
+;
+
+rob_station_port
+:
+   STATION_PORT DEC
+;
+
+rof_export
+:
+   EXPORT name = variable
+;
+
+rof_no_ecmp_fast_reroute
+:
+   NO_ECMP_FAST_REROUTE
+;
+
+rof_null
+:
+   (
+      INDIRECT_NEXT_HOP
+      | INDIRECT_NEXT_HOP_CHANGE_ACKNOWLEDGEMENTS
+   ) null_filler
+;
+
+rog_discard
+:
+   DISCARD
+;
+
+rog_metric
+:
+   METRIC metric = DEC
+;
+
+rog_policy
+:
+   POLICY policy = variable
+;
+
+roi_family
+:
+   FAMILY
+   (
+      roif_inet
+      | roif_null
+   )
+;
+
+roi_rib_group
+:
+   RIB_GROUP
+   (
+      roir_inet
+      | roir_null
+   )
+;
+
+roif_inet
+:
+   INET
+   (
+      roifi_export
+   )
+;
+
+roif_null
+:
+   INET6 null_filler
+;
+
+roifi_export
+:
+   EXPORT
+   (
+      LAN
+      | POINT_TO_POINT
+   )
+;
+
+roir_inet
+:
+   INET name = variable
+;
+
+roir_null
+:
+   INET6 null_filler
+;
+
+ror_export_rib
+:
+   EXPORT_RIB rib = variable
+;
+
+ror_import_policy
+:
+   IMPORT_POLICY name = variable
+;
+
+ror_import_rib
+:
+   IMPORT_RIB rib = variable
+;
+
+ros_rib_group
 :
    RIB_GROUP name = variable
 ;
 
-rst_route
+ros_route
 :
    ROUTE
    (
       IP_PREFIX
       | IPV6_PREFIX
-   ) rst_route_tail
+   )
+   (
+      rosr_common
+      | rosr_qualified_next_hop
+   )
 ;
 
-rst_route_tail
-:
-   srt_common
-   | srt_qualified_next_hop
-;
-
-s_routing_instances
-:
-   ROUTING_INSTANCES s_routing_instances_tail
-;
-
-s_routing_instances_tail
-:
-   rit_common
-   | rit_named_routing_instance
-;
-
-s_routing_options
-:
-   ROUTING_OPTIONS s_routing_options_tail
-;
-
-s_routing_options_tail
-:
-   rot_aggregate
-   | rot_auto_export
-   | rot_autonomous_system
-   | rot_bmp
-   | rot_forwarding_table
-   | rot_generate
-   | rot_interface_routes
-   | rot_martians
-   | rot_null
-   | rot_rib
-   | rot_rib_groups
-   | rot_router_id
-   | rot_srlg
-   | rot_static
-;
-
-srlgnt_srlg_cost
+roslrg_srlg_cost
 :
    SRLG_COST cost = DEC
 ;
 
-srlgnt_srlg_value
+roslrg_srlg_value
 :
    SRLG_VALUE value = DEC
 ;
 
-srlgt_named
-:
-   name = variable srlgt_named_tail
-;
-
-srlgt_named_tail
-:
-   srlgnt_srlg_cost
-   | srlgnt_srlg_value
-;
-
-srt_active
+rosr_active
 :
    ACTIVE
 ;
 
-srt_as_path
+rosr_as_path
 :
    AS_PATH PATH
    (
@@ -545,43 +449,43 @@ srt_as_path
    )+
 ;
 
-srt_common
+rosr_common
 :
-   srt_active
-   | srt_as_path
-   | srt_community
-   | srt_discard
-   | srt_install
-   | srt_metric
-   | srt_next_hop
-   | srt_next_table
-   | srt_no_readvertise
-   | srt_no_retain
-   | srt_passive
-   | srt_preference
-   | srt_readvertise
-   | srt_reject
-   | srt_resolve
-   | srt_retain
-   | srt_tag
+   rosr_active
+   | rosr_as_path
+   | rosr_community
+   | rosr_discard
+   | rosr_install
+   | rosr_metric
+   | rosr_next_hop
+   | rosr_next_table
+   | rosr_no_readvertise
+   | rosr_no_retain
+   | rosr_passive
+   | rosr_preference
+   | rosr_readvertise
+   | rosr_reject
+   | rosr_resolve
+   | rosr_retain
+   | rosr_tag
 ;
 
-srt_community
+rosr_community
 :
    COMMUNITY standard_community
 ;
 
-srt_discard
+rosr_discard
 :
    DISCARD
 ;
 
-srt_install
+rosr_install
 :
    INSTALL
 ;
 
-srt_metric
+rosr_metric
 :
    METRIC metric = DEC
    (
@@ -589,7 +493,7 @@ srt_metric
    )?
 ;
 
-srt_next_hop
+rosr_next_hop
 :
    NEXT_HOP
    (
@@ -599,72 +503,87 @@ srt_next_hop
    )
 ;
 
-srt_next_table
+rosr_next_table
 :
    NEXT_TABLE name = variable
 ;
 
-srt_no_readvertise
+rosr_no_readvertise
 :
    NO_READVERTISE
 ;
 
-srt_no_retain
+rosr_no_retain
 :
    NO_RETAIN
 ;
 
-srt_passive
+rosr_passive
 :
    PASSIVE
 ;
 
-srt_preference
+rosr_preference
 :
    PREFERENCE pref = DEC
 ;
 
-srt_qualified_next_hop
+rosr_qualified_next_hop
 :
-   QUALIFIED_NEXT_HOP nexthop = IP_ADDRESS srt_common?
+   QUALIFIED_NEXT_HOP nexthop = IP_ADDRESS rosr_common?
 ;
 
-srt_readvertise
+rosr_readvertise
 :
    READVERTISE
 ;
 
-srt_reject
+rosr_reject
 :
    REJECT
 ;
 
-srt_resolve
+rosr_resolve
 :
    RESOLVE
 ;
 
-srt_retain
+rosr_retain
 :
    RETAIN
 ;
 
-srt_tag
+rosr_tag
 :
    TAG tag = DEC
 ;
 
-vtt_community
+s_routing_instances
 :
-   extended_community
+   ROUTING_INSTANCES
+   (
+      ri_common
+      | ri_named_routing_instance
+   )
 ;
 
-vtt_export
+s_routing_options
 :
-   EXPORT extended_community
-;
-
-vtt_import
-:
-   IMPORT extended_community
+   ROUTING_OPTIONS
+   (
+      ro_aggregate
+      | ro_auto_export
+      | ro_autonomous_system
+      | ro_bmp
+      | ro_forwarding_table
+      | ro_generate
+      | ro_interface_routes
+      | ro_martians
+      | ro_null
+      | ro_rib
+      | ro_rib_groups
+      | ro_router_id
+      | ro_srlg
+      | ro_static
+   )
 ;
