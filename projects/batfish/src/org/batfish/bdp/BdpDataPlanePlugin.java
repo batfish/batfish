@@ -14,7 +14,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -136,7 +135,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   if (edges != null) {
                      int unreachableNeighbors = 0;
                      int potentialNeighbors = 0;
-                     FlowTraceHop neighborUnreachableHopSource = null;
                      for (Edge edge : edges) {
                         if (!edge.getNode1().equals(currentNodeName)) {
                            continue;
@@ -195,7 +193,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                               }
                               if (neighborUnreachable) {
                                  unreachableNeighbors++;
-                                 neighborUnreachableHopSource = newHop;
                                  continue;
                               }
                            }
@@ -241,30 +238,18 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                      if (unreachableNeighbors > 0
                            && unreachableNeighbors == potentialNeighbors) {
-                        Edge lastEdge = neighborUnreachableHopSource.getEdge();
-                        Edge neighborUnreachbleEdge = new Edge(
-                              lastEdge.getFirst(),
-                              new NodeInterfacePair(
-                                    Configuration.NODE_NONE_NAME,
-                                    Interface.NULL_INTERFACE_NAME));
-                        FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
-                              neighborUnreachbleEdge,
-                              neighborUnreachableHopSource.getRoutes());
-                        List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
-                        newHops.add(neighborUnreachableHop);
-                        FlowTrace trace = new FlowTrace(
-                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK,
-                              newHops,
-                              FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-                                    .toString());
+                        FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
+                              nextHopInterface, routesForThisNextHopInterface);
                         flowTraces.add(trace);
                         continue;
                      }
                   }
                   else {
-                     throw new BatfishException(
-                           "Should not be sent out non-flow sink interface with no edges: "
-                                 + nextHopInterface);
+                     // Should only get here for delta environment where
+                     // non-flow-sink interface from base has no edges in delta
+                     FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
+                           nextHopInterface, routesForThisNextHopInterface);
+                     flowTraces.add(trace);
                   }
                }
             }
@@ -676,6 +661,21 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
    private BdpDataPlane loadDataPlane() {
       return (BdpDataPlane) _batfish.loadDataPlane();
+   }
+
+   private FlowTrace neighborUnreachableTrace(List<FlowTraceHop> completedHops,
+         NodeInterfacePair srcInterface, SortedSet<String> routes) {
+      Edge neighborUnreachbleEdge = new Edge(srcInterface,
+            new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+                  Interface.NULL_INTERFACE_NAME));
+      FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
+            neighborUnreachbleEdge, routes);
+      List<FlowTraceHop> newHops = new ArrayList<>(completedHops);
+      newHops.add(neighborUnreachableHop);
+      FlowTrace trace = new FlowTrace(
+            FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, newHops,
+            FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.toString());
+      return trace;
    }
 
    @Override
