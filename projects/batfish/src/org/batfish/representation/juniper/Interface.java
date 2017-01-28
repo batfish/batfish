@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.VrrpGroup;
 
 public class Interface extends ComparableStructure<String> {
 
@@ -77,7 +79,9 @@ public class Interface extends ComparableStructure<String> {
 
    private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
-   private final Map<String, Interface> _units;
+   private final SortedMap<String, Interface> _units;
+
+   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
    @SuppressWarnings("unused")
    private Interface() {
@@ -98,6 +102,7 @@ public class Interface extends ComparableStructure<String> {
       _ospfCost = null;
       _ospfPassiveAreas = new HashSet<>();
       _units = new TreeMap<>();
+      _vrrpGroups = new TreeMap<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -190,6 +195,10 @@ public class Interface extends ComparableStructure<String> {
 
    public Map<String, Interface> getUnits() {
       return _units;
+   }
+
+   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
+      return _vrrpGroups;
    }
 
    public void setAccessVlan(int vlan) {

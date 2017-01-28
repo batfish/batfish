@@ -72,6 +72,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
@@ -830,9 +831,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Map<String, Configuration> configurations) {
       // TODO: confirm VRFs are handled correctly
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
+      Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
       configurations.forEach((hostname, c) -> {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getActive()) {
+               // collect vrrp info
+               i.getVrrpGroups().forEach((groupNum, vrrpGroup) -> {
+                  Prefix prefix = vrrpGroup.getVirtualAddress();
+                  Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
+                  Set<Interface> candidates = vrrpGroups.get(key);
+                  if (candidates == null) {
+                     candidates = Collections.newSetFromMap(
+                           new IdentityHashMap<Interface, Boolean>());
+                     vrrpGroups.put(key, candidates);
+                  }
+                  candidates.add(i);
+               });
+               // collect prefixes
                i.getAllPrefixes().stream().map(p -> p.getAddress())
                      .forEach(ip -> {
                         Set<String> owners = ipOwners.get(ip);
@@ -844,6 +859,27 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                      });
             }
          }
+      });
+      vrrpGroups.forEach((p, candidates) -> {
+         int groupNum = p.getSecond();
+         Prefix prefix = p.getFirst();
+         Ip ip = prefix.getAddress();
+         int lowestPriority = Integer.MAX_VALUE;
+         String bestCandidate = null;
+         for (Interface candidate : candidates) {
+            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
+            int currentPriority = group.getPriority();
+            if (currentPriority < lowestPriority) {
+               currentPriority = lowestPriority;
+               bestCandidate = candidate.getOwner().getHostname();
+            }
+         }
+         Set<String> owners = ipOwners.get(ip);
+         if (owners == null) {
+            owners = new HashSet<>();
+            ipOwners.put(ip, owners);
+         }
+         owners.add(bestCandidate);
       });
       return ipOwners;
    }
