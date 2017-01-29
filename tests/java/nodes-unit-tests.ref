@@ -6164,7 +6164,14 @@
               "prefix" : "10.0.0.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "vrf" : "default"
+              "vrf" : "default",
+              "vrrpGroups" : {
+                "5" : {
+                  "name" : 5,
+                  "preempt" : true,
+                  "priority" : 100
+                }
+              }
             },
             "xe-0/0/0:0.0" : {
               "name" : "xe-0/0/0:0.0",

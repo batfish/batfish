@@ -42,25 +42,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      _configurationContext = ctx;
-      _newConfigurationLines = new ArrayList<>();
-      _newConfigurationLines.addAll(ctx.children);
-   }
-
-   @Override
-   public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording && ctx.unit != null) {
-         _enablePathRecording = false;
-         _reenablePathRecording = true;
-         String text = ctx.getText();
-         _currentPath.addNode(text);
-      }
-   }
-
-   @Override
-   public void enterS_apply_groups(S_apply_groupsContext ctx) {
+   public void enterApply_groups(Apply_groupsContext ctx) {
       if (_inGroup) {
          return;
       }
@@ -96,12 +78,30 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
+   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
       if (_inGroup) {
          _w.redFlag(
                "Do not know how to handle apply-groups-except occcurring within group statement");
       }
       _newConfigurationLines.remove(_currentSetLine);
+   }
+
+   @Override
+   public void enterFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      _configurationContext = ctx;
+      _newConfigurationLines = new ArrayList<>();
+      _newConfigurationLines.addAll(ctx.children);
+   }
+
+   @Override
+   public void enterInterface_id(Interface_idContext ctx) {
+      if (_enablePathRecording && ctx.unit != null) {
+         _enablePathRecording = false;
+         _reenablePathRecording = true;
+         String text = ctx.getText();
+         _currentPath.addNode(text);
+      }
    }
 
    @Override

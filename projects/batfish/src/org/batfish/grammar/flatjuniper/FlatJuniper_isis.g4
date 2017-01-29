@@ -6,104 +6,7 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-isisilt_enable
-:
-   ENABLE
-;
-
-isisilt_metric
-:
-   METRIC DEC
-;
-
-isisilt_te_metric
-:
-   TE_METRIC DEC
-;
-
-isisilt_null
-:
-   (
-      HELLO_AUTHENTICATION_KEY
-      | HELLO_AUTHENTICATION_TYPE
-      | HELLO_INTERVAL
-      | HOLD_TIME
-   ) s_null_filler
-;
-
-isisit_apply_groups
-:
-   s_apply_groups
-;
-
-isisit_apply_groups_except
-:
-   s_apply_groups_except
-;
-
-isisit_level
-:
-   LEVEL DEC isisit_level_tail
-;
-
-isisit_level_tail
-:
-   isisilt_enable
-   | isisilt_metric
-   | isisilt_te_metric
-   | isisilt_null
-;
-
-isisit_null
-:
-   (
-      BFD_LIVENESS_DETECTION
-      | HELLO_PADDING
-      | LSP_INTERVAL
-      | NO_ADJACENCY_DOWN_NOTIFICATION
-   ) s_null_filler
-;
-
-isisit_passive
-:
-   PASSIVE
-;
-
-isisit_point_to_point
-:
-   POINT_TO_POINT
-;
-
-isislt_disable
-:
-   DISABLE
-;
-
-isislt_enable
-:
-   ENABLE
-;
-
-isislt_null
-:
-   (
-      AUTHENTICATION_KEY
-      | AUTHENTICATION_TYPE
-      | PREFIX_EXPORT_LIMIT
-   ) s_null_filler
-;
-
-isislt_wide_metrics_only
-:
-   WIDE_METRICS_ONLY
-;
-
-isist_apply_groups
-:
-   s_apply_groups
-;
-
-isist_export
+is_export
 :
    EXPORT
    (
@@ -111,82 +14,153 @@ isist_export
    )+
 ;
 
-isist_interface
+is_interface
 :
    INTERFACE
    (
       id = interface_id
       | WILDCARD
-   ) isist_interface_tail
+   )
+   (
+      apply
+      | isi_level
+      | isi_null
+      | isi_passive
+      | isi_point_to_point
+   )
 ;
 
-isist_interface_tail
-:
-// intentional blank
-
-   | isisit_apply_groups
-   | isisit_apply_groups_except
-   | isisit_level
-   | isisit_null
-   | isisit_passive
-   | isisit_point_to_point
-;
-
-isist_level
+is_level
 :
    LEVEL
    (
       DEC
       | WILDCARD
-   ) isist_level_tail
+   )
+   (
+      isl_disable
+      | isl_enable
+      | isl_null
+      | isl_wide_metrics_only
+   )
 ;
 
-isist_level_tail
+is_no_ipv4_routing
 :
-   isislt_disable
-   | isislt_enable
-   | isislt_null
-   | isislt_wide_metrics_only
+   NO_IPV4_ROUTING
 ;
 
-isist_null
+is_null
 :
    (
       LSP_LIFETIME
       | SPF_OPTIONS
       | OVERLOAD
       | TRACEOPTIONS
-   ) s_null_filler
+   ) null_filler
 ;
 
-isist_no_ipv4_routing
-:
-   NO_IPV4_ROUTING
-;
-
-isist_rib_group
+is_rib_group
 :
    RIB_GROUP INET name = variable
 ;
 
-isist_traffic_engineering
+is_traffic_engineering
 :
-   TRAFFIC_ENGINEERING isist_traffic_engineering_tail
+   TRAFFIC_ENGINEERING
+   (
+      ist_credibility_protocol_preference
+      | ist_family_shortcuts
+      | ist_multipath
+   )
 ;
 
-isist_traffic_engineering_tail
+isi_level
 :
-   isistet_credibility_protocol_preference
-   | isistet_family_shortcuts
-   | isistet_multipath
+   LEVEL DEC
+   (
+      isil_enable
+      | isil_metric
+      | isil_te_metric
+      | isil_null
+   )
 ;
 
-isistet_credibility_protocol_preference
+isi_null
+:
+   (
+      BFD_LIVENESS_DETECTION
+      | HELLO_PADDING
+      | LSP_INTERVAL
+      | NO_ADJACENCY_DOWN_NOTIFICATION
+   ) null_filler
+;
+
+isi_passive
+:
+   PASSIVE
+;
+
+isi_point_to_point
+:
+   POINT_TO_POINT
+;
+
+isil_enable
+:
+   ENABLE
+;
+
+isil_metric
+:
+   METRIC DEC
+;
+
+isil_null
+:
+   (
+      HELLO_AUTHENTICATION_KEY
+      | HELLO_AUTHENTICATION_TYPE
+      | HELLO_INTERVAL
+      | HOLD_TIME
+   ) null_filler
+;
+
+isil_te_metric
+:
+   TE_METRIC DEC
+;
+
+isl_disable
+:
+   DISABLE
+;
+
+isl_enable
+:
+   ENABLE
+;
+
+isl_null
+:
+   (
+      AUTHENTICATION_KEY
+      | AUTHENTICATION_TYPE
+      | PREFIX_EXPORT_LIMIT
+   ) null_filler
+;
+
+isl_wide_metrics_only
+:
+   WIDE_METRICS_ONLY
+;
+
+ist_credibility_protocol_preference
 :
    CREDIBILITY_PROTOCOL_PREFERENCE
 ;
 
-isistet_family_shortcuts
+ist_family_shortcuts
 :
    FAMILY
    (
@@ -195,24 +169,22 @@ isistet_family_shortcuts
    ) SHORTCUTS
 ;
 
-isistet_multipath
+ist_multipath
 :
    MULTIPATH LSP_EQUAL_COST
 ;
 
-s_protocols_isis
+p_isis
 :
-   ISIS s_protocols_isis_tail
-;
-
-s_protocols_isis_tail
-:
-   isist_apply_groups
-   | isist_export
-   | isist_interface
-   | isist_level
-   | isist_null
-   | isist_no_ipv4_routing
-   | isist_rib_group
-   | isist_traffic_engineering
+   ISIS
+   (
+      apply
+      | is_export
+      | is_interface
+      | is_level
+      | is_null
+      | is_no_ipv4_routing
+      | is_rib_group
+      | is_traffic_engineering
+   )
 ;

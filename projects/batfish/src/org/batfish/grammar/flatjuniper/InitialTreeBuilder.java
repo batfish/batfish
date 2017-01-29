@@ -21,6 +21,14 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
+      _addLine = false;
+      _hierarchy.addMasterPath(_currentPath, null);
+      String groupName = ctx.name.getText();
+      _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
+   }
+
+   @Override
    public void enterInterface_id(Interface_idContext ctx) {
       if (_enablePathRecording && ctx.unit != null) {
          _enablePathRecording = false;
@@ -28,14 +36,6 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
          String text = ctx.getText();
          _currentPath.addNode(text);
       }
-   }
-
-   @Override
-   public void enterS_apply_groups_except(S_apply_groups_exceptContext ctx) {
-      _addLine = false;
-      _hierarchy.addMasterPath(_currentPath, null);
-      String groupName = ctx.name.getText();
-      _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
    }
 
    @Override
@@ -52,16 +52,16 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitApply_groups(Apply_groupsContext ctx) {
+      _addLine = false;
+   }
+
+   @Override
    public void exitInterface_id(Interface_idContext ctx) {
       if (_reenablePathRecording) {
          _enablePathRecording = true;
          _reenablePathRecording = false;
       }
-   }
-
-   @Override
-   public void exitS_apply_groups(S_apply_groupsContext ctx) {
-      _addLine = false;
    }
 
    @Override

@@ -112,7 +112,14 @@ public class Main {
                   keystoreFile.getAbsolutePath());
             System.exit(1);
          }
-
+         /* Uncomment below to enable fine glassfish/grizzly ssl logging */
+         // Logger l =
+         // Logger.getLogger("org.glassfish.grizzly.ssl.SSLContextConfigurator");
+         // l.setLevel(Level.FINE);
+         // l.setUseParentHandlers(false);
+         // ConsoleHandler ch = new ConsoleHandler();
+         // ch.setLevel(Level.ALL);
+         // l.addHandler(ch);
          SSLContextConfigurator sslCon = new SSLContextConfigurator();
          sslCon.setKeyStoreFile(keystoreFile.getAbsolutePath());
          sslCon.setKeyStorePass(_settings.getSslKeystorePassword());

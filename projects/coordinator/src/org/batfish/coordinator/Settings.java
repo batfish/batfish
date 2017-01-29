@@ -268,7 +268,7 @@ public class Settings extends BaseSettings {
             "port_number_work_service");
 
       addOption(ARG_SSL_KEYSTORE_FILE, "which keystore file to use for ssl",
-            "keystor (.jks) file");
+            "keystore (.jks) file");
 
       addOption(ARG_CONTAINERS_LOCATION, "where to store containers",
             "containers_location");

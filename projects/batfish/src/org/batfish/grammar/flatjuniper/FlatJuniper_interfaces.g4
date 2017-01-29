@@ -6,21 +6,6 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
-brt_filter
-:
-   filter
-;
-
-brt_interface_mode
-:
-   INTERFACE_MODE interface_mode
-;
-
-brt_vlan_id_list
-:
-   VLAN_ID_LIST DEC
-;
-
 direction
 :
    INPUT
@@ -29,83 +14,26 @@ direction
    | OUTPUT_LIST
 ;
 
-efamt_filter
+eo_802_3ad
 :
-   FILTER direction name = variable
-;
-
-efamt_interface_mode
-:
-   INTERFACE_MODE
+   EIGHT02_3AD
    (
-      ACCESS
-      | TRUNK
+      eo8023ad_interface
+      | eo8023ad_lacp
    )
 ;
 
-efamt_native_vlan_id
-:
-   NATIVE_VLAN_ID name = variable
-;
-
-efamt_port_mode
-:
-   PORT_MODE
-   (
-      ACCESS
-      | TRUNK
-   )
-;
-
-efamt_vlan
-:
-   VLAN MEMBERS
-   (
-      ALL
-      | range
-      | variable
-   )
-;
-
-eot_802_3ad
-:
-   EIGHT02_3AD eot_802_3ad_tail
-;
-
-eot_802_3ad_tail
-:
-   eot802_3adt_interface
-   | eot802_3adt_lacp
-;
-
-eot802_3adt_interface
-:
-   (
-      node = variable COLON
-   )? name = variable
-;
-
-eot802_3adt_lacp
-:
-   LACP FORCE_UP
-;
-
-eot_auto_negotiation
+eo_auto_negotiation
 :
    AUTO_NEGOTIATION
 ;
 
-eot_no_auto_negotiation
+eo_no_auto_negotiation
 :
    NO_AUTO_NEGOTIATION
 ;
 
-eot_speed
-:
-   SPEED DEC speed_abbreviation
-;
-
-eot_null
+eo_null
 :
    (
       AUTO_NEGOTIATION
@@ -114,397 +42,147 @@ eot_null
       | NO_AUTO_NEGOTIATION
       | NO_FLOW_CONTROL
       | LINK_MODE
-   ) s_null_filler
+   ) null_filler
 ;
 
-eot_redundant_parent
+eo_redundant_parent
 :
    REDUNDANT_PARENT name = variable
 ;
 
-ether_options_tail
+eo_speed
 :
-   eot_802_3ad
-   | eot_null
-   | eot_redundant_parent
-   | eot_speed
+   SPEED DEC speed_abbreviation
 ;
 
-famt_bridge
+eo8023ad_interface
 :
-   BRIDGE famt_bridge_tail
+   (
+      node = variable COLON
+   )? name = variable
 ;
 
-famt_bridge_tail
-: // intentional blank
-
-   | brt_filter
-   | brt_interface_mode
-   | brt_vlan_id_list
-;
-
-famt_ccc
+eo8023ad_lacp
 :
-   CCC s_null_filler
+   LACP FORCE_UP
 ;
 
-famt_ethernet_switching
+ether_options
 :
-   ETHERNET_SWITCHING famt_ethernet_switching_tail
-;
-
-famt_ethernet_switching_tail
-: // intentional blank
-
-   | efamt_filter
-   | efamt_interface_mode
-   | efamt_native_vlan_id
-   | efamt_port_mode
-   | efamt_vlan
-;
-
-famt_inet
-:
-   INET famt_inet_tail
-;
-
-famt_inet_tail
-: // intentional blank
-
-   | ifamt_address
-   | ifamt_apply_groups
-   | ifamt_apply_groups_except
-   | ifamt_filter
-   | ifamt_mtu
-   | ifamt_no_redirects
-   | ifamt_null
-   | ifamt_rpf_check
-;
-
-famt_inet6
-:
-   INET6 s_null_filler
-;
-
-famt_iso
-:
-   ISO famt_iso_tail
-;
-
-famt_iso_tail
-: // intentional blank
-
-   | isofamt_address
-   | isofamt_mtu
-;
-
-famt_mpls
-:
-   MPLS famt_mpls_tail
-;
-
-famt_mpls_tail
-: // intentional blank alternative
-
-   | mfamt_filter
-   | mfamt_maximum_labels
-   | mfamt_mtu
+   eo_802_3ad
+   | eo_null
+   | eo_redundant_parent
+   | eo_speed
 ;
 
 filter
 :
-   FILTER filter_tail
-;
-
-filter_tail
-: // intentional blank
-
-   | ft_direction
-;
-
-ft_direction
-:
-   direction name = variable
-;
-
-ifamat_arp
-:
-   ARP IP_ADDRESS
+   FILTER
    (
-      MAC
-      | MULTICAST_MAC
-   ) MAC_ADDRESS
+      direction name = variable
+   )?
 ;
 
-ifamat_master_only
+i_apply_groups
 :
-   MASTER_ONLY
+   apply_groups
 ;
 
-ifamat_preferred
+i_apply_groups_except
 :
-   PREFERRED
+   apply_groups_except
 ;
 
-ifamat_primary
-:
-   PRIMARY
-;
-
-ifamat_vrrp_group
-:
-   VRRP_GROUP
-   (
-      name = variable
-      | WILDCARD
-   ) ifamat_vrrp_group_tail
-;
-
-ifamat_vrrp_group_tail
-:
-   ivrrpt_accept_data
-   | ivrrpt_advertise_interval
-   | ivrrpt_authentication_key
-   | ivrrpt_authentication_type
-   | ivrrpt_preempt
-   | ivrrpt_priority
-   | ivrrpt_track
-   | ivrrpt_virtual_address
-;
-
-ifamt_address
-:
-   ADDRESS
-   (
-      IP_ADDRESS
-      | IP_PREFIX
-      | WILDCARD
-   ) ifamt_address_tail?
-;
-
-ifamt_address_tail
-:
-   ifamat_arp
-   | ifamat_master_only
-   | ifamat_preferred
-   | ifamat_primary
-   | ifamat_vrrp_group
-;
-
-ifamt_apply_groups
-:
-   s_apply_groups
-;
-
-ifamt_apply_groups_except
-:
-   s_apply_groups_except
-;
-
-ifamt_filter
-:
-   filter
-;
-
-ifamt_mtu
-:
-   it_mtu
-;
-
-ifamt_no_redirects
-:
-   NO_REDIRECTS
-;
-
-ifamt_null
-:
-   (
-      DHCP
-      | POLICER
-      | SAMPLING
-      | SERVICE
-      | TARGETED_BROADCAST
-   ) s_null_filler
-;
-
-ifamt_rpf_check
-:
-   RPF_CHECK FAIL_FILTER name = variable
-;
-
-interface_mode
-:
-   TRUNK
-;
-
-intt_apply_groups
-:
-   s_apply_groups
-;
-
-intt_interface_range
-:
-   INTERFACE_RANGE irange = variable MEMBER member = DOUBLE_QUOTED_STRING
-;
-
-intt_named
-:
-   (
-      WILDCARD
-      |
-      (
-         (
-            node = variable COLON
-         )? name = variable
-      )
-   ) intt_named_tail
-;
-
-intt_named_tail
-:
-   it_common
-   | it_flexible_vlan_tagging
-   | it_link_mode
-   | it_native_vlan_id
-   | it_per_unit_scheduler
-   | it_unit
-;
-
-intt_null
-:
-   (
-      TRACEOPTIONS
-   ) s_null_filler
-;
-
-isofamt_address
-:
-   ADDRESS ISO_ADDRESS
-;
-
-isofamt_mtu
-:
-   MTU DEC
-;
-
-it_apply_groups
-:
-   s_apply_groups
-;
-
-it_apply_groups_except
-:
-   s_apply_groups_except
-;
-
-it_common
-:
-   it_apply_groups
-   | it_apply_groups_except
-   | it_arp_resp
-   | it_description
-   | it_disable
-   | it_enable
-   | it_ether_options
-   | it_fastether_options
-   | it_gigether_options
-   | it_family
-   | it_mtu
-   | it_null
-   | it_redundant_ether_options
-   | it_speed
-   | it_vlan_id
-   | it_vlan_id_list
-   | it_vlan_tagging
-;
-
-it_arp_resp
+i_arp_resp
 :
    ARP_RESP
 ;
 
-it_description
+i_common
 :
-   s_description
+   apply
+   | i_arp_resp
+   | i_description
+   | i_disable
+   | i_enable
+   | i_ether_options
+   | i_fastether_options
+   | i_gigether_options
+   | i_family
+   | i_mtu
+   | i_null
+   | i_redundant_ether_options
+   | i_speed
+   | i_vlan_id
+   | i_vlan_id_list
+   | i_vlan_tagging
 ;
 
-it_disable
+i_description
+:
+   description
+;
+
+i_disable
 :
    DISABLE
 ;
 
-it_enable
+i_enable
 :
    ENABLE
 ;
 
-it_ether_options
+i_ether_options
 :
-   ETHER_OPTIONS it_ether_options_tail
+   ETHER_OPTIONS ether_options
 ;
 
-it_ether_options_tail
+i_fastether_options
 :
-   ether_options_tail
+   FASTETHER_OPTIONS ether_options
 ;
 
-it_fastether_options
+i_family
 :
-   FASTETHER_OPTIONS it_fastether_options_tail
+   FAMILY
+   (
+      if_bridge
+      | if_ccc
+      | if_ethernet_switching
+      | if_inet
+      | if_inet6
+      | if_iso
+      | if_mpls
+   )
 ;
 
-it_fastether_options_tail
-:
-   ether_options_tail
-;
-
-it_gigether_options
-:
-   GIGETHER_OPTIONS it_gigether_options_tail
-;
-
-it_gigether_options_tail
-:
-   ether_options_tail
-;
-
-it_family
-:
-   FAMILY it_family_tail
-;
-
-it_family_tail
-:
-   famt_bridge
-   | famt_ccc
-   | famt_ethernet_switching
-   | famt_inet
-   | famt_inet6
-   | famt_iso
-   | famt_mpls
-;
-
-it_flexible_vlan_tagging
+i_flexible_vlan_tagging
 :
    FLEXIBLE_VLAN_TAGGING
 ;
 
-it_link_mode
+i_gigether_options
+:
+   GIGETHER_OPTIONS ether_options
+;
+
+i_link_mode
 :
    LINK_MODE FULL_DUPLEX
 ;
 
-it_mtu
+i_mtu
 :
    MTU size = DEC
 ;
 
-it_native_vlan_id
+i_native_vlan_id
 :
    NATIVE_VLAN_ID id = DEC
 ;
 
-it_null
+i_null
 :
    (
       AGGREGATED_ETHER_OPTIONS
@@ -521,76 +199,287 @@ it_null
       | TRACEOPTIONS
       | TRAPS
       | TUNNEL
-   ) s_null_filler
+   ) null_filler
 ;
 
-it_peer_unit
+i_peer_unit
 :
    PEER_UNIT unit = DEC
 ;
 
-it_per_unit_scheduler
+i_per_unit_scheduler
 :
-   PER__UNIT_SCHEDULER
+   PER_UNIT_SCHEDULER
 ;
 
-it_redundant_ether_options
+i_redundant_ether_options
 :
    REDUNDANCY_GROUP name = variable
 ;
 
-it_speed
+i_speed
 :
    SPEED DEC speed_abbreviation
 ;
 
-it_unit
+i_unit
 :
    UNIT
    (
       WILDCARD
       | num = DEC
-   ) it_unit_tail
+   )
+   (
+      i_common
+      | i_peer_unit
+   )
 ;
 
-it_unit_tail
-: // intentional blank
-
-   | it_common
-   | it_peer_unit
-;
-
-it_vlan_id
+i_vlan_id
 :
    VLAN_ID id = DEC
 ;
 
-it_vlan_id_list
+i_vlan_id_list
 :
    VLAN_ID_LIST subrange
 ;
 
-it_vlan_tagging
+i_vlan_tagging
 :
    VLAN_TAGGING
 ;
 
-ivrrpt_accept_data
+if_bridge
+:
+   BRIDGE
+   (
+      apply
+      | ifbr_filter
+      | ifbr_interface_mode
+      | ifbr_vlan_id_list
+   )
+;
+
+if_ccc
+:
+   CCC null_filler
+;
+
+if_ethernet_switching
+:
+   ETHERNET_SWITCHING
+   (
+      apply
+      | ife_filter
+      | ife_interface_mode
+      | ife_native_vlan_id
+      | ife_port_mode
+      | ife_vlan
+   )
+;
+
+if_inet
+:
+   INET
+   (
+      apply
+      | ifi_address
+      | ifi_filter
+      | ifi_mtu
+      | ifi_no_redirects
+      | ifi_null
+      | ifi_rpf_check
+   )
+;
+
+if_inet6
+:
+   INET6 null_filler
+;
+
+if_iso
+:
+   ISO
+   (
+      apply
+      | ifiso_address
+      | ifiso_mtu
+   )
+;
+
+if_mpls
+:
+   MPLS
+   (
+      apply
+      | ifm_filter
+      | ifm_maximum_labels
+      | ifm_mtu
+   )
+;
+
+ifbr_filter
+:
+   filter
+;
+
+ifbr_interface_mode
+:
+   INTERFACE_MODE interface_mode
+;
+
+ifbr_vlan_id_list
+:
+   VLAN_ID_LIST DEC
+;
+
+ife_filter
+:
+   FILTER direction name = variable
+;
+
+ife_interface_mode
+:
+   INTERFACE_MODE
+   (
+      ACCESS
+      | TRUNK
+   )
+;
+
+ife_native_vlan_id
+:
+   NATIVE_VLAN_ID name = variable
+;
+
+ife_port_mode
+:
+   PORT_MODE
+   (
+      ACCESS
+      | TRUNK
+   )
+;
+
+ife_vlan
+:
+   VLAN MEMBERS
+   (
+      ALL
+      | range
+      | variable
+   )
+;
+
+ifi_address
+:
+   ADDRESS
+   (
+      IP_ADDRESS
+      | IP_PREFIX
+      | WILDCARD
+   )
+   (
+      ifia_arp
+      | ifia_master_only
+      | ifia_preferred
+      | ifia_primary
+      | ifia_vrrp_group
+   )?
+;
+
+ifi_filter
+:
+   filter
+;
+
+ifi_mtu
+:
+   i_mtu
+;
+
+ifi_no_redirects
+:
+   NO_REDIRECTS
+;
+
+ifi_null
+:
+   (
+      DHCP
+      | POLICER
+      | SAMPLING
+      | SERVICE
+      | TARGETED_BROADCAST
+   ) null_filler
+;
+
+ifi_rpf_check
+:
+   RPF_CHECK FAIL_FILTER name = variable
+;
+
+ifia_arp
+:
+   ARP IP_ADDRESS
+   (
+      MAC
+      | MULTICAST_MAC
+   ) MAC_ADDRESS
+;
+
+ifia_master_only
+:
+   MASTER_ONLY
+;
+
+ifia_preferred
+:
+   PREFERRED
+;
+
+ifia_primary
+:
+   PRIMARY
+;
+
+ifia_vrrp_group
+:
+   VRRP_GROUP
+   (
+      number = DEC
+      | WILDCARD
+      | name = variable
+   )
+   (
+      ifiav_accept_data
+      | ifiav_advertise_interval
+      | ifiav_authentication_key
+      | ifiav_authentication_type
+      | ifiav_preempt
+      | ifiav_priority
+      | ifiav_track
+      | ifiav_virtual_address
+   )
+;
+
+ifiav_accept_data
 :
    ACCEPT_DATA
 ;
 
-ivrrpt_advertise_interval
+ifiav_advertise_interval
 :
    ADVERTISE_INTERVAL DEC
 ;
 
-ivrrpt_authentication_key
+ifiav_authentication_key
 :
    AUTHENTICATION_KEY DOUBLE_QUOTED_STRING
 ;
 
-ivrrpt_authentication_type
+ifiav_authentication_type
 :
    AUTHENTICATION_TYPE
    (
@@ -599,78 +488,120 @@ ivrrpt_authentication_type
    )
 ;
 
-ivrrpt_preempt
+ifiav_preempt
 :
    PREEMPT
 ;
 
-ivrrpt_priority
+ifiav_priority
 :
-   PRIORITY DEC
+   PRIORITY priority = DEC
 ;
 
-ivrrpt_track
+ifiav_track
 :
-   TRACK ivrrpt_track_tail
+   TRACK
+   (
+      ifiavt_interface
+      | ifiavt_route
+   )
 ;
 
-ivrrpt_track_tail
-:
-   ivrrptt_interface
-   | ivrrptt_route
-;
-
-ivrrpt_virtual_address
+ifiav_virtual_address
 :
    VIRTUAL_ADDRESS IP_ADDRESS
 ;
 
-ivrrptt_interface
+ifiavt_interface
 :
-   INTERFACE interface_id ivrrptt_interface_tail
+   INTERFACE interface_id
+   (
+      ifiavti_priority_cost
+   )
 ;
 
-ivrrptt_interface_tail
-:
-   ivrrptti_priority_cost
-;
-
-ivrrptt_route
+ifiavt_route
 :
    ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST DEC
 ;
 
-ivrrptti_priority_cost
+ifiavti_priority_cost
 :
    PRIORITY_COST cost = DEC
 ;
 
-mfamt_filter
+ifiso_address
 :
-   filter
+   ADDRESS ISO_ADDRESS
 ;
 
-mfamt_maximum_labels
-:
-   MAXIMUM_LABELS num = DEC
-;
-
-mfamt_mtu
+ifiso_mtu
 :
    MTU DEC
 ;
 
-s_interfaces
+ifm_filter
 :
-   INTERFACES s_interfaces_tail
+   filter
 ;
 
-s_interfaces_tail
+ifm_maximum_labels
 :
-   intt_apply_groups
-   | intt_interface_range
-   | intt_named
-   | intt_null
+   MAXIMUM_LABELS num = DEC
+;
+
+ifm_mtu
+:
+   MTU DEC
+;
+
+int_interface_range
+:
+   INTERFACE_RANGE irange = variable MEMBER member = DOUBLE_QUOTED_STRING
+;
+
+int_named
+:
+   (
+      WILDCARD
+      |
+      (
+         (
+            node = variable COLON
+         )? name = variable
+      )
+   )
+   (
+      i_common
+      | i_flexible_vlan_tagging
+      | i_link_mode
+      | i_native_vlan_id
+      | i_per_unit_scheduler
+      | i_unit
+   )
+;
+
+int_null
+:
+   (
+      TRACEOPTIONS
+   ) null_filler
+;
+
+interface_mode
+:
+   TRUNK
+;
+
+s_interfaces
+:
+   INTERFACES
+   (
+      apply
+      | int_interface_range
+      | int_named
+      | int_null
+   )
 ;
 
 speed_abbreviation
