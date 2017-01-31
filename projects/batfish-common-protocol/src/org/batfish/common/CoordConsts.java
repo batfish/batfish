@@ -69,6 +69,7 @@ public class CoordConsts {
    public static final String SVC_QUESTION_NAME_KEY = "questionname";
    public static final String SVC_QUEUE_WORK_RSC = "queuework";
    public static final String SVC_SUCCESS_KEY = "success";
+   public static final String SVC_TASKSTATUS_KEY = "taskstatus";
    public static final String SVC_TESTRIG_INFO_KEY = "testriginfo";
    public static final String SVC_TESTRIG_LIST_KEY = "testriglist";
    public static final String SVC_TESTRIG_NAME_KEY = "testrigname";

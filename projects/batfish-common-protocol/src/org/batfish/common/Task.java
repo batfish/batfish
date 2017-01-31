@@ -75,6 +75,14 @@ public class Task {
       public void setStartDate(Date startDate) {
          _startDate = startDate;
       }
+      
+      public String toString() {
+         return String.format("%s: %s: %s/%d", 
+               _startDate.toString(), 
+               _description, 
+               _completed.toString(), 
+               _size);
+      }
 
    }
 
@@ -99,7 +107,7 @@ public class Task {
    private volatile boolean _terminationRequested;
 
    @JsonCreator
-   private Task() {
+   public Task() {
    }
 
    public Task(String[] args) {

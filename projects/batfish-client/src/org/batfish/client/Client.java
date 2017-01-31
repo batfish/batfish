@@ -30,6 +30,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Task;
+import org.batfish.common.Task.Batch;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.plugin.AbstractClient;
@@ -258,22 +260,16 @@ public class Client extends AbstractClient implements IClient {
          return queueWorkResult;
       }
 
-      WorkStatusCode status = _workHelper.getWorkStatus(wItem.getId());
+      Pair<WorkStatusCode,String> response = _workHelper.getWorkStatus(wItem.getId());
 
-      while (status != WorkStatusCode.TERMINATEDABNORMALLY
-            && status != WorkStatusCode.TERMINATEDNORMALLY
-            && status != WorkStatusCode.ASSIGNMENTERROR) {
-
-         _logger.info(". ");
-         _logger.infof("status: %s\n", status);
-
+      while (response.getFirst() != WorkStatusCode.TERMINATEDABNORMALLY
+            && response.getFirst() != WorkStatusCode.TERMINATEDNORMALLY
+            && response.getFirst() != WorkStatusCode.ASSIGNMENTERROR) {         
+         printWorkStatusResponse(response);         
          Thread.sleep(1 * 1000);
-
-         status = _workHelper.getWorkStatus(wItem.getId());
+         response = _workHelper.getWorkStatus(wItem.getId());
       }
-
-      _logger.info("\n");
-      _logger.infof("final status: %s\n", status);
+      printWorkStatusResponse(response);
 
       // get the answer
       String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
@@ -354,7 +350,7 @@ public class Client extends AbstractClient implements IClient {
          }
       }
 
-      if (status == WorkStatusCode.TERMINATEDNORMALLY) {
+      if (response.getFirst() == WorkStatusCode.TERMINATEDNORMALLY) {
          return true;
       }
       else {
@@ -611,6 +607,41 @@ public class Client extends AbstractClient implements IClient {
       }
 
       return processCommand(words, null);
+   }
+
+   private void printWorkStatusResponse(Pair<WorkStatusCode, String> response) {   
+      
+      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
+         _logger.infof("status: %s\n", response.getFirst());
+
+         BatfishObjectMapper mapper = new BatfishObjectMapper();
+         Task task;
+         try {
+            task = mapper.readValue(response.getSecond(), Task.class);
+         } 
+         catch (IOException e) {
+            _logger.errorf("Could not deserliaze task object: %s\n", e);
+            return;
+         }
+         
+         if (task == null) {
+            _logger.infof(".... null\n");
+            return;
+         }
+         
+         List<Batch> batches = task.getBatches();
+
+         //when log level is INFO, we only print the last batch
+         //else print all
+         for (int i=0; i < batches.size(); i++) {
+            if (i == batches.size() - 1) {
+               _logger.infof(".... %s\n", batches.get(i).toString());               
+            }
+            else {
+               _logger.debugf(".... %s\n", batches.get(i).toString());               
+            }
+         }         
+      }   
    }
 
    private boolean processCommand(String[] words, FileWriter outWriter) {
