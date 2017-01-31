@@ -3,8 +3,10 @@ package org.batfish.main;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +25,8 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
+import org.batfish.common.Task;
+import org.batfish.common.Task.Batch;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.Version;
@@ -43,7 +47,7 @@ public class Driver {
 
    private static Settings _mainSettings = null;
 
-   private static HashMap<String, Task> _taskLog;
+   private static ConcurrentMap<String, Task> _taskLog;
 
    private static final int COORDINATOR_POLL_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1
                                                                                 // minute
@@ -80,7 +84,20 @@ public class Driver {
       return _mainLogger;
    }
 
-   synchronized static Task getTaskkFromLog(String taskId) {
+   private synchronized static Task getTask(Settings settings) {
+      String taskId = settings.getTaskId();
+      if (taskId == null) {
+         return null;
+      }
+      else if (!_taskLog.containsKey(taskId)) {
+         return null;
+      }
+      else {
+         return _taskLog.get(taskId);
+      }
+   }
+
+   public synchronized static Task getTaskFromLog(String taskId) {
       if (_taskLog.containsKey(taskId)) {
          return _taskLog.get(taskId);
       }
@@ -114,7 +131,7 @@ public class Driver {
    }
 
    private static void mainInit(String[] args) {
-      _taskLog = new HashMap<>();
+      _taskLog = new ConcurrentHashMap<>();
 
       try {
          _mainSettings = new Settings(args);
@@ -188,6 +205,20 @@ public class Driver {
 
    private static synchronized void makeIdle() {
       _idle = true;
+   }
+
+   public static synchronized AtomicInteger newBatch(Settings settings,
+         String description, int jobs) {
+      Batch batch = null;
+      Task task = getTask(settings);
+      if (task != null) {
+         batch = task.newBatch(description);
+         batch.setSize(jobs);
+         return batch.getCompleted();
+      }
+      else {
+         return new AtomicInteger();
+      }
    }
 
    private static boolean registerWithCoordinator(String poolRegUrl) {
@@ -338,13 +369,15 @@ public class Driver {
       }
    }
 
-   public static List<String> RunBatfishThroughService(String taskId,
+   public static List<String> RunBatfishThroughService(final String taskId,
          String[] args) {
       final Settings settings;
       try {
          settings = new Settings(args);
          // inherit pluginDir passed to service on startup
          settings.setPluginDirs(_mainSettings.getPluginDirs());
+         // assign taskId for status updates, termination requests
+         settings.setTaskId(taskId);
       }
       catch (Exception e) {
          return Arrays.asList("failure",

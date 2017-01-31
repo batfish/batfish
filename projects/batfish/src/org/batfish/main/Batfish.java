@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -761,7 +762,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "Composite NOD");
       executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
@@ -889,7 +890,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "NOD First-UNSAT");
       executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
       printElapsedTime();
    }
@@ -899,7 +900,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "NOD");
       // todo: do something with nod answer element
       executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
@@ -911,7 +912,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "NOD SAT");
       executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
    }
@@ -987,7 +988,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger,
+            "Convert configurations to vendor-independent format");
       executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
       return configurations;
@@ -1168,7 +1170,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "Flatten configurations");
       // todo: do something with answer element
       executor.executeJobs(jobs, outputConfigurationData,
             new FlattenVendorConfigurationAnswerElement());
@@ -2093,6 +2095,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answerElement;
    }
 
+   @Override
+   public AtomicInteger newBatch(String description, int jobs) {
+      return Driver.newBatch(_settings, description, jobs);
+   }
+
    void outputAnswer(Answer answer) {
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
@@ -2329,7 +2336,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, "Parse configurations");
 
       executor.executeJobs(jobs, vendorConfigurations, answerElement);
       printElapsedTime();

@@ -32,6 +32,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.Task;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.common.WorkItem;
@@ -263,16 +265,15 @@ public class WorkMgr {
                            array.get(0), array.get(1)));
             }
             else {
-
-               JSONObject jObj = new JSONObject(array.get(1).toString());
-
-               if (!jObj.has("status")) {
+               String taskStr = array.get(1).toString();
+               BatfishObjectMapper mapper = new BatfishObjectMapper();
+               Task task = mapper.readValue(taskStr, Task.class);
+               if (task.getStatus() == null) {
                   _logger.error(String
                         .format("did not see status key in json response\n"));
                }
                else {
-                  status = BfConsts.TaskStatus
-                        .valueOf(jObj.getString("status"));
+                  status = task.getStatus();
                }
             }
          }
