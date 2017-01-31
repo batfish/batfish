@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
@@ -14,19 +15,24 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.main.Driver;
 import org.batfish.main.Settings;
 
 public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends AnswerElement, JobResult extends BatfishJobResult<Output, AE>, Output> {
 
    private static final long JOB_POLLING_PERIOD_MS = 1000l;
 
+   private final String _description;
+
    private final BatfishLogger _logger;
 
    private final Settings _settings;
 
-   public BatfishJobExecutor(Settings settings, BatfishLogger logger) {
+   public BatfishJobExecutor(Settings settings, BatfishLogger logger,
+         String description) {
       _settings = settings;
       _logger = logger;
+      _description = description;
    }
 
    public void executeJobs(List<Job> jobs, Output output, AE answerElement) {
@@ -54,6 +60,8 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       boolean processingError = false;
       int finishedJobs = 0;
       int totalJobs = jobs.size();
+      AtomicInteger completed = Driver.newBatch(_settings, _description,
+            totalJobs);
       double finishedPercent;
       List<BatfishException> failureCauses = new ArrayList<>();
       while (!futures.isEmpty()) {
@@ -63,6 +71,7 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
             if (future.isDone()) {
                futures.remove(future);
                finishedJobs++;
+               completed.incrementAndGet();
                finishedPercent = 100 * ((double) finishedJobs) / totalJobs;
                JobResult result = null;
                try {

@@ -2,6 +2,7 @@ package org.batfish.common.plugin;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 import org.batfish.common.Answerer;
@@ -75,6 +76,8 @@ public interface IBatfish extends IPluginConsumer {
    DataPlane loadDataPlane();
 
    AnswerElement multipath(HeaderSpace headerSpace);
+
+   AtomicInteger newBatch(String description, int jobs);
 
    AssertionAst parseAssertion(String text);
 

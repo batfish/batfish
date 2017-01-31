@@ -553,6 +553,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _synthesizeTopology;
 
+   private String _taskId;
+
    private String _taskPlugin;
 
    private String _testrig;
@@ -865,6 +867,10 @@ public final class Settings extends BaseSettings {
 
    public boolean getSynthesizeTopology() {
       return _synthesizeTopology;
+   }
+
+   public String getTaskId() {
+      return _taskId;
    }
 
    public String getTaskPlugin() {
@@ -1450,6 +1456,10 @@ public final class Settings extends BaseSettings {
 
    public void setSequential(boolean sequential) {
       _sequential = true;
+   }
+
+   public void setTaskId(String taskId) {
+      _taskId = taskId;
    }
 
    public void setThrowOnLexerError(boolean throwOnLexerError) {

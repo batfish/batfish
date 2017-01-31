@@ -13,6 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
@@ -304,6 +305,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          BdpAnswerElement ae) {
       // BEGIN DONE ONCE (except main rib)
       // connected, initial static routes, ospf setup, bgp setup
+      AtomicInteger initialCompleted = _batfish.newBatch(
+            "Compute initial connected and static routes, ospf setup, bgp setup",
+            nodes.size());
       nodes.values().parallelStream().forEach(n -> {
          for (VirtualRouter vr : n._virtualRouters.values()) {
             vr.initConnectedRib();
@@ -317,6 +321,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             vr.initEbgpTopology(dp);
             vr.initBaseBgpRibs(externalAdverts);
          }
+         initialCompleted.incrementAndGet();
       });
 
       final Object routesChangedMonitor = new Object();
@@ -327,6 +332,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       while (ospfInternalChanged[0]) {
          ospfInternalIterations++;
          ospfInternalChanged[0] = false;
+         AtomicInteger ospfInternalCompleted = _batfish
+               .newBatch("Compute OSPF Internal routes: iteration "
+                     + ospfInternalIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                if (vr.propagateOspfInternalRoutes(nodes, topology)) {
@@ -335,19 +343,27 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            ospfInternalCompleted.incrementAndGet();
          });
+         AtomicInteger ospfInternalUnstageCompleted = _batfish
+               .newBatch("Unstage OSPF Internal routes: iteration "
+                     + ospfInternalIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.unstageOspfInternalRoutes();
             }
+            ospfInternalUnstageCompleted.incrementAndGet();
          });
       }
+      AtomicInteger ospfInternalImportCompleted = _batfish
+            .newBatch("Import OSPF Internal routes", nodes.size());
       nodes.values().parallelStream().forEach(n -> {
          for (VirtualRouter vr : n._virtualRouters.values()) {
             vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
             vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
             vr.importRib(vr._independentRib, vr._ospfRib);
          }
+         ospfInternalImportCompleted.incrementAndGet();
       });
       // END DONE ONCE
 
@@ -358,6 +374,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          dependentRoutesIterations++;
          dependentRoutesChanged[0] = false;
          // (Re)initialization of dependent route calculation
+         AtomicInteger reinitializeDependentCompleted = _batfish
+               .newBatch("Reinitialize dependent routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
 
@@ -410,9 +429,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
 
             }
+            reinitializeDependentCompleted.incrementAndGet();
          });
 
          // Static nextHopIp routes
+         AtomicInteger recomputeStaticCompleted = _batfish
+               .newBatch("Recompute static routes with next-hop IP: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             boolean staticChanged = true;
             while (staticChanged) {
@@ -423,9 +446,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            recomputeStaticCompleted.incrementAndGet();
          });
 
          // Generated/aggregate routes
+         AtomicInteger recomputeAggregateCompleted = _batfish
+               .newBatch("Recompute aggregate/generated routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                boolean generatedChanged = true;
@@ -438,6 +465,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                }
                vr.importRib(vr._mainRib, vr._generatedRib);
             }
+            recomputeAggregateCompleted.incrementAndGet();
          });
 
          // OSPF external routes
@@ -450,7 +478,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
          // repropagate exports
          final boolean[] ospfExternalChanged = new boolean[] { true };
+         int ospfExternalSubIterations = 0;
          while (ospfExternalChanged[0]) {
+            ospfExternalSubIterations++;
+            AtomicInteger propagateOspfExternalCompleted = _batfish
+                  .newBatch("Propagate OSPF external routes: iteration "
+                        + dependentRoutesIterations + ", subIteration: "
+                        + ospfExternalSubIterations, nodes.size());
             ospfExternalChanged[0] = false;
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
@@ -460,19 +494,29 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                   }
                }
+               propagateOspfExternalCompleted.incrementAndGet();
             });
+            AtomicInteger unstageOspfExternalCompleted = _batfish
+                  .newBatch("Unstage OSPF external routes: iteration "
+                        + dependentRoutesIterations + ", subIteration: "
+                        + ospfExternalSubIterations, nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   vr.unstageOspfExternalRoutes();
                }
+               unstageOspfExternalCompleted.incrementAndGet();
             });
          }
+         AtomicInteger importOspfExternalCompleted = _batfish
+               .newBatch("Unstage OSPF external routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.importRib(vr._ospfRib, vr._ospfExternalType1Rib);
                vr.importRib(vr._ospfRib, vr._ospfExternalType2Rib);
                vr.importRib(vr._mainRib, vr._ospfRib);
             }
+            importOspfExternalCompleted.incrementAndGet();
          });
 
          // BGP routes
@@ -487,6 +531,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          while (bgpChanged[0]) {
             currentBgpIterations++;
             bgpChanged[0] = false;
+            AtomicInteger propagateBgpCompleted = _batfish.newBatch(
+                  "Propagate BGP routes: iteration " + dependentRoutesIterations
+                        + ", subIteration: " + currentBgpIterations,
+                  nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   if (vr.propagateBgpRoutes(nodes, topology)) {
@@ -495,7 +543,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                   }
                }
+               propagateBgpCompleted.incrementAndGet();
             });
+            AtomicInteger importBgpCompleted = _batfish.newBatch(
+                  "Import BGP routes: iteration " + dependentRoutesIterations
+                        + ", subIteration: " + currentBgpIterations,
+                  nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   vr.unstageBgpRoutes();
@@ -503,11 +556,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   vr.importRib(vr._bgpRib, vr._ibgpRib);
                   vr.importRib(vr._mainRib, vr._bgpRib);
                }
+               importBgpCompleted.incrementAndGet();
             });
          }
          bgpIterations.put(dependentRoutesIterations, currentBgpIterations);
 
          // Check to see if routes have changed
+         AtomicInteger checkFixedPointCompleted = _batfish
+               .newBatch("Check if fixed-point reached: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                boolean changed = false;
@@ -529,6 +586,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            checkFixedPointCompleted.incrementAndGet();
          });
       }
       int totalRoutes = nodes.values().stream()
