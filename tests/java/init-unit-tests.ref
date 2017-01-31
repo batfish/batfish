@@ -110,6 +110,7 @@
         "cisco_snmp" : {
           "snmp access-list" : [
             "2",
+            "8",
             "customer-snmp",
             "dummyacl",
             "snmp-acl",
@@ -545,11 +546,12 @@
         "cisco_snmp" : {
           "Red flags" : {
             "1" : "UNDEFINED: Reference to undefined snmp access-list: 2",
-            "2" : "UNDEFINED: Reference to undefined snmp access-list: customer-snmp",
-            "3" : "UNDEFINED: Reference to undefined snmp access-list: dummyacl",
-            "4" : "UNDEFINED: Reference to undefined snmp access-list: snmp-acl",
-            "5" : "UNDEFINED: Reference to undefined snmp access-list: snmp-arpa-acl",
-            "6" : "UNDEFINED: Reference to undefined snmp access-list: to-VTY"
+            "2" : "UNDEFINED: Reference to undefined snmp access-list: 8",
+            "3" : "UNDEFINED: Reference to undefined snmp access-list: customer-snmp",
+            "4" : "UNDEFINED: Reference to undefined snmp access-list: dummyacl",
+            "5" : "UNDEFINED: Reference to undefined snmp access-list: snmp-acl",
+            "6" : "UNDEFINED: Reference to undefined snmp access-list: snmp-arpa-acl",
+            "7" : "UNDEFINED: Reference to undefined snmp access-list: to-VTY"
           }
         },
         "cisco_style_acl1" : {

@@ -6,6 +6,15 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+snmp_file_transfer_protocol
+:
+   FTP
+   | RCP
+   | SCP
+   | SFTP
+   | TFTP
+;
+
 s_snmp_server
 :
    SNMP_SERVER
@@ -14,8 +23,10 @@ s_snmp_server
       | ss_community
       | ss_enable_mib_null
       | ss_enable_traps
+      | ss_file_transfer
       | ss_host
       | ss_null
+      | ss_tftp_server_list
       | ss_trap_source
    )
 ;
@@ -47,6 +58,14 @@ ss_enable_traps
    )? NEWLINE
 ;
 
+ss_file_transfer
+:
+   FILE_TRANSFER ACCESS_GROUP acl = variable
+   (
+      PROTOCOL snmp_file_transfer_protocol
+   )? NEWLINE
+;
+
 ss_host
 :
    HOST
@@ -54,31 +73,44 @@ ss_host
       ip4 = IP_ADDRESS
       | ip6 = IPV6_ADDRESS
       | host = variable
-   )   
-   (
-      ss_host_null
-      | ss_host_use_vrf
    )
+   (
+      ss_host_use_vrf
+      |
+      (
+         ss_host_informs
+         | ss_host_traps
+         | ss_host_version
+      )* comm_or_username = variable_snmp_host
+      (
+         traps += variable_snmp_host
+      )*
+   ) NEWLINE
 ;
 
-ss_host_null
+ss_host_informs
 :
-   (
-      INFORMS
-      | TRAPS
-      | VERSION
-      | variable
-   ) ~NEWLINE* NEWLINE
+   INFORMS
+;
+
+ss_host_traps
+:
+   TRAPS
 ;
 
 ss_host_use_vrf
 :
-   USE_VRF vrf = variable NEWLINE
+   USE_VRF vrf = variable
 ;
 
 ss_host_version
 :
-   VERSION
+   VERSION version = variable_snmp_host
+   (
+      AUTH
+      | NOAUTH
+      | PRIV
+   )?
 ;
 
 ss_null
@@ -91,7 +123,6 @@ ss_null
       | CONTACT
       | CONTEXT
       | ENGINEID
-      | FILE_TRANSFER
       | GLOBALENFORCEPRIV
       | GROUP
       | IFINDEX
@@ -105,13 +136,17 @@ ss_null
       | QUEUE_LENGTH
       | SOURCE_INTERFACE
       | TCP_SESSION
-      | TFTP_SERVER_LIST
       | TRAP
       | TRAPS
       | USER
       | VIEW
       | VRF
    ) ~NEWLINE* NEWLINE
+;
+
+ss_tftp_server_list
+:
+   TFTP_SERVER_LIST name = variable NEWLINE
 ;
 
 ss_trap_source
@@ -167,4 +202,9 @@ variable_snmp
 :
    ~( IPV4 | IPV6 | GROUP | NEWLINE | RO | RW | SDROWNER | SYSTEMOWNER |
    USE_ACL | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )
+;
+
+variable_snmp_host
+:
+   ~( NEWLINE | INFORMS | TRAPS | VERSION | USE_VRF | VRF )
 ;

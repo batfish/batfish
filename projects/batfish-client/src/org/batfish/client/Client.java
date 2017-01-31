@@ -260,12 +260,13 @@ public class Client extends AbstractClient implements IClient {
          return queueWorkResult;
       }
 
-      Pair<WorkStatusCode,String> response = _workHelper.getWorkStatus(wItem.getId());
+      Pair<WorkStatusCode, String> response = _workHelper
+            .getWorkStatus(wItem.getId());
 
       while (response.getFirst() != WorkStatusCode.TERMINATEDABNORMALLY
             && response.getFirst() != WorkStatusCode.TERMINATEDNORMALLY
-            && response.getFirst() != WorkStatusCode.ASSIGNMENTERROR) {         
-         printWorkStatusResponse(response);         
+            && response.getFirst() != WorkStatusCode.ASSIGNMENTERROR) {
+         printWorkStatusResponse(response);
          Thread.sleep(1 * 1000);
          response = _workHelper.getWorkStatus(wItem.getId());
       }
@@ -593,6 +594,41 @@ public class Client extends AbstractClient implements IClient {
             usage.getFirst(), usage.getSecond());
    }
 
+   private void printWorkStatusResponse(Pair<WorkStatusCode, String> response) {
+
+      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
+         _logger.infof("status: %s\n", response.getFirst());
+
+         BatfishObjectMapper mapper = new BatfishObjectMapper();
+         Task task;
+         try {
+            task = mapper.readValue(response.getSecond(), Task.class);
+         }
+         catch (IOException e) {
+            _logger.errorf("Could not deserliaze task object: %s\n", e);
+            return;
+         }
+
+         if (task == null) {
+            _logger.infof(".... null\n");
+            return;
+         }
+
+         List<Batch> batches = task.getBatches();
+
+         // when log level is INFO, we only print the last batch
+         // else print all
+         for (int i = 0; i < batches.size(); i++) {
+            if (i == batches.size() - 1) {
+               _logger.infof(".... %s\n", batches.get(i).toString());
+            }
+            else {
+               _logger.debugf(".... %s\n", batches.get(i).toString());
+            }
+         }
+      }
+   }
+
    private boolean processCommand(String command) {
       String line = command.trim();
       if (line.length() == 0 || line.startsWith("#")) {
@@ -607,41 +643,6 @@ public class Client extends AbstractClient implements IClient {
       }
 
       return processCommand(words, null);
-   }
-
-   private void printWorkStatusResponse(Pair<WorkStatusCode, String> response) {   
-      
-      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
-         _logger.infof("status: %s\n", response.getFirst());
-
-         BatfishObjectMapper mapper = new BatfishObjectMapper();
-         Task task;
-         try {
-            task = mapper.readValue(response.getSecond(), Task.class);
-         } 
-         catch (IOException e) {
-            _logger.errorf("Could not deserliaze task object: %s\n", e);
-            return;
-         }
-         
-         if (task == null) {
-            _logger.infof(".... null\n");
-            return;
-         }
-         
-         List<Batch> batches = task.getBatches();
-
-         //when log level is INFO, we only print the last batch
-         //else print all
-         for (int i=0; i < batches.size(); i++) {
-            if (i == batches.size() - 1) {
-               _logger.infof(".... %s\n", batches.get(i).toString());               
-            }
-            else {
-               _logger.debugf(".... %s\n", batches.get(i).toString());               
-            }
-         }         
-      }   
    }
 
    private boolean processCommand(String[] words, FileWriter outWriter) {
