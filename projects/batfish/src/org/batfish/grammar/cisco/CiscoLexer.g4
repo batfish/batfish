@@ -751,6 +751,11 @@ AUDIT
    'audit'
 ;
 
+AUTH
+:
+   'auth'
+;
+
 AUTH_PORT
 :
    'auth-port'
@@ -3007,6 +3012,11 @@ FILE_ENTRY
 FILE_SIZE
 :
    'file-size'
+;
+
+FILE_TRANSFER
+:
+   'file-transfer'
 ;
 
 FILTER_LIST
@@ -5354,6 +5364,11 @@ NO_SUMMARY
    'no-summary'
 ;
 
+NOAUTH
+:
+   'noauth'
+;
+
 NODE
 :
    'node'
@@ -6234,6 +6249,11 @@ PRIORITY_QUEUE
    'priority-queue'
 ;
 
+PRIV
+:
+   'priv'
+;
+
 PRIVATE_AS
 :
    'private-as'
@@ -6482,6 +6502,11 @@ RC4_SHA1
 RCMD
 :
    'rcmd'
+;
+
+RCP
+:
+   'rcp'
 ;
 
 RCV_QUEUE
@@ -7349,6 +7374,11 @@ SFLOW
    'sflow'
 ;
 
+SFTP
+:
+   'sftp'
+;
+
 SGBP
 :
    'sgbp'
@@ -8144,6 +8174,11 @@ TFTP
 TFTP_SERVER
 :
    'tftp-server'
+;
+
+TFTP_SERVER_LIST
+:
+   'tftp-server-list'
 ;
 
 THEN

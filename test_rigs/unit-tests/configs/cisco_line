@@ -49,7 +49,7 @@ line 2
 line vty 0 4
  access-class 99 in
  exec-timeout 60 0
-! password 
+ password xxx  
  logging synchronous
  ipv6 access-class ipv6-vty-acl in
  transport preferred none

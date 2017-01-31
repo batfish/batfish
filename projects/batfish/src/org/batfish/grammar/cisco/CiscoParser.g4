@@ -814,6 +814,7 @@ l_null
       | LOGOUT_WARNING
       | MODEM
       | NOTIFY
+      | PASSWORD
       | PRIVILEGE
       | ROTARY
       | SESSION_DISCONNECT_WARNING
@@ -1871,7 +1872,10 @@ s_ip_dhcp
 
 s_ip_domain_name
 :
-   IP DOMAIN_NAME name = variable NEWLINE
+   IP DOMAIN_NAME name = variable
+   (
+      USE_VRF variable
+   )? NEWLINE
 ;
 
 s_ip_nat

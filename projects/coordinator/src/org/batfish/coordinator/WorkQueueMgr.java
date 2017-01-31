@@ -6,6 +6,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Task;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
@@ -150,17 +151,17 @@ public class WorkQueueMgr {
       work.setAssignment(assignedWorker);
    }
 
-   public synchronized void processStatusCheckResult(QueuedWork work,
-         TaskStatus status) {
+   public synchronized void processTaskCheckResult(QueuedWork work,
+         Task task) {
 
       // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
       // Unknown, UnreachableOrBadResponse}
 
-      switch (status) {
+      switch (task.getStatus()) {
       case Unscheduled:
       case InProgress:
          work.setStatus(WorkStatusCode.ASSIGNED);
-         work.recordTaskStatusCheckResult(status);
+         work.recordTaskCheckResult(task);
          break;
       case TerminatedNormally:
       case TerminatedAbnormally:
@@ -174,10 +175,10 @@ public class WorkQueueMgr {
             _logger.error("Could not put work on completed queue. Work = "
                   + work + "\nException = " + stackTrace);
          }
-         work.setStatus((status == TaskStatus.TerminatedNormally)
+         work.setStatus((task.getStatus() == TaskStatus.TerminatedNormally)
                ? WorkStatusCode.TERMINATEDNORMALLY
                : WorkStatusCode.TERMINATEDABNORMALLY);
-         work.recordTaskStatusCheckResult(status);
+         work.recordTaskCheckResult(task);
          break;
       case Unknown:
          // we mark this unassigned, so we try to schedule it again
@@ -186,7 +187,7 @@ public class WorkQueueMgr {
          break;
       case UnreachableOrBadResponse:
          if (work
-               .getLastTaskCheckedStatus() == TaskStatus.UnreachableOrBadResponse) {
+               .getLastTaskCheckResult().getStatus() == TaskStatus.UnreachableOrBadResponse) {
             // if we saw the same thing last time around, free the task to be
             // scheduled elsewhere
             work.setStatus(WorkStatusCode.UNASSIGNED);
@@ -194,7 +195,7 @@ public class WorkQueueMgr {
          }
          else {
             work.setStatus(WorkStatusCode.ASSIGNED);
-            work.recordTaskStatusCheckResult(status);
+            work.recordTaskCheckResult(task);
          }
          break;
       }

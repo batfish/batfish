@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.*;
+import org.batfish.common.util.BatfishObjectMapper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -447,9 +448,13 @@ public class WorkMgrService {
          checkContainerAccessibility(apiKey,
                work.getWorkItem().getContainerName());
 
+         BatfishObjectMapper mapper = new BatfishObjectMapper();
+         String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
+
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
-               (new JSONObject().put(CoordConsts.SVC_WORKSTATUS_KEY,
-                     work.getStatus().toString()))));
+               (new JSONObject()
+                     .put(CoordConsts.SVC_WORKSTATUS_KEY, work.getStatus().toString())
+                     .put(CoordConsts.SVC_TASKSTATUS_KEY, taskStr))));
       }
       catch (FileExistsException | FileNotFoundException
             | IllegalArgumentException | AccessControlException e) {
