@@ -21,11 +21,15 @@ public class Task {
 
       private static final String SIZE_VAR = "size";
 
+      private static final String START_DATE_VAR = "startDate";
+
       private AtomicInteger _completed;
 
       private String _description;
 
       private int _size;
+
+      private Date _startDate;
 
       @JsonCreator
       private Batch() {
@@ -47,6 +51,11 @@ public class Task {
          return _size;
       }
 
+      @JsonProperty(START_DATE_VAR)
+      public Date getStartDate() {
+         return _startDate;
+      }
+
       @JsonProperty(COMPLETED_VAR)
       private void setCompleted(AtomicInteger completed) {
          _completed = completed;
@@ -60,6 +69,11 @@ public class Task {
       @JsonProperty(SIZE_VAR)
       public void setSize(int size) {
          _size = size;
+      }
+
+      @JsonProperty(START_DATE_VAR)
+      public void setStartDate(Date startDate) {
+         _startDate = startDate;
       }
 
    }
@@ -128,6 +142,8 @@ public class Task {
    public Batch newBatch(String description) {
       Batch batch = new Batch();
       batch.setDescription(description);
+      Date date = new Date();
+      batch.setStartDate(date);
       _batches.add(batch);
       return batch;
    }
