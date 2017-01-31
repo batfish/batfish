@@ -3,8 +3,8 @@ package org.batfish.coordinator;
 import java.util.Date;
 import java.util.UUID;
 
-import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 
 public class QueuedWork {
@@ -17,7 +17,7 @@ public class QueuedWork {
    Date _dateLastTaskCheckedStatus;
    Date _dateTerminated;
 
-   TaskStatus _lastTaskCheckedStatus;
+   Task _lastTaskCheckResult;
    WorkStatusCode _status;
 
    WorkItem _workItem;
@@ -32,7 +32,7 @@ public class QueuedWork {
       _dateAssigned = null;
       _assignedWorker = null;
 
-      _lastTaskCheckedStatus = null;
+      _lastTaskCheckResult = null;
       _dateLastTaskCheckedStatus = null;
    }
 
@@ -44,8 +44,8 @@ public class QueuedWork {
       return _workItem.getId();
    }
 
-   public TaskStatus getLastTaskCheckedStatus() {
-      return _lastTaskCheckedStatus;
+   public Task getLastTaskCheckResult() {
+      return _lastTaskCheckResult;
    }
 
    public WorkStatusCode getStatus() {
@@ -56,8 +56,8 @@ public class QueuedWork {
       return _workItem;
    }
 
-   public void recordTaskStatusCheckResult(TaskStatus status) {
-      _lastTaskCheckedStatus = status;
+   public void recordTaskCheckResult(Task task) {
+      _lastTaskCheckResult = task;
       _dateLastTaskCheckedStatus = new Date();
    }
 
@@ -75,7 +75,8 @@ public class QueuedWork {
    public String toString() {
       return String.format("%s [%s] [%s %s %s] [%s] [%s, %s]",
             _workItem.toJsonString(), _status, _dateCreated, _dateAssigned,
-            _dateTerminated, _assignedWorker, _lastTaskCheckedStatus,
+            _dateTerminated, _assignedWorker, 
+            (_lastTaskCheckResult == null) ? "null" : _lastTaskCheckResult.getStatus(),
             _dateLastTaskCheckedStatus);
    }
 }
