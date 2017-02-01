@@ -54,9 +54,6 @@ public class Warnings extends org.batfish.common.Warnings {
          throw new PedanticBatfishException(msg);
       }
       else if (_pedanticRecord) {
-         // String prefix = "WARNING " + (_pedanticWarnings.size() + 1)
-         // + ": PEDANTIC: ";
-         // String warning = prefix + msg + "\n";
          _pedanticWarnings.add(new Warning(msg, tag));
       }
    }
@@ -70,9 +67,6 @@ public class Warnings extends org.batfish.common.Warnings {
          throw new RedFlagBatfishException(msg);
       }
       else if (_redFlagRecord) {
-         // String prefix = "WARNING " + (_redFlagWarnings.size() + 1)
-         // + ": RED FLAG: ";
-         // String warning = prefix + msg + "\n";
          _redFlagWarnings.add(new Warning(msg, tag));
       }
    }
@@ -129,9 +123,6 @@ public class Warnings extends org.batfish.common.Warnings {
          throw new UnimplementedBatfishException(msg);
       }
       else if (_unimplementedRecord) {
-         // String prefix = "WARNING " + (_unimplementedWarnings.size() + 1)
-         // + ": UNIMPLEMENTED: ";
-         // String warning = prefix + msg + "\n";
          _unimplementedWarnings.add(new Warning(msg, tag));
       }
    }

@@ -25,11 +25,9 @@ public abstract class VendorConfiguration
     */
    private static final long serialVersionUID = 1L;
 
-   private static final String UNDEFINED = "UNDEFINED";
-
-   private static final String UNUSED = "UNUSED";
-
    private transient ConvertConfigurationAnswerElement _answerElement;
+
+   private transient boolean _unrecognized;
 
    protected transient Warnings _w;
 
@@ -43,6 +41,10 @@ public abstract class VendorConfiguration
    public abstract RoleSet getRoles();
 
    public abstract Set<String> getUnimplementedFeatures();
+
+   public boolean getUnrecognized() {
+      return _unrecognized;
+   }
 
    @JsonIgnore
    public final Warnings getWarnings() {
@@ -58,6 +60,10 @@ public abstract class VendorConfiguration
 
    public abstract void setRoles(RoleSet roles);
 
+   public void setUnrecognized(boolean unrecognized) {
+      _unrecognized = unrecognized;
+   }
+
    public abstract void setVendor(ConfigurationFormat format);
 
    public final void setWarnings(Warnings warnings) {
@@ -68,7 +74,6 @@ public abstract class VendorConfiguration
          throws VendorConversionException;
 
    public void undefined(String message, String type, String name) {
-      _w.redFlag(message, UNDEFINED);
       String hostname = getHostname();
       SortedMap<String, SortedSet<String>> byHostname = _answerElement
             .getUndefinedReferences().get(hostname);
@@ -85,7 +90,6 @@ public abstract class VendorConfiguration
    }
 
    protected void unused(String message, String type, String name) {
-      _w.redFlag(message, UNUSED);
       String hostname = getHostname();
       SortedMap<String, SortedSet<String>> byHostname = _answerElement
             .getUnusedStructures().get(hostname);

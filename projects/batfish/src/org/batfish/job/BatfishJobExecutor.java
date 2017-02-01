@@ -24,14 +24,17 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
 
    private final String _description;
 
+   private final boolean _haltOnProcessingError;
+
    private final BatfishLogger _logger;
 
    private final Settings _settings;
 
    public BatfishJobExecutor(Settings settings, BatfishLogger logger,
-         String description) {
+         boolean haltOnProcessingError, String description) {
       _settings = settings;
       _logger = logger;
+      _haltOnProcessingError = haltOnProcessingError;
       _description = description;
    }
 
@@ -108,6 +111,9 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
                      _logger.error(failureMessage + ":\n\t"
                            + ExceptionUtils.getStackTrace(failureCause));
                      failureCauses.add(bfc);
+                     if (!_haltOnProcessingError) {
+                        result.applyTo(output, _logger, answerElement);
+                     }
                   }
                }
             }
@@ -126,15 +132,22 @@ public class BatfishJobExecutor<Job extends BatfishJob<JobResult>, AE extends An
       }
       pool.shutdown();
       if (processingError) {
-         throw new CompositeBatfishException(
-               new BatfishException(
-                     "Fatal exception due to failure of at least one nod job"),
-               failureCauses);
-      }
-      else {
+         int numJobs = jobs.size();
+         int numFailed = numJobs - failureCauses.size();
+         int numSucceeded = numJobs - numFailed;
          if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
-            _logger.info("All jobs executed successfully\n");
+            _logger.infof("%d jobs succeeded; %d jobs failed\n", numSucceeded,
+                  numFailed);
          }
+         if (_haltOnProcessingError) {
+            throw new CompositeBatfishException(
+                  new BatfishException(
+                        "Fatal exception due to failure of at least one job"),
+                  failureCauses);
+         }
+      }
+      else if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
+         _logger.info("All jobs executed successfully\n");
       }
 
    }

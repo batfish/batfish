@@ -2,6 +2,11 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "parseStatus" : {
+        "junos-srx-1" : "PASSED",
+        "junos-srx-2" : "PASSED",
+        "junos-srx-3" : "PASSED"
+      },
       "parseTrees" : {
         "junos-srx-1" : {
           "sentences" : [
@@ -5899,16 +5904,26 @@
             "st0.1"
           ]
         }
-      },
-      "warnings" : {
-        "junos-srx-3" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused IKE gateway: 'gateway-1'",
-            "2" : "UNUSED: Unused vpn tunnel interface: 'st0.1'"
-          }
-        }
       }
     }
   ],
+  "status" : "SUCCESS"
+}
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoAnswerElement",
+      "parseStatus" : {
+        "junos-srx-1" : "PASSED",
+        "junos-srx-2" : "PASSED",
+        "junos-srx-3" : "PASSED"
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
+    "differential" : false,
+    "summary" : true
+  },
   "status" : "SUCCESS"
 }

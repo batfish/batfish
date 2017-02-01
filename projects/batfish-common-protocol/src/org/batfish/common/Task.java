@@ -75,13 +75,11 @@ public class Task {
       public void setStartDate(Date startDate) {
          _startDate = startDate;
       }
-      
+
+      @Override
       public String toString() {
-         return String.format("%s: %s: %s/%d", 
-               _startDate.toString(), 
-               _description, 
-               _completed.toString(), 
-               _size);
+         return String.format("%s: %s: %s/%d", _startDate.toString(),
+               _description, _completed.toString(), _size);
       }
 
    }

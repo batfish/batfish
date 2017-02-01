@@ -64,13 +64,20 @@ public class ConvertConfigurationResult extends
                configurations.put(hostname, config);
                if (!_warnings.isEmpty()) {
                   answerElement.getWarnings().put(hostname, _warnings);
+               }
+               if (!_answerElement.getUnusedStructures().isEmpty()) {
                   answerElement.getUnusedStructures()
                         .putAll(_answerElement.getUnusedStructures());
+               }
+               if (!_answerElement.getUndefinedReferences().isEmpty()) {
                   answerElement.getUndefinedReferences()
                         .putAll(_answerElement.getUndefinedReferences());
                }
             }
          }
+      }
+      else {
+         answerElement.getFailed().add(_name);
       }
    }
 

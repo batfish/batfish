@@ -383,6 +383,8 @@ public final class Settings extends BaseSettings {
     */
    private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts";
 
+   private static final String ARG_VERBOSE_PARSE = "verboseparse";
+
    private static final String ARGNAME_AS = "as";
 
    private static final String ARGNAME_HOSTNAME = "hostname";
@@ -464,6 +466,10 @@ public final class Settings extends BaseSettings {
    private Integer _generateStubsRemoteAs;
 
    private Path _genOspfTopologyPath;
+
+   private boolean _haltOnConvertError;
+
+   private boolean _haltOnParseError;
 
    private List<String> _helpPredicates;
 
@@ -580,6 +586,8 @@ public final class Settings extends BaseSettings {
    private boolean _usePrecomputedIbgpNeighbors;
 
    private boolean _usePrecomputedRoutes;
+
+   private boolean _verboseParse;
 
    private boolean _writeBgpAdvertisements;
 
@@ -715,6 +723,14 @@ public final class Settings extends BaseSettings {
 
    public int getGenerateStubsRemoteAs() {
       return _generateStubsRemoteAs;
+   }
+
+   public boolean getHaltOnConvertError() {
+      return _haltOnConvertError;
+   }
+
+   public boolean getHaltOnParseError() {
+      return _haltOnParseError;
    }
 
    public List<String> getHelpPredicates() {
@@ -925,6 +941,10 @@ public final class Settings extends BaseSettings {
       return _usePrecomputedRoutes;
    }
 
+   public boolean getVerboseParse() {
+      return _verboseParse;
+   }
+
    public boolean getWriteBgpAdvertisements() {
       return _writeBgpAdvertisements;
    }
@@ -973,6 +993,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
       setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
       setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
       setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
@@ -1013,12 +1035,13 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
-      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
+      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+      setDefaultProperty(ARG_VERBOSE_PARSE, false);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
@@ -1105,6 +1128,12 @@ public final class Settings extends BaseSettings {
 
       addOption(ARG_GENERATE_STUBS_REMOTE_AS,
             "autonomous system number of stubs to be generated", ARGNAME_AS);
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_CONVERT_ERROR,
+            "Halt on conversion error instead of proceeding with successfully converted configs");
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_PARSE_ERROR,
+            "Halt on parse error instead of proceeding with successfully parsed configs");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -1237,6 +1266,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES,
             "add precomputed routes to data plane model");
 
+      addBooleanOption(ARG_VERBOSE_PARSE,
+            "(developer option) include parse/convert data in init-testrig answer");
+
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
       addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
@@ -1312,6 +1344,10 @@ public final class Settings extends BaseSettings {
       _generateStubsRemoteAs = getIntegerOptionValue(
             ARG_GENERATE_STUBS_REMOTE_AS);
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+      _haltOnConvertError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_CONVERT_ERROR);
+      _haltOnParseError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_PARSE_ERROR);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
       _ignoreFilesWithStrings = getStringListOptionValue(
             BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
@@ -1375,6 +1411,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedRoutes = getBooleanOptionValue(
             BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _verboseParse = getBooleanOptionValue(ARG_VERBOSE_PARSE);
       _writeBgpAdvertisements = getBooleanOptionValue(
             BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
       _writeIbgpNeighbors = getBooleanOptionValue(
@@ -1416,6 +1453,14 @@ public final class Settings extends BaseSettings {
 
    public void setEnvironmentName(String envName) {
       _environmentName = envName;
+   }
+
+   public void setHaltOnConvertError(boolean haltOnConvertError) {
+      _haltOnConvertError = haltOnConvertError;
+   }
+
+   public void setHaltOnParseError(boolean haltOnParseError) {
+      _haltOnParseError = haltOnParseError;
    }
 
    public void setLogger(BatfishLogger logger) {
@@ -1468,6 +1513,10 @@ public final class Settings extends BaseSettings {
 
    public void setThrowOnParserError(boolean throwOnParserError) {
       _throwOnParserError = throwOnParserError;
+   }
+
+   public void setVerboseParse(boolean verboseParse) {
+      _verboseParse = verboseParse;
    }
 
 }

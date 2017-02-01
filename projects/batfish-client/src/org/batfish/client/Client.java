@@ -299,7 +299,7 @@ public class Client extends AbstractClient implements IClient {
          }
 
          if (outWriter == null) {
-            _logger.output(answerStringToPrint + "\n");
+            _logger.output(answerStringToPrint);
          }
          else {
             outWriter.write(answerStringToPrint);
@@ -1007,11 +1007,19 @@ public class Client extends AbstractClient implements IClient {
             if (command == Command.INIT_TESTRIG) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
+               if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", false,
+                     outWriter)) {
+                  return false;
+               }
                _logger.infof("Base testrig is now %s\n", _currTestrig);
             }
             else {
                _currDeltaTestrig = testrigName;
                _currDeltaEnv = DEFAULT_ENV_NAME;
+               if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", true,
+                     outWriter)) {
+                  return false;
+               }
                _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
             }
 
@@ -1072,7 +1080,8 @@ public class Client extends AbstractClient implements IClient {
          case REINIT_DELTA_TESTRIG: {
 
             String testrig;
-            if (command == Command.REINIT_TESTRIG) {
+            boolean isDelta = command != Command.REINIT_TESTRIG;
+            if (!isDelta) {
                _logger.output("Reinitializing testrig. Parsing now.\n");
                testrig = _currTestrig;
             }
@@ -1088,6 +1097,10 @@ public class Client extends AbstractClient implements IClient {
                return false;
             }
 
+            if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", isDelta,
+                  outWriter)) {
+               return false;
+            }
             return true;
          }
 

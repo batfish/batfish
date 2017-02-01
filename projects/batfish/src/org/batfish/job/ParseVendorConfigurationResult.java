@@ -7,6 +7,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ParseTreeSentences;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -78,7 +79,18 @@ public class ParseVendorConfigurationResult extends
             if (!_parseTree.isEmpty()) {
                answerElement.getParseTrees().put(hostname, _parseTree);
             }
+            if (_vc.getUnrecognized()) {
+               answerElement.getParseStatus().put(hostname,
+                     ParseStatus.UNRECOGNIZED);
+            }
+            else {
+               answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+            }
          }
+      }
+      else {
+         String filename = _file.getFileName().toString();
+         answerElement.getParseStatus().put(filename, ParseStatus.FAILED);
       }
    }
 

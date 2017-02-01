@@ -1,5 +1,9 @@
 #this file assumes that we are running from top-level source directory
 
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option verboseparse
+
 # example testrig
 test tests/java/init.ref init-testrig test_rigs/example
 test tests/java/init-delta.ref init-delta-testrig test_rigs/example-with-delta
