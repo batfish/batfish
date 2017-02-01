@@ -17,7 +17,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Task;
 import org.batfish.common.BfConsts.TaskStatus;
-import org.batfish.common.util.BatfishObjectMapper;
 
 @Path(BfConsts.SVC_BASE_RSC)
 public class Service {
@@ -63,8 +62,7 @@ public class Service {
             task = new Task(null);
             task.setStatus(TaskStatus.Unknown);
          }
-         BatfishObjectMapper mapper = new BatfishObjectMapper();
-         String taskStr = mapper.writeValueAsString(task);
+         String taskStr = task.updateAndWrite();
          return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
       }
       catch (Exception e) {
