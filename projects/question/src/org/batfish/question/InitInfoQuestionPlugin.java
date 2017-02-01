@@ -104,15 +104,17 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
             }
          }
          sb.append("STATISTICS\n");
-         sb.append("  Total warnings:\n");
-         if (redFlagCount > 0) {
-            sb.append("    Red Flag: " + redFlagCount + "\n");
-         }
-         if (unimplementedCount > 0) {
-            sb.append("    Unimplemented: " + unimplementedCount + "\n");
-         }
-         if (pedanticCount > 0) {
-            sb.append("    Pedantic: " + pedanticCount + "\n");
+         if (!_warnings.isEmpty()) {
+            sb.append("  Total warnings:\n");
+            if (redFlagCount > 0) {
+               sb.append("    Red Flag: " + redFlagCount + "\n");
+            }
+            if (unimplementedCount > 0) {
+               sb.append("    Unimplemented: " + unimplementedCount + "\n");
+            }
+            if (pedanticCount > 0) {
+               sb.append("    Pedantic: " + pedanticCount + "\n");
+            }
          }
          sb.append("  Parsing results:\n");
          if (passedCount > 0) {
