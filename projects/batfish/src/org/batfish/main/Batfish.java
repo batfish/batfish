@@ -253,7 +253,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public static void initQuestionSettings(Settings settings) {
       String questionName = settings.getQuestionName();
-      Path testrigDir = settings.getTestrigSettings().getBasePath();
+      Path testrigDir = settings.getActiveTestrigSettings().getBasePath();
       if (questionName != null) {
          Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR)
                .resolve(questionName);
@@ -270,7 +270,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       String questionName = settings.getQuestionName();
       Path containerDir = settings.getContainerDir();
       if (testrig != null) {
-         applyBaseDir(settings.getTestrigSettings(), containerDir, testrig,
+         applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig,
                envName, questionName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
@@ -293,7 +293,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .setActiveTestrigSettings(settings.getDeltaTestrigSettings());
          }
          else {
-            settings.setActiveTestrigSettings(settings.getTestrigSettings());
+            settings
+                  .setActiveTestrigSettings(settings.getBaseTestrigSettings());
          }
          initQuestionSettings(settings);
       }
@@ -382,7 +383,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _cachedConfigurations = new HashMap<>();
       _dataPlanes = new HashMap<>();
       _testrigSettings = settings.getActiveTestrigSettings();
-      _baseTestrigSettings = settings.getTestrigSettings();
+      _baseTestrigSettings = settings.getBaseTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
       _logger = _settings.getLogger();
       _terminatedWithException = false;
@@ -721,7 +722,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void checkQuestionsDirExists() {
       checkBaseDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _testrigSettings.getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       if (!Files.exists(questionsDir)) {
          throw new CleanBatfishException("questions dir does not exist: \""
@@ -1010,8 +1011,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
-            _settings.getTestrig(), newEnvName, _settings.getQuestionName());
+      applyBaseDir(_settings.getBaseTestrigSettings(),
+            _settings.getContainerDir(), _settings.getTestrig(), newEnvName,
+            _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
@@ -2786,7 +2788,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private AnswerElement report() {
       ReportAnswerElement answerElement = new ReportAnswerElement();
       checkQuestionsDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _settings.getActiveTestrigSettings().getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
       try {
@@ -3043,8 +3045,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            String relativePathStr = _settings.getTestrigSettings()
-                  .getBasePath().relativize(path).toString();
+            String relativePathStr = _testrigSettings.getBasePath()
+                  .relativize(path).toString();
             if (!iptablesConfigurations.containsKey(relativePathStr)) {
                for (String key : iptablesConfigurations.keySet()) {
                   _logger.errorf("key : %s\n", key);
@@ -3413,14 +3415,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       Path questionPath = _settings.getQuestionPath();
       if (questionPath != null) {
-         if (!Files.exists(questionPath)) {
+         Path questionDir = questionPath.getParent();
+         if (!Files.exists(questionDir)) {
             throw new BatfishException(
                   "Could not write JSON answer to question dir '"
-                        + questionPath.toString()
+                        + questionDir.toString()
                         + "' because it does not exist");
          }
-         Path answerPath = questionPath.getParent()
-               .resolve(BfConsts.RELPATH_ANSWER_JSON);
+         Path answerPath = questionDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
          CommonUtil.writeFile(answerPath, jsonAnswer);
       }
    }

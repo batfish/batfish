@@ -372,11 +372,15 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemParse(String containerName, String testrigName) {
+   public WorkItem getWorkItemParse(String containerName, String testrigName,
+         boolean doDelta) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
+      if (doDelta) {
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      }
       return wItem;
    }
 

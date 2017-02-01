@@ -87,7 +87,7 @@ public class EnvironmentCreationQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String getName() {
-         return "environmentcreation";
+         return NAME;
       }
 
       @JsonProperty(NODE_BLACKLIST_VAR)

@@ -7,7 +7,6 @@ import java.util.TreeMap;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
@@ -15,6 +14,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.questions.IInitInfoQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -190,9 +190,8 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     * @example bf_answer("initinfo", summary=True") Get summary information
     *          about test-rig initialization
     */
-   public static class InitInfoQuestion extends Question {
-
-      private static final String SUMMARY_VAR = "summary";
+   public static class InitInfoQuestion extends Question
+         implements IInitInfoQuestion {
 
       private boolean _summary;
 
@@ -206,10 +205,10 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String getName() {
-         return BfConsts.Q_INIT_INFO;
+         return NAME;
       }
 
-      @JsonProperty(SUMMARY_VAR)
+      @JsonProperty(SUMMARY_KEY)
       public boolean getSummary() {
          return _summary;
       }
@@ -221,7 +220,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
 
       @Override
       public String prettyPrint() throws JsonProcessingException {
-         return getName() + " summary=" + _summary;
+         return getName() + " " + SUMMARY_KEY + "=" + _summary;
       }
 
       @Override
@@ -235,7 +234,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
             }
             try {
                switch (paramKey) {
-               case SUMMARY_VAR:
+               case SUMMARY_KEY:
                   setSummary(parameters.getBoolean(paramKey));
                   break;
                default:
@@ -249,7 +248,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      @JsonProperty(SUMMARY_VAR)
+      @JsonProperty(SUMMARY_KEY)
       public void setSummary(boolean summary) {
          _summary = summary;
       }

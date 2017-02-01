@@ -417,6 +417,8 @@ public final class Settings extends BaseSettings {
 
    private Path _answerJsonPath;
 
+   private TestrigSettings _baseTestrigSettings;
+
    private List<String> _blockNames;
 
    private boolean _canExecute;
@@ -565,8 +567,6 @@ public final class Settings extends BaseSettings {
 
    private String _testrig;
 
-   private TestrigSettings _testrigSettings;
-
    private boolean _throwOnLexerError;
 
    private boolean _throwOnParserError;
@@ -602,7 +602,7 @@ public final class Settings extends BaseSettings {
    public Settings(String[] args) {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
-      _testrigSettings = new TestrigSettings();
+      _baseTestrigSettings = new TestrigSettings();
       _deltaTestrigSettings = new TestrigSettings();
       initConfigDefaults();
       initOptions();
@@ -631,6 +631,10 @@ public final class Settings extends BaseSettings {
 
    public Path getAnswerJsonPath() {
       return _answerJsonPath;
+   }
+
+   public TestrigSettings getBaseTestrigSettings() {
+      return _baseTestrigSettings;
    }
 
    public List<String> getBlockNames() {
@@ -895,10 +899,6 @@ public final class Settings extends BaseSettings {
 
    public String getTestrig() {
       return _testrig;
-   }
-
-   public TestrigSettings getTestrigSettings() {
-      return _testrigSettings;
    }
 
    public boolean getThrowOnLexerError() {

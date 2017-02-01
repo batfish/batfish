@@ -42,6 +42,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
+import org.batfish.datamodel.questions.IInitInfoQuestion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -165,8 +166,8 @@ public class Client extends AbstractClient implements IClient {
 
       // upload the question
       boolean resultUpload = _workHelper.uploadQuestion(_currContainerName,
-            _currTestrig, questionName, questionFile,
-            paramsFile.getAbsolutePath());
+            isDelta ? _currDeltaTestrig : _currTestrig, questionName,
+            questionFile, paramsFile.getAbsolutePath());
 
       if (!resultUpload) {
          return false;
@@ -816,6 +817,7 @@ public class Client extends AbstractClient implements IClient {
                      deltaEnvName);
 
                if (!answerType(qTypeStr, paramsLine, isDelta, outWriter)) {
+                  unsetTestrig(true);
                   return false;
                }
 
@@ -973,7 +975,7 @@ public class Client extends AbstractClient implements IClient {
          }
          case INIT_DELTA_TESTRIG:
          case INIT_TESTRIG: {
-
+            boolean doDelta = command == Command.INIT_DELTA_TESTRIG;
             String testrigLocation = parameters.get(0);
             String testrigName = (parameters.size() > 1) ? parameters.get(1)
                   : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID().toString();
@@ -992,35 +994,45 @@ public class Client extends AbstractClient implements IClient {
             }
 
             if (!uploadTestrigOrEnv(testrigLocation, testrigName, true)) {
+               unsetTestrig(doDelta);
                return false;
             }
 
             _logger.output("Uploaded testrig. Parsing now.\n");
 
             WorkItem wItemParse = _workHelper
-                  .getWorkItemParse(_currContainerName, testrigName);
+                  .getWorkItemParse(_currContainerName, testrigName, false);
 
             if (!execute(wItemParse, outWriter)) {
+               unsetTestrig(doDelta);
                return false;
             }
 
             if (command == Command.INIT_TESTRIG) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
-               if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", false,
+               if (!answerType(IInitInfoQuestion.NAME,
+                     IInitInfoQuestion.SUMMARY_KEY + "=true", false,
                      outWriter)) {
+                  unsetTestrig(doDelta);
                   return false;
                }
-               _logger.infof("Base testrig is now %s\n", _currTestrig);
+               else {
+                  _logger.infof("Base testrig is now %s\n", _currTestrig);
+               }
             }
             else {
                _currDeltaTestrig = testrigName;
                _currDeltaEnv = DEFAULT_ENV_NAME;
-               if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", true,
+               if (!answerType(IInitInfoQuestion.NAME,
+                     IInitInfoQuestion.SUMMARY_KEY + "=true", true,
                      outWriter)) {
+                  unsetTestrig(doDelta);
                   return false;
                }
-               _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
+               else {
+                  _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
+               }
             }
 
             return true;
@@ -1091,13 +1103,14 @@ public class Client extends AbstractClient implements IClient {
             }
 
             WorkItem wItemParse = _workHelper
-                  .getWorkItemParse(_currContainerName, testrig);
+                  .getWorkItemParse(_currContainerName, testrig, isDelta);
 
             if (!execute(wItemParse, outWriter)) {
                return false;
             }
 
-            if (!answerType(BfConsts.Q_INIT_INFO, "summary=true", isDelta,
+            if (!answerType(IInitInfoQuestion.NAME,
+                  IInitInfoQuestion.SUMMARY_KEY + "=true", isDelta,
                   outWriter)) {
                return false;
             }
@@ -1469,6 +1482,19 @@ public class Client extends AbstractClient implements IClient {
       }
       catch (Throwable t) {
          t.printStackTrace();
+      }
+   }
+
+   private void unsetTestrig(boolean doDelta) {
+      if (doDelta) {
+         _currDeltaTestrig = null;
+         _currDeltaEnv = null;
+         _logger.info("Delta testrig and environment are now unset\n");
+      }
+      else {
+         _currTestrig = null;
+         _currEnv = null;
+         _logger.info("Base testrig and environment are now unset\n");
       }
    }
 
