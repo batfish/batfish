@@ -762,7 +762,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "Composite NOD");
+            _settings, _logger, true, "Composite NOD");
       executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
@@ -890,7 +890,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "NOD First-UNSAT");
+            _settings, _logger, true, "NOD First-UNSAT");
       executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
       printElapsedTime();
    }
@@ -900,7 +900,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "NOD");
+            _settings, _logger, true, "NOD");
       // todo: do something with nod answer element
       executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
@@ -912,7 +912,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "NOD SAT");
+            _settings, _logger, true, "NOD SAT");
       executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
    }
@@ -988,7 +988,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger,
+            _settings, _logger, _settings.getHaltOnConvertError(),
             "Convert configurations to vendor-independent format");
       executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
@@ -1170,7 +1170,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "Flatten configurations");
+            _settings, _logger,
+            _settings.getFlatten() || _settings.getHaltOnParseError(),
+            "Flatten configurations");
       // todo: do something with answer element
       executor.executeJobs(jobs, outputConfigurationData,
             new FlattenVendorConfigurationAnswerElement());
@@ -1615,6 +1617,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          }
       }
       return blacklistNodes;
+   }
+
+   @Override
+   public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement() {
+      return deserializeObject(_testrigSettings.getParseAnswerPath(),
+            ParseVendorConfigurationAnswerElement.class);
    }
 
    public Path getPrecomputedRoutesPath() {
@@ -2103,11 +2111,16 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    void outputAnswer(Answer answer) {
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
+         StringBuilder sb = new StringBuilder();
+
          String jsonString = mapper
                .writeValueAsString(_settings.prettyPrintAnswer()
                      ? answer.prettyPrintAnswer() : answer);
-         _logger.debug(jsonString);
-         writeJsonAnswer(jsonString);
+         sb.append(jsonString);
+         sb.append("\n");
+         String answerString = sb.toString();
+         _logger.debug(answerString);
+         writeJsonAnswer(answerString);
       }
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
@@ -2336,7 +2349,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger, "Parse configurations");
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse configurations");
 
       executor.executeJobs(jobs, vendorConfigurations, answerElement);
       printElapsedTime();
@@ -3082,7 +3096,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       Map<String, Configuration> configurations = getConfigurations(
             vendorConfigPath, answerElement);
       serializeIndependentConfigs(configurations, outputPath);
@@ -3152,7 +3168,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       if (Files.exists(networkConfigsPath)) {
          serializeNetworkConfigs(testRigPath, outputPath, answerElement);
          configsFound = true;

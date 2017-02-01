@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.util.BatfishObjectMapper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Task {
 
@@ -75,13 +77,11 @@ public class Task {
       public void setStartDate(Date startDate) {
          _startDate = startDate;
       }
-      
+
+      @Override
       public String toString() {
-         return String.format("%s: %s: %s/%d", 
-               _startDate.toString(), 
-               _description, 
-               _completed.toString(), 
-               _size);
+         return String.format("%s: %s: %s/%d", _startDate.toString(),
+               _description, _completed.toString(), _size);
       }
 
    }
@@ -171,7 +171,7 @@ public class Task {
    }
 
    @JsonProperty(OBTAINED_VAR)
-   public void setObtained(Date obtained) {
+   private void setObtained(Date obtained) {
       _obtained = obtained;
    }
 
@@ -187,5 +187,11 @@ public class Task {
    @JsonProperty(TERMINATED_VAR)
    public void setTerminated(Date terminated) {
       _terminated = terminated;
+   }
+
+   public synchronized String updateAndWrite() throws JsonProcessingException {
+      _obtained = new Date();
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.writeValueAsString(this);
    }
 }

@@ -24,6 +24,8 @@ public class BfConsts {
    public static final String ARG_DELTA_TESTRIG = "deltatestrig";
    public static final String ARG_DIFF_ACTIVE = "diffactive";
    public static final String ARG_ENVIRONMENT_NAME = "env";
+   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
+   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
    public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
    public static final String ARG_LOG_FILE = "logfile";
    public static final String ARG_LOG_LEVEL = "loglevel";
@@ -60,6 +62,8 @@ public class BfConsts {
    public static final String KEY_BGP_ANNOUNCEMENTS = "Announcements";
 
    public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
+
+   public static final String Q_INIT_INFO = "initinfo";
 
    public static final String RELPATH_ANSWER_HTML = "answer.html";
    public static final String RELPATH_ANSWER_JSON = "answer.json";

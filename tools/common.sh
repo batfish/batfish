@@ -623,7 +623,7 @@ batfish_unit_tests_parser() {
    batfish_date
    echo ": START UNIT TEST: Vendor configuration parser"
    batfish_prepare_test_rig $UNIT_TEST_DIR $PWD $UNIT_TEST_NAME
-   batfish -containerdir $PWD -testrig $UNIT_TEST_NAME -sv "$@"
+   batfish -containerdir $PWD -testrig $UNIT_TEST_NAME -sv "$@" -haltonparseerror -haltonconverterror -urf false
    batfish_date
    echo ": END UNIT TEST: Vendor configuration parser"
 }

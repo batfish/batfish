@@ -16,6 +16,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.InterfaceSet;
@@ -58,6 +59,8 @@ public interface IBatfish extends IPluginConsumer {
    String getFlowTag();
 
    FlowHistory getHistory();
+
+   ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement();
 
    void initBgpAdvertisements(Map<String, Configuration> configurations);
 

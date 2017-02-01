@@ -2,6 +2,15 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "parseStatus" : {
+        "A1Border" : "PASSED",
+        "A1Dist" : "PASSED",
+        "A1Inter" : "PASSED",
+        "A2Dist1" : "PASSED",
+        "A2Dist2" : "PASSED",
+        "A2Inter" : "PASSED",
+        "ISP" : "PASSED"
+      },
       "parseTrees" : {
         "A1Border" : {
           "sentences" : [
@@ -2433,5 +2442,27 @@
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement"
     }
   ],
+  "status" : "SUCCESS"
+}
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoAnswerElement",
+      "parseStatus" : {
+        "A1Border" : "PASSED",
+        "A1Dist" : "PASSED",
+        "A1Inter" : "PASSED",
+        "A2Dist1" : "PASSED",
+        "A2Dist2" : "PASSED",
+        "A2Inter" : "PASSED",
+        "ISP" : "PASSED"
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
+    "differential" : false,
+    "summary" : true
+  },
   "status" : "SUCCESS"
 }

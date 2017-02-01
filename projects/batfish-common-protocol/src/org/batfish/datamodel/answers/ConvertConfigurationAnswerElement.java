@@ -1,9 +1,11 @@
 package org.batfish.datamodel.answers;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -18,6 +20,8 @@ public class ConvertConfigurationAnswerElement
     */
    private static final long serialVersionUID = 1L;
 
+   private Set<String> _failed;
+
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _undefinedReferences;
 
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
@@ -25,9 +29,14 @@ public class ConvertConfigurationAnswerElement
    private SortedMap<String, Warnings> _warnings;
 
    public ConvertConfigurationAnswerElement() {
+      _failed = new TreeSet<>();
       _warnings = new TreeMap<>();
       _undefinedReferences = new TreeMap<>();
       _unusedStructures = new TreeMap<>();
+   }
+
+   public Set<String> getFailed() {
+      return _failed;
    }
 
    public SortedMap<String, SortedMap<String, SortedSet<String>>> getUndefinedReferences() {
@@ -83,6 +92,10 @@ public class ConvertConfigurationAnswerElement
       }
 
       return retString.toString();
+   }
+
+   public void setFailed(Set<String> failed) {
+      _failed = failed;
    }
 
    public void setUndefinedReferences(
