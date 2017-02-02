@@ -75,7 +75,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
+ExecStart=/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
