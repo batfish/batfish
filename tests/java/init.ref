@@ -123,14 +123,9 @@
           }
         }
       }
-    }
-  ],
-  "status" : "SUCCESS"
-}
-{
-  "answerElements" : [
+    },
     {
-      "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoAnswerElement",
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
         "as1border1" : "PASSED",
         "as1border2" : "PASSED",
@@ -152,10 +147,5 @@
       }
     }
   ],
-  "question" : {
-    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
-    "differential" : false,
-    "summary" : true
-  },
   "status" : "SUCCESS"
 }

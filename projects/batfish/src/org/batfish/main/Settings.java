@@ -383,8 +383,6 @@ public final class Settings extends BaseSettings {
     */
    private static final String ARG_TRUST_ALL_SSL_CERTS = "batfish.TrustAllSslCerts";
 
-   private static final String ARG_VERBOSE_PARSE = "verboseparse";
-
    private static final String ARGNAME_AS = "as";
 
    private static final String ARGNAME_HOSTNAME = "hostname";
@@ -482,6 +480,8 @@ public final class Settings extends BaseSettings {
    private boolean _ignoreUnknown;
 
    private boolean _ignoreUnsupported;
+
+   private boolean _initInfo;
 
    private int _jobs;
 
@@ -743,6 +743,10 @@ public final class Settings extends BaseSettings {
 
    public boolean getHistogram() {
       return _histogram;
+   }
+
+   public boolean getInitInfo() {
+      return _initInfo;
    }
 
    public int getJobs() {
@@ -1041,10 +1045,11 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
-      setDefaultProperty(ARG_VERBOSE_PARSE, false);
+      setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
+      setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REPORT, false);
@@ -1113,6 +1118,9 @@ public final class Settings extends BaseSettings {
 
       addBooleanOption(ARG_FLATTEN_ON_THE_FLY,
             "flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)");
+
+      addBooleanOption(BfConsts.COMMAND_INIT_INFO,
+            "include parse/convert initialization info in answer");
 
       addOption(ARG_GEN_OSPF_TOPLOGY_PATH,
             "generate ospf configs from specified topology", ARGNAME_PATH);
@@ -1266,7 +1274,7 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES,
             "add precomputed routes to data plane model");
 
-      addBooleanOption(ARG_VERBOSE_PARSE,
+      addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
             "(developer option) include parse/convert data in init-testrig answer");
 
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
@@ -1353,6 +1361,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
       _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
+      _initInfo = getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
       _jobs = getIntOptionValue(ARG_JOBS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
       _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
@@ -1411,7 +1420,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedRoutes = getBooleanOptionValue(
             BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
-      _verboseParse = getBooleanOptionValue(ARG_VERBOSE_PARSE);
+      _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
       _writeBgpAdvertisements = getBooleanOptionValue(
             BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
       _writeIbgpNeighbors = getBooleanOptionValue(
@@ -1461,6 +1470,10 @@ public final class Settings extends BaseSettings {
 
    public void setHaltOnParseError(boolean haltOnParseError) {
       _haltOnParseError = haltOnParseError;
+   }
+
+   public void setInitInfo(boolean initInfo) {
+      _initInfo = initInfo;
    }
 
    public void setLogger(BatfishLogger logger) {

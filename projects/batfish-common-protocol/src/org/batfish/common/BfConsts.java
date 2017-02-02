@@ -47,10 +47,12 @@ public class BfConsts {
    public static final String ARG_USE_PRECOMPUTED_ADVERTISEMENTS = "useprecomputedadvertisements";
    public static final String ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS = "useprecomputedibgpneighbors";
    public static final String ARG_USE_PRECOMPUTED_ROUTES = "useprecomputedroutes";
+   public static final String ARG_VERBOSE_PARSE = "verboseparse";
 
    public static final String COMMAND_ANSWER = "answer";
    public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
    public static final String COMMAND_DUMP_DP = "dp";
+   public static final String COMMAND_INIT_INFO = "initinfo";
    public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
    public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
    public static final String COMMAND_QUERY = "query";

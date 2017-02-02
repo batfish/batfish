@@ -42,7 +42,6 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.IEnvironmentCreationQuestion;
-import org.batfish.datamodel.questions.IInitInfoQuestion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1011,28 +1010,12 @@ public class Client extends AbstractClient implements IClient {
             if (command == Command.INIT_TESTRIG) {
                _currTestrig = testrigName;
                _currEnv = DEFAULT_ENV_NAME;
-               if (!answerType(IInitInfoQuestion.NAME,
-                     IInitInfoQuestion.SUMMARY_KEY + "=true", false,
-                     outWriter)) {
-                  unsetTestrig(doDelta);
-                  return false;
-               }
-               else {
-                  _logger.infof("Base testrig is now %s\n", _currTestrig);
-               }
+               _logger.infof("Base testrig is now %s\n", _currTestrig);
             }
             else {
                _currDeltaTestrig = testrigName;
                _currDeltaEnv = DEFAULT_ENV_NAME;
-               if (!answerType(IInitInfoQuestion.NAME,
-                     IInitInfoQuestion.SUMMARY_KEY + "=true", true,
-                     outWriter)) {
-                  unsetTestrig(doDelta);
-                  return false;
-               }
-               else {
-                  _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
-               }
+               _logger.infof("Delta testrig is now %s\n", _currDeltaTestrig);
             }
 
             return true;
@@ -1109,11 +1092,6 @@ public class Client extends AbstractClient implements IClient {
                return false;
             }
 
-            if (!answerType(IInitInfoQuestion.NAME,
-                  IInitInfoQuestion.SUMMARY_KEY + "=true", isDelta,
-                  outWriter)) {
-               return false;
-            }
             return true;
          }
 

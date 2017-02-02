@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -82,9 +83,11 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
@@ -1863,6 +1866,38 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // }
    }
 
+   @Override
+   public InitInfoAnswerElement initInfo(boolean summary) {
+      checkConfigurations();
+      InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
+      ParseVendorConfigurationAnswerElement parseAnswer = getParseVendorConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement convertAnswer = getConvertConfigurationAnswerElement();
+      if (!summary) {
+         SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
+               .getWarnings();
+         warnings.putAll(parseAnswer.getWarnings());
+         convertAnswer.getWarnings().forEach((hostname, convertWarnings) -> {
+            org.batfish.common.Warnings combined = warnings.get(hostname);
+            if (combined == null) {
+               warnings.put(hostname, convertWarnings);
+            }
+            else {
+               combined.getPedanticWarnings()
+                     .addAll(convertWarnings.getPedanticWarnings());
+               combined.getRedFlagWarnings()
+                     .addAll(convertWarnings.getRedFlagWarnings());
+               combined.getUnimplementedWarnings()
+                     .addAll(convertWarnings.getUnimplementedWarnings());
+            }
+         });
+      }
+      answerElement.setParseStatus(parseAnswer.getParseStatus());
+      for (String failed : convertAnswer.getFailed()) {
+         answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
+      }
+      return answerElement;
+   }
+
    private void initQuestionEnvironment(Question question, boolean dp,
          boolean differentialContext) {
       EnvironmentSettings envSettings = _testrigSettings
@@ -2918,6 +2953,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path inputPath = _testrigSettings.getSerializeVendorPath();
          Path outputPath = _testrigSettings.getSerializeIndependentPath();
          answer.append(serializeIndependentConfigs(inputPath, outputPath));
+         action = true;
+      }
+
+      if (_settings.getInitInfo()) {
+         answer.addAnswerElement(initInfo(true));
          action = true;
       }
 

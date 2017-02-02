@@ -1898,14 +1898,9 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement"
-    }
-  ],
-  "status" : "SUCCESS"
-}
-{
-  "answerElements" : [
+    },
     {
-      "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoAnswerElement",
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
         "D1" : "PASSED",
         "D2" : "PASSED",
@@ -1916,10 +1911,5 @@
       }
     }
   ],
-  "question" : {
-    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
-    "differential" : false,
-    "summary" : true
-  },
   "status" : "SUCCESS"
 }

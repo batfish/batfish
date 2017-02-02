@@ -5905,14 +5905,9 @@
           ]
         }
       }
-    }
-  ],
-  "status" : "SUCCESS"
-}
-{
-  "answerElements" : [
+    },
     {
-      "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoAnswerElement",
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
         "junos-srx-1" : "PASSED",
         "junos-srx-2" : "PASSED",
@@ -5920,10 +5915,5 @@
       }
     }
   ],
-  "question" : {
-    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
-    "differential" : false,
-    "summary" : true
-  },
   "status" : "SUCCESS"
 }

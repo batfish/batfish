@@ -16,6 +16,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
@@ -66,6 +67,8 @@ public interface IBatfish extends IPluginConsumer {
 
    void initBgpOriginationSpaceExplicit(
          Map<String, Configuration> configurations);
+
+   InitInfoAnswerElement initInfo(boolean summary);
 
    void initRemoteBgpNeighbors(Map<String, Configuration> configurations,
          Map<Ip, Set<String>> ipOwners);
