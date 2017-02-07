@@ -19,8 +19,12 @@ export BATFISH_DOCS_DATAMODEL="$BATFISH_DOCS_ROOT/datamodel.json"
 export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
 export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
 export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
-export BATFISH_DATAMODEL_PAGE_SCRIPT="${BATFISH_TOOLS_PATH}/datamodel_page.py"
-export BATFISH_QUESTIONS_PAGE_SCRIPT="${BATFISH_TOOLS_PATH}/questions_page.py"
+
+if [ -d "$BATFISH_ROOT/../pybatfish" ]; then
+   export PYBATFISH_ROOT="$BATFISH_ROOT/../pybatfish"
+   export BATFISH_DATAMODEL_PAGE_SCRIPT="${PYBATFISH_ROOT}/datamodel_page.py"
+   export BATFISH_QUESTIONS_PAGE_SCRIPT="${PYBATFISH_ROOT}/questions_page.py"
+fi
 
 export COORDINATOR_PATH="$BATFISH_ROOT/projects/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
@@ -634,13 +638,13 @@ batfish_datamodel() {
    batfish_client -runmode gendatamodel > $BATFISH_DOCS_DATAMODEL
 
    echo "Generating wiki page to " $BATFISH_WIKI_DATAMODEL
-   pybatfish $BATFISH_DATAMODEL_PAGE_SCRIPT $BATFISH_DOCS_DATAMODEL > $BATFISH_WIKI_DATAMODEL
+   python $BATFISH_DATAMODEL_PAGE_SCRIPT $BATFISH_DOCS_DATAMODEL > $BATFISH_WIKI_DATAMODEL
 }
 export -f batfish_datamodel
 
 batfish_wiki_questions() {
    echo "Generating questions to " $BATFISH_WIKI_QUESTIONS
-   pybatfish $BATFISH_QUESTIONS_PAGE_SCRIPT "$QUESTION_PATH/src" > $BATFISH_WIKI_QUESTIONS
+   python $BATFISH_QUESTIONS_PAGE_SCRIPT "$QUESTION_PATH/src" > $BATFISH_WIKI_QUESTIONS
 }
 export -f batfish_wiki_questions
 
@@ -725,26 +729,6 @@ _client_build() {
    ant "$@" || return 1
 }
 export -f _client_build
-
-pybatfish() {
-   bash -c '_pybatfish "$@"' _pybatfish "$@" || return 1
-}
-export -f pybatfish
-
-_pybatfish() {
-   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" python2.7 "$@" || return 1
-}
-export -f _pybatfish
-
-ipybatfish() {
-   bash -c '_ipybatfish "$@"' _ipybatfish "$@" || return 1
-}
-export -f ipybatfish
-
-_ipybatfish() {
-   PYTHONPATH="${PYBATFISH_PATH}:${PYTHONPATH}" ipython2 "$@" || return 1
-}
-export -f _ipybatfish
 
 allinone() {
    # if cygwin, shift and replace each parameter

@@ -260,8 +260,8 @@
           "description" : "Logical (non-VPN) interface from which to connect to IKE gateway. This interface is used to determine source-address for the connection."
         },
         "ikePolicy" : {
-          "$ref" : "#/definitions/IkePolicy",
-          "description" : "IKE policy to be used with this IKE gateway. Stored as @id."
+          "type" : "string",
+          "description" : "IKE policy to be used with this IKE gateway."
         },
         "localAddress" : {
           "type" : "string",
@@ -320,12 +320,12 @@
           "description" : "Description of this interface"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
-          "description" : "The IPV4 access-list used to filter traffic destined for this device on this interface. Stored as @id"
+          "type" : "string",
+          "description" : "The IPV4 access-list used to filter traffic destined for this device on this interface."
         },
         "incomingFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
-          "description" : "The IPV4 access-list used to filter traffic that arrives on this interface. Stored as @id"
+          "type" : "string",
+          "description" : "The IPV4 access-list used to filter traffic that arrives on this interface."
         },
         "isisCost" : {
           "type" : "integer",
@@ -358,8 +358,8 @@
           "description" : "The native VLAN of this interface when switchport mode is TRUNK"
         },
         "ospfArea" : {
-          "$ref" : "#/definitions/OspfArea",
-          "description" : "The OSPF area to which this interface belongs. Stored as @id"
+          "type" : "integer",
+          "description" : "The OSPF area to which this interface belongs."
         },
         "ospfCost" : {
           "type" : "integer",
@@ -382,12 +382,8 @@
           "description" : "Whether or not OSPF is enabled passively on this interface. If passive, this interface is included in the OSPF RIB, but no OSPF packets are sent from it."
         },
         "outgoingFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
+          "type" : "string",
           "description" : "The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration",
-          "description" : "The Configuration to which this interface belongs. Stored as @id"
         },
         "prefix" : {
           "type" : "string",
@@ -429,9 +425,14 @@
           "type" : "string",
           "description" : "The name of the VRF to which this interface belongs"
         },
+        "vrrpGroups" : {
+          "additionalProperties" : {
+            "$ref" : "#/definitions/VrrpGroup"
+          }
+        },
         "zone" : {
-          "$ref" : "#/definitions/Zone",
-          "description" : "The firewall zone to which this interface belongs. Stored as @id"
+          "type" : "string",
+          "description" : "The firewall zone to which this interface belongs."
         }
       },
       "required" : [
@@ -445,831 +446,7 @@
         "ospfPassive"
       ]
     },
-    "IpAccessList" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "description" : "An access-list used to filter IPV4 packets",
-      "properties" : {
-        "name" : {
-          "type" : "string",
-          "description" : "The name of this structure"
-        },
-        "lines" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/IpAccessListLine"
-          },
-          "description" : "The lines against which to check an IPV4 packet"
-        }
-      }
-    },
-    "IpAccessListLine" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "description" : "A line in an IpAccessList",
-      "properties" : {
-        "action" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ],
-          "description" : "The action the underlying access-list will take when this line matches an IPV4 packet."
-        },
-        "dscps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          },
-          "description" : "A set of acceptable DSCP values for a packet"
-        },
-        "dstIps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A space of acceptable destination IP addresses for a packet"
-        },
-        "dstPorts" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of acceptable destination port ranges for a TCP/UDP packet"
-        },
-        "ecns" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          },
-          "description" : "A set of acceptable ECN values for a packet"
-        },
-        "fragmentOffsets" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of acceptable fragment offsets for a UDP packet"
-        },
-        "icmpCodes" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of acceptable ICMP code ranges for an ICMP packet"
-        },
-        "icmpTypes" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of acceptable ICMP type ranges for an ICMP packet"
-        },
-        "ipProtocols" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string",
-            "enum" : [
-              "AHP",
-              "AN",
-              "ANY_0_HOP_PROTOCOL",
-              "ANY_DISTRIBUTED_FILE_SYSTEM",
-              "ANY_HOST_INTERNAL_PROTOCOL",
-              "ANY_LOCAL_NETWORK",
-              "ANY_PRIVATE_ENCRYPTION_SCHEME",
-              "ARGUS",
-              "ARIS",
-              "AX25",
-              "BBN_RCC_MON",
-              "BNA",
-              "BR_SAT_MON",
-              "CBT",
-              "CFTP",
-              "CHAOS",
-              "COMPAQ_PEER",
-              "CPHB",
-              "CPNX",
-              "CRTP",
-              "CRUDP",
-              "DCCP",
-              "DCN_MEAS",
-              "DDP",
-              "DDX",
-              "DGP",
-              "EGP",
-              "EIGRP",
-              "EMCON",
-              "ENCAP",
-              "ESP",
-              "ETHERIP",
-              "FC",
-              "FIRE",
-              "GGP",
-              "GMTP",
-              "GRE",
-              "HIP",
-              "HMP",
-              "HOPOPT",
-              "I_NLSP",
-              "IATP",
-              "ICMP",
-              "IDPR",
-              "IDPR_CMTP",
-              "IDRP",
-              "IFMP",
-              "IGMP",
-              "IGP",
-              "IL",
-              "IP",
-              "IPComp",
-              "IPCU",
-              "IPINIP",
-              "IPIP",
-              "IPLT",
-              "IPPC",
-              "IPV6",
-              "IPV6_FRAG",
-              "IPV6_ICMP",
-              "IPV6_NO_NXT",
-              "IPV6_OPTS",
-              "IPV6_ROUTE",
-              "IPX_IN_IP",
-              "IRTP",
-              "ISIS",
-              "ISO_IP",
-              "ISO_TP4",
-              "KRYPTOLAN",
-              "L2TP",
-              "LARP",
-              "LEAF1",
-              "LEAF2",
-              "MANAET",
-              "MERIT_INP",
-              "MFE_NSP",
-              "MHRP",
-              "MICP",
-              "MOBILE",
-              "MOBILITY",
-              "MPLS_IN_IP",
-              "MTP",
-              "MUX",
-              "NARP",
-              "NETBLT",
-              "NSFNET_IGP",
-              "NVPII",
-              "OSPF",
-              "PGM",
-              "PIM",
-              "PIPE",
-              "PNNI",
-              "PRM",
-              "PTP",
-              "PUP",
-              "PVP",
-              "QNX",
-              "RDP",
-              "ROHC",
-              "RSVP",
-              "RSVP_E2E_IGNORE",
-              "RVD",
-              "SAT_EXPAK",
-              "SAT_MON",
-              "SCC_SP",
-              "SCPS",
-              "SCTP",
-              "SDRP",
-              "SECURE_VMTP",
-              "SHIM6",
-              "SKIP",
-              "SM",
-              "SMP",
-              "SNP",
-              "SPRITE_RPC",
-              "SPS",
-              "SRP",
-              "SSCOPMCE",
-              "ST",
-              "STP",
-              "SUN_ND",
-              "SWIPE",
-              "TCF",
-              "TCP",
-              "THREE_PC",
-              "TLSP",
-              "TPPLUSPLUS",
-              "TRUNK1",
-              "TRUNK2",
-              "TTP",
-              "UDP",
-              "UDP_LITE",
-              "UNNAMED_143",
-              "UNNAMED_144",
-              "UNNAMED_145",
-              "UNNAMED_146",
-              "UNNAMED_147",
-              "UNNAMED_148",
-              "UNNAMED_149",
-              "UNNAMED_150",
-              "UNNAMED_151",
-              "UNNAMED_152",
-              "UNNAMED_153",
-              "UNNAMED_154",
-              "UNNAMED_155",
-              "UNNAMED_156",
-              "UNNAMED_157",
-              "UNNAMED_158",
-              "UNNAMED_159",
-              "UNNAMED_160",
-              "UNNAMED_161",
-              "UNNAMED_162",
-              "UNNAMED_163",
-              "UNNAMED_164",
-              "UNNAMED_165",
-              "UNNAMED_166",
-              "UNNAMED_167",
-              "UNNAMED_168",
-              "UNNAMED_169",
-              "UNNAMED_170",
-              "UNNAMED_171",
-              "UNNAMED_172",
-              "UNNAMED_173",
-              "UNNAMED_174",
-              "UNNAMED_175",
-              "UNNAMED_176",
-              "UNNAMED_177",
-              "UNNAMED_178",
-              "UNNAMED_179",
-              "UNNAMED_180",
-              "UNNAMED_181",
-              "UNNAMED_182",
-              "UNNAMED_183",
-              "UNNAMED_184",
-              "UNNAMED_185",
-              "UNNAMED_186",
-              "UNNAMED_187",
-              "UNNAMED_188",
-              "UNNAMED_189",
-              "UNNAMED_190",
-              "UNNAMED_191",
-              "UNNAMED_192",
-              "UNNAMED_193",
-              "UNNAMED_194",
-              "UNNAMED_195",
-              "UNNAMED_196",
-              "UNNAMED_197",
-              "UNNAMED_198",
-              "UNNAMED_199",
-              "UNNAMED_200",
-              "UNNAMED_201",
-              "UNNAMED_202",
-              "UNNAMED_203",
-              "UNNAMED_204",
-              "UNNAMED_205",
-              "UNNAMED_206",
-              "UNNAMED_207",
-              "UNNAMED_208",
-              "UNNAMED_209",
-              "UNNAMED_210",
-              "UNNAMED_211",
-              "UNNAMED_212",
-              "UNNAMED_213",
-              "UNNAMED_214",
-              "UNNAMED_215",
-              "UNNAMED_216",
-              "UNNAMED_217",
-              "UNNAMED_218",
-              "UNNAMED_219",
-              "UNNAMED_220",
-              "UNNAMED_221",
-              "UNNAMED_222",
-              "UNNAMED_223",
-              "UNNAMED_224",
-              "UNNAMED_225",
-              "UNNAMED_226",
-              "UNNAMED_227",
-              "UNNAMED_228",
-              "UNNAMED_229",
-              "UNNAMED_230",
-              "UNNAMED_231",
-              "UNNAMED_232",
-              "UNNAMED_233",
-              "UNNAMED_234",
-              "UNNAMED_235",
-              "UNNAMED_236",
-              "UNNAMED_237",
-              "UNNAMED_238",
-              "UNNAMED_239",
-              "UNNAMED_240",
-              "UNNAMED_241",
-              "UNNAMED_242",
-              "UNNAMED_243",
-              "UNNAMED_244",
-              "UNNAMED_245",
-              "UNNAMED_246",
-              "UNNAMED_247",
-              "UNNAMED_248",
-              "UNNAMED_249",
-              "UNNAMED_250",
-              "UNNAMED_251",
-              "UNNAMED_252",
-              "UNNAMED_253",
-              "UNNAMED_254",
-              "UNNAMED_255",
-              "UTI",
-              "VINES",
-              "VISA",
-              "VMTP",
-              "VRRP",
-              "WB_EXPAK",
-              "WB_MON",
-              "WESP",
-              "WSN",
-              "XNET",
-              "XNS_IDP",
-              "XTP"
-            ]
-          },
-          "description" : "A set of acceptable IP protocols for a packet"
-        },
-        "name" : {
-          "type" : "string",
-          "description" : "The name of this line in the list"
-        },
-        "negate" : {
-          "type" : "boolean",
-          "description" : "Determines whether to match the complement of the stated criteria of this header space"
-        },
-        "notDscps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          },
-          "description" : "A set of unacceptable DSCP values for a packet"
-        },
-        "notDstIps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A space of unacceptable destination IP addresses for a packet"
-        },
-        "notDstPorts" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of unacceptable destination port ranges for a TCP/UDP packet"
-        },
-        "notEcns" : {
-          "type" : "array",
-          "items" : {
-            "type" : "integer"
-          },
-          "description" : "A set of unacceptable ECN values for a packet"
-        },
-        "notFragmentOffsets" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of unacceptable fragment offsets for a UDP packet"
-        },
-        "notIcmpCodes" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of unacceptable ICMP code ranges for an ICMP packet"
-        },
-        "notIcmpTypes" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of unacceptable ICMP type ranges for an ICMP packet"
-        },
-        "notIpProtocols" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string",
-            "enum" : [
-              "AHP",
-              "AN",
-              "ANY_0_HOP_PROTOCOL",
-              "ANY_DISTRIBUTED_FILE_SYSTEM",
-              "ANY_HOST_INTERNAL_PROTOCOL",
-              "ANY_LOCAL_NETWORK",
-              "ANY_PRIVATE_ENCRYPTION_SCHEME",
-              "ARGUS",
-              "ARIS",
-              "AX25",
-              "BBN_RCC_MON",
-              "BNA",
-              "BR_SAT_MON",
-              "CBT",
-              "CFTP",
-              "CHAOS",
-              "COMPAQ_PEER",
-              "CPHB",
-              "CPNX",
-              "CRTP",
-              "CRUDP",
-              "DCCP",
-              "DCN_MEAS",
-              "DDP",
-              "DDX",
-              "DGP",
-              "EGP",
-              "EIGRP",
-              "EMCON",
-              "ENCAP",
-              "ESP",
-              "ETHERIP",
-              "FC",
-              "FIRE",
-              "GGP",
-              "GMTP",
-              "GRE",
-              "HIP",
-              "HMP",
-              "HOPOPT",
-              "I_NLSP",
-              "IATP",
-              "ICMP",
-              "IDPR",
-              "IDPR_CMTP",
-              "IDRP",
-              "IFMP",
-              "IGMP",
-              "IGP",
-              "IL",
-              "IP",
-              "IPComp",
-              "IPCU",
-              "IPINIP",
-              "IPIP",
-              "IPLT",
-              "IPPC",
-              "IPV6",
-              "IPV6_FRAG",
-              "IPV6_ICMP",
-              "IPV6_NO_NXT",
-              "IPV6_OPTS",
-              "IPV6_ROUTE",
-              "IPX_IN_IP",
-              "IRTP",
-              "ISIS",
-              "ISO_IP",
-              "ISO_TP4",
-              "KRYPTOLAN",
-              "L2TP",
-              "LARP",
-              "LEAF1",
-              "LEAF2",
-              "MANAET",
-              "MERIT_INP",
-              "MFE_NSP",
-              "MHRP",
-              "MICP",
-              "MOBILE",
-              "MOBILITY",
-              "MPLS_IN_IP",
-              "MTP",
-              "MUX",
-              "NARP",
-              "NETBLT",
-              "NSFNET_IGP",
-              "NVPII",
-              "OSPF",
-              "PGM",
-              "PIM",
-              "PIPE",
-              "PNNI",
-              "PRM",
-              "PTP",
-              "PUP",
-              "PVP",
-              "QNX",
-              "RDP",
-              "ROHC",
-              "RSVP",
-              "RSVP_E2E_IGNORE",
-              "RVD",
-              "SAT_EXPAK",
-              "SAT_MON",
-              "SCC_SP",
-              "SCPS",
-              "SCTP",
-              "SDRP",
-              "SECURE_VMTP",
-              "SHIM6",
-              "SKIP",
-              "SM",
-              "SMP",
-              "SNP",
-              "SPRITE_RPC",
-              "SPS",
-              "SRP",
-              "SSCOPMCE",
-              "ST",
-              "STP",
-              "SUN_ND",
-              "SWIPE",
-              "TCF",
-              "TCP",
-              "THREE_PC",
-              "TLSP",
-              "TPPLUSPLUS",
-              "TRUNK1",
-              "TRUNK2",
-              "TTP",
-              "UDP",
-              "UDP_LITE",
-              "UNNAMED_143",
-              "UNNAMED_144",
-              "UNNAMED_145",
-              "UNNAMED_146",
-              "UNNAMED_147",
-              "UNNAMED_148",
-              "UNNAMED_149",
-              "UNNAMED_150",
-              "UNNAMED_151",
-              "UNNAMED_152",
-              "UNNAMED_153",
-              "UNNAMED_154",
-              "UNNAMED_155",
-              "UNNAMED_156",
-              "UNNAMED_157",
-              "UNNAMED_158",
-              "UNNAMED_159",
-              "UNNAMED_160",
-              "UNNAMED_161",
-              "UNNAMED_162",
-              "UNNAMED_163",
-              "UNNAMED_164",
-              "UNNAMED_165",
-              "UNNAMED_166",
-              "UNNAMED_167",
-              "UNNAMED_168",
-              "UNNAMED_169",
-              "UNNAMED_170",
-              "UNNAMED_171",
-              "UNNAMED_172",
-              "UNNAMED_173",
-              "UNNAMED_174",
-              "UNNAMED_175",
-              "UNNAMED_176",
-              "UNNAMED_177",
-              "UNNAMED_178",
-              "UNNAMED_179",
-              "UNNAMED_180",
-              "UNNAMED_181",
-              "UNNAMED_182",
-              "UNNAMED_183",
-              "UNNAMED_184",
-              "UNNAMED_185",
-              "UNNAMED_186",
-              "UNNAMED_187",
-              "UNNAMED_188",
-              "UNNAMED_189",
-              "UNNAMED_190",
-              "UNNAMED_191",
-              "UNNAMED_192",
-              "UNNAMED_193",
-              "UNNAMED_194",
-              "UNNAMED_195",
-              "UNNAMED_196",
-              "UNNAMED_197",
-              "UNNAMED_198",
-              "UNNAMED_199",
-              "UNNAMED_200",
-              "UNNAMED_201",
-              "UNNAMED_202",
-              "UNNAMED_203",
-              "UNNAMED_204",
-              "UNNAMED_205",
-              "UNNAMED_206",
-              "UNNAMED_207",
-              "UNNAMED_208",
-              "UNNAMED_209",
-              "UNNAMED_210",
-              "UNNAMED_211",
-              "UNNAMED_212",
-              "UNNAMED_213",
-              "UNNAMED_214",
-              "UNNAMED_215",
-              "UNNAMED_216",
-              "UNNAMED_217",
-              "UNNAMED_218",
-              "UNNAMED_219",
-              "UNNAMED_220",
-              "UNNAMED_221",
-              "UNNAMED_222",
-              "UNNAMED_223",
-              "UNNAMED_224",
-              "UNNAMED_225",
-              "UNNAMED_226",
-              "UNNAMED_227",
-              "UNNAMED_228",
-              "UNNAMED_229",
-              "UNNAMED_230",
-              "UNNAMED_231",
-              "UNNAMED_232",
-              "UNNAMED_233",
-              "UNNAMED_234",
-              "UNNAMED_235",
-              "UNNAMED_236",
-              "UNNAMED_237",
-              "UNNAMED_238",
-              "UNNAMED_239",
-              "UNNAMED_240",
-              "UNNAMED_241",
-              "UNNAMED_242",
-              "UNNAMED_243",
-              "UNNAMED_244",
-              "UNNAMED_245",
-              "UNNAMED_246",
-              "UNNAMED_247",
-              "UNNAMED_248",
-              "UNNAMED_249",
-              "UNNAMED_250",
-              "UNNAMED_251",
-              "UNNAMED_252",
-              "UNNAMED_253",
-              "UNNAMED_254",
-              "UNNAMED_255",
-              "UTI",
-              "VINES",
-              "VISA",
-              "VMTP",
-              "VRRP",
-              "WB_EXPAK",
-              "WB_MON",
-              "WESP",
-              "WSN",
-              "XNET",
-              "XNS_IDP",
-              "XTP"
-            ]
-          },
-          "description" : "A set of unacceptable IP protocols for a packet"
-        },
-        "notSrcIps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A space of unacceptable source IP addresses for a packet"
-        },
-        "notSrcPorts" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of unacceptable source port ranges for a TCP/UDP packet"
-        },
-        "srcIps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A space of acceptable source IP addresses for a packet"
-        },
-        "srcOrDstIps" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A space of IP addresses within which either the source or the destination IP of a packet must fall for acceptance"
-        },
-        "srcOrDstPorts" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of ranges within which either the source or the destination port of a TCP/UDP packet must fall for acceptance"
-        },
-        "srcPorts" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "A set of acceptable source port ranges for a TCP/UDP packet"
-        },
-        "states" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string",
-            "enum" : [
-              "ESTABLISHED",
-              "INVALID",
-              "NEW",
-              "RELATED"
-            ]
-          },
-          "description" : "A set of acceptable abstract firewall states for a packet to match"
-        },
-        "tcpFlags" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/TcpFlags"
-          },
-          "description" : "A set of acceptable TCP flag bitmasks for a TCP packet to match"
-        }
-      },
-      "required" : [
-        "negate"
-      ]
-    },
-    "TcpFlags" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "properties" : {
-        "ack" : {
-          "type" : "boolean",
-          "description" : "Value for ACK bit if used (true->1/false->0)"
-        },
-        "cwr" : {
-          "type" : "boolean",
-          "description" : "Value for CWR bit if used (true->1/false->0)"
-        },
-        "ece" : {
-          "type" : "boolean",
-          "description" : "Value for ECE bit if used (true->1/false->0)"
-        },
-        "fin" : {
-          "type" : "boolean",
-          "description" : "Value for FIN bit if used (true->1/false->0)"
-        },
-        "psh" : {
-          "type" : "boolean",
-          "description" : "Value for PSH bit if used (true->1/false->0)"
-        },
-        "rst" : {
-          "type" : "boolean",
-          "description" : "Value for RST bit if used (true->1/false->0)"
-        },
-        "syn" : {
-          "type" : "boolean",
-          "description" : "Value for SYN bit if used (true->1/false->0)"
-        },
-        "urg" : {
-          "type" : "boolean",
-          "description" : "Value for URG bit if used (true->1/false->0)"
-        },
-        "useAck" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the ACK bit"
-        },
-        "useCwr" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the CWR bit"
-        },
-        "useEce" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the ECE bit"
-        },
-        "useFin" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the FIN bit"
-        },
-        "usePsh" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the PSH bit"
-        },
-        "useRst" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the RST bit"
-        },
-        "useSyn" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the SYN bit"
-        },
-        "useUrg" : {
-          "type" : "boolean",
-          "description" : "Whether or not to match against the URG bit"
-        }
-      },
-      "required" : [
-        "ack",
-        "cwr",
-        "ece",
-        "fin",
-        "psh",
-        "rst",
-        "syn",
-        "urg",
-        "useAck",
-        "useCwr",
-        "useEce",
-        "useFin",
-        "usePsh",
-        "useRst",
-        "useSyn",
-        "useUrg"
-      ]
-    },
-    "OspfArea" : {
+    "VrrpGroup" : {
       "type" : "object",
       "additionalProperties" : false,
       "properties" : {
@@ -1277,180 +454,20 @@
           "type" : "integer",
           "description" : "The name of this structure"
         },
-        "interfaces" : {
-          "type" : "array",
-          "items" : {
-            "$ref" : "#/definitions/Interface"
-          },
-          "description" : "The interfaces assigned to this OSPF area. Stored as @id"
+        "preempt" : {
+          "type" : "boolean"
+        },
+        "priority" : {
+          "type" : "integer"
+        },
+        "virtualAddress" : {
+          "type" : "string"
         }
-      }
-    },
-    "Configuration" : {
-      "type" : "object",
-      "additionalProperties" : false,
-      "description" : "A Configuration represents an autonomous network device, such as a router, host, switch, or firewall.",
-      "properties" : {
-        "name" : {
-          "type" : "string",
-          "description" : "Hostname of this node."
-        },
-        "asPathAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/AsPathAccessList"
-          },
-          "description" : "Dictionary of all AS-path access-lists for this node."
-        },
-        "communityLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/CommunityList"
-          },
-          "description" : "Dictionary of all community-lists for this node."
-        },
-        "configurationFormat" : {
-          "type" : "string",
-          "enum" : [
-            "ALCATEL_AOS",
-            "ARISTA",
-            "AWS_VPC",
-            "BLADENETWORK",
-            "CISCO_IOS",
-            "CISCO_IOS_XR",
-            "CISCO_NX",
-            "EMPTY",
-            "FLAT_JUNIPER",
-            "FLAT_VYOS",
-            "FORCE10",
-            "FOUNDRY",
-            "HOST",
-            "IGNORED",
-            "IPTABLES",
-            "JUNIPER",
-            "JUNIPER_SWITCH",
-            "MRV",
-            "MSS",
-            "UNKNOWN",
-            "VXWORKS",
-            "VYOS"
-          ],
-          "description" : "Best guess at vendor configuration format. Used for setting default values, protocol costs, etc."
-        },
-        "defaultCrossZoneAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ],
-          "description" : "Default forwarding action to take for traffic that crosses firewall zones."
-        },
-        "defaultInboundAction" : {
-          "type" : "string",
-          "enum" : [
-            "ACCEPT",
-            "REJECT"
-          ],
-          "description" : "Default forwarding action to take for traffic destined for this device."
-        },
-        "domainName" : {
-          "type" : "string",
-          "description" : "Domain name of this node."
-        },
-        "ikeGateways" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeGateway"
-          },
-          "description" : "Dictionary of all IKE gateways for this node."
-        },
-        "ikePolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkePolicy"
-          },
-          "description" : "Dictionary of all IKE policies for this node."
-        },
-        "ikeProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeProposal"
-          },
-          "description" : "Dictionary of all IKE proposals for this node."
-        },
-        "interfaces" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Interface"
-          },
-          "description" : "Dictionary of all interfaces across all VRFs for this node."
-        },
-        "ip6AccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Ip6AccessList"
-          },
-          "description" : "Dictionary of all IPV6 access-lists for this node."
-        },
-        "ipAccessLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
-          },
-          "description" : "Dictionary of all IPV4 access-lists for this node."
-        },
-        "ipsecPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecPolicy"
-          },
-          "description" : "Dictionary of all IPSEC policies for this node."
-        },
-        "ipsecProposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecProposal"
-          },
-          "description" : "Dictionary of all IPSEC proposals for this node."
-        },
-        "ipsecVpns" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecVpn"
-          },
-          "description" : "Dictionary of all IPSEC VPNs for this node."
-        },
-        "roles" : {
-          "type" : "array",
-          "items" : {
-            "type" : "string"
-          },
-          "description" : "Set of all roles in which this node serves."
-        },
-        "route6FilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Route6FilterList"
-          },
-          "description" : "Dictionary of all IPV6 route filter lists for this node."
-        },
-        "routeFilterLists" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RouteFilterList"
-          },
-          "description" : "Dictionary of all IPV4 route filter lists for this node."
-        },
-        "routingPolicies" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/RoutingPolicy"
-          },
-          "description" : "Dictionary of all routing policies for this node."
-        },
-        "vendorFamily" : {
-          "$ref" : "#/definitions/VendorFamily",
-          "description" : "Object containing vendor-specific information for this node."
-        },
-        "vrfs" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Vrf"
-          },
-          "description" : "Dictionary of all VRFs for this node."
-        },
-        "zones" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Zone"
-          },
-          "description" : "Dictionary of all firewall zones for this node."
-        }
-      }
+      },
+      "required" : [
+        "preempt",
+        "priority"
+      ]
     },
     "IkePolicy" : {
       "type" : "object",
@@ -1465,8 +482,9 @@
           "description" : "SHA-256 hash of salted version of pre-shared-key stored in original configuration"
         },
         "proposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IkeProposal"
+          "type" : "array",
+          "items" : {
+            "type" : "string"
           },
           "description" : "Dictionary of IKE proposals attached to this policy. Each stored as @id"
         }
@@ -2251,6 +1269,830 @@
         "negate"
       ]
     },
+    "TcpFlags" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "ack" : {
+          "type" : "boolean",
+          "description" : "Value for ACK bit if used (true->1/false->0)"
+        },
+        "cwr" : {
+          "type" : "boolean",
+          "description" : "Value for CWR bit if used (true->1/false->0)"
+        },
+        "ece" : {
+          "type" : "boolean",
+          "description" : "Value for ECE bit if used (true->1/false->0)"
+        },
+        "fin" : {
+          "type" : "boolean",
+          "description" : "Value for FIN bit if used (true->1/false->0)"
+        },
+        "psh" : {
+          "type" : "boolean",
+          "description" : "Value for PSH bit if used (true->1/false->0)"
+        },
+        "rst" : {
+          "type" : "boolean",
+          "description" : "Value for RST bit if used (true->1/false->0)"
+        },
+        "syn" : {
+          "type" : "boolean",
+          "description" : "Value for SYN bit if used (true->1/false->0)"
+        },
+        "urg" : {
+          "type" : "boolean",
+          "description" : "Value for URG bit if used (true->1/false->0)"
+        },
+        "useAck" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the ACK bit"
+        },
+        "useCwr" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the CWR bit"
+        },
+        "useEce" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the ECE bit"
+        },
+        "useFin" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the FIN bit"
+        },
+        "usePsh" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the PSH bit"
+        },
+        "useRst" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the RST bit"
+        },
+        "useSyn" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the SYN bit"
+        },
+        "useUrg" : {
+          "type" : "boolean",
+          "description" : "Whether or not to match against the URG bit"
+        }
+      },
+      "required" : [
+        "ack",
+        "cwr",
+        "ece",
+        "fin",
+        "psh",
+        "rst",
+        "syn",
+        "urg",
+        "useAck",
+        "useCwr",
+        "useEce",
+        "useFin",
+        "usePsh",
+        "useRst",
+        "useSyn",
+        "useUrg"
+      ]
+    },
+    "IpAccessList" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "description" : "An access-list used to filter IPV4 packets",
+      "properties" : {
+        "name" : {
+          "type" : "string",
+          "description" : "The name of this structure"
+        },
+        "lines" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/IpAccessListLine"
+          },
+          "description" : "The lines against which to check an IPV4 packet"
+        }
+      }
+    },
+    "IpAccessListLine" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "description" : "A line in an IpAccessList",
+      "properties" : {
+        "action" : {
+          "type" : "string",
+          "enum" : [
+            "ACCEPT",
+            "REJECT"
+          ],
+          "description" : "The action the underlying access-list will take when this line matches an IPV4 packet."
+        },
+        "dscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          },
+          "description" : "A set of acceptable DSCP values for a packet"
+        },
+        "dstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A space of acceptable destination IP addresses for a packet"
+        },
+        "dstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of acceptable destination port ranges for a TCP/UDP packet"
+        },
+        "ecns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          },
+          "description" : "A set of acceptable ECN values for a packet"
+        },
+        "fragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of acceptable fragment offsets for a UDP packet"
+        },
+        "icmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of acceptable ICMP code ranges for an ICMP packet"
+        },
+        "icmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of acceptable ICMP type ranges for an ICMP packet"
+        },
+        "ipProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          },
+          "description" : "A set of acceptable IP protocols for a packet"
+        },
+        "name" : {
+          "type" : "string",
+          "description" : "The name of this line in the list"
+        },
+        "negate" : {
+          "type" : "boolean",
+          "description" : "Determines whether to match the complement of the stated criteria of this header space"
+        },
+        "notDscps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          },
+          "description" : "A set of unacceptable DSCP values for a packet"
+        },
+        "notDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A space of unacceptable destination IP addresses for a packet"
+        },
+        "notDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of unacceptable destination port ranges for a TCP/UDP packet"
+        },
+        "notEcns" : {
+          "type" : "array",
+          "items" : {
+            "type" : "integer"
+          },
+          "description" : "A set of unacceptable ECN values for a packet"
+        },
+        "notFragmentOffsets" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of unacceptable fragment offsets for a UDP packet"
+        },
+        "notIcmpCodes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of unacceptable ICMP code ranges for an ICMP packet"
+        },
+        "notIcmpTypes" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of unacceptable ICMP type ranges for an ICMP packet"
+        },
+        "notIpProtocols" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "AHP",
+              "AN",
+              "ANY_0_HOP_PROTOCOL",
+              "ANY_DISTRIBUTED_FILE_SYSTEM",
+              "ANY_HOST_INTERNAL_PROTOCOL",
+              "ANY_LOCAL_NETWORK",
+              "ANY_PRIVATE_ENCRYPTION_SCHEME",
+              "ARGUS",
+              "ARIS",
+              "AX25",
+              "BBN_RCC_MON",
+              "BNA",
+              "BR_SAT_MON",
+              "CBT",
+              "CFTP",
+              "CHAOS",
+              "COMPAQ_PEER",
+              "CPHB",
+              "CPNX",
+              "CRTP",
+              "CRUDP",
+              "DCCP",
+              "DCN_MEAS",
+              "DDP",
+              "DDX",
+              "DGP",
+              "EGP",
+              "EIGRP",
+              "EMCON",
+              "ENCAP",
+              "ESP",
+              "ETHERIP",
+              "FC",
+              "FIRE",
+              "GGP",
+              "GMTP",
+              "GRE",
+              "HIP",
+              "HMP",
+              "HOPOPT",
+              "I_NLSP",
+              "IATP",
+              "ICMP",
+              "IDPR",
+              "IDPR_CMTP",
+              "IDRP",
+              "IFMP",
+              "IGMP",
+              "IGP",
+              "IL",
+              "IP",
+              "IPComp",
+              "IPCU",
+              "IPINIP",
+              "IPIP",
+              "IPLT",
+              "IPPC",
+              "IPV6",
+              "IPV6_FRAG",
+              "IPV6_ICMP",
+              "IPV6_NO_NXT",
+              "IPV6_OPTS",
+              "IPV6_ROUTE",
+              "IPX_IN_IP",
+              "IRTP",
+              "ISIS",
+              "ISO_IP",
+              "ISO_TP4",
+              "KRYPTOLAN",
+              "L2TP",
+              "LARP",
+              "LEAF1",
+              "LEAF2",
+              "MANAET",
+              "MERIT_INP",
+              "MFE_NSP",
+              "MHRP",
+              "MICP",
+              "MOBILE",
+              "MOBILITY",
+              "MPLS_IN_IP",
+              "MTP",
+              "MUX",
+              "NARP",
+              "NETBLT",
+              "NSFNET_IGP",
+              "NVPII",
+              "OSPF",
+              "PGM",
+              "PIM",
+              "PIPE",
+              "PNNI",
+              "PRM",
+              "PTP",
+              "PUP",
+              "PVP",
+              "QNX",
+              "RDP",
+              "ROHC",
+              "RSVP",
+              "RSVP_E2E_IGNORE",
+              "RVD",
+              "SAT_EXPAK",
+              "SAT_MON",
+              "SCC_SP",
+              "SCPS",
+              "SCTP",
+              "SDRP",
+              "SECURE_VMTP",
+              "SHIM6",
+              "SKIP",
+              "SM",
+              "SMP",
+              "SNP",
+              "SPRITE_RPC",
+              "SPS",
+              "SRP",
+              "SSCOPMCE",
+              "ST",
+              "STP",
+              "SUN_ND",
+              "SWIPE",
+              "TCF",
+              "TCP",
+              "THREE_PC",
+              "TLSP",
+              "TPPLUSPLUS",
+              "TRUNK1",
+              "TRUNK2",
+              "TTP",
+              "UDP",
+              "UDP_LITE",
+              "UNNAMED_143",
+              "UNNAMED_144",
+              "UNNAMED_145",
+              "UNNAMED_146",
+              "UNNAMED_147",
+              "UNNAMED_148",
+              "UNNAMED_149",
+              "UNNAMED_150",
+              "UNNAMED_151",
+              "UNNAMED_152",
+              "UNNAMED_153",
+              "UNNAMED_154",
+              "UNNAMED_155",
+              "UNNAMED_156",
+              "UNNAMED_157",
+              "UNNAMED_158",
+              "UNNAMED_159",
+              "UNNAMED_160",
+              "UNNAMED_161",
+              "UNNAMED_162",
+              "UNNAMED_163",
+              "UNNAMED_164",
+              "UNNAMED_165",
+              "UNNAMED_166",
+              "UNNAMED_167",
+              "UNNAMED_168",
+              "UNNAMED_169",
+              "UNNAMED_170",
+              "UNNAMED_171",
+              "UNNAMED_172",
+              "UNNAMED_173",
+              "UNNAMED_174",
+              "UNNAMED_175",
+              "UNNAMED_176",
+              "UNNAMED_177",
+              "UNNAMED_178",
+              "UNNAMED_179",
+              "UNNAMED_180",
+              "UNNAMED_181",
+              "UNNAMED_182",
+              "UNNAMED_183",
+              "UNNAMED_184",
+              "UNNAMED_185",
+              "UNNAMED_186",
+              "UNNAMED_187",
+              "UNNAMED_188",
+              "UNNAMED_189",
+              "UNNAMED_190",
+              "UNNAMED_191",
+              "UNNAMED_192",
+              "UNNAMED_193",
+              "UNNAMED_194",
+              "UNNAMED_195",
+              "UNNAMED_196",
+              "UNNAMED_197",
+              "UNNAMED_198",
+              "UNNAMED_199",
+              "UNNAMED_200",
+              "UNNAMED_201",
+              "UNNAMED_202",
+              "UNNAMED_203",
+              "UNNAMED_204",
+              "UNNAMED_205",
+              "UNNAMED_206",
+              "UNNAMED_207",
+              "UNNAMED_208",
+              "UNNAMED_209",
+              "UNNAMED_210",
+              "UNNAMED_211",
+              "UNNAMED_212",
+              "UNNAMED_213",
+              "UNNAMED_214",
+              "UNNAMED_215",
+              "UNNAMED_216",
+              "UNNAMED_217",
+              "UNNAMED_218",
+              "UNNAMED_219",
+              "UNNAMED_220",
+              "UNNAMED_221",
+              "UNNAMED_222",
+              "UNNAMED_223",
+              "UNNAMED_224",
+              "UNNAMED_225",
+              "UNNAMED_226",
+              "UNNAMED_227",
+              "UNNAMED_228",
+              "UNNAMED_229",
+              "UNNAMED_230",
+              "UNNAMED_231",
+              "UNNAMED_232",
+              "UNNAMED_233",
+              "UNNAMED_234",
+              "UNNAMED_235",
+              "UNNAMED_236",
+              "UNNAMED_237",
+              "UNNAMED_238",
+              "UNNAMED_239",
+              "UNNAMED_240",
+              "UNNAMED_241",
+              "UNNAMED_242",
+              "UNNAMED_243",
+              "UNNAMED_244",
+              "UNNAMED_245",
+              "UNNAMED_246",
+              "UNNAMED_247",
+              "UNNAMED_248",
+              "UNNAMED_249",
+              "UNNAMED_250",
+              "UNNAMED_251",
+              "UNNAMED_252",
+              "UNNAMED_253",
+              "UNNAMED_254",
+              "UNNAMED_255",
+              "UTI",
+              "VINES",
+              "VISA",
+              "VMTP",
+              "VRRP",
+              "WB_EXPAK",
+              "WB_MON",
+              "WESP",
+              "WSN",
+              "XNET",
+              "XNS_IDP",
+              "XTP"
+            ]
+          },
+          "description" : "A set of unacceptable IP protocols for a packet"
+        },
+        "notSrcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A space of unacceptable source IP addresses for a packet"
+        },
+        "notSrcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of unacceptable source port ranges for a TCP/UDP packet"
+        },
+        "srcIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A space of acceptable source IP addresses for a packet"
+        },
+        "srcOrDstIps" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A space of IP addresses within which either the source or the destination IP of a packet must fall for acceptance"
+        },
+        "srcOrDstPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of ranges within which either the source or the destination port of a TCP/UDP packet must fall for acceptance"
+        },
+        "srcPorts" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "A set of acceptable source port ranges for a TCP/UDP packet"
+        },
+        "states" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [
+              "ESTABLISHED",
+              "INVALID",
+              "NEW",
+              "RELATED"
+            ]
+          },
+          "description" : "A set of acceptable abstract firewall states for a packet to match"
+        },
+        "tcpFlags" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TcpFlags"
+          },
+          "description" : "A set of acceptable TCP flag bitmasks for a TCP packet to match"
+        }
+      },
+      "required" : [
+        "negate"
+      ]
+    },
     "IpsecPolicy" : {
       "type" : "object",
       "additionalProperties" : false,
@@ -2284,9 +2126,11 @@
           "type" : "boolean"
         },
         "proposals" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/IpsecProposal"
-          }
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "IPSEC proposals to try with this policy"
         }
       },
       "required" : [
@@ -2343,7 +2187,8 @@
           "description" : "The name of this structure"
         },
         "bindInterface" : {
-          "$ref" : "#/definitions/Interface"
+          "type" : "string",
+          "description" : "Tunnel interface on which the VPN will be bound"
         },
         "candidateRemoteIpsecVpns" : {
           "type" : "array",
@@ -2351,14 +2196,13 @@
             "$ref" : "#/definitions/IpsecVpn"
           }
         },
-        "gateway" : {
-          "$ref" : "#/definitions/IkeGateway"
+        "ikeGateway" : {
+          "type" : "string",
+          "description" : "Remote VPN gateway configuration"
         },
         "ipsecPolicy" : {
-          "$ref" : "#/definitions/IpsecPolicy"
-        },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration"
+          "type" : "string",
+          "description" : "IPSEC policy for this VPN"
         },
         "remoteIpsecVpn" : {
           "$ref" : "#/definitions/IpsecVpn"
@@ -2466,7 +2310,11 @@
       }
     },
     "Statement" : {
-      "properties" : { },
+      "properties" : {
+        "comment" : {
+          "type" : "string"
+        }
+      },
       "oneOf" : [
         {
           "$ref" : "#/definitions/CallStatement"
@@ -2595,6 +2443,9 @@
             null
           ],
           "default" : null
+        },
+        "comment" : {
+          "type" : "string"
         }
       },
       "title" : null,
@@ -3440,6 +3291,9 @@
         "accessList" : {
           "type" : "string"
         },
+        "accessList6" : {
+          "type" : "string"
+        },
         "ro" : {
           "type" : "boolean"
         },
@@ -3526,10 +3380,11 @@
           "description" : "Generated IPV6 routes for this VRF"
         },
         "interfaces" : {
-          "additionalProperties" : {
-            "$ref" : "#/definitions/Interface"
+          "type" : "array",
+          "items" : {
+            "type" : "string"
           },
-          "description" : "Interfaces assigned to this VRF. Stored as @id"
+          "description" : "Interfaces assigned to this VRF"
         },
         "isisProcess" : {
           "$ref" : "#/definitions/IsisProcess",
@@ -3706,10 +3561,6 @@
           "type" : "string",
           "description" : "The local (source) IPV4 address of this peering"
         },
-        "owner" : {
-          "$ref" : "#/definitions/Configuration",
-          "description" : "The configuration that owns this peering. Stored as @id"
-        },
         "remoteAs" : {
           "type" : "integer",
           "description" : "The remote autonomous sysem of this peering"
@@ -3851,6 +3702,23 @@
         }
       }
     },
+    "OspfArea" : {
+      "type" : "object",
+      "additionalProperties" : false,
+      "properties" : {
+        "name" : {
+          "type" : "integer",
+          "description" : "The name of this structure"
+        },
+        "interfaces" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string"
+          },
+          "description" : "The interfaces assigned to this OSPF area"
+        }
+      }
+    },
     "StaticRoute" : {
       "type" : "object",
       "additionalProperties" : false,
@@ -3900,26 +3768,26 @@
           "description" : "The name of this structure"
         },
         "fromHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
+          "type" : "string",
           "description" : "Filter applied against packets originating from an interface in this zone on this node"
         },
         "inboundFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
+          "type" : "string",
           "description" : "Filter applied against packets whose final destination is an interface in this zone that does not have its own inbound filter"
         },
         "inboundInterfaceFilters" : {
           "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
+            "type" : "string"
           },
           "description" : "Mapping of interfaces in this zone to their corresponding inbound filters: the filter applied against packets whose final destination is the interface whose name is the key in this mapping"
         },
         "toHostFilter" : {
-          "$ref" : "#/definitions/IpAccessList",
+          "type" : "string",
           "description" : "Filter applied against packets whose final destination is an interface in this zone. If this filter exists, it is applied IN ADDITION to the interface-specific or default inbound filter."
         },
         "toZonePolicies" : {
           "additionalProperties" : {
-            "$ref" : "#/definitions/IpAccessList"
+            "type" : "string"
           },
           "description" : "Maps names of destination zones to the corresponding filter applied against packets which are received on this zone and routed to the named zone"
         }

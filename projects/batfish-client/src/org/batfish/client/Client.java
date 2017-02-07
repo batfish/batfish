@@ -476,6 +476,16 @@ public class Client extends AbstractClient implements IClient {
    }
 
    private void initHelpers() {
+      switch (_settings.getRunMode()) {
+      case batch:
+      case interactive:
+         break;
+
+      case gendatamodel:
+      case genquestions:
+      default:
+         return;
+      }
 
       String workMgr = _settings.getCoordinatorHost() + ":"
             + _settings.getCoordinatorWorkPort();
