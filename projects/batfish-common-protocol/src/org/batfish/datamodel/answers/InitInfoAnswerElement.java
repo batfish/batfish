@@ -68,7 +68,7 @@ public class InitInfoAnswerElement implements AnswerElement {
          ParseStatus status = e.getValue();
          switch (status) {
          case FAILED:
-            sb.append(" " + hostname + ": failed to parse\n");
+            sb.append("  " + hostname + ": failed to parse\n");
             failedCount++;
             break;
 
