@@ -554,7 +554,9 @@
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_logging",
-              "logging" : { }
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -725,6 +727,7 @@
               },
               "hostname" : "banner",
               "logging" : {
+                "on" : true,
                 "trap" : {
                   "severity" : "informational",
                   "severityNum" : 6
@@ -1686,6 +1689,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1703,6 +1707,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1720,6 +1725,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1737,6 +1743,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1759,6 +1766,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "13.9.2.2/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1776,6 +1784,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1797,6 +1806,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.2.3.4/30",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2223,6 +2233,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.25.57/30",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2240,6 +2251,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2257,6 +2269,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2274,6 +2287,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2311,8 +2325,9 @@
               "lines" : {
                 "<UNNAMED>0/0/0" : {
                   "name" : "<UNNAMED>0/0/0",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2325,8 +2340,9 @@
                 },
                 "<UNNAMED>0/0/1" : {
                   "name" : "<UNNAMED>0/0/1",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2339,8 +2355,9 @@
                 },
                 "<UNNAMED>0/0/10" : {
                   "name" : "<UNNAMED>0/0/10",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2353,8 +2370,9 @@
                 },
                 "<UNNAMED>0/0/11" : {
                   "name" : "<UNNAMED>0/0/11",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2367,8 +2385,9 @@
                 },
                 "<UNNAMED>0/0/12" : {
                   "name" : "<UNNAMED>0/0/12",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2381,8 +2400,9 @@
                 },
                 "<UNNAMED>0/0/13" : {
                   "name" : "<UNNAMED>0/0/13",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2395,8 +2415,9 @@
                 },
                 "<UNNAMED>0/0/14" : {
                   "name" : "<UNNAMED>0/0/14",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2409,8 +2430,9 @@
                 },
                 "<UNNAMED>0/0/15" : {
                   "name" : "<UNNAMED>0/0/15",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2423,8 +2445,9 @@
                 },
                 "<UNNAMED>0/0/2" : {
                   "name" : "<UNNAMED>0/0/2",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2437,8 +2460,9 @@
                 },
                 "<UNNAMED>0/0/3" : {
                   "name" : "<UNNAMED>0/0/3",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2451,8 +2475,9 @@
                 },
                 "<UNNAMED>0/0/4" : {
                   "name" : "<UNNAMED>0/0/4",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2465,8 +2490,9 @@
                 },
                 "<UNNAMED>0/0/5" : {
                   "name" : "<UNNAMED>0/0/5",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2479,8 +2505,9 @@
                 },
                 "<UNNAMED>0/0/6" : {
                   "name" : "<UNNAMED>0/0/6",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2493,8 +2520,9 @@
                 },
                 "<UNNAMED>0/0/7" : {
                   "name" : "<UNNAMED>0/0/7",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2507,8 +2535,9 @@
                 },
                 "<UNNAMED>0/0/8" : {
                   "name" : "<UNNAMED>0/0/8",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2521,8 +2550,9 @@
                 },
                 "<UNNAMED>0/0/9" : {
                   "name" : "<UNNAMED>0/0/9",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2544,84 +2574,112 @@
                 },
                 "<UNNAMED>35" : {
                   "name" : "<UNNAMED>35",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>36" : {
                   "name" : "<UNNAMED>36",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>37" : {
                   "name" : "<UNNAMED>37",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>38" : {
                   "name" : "<UNNAMED>38",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>39" : {
                   "name" : "<UNNAMED>39",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>40" : {
                   "name" : "<UNNAMED>40",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>41" : {
                   "name" : "<UNNAMED>41",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>42" : {
                   "name" : "<UNNAMED>42",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>43" : {
                   "name" : "<UNNAMED>43",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>44" : {
                   "name" : "<UNNAMED>44",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>45" : {
                   "name" : "<UNNAMED>45",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>46" : {
                   "name" : "<UNNAMED>46",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>47" : {
                   "name" : "<UNNAMED>47",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>48" : {
                   "name" : "<UNNAMED>48",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
@@ -2633,6 +2691,8 @@
                 },
                 "vty" : {
                   "name" : "vty",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "vty-acl"
                 },
                 "vty0" : {
@@ -2641,7 +2701,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2652,7 +2711,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2661,43 +2719,37 @@
                   "name" : "vty10",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty11" : {
                   "name" : "vty11",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty12" : {
                   "name" : "vty12",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty13" : {
                   "name" : "vty13",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty14" : {
                   "name" : "vty14",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty15" : {
                   "name" : "vty15",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty2" : {
                   "name" : "vty2",
@@ -2705,7 +2757,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2716,7 +2767,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2727,7 +2777,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2736,36 +2785,31 @@
                   "name" : "vty5",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty6" : {
                   "name" : "vty6",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty7" : {
                   "name" : "vty7",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty8" : {
                   "name" : "vty8",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty9" : {
                   "name" : "vty9",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 }
               }
             }
@@ -2801,6 +2845,7 @@
                     "name" : "137.164.80.152"
                   }
                 },
+                "on" : true,
                 "sourceInterface" : "Vlan1",
                 "trap" : {
                   "severity" : "errors",
@@ -2914,6 +2959,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.3.3.0/24",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2935,6 +2981,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.1.1.1/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4355,6 +4402,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4385,7 +4433,8 @@
               "logging" : {
                 "buffered" : {
                   "size" : 1000
-                }
+                },
+                "on" : true
               }
             }
           },
@@ -4924,6 +4973,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.22.33.10/29",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4945,6 +4995,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.12.12.1/23",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4984,6 +5035,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5001,6 +5053,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5018,6 +5071,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5035,6 +5089,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5081,6 +5136,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.16.80/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5360,6 +5416,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5443,6 +5500,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5460,6 +5518,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5477,6 +5536,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5494,6 +5554,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5511,6 +5572,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5528,6 +5590,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5545,6 +5608,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5562,6 +5626,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5579,6 +5644,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7935,6 +8001,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.17.8/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11360,6 +11427,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11792,6 +11860,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11830,6 +11899,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"

@@ -79,6 +79,8 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.cisco.Aaa;
+import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
@@ -707,6 +709,10 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       }
       return updateSource;
+   }
+
+   public ConfigurationFormat getVendor() {
+      return _vendor;
    }
 
    public Set<String> getVerifyAccessLists() {
@@ -2711,6 +2717,27 @@ public class CiscoConfiguration extends VendorConfiguration {
 
       processLines();
       processFailoverSettings();
+
+      // remove line login authentication lists if they don't exist
+      for (Line line : _cf.getLines().values()) {
+         String list = line.getLoginAuthentication();
+         boolean found = false;
+         Aaa aaa = _cf.getAaa();
+         if (aaa != null) {
+            AaaAuthentication authentication = aaa.getAuthentication();
+            if (authentication != null) {
+               AaaAuthenticationLogin login = authentication.getLogin();
+               if (login != null) {
+                  if (login.getLists().containsKey(list)) {
+                     found = true;
+                  }
+               }
+            }
+         }
+         if (!found) {
+            line.setLoginAuthentication(null);
+         }
+      }
 
       // initialize vrfs
       for (String vrfName : _vrfs.keySet()) {

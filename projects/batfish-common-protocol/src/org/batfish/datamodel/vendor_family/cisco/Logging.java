@@ -35,7 +35,7 @@ public class Logging implements Serializable {
 
    private SortedMap<String, LoggingHost> _hosts;
 
-   private Boolean _on;
+   private boolean _on;
 
    private String _sourceInterface;
 
@@ -43,6 +43,7 @@ public class Logging implements Serializable {
 
    public Logging() {
       _hosts = new TreeMap<>();
+      _on = true;
    }
 
    public Buffered getBuffered() {
@@ -57,7 +58,7 @@ public class Logging implements Serializable {
       return _hosts;
    }
 
-   public Boolean getOn() {
+   public boolean getOn() {
       return _on;
    }
 
@@ -81,7 +82,7 @@ public class Logging implements Serializable {
       _hosts = hosts;
    }
 
-   public void setOn(Boolean on) {
+   public void setOn(boolean on) {
       _on = on;
    }
 
