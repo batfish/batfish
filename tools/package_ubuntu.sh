@@ -3,20 +3,20 @@ export BATFISH_SOURCED_SCRIPT="$BASH_SOURCE"
 export OLD_PWD="$PWD"
 
 architecture() {
-	local MACHINE=$(uname -m)
-	if [ "$MACHINE" = "x86_64" ]; then
-		local ARCHITECTURE=amd64
-	elif [ "$MACHINE" = "i386" ]; then
-		local ARCHITECTURE=i386
-	else
-		echo "Could not determine architecture from output of uname -m: $MACHINE"
-		exit 1
-	fi
-	echo $ARCHITECTURE
+   local MACHINE=$(uname -m)
+   if [ "$MACHINE" = "x86_64" ]; then
+      local ARCHITECTURE=amd64
+   elif [ "$MACHINE" = "i386" ]; then
+      local ARCHITECTURE=i386
+   else
+      echo "Could not determine architecture from output of uname -m: $MACHINE"
+      exit 1
+   fi
+   echo $ARCHITECTURE
 }
 
 ubuntu_version() {
-	head -n1 /etc/issue | cut -f2 -d' ' | cut -f1,2 -d'.'
+   head -n1 /etc/issue | cut -f2 -d' ' | cut -f1,2 -d'.'
 }
 
 install_z3() {
@@ -28,7 +28,7 @@ install_z3() {
       $BATFISH_TOOLS_PATH/install_z3_ubuntu_14.04.sh $USR_P
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
@@ -43,20 +43,20 @@ set_init_vars() {
       COORDINATOR_INIT_NAME=coordinator.conf
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
 reload_init_scripts() {
    if [ "${UBUNTU_VERSION}" = "16.04" ]; then
-		echo "systemctl enable $BATFISH_INIT_NAME || true"
-		echo "systemctl enable $COORDINATOR_INIT_NAME || true"
-		echo "systemctl daemon-reload"
+      echo "systemctl enable $BATFISH_INIT_NAME || true"
+      echo "systemctl enable $COORDINATOR_INIT_NAME || true"
+      echo "systemctl daemon-reload"
    elif [ "${UBUNTU_VERSION}" = "14.04" ]; then
-		echo "initctl reload-configuration"
+      echo "initctl reload-configuration"
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 }
 
@@ -127,7 +127,7 @@ EOF
    echo $COORDINATOR_INIT >> $CONFFILES_FILE
    else
       echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
-		exit 1
+      exit 1
    fi
 
 }
@@ -138,9 +138,10 @@ package() {
    BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    VERSION_FILE=$BATFISH_PATH/projects/batfish-common-protocol/src/org/batfish/common/Version.java
    BATFISH_VERSION=$(grep 'private static final String VERSION' $VERSION_FILE | sed -e 's/^[^"]*"\([^"]*\)".*$/\1/g')
-	ARCHITECTURE=$(architecture)
-	UBUNTU_VERSION=$(ubuntu_version)
-	VERSION="${BATFISH_VERSION}-ubuntu${UBUNTU_VERSION}"
+   SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
+   ARCHITECTURE=$(architecture)
+   UBUNTU_VERSION=$(ubuntu_version)
+   VERSION="${BATFISH_VERSION}-ubuntu${UBUNTU_VERSION}"
    TARGET="${OLD_PWD}/batfish_${VERSION}_${ARCHITECTURE}.deb"
    WORKING=$(mktemp -d -t ${SCRIPT_NAME}.XXXXXXX)
    PACKAGE_NAME="batfish-${VERSION}"
@@ -268,7 +269,10 @@ package() {
    write_init_scripts
 
    cat > $CONTROL_FILE <<EOF
-Package: batfish
+Package: batfish-${SECONDARY_VERSION}
+Conflicts: batfish
+Replaces: batfish
+Provides: batfish
 Version: $VERSION
 Section: web
 Priority: optional
