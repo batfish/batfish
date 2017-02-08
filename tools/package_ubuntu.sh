@@ -141,12 +141,13 @@ package() {
    SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
    ARCHITECTURE=$(architecture)
    UBUNTU_VERSION=$(ubuntu_version)
-   VERSION="${BATFISH_VERSION}-ubuntu${UBUNTU_VERSION}"
-   TARGET="${OLD_PWD}/batfish_${VERSION}_${ARCHITECTURE}.deb"
+   VERSION="${BATFISH_VERSION}~ubuntu${UBUNTU_VERSION}"
+   PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
+   DEB_NAME=${PACKAGE_NAME}_${VERSION}_${ARCHITECTURE}
+   TARGET="${OLD_PWD}/${DEB_NAME}.deb"
    WORKING=$(mktemp -d -t ${SCRIPT_NAME}.XXXXXXX)
-   PACKAGE_NAME="batfish-${VERSION}"
-   DPKG_DIR=$WORKING/$PACKAGE_NAME
-   PBASE=$DPKG_DIR/debian
+   DPKG_DIR=${WORKING}/${DEB_NAME}
+   PBASE=${DPKG_DIR}/debian
    USR=/usr
    USR_P=${PBASE}${USR}
    Z3=$USR/bin/z3
@@ -271,7 +272,7 @@ package() {
    write_init_scripts
 
    cat > $CONTROL_FILE <<EOF
-Package: batfish-${SECONDARY_VERSION}
+Package: ${PACKAGE_NAME}
 Conflicts: batfish
 Replaces: batfish
 Provides: batfish
