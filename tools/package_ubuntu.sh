@@ -75,7 +75,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME >> $COORDINATOR_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
@@ -108,7 +108,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
 EOF
 
    cat > $COORDINATOR_INIT_P <<EOF
@@ -121,7 +121,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME >> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
 EOF
    echo $BATFISH_INIT >> $CONFFILES_FILE
    echo $COORDINATOR_INIT >> $CONFFILES_FILE
@@ -215,6 +215,8 @@ package() {
    BATFISH_RUN_DIR=/var/run/batfish
    BATFISH_LOG_NAME=batfish.log
    BATFISH_LOG=$BATFISH_LOG_DIR/$BATFISH_LOG_NAME
+   BATFISH_JAVA_LOG_NAME=batfish-java.log
+   BATFISH_JAVA_LOG=$BATFISH_LOG_DIR/$BATFISH_JAVA_LOG_NAME
    COORDINATOR_LOG_NAME=coordinator.log
    COORDINATOR_LOG=$BATFISH_LOG_DIR/$COORDINATOR_LOG_NAME
    COORDINATOR_JAVA_LOG_NAME=coordinator-java.log

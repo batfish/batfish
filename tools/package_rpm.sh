@@ -50,6 +50,8 @@ package() {
    local COORDINATOR_JAR_SRC=$BATFISH_PATH/projects/coordinator/out/${COORDINATOR_JAR_NAME}
    local COORDINATOR_JAR=${DATA_DIR}/$COORDINATOR_JAR_NAME
    local COORDINATOR_JAR_P=${PBASE}$COORDINATOR_JAR
+   local COORDINATOR_CLASSPATH_NAME=coordinator.classpath
+   local COORDINATOR_CLASSPATH=${CONF_DIR}/${COORDINATOR_CLASSPATH_NAME}
    local COORDINATOR_PROPERTIES_NAME=coordinator.properties
    local COORDINATOR_PROPERTIES_SRC=${BATFISH_PATH}/projects/coordinator/out/${COORDINATOR_PROPERTIES_NAME}
    local COORDINATOR_PROPERTIES_LINK=${DATA_DIR}/${COORDINATOR_PROPERTIES_NAME}
@@ -73,11 +75,24 @@ package() {
    local COPYRIGHT_P=${PBASE}${COPYRIGHT}
    local BATFISH_HOME=/var/batfish                                                                                                         
    local BATFISH_LOG_DIR=/var/log/batfish
+   local LOCK_DIR=/var/lock/subsys
    local BATFISH_RUN_DIR=/var/run/batfish
    local BATFISH_LOG_NAME=batfish.log
-   local BATFISH_LOG=$BATFISH_LOG_DIR/$BATFISH_LOG_NAME
+   local BATFISH_LOG=${BATFISH_LOG_DIR}/${BATFISH_LOG_NAME}
+   local BATFISH_JAVA_LOG_NAME=batfish-java.log
+   local BATFISH_JAVA_LOG=${BATFISH_LOG_DIR}/${BATFISH_JAVA_LOG_NAME}
+   local BATFISH_LOCK_NAME=batfish.lock
+   local BATFISH_LOCK=${LOCK_DIR}/${BATFISH_LOCK_NAME}
+   local BATFISH_PID_FILE_NAME=batfish.pid
+   local BATFISH_PID_FILE=${BATFISH_RUN_DIR}/${BATFISH_PID_FILE_NAME}
    local COORDINATOR_LOG_NAME=coordinator.log
-   local COORDINATOR_LOG_DST=$BATFISH_LOG_DIR/$COORDINATOR_LOG_NAME
+   local COORDINATOR_LOG=${BATFISH_LOG_DIR}/${COORDINATOR_LOG_NAME}
+   local COORDINATOR_JAVA_LOG_NAME=coordinator-java.log
+   local COORDINATOR_JAVA_LOG=${BATFISH_LOG_DIR}/${COORDINATOR_JAVA_LOG_NAME}
+   local COORDINATOR_LOCK_NAME=coordinator.lock
+   local COORDINATOR_LOCK=${LOCK_DIR}/${COORDINATOR_LOCK_NAME}
+   local COORDINATOR_PID_FILE_NAME=coordinator.pid
+   local COORDINATOR_PID_FILE=${BATFISH_RUN_DIR}/${COORDINATOR_PID_FILE_NAME}
    local BATFISH_USER=batfish
    local SPEC_FILE_NAME=batfish.spec
    local SPEC_FILE=$RBASE/SPECS/$SPEC_FILE_NAME
@@ -245,35 +260,32 @@ EOF
 . /etc/init.d/functions
 
 RETVAL=0
-prog="batfish"
-LOCKFILE=/var/lock/subsys/\$prog
-PIDFILE=$BATFISH_RUN_DIR/\${prog}.pid
 
 start() {
-   echo -n "Starting \$prog: "
-   if [ -f \$PIDFILE ]; then
-      echo "Already running with pid: \$(cat \$PIDFILE)"
+   echo -n "Starting batfish: "
+   if [ -f $BATFISH_PID_FILE ]; then
+      echo "Already running with pid: \$(cat $BATFISH_PID_FILE)"
       return 1
    fi
-   if [ -f \$LOCKFILE ]; then
-      echo "Missing pid file, but lock file present: \$LOCKFILE"
+   if [ -f $BATFISH_LOCK ]; then
+      echo "Missing pid file, but lock file present: $BATFISH_LOCK"
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG_DIR/\${prog}.log -servicemode -register true >& /dev/null & echo \\\$! > \$PIDFILE'" batfish
-   touch \$LOCKFILE
+   su -c "bash -c '/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG & echo \\\$! > $BATFISH_PID_FILE'" batfish
+   touch $BATFISH_LOCK
    echo "Sucess"
 }
 
 stop() {
-   echo -n "Shutting down \$prog: "
+   echo -n "Shutting down batfish: "
    RETVAL=0
-   if [ -f \$PIDFILE ]; then
-      PID=\$(cat \$PIDFILE)
+   if [ -f $BATFISH_PID_FILE ]; then
+      PID=\$(cat $BATFISH_PID_FILE)
       kill -9 \$PID
       RETVAL=\$?
-      rm -f \$PIDFILE
+      rm -f $BATFISH_PID_FILE
    fi
-   [ \$RETVAL -eq 0 ] && rm -f \$LOCKFILE && echo "Success"
+   [ \$RETVAL -eq 0 ] && rm -f $BATFISH_LOCK && echo "Success"
    return \$RETVAL
 }
 
@@ -292,7 +304,7 @@ case "\$1" in
       start
    ;;
     *)
-      echo "Usage: \$prog {start|stop|status|restart]"
+      echo "Usage: batfish {start|stop|status|restart]"
       exit 1
    ;;
 esac
@@ -311,35 +323,32 @@ EOF
 . /etc/init.d/functions
 
 RETVAL=0
-prog="coordinator"
-LOCKFILE=/var/lock/subsys/\$prog
-PIDFILE=$BATFISH_RUN_DIR/\${prog}.pid
 
 start() {
-   echo -n "Starting \$prog: "
-   if [ -f \$PIDFILE ]; then
-      echo "Already running with pid: \$(cat \$PIDFILE)" >&2
+   echo -n "Starting coordinator: "
+   if [ -f $COORDINATOR_PID_FILE ]; then
+      echo "Already running with pid: \$(cat $COORDINATOR_PID_FILE)" >&2
       return 1
    fi
-   if [ -f \$LOCKFILE ]; then
-      echo "Missing pid file, but lock file present: \$LOCKFILE" >&2
+   if [ -f $COORDINATOR_LOCK ]; then
+      echo "Missing pid file, but lock file present: $COORDINATOR_LOCK" >&2
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -jar $COORDINATOR_JAR -loglevel debug -logfile $BATFISH_LOG_DIR/\${prog}.log -servicehost localhost -containerslocation /var/batfish >& /dev/null & echo \\\$! > \$PIDFILE'" batfish
-   touch \$LOCKFILE
+   su -c "bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME &>> $COORDINATOR_JAVA_LOG & echo \\\$! > $COORDINATOR_PID_FILE'" batfish
+   touch $COORDINATOR_LOCK
    echo "Success"
 }
 
 stop() {
-   echo -n "Shutting down \$prog: "
+   echo -n "Shutting down coordinator: "
    RETVAL=0
-   if [ -f \$PIDFILE ]; then
-      PID=\$(cat \$PIDFILE)
+   if [ -f $COORDINATOR_PID_FILE ]; then
+      PID=\$(cat $COORDINATOR_PID_FILE)
       kill -9 \$PID
       RETVAL=\$?
-      rm -f \$PIDFILE
+      rm -f $COORDINATOR_PID_FILE
    fi
-   [ \$RETVAL -eq 0 ] && rm -f \$LOCKFILE && echo "Success"
+   [ \$RETVAL -eq 0 ] && rm -f $COORDINATOR_LOCK && echo "Success"
    return \$RETVAL
 }
 
@@ -358,7 +367,7 @@ case "\$1" in
       start
    ;;
     *)
-      echo "Usage: \$prog {start|stop|status|restart]"
+      echo "Usage: coordinator {start|stop|status|restart]"
       exit 1
    ;;
 esac
