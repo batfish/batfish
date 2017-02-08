@@ -28,8 +28,18 @@ apply
 :
 // intentional blank
 
-   | s_apply_groups
-   | s_apply_groups_except
+   | apply_groups
+   | apply_groups_except
+;
+
+apply_groups
+:
+   APPLY_GROUPS name = variable
+;
+
+apply_groups_except
+:
+   APPLY_GROUPS_EXCEPT name = variable
 ;
 
 as_path_expr
@@ -51,6 +61,11 @@ as_unit
 :
    as_set
    | DEC
+;
+
+description
+:
+   DESCRIPTION text = M_Description_DESCRIPTION?
 ;
 
 ec_administrator
@@ -150,26 +165,16 @@ ip_protocol
    | VRRP
 ;
 
+null_filler
+:
+   ~( APPLY_GROUPS | NEWLINE )* apply_groups?
+;
+
 origin_type
 :
    EGP
    | IGP
    | INCOMPLETE
-;
-
-s_apply_groups
-:
-   APPLY_GROUPS name = variable
-;
-
-s_apply_groups_except
-:
-   APPLY_GROUPS_EXCEPT name = variable
-;
-
-s_description
-:
-   DESCRIPTION description = M_Description_DESCRIPTION?
 ;
 
 pe_conjunction
@@ -289,19 +294,6 @@ routing_protocol
    | STATIC
 ;
 
-subrange
-:
-   low = DEC
-   (
-      DASH high = DEC
-   )?
-;
-
-s_null_filler
-:
-   ~( APPLY_GROUPS | NEWLINE )* s_apply_groups?
-;
-
 sc_literal
 :
    COMMUNITY_LITERAL
@@ -317,6 +309,14 @@ standard_community
 :
    sc_literal
    | sc_named
+;
+
+subrange
+:
+   low = DEC
+   (
+      DASH high = DEC
+   )?
 ;
 
 variable

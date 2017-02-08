@@ -751,6 +751,11 @@ AUDIT
    'audit'
 ;
 
+AUTH
+:
+   'auth'
+;
+
 AUTH_PORT
 :
    'auth-port'
@@ -1039,6 +1044,16 @@ BOOTPC
 BOOTPS
 :
    'bootps'
+;
+
+BORDER
+:
+   'border'
+;
+
+BORDER_ROUTER
+:
+   'border-router'
 ;
 
 BOTH
@@ -2999,6 +3014,11 @@ FILE_SIZE
    'file-size'
 ;
 
+FILE_TRANSFER
+:
+   'file-transfer'
+;
+
 FILTER_LIST
 :
    'filter-list'
@@ -3756,6 +3776,11 @@ INSERVICE
    'inservice'
 ;
 
+INSIDE
+:
+   'inside'
+;
+
 INSPECT
 :
    'inspect'
@@ -3866,7 +3891,7 @@ IPSLA
 
 IPV4
 :
-   [iI][pP][vV]'4'
+   [iI] [pP] [vV] '4'
 ;
 
 IPV4_L5
@@ -3876,7 +3901,7 @@ IPV4_L5
 
 IPV6
 :
-   [iI][pP][vV]'6'
+   [iI] [pP] [vV] '6'
 ;
 
 IPV6_ADDRESS_POOL
@@ -5134,6 +5159,11 @@ NEIGHBOR_DOWN
    'neighbor-down'
 ;
 
+NEIGHBOR_FILTER
+:
+   'neighbor-filter'
+;
+
 NEIGHBOR_GROUP
 :
    'neighbor-group'
@@ -5332,6 +5362,11 @@ NO_REDISTRIBUTION
 NO_SUMMARY
 :
    'no-summary'
+;
+
+NOAUTH
+:
+   'noauth'
 ;
 
 NODE
@@ -5602,6 +5637,16 @@ OUT_OF_BAND
 OUTPUT
 :
    'output'
+;
+
+OUTSIDE
+:
+   'outside'
+;
+
+OVERLOAD
+:
+   'overload'
 ;
 
 OVERLOAD_CONTROL
@@ -6204,6 +6249,11 @@ PRIORITY_QUEUE
    'priority-queue'
 ;
 
+PRIV
+:
+   'priv'
+;
+
 PRIVATE_AS
 :
    'private-as'
@@ -6344,6 +6394,11 @@ QOS_POLICY_OUTPUT
    'qos-policy-output'
 ;
 
+QUERY_INTERVAL
+:
+   'query-interval'
+;
+
 QUERY_ONLY
 :
    'query-only'
@@ -6447,6 +6502,11 @@ RC4_SHA1
 RCMD
 :
    'rcmd'
+;
+
+RCP
+:
+   'rcp'
 ;
 
 RCV_QUEUE
@@ -7314,6 +7374,11 @@ SFLOW
    'sflow'
 ;
 
+SFTP
+:
+   'sftp'
+;
+
 SGBP
 :
    'sgbp'
@@ -7532,6 +7597,16 @@ SPAN
 SPANNING_TREE
 :
    'spanning-tree'
+;
+
+SPARSE_DENSE_MODE
+:
+   'sparse-dense-mode'
+;
+
+SPARSE_MODE
+:
+   'sparse-mode'
 ;
 
 SPD
@@ -8101,6 +8176,11 @@ TFTP_SERVER
    'tftp-server'
 ;
 
+TFTP_SERVER_LIST
+:
+   'tftp-server-list'
+;
+
 THEN
 :
    'then'
@@ -8269,6 +8349,11 @@ TRANSCEIVER_TYPE_CHECK
 TRANSLATE
 :
    'translate'
+;
+
+TRANSLATION
+:
+   'translation'
 ;
 
 TRANSLATION_PROFILE
@@ -9584,7 +9669,7 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*#] | '[' | ']' | [/.] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'"*#] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
@@ -9596,13 +9681,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'*#] | '[' | ']' )
+   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'*#] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' | ':' )
 ;
 
 fragment

@@ -15,9 +15,9 @@ public class Line extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
-   private Integer _execTimeoutMinutes;
+   private int _execTimeoutMinutes;
 
-   private Integer _execTimeoutSeconds;
+   private int _execTimeoutSeconds;
 
    private String _inputAccessList;
 

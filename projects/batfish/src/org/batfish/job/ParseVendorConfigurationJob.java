@@ -107,8 +107,8 @@ public class ParseVendorConfigurationJob
          }
       }
 
-      String relativePathStr = _settings.getTestrigSettings().getBasePath()
-            .relativize(_file).toString();
+      String relativePathStr = _settings.getActiveTestrigSettings()
+            .getBasePath().relativize(_file).toString();
 
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);

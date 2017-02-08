@@ -75,7 +75,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
+ExecStart=/usr/bin/java -DbatfishQuestionPluginDir=$PLUGIN_DIR -jar $BATFISH_JAR -logfile $BATFISH_LOG -servicemode -register true
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/usr/bin/java -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME
+ExecStart=/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME >> $COORDINATOR_JAVA_LOG'
 WorkingDirectory=$BATFISH_HOME
 PIDFile=$BATFISH_RUN_DIR/coordinator.pid
 Restart=always
@@ -121,7 +121,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/usr/bin/java -jar $COORDINATOR_JAR -loglevel debug -logfile $COORDINATOR_LOG -servicehost localhost -containerslocation $BATFISH_HOME" $BATFISH_USER
+exec su -c "/bin/bash -c '/usr/bin/java -Done-jar.class.path=\$(cat $COORDINATOR_CLASSPATH) -jar $COORDINATOR_JAR -logfile $COORDINATOR_LOG -containerslocation $BATFISH_HOME >> $COORDINATOR_JAVA_LOG'" $BATFISH_USER
 EOF
    echo $BATFISH_INIT >> $CONFFILES_FILE
    echo $COORDINATOR_INIT >> $CONFFILES_FILE
@@ -186,6 +186,8 @@ package() {
    COORDINATOR_JAR_SRC=$BATFISH_PATH/projects/coordinator/out/${COORDINATOR_JAR_NAME}
    COORDINATOR_JAR=${DATA_DIR}/$COORDINATOR_JAR_NAME
    COORDINATOR_JAR_P=${PBASE}$COORDINATOR_JAR
+   COORDINATOR_CLASSPATH_NAME=coordinator.classpath
+   COORDINATOR_CLASSPATH=${CONF_DIR}/${COORDINATOR_CLASSPATH_NAME}
    COORDINATOR_PROPERTIES_NAME=coordinator.properties
    COORDINATOR_PROPERTIES_SRC=${BATFISH_PATH}/projects/coordinator/out/${COORDINATOR_PROPERTIES_NAME}
    COORDINATOR_PROPERTIES_LINK=${DATA_DIR}/${COORDINATOR_PROPERTIES_NAME}
@@ -214,6 +216,8 @@ package() {
    BATFISH_LOG=$BATFISH_LOG_DIR/$BATFISH_LOG_NAME
    COORDINATOR_LOG_NAME=coordinator.log
    COORDINATOR_LOG=$BATFISH_LOG_DIR/$COORDINATOR_LOG_NAME
+   COORDINATOR_JAVA_LOG_NAME=coordinator-java.log
+   COORDINATOR_JAVA_LOG=$BATFISH_LOG_DIR/$COORDINATOR_JAVA_LOG_NAME
    BATFISH_USER=batfish
    CHANGELOG_NAME=changelog.Debian.gz
    CHANGELOG=${DOC_DIR}/${CHANGELOG_NAME}

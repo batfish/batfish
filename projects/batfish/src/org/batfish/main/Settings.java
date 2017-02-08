@@ -415,6 +415,8 @@ public final class Settings extends BaseSettings {
 
    private Path _answerJsonPath;
 
+   private TestrigSettings _baseTestrigSettings;
+
    private List<String> _blockNames;
 
    private boolean _canExecute;
@@ -465,6 +467,10 @@ public final class Settings extends BaseSettings {
 
    private Path _genOspfTopologyPath;
 
+   private boolean _haltOnConvertError;
+
+   private boolean _haltOnParseError;
+
    private List<String> _helpPredicates;
 
    private boolean _histogram;
@@ -474,6 +480,8 @@ public final class Settings extends BaseSettings {
    private boolean _ignoreUnknown;
 
    private boolean _ignoreUnsupported;
+
+   private boolean _initInfo;
 
    private int _jobs;
 
@@ -553,11 +561,11 @@ public final class Settings extends BaseSettings {
 
    private boolean _synthesizeTopology;
 
+   private String _taskId;
+
    private String _taskPlugin;
 
    private String _testrig;
-
-   private TestrigSettings _testrigSettings;
 
    private boolean _throwOnLexerError;
 
@@ -579,6 +587,8 @@ public final class Settings extends BaseSettings {
 
    private boolean _usePrecomputedRoutes;
 
+   private boolean _verboseParse;
+
    private boolean _writeBgpAdvertisements;
 
    private boolean _writeIbgpNeighbors;
@@ -592,7 +602,7 @@ public final class Settings extends BaseSettings {
    public Settings(String[] args) {
       super(CommonUtil.getConfigProperties(ConfigurationLocator.class,
             BfConsts.RELPATH_CONFIG_FILE_NAME_BATFISH));
-      _testrigSettings = new TestrigSettings();
+      _baseTestrigSettings = new TestrigSettings();
       _deltaTestrigSettings = new TestrigSettings();
       initConfigDefaults();
       initOptions();
@@ -621,6 +631,10 @@ public final class Settings extends BaseSettings {
 
    public Path getAnswerJsonPath() {
       return _answerJsonPath;
+   }
+
+   public TestrigSettings getBaseTestrigSettings() {
+      return _baseTestrigSettings;
    }
 
    public List<String> getBlockNames() {
@@ -715,12 +729,24 @@ public final class Settings extends BaseSettings {
       return _generateStubsRemoteAs;
    }
 
+   public boolean getHaltOnConvertError() {
+      return _haltOnConvertError;
+   }
+
+   public boolean getHaltOnParseError() {
+      return _haltOnParseError;
+   }
+
    public List<String> getHelpPredicates() {
       return _helpPredicates;
    }
 
    public boolean getHistogram() {
       return _histogram;
+   }
+
+   public boolean getInitInfo() {
+      return _initInfo;
    }
 
    public int getJobs() {
@@ -867,16 +893,16 @@ public final class Settings extends BaseSettings {
       return _synthesizeTopology;
    }
 
+   public String getTaskId() {
+      return _taskId;
+   }
+
    public String getTaskPlugin() {
       return _taskPlugin;
    }
 
    public String getTestrig() {
       return _testrig;
-   }
-
-   public TestrigSettings getTestrigSettings() {
-      return _testrigSettings;
    }
 
    public boolean getThrowOnLexerError() {
@@ -917,6 +943,10 @@ public final class Settings extends BaseSettings {
 
    public boolean getUsePrecomputedRoutes() {
       return _usePrecomputedRoutes;
+   }
+
+   public boolean getVerboseParse() {
+      return _verboseParse;
    }
 
    public boolean getWriteBgpAdvertisements() {
@@ -967,6 +997,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
       setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
       setDefaultProperty(ARG_GENERATE_STUBS_REMOTE_AS, null);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
+      setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
       setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
@@ -1007,15 +1039,17 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
       setDefaultProperty(ARG_TIMESTAMP, false);
       setDefaultProperty(ARG_TRUST_ALL_SSL_CERTS, true);
-      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, false);
+      setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ADVERTISEMENTS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS, false);
       setDefaultProperty(BfConsts.ARG_USE_PRECOMPUTED_ROUTES, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
       setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
+      setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
       setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
       setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
       setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
+      setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
       setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
       setDefaultProperty(BfConsts.COMMAND_REPORT, false);
@@ -1085,6 +1119,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(ARG_FLATTEN_ON_THE_FLY,
             "flatten hierarchical juniper configuration files on-the-fly (line number references will be spurious)");
 
+      addBooleanOption(BfConsts.COMMAND_INIT_INFO,
+            "include parse/convert initialization info in answer");
+
       addOption(ARG_GEN_OSPF_TOPLOGY_PATH,
             "generate ospf configs from specified topology", ARGNAME_PATH);
 
@@ -1099,6 +1136,12 @@ public final class Settings extends BaseSettings {
 
       addOption(ARG_GENERATE_STUBS_REMOTE_AS,
             "autonomous system number of stubs to be generated", ARGNAME_AS);
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_CONVERT_ERROR,
+            "Halt on conversion error instead of proceeding with successfully converted configs");
+
+      addBooleanOption(BfConsts.ARG_HALT_ON_PARSE_ERROR,
+            "Halt on parse error instead of proceeding with successfully parsed configs");
 
       addBooleanOption(ARG_HELP, "print this message");
 
@@ -1231,6 +1274,9 @@ public final class Settings extends BaseSettings {
       addBooleanOption(BfConsts.ARG_USE_PRECOMPUTED_ROUTES,
             "add precomputed routes to data plane model");
 
+      addBooleanOption(BfConsts.ARG_VERBOSE_PARSE,
+            "(developer option) include parse/convert data in init-testrig answer");
+
       addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
       addBooleanOption(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
@@ -1306,11 +1352,16 @@ public final class Settings extends BaseSettings {
       _generateStubsRemoteAs = getIntegerOptionValue(
             ARG_GENERATE_STUBS_REMOTE_AS);
       _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+      _haltOnConvertError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_CONVERT_ERROR);
+      _haltOnParseError = getBooleanOptionValue(
+            BfConsts.ARG_HALT_ON_PARSE_ERROR);
       _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
       _ignoreFilesWithStrings = getStringListOptionValue(
             BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
       _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
       _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
+      _initInfo = getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
       _jobs = getIntOptionValue(ARG_JOBS);
       _logTee = getBooleanOptionValue(ARG_LOG_TEE);
       _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
@@ -1369,6 +1420,7 @@ public final class Settings extends BaseSettings {
             BfConsts.ARG_USE_PRECOMPUTED_IBGP_NEIGHBORS);
       _usePrecomputedRoutes = getBooleanOptionValue(
             BfConsts.ARG_USE_PRECOMPUTED_ROUTES);
+      _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
       _writeBgpAdvertisements = getBooleanOptionValue(
             BfConsts.COMMAND_WRITE_ADVERTISEMENTS);
       _writeIbgpNeighbors = getBooleanOptionValue(
@@ -1412,6 +1464,18 @@ public final class Settings extends BaseSettings {
       _environmentName = envName;
    }
 
+   public void setHaltOnConvertError(boolean haltOnConvertError) {
+      _haltOnConvertError = haltOnConvertError;
+   }
+
+   public void setHaltOnParseError(boolean haltOnParseError) {
+      _haltOnParseError = haltOnParseError;
+   }
+
+   public void setInitInfo(boolean initInfo) {
+      _initInfo = initInfo;
+   }
+
    public void setLogger(BatfishLogger logger) {
       _logger = logger;
    }
@@ -1452,12 +1516,20 @@ public final class Settings extends BaseSettings {
       _sequential = true;
    }
 
+   public void setTaskId(String taskId) {
+      _taskId = taskId;
+   }
+
    public void setThrowOnLexerError(boolean throwOnLexerError) {
       _throwOnLexerError = throwOnLexerError;
    }
 
    public void setThrowOnParserError(boolean throwOnParserError) {
       _throwOnParserError = throwOnParserError;
+   }
+
+   public void setVerboseParse(boolean verboseParse) {
+      _verboseParse = verboseParse;
    }
 
 }

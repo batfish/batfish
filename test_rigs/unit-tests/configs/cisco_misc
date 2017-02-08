@@ -45,7 +45,7 @@ load-balance policies
     distribution symmetric-hash mac-ip
 no lldp run
 load-interval default 5
-ip domain-name my.domain.name
+ip domain-name my.domain.name use-vrf blip
 domain-name my.domain.name
 nv
  satellite 100

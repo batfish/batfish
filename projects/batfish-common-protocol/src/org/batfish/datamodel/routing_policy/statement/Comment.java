@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class Comment extends AbstractStatement {
+public class Comment extends Statement {
 
    /**
     *
@@ -13,7 +13,7 @@ public class Comment extends AbstractStatement {
    private static final long serialVersionUID = 1L;
 
    @JsonCreator
-   public Comment() {
+   private Comment() {
    }
 
    public Comment(String text) {
@@ -21,8 +21,21 @@ public class Comment extends AbstractStatement {
    }
 
    @Override
+   public boolean equals(Object obj) {
+      if (obj == null) {
+         return false;
+      }
+      return obj.getClass() == this.getClass();
+   }
+
+   @Override
    public Result execute(Environment environment) {
       return new Result();
+   }
+
+   @Override
+   public int hashCode() {
+      return 0x12345678;
    }
 
 }

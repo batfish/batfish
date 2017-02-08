@@ -1,7 +1,19 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement"
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "parseStatus" : {
+        "plane_0_spine_0" : "PASSED",
+        "plane_1_spine_0" : "PASSED",
+        "pod_0_leaf_0" : "PASSED",
+        "pod_0_leaf_1" : "PASSED",
+        "pod_0_tor_0" : "PASSED",
+        "pod_0_tor_1" : "PASSED",
+        "pod_1_leaf_0" : "PASSED",
+        "pod_1_leaf_1" : "PASSED",
+        "pod_1_tor_0" : "PASSED",
+        "pod_1_tor_1" : "PASSED"
+      }
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -96,96 +108,22 @@
             "IPV4_18_OR_LONGER"
           ]
         }
-      },
-      "warnings" : {
-        "plane_0_spine_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "plane_1_spine_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_leaf_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_leaf_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_tor_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_tor_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_leaf_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_leaf_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_tor_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_tor_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        }
       }
-    }
-  ],
-  "status" : "SUCCESS"
-}{
-  "answerElements" : [
+    },
     {
-      "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
-      "bgpIterations" : {
-        "1" : 2,
-        "2" : 2,
-        "3" : 2,
-        "4" : 2,
-        "5" : 2
-      },
-      "dependentRoutesIterations" : 5,
-      "ospfInternalIterations" : 1,
-      "totalRoutes" : 170
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "plane_0_spine_0" : "PASSED",
+        "plane_1_spine_0" : "PASSED",
+        "pod_0_leaf_0" : "PASSED",
+        "pod_0_leaf_1" : "PASSED",
+        "pod_0_tor_0" : "PASSED",
+        "pod_0_tor_1" : "PASSED",
+        "pod_1_leaf_0" : "PASSED",
+        "pod_1_leaf_1" : "PASSED",
+        "pod_1_tor_0" : "PASSED",
+        "pod_1_tor_1" : "PASSED"
+      }
     }
   ],
   "status" : "SUCCESS"

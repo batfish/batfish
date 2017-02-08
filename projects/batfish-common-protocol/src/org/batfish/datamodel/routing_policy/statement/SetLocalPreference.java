@@ -7,7 +7,7 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class SetLocalPreference extends AbstractStatement {
+public class SetLocalPreference extends Statement {
 
    /**
     *
@@ -17,11 +17,34 @@ public class SetLocalPreference extends AbstractStatement {
    private IntExpr _localPreference;
 
    @JsonCreator
-   public SetLocalPreference() {
+   private SetLocalPreference() {
    }
 
    public SetLocalPreference(IntExpr localPreference) {
       _localPreference = localPreference;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      SetLocalPreference other = (SetLocalPreference) obj;
+      if (_localPreference == null) {
+         if (other._localPreference != null) {
+            return false;
+         }
+      }
+      else if (!_localPreference.equals(other._localPreference)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -31,11 +54,24 @@ public class SetLocalPreference extends AbstractStatement {
             .getOutputRoute();
       int localPreference = _localPreference.evaluate(environment);
       bgpBuilder.setLocalPreference(localPreference);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes()
+               .setLocalPreference(localPreference);
+      }
       return result;
    }
 
    public IntExpr getLocalPreference() {
       return _localPreference;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_localPreference == null) ? 0 : _localPreference.hashCode());
+      return result;
    }
 
    public void setLocalPreference(IntExpr localPreference) {

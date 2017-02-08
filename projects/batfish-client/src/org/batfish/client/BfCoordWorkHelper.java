@@ -22,6 +22,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.WorkItem;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONArray;
@@ -371,15 +372,20 @@ public class BfCoordWorkHelper {
       return wItem;
    }
 
-   public WorkItem getWorkItemParse(String containerName, String testrigName) {
+   public WorkItem getWorkItemParse(String containerName, String testrigName,
+         boolean doDelta) {
       WorkItem wItem = new WorkItem(containerName, testrigName);
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
       wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
+      wItem.addRequestParam(BfConsts.COMMAND_INIT_INFO, "");
       wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
+      if (doDelta) {
+         wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+      }
       return wItem;
    }
 
-   public WorkStatusCode getWorkStatus(UUID parseWorkUUID) {
+   public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
       try {
          Client client = getClientBuilder().build();
          WebTarget webTarget = getTarget(client,
@@ -404,8 +410,16 @@ public class BfCoordWorkHelper {
             return null;
          }
 
-         return WorkStatusCode
+         WorkStatusCode workStatus = WorkStatusCode
                .valueOf(jObj.getString(CoordConsts.SVC_WORKSTATUS_KEY));
+
+         if (!jObj.has(CoordConsts.SVC_TASKSTATUS_KEY)) {
+            _logger.errorf("taskstatus key not found in: %s\n",
+                  jObj.toString());
+         }
+         String taskStr = jObj.getString(CoordConsts.SVC_TASKSTATUS_KEY);
+
+         return new Pair<>(workStatus, taskStr);
       }
       catch (Exception e) {
          _logger.errorf("exception: ");

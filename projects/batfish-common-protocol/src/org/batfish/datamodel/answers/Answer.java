@@ -63,13 +63,10 @@ public class Answer {
 
       string.append("Status: " + _status + "\n");
       if (_question != null) {
-         string.append("Question: " + _question.prettyPrint());
-      }
-      else {
-         string.append("Question: null");
+         string.append("Question: " + _question.prettyPrint() + "\n");
       }
       for (AnswerElement ae : _answerElements) {
-         string.append("\n" + ae.prettyPrint());
+         string.append(ae.prettyPrint() + "\n");
       }
       return string.toString();
    }

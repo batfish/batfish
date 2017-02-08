@@ -109,9 +109,21 @@ if_ip_address_secondary
    ) SECONDARY NEWLINE
 ;
 
-if_ip_ospf_area_null
+if_ip_nat_source
 :
-   IP OSPF DEC AREA DEC NEWLINE
+   IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
+   (
+      OVERLOAD
+      |
+      (
+         POOL pool = variable
+      )
+   )* NEWLINE
+;
+
+if_ip_ospf_area
+:
+   IP OSPF procnum = DEC AREA area = DEC NEWLINE
 ;
 
 if_ip_ospf_cost
@@ -139,6 +151,11 @@ if_ip_ospf_passive_interface
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
 ;
 
+if_ip_pim_neighbor_filter
+:
+   IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
+;
+
 if_ip_policy
 :
    IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
@@ -152,6 +169,11 @@ if_ip_proxy_arp
 if_ip_router_isis
 :
    IP ROUTER ISIS NEWLINE
+;
+
+if_ip_router_ospf_area
+:
+   IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
 ;
 
 if_ip_verify
@@ -351,7 +373,14 @@ if_null_block
             | MTU
             | MULTICAST
             | MULTICAST_BOUNDARY
-            | NAT
+            |
+            (
+               NAT
+               (
+                  INSIDE
+                  | OUTSIDE
+               )
+            )
             | NHRP
             |
             (
@@ -367,14 +396,27 @@ if_null_block
                   | PRIORITY
                )
             )
-            | PIM
+            |
+            (
+               PIM
+               (
+                  BORDER
+                  | BORDER_ROUTER
+                  | BSR_BORDER
+                  | DR_PRIORITY
+                  | PASSIVE
+                  | QUERY_INTERVAL
+                  | SNOOPING
+                  | SPARSE_DENSE_MODE
+                  | SPARSE_MODE
+               )
+            )
             | PIM_SPARSE
             | PORT_UNREACHABLE
             | REDIRECT
             | REDIRECTS
             | RIP
             | ROUTE_CACHE
-            | ROUTER
             | RSVP
             | SDR
             | TCP
@@ -498,6 +540,7 @@ if_null_block
       | PRIORITY_QUEUE
       | PVC
       | QOS
+      | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT
@@ -728,14 +771,17 @@ s_interface
       | if_ip_address
       | if_ip_address_dhcp
       | if_ip_address_secondary
-      | if_ip_ospf_area_null
+      | if_ip_nat_source
+      | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
       | if_ip_ospf_dead_interval_minimal
       | if_ip_ospf_hello_interval
       | if_ip_ospf_passive_interface
+      | if_ip_pim_neighbor_filter
       | if_ip_policy
       | if_ip_router_isis
+      | if_ip_router_ospf_area
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval

@@ -814,6 +814,7 @@ l_null
       | LOGOUT_WARNING
       | MODEM
       | NOTIFY
+      | PASSWORD
       | PRIVILEGE
       | ROTARY
       | SESSION_DISCONNECT_WARNING
@@ -1442,10 +1443,17 @@ pim_rp_address
 :
    RP_ADDRESS IP_ADDRESS
    (
-      GROUP_LIST prefix = IP_PREFIX
+      (
+         ACCESS_LIST name = variable
+      )
+      |
+      (
+         GROUP_LIST prefix = IP_PREFIX
+      )
       | OVERRIDE
+      | prefix = IP_PREFIX
       | name = variable
-   )? NEWLINE
+   )* NEWLINE
 ;
 
 pim_rp_announce_filter
@@ -1864,12 +1872,22 @@ s_ip_dhcp
 
 s_ip_domain_name
 :
-   IP DOMAIN_NAME name = variable NEWLINE
+   IP DOMAIN_NAME name = variable
+   (
+      USE_VRF variable
+   )? NEWLINE
 ;
 
 s_ip_nat
 :
-   NO? IP NAT ~NEWLINE* NEWLINE
+   NO? IP NAT
+   (
+      INSIDE
+      | LOG
+      | OUTSIDE
+      | POOL
+      | TRANSLATION
+   ) ~NEWLINE* NEWLINE
    (
       ip_nat_null
    )*
@@ -1877,7 +1895,7 @@ s_ip_nat
 
 s_ip_pim
 :
-   IP PIM
+   NO? IP PIM
    (
       VRF vrf = variable
    )? ip_pim_tail

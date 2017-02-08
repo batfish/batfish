@@ -19,12 +19,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -72,6 +74,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Answer;
@@ -80,9 +83,11 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.EnvironmentCreationAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
@@ -251,7 +256,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public static void initQuestionSettings(Settings settings) {
       String questionName = settings.getQuestionName();
-      Path testrigDir = settings.getTestrigSettings().getBasePath();
+      Path testrigDir = settings.getActiveTestrigSettings().getBasePath();
       if (questionName != null) {
          Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR)
                .resolve(questionName);
@@ -268,7 +273,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       String questionName = settings.getQuestionName();
       Path containerDir = settings.getContainerDir();
       if (testrig != null) {
-         applyBaseDir(settings.getTestrigSettings(), containerDir, testrig,
+         applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig,
                envName, questionName);
          String deltaTestrig = settings.getDeltaTestrig();
          String deltaEnvName = settings.getDeltaEnvironmentName();
@@ -291,7 +296,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   .setActiveTestrigSettings(settings.getDeltaTestrigSettings());
          }
          else {
-            settings.setActiveTestrigSettings(settings.getTestrigSettings());
+            settings
+                  .setActiveTestrigSettings(settings.getBaseTestrigSettings());
          }
          initQuestionSettings(settings);
       }
@@ -380,7 +386,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _cachedConfigurations = new HashMap<>();
       _dataPlanes = new HashMap<>();
       _testrigSettings = settings.getActiveTestrigSettings();
-      _baseTestrigSettings = settings.getTestrigSettings();
+      _baseTestrigSettings = settings.getBaseTestrigSettings();
       _deltaTestrigSettings = settings.getDeltaTestrigSettings();
       _logger = _settings.getLogger();
       _terminatedWithException = false;
@@ -719,7 +725,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    private void checkQuestionsDirExists() {
       checkBaseDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _testrigSettings.getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       if (!Files.exists(questionsDir)) {
          throw new CleanBatfishException("questions dir does not exist: \""
@@ -760,7 +766,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "Composite NOD");
       executor.executeJobs(jobs, flows, answerElement);
       printElapsedTime();
       return flows;
@@ -830,9 +836,23 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Map<String, Configuration> configurations) {
       // TODO: confirm VRFs are handled correctly
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
+      Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
       configurations.forEach((hostname, c) -> {
          for (Interface i : c.getInterfaces().values()) {
             if (i.getActive()) {
+               // collect vrrp info
+               i.getVrrpGroups().forEach((groupNum, vrrpGroup) -> {
+                  Prefix prefix = vrrpGroup.getVirtualAddress();
+                  Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
+                  Set<Interface> candidates = vrrpGroups.get(key);
+                  if (candidates == null) {
+                     candidates = Collections.newSetFromMap(
+                           new IdentityHashMap<Interface, Boolean>());
+                     vrrpGroups.put(key, candidates);
+                  }
+                  candidates.add(i);
+               });
+               // collect prefixes
                i.getAllPrefixes().stream().map(p -> p.getAddress())
                      .forEach(ip -> {
                         Set<String> owners = ipOwners.get(ip);
@@ -845,6 +865,27 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             }
          }
       });
+      vrrpGroups.forEach((p, candidates) -> {
+         int groupNum = p.getSecond();
+         Prefix prefix = p.getFirst();
+         Ip ip = prefix.getAddress();
+         int lowestPriority = Integer.MAX_VALUE;
+         String bestCandidate = null;
+         for (Interface candidate : candidates) {
+            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
+            int currentPriority = group.getPriority();
+            if (currentPriority < lowestPriority) {
+               currentPriority = lowestPriority;
+               bestCandidate = candidate.getOwner().getHostname();
+            }
+         }
+         Set<String> owners = ipOwners.get(ip);
+         if (owners == null) {
+            owners = new HashSet<>();
+            ipOwners.put(ip, owners);
+         }
+         owners.add(bestCandidate);
+      });
       return ipOwners;
    }
 
@@ -853,7 +894,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodFirstUnsatJob<Key, Result>, NodFirstUnsatAnswerElement, NodFirstUnsatResult<Key, Result>, Map<Key, Result>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD First-UNSAT");
       executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
       printElapsedTime();
    }
@@ -863,7 +904,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       resetTimer();
       Set<Flow> flows = new TreeSet<>();
       BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD");
       // todo: do something with nod answer element
       executor.executeJobs(jobs, flows, new NodAnswerElement());
       printElapsedTime();
@@ -875,7 +916,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
       resetTimer();
       BatfishJobExecutor<NodSatJob<Key>, NodSatAnswerElement, NodSatResult<Key>, Map<Key, Boolean>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, true, "NOD SAT");
       executor.executeJobs(jobs, output, new NodSatAnswerElement());
       printElapsedTime();
    }
@@ -951,7 +992,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult, Map<String, Configuration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, _settings.getHaltOnConvertError(),
+            "Convert configurations to vendor-independent format");
       executor.executeJobs(jobs, configurations, answerElement);
       printElapsedTime();
       return configurations;
@@ -972,8 +1014,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       answerElement.setNewEnvironmentName(newEnvName);
       answerElement.setOldEnvironmentName(oldEnvName);
       Path oldEnvPath = envSettings.getEnvPath();
-      applyBaseDir(_settings.getTestrigSettings(), _settings.getContainerDir(),
-            _settings.getTestrig(), newEnvName, _settings.getQuestionName());
+      applyBaseDir(_settings.getBaseTestrigSettings(),
+            _settings.getContainerDir(), _settings.getTestrig(), newEnvName,
+            _settings.getQuestionName());
       EnvironmentSettings newEnvSettings = _testrigSettings
             .getEnvironmentSettings();
       Path newEnvPath = newEnvSettings.getEnvPath();
@@ -1132,7 +1175,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement, FlattenVendorConfigurationResult, Map<Path, String>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger,
+            _settings.getFlatten() || _settings.getHaltOnParseError(),
+            "Flatten configurations");
       // todo: do something with answer element
       executor.executeJobs(jobs, outputConfigurationData,
             new FlattenVendorConfigurationAnswerElement());
@@ -1579,6 +1624,12 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return blacklistNodes;
    }
 
+   @Override
+   public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement() {
+      return deserializeObject(_testrigSettings.getParseAnswerPath(),
+            ParseVendorConfigurationAnswerElement.class);
+   }
+
    public Path getPrecomputedRoutesPath() {
       return _testrigSettings.getEnvironmentSettings()
             .getPrecomputedRoutesPath();
@@ -1813,6 +1864,38 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       // proc.setOriginationSpace(ebgpExportSpace);
       // }
       // }
+   }
+
+   @Override
+   public InitInfoAnswerElement initInfo(boolean summary) {
+      checkConfigurations();
+      InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
+      ParseVendorConfigurationAnswerElement parseAnswer = getParseVendorConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement convertAnswer = getConvertConfigurationAnswerElement();
+      if (!summary) {
+         SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
+               .getWarnings();
+         warnings.putAll(parseAnswer.getWarnings());
+         convertAnswer.getWarnings().forEach((hostname, convertWarnings) -> {
+            org.batfish.common.Warnings combined = warnings.get(hostname);
+            if (combined == null) {
+               warnings.put(hostname, convertWarnings);
+            }
+            else {
+               combined.getPedanticWarnings()
+                     .addAll(convertWarnings.getPedanticWarnings());
+               combined.getRedFlagWarnings()
+                     .addAll(convertWarnings.getRedFlagWarnings());
+               combined.getUnimplementedWarnings()
+                     .addAll(convertWarnings.getUnimplementedWarnings());
+            }
+         });
+      }
+      answerElement.setParseStatus(parseAnswer.getParseStatus());
+      for (String failed : convertAnswer.getFailed()) {
+         answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
+      }
+      return answerElement;
    }
 
    private void initQuestionEnvironment(Question question, boolean dp,
@@ -2057,14 +2140,24 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return answerElement;
    }
 
+   @Override
+   public AtomicInteger newBatch(String description, int jobs) {
+      return Driver.newBatch(_settings, description, jobs);
+   }
+
    void outputAnswer(Answer answer) {
       ObjectMapper mapper = new BatfishObjectMapper();
       try {
+         StringBuilder sb = new StringBuilder();
+
          String jsonString = mapper
                .writeValueAsString(_settings.prettyPrintAnswer()
                      ? answer.prettyPrintAnswer() : answer);
-         _logger.debug(jsonString);
-         writeJsonAnswer(jsonString);
+         sb.append(jsonString);
+         sb.append("\n");
+         String answerString = sb.toString();
+         _logger.debug(answerString);
+         writeJsonAnswer(answerString);
       }
       catch (Exception e) {
          BatfishException be = new BatfishException("Error in sending answer",
@@ -2293,7 +2386,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          jobs.add(job);
       }
       BatfishJobExecutor<ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement, ParseVendorConfigurationResult, Map<String, VendorConfiguration>> executor = new BatfishJobExecutor<>(
-            _settings, _logger);
+            _settings, _logger, _settings.getHaltOnParseError(),
+            "Parse configurations");
 
       executor.executeJobs(jobs, vendorConfigurations, answerElement);
       printElapsedTime();
@@ -2729,7 +2823,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    private AnswerElement report() {
       ReportAnswerElement answerElement = new ReportAnswerElement();
       checkQuestionsDirExists();
-      Path questionsDir = _settings.getTestrigSettings().getBasePath()
+      Path questionsDir = _settings.getActiveTestrigSettings().getBasePath()
             .resolve(BfConsts.RELPATH_QUESTIONS_DIR);
       ConcurrentMap<Path, String> answers = new ConcurrentHashMap<>();
       try {
@@ -2862,6 +2956,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          action = true;
       }
 
+      if (_settings.getInitInfo()) {
+         answer.addAnswerElement(initInfo(true));
+         action = true;
+      }
+
       if (_settings.getCompileEnvironment()) {
          answer.append(compileEnvironmentConfigurations(_testrigSettings));
          action = true;
@@ -2986,8 +3085,8 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          if (hostConfig.getIptablesFile() != null) {
             Path path = Paths.get(testRigPath.toString(),
                   hostConfig.getIptablesFile());
-            String relativePathStr = _settings.getTestrigSettings()
-                  .getBasePath().relativize(path).toString();
+            String relativePathStr = _testrigSettings.getBasePath()
+                  .relativize(path).toString();
             if (!iptablesConfigurations.containsKey(relativePathStr)) {
                for (String key : iptablesConfigurations.keySet()) {
                   _logger.errorf("key : %s\n", key);
@@ -3039,7 +3138,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       Map<String, Configuration> configurations = getConfigurations(
             vendorConfigPath, answerElement);
       serializeIndependentConfigs(configurations, outputPath);
@@ -3109,7 +3210,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
-      answer.addAnswerElement(answerElement);
+      if (_settings.getVerboseParse()) {
+         answer.addAnswerElement(answerElement);
+      }
       if (Files.exists(networkConfigsPath)) {
          serializeNetworkConfigs(testRigPath, outputPath, answerElement);
          configsFound = true;
@@ -3352,14 +3455,14 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       }
       Path questionPath = _settings.getQuestionPath();
       if (questionPath != null) {
-         if (!Files.exists(questionPath)) {
+         Path questionDir = questionPath.getParent();
+         if (!Files.exists(questionDir)) {
             throw new BatfishException(
                   "Could not write JSON answer to question dir '"
-                        + questionPath.toString()
+                        + questionDir.toString()
                         + "' because it does not exist");
          }
-         Path answerPath = questionPath.getParent()
-               .resolve(BfConsts.RELPATH_ANSWER_JSON);
+         Path answerPath = questionDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
          CommonUtil.writeFile(answerPath, jsonAnswer);
       }
    }

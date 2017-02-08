@@ -32,6 +32,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
+import org.batfish.common.Task;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.common.WorkItem;
@@ -110,7 +112,8 @@ public class WorkMgr {
          assignWork(work, idleWorker);
       }
       catch (Exception e) {
-         _logger.error("Got exception in assignWork: " + e.getMessage());
+         String stackTrace = ExceptionUtils.getFullStackTrace(e);
+         _logger.error("Got exception in assignWork: " + stackTrace);
       }
    }
 
@@ -234,7 +237,8 @@ public class WorkMgr {
       _logger.info(
             "WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
 
-      BfConsts.TaskStatus status = BfConsts.TaskStatus.UnreachableOrBadResponse;
+      Task task = new Task();
+      task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
       try {
          Client client = ClientBuilder.newClient();
@@ -263,16 +267,12 @@ public class WorkMgr {
                            array.get(0), array.get(1)));
             }
             else {
-
-               JSONObject jObj = new JSONObject(array.get(1).toString());
-
-               if (!jObj.has("status")) {
+               String taskStr = array.get(1).toString();
+               BatfishObjectMapper mapper = new BatfishObjectMapper();
+               task = mapper.readValue(taskStr, Task.class);
+               if (task.getStatus() == null) {
                   _logger.error(String
                         .format("did not see status key in json response\n"));
-               }
-               else {
-                  status = BfConsts.TaskStatus
-                        .valueOf(jObj.getString("status"));
                }
             }
          }
@@ -286,13 +286,13 @@ public class WorkMgr {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error(String.format("exception: %s\n", stackTrace));
       }
-
-      _workQueueMgr.processStatusCheckResult(work, status);
+      
+      _workQueueMgr.processTaskCheckResult(work, task);
 
       // if the task ended, send a hint to the pool manager to look up worker
       // status
-      if (status == TaskStatus.TerminatedAbnormally
-            || status == TaskStatus.TerminatedNormally) {
+      if (task.getStatus() == TaskStatus.TerminatedAbnormally
+            || task.getStatus() == TaskStatus.TerminatedNormally) {
          Main.getPoolMgr().refreshWorkerStatus(worker);
       }
    }

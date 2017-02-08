@@ -27,14 +27,19 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
    private static final String STATEMENTS_VAR = "statements";
 
-   private transient Configuration _owner;
+   private Configuration _owner;
 
    private List<Statement> _statements;
 
    @JsonCreator
-   public RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
+   private RoutingPolicy(@JsonProperty(NAME_VAR) String name) {
       super(name);
       _statements = new ArrayList<>();
+   }
+
+   public RoutingPolicy(String name, Configuration owner) {
+      this(name);
+      _owner = owner;
    }
 
    public Result call(Environment environment) {
@@ -60,12 +65,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
          return true;
       }
       RoutingPolicy other = (RoutingPolicy) o;
-      if (this.getStatements().equals(other.getStatements())) {
-         return true;
-      }
-      else {
-         return false;
-      }
+      return _statements.equals(other._statements);
    }
 
    @JsonIgnore
@@ -81,13 +81,10 @@ public class RoutingPolicy extends ComparableStructure<String> {
 
    public boolean process(AbstractRoute inputRoute, AbstractRoute6 inputRoute6,
          AbstractRouteBuilder<?> outputRoute, Ip peerAddress, String vrf) {
-      Result result = call(new Environment(_owner, vrf, inputRoute, inputRoute6,
-            outputRoute, peerAddress));
+      Environment environment = new Environment(_owner, vrf, inputRoute,
+            inputRoute6, outputRoute, peerAddress);
+      Result result = call(environment);
       return result.getBooleanValue();
-   }
-
-   public void setOwner(Configuration owner) {
-      _owner = owner;
    }
 
    @JsonProperty(STATEMENTS_VAR)
@@ -100,7 +97,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
       for (Statement statement : _statements) {
          simpleStatements.addAll(statement.simplify());
       }
-      RoutingPolicy simple = new RoutingPolicy(_key);
+      RoutingPolicy simple = new RoutingPolicy(_key, _owner);
       simple.setStatements(simpleStatements);
       return simple;
    }

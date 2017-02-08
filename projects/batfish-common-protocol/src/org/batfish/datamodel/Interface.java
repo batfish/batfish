@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.BatfishException;
@@ -77,6 +79,8 @@ public final class Interface extends ComparableStructure<String> {
    private static final String SWITCHPORT_TRUNK_ENCAPSULATION_VAR = "switchportTrunkEncapsulation";
 
    private static final String VRF_VAR = "vrf";
+
+   private static final String VRRP_GROUPS_VAR = "vrrpGroups";
 
    private static final String ZONE_VAR = "zone";
 
@@ -320,6 +324,8 @@ public final class Interface extends ComparableStructure<String> {
 
    private transient String _vrfName;
 
+   private SortedMap<Integer, VrrpGroup> _vrrpGroups;
+
    private Zone _zone;
 
    private transient String _zoneName;
@@ -347,6 +353,7 @@ public final class Interface extends ComparableStructure<String> {
       _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
       _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
       _vrfName = Configuration.DEFAULT_VRF_NAME;
+      _vrrpGroups = new TreeMap<>();
    }
 
    public void addAllowedRanges(List<SubRange> ranges) {
@@ -645,6 +652,11 @@ public final class Interface extends ComparableStructure<String> {
       }
    }
 
+   @JsonProperty(VRRP_GROUPS_VAR)
+   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
+      return _vrrpGroups;
+   }
+
    @JsonIgnore
    public Zone getZone() {
       return _zone;
@@ -861,6 +873,11 @@ public final class Interface extends ComparableStructure<String> {
    @JsonProperty(VRF_VAR)
    public void setVrfName(String vrfName) {
       _vrfName = vrfName;
+   }
+
+   @JsonProperty(VRRP_GROUPS_VAR)
+   public void setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = vrrpGroups;
    }
 
    @JsonIgnore

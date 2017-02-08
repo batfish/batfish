@@ -554,7 +554,9 @@
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_logging",
-              "logging" : { }
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -603,10 +605,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -729,6 +727,7 @@
               },
               "hostname" : "banner",
               "logging" : {
+                "on" : true,
                 "trap" : {
                   "severity" : "informational",
                   "severityNum" : 6
@@ -1690,6 +1689,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1707,6 +1707,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1724,6 +1725,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1741,6 +1743,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1763,6 +1766,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "13.9.2.2/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1780,6 +1784,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1801,6 +1806,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.2.3.4/30",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2227,6 +2233,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.25.57/30",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2244,6 +2251,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2261,6 +2269,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2278,6 +2287,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2315,8 +2325,9 @@
               "lines" : {
                 "<UNNAMED>0/0/0" : {
                   "name" : "<UNNAMED>0/0/0",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2329,8 +2340,9 @@
                 },
                 "<UNNAMED>0/0/1" : {
                   "name" : "<UNNAMED>0/0/1",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2343,8 +2355,9 @@
                 },
                 "<UNNAMED>0/0/10" : {
                   "name" : "<UNNAMED>0/0/10",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2357,8 +2370,9 @@
                 },
                 "<UNNAMED>0/0/11" : {
                   "name" : "<UNNAMED>0/0/11",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2371,8 +2385,9 @@
                 },
                 "<UNNAMED>0/0/12" : {
                   "name" : "<UNNAMED>0/0/12",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2385,8 +2400,9 @@
                 },
                 "<UNNAMED>0/0/13" : {
                   "name" : "<UNNAMED>0/0/13",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2399,8 +2415,9 @@
                 },
                 "<UNNAMED>0/0/14" : {
                   "name" : "<UNNAMED>0/0/14",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2413,8 +2430,9 @@
                 },
                 "<UNNAMED>0/0/15" : {
                   "name" : "<UNNAMED>0/0/15",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2427,8 +2445,9 @@
                 },
                 "<UNNAMED>0/0/2" : {
                   "name" : "<UNNAMED>0/0/2",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2441,8 +2460,9 @@
                 },
                 "<UNNAMED>0/0/3" : {
                   "name" : "<UNNAMED>0/0/3",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2455,8 +2475,9 @@
                 },
                 "<UNNAMED>0/0/4" : {
                   "name" : "<UNNAMED>0/0/4",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2469,8 +2490,9 @@
                 },
                 "<UNNAMED>0/0/5" : {
                   "name" : "<UNNAMED>0/0/5",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2483,8 +2505,9 @@
                 },
                 "<UNNAMED>0/0/6" : {
                   "name" : "<UNNAMED>0/0/6",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2497,8 +2520,9 @@
                 },
                 "<UNNAMED>0/0/7" : {
                   "name" : "<UNNAMED>0/0/7",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2511,8 +2535,9 @@
                 },
                 "<UNNAMED>0/0/8" : {
                   "name" : "<UNNAMED>0/0/8",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2525,8 +2550,9 @@
                 },
                 "<UNNAMED>0/0/9" : {
                   "name" : "<UNNAMED>0/0/9",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "40",
-                  "loginAuthentication" : "SecurID",
                   "transportInput" : [
                     "telnet"
                   ],
@@ -2548,84 +2574,112 @@
                 },
                 "<UNNAMED>35" : {
                   "name" : "<UNNAMED>35",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>36" : {
                   "name" : "<UNNAMED>36",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>37" : {
                   "name" : "<UNNAMED>37",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>38" : {
                   "name" : "<UNNAMED>38",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>39" : {
                   "name" : "<UNNAMED>39",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>40" : {
                   "name" : "<UNNAMED>40",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>41" : {
                   "name" : "<UNNAMED>41",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>42" : {
                   "name" : "<UNNAMED>42",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>43" : {
                   "name" : "<UNNAMED>43",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>44" : {
                   "name" : "<UNNAMED>44",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>45" : {
                   "name" : "<UNNAMED>45",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>46" : {
                   "name" : "<UNNAMED>46",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>47" : {
                   "name" : "<UNNAMED>47",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
                 },
                 "<UNNAMED>48" : {
                   "name" : "<UNNAMED>48",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "transportInput" : [
                     "all"
                   ]
@@ -2637,6 +2691,8 @@
                 },
                 "vty" : {
                   "name" : "vty",
+                  "execTimeoutMinutes" : 0,
+                  "execTimeoutSeconds" : 0,
                   "inputAccessList" : "vty-acl"
                 },
                 "vty0" : {
@@ -2645,7 +2701,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2656,7 +2711,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2665,43 +2719,37 @@
                   "name" : "vty10",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty11" : {
                   "name" : "vty11",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty12" : {
                   "name" : "vty12",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty13" : {
                   "name" : "vty13",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty14" : {
                   "name" : "vty14",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty15" : {
                   "name" : "vty15",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty2" : {
                   "name" : "vty2",
@@ -2709,7 +2757,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2720,7 +2767,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2731,7 +2777,6 @@
                   "execTimeoutSeconds" : 0,
                   "inputAccessList" : "99",
                   "inputIpv6AccessList" : "ipv6-vty-acl",
-                  "loginAuthentication" : "blah",
                   "transportPreferred" : [
                     "none"
                   ]
@@ -2740,36 +2785,31 @@
                   "name" : "vty5",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty6" : {
                   "name" : "vty6",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty7" : {
                   "name" : "vty7",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty8" : {
                   "name" : "vty8",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 },
                 "vty9" : {
                   "name" : "vty9",
                   "execTimeoutMinutes" : 15,
                   "execTimeoutSeconds" : 0,
-                  "inputAccessList" : "40",
-                  "loginAuthentication" : "blah"
+                  "inputAccessList" : "40"
                 }
               }
             }
@@ -2805,6 +2845,7 @@
                     "name" : "137.164.80.152"
                   }
                 },
+                "on" : true,
                 "sourceInterface" : "Vlan1",
                 "trap" : {
                   "severity" : "errors",
@@ -2900,6 +2941,29 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "interfaces" : {
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "3.3.3.0/24"
+              ],
+              "bandwidth" : 1.0E9,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "3.3.3.0/24",
+              "proxyArp" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "vrf" : "default"
+            },
             "Loopback0" : {
               "name" : "Loopback0",
               "accessVlan" : 0,
@@ -2917,6 +2981,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.1.1.1/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2963,13 +3028,38 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
+                "Ethernet0/0",
                 "Loopback0"
               ],
               "ospfProcess" : {
+                "areas" : {
+                  "0" : {
+                    "name" : 0,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ]
+                  }
+                },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "1.2.3.4"
               }
+            }
+          }
+        },
+        "cisco_pim" : {
+          "name" : "cisco_pim",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_pim"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
             }
           }
         },
@@ -3081,10 +3171,29 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnFalse"
+                }
+              ]
+            },
+            "beeble" : {
+              "name" : "beeble",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 0
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnTrue"
                 }
               ]
             },
@@ -3093,7 +3202,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             },
@@ -3103,10 +3212,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -3116,20 +3221,12 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
             "next-hop-null" : {
               "name" : "next-hop-null",
               "statements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
-                },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnFalse"
@@ -3149,10 +3246,6 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3690,6 +3783,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~AAA1-BBB-CCC~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                     "expr" : {
@@ -3721,10 +3821,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3763,6 +3859,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~AAA1-BBB-CCC~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
                     "expr" : {
@@ -3794,10 +3897,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -3848,6 +3947,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~TO_NEIGHBOR~30~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -3882,10 +3988,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -4300,6 +4402,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4330,7 +4433,8 @@
               "logging" : {
                 "buffered" : {
                   "size" : 1000
-                }
+                },
+                "on" : true
               }
             }
           },
@@ -4869,6 +4973,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.22.33.10/29",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4890,6 +4995,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.12.12.1/23",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4929,6 +5035,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4946,12 +5053,13 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
             },
-            "Port-channel1" : {
-              "name" : "Port-channel1",
+            "Port-Channel1" : {
+              "name" : "Port-Channel1",
               "accessVlan" : 0,
               "active" : true,
               "bandwidth" : 1.0E12,
@@ -4963,6 +5071,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4980,6 +5089,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4996,7 +5106,7 @@
               "interfaces" : [
                 "FastEthernet12/13",
                 "HundredGigabitEthernet0/6/0/8",
-                "Port-channel1",
+                "Port-Channel1",
                 "Vlan100"
               ]
             }
@@ -5026,6 +5136,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.16.80/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5305,6 +5416,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5388,6 +5500,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5405,6 +5518,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5422,6 +5536,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5439,6 +5554,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5456,6 +5572,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5473,6 +5590,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5490,6 +5608,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5507,6 +5626,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5524,6 +5644,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6109,7 +6230,14 @@
               "prefix" : "10.0.0.1/24",
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "vrf" : "default"
+              "vrf" : "default",
+              "vrrpGroups" : {
+                "5" : {
+                  "name" : 5,
+                  "preempt" : true,
+                  "priority" : 100
+                }
+              }
             },
             "xe-0/0/0:0.0" : {
               "name" : "xe-0/0/0:0.0",
@@ -6336,7 +6464,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             }
@@ -7873,6 +8001,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.17.8/32",
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -8014,6 +8143,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~to_elacc~10~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -8030,10 +8166,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             }
@@ -9946,37 +10078,6 @@
             }
           }
         },
-        "route_map_sub" : {
-          "name" : "route_map_sub",
-          "configurationFormat" : "CISCO_NX",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "routingPolicies" : {
-            "ABC" : {
-              "name" : "ABC",
-              "statements" : [
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnTrue"
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
-                }
-              ]
-            }
-          },
-          "vendorFamily" : {
-            "cisco" : {
-              "hostname" : "route_map_sub"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default"
-            }
-          }
-        },
         "route_maps_in_two_address_families" : {
           "name" : "route_maps_in_two_address_families",
           "configurationFormat" : "CISCO_NX",
@@ -10021,6 +10122,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~FROM_ABC_V4~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                     "prefix" : {
@@ -10037,10 +10145,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -10049,6 +10153,13 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~FROM_ABC_V6~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
                   "guard" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set",
                     "prefix" : {
@@ -10065,10 +10176,6 @@
                       "type" : "ReturnTrue"
                     }
                   ]
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
                 }
               ]
             },
@@ -10188,6 +10295,47 @@
         },
         "route_policy_as_path_set" : {
           "name" : "route_policy_as_path_set",
+          "asPathAccessLists" : {
+            "ama-coe-as-path" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path"
+            },
+            "ama-coe-as-path2" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                }
+              ],
+              "name" : "ama-coe-as-path2"
+            },
+            "ama-coe-as-path3" : {
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^64666((,|\\{|\\}|^|$| )64666)*$"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "regex" : "^$"
+                }
+              ],
+              "name" : "ama-coe-as-path3"
+            }
+          },
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -11279,6 +11427,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11676,7 +11825,7 @@
               "statements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnFalse"
+                  "type" : "ReturnLocalDefaultAction"
                 }
               ]
             }
@@ -11711,6 +11860,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -11749,6 +11899,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
+              "proxyArp" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"

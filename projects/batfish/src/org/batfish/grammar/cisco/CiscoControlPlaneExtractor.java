@@ -28,6 +28,7 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -222,7 +223,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
       prefixes.put("MgmtEth", "ManagementEthernet");
       prefixes.put("Null", "Null");
-      prefixes.put("Port-channel", "Port-channel");
+      prefixes.put("Port-channel", "Port-Channel");
       prefixes.put("POS", "POS");
       prefixes.put("PTP", "PTP");
       prefixes.put("Serial", "Serial");
@@ -404,6 +405,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private boolean _inIpv6BgpPeer;
 
+   private boolean _no;
+
    private final BatfishCombinedParser<?, ?> _parser;
 
    private List<BgpPeerGroup> _peerGroupStack;
@@ -433,6 +436,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
          newInterface = new Interface(name);
+         initInterface(newInterface, _configuration.getVendor());
          _configuration.getInterfaces().put(name, newInterface);
          initInterface(newInterface, ctx);
       }
@@ -841,7 +845,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                pushPeer(_currentIpPeerGroup);
             }
             else {
-               String message = "reference to undeclared peer group: '"
+               String message = "Ignoring reference to undeclared peer group: '"
                      + ip.toString() + "'";
                _w.redFlag(message);
                pushPeer(_dummyPeerGroup);
@@ -861,7 +865,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                pushPeer(pg6);
             }
             else {
-               String message = "reference to undeclared peer group: '"
+               String message = "Ignoring reference to undeclared peer group: '"
                      + ip6.toString() + "'";
                _w.redFlag(message);
                pushPeer(_dummyPeerGroup);
@@ -945,7 +949,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // might cause problems if interfaces are declared after ospf, but
       // whatever
       for (Prefix prefix : iface.getAllPrefixes()) {
-         OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
+         Prefix networkPrefix = prefix.getNetworkPrefix();
+         OspfNetwork network = new OspfNetwork(networkPrefix, _currentOspfArea);
          _currentOspfProcess.getNetworks().add(network);
       }
       _currentOspfInterface = iface.getName();
@@ -1054,6 +1059,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_ip_pim(S_ip_pimContext ctx) {
+      _no = ctx.NO() != null;
+   }
+
+   @Override
    public void enterS_ip_ssh(S_ip_sshContext ctx) {
       if (_configuration.getCf().getSsh() == null) {
          _configuration.getCf().setSsh(new SshSettings());
@@ -1130,6 +1140,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (String name : names) {
          if (_configuration.getCf().getLines().get(name) == null) {
             Line line = new Line(name);
+            line.setLoginAuthentication(
+                  AaaAuthenticationLogin.DEFAULT_LIST_NAME);
             _configuration.getCf().getLines().put(name, line);
          }
       }
@@ -1140,6 +1152,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_logging(S_loggingContext ctx) {
       if (_configuration.getCf().getLogging() == null) {
          _configuration.getCf().setLogging(new Logging());
+      }
+      if (ctx.NO() != null) {
+         _no = true;
       }
    }
 
@@ -1485,6 +1500,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
+      String name = ctx.name.getText();
+      AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
+      if (asPathSet != null) {
+         _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
+      }
+      asPathSet = new AsPathSet(name);
+      _configuration.getAsPathSets().put(name, asPathSet);
+      for (As_path_set_elemContext elemCtx : ctx.elems) {
+         AsPathSetElem elem = toAsPathSetElem(elemCtx);
+         asPathSet.getElements().add(elem);
+      }
+   }
+
+   @Override
    public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
       todo(ctx, F_BGP_AUTO_SUMMARY);
    }
@@ -1560,6 +1590,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          name = ctx.num.getText();
       }
       _configuration.getClassMapAccessGroups().add(name);
+   }
+
+   @Override
+   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
+      Integer target = null;
+      if (ctx.DEC() != null) {
+         target = toInteger(ctx.DEC());
+      }
+      RouteMapContinueLine continueLine = new RouteMapContinueLine(target);
+      _currentRouteMapClause.setContinueLine(continueLine);
    }
 
    @Override
@@ -2055,6 +2095,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
+      String acl = ctx.acl.getText();
+      _configuration.getIpNatSourceAccessLists().add(acl);
+   }
+
+   @Override
+   public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
+      long area = toInteger(ctx.area);
+      for (Interface iface : _currentInterfaces) {
+         iface.setOspfArea(area);
+      }
+   }
+
+   @Override
    public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
       int cost = toInteger(ctx.cost);
       for (Interface currentInterface : _currentInterfaces) {
@@ -2083,6 +2137,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_ip_ospf_passive_interface(
+         If_ip_ospf_passive_interfaceContext ctx) {
+      boolean active = ctx.NO() != null;
+      if (active) {
+         for (Interface iface : _currentInterfaces) {
+            iface.setOspfActive(true);
+         }
+      }
+      else {
+         for (Interface iface : _currentInterfaces) {
+            iface.setOspfPassive(true);
+         }
+      }
+   }
+
+   @Override
+   public void exitIf_ip_pim_neighbor_filter(
+         If_ip_pim_neighbor_filterContext ctx) {
+      String acl = ctx.acl.getText();
+      _configuration.getIpPimNeighborFilters().add(acl);
+   }
+
+   @Override
    public void exitIf_ip_policy(If_ip_policyContext ctx) {
       String policyName = ctx.name.getText();
       for (Interface currentInterface : _currentInterfaces) {
@@ -2102,6 +2179,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
       for (Interface iface : _currentInterfaces) {
          iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
+      }
+   }
+
+   @Override
+   public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
+      long area = new Ip(ctx.area.getText()).asLong();
+      for (Interface iface : _currentInterfaces) {
+         iface.setOspfArea(area);
       }
    }
 
@@ -2290,7 +2375,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_as_path_access_list_tail(
          Ip_as_path_access_list_tailContext ctx) {
       LineAction action = toLineAction(ctx.action);
-      String regex = ctx.as_path_regex.getText();
+      String regex = ctx.as_path_regex.getText().trim();
       IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
       _currentAsPathAcl.addLine(line);
    }
@@ -2541,6 +2626,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_buffered(Logging_bufferedContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer size = null;
       Integer severityNum = null;
       String severity = null;
@@ -2580,6 +2668,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_console(Logging_consoleContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer severityNum = null;
       String severity = null;
       if (ctx.logging_severity() != null) {
@@ -2598,6 +2689,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_host(Logging_hostContext ctx) {
+      if (_no) {
+         return;
+      }
       Logging logging = _configuration.getCf().getLogging();
       String hostname = ctx.hostname.getText();
       LoggingHost host = new LoggingHost(hostname);
@@ -2607,12 +2701,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitLogging_on(Logging_onContext ctx) {
       Logging logging = _configuration.getCf().getLogging();
-      logging.setOn(true);
+      logging.setOn(!_no);
    }
 
    @Override
    public void exitLogging_source_interface(
          Logging_source_interfaceContext ctx) {
+      if (_no) {
+         return;
+      }
       Logging logging = _configuration.getCf().getLogging();
       String sourceInterface = toInterfaceName(ctx.interface_name());
       logging.setSourceInterface(sourceInterface);
@@ -2620,6 +2717,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_trap(Logging_trapContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer severityNum = null;
       String severity = null;
       if (ctx.logging_severity() != null) {
@@ -2843,7 +2943,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ip ip = toIp(ctx.ip);
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
          if (pg == null) {
-            String message = "reference to undefined ip peer group: "
+            String message = "ignoring attempt to activate undefined ip peer group: "
                   + ip.toString();
             _w.redFlag(message);
          }
@@ -2855,7 +2955,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ip6 ip6 = toIp6(ctx.ip6);
          Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
          if (pg == null) {
-            String message = "reference to undefined ipv6 peer group: "
+            String message = "ignoring attempt to activate undefined ipv6 peer group: "
                   + ip6.toString();
             _w.redFlag(message);
          }
@@ -2891,7 +2991,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          IpBgpPeerGroup pg = proc.getIpPeerGroups().get(ip);
          // TODO: see if it is always ok to set active on 'no shutdown'
          if (pg == null) {
-            String message = "reference to undefined ip peer group: "
+            String message = "ignoring attempt to shut down to undefined ip peer group: "
                   + ip.toString();
             _w.redFlag(message);
          }
@@ -2905,7 +3005,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          Ipv6BgpPeerGroup pg = proc.getIpv6PeerGroups().get(ip6);
          // TODO: see if it is always ok to set active on 'no shutdown'
          if (pg == null) {
-            String message = "reference to undefined ipv6 peer group: "
+            String message = "ignoring attempt to shut down undefined ipv6 peer group: "
                   + ip6.toString();
             _w.redFlag(message);
          }
@@ -3065,9 +3165,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-      if (ctx.name != null) {
-         String name = ctx.name.getText();
-         _configuration.getPimAcls().add(name);
+      if (!_no) {
+         if (ctx.name != null) {
+            String name = ctx.name.getText();
+            _configuration.getPimAcls().add(name);
+         }
       }
    }
 
@@ -3438,10 +3540,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String iname = ctx.i.getText();
       OspfProcess proc = _currentOspfProcess;
       if (passive) {
-         proc.getInterfaceBlacklist().add(iname);
+         proc.getPassiveInterfaceList().add(iname);
       }
       else {
-         proc.getInterfaceWhitelist().add(iname);
+         proc.getActiveInterfaceList().add(iname);
       }
    }
 
@@ -3560,7 +3662,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRoi_passive(Roi_passiveContext ctx) {
       if (ctx.ENABLE() != null) {
-         _currentOspfProcess.getInterfaceBlacklist().add(_currentOspfInterface);
+         _currentOspfProcess.getPassiveInterfaceList()
+               .add(_currentOspfInterface);
       }
    }
 
@@ -3668,6 +3771,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_ip_pim(S_ip_pimContext ctx) {
+      _no = false;
+   }
+
+   @Override
    public void exitS_ip_source_route(S_ip_source_routeContext ctx) {
       boolean enabled = ctx.NO() == null;
       _configuration.getCf().setSourceRoute(enabled);
@@ -3676,6 +3784,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitS_line(S_lineContext ctx) {
       _currentLineNames = null;
+   }
+
+   @Override
+   public void exitS_logging(S_loggingContext ctx) {
+      _no = false;
    }
 
    @Override
@@ -3938,8 +4051,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitSs_file_transfer(Ss_file_transferContext ctx) {
+      String acl = ctx.acl.getText();
+      _configuration.getSnmpAccessLists().add(acl);
+   }
+
+   @Override
    public void exitSs_host(Ss_hostContext ctx) {
       _currentSnmpHost = null;
+   }
+
+   @Override
+   public void exitSs_tftp_server_list(Ss_tftp_server_listContext ctx) {
+      String acl = ctx.name.getText();
+      _configuration.getSnmpAccessLists().add(acl);
    }
 
    @Override
@@ -3947,12 +4072,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.acl4 != null) {
          String name = ctx.acl4.getText();
          _configuration.getSnmpAccessLists().add(name);
-         _currentSnmpCommunity.setAccessList(name);         
+         _currentSnmpCommunity.setAccessList(name);
       }
       if (ctx.acl6 != null) {
          String name = ctx.acl6.getText();
          _configuration.getSnmpAccessLists().add(name);
-         _currentSnmpCommunity.setAccessList6(name);         
+         _currentSnmpCommunity.setAccessList6(name);
       }
       if (ctx.RO() != null) {
          _currentSnmpCommunity.setRo(true);
@@ -4156,13 +4281,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String msg = String.format("Line %d unrecognized: %s",
             ctx.start.getLine(), line);
       if (_unrecognizedAsRedFlag) {
+         msg += "\nLINES BELOW LINE " + line
+               + " ARE UNLIKELY TO BE PROCESSED CORRECTLY";
          _w.redFlag(msg);
+         _configuration.setUnrecognized(true);
       }
       else {
          _parser.getParserErrorListener().syntaxError(ctx, ctx.getStart(),
                ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(),
                msg);
-         // throw new BatfishException(msg);
       }
    }
 
@@ -4342,6 +4469,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
    }
 
+   private void initInterface(Interface iface, ConfigurationFormat format) {
+      if (format == ConfigurationFormat.CISCO_IOS) {
+         iface.setProxyArp(true);
+      }
+   }
+
    private void initInterface(Interface iface, Interface_nameContext ctx) {
       String nameAlpha = ctx.name_prefix_alpha.getText();
       String canonicalNamePrefix = getCanonicalInterfaceNamePrefix(nameAlpha);
@@ -4352,6 +4485,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int mtu = Interface.getDefaultMtu();
       iface.setBandwidth(bandwidth);
       iface.setVrf(vrf);
+      initVrf(vrf);
       iface.setMtu(mtu);
    }
 

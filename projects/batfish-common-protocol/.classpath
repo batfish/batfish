@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" output="test/bin" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/guava/guava-15.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar"/>
@@ -25,5 +24,6 @@
 	<classpathentry kind="lib" path="lib/slf4j/slf4j-simple-1.7.21.jar"/>
 	<classpathentry kind="lib" path="lib/accessors-smart/accessors-smart-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-1.0.11-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/guava/guava-21.0.jar" sourcepath="lib/guava/guava-21.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

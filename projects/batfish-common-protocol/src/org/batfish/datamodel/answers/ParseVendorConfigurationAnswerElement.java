@@ -18,11 +18,14 @@ public class ParseVendorConfigurationAnswerElement
     */
    private static final long serialVersionUID = 1L;
 
+   private SortedMap<String, ParseStatus> _parseStatus;
+
    private SortedMap<String, ParseTreeSentences> _parseTrees;
 
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
+      _parseStatus = new TreeMap<>();
       _parseTrees = new TreeMap<>();
       _warnings = new TreeMap<>();
    }
@@ -32,6 +35,10 @@ public class ParseVendorConfigurationAnswerElement
          _warnings.put(name, new Warnings());
       }
       _warnings.get(name).getRedFlagWarnings().add(warning);
+   }
+
+   public SortedMap<String, ParseStatus> getParseStatus() {
+      return _parseStatus;
    }
 
    public SortedMap<String, ParseTreeSentences> getParseTrees() {
@@ -71,6 +78,10 @@ public class ParseVendorConfigurationAnswerElement
       }
 
       return retString.toString();
+   }
+
+   public void setParseStatus(SortedMap<String, ParseStatus> parseStatus) {
+      _parseStatus = parseStatus;
    }
 
    public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {

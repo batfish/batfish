@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public final class Node extends ComparableStructure<String> {
 
@@ -33,12 +32,6 @@ public final class Node extends ComparableStructure<String> {
 
    public Configuration getConfiguration() {
       return _c;
-   }
-
-   public void initPolicyOwners() {
-      for (RoutingPolicy policy : _c.getRoutingPolicies().values()) {
-         policy.setOwner(_c);
-      }
    }
 
 }

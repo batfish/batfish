@@ -1,0 +1,56 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.NodesQuestionPlugin$NodesDiffAnswerElement",
+      "configDiff" : {
+        "as1border1" : {
+          "class" : "org.batfish.datamodel.ConfigurationDiff",
+          "routeFilterListsDiff" : {
+            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
+            "inBeforeOnly" : [
+              "default_list"
+            ]
+          },
+          "routingPoliciesDiff" : {
+            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
+            "diff" : [
+              "as1_to_as2"
+            ]
+          }
+        },
+        "as2dept1" : {
+          "class" : "org.batfish.datamodel.ConfigurationDiff",
+          "interfacesDiff" : {
+            "class" : "org.batfish.datamodel.InterfacesDiff",
+            "diff" : [
+              "FastEthernet1/0",
+              "FastEthernet1/1"
+            ]
+          }
+        },
+        "as3border1" : {
+          "class" : "org.batfish.datamodel.ConfigurationDiff",
+          "routeFilterListsDiff" : {
+            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
+            "inBeforeOnly" : [
+              "default_list"
+            ]
+          },
+          "routingPoliciesDiff" : {
+            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
+            "diff" : [
+              "as3_to_as2"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
+    "differential" : true,
+    "nodeRegex" : ".*",
+    "summary" : false
+  },
+  "status" : "SUCCESS"
+}

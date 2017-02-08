@@ -43,7 +43,7 @@ statement
 s_common
 :
    s_applications
-   | s_apply_groups
+   | apply_groups
    | s_fabric
    | s_firewall
    | s_interfaces
@@ -101,9 +101,9 @@ s_null
          | POE
          | SWITCH_OPTIONS
          | VIRTUAL_CHASSIS
-      ) s_null_filler
+      ) null_filler
    )
-   | rit_null
+   | ri_null
 ;
 
 s_system
@@ -206,7 +206,7 @@ sy_null
       | SYSLOG
       | TACPLUS_SERVER
       | TIME_ZONE
-   ) s_null_filler
+   ) null_filler
 ;
 
 vlt_description

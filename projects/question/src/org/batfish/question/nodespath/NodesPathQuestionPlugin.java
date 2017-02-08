@@ -7,13 +7,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
@@ -22,6 +25,7 @@ import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,14 +61,14 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             NodesPathResult result = _results.get(index);
             sb.append(String.format("  [%d]: %d results for %s\n", index,
                   result.getNumResults(), result.getPath().toString()));
-            for (String path : result.getResult().keySet()) {
+            for (ConcretePath path : result.getResult().keySet()) {
                JsonNode suffix = result.getResult().get(path);
                if (suffix != null) {
-                  sb.append(String.format("    %s : %s\n", path,
+                  sb.append(String.format("    %s : %s\n", path.toString(),
                         result.getResult().get(path).toString()));
                }
                else {
-                  sb.append(String.format("    %s\n", path));
+                  sb.append(String.format("    %s\n", path.toString()));
                }
             }
          }
@@ -85,7 +89,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
+      public NodesPathAnswerElement answer() {
 
          ConfigurationBuilder b = new ConfigurationBuilder();
          b.jsonProvider(new JacksonJsonNodeJsonProvider());
@@ -159,7 +163,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
             nodePathResult.setNumResults(numResults);
             boolean includeSuffix = nodesPath.getSuffix();
             if (!nodesPath.getSummary()) {
-               SortedMap<String, JsonNode> result = new TreeMap<>();
+               SortedMap<ConcretePath, JsonNode> result = new TreeMap<>();
                Iterator<JsonNode> p = prefixes.iterator();
                Iterator<JsonNode> s = suffixes.iterator();
                while (p.hasNext()) {
@@ -169,7 +173,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                   if (prefixStr == null) {
                      throw new BatfishException("Did not expect null value");
                   }
-                  result.put(prefixStr, suffix);
+                  ConcretePath concretePath = new ConcretePath(prefixStr);
+                  result.put(concretePath, suffix);
                }
                nodePathResult.setResult(result);
             }
@@ -180,6 +185,95 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
          return answerElement;
       }
+
+      @Override
+      public AnswerElement answerDiff() {
+         _batfish.pushBaseEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         _batfish.checkEnvironmentExists();
+         _batfish.popEnvironment();
+         _batfish.pushBaseEnvironment();
+         NodesPathAnswerer beforeAnswerer = (NodesPathAnswerer) create(
+               _question, _batfish);
+         NodesPathAnswerElement before = beforeAnswerer.answer();
+         _batfish.popEnvironment();
+         _batfish.pushDeltaEnvironment();
+         NodesPathAnswerer afterAnswerer = (NodesPathAnswerer) create(_question,
+               _batfish);
+         NodesPathAnswerElement after = afterAnswerer.answer();
+         _batfish.popEnvironment();
+         return new NodesPathDiffAnswerElement(before, after);
+      }
+   }
+
+   public static class NodesPathDiffAnswerElement implements AnswerElement {
+
+      private SortedMap<Integer, NodesPathDiffResult> _results;
+
+      @JsonCreator
+      public NodesPathDiffAnswerElement() {
+      }
+
+      public NodesPathDiffAnswerElement(NodesPathAnswerElement before,
+            NodesPathAnswerElement after) {
+         _results = new TreeMap<>();
+         for (Integer index : before._results.keySet()) {
+            NodesPathResult nprBefore = before._results.get(index);
+            NodesPathResult nprAfter = after._results.get(index);
+            NodesPathDiffResult diff = new NodesPathDiffResult(nprBefore,
+                  nprAfter);
+            _results.put(index, diff);
+         }
+      }
+
+      public SortedMap<Integer, NodesPathDiffResult> getResults() {
+         return _results;
+      }
+
+      @Override
+      public String prettyPrint() throws JsonProcessingException {
+         StringBuilder sb = new StringBuilder();
+         _results.forEach((index, diff) -> {
+            SortedMap<ConcretePath, JsonNode> added = diff.getAdded();
+            SortedMap<ConcretePath, JsonNode> removed = diff.getRemoved();
+            sb.append(String.format("  [%d]: %d added and %d removed for %s\n",
+                  index, added.size(), removed.size(),
+                  diff.getPath().toString()));
+            SortedSet<ConcretePath> allKeys = CommonUtil.union(added.keySet(),
+                  removed.keySet(), TreeSet::new);
+            for (ConcretePath key : allKeys) {
+               if (removed.containsKey(key)) {
+                  JsonNode removedNode = removed.get(key);
+                  if (removedNode != null) {
+                     sb.append(String.format("-   %s : %s\n", key.toString(),
+                           removedNode.toString()));
+                  }
+                  else {
+                     sb.append(String.format("-   %s\n", key.toString()));
+                  }
+               }
+               if (added.containsKey(key)) {
+                  JsonNode addedNode = added.get(key);
+                  if (addedNode != null) {
+                     sb.append(String.format("+   %s : %s\n", key.toString(),
+                           addedNode.toString()));
+                  }
+                  else {
+                     sb.append(String.format("+   %s\n", key.toString()));
+                  }
+               }
+            }
+         });
+         String result = sb.toString();
+         return result;
+      }
+
+      public void setResults(SortedMap<Integer, NodesPathDiffResult> results) {
+         _results = results;
+      }
+
    }
 
    // <question_page_comment>

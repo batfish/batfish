@@ -5,7 +5,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchMetric extends AbstractBooleanExpr {
+public class MatchMetric extends BooleanExpr {
 
    /**
     *
@@ -17,12 +17,38 @@ public class MatchMetric extends AbstractBooleanExpr {
    private IntExpr _metric;
 
    @JsonCreator
-   public MatchMetric() {
+   private MatchMetric() {
    }
 
    public MatchMetric(IntComparator comparator, IntExpr metric) {
       _comparator = comparator;
       _metric = metric;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchMetric other = (MatchMetric) obj;
+      if (_comparator != other._comparator) {
+         return false;
+      }
+      if (_metric == null) {
+         if (other._metric != null) {
+            return false;
+         }
+      }
+      else if (!_metric.equals(other._metric)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -38,6 +64,16 @@ public class MatchMetric extends AbstractBooleanExpr {
 
    public IntExpr getMetric() {
       return _metric;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+            + ((_comparator == null) ? 0 : _comparator.hashCode());
+      result = prime * result + ((_metric == null) ? 0 : _metric.hashCode());
+      return result;
    }
 
    public void setComparator(IntComparator comparator) {

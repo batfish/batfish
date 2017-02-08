@@ -1,17 +1,20 @@
 package org.batfish.bdp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -25,6 +28,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
@@ -46,7 +50,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    }
 
    private void collectFlowTraces(BdpDataPlane dp, String currentNodeName,
-         List<FlowTraceHop> hopsSoFar, Set<FlowTrace> flowTraces, Flow flow) {
+         Set<Edge> visitedEdges, List<FlowTraceHop> hopsSoFar,
+         Set<FlowTrace> flowTraces, Flow flow) {
       Ip dstIp = flow.getDstIp();
       Set<String> ipOwners = dp._ipOwners.get(dstIp);
       if (ipOwners != null && ipOwners.contains(currentNodeName)) {
@@ -81,14 +86,22 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                // .stream().map(ar -> ar.toString())
                // .collect(Collectors.toSet()));
                SortedSet<String> routesForThisNextHopInterface = new TreeSet<>();
-               nextHopInterfacesByRoute.forEach(
-                     (routeCandidate, routeCandidateNextHopInterfaces) -> {
-                        if (routeCandidateNextHopInterfaces
-                              .contains(nextHopInterfaceName)) {
-                           routesForThisNextHopInterface
-                                 .add(routeCandidate.toString());
-                        }
-                     });
+               boolean nextHopIpRoute = false;
+               for (Entry<AbstractRoute, Set<String>> e : nextHopInterfacesByRoute
+                     .entrySet()) {
+                  AbstractRoute routeCandidate = e.getKey();
+                  Set<String> routeCandidateNextHopInterfaces = e.getValue();
+                  if (routeCandidateNextHopInterfaces
+                        .contains(nextHopInterfaceName)) {
+                     Ip nextHopIp = routeCandidate.getNextHopIp();
+                     if (nextHopIp != null && !nextHopIp
+                           .equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+                        nextHopIpRoute = true;
+                     }
+                     routesForThisNextHopInterface
+                           .add(routeCandidate.toString());
+                  }
+               }
                NodeInterfacePair nextHopInterface = new NodeInterfacePair(
                      currentNodeName, nextHopInterfaceName);
                if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
@@ -121,19 +134,79 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   EdgeSet edges = dp._topology.getInterfaceEdges()
                         .get(nextHopInterface);
                   if (edges != null) {
+                     int unreachableNeighbors = 0;
+                     int potentialNeighbors = 0;
                      for (Edge edge : edges) {
                         if (!edge.getNode1().equals(currentNodeName)) {
                            continue;
                         }
+                        potentialNeighbors++;
                         List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
+                        Set<Edge> newVisitedEdges = new LinkedHashSet<>(
+                              visitedEdges);
                         FlowTraceHop newHop = new FlowTraceHop(edge,
                               routesForThisNextHopInterface);
+                        newVisitedEdges.add(edge);
                         newHops.add(newHop);
-                        String nextNodeName = edge.getNode2();
-                        if (nextNodeName
-                              .equals(newHops.get(0).getEdge().getNode1())) {
-                           throw new BatfishException("Loop!");
+                        /*
+                         * Check to see whether neighbor would refrain from
+                         * sending ARP reply (NEIGHBOR_UNREACHABLE)
+                         *
+                         * This occurs if:
+                         *
+                         * - Using interface-only route
+                         *
+                         * AND
+                         *
+                         * - Neighbor does not own dstIp
+                         *
+                         * AND EITHER
+                         *
+                         * -- Neighbor not using proxy-arp
+                         *
+                         * - OR
+                         *
+                         * -- Subnet of neighbor's receiving-interface contains
+                         * dstIp
+                         */
+                        if (!nextHopIpRoute) {
+                           // using interface-only route
+                           String node2 = edge.getNode2();
+                           if (ipOwners == null || !ipOwners.contains(node2)) {
+                              // neighbor does not own dstIp
+                              String int2Name = edge.getInt2();
+                              Interface int2 = dp._nodes.get(node2)._c
+                                    .getInterfaces().get(int2Name);
+                              boolean neighborUnreachable = false;
+                              Boolean proxyArp = int2.getProxyArp();
+                              if (proxyArp == null || !proxyArp) {
+                                 // TODO: proxyArp probably shouldn't be null
+                                 neighborUnreachable = true;
+                              }
+                              else {
+                                 for (Prefix prefix : int2.getAllPrefixes()) {
+                                    if (prefix.getNetworkPrefix()
+                                          .contains(dstIp)) {
+                                       neighborUnreachable = true;
+                                       break;
+                                    }
+                                 }
+                              }
+                              if (neighborUnreachable) {
+                                 unreachableNeighbors++;
+                                 continue;
+                              }
+                           }
                         }
+
+                        if (visitedEdges.contains(edge)) {
+                           FlowTrace trace = new FlowTrace(FlowDisposition.LOOP,
+                                 newHops, FlowDisposition.LOOP.toString());
+                           flowTraces.add(trace);
+                           potentialNeighbors--;
+                           continue;
+                        }
+                        String nextNodeName = edge.getNode2();
                         // now check output filter and input filter
                         IpAccessList outFilter = dp._nodes
                               .get(currentNodeName)._c.getInterfaces()
@@ -144,6 +217,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                            boolean denied = flowTraceDeniedHelper(flowTraces,
                                  flow, newHops, outFilter, disposition);
                            if (denied) {
+                              potentialNeighbors--;
                               continue;
                            }
                         }
@@ -155,18 +229,28 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                            boolean denied = flowTraceDeniedHelper(flowTraces,
                                  flow, newHops, inFilter, disposition);
                            if (denied) {
+                              potentialNeighbors--;
                               continue;
                            }
                         }
                         // recurse
-                        collectFlowTraces(dp, nextNodeName, newHops, flowTraces,
-                              flow);
+                        collectFlowTraces(dp, nextNodeName, newVisitedEdges,
+                              newHops, flowTraces, flow);
+                     }
+                     if (unreachableNeighbors > 0
+                           && unreachableNeighbors == potentialNeighbors) {
+                        FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
+                              nextHopInterface, routesForThisNextHopInterface);
+                        flowTraces.add(trace);
+                        continue;
                      }
                   }
                   else {
-                     throw new BatfishException(
-                           "Should not be sent out non-flow sink interface with no edges: "
-                                 + nextHopInterface);
+                     // Should only get here for delta environment where
+                     // non-flow-sink interface from base has no edges in delta
+                     FlowTrace trace = neighborUnreachableTrace(hopsSoFar,
+                           nextHopInterface, routesForThisNextHopInterface);
+                     flowTraces.add(trace);
                   }
                }
             }
@@ -221,8 +305,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          BdpAnswerElement ae) {
       // BEGIN DONE ONCE (except main rib)
       // connected, initial static routes, ospf setup, bgp setup
+      AtomicInteger initialCompleted = _batfish.newBatch(
+            "Compute initial connected and static routes, ospf setup, bgp setup",
+            nodes.size());
       nodes.values().parallelStream().forEach(n -> {
-         n.initPolicyOwners();
          for (VirtualRouter vr : n._virtualRouters.values()) {
             vr.initConnectedRib();
             vr.importRib(vr._independentRib, vr._connectedRib);
@@ -235,6 +321,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             vr.initEbgpTopology(dp);
             vr.initBaseBgpRibs(externalAdverts);
          }
+         initialCompleted.incrementAndGet();
       });
 
       final Object routesChangedMonitor = new Object();
@@ -245,6 +332,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       while (ospfInternalChanged[0]) {
          ospfInternalIterations++;
          ospfInternalChanged[0] = false;
+         AtomicInteger ospfInternalCompleted = _batfish
+               .newBatch("Compute OSPF Internal routes: iteration "
+                     + ospfInternalIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                if (vr.propagateOspfInternalRoutes(nodes, topology)) {
@@ -253,19 +343,27 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            ospfInternalCompleted.incrementAndGet();
          });
+         AtomicInteger ospfInternalUnstageCompleted = _batfish
+               .newBatch("Unstage OSPF Internal routes: iteration "
+                     + ospfInternalIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.unstageOspfInternalRoutes();
             }
+            ospfInternalUnstageCompleted.incrementAndGet();
          });
       }
+      AtomicInteger ospfInternalImportCompleted = _batfish
+            .newBatch("Import OSPF Internal routes", nodes.size());
       nodes.values().parallelStream().forEach(n -> {
          for (VirtualRouter vr : n._virtualRouters.values()) {
             vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
             vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
             vr.importRib(vr._independentRib, vr._ospfRib);
          }
+         ospfInternalImportCompleted.incrementAndGet();
       });
       // END DONE ONCE
 
@@ -276,6 +374,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          dependentRoutesIterations++;
          dependentRoutesChanged[0] = false;
          // (Re)initialization of dependent route calculation
+         AtomicInteger reinitializeDependentCompleted = _batfish
+               .newBatch("Reinitialize dependent routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
 
@@ -328,9 +429,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
 
             }
+            reinitializeDependentCompleted.incrementAndGet();
          });
 
          // Static nextHopIp routes
+         AtomicInteger recomputeStaticCompleted = _batfish
+               .newBatch("Recompute static routes with next-hop IP: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             boolean staticChanged = true;
             while (staticChanged) {
@@ -341,9 +446,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            recomputeStaticCompleted.incrementAndGet();
          });
 
          // Generated/aggregate routes
+         AtomicInteger recomputeAggregateCompleted = _batfish
+               .newBatch("Recompute aggregate/generated routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                boolean generatedChanged = true;
@@ -356,6 +465,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                }
                vr.importRib(vr._mainRib, vr._generatedRib);
             }
+            recomputeAggregateCompleted.incrementAndGet();
          });
 
          // OSPF external routes
@@ -368,7 +478,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
          // repropagate exports
          final boolean[] ospfExternalChanged = new boolean[] { true };
+         int ospfExternalSubIterations = 0;
          while (ospfExternalChanged[0]) {
+            ospfExternalSubIterations++;
+            AtomicInteger propagateOspfExternalCompleted = _batfish
+                  .newBatch("Propagate OSPF external routes: iteration "
+                        + dependentRoutesIterations + ", subIteration: "
+                        + ospfExternalSubIterations, nodes.size());
             ospfExternalChanged[0] = false;
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
@@ -378,19 +494,29 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                   }
                }
+               propagateOspfExternalCompleted.incrementAndGet();
             });
+            AtomicInteger unstageOspfExternalCompleted = _batfish
+                  .newBatch("Unstage OSPF external routes: iteration "
+                        + dependentRoutesIterations + ", subIteration: "
+                        + ospfExternalSubIterations, nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   vr.unstageOspfExternalRoutes();
                }
+               unstageOspfExternalCompleted.incrementAndGet();
             });
          }
+         AtomicInteger importOspfExternalCompleted = _batfish
+               .newBatch("Unstage OSPF external routes: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                vr.importRib(vr._ospfRib, vr._ospfExternalType1Rib);
                vr.importRib(vr._ospfRib, vr._ospfExternalType2Rib);
                vr.importRib(vr._mainRib, vr._ospfRib);
             }
+            importOspfExternalCompleted.incrementAndGet();
          });
 
          // BGP routes
@@ -405,6 +531,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          while (bgpChanged[0]) {
             currentBgpIterations++;
             bgpChanged[0] = false;
+            AtomicInteger propagateBgpCompleted = _batfish.newBatch(
+                  "Propagate BGP routes: iteration " + dependentRoutesIterations
+                        + ", subIteration: " + currentBgpIterations,
+                  nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   if (vr.propagateBgpRoutes(nodes, topology)) {
@@ -413,7 +543,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                      }
                   }
                }
+               propagateBgpCompleted.incrementAndGet();
             });
+            AtomicInteger importBgpCompleted = _batfish.newBatch(
+                  "Import BGP routes: iteration " + dependentRoutesIterations
+                        + ", subIteration: " + currentBgpIterations,
+                  nodes.size());
             nodes.values().parallelStream().forEach(n -> {
                for (VirtualRouter vr : n._virtualRouters.values()) {
                   vr.unstageBgpRoutes();
@@ -421,11 +556,15 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   vr.importRib(vr._bgpRib, vr._ibgpRib);
                   vr.importRib(vr._mainRib, vr._bgpRib);
                }
+               importBgpCompleted.incrementAndGet();
             });
          }
          bgpIterations.put(dependentRoutesIterations, currentBgpIterations);
 
          // Check to see if routes have changed
+         AtomicInteger checkFixedPointCompleted = _batfish
+               .newBatch("Check if fixed-point reached: iteration "
+                     + dependentRoutesIterations, nodes.size());
          nodes.values().parallelStream().forEach(n -> {
             for (VirtualRouter vr : n._virtualRouters.values()) {
                boolean changed = false;
@@ -447,6 +586,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                   }
                }
             }
+            checkFixedPointCompleted.incrementAndGet();
          });
       }
       int totalRoutes = nodes.values().stream()
@@ -581,6 +721,21 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       return (BdpDataPlane) _batfish.loadDataPlane();
    }
 
+   private FlowTrace neighborUnreachableTrace(List<FlowTraceHop> completedHops,
+         NodeInterfacePair srcInterface, SortedSet<String> routes) {
+      Edge neighborUnreachbleEdge = new Edge(srcInterface,
+            new NodeInterfacePair(Configuration.NODE_NONE_NAME,
+                  Interface.NULL_INTERFACE_NAME));
+      FlowTraceHop neighborUnreachableHop = new FlowTraceHop(
+            neighborUnreachbleEdge, routes);
+      List<FlowTraceHop> newHops = new ArrayList<>(completedHops);
+      newHops.add(neighborUnreachableHop);
+      FlowTrace trace = new FlowTrace(
+            FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK, newHops,
+            FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.toString());
+      return trace;
+   }
+
    @Override
    public void processFlows(Set<Flow> flows) {
       BdpDataPlane dp = loadDataPlane();
@@ -589,8 +744,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
          Set<FlowTrace> currentFlowTraces = new TreeSet<>();
          flowTraces.put(flow, currentFlowTraces);
          String ingressNodeName = flow.getIngressNode();
-         List<FlowTraceHop> edges = new ArrayList<>();
-         collectFlowTraces(dp, ingressNodeName, edges, currentFlowTraces, flow);
+         Set<Edge> visitedEdges = Collections.emptySet();
+         List<FlowTraceHop> hops = new ArrayList<>();
+         collectFlowTraces(dp, ingressNodeName, visitedEdges, hops,
+               currentFlowTraces, flow);
       });
       _flowTraces.put(dp, new TreeMap<>(flowTraces));
    }

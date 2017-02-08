@@ -30,6 +30,10 @@ public abstract class AbstractRouteBuilder<T extends AbstractRoute> {
       return _nextHopIp;
    }
 
+   public int getTag() {
+      return _tag;
+   }
+
    public final void setAdmin(int admin) {
       _admin = admin;
    }

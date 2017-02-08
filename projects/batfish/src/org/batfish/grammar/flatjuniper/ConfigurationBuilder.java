@@ -39,12 +39,17 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.VrrpGroup;
 import org.batfish.main.Warnings;
 import org.batfish.representation.juniper.*;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
+
+   private static final boolean DEFAULT_VRRP_PREEMPT = true;
+
+   private static final int DEFAULT_VRRP_PRIORITY = 100;
 
    private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(
          Prefix.ZERO);
@@ -1432,6 +1437,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private Zone _currentToZone;
 
+   private VrrpGroup _currentVrrpGroup;
+
    private Zone _currentZone;
 
    private FirewallFilter _currentZoneInboundFilter;
@@ -1468,26 +1475,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterAbt_address_set(Abt_address_setContext ctx) {
-      String name = ctx.name.getText();
-      AddressBookEntry entry = _currentAddressBook.getEntries().get(name);
-      if (entry == null) {
-         entry = new AddressSetAddressBookEntry(name);
-         _currentAddressBook.getEntries().put(name, entry);
-      }
-      try {
-         _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
-      }
-      catch (ClassCastException e) {
-         throw new BatfishException(
-               "Cannot create address-set address-book entry \"" + name
-                     + "\" because a different type of address-book entry with that name already exists",
-               e);
-      }
-   }
-
-   @Override
-   public void enterAppst_application(Appst_applicationContext ctx) {
+   public void enterA_application(A_applicationContext ctx) {
       String name = ctx.name.getText();
       _currentApplication = _configuration.getApplications().get(name);
       if (_currentApplication == null) {
@@ -1498,7 +1486,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterAppst_term(Appst_termContext ctx) {
+   public void enterAa_term(Aa_termContext ctx) {
       String name = ctx.name.getText();
       _currentApplicationTerm = _currentApplication.getTerms().get(name);
       if (_currentApplicationTerm == null) {
@@ -1508,50 +1496,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterAt_interface(At_interfaceContext ctx) {
-      Map<String, Interface> interfaces = _configuration.getInterfaces();
-      String unitFullName = null;
-      if (ctx.ALL() != null) {
-         _currentOspfInterface = _currentRoutingInstance
-               .getGlobalMasterInterface();
-      }
-      else if (ctx.ip != null) {
-         Ip ip = new Ip(ctx.ip.getText());
-         for (Interface iface : interfaces.values()) {
-            for (Interface unit : iface.getUnits().values()) {
-               if (unit.getAllPrefixIps().contains(ip)) {
-                  _currentOspfInterface = unit;
-                  unitFullName = unit.getName();
-               }
-            }
-         }
-         if (_currentOspfInterface == null) {
-            throw new BatfishException(
-                  "Could not find interface with ip address: " + ip.toString());
-         }
-      }
-      else {
-         _currentOspfInterface = initInterface(ctx.id);
-         unitFullName = _currentOspfInterface.getName();
-      }
-      Ip currentArea = _currentArea.getAreaIp();
-      if (ctx.at_interface_tail() != null
-            && ctx.at_interface_tail().ait_passive() != null) {
-         _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
-      }
-      else {
-         Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
-         if (interfaceActiveArea != null
-               && !currentArea.equals(interfaceActiveArea)) {
-            throw new BatfishException("Interface: \"" + unitFullName.toString()
-                  + "\" assigned to multiple active areas");
-         }
-         _currentOspfInterface.setOspfActiveArea(currentArea);
-      }
-   }
-
-   @Override
-   public void enterBt_group(Bt_groupContext ctx) {
+   public void enterB_group(B_groupContext ctx) {
       String name = ctx.name.getText();
       Map<String, NamedBgpGroup> namedBgpGroups = _currentRoutingInstance
             .getNamedBgpGroups();
@@ -1565,7 +1510,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterBt_neighbor(Bt_neighborContext ctx) {
+   public void enterB_neighbor(B_neighborContext ctx) {
       if (ctx.IP_ADDRESS() != null) {
          Ip remoteAddress = new Ip(ctx.IP_ADDRESS().getText());
          Map<Ip, IpBgpGroup> ipBgpGroups = _currentRoutingInstance
@@ -1585,53 +1530,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterFromt_route_filter(Fromt_route_filterContext ctx) {
-      _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
-      if (_currentRouteFilter == null) {
-         String rfName = _currentPolicyStatement.getName() + ":"
-               + _currentPsTerm.getName();
-         _currentRouteFilter = new RouteFilter(rfName);
-         _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
-         _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
-         PsFromRouteFilter from = new PsFromRouteFilter(rfName);
-         _currentPsTerm.getFroms().add(from);
-      }
-      if (ctx.IP_PREFIX() != null) {
-         _currentRouteFilterPrefix = new Prefix(ctx.IP_PREFIX().getText());
-         _currentRouteFilter.setIpv4(true);
-      }
-      else if (ctx.IPV6_PREFIX() != null) {
-         _currentRoute6FilterPrefix = new Prefix6(ctx.IPV6_PREFIX().getText());
-         _currentRouteFilter.setIpv6(true);
-      }
-   }
-
-   @Override
-   public void enterFromt_route_filter_then(
-         Fromt_route_filter_thenContext ctx) {
-      if (_currentRouteFilterPrefix != null) { // ipv4
-         Route4FilterLine line = _currentRouteFilterLine;
-         _currentPsThens = line.getThens();
-      }
-      else if (_currentRoute6FilterPrefix != null) { // ipv6
-         Route6FilterLine line = _currentRoute6FilterLine;
-         _currentPsThens = line.getThens();
-      }
-   }
-
-   @Override
-   public void enterFwft_term(Fwft_termContext ctx) {
-      String name = ctx.name.getText();
-      Map<String, FwTerm> terms = _currentFilter.getTerms();
-      _currentFwTerm = terms.get(name);
-      if (_currentFwTerm == null) {
-         _currentFwTerm = new FwTerm(name);
-         terms.put(name, _currentFwTerm);
-      }
-   }
-
-   @Override
-   public void enterFwt_family(Fwt_familyContext ctx) {
+   public void enterF_family(F_familyContext ctx) {
       if (ctx.INET() != null) {
          _currentFirewallFamily = Family.INET;
       }
@@ -1644,7 +1543,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterFwt_filter(Fwt_filterContext ctx) {
+   public void enterF_filter(F_filterContext ctx) {
       String name = ctx.name.getText();
       Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
       _currentFilter = filters.get(name);
@@ -1658,7 +1557,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterIfamt_address(Ifamt_addressContext ctx) {
+   public void enterFf_term(Ff_termContext ctx) {
+      String name = ctx.name.getText();
+      Map<String, FwTerm> terms = _currentFilter.getTerms();
+      _currentFwTerm = terms.get(name);
+      if (_currentFwTerm == null) {
+         _currentFwTerm = new FwTerm(name);
+         terms.put(name, _currentFwTerm);
+      }
+   }
+
+   @Override
+   public void enterI_unit(I_unitContext ctx) {
+      String unit = ctx.num.getText();
+      String unitFullName = _currentMasterInterface.getName() + "." + unit;
+      Map<String, Interface> units = _currentMasterInterface.getUnits();
+      _currentInterface = units.get(unitFullName);
+      if (_currentInterface == null) {
+         _currentInterface = new Interface(unitFullName);
+         _currentInterface
+               .setRoutingInstance(_currentRoutingInstance.getName());
+         units.put(unitFullName, _currentInterface);
+      }
+   }
+
+   @Override
+   public void enterIfi_address(Ifi_addressContext ctx) {
       Set<Prefix> allPrefixes = _currentInterface.getAllPrefixes();
       Prefix prefix;
       if (ctx.IP_PREFIX() != null) {
@@ -1684,37 +1608,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterIket_gateway(Iket_gatewayContext ctx) {
-      String name = ctx.name.getText();
-      _currentIkeGateway = _configuration.getIkeGateways().get(name);
-      if (_currentIkeGateway == null) {
-         _currentIkeGateway = new IkeGateway(name);
-         _configuration.getIkeGateways().put(name, _currentIkeGateway);
+   public void enterIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
+      int group = toInt(ctx.number);
+      VrrpGroup currentVrrpGroup = _currentInterface.getVrrpGroups().get(group);
+      if (currentVrrpGroup == null) {
+         currentVrrpGroup = new VrrpGroup(group);
+         currentVrrpGroup.setPreempt(DEFAULT_VRRP_PREEMPT);
+         currentVrrpGroup.setPriority(DEFAULT_VRRP_PRIORITY);
+         _currentInterface.getVrrpGroups().put(group, currentVrrpGroup);
       }
+      _currentVrrpGroup = currentVrrpGroup;
    }
 
    @Override
-   public void enterIket_policy(Iket_policyContext ctx) {
-      String name = ctx.name.getText();
-      _currentIkePolicy = _configuration.getIkePolicies().get(name);
-      if (_currentIkePolicy == null) {
-         _currentIkePolicy = new IkePolicy(name);
-         _configuration.getIkePolicies().put(name, _currentIkePolicy);
-      }
-   }
-
-   @Override
-   public void enterIket_proposal(Iket_proposalContext ctx) {
-      String name = ctx.name.getText();
-      _currentIkeProposal = _configuration.getIkeProposals().get(name);
-      if (_currentIkeProposal == null) {
-         _currentIkeProposal = new IkeProposal(name);
-         _configuration.getIkeProposals().put(name, _currentIkeProposal);
-      }
-   }
-
-   @Override
-   public void enterIntt_named(Intt_namedContext ctx) {
+   public void enterInt_named(Int_namedContext ctx) {
       Interface currentInterface;
       if (ctx.name == null) {
          currentInterface = _configuration.getGlobalMasterInterface();
@@ -1751,55 +1658,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterIpsect_policy(Ipsect_policyContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecPolicy = _configuration.getIpsecPolicies().get(name);
-      if (_currentIpsecPolicy == null) {
-         _currentIpsecPolicy = new IpsecPolicy(name);
-         _configuration.getIpsecPolicies().put(name, _currentIpsecPolicy);
-      }
-   }
-
-   @Override
-   public void enterIpsect_proposal(Ipsect_proposalContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecProposal = _configuration.getIpsecProposals().get(name);
-      if (_currentIpsecProposal == null) {
-         _currentIpsecProposal = new IpsecProposal(name);
-         _configuration.getIpsecProposals().put(name, _currentIpsecProposal);
-      }
-   }
-
-   @Override
-   public void enterIpsect_vpn(Ipsect_vpnContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecVpn = _configuration.getIpsecVpns().get(name);
-      if (_currentIpsecVpn == null) {
-         _currentIpsecVpn = new IpsecVpn(name);
-         _configuration.getIpsecVpns().put(name, _currentIpsecVpn);
-      }
-   }
-
-   @Override
-   public void enterIsisit_level(Isisit_levelContext ctx) {
-      int level = toInt(ctx.DEC());
-      switch (level) {
-      case 1:
-         _currentIsisInterfaceLevelSettings = _currentIsisInterface
-               .getIsisSettings().getLevel1Settings();
-         break;
-      case 2:
-         _currentIsisInterfaceLevelSettings = _currentIsisInterface
-               .getIsisSettings().getLevel2Settings();
-         break;
-      default:
-         throw new BatfishException("invalid IS-IS level: " + level);
-      }
-      _currentIsisInterfaceLevelSettings.setEnabled(true);
-   }
-
-   @Override
-   public void enterIsist_interface(Isist_interfaceContext ctx) {
+   public void enterIs_interface(Is_interfaceContext ctx) {
       Map<String, Interface> interfaces = _configuration.getInterfaces();
       String unitFullName = null;
       String name = ctx.id.name.getText();
@@ -1829,7 +1688,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterIsist_level(Isist_levelContext ctx) {
+   public void enterIs_level(Is_levelContext ctx) {
       IsisSettings isisSettings = _currentRoutingInstance.getIsisSettings();
       int level = toInt(ctx.DEC());
       switch (level) {
@@ -1846,21 +1705,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterIt_unit(It_unitContext ctx) {
-      String unit = ctx.num.getText();
-      String unitFullName = _currentMasterInterface.getName() + "." + unit;
-      Map<String, Interface> units = _currentMasterInterface.getUnits();
-      _currentInterface = units.get(unitFullName);
-      if (_currentInterface == null) {
-         _currentInterface = new Interface(unitFullName);
-         _currentInterface
-               .setRoutingInstance(_currentRoutingInstance.getName());
-         units.put(unitFullName, _currentInterface);
+   public void enterIsi_level(Isi_levelContext ctx) {
+      int level = toInt(ctx.DEC());
+      switch (level) {
+      case 1:
+         _currentIsisInterfaceLevelSettings = _currentIsisInterface
+               .getIsisSettings().getLevel1Settings();
+         break;
+      case 2:
+         _currentIsisInterfaceLevelSettings = _currentIsisInterface
+               .getIsisSettings().getLevel2Settings();
+         break;
+      default:
+         throw new BatfishException("invalid IS-IS level: " + level);
       }
+      _currentIsisInterfaceLevelSettings.setEnabled(true);
    }
 
    @Override
-   public void enterOt_area(Ot_areaContext ctx) {
+   public void enterO_area(O_areaContext ctx) {
       Ip areaIp = new Ip(ctx.area.getText());
       Map<Ip, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
       _currentArea = areas.get(areaIp);
@@ -1871,7 +1734,54 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPot_community(Pot_communityContext ctx) {
+   public void enterOa_interface(Oa_interfaceContext ctx) {
+      Map<String, Interface> interfaces = _configuration.getInterfaces();
+      String unitFullName = null;
+      if (ctx.ALL() != null) {
+         _currentOspfInterface = _currentRoutingInstance
+               .getGlobalMasterInterface();
+      }
+      else if (ctx.ip != null) {
+         Ip ip = new Ip(ctx.ip.getText());
+         for (Interface iface : interfaces.values()) {
+            for (Interface unit : iface.getUnits().values()) {
+               if (unit.getAllPrefixIps().contains(ip)) {
+                  _currentOspfInterface = unit;
+                  unitFullName = unit.getName();
+               }
+            }
+         }
+         if (_currentOspfInterface == null) {
+            throw new BatfishException(
+                  "Could not find interface with ip address: " + ip.toString());
+         }
+      }
+      else {
+         _currentOspfInterface = initInterface(ctx.id);
+         unitFullName = _currentOspfInterface.getName();
+      }
+      Ip currentArea = _currentArea.getAreaIp();
+      if (ctx.oai_passive() != null) {
+         _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
+      }
+      else {
+         Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
+         if (interfaceActiveArea != null
+               && !currentArea.equals(interfaceActiveArea)) {
+            throw new BatfishException("Interface: \"" + unitFullName.toString()
+                  + "\" assigned to multiple active areas");
+         }
+         _currentOspfInterface.setOspfActiveArea(currentArea);
+      }
+   }
+
+   @Override
+   public void enterP_bgp(P_bgpContext ctx) {
+      _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
+   }
+
+   @Override
+   public void enterPo_community(Po_communityContext ctx) {
       String name = ctx.name.getText();
       Map<String, CommunityList> communityLists = _configuration
             .getCommunityLists();
@@ -1883,7 +1793,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPot_policy_statement(Pot_policy_statementContext ctx) {
+   public void enterPo_policy_statement(Po_policy_statementContext ctx) {
       String name = ctx.name.getText();
       Map<String, PolicyStatement> policyStatements = _configuration
             .getPolicyStatements();
@@ -1897,7 +1807,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPot_prefix_list(Pot_prefix_listContext ctx) {
+   public void enterPo_prefix_list(Po_prefix_listContext ctx) {
       String name = ctx.name.getText();
       Map<String, PrefixList> prefixLists = _configuration.getPrefixLists();
       _currentPrefixList = prefixLists.get(name);
@@ -1908,7 +1818,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterPst_term(Pst_termContext ctx) {
+   public void enterPops_term(Pops_termContext ctx) {
       String name = ctx.name.getText();
       Map<String, PsTerm> terms = _currentPolicyStatement.getTerms();
       _currentPsTerm = terms.get(name);
@@ -1920,7 +1830,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_exact(Rft_exactContext ctx) {
+   public void enterPopsf_route_filter(Popsf_route_filterContext ctx) {
+      _currentRouteFilter = _termRouteFilters.get(_currentPsTerm);
+      if (_currentRouteFilter == null) {
+         String rfName = _currentPolicyStatement.getName() + ":"
+               + _currentPsTerm.getName();
+         _currentRouteFilter = new RouteFilter(rfName);
+         _termRouteFilters.put(_currentPsTerm, _currentRouteFilter);
+         _configuration.getRouteFilters().put(rfName, _currentRouteFilter);
+         PsFromRouteFilter from = new PsFromRouteFilter(rfName);
+         _currentPsTerm.getFroms().add(from);
+      }
+      if (ctx.IP_PREFIX() != null) {
+         _currentRouteFilterPrefix = new Prefix(ctx.IP_PREFIX().getText());
+         _currentRouteFilter.setIpv4(true);
+      }
+      else if (ctx.IPV6_PREFIX() != null) {
+         _currentRoute6FilterPrefix = new Prefix6(ctx.IPV6_PREFIX().getText());
+         _currentRouteFilter.setIpv6(true);
+      }
+   }
+
+   @Override
+   public void enterPopsfrf_exact(Popsfrf_exactContext ctx) {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineExact(
                _currentRouteFilterPrefix);
@@ -1936,7 +1868,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_longer(Rft_longerContext ctx) {
+   public void enterPopsfrf_longer(Popsfrf_longerContext ctx) {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineLonger(
                _currentRouteFilterPrefix);
@@ -1952,7 +1884,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_orlonger(Rft_orlongerContext ctx) {
+   public void enterPopsfrf_orlonger(Popsfrf_orlongerContext ctx) {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineOrLonger(
                _currentRouteFilterPrefix);
@@ -1968,8 +1900,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_prefix_length_range(
-         Rft_prefix_length_rangeContext ctx) {
+   public void enterPopsfrf_prefix_length_range(
+         Popsfrf_prefix_length_rangeContext ctx) {
       int minPrefixLength = toInt(ctx.low);
       int maxPrefixLength = toInt(ctx.high);
       if (_currentRouteFilterPrefix != null) { // ipv4
@@ -1987,7 +1919,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_through(Rft_throughContext ctx) {
+   public void enterPopsfrf_then(Popsfrf_thenContext ctx) {
+      if (_currentRouteFilterPrefix != null) { // ipv4
+         Route4FilterLine line = _currentRouteFilterLine;
+         _currentPsThens = line.getThens();
+      }
+      else if (_currentRoute6FilterPrefix != null) { // ipv6
+         Route6FilterLine line = _currentRoute6FilterLine;
+         _currentPsThens = line.getThens();
+      }
+   }
+
+   @Override
+   public void enterPopsfrf_through(Popsfrf_throughContext ctx) {
       if (_currentRouteFilterPrefix != null) { // ipv4
          Prefix throughPrefix = new Prefix(ctx.IP_PREFIX().getText());
          Route4FilterLine line = new Route4FilterLineThrough(
@@ -2005,7 +1949,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRft_upto(Rft_uptoContext ctx) {
+   public void enterPopsfrf_upto(Popsfrf_uptoContext ctx) {
       int maxPrefixLength = toInt(ctx.high);
       if (_currentRouteFilterPrefix != null) { // ipv4
          Route4FilterLine line = new Route4FilterLineUpTo(
@@ -2022,8 +1966,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRit_named_routing_instance(
-         Rit_named_routing_instanceContext ctx) {
+   public void enterRi_named_routing_instance(
+         Ri_named_routing_instanceContext ctx) {
       String name;
       name = ctx.name.getText();
       _currentRoutingInstance = _configuration.getRoutingInstances().get(name);
@@ -2035,7 +1979,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRot_aggregate(Rot_aggregateContext ctx) {
+   public void enterRo_aggregate(Ro_aggregateContext ctx) {
       if (ctx.prefix != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
          Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib
@@ -2052,7 +1996,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRot_generate(Rot_generateContext ctx) {
+   public void enterRo_generate(Ro_generateContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
          Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib
@@ -2071,7 +2015,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRot_rib(Rot_ribContext ctx) {
+   public void enterRo_rib(Ro_ribContext ctx) {
       String name = ctx.name.getText();
       Map<String, RoutingInformationBase> ribs = _currentRoutingInstance
             .getRibs();
@@ -2083,7 +2027,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterRst_route(Rst_routeContext ctx) {
+   public void enterRos_route(Ros_routeContext ctx) {
       if (ctx.IP_PREFIX() != null) {
          Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
          Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
@@ -2104,18 +2048,73 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterS_protocols_bgp(S_protocols_bgpContext ctx) {
-      _currentBgpGroup = _currentRoutingInstance.getMasterBgpGroup();
-   }
-
-   @Override
    public void enterS_routing_options(S_routing_optionsContext ctx) {
       _currentRib = _currentRoutingInstance.getRibs()
             .get(RoutingInformationBase.RIB_IPV4_UNICAST);
    }
 
    @Override
-   public void enterSpt_from_zone(Spt_from_zoneContext ctx) {
+   public void enterSeik_gateway(Seik_gatewayContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeGateway = _configuration.getIkeGateways().get(name);
+      if (_currentIkeGateway == null) {
+         _currentIkeGateway = new IkeGateway(name);
+         _configuration.getIkeGateways().put(name, _currentIkeGateway);
+      }
+   }
+
+   @Override
+   public void enterSeik_policy(Seik_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkePolicy = _configuration.getIkePolicies().get(name);
+      if (_currentIkePolicy == null) {
+         _currentIkePolicy = new IkePolicy(name);
+         _configuration.getIkePolicies().put(name, _currentIkePolicy);
+      }
+   }
+
+   @Override
+   public void enterSeik_proposal(Seik_proposalContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeProposal = _configuration.getIkeProposals().get(name);
+      if (_currentIkeProposal == null) {
+         _currentIkeProposal = new IkeProposal(name);
+         _configuration.getIkeProposals().put(name, _currentIkeProposal);
+      }
+   }
+
+   @Override
+   public void enterSeip_policy(Seip_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecPolicy = _configuration.getIpsecPolicies().get(name);
+      if (_currentIpsecPolicy == null) {
+         _currentIpsecPolicy = new IpsecPolicy(name);
+         _configuration.getIpsecPolicies().put(name, _currentIpsecPolicy);
+      }
+   }
+
+   @Override
+   public void enterSeip_proposal(Seip_proposalContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecProposal = _configuration.getIpsecProposals().get(name);
+      if (_currentIpsecProposal == null) {
+         _currentIpsecProposal = new IpsecProposal(name);
+         _configuration.getIpsecProposals().put(name, _currentIpsecProposal);
+      }
+   }
+
+   @Override
+   public void enterSeip_vpn(Seip_vpnContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn = _configuration.getIpsecVpns().get(name);
+      if (_currentIpsecVpn == null) {
+         _currentIpsecVpn = new IpsecVpn(name);
+         _configuration.getIpsecVpns().put(name, _currentIpsecVpn);
+      }
+   }
+
+   @Override
+   public void enterSep_from_zone(Sep_from_zoneContext ctx) {
       if (ctx.from.JUNOS_HOST() != null && ctx.to.JUNOS_HOST() != null) {
          _w.redFlag(
                "Cannot create security policy from junos-host to junos-host");
@@ -2177,7 +2176,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterSpt_policy(Spt_policyContext ctx) {
+   public void enterSepf_policy(Sepf_policyContext ctx) {
       String termName = ctx.name.getText();
       _currentFwTerm = _currentFilter.getTerms().get(termName);
       if (_currentFwTerm == null) {
@@ -2187,13 +2186,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterSzszt_address_book(Szszt_address_bookContext ctx) {
+   public void enterSez_security_zone(Sez_security_zoneContext ctx) {
+      String zoneName = ctx.zone().getText();
+      _currentZone = _configuration.getZones().get(zoneName);
+      if (_currentZone == null) {
+         _currentZone = new Zone(zoneName,
+               _configuration.getGlobalAddressBooks());
+         _configuration.getFirewallFilters().put(
+               _currentZone.getInboundFilter().getName(),
+               _currentZone.getInboundFilter());
+         _configuration.getZones().put(zoneName, _currentZone);
+      }
+      _currentZoneInboundFilter = _currentZone.getInboundFilter();
+   }
+
+   @Override
+   public void enterSezs_address_book(Sezs_address_bookContext ctx) {
       _currentAddressBook = _currentZone.getAddressBook();
    }
 
    @Override
-   public void enterSzszt_host_inbound_traffic(
-         Szszt_host_inbound_trafficContext ctx) {
+   public void enterSezs_host_inbound_traffic(
+         Sezs_host_inbound_trafficContext ctx) {
       if (_currentZoneInterface != null) {
          _currentZoneInboundFilter = _currentZone.getInboundInterfaceFilters()
                .get(_currentZoneInterface);
@@ -2210,142 +2224,82 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void enterSzszt_interfaces(Szszt_interfacesContext ctx) {
+   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
       _currentZoneInterface = initInterface(ctx.interface_id());
       _currentZone.getInterfaces().add(_currentZoneInterface);
    }
 
    @Override
-   public void enterSzt_security_zone(Szt_security_zoneContext ctx) {
-      String zoneName = ctx.zone().getText();
-      _currentZone = _configuration.getZones().get(zoneName);
-      if (_currentZone == null) {
-         _currentZone = new Zone(zoneName,
-               _configuration.getGlobalAddressBooks());
-         _configuration.getFirewallFilters().put(
-               _currentZone.getInboundFilter().getName(),
-               _currentZone.getInboundFilter());
-         _configuration.getZones().put(zoneName, _currentZone);
+   public void enterSezsa_address_set(Sezsa_address_setContext ctx) {
+      String name = ctx.name.getText();
+      AddressBookEntry entry = _currentAddressBook.getEntries().get(name);
+      if (entry == null) {
+         entry = new AddressSetAddressBookEntry(name);
+         _currentAddressBook.getEntries().put(name, entry);
       }
-      _currentZoneInboundFilter = _currentZone.getInboundFilter();
+      try {
+         _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
+      }
+      catch (ClassCastException e) {
+         throw new BatfishException(
+               "Cannot create address-set address-book entry \"" + name
+                     + "\" because a different type of address-book entry with that name already exists",
+               e);
+      }
    }
 
    @Override
-   public void exitAbast_address(Abast_addressContext ctx) {
-      String name = ctx.name.getText();
-      _currentAddressSetAddressBookEntry.getEntries()
-            .add(new AddressSetEntry(name, _currentAddressBook));
-   }
-
-   @Override
-   public void exitAbast_address_set(Abast_address_setContext ctx) {
-      String name = ctx.name.getText();
-      _currentAddressSetAddressBookEntry.getEntries()
-            .add(new AddressSetEntry(name, _currentAddressBook));
-   }
-
-   @Override
-   public void exitAbt_address(Abt_addressContext ctx) {
-      String name = ctx.name.getText();
-      Prefix prefix = new Prefix(ctx.abt_address_tail().IP_PREFIX().getText());
-      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, prefix);
-      _currentZone.getAddressBook().getEntries().put(name, addressEntry);
-   }
-
-   @Override
-   public void exitAbt_address_set(Abt_address_setContext ctx) {
-      _currentAddressSetAddressBookEntry = null;
-   }
-
-   @Override
-   public void exitAgast_path(Agast_pathContext ctx) {
-      AsPath asPath = toAsPath(ctx.path);
-      _currentAggregateRoute.setAsPath(asPath);
-   }
-
-   @Override
-   public void exitAgt_community(Agt_communityContext ctx) {
-      long community = CommonUtil
-            .communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
-      _configuration.getAllStandardCommunities().add(community);
-      _currentAggregateRoute.getCommunities().add(community);
-   }
-
-   @Override
-   public void exitAgt_preference(Agt_preferenceContext ctx) {
-      int preference = toInt(ctx.preference);
-      _currentAggregateRoute.setPreference(preference);
-   }
-
-   @Override
-   public void exitAgt_tag(Agt_tagContext ctx) {
-      int tag = toInt(ctx.tag);
-      _currentAggregateRoute.setTag(tag);
-   }
-
-   @Override
-   public void exitAppst_application(Appst_applicationContext ctx) {
+   public void exitA_application(A_applicationContext ctx) {
       _currentApplication = null;
       _currentApplicationTerm = null;
    }
 
    @Override
-   public void exitAppst_term(Appst_termContext ctx) {
+   public void exitAa_term(Aa_termContext ctx) {
       _currentApplicationTerm = _currentApplication.getMainTerm();
    }
 
    @Override
-   public void exitApptt_destination_port(Apptt_destination_portContext ctx) {
+   public void exitAat_destination_port(Aat_destination_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
       _currentApplicationTerm.getLine().getDstPorts().add(subrange);
    }
 
    @Override
-   public void exitApptt_protocol(Apptt_protocolContext ctx) {
+   public void exitAat_protocol(Aat_protocolContext ctx) {
       IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
       _currentApplicationTerm.getLine().getIpProtocols().add(protocol);
    }
 
    @Override
-   public void exitApptt_source_port(Apptt_source_portContext ctx) {
+   public void exitAat_source_port(Aat_source_portContext ctx) {
       SubRange subrange = toSubRange(ctx.subrange());
       _currentApplicationTerm.getLine().getSrcPorts().add(subrange);
    }
 
    @Override
-   public void exitAt_interface(At_interfaceContext ctx) {
-      _currentOspfInterface = null;
-   }
-
-   @Override
-   public void exitBpast_as(Bpast_asContext ctx) {
-      int peerAs = toInt(ctx.as);
-      _currentBgpGroup.setPeerAs(peerAs);
-   }
-
-   @Override
-   public void exitBt_advertise_external(Bt_advertise_externalContext ctx) {
+   public void exitB_advertise_external(B_advertise_externalContext ctx) {
       _currentBgpGroup.setAdvertiseExternal(true);
    }
 
    @Override
-   public void exitBt_advertise_inactive(Bt_advertise_inactiveContext ctx) {
+   public void exitB_advertise_inactive(B_advertise_inactiveContext ctx) {
       _currentBgpGroup.setAdvertiseInactive(true);
    }
 
    @Override
-   public void exitBt_advertise_peer_as(Bt_advertise_peer_asContext ctx) {
+   public void exitB_advertise_peer_as(B_advertise_peer_asContext ctx) {
       _currentBgpGroup.setAdvertisePeerAs(true);
    }
 
    @Override
-   public void exitBt_description(Bt_descriptionContext ctx) {
-      String description = ctx.s_description().description.getText();
+   public void exitB_description(B_descriptionContext ctx) {
+      String description = ctx.description().text.getText();
       _currentBgpGroup.setDescription(description);
    }
 
    @Override
-   public void exitBt_export(Bt_exportContext ctx) {
+   public void exitB_export(B_exportContext ctx) {
       Policy_expressionContext expr = ctx.expr;
       String name;
       if (expr.variable() != null) {
@@ -2358,7 +2312,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitBt_import(Bt_importContext ctx) {
+   public void exitB_import(B_importContext ctx) {
       Policy_expressionContext expr = ctx.expr;
       String name;
       if (expr.variable() != null) {
@@ -2371,7 +2325,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitBt_local_address(Bt_local_addressContext ctx) {
+   public void exitB_local_address(B_local_addressContext ctx) {
       if (ctx.IP_ADDRESS() != null) {
          Ip localAddress = new Ip(ctx.IP_ADDRESS().getText());
          _currentBgpGroup.setLocalAddress(localAddress);
@@ -2379,17 +2333,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitBt_multihop(Bt_multihopContext ctx) {
+   public void exitB_multihop(B_multihopContext ctx) {
       _currentBgpGroup.setEbgpMultihop(true);
    }
 
    @Override
-   public void exitBt_remove_private(Bt_remove_privateContext ctx) {
+   public void exitB_remove_private(B_remove_privateContext ctx) {
       _currentBgpGroup.setRemovePrivate(true);
    }
 
    @Override
-   public void exitBt_type(Bt_typeContext ctx) {
+   public void exitB_type(B_typeContext ctx) {
       if (ctx.INTERNAL() != null) {
          _currentBgpGroup.setType(BgpGroupType.INTERNAL);
       }
@@ -2399,12 +2353,566 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitCt_invert_match(Ct_invert_matchContext ctx) {
+   public void exitBl_loops(Bl_loopsContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_LOOPS);
+      int loops = toInt(ctx.DEC());
+      _currentBgpGroup.setLoops(loops);
+   }
+
+   @Override
+   public void exitBl_number(Bl_numberContext ctx) {
+      int localAs = toInt(ctx.as);
+      _currentBgpGroup.setLocalAs(localAs);
+   }
+
+   @Override
+   public void exitBl_private(Bl_privateContext ctx) {
+      todo(ctx, F_BGP_LOCAL_AS_PRIVATE);
+   }
+
+   @Override
+   public void exitBpa_as(Bpa_asContext ctx) {
+      int peerAs = toInt(ctx.as);
+      _currentBgpGroup.setPeerAs(peerAs);
+   }
+
+   @Override
+   public void exitF_filter(F_filterContext ctx) {
+      _currentFilter = null;
+   }
+
+   @Override
+   public void exitFf_term(Ff_termContext ctx) {
+      _currentFwTerm = null;
+   }
+
+   @Override
+   public void exitFftf_destination_address(
+         Fftf_destination_addressContext ctx) {
+      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+         Prefix prefix;
+         if (ctx.IP_PREFIX() != null) {
+            prefix = new Prefix(ctx.IP_PREFIX().getText());
+         }
+         else {
+            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+                  Prefix.MAX_PREFIX_LENGTH);
+         }
+         FwFrom from;
+         if (ctx.EXCEPT() != null) {
+            from = new FwFromDestinationAddressExcept(prefix);
+         }
+         else {
+            from = new FwFromDestinationAddress(prefix);
+         }
+         _currentFwTerm.getFroms().add(from);
+      }
+   }
+
+   @Override
+   public void exitFftf_destination_port(Fftf_destination_portContext ctx) {
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
+         FwFrom from = new FwFromDestinationPort(subrange);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            SubRange subrange = toSubRange(subrangeContext);
+            FwFrom from = new FwFromDestinationPort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
+   }
+
+   @Override
+   public void exitFftf_destination_prefix_list(
+         Fftf_destination_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+         from = new FwFromDestinationPrefixListExcept(name);
+      }
+      else {
+         from = new FwFromDestinationPrefixList(name);
+      }
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_first_fragment(Fftf_first_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_fragment_offset(Fftf_fragment_offsetContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, false);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_fragment_offset_except(
+         Fftf_fragment_offset_exceptContext ctx) {
+      SubRange subRange = toSubRange(ctx.subrange());
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_icmp_code(Fftf_icmp_codeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         // TODO: support icmpv6
+         return;
+      }
+      SubRange icmpCodeRange;
+      if (ctx.subrange() != null) {
+         icmpCodeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_code() != null) {
+         int icmpCode = toIcmpCode(ctx.icmp_code());
+         icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-code");
+      }
+      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_icmp_type(Fftf_icmp_typeContext ctx) {
+      if (_currentFirewallFamily == Family.INET6) {
+         // TODO: support icmpv6
+         return;
+      }
+      SubRange icmpTypeRange;
+      if (ctx.subrange() != null) {
+         icmpTypeRange = toSubRange(ctx.subrange());
+      }
+      else if (ctx.icmp_type() != null) {
+         int icmpType = toIcmpType(ctx.icmp_type());
+         icmpTypeRange = new SubRange(icmpType, icmpType);
+      }
+      else {
+         throw new BatfishException("Invalid icmp-type");
+      }
+      FwFrom from = new FwFromIcmpType(icmpTypeRange);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_is_fragment(Fftf_is_fragmentContext ctx) {
+      SubRange subRange = new SubRange(0, 0);
+      FwFrom from = new FwFromFragmentOffset(subRange, true);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_port(Fftf_portContext ctx) {
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
+         FwFrom from = new FwFromPort(subrange);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            SubRange subrange = toSubRange(subrangeContext);
+            FwFrom from = new FwFromPort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
+   }
+
+   @Override
+   public void exitFftf_prefix_list(Fftf_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
+      FwFromPrefixList from = new FwFromPrefixList(name);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_protocol(Fftf_protocolContext ctx) {
+      IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
+      FwFrom from = new FwFromProtocol(protocol);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_source_address(Fftf_source_addressContext ctx) {
+      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+         Prefix prefix;
+         if (ctx.IP_PREFIX() != null) {
+            prefix = new Prefix(ctx.IP_PREFIX().getText());
+         }
+         else {
+            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
+                  Prefix.MAX_PREFIX_LENGTH);
+         }
+         FwFrom from;
+         if (ctx.EXCEPT() != null) {
+            from = new FwFromSourceAddressExcept(prefix);
+         }
+         else {
+            from = new FwFromSourceAddress(prefix);
+         }
+         _currentFwTerm.getFroms().add(from);
+      }
+   }
+
+   @Override
+   public void exitFftf_source_port(Fftf_source_portContext ctx) {
+      if (ctx.port() != null) {
+         int port = getPortNumber(ctx.port());
+         SubRange subrange = new SubRange(port, port);
+         FwFrom from = new FwFromSourcePort(subrange);
+         _currentFwTerm.getFroms().add(from);
+      }
+      else if (ctx.range() != null) {
+         for (SubrangeContext subrangeContext : ctx.range().range_list) {
+            SubRange subrange = toSubRange(subrangeContext);
+            FwFrom from = new FwFromSourcePort(subrange);
+            _currentFwTerm.getFroms().add(from);
+         }
+      }
+   }
+
+   @Override
+   public void exitFftf_source_prefix_list(Fftf_source_prefix_listContext ctx) {
+      String name = ctx.name.getText();
+      // temporary
+      if (_currentFilter.getFamily() != Family.INET) {
+         _configuration.getIgnoredPrefixLists().add(name);
+      }
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+         from = new FwFromSourcePrefixListExcept(name);
+      }
+      else {
+         from = new FwFromSourcePrefixList(name);
+      }
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_tcp_established(Fftf_tcp_establishedContext ctx) {
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(true);
+      tcpFlags.add(alt1);
+      TcpFlags alt2 = new TcpFlags();
+      alt2.setUseRst(true);
+      alt2.setRst(true);
+      tcpFlags.add(alt2);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_tcp_flags(Fftf_tcp_flagsContext ctx) {
+      List<TcpFlags> tcpFlags = toTcpFlags(ctx.tcp_flags());
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftf_tcp_initial(Fftf_tcp_initialContext ctx) {
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      TcpFlags alt1 = new TcpFlags();
+      alt1.setUseAck(true);
+      alt1.setAck(false);
+      alt1.setUseSyn(true);
+      alt1.setSyn(true);
+      tcpFlags.add(alt1);
+      FwFrom from = new FwFromTcpFlags(tcpFlags);
+      _currentFwTerm.getFroms().add(from);
+   }
+
+   @Override
+   public void exitFftt_accept(Fftt_acceptContext ctx) {
+      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
+   }
+
+   @Override
+   public void exitFftt_discard(Fftt_discardContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFftt_next_ip(Fftt_next_ipContext ctx) {
+      Prefix nextPrefix;
+      if (ctx.ip != null) {
+         Ip nextIp = new Ip(ctx.ip.getText());
+         nextPrefix = new Prefix(nextIp, 32);
+      }
+      else {
+         nextPrefix = new Prefix(ctx.prefix.getText());
+      }
+      FwThenNextIp then = new FwThenNextIp(nextPrefix);
+      _currentFwTerm.getThens().add(then);
+      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
+      _currentFilter.setRoutingPolicy(true);
+   }
+
+   @Override
+   public void exitFftt_next_term(Fftt_next_termContext ctx) {
+      _currentFwTerm.getThens().add(FwThenNextTerm.INSTANCE);
+   }
+
+   @Override
+   public void exitFftt_nop(Fftt_nopContext ctx) {
+      _currentFwTerm.getThens().add(FwThenNop.INSTANCE);
+   }
+
+   @Override
+   public void exitFftt_reject(Fftt_rejectContext ctx) {
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
+      // TODO: implement
+      _w.unimplemented(
+            ConfigurationBuilder.F_FIREWALL_TERM_THEN_ROUTING_INSTANCE);
+      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+   }
+
+   @Override
+   public void exitFlat_juniper_configuration(
+         Flat_juniper_configurationContext ctx) {
+      if (_hasZones) {
+         if (_defaultCrossZoneAction == null) {
+            _defaultCrossZoneAction = LineAction.REJECT;
+         }
+         _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+         _configuration.setDefaultInboundAction(LineAction.REJECT);
+      }
+      else {
+         _configuration.setDefaultInboundAction(LineAction.ACCEPT);
+      }
+   }
+
+   @Override
+   public void exitI_disable(I_disableContext ctx) {
+      _currentInterface.setActive(false);
+   }
+
+   @Override
+   public void exitI_enable(I_enableContext ctx) {
+      _currentInterface.setActive(true);
+   }
+
+   @Override
+   public void exitI_unit(I_unitContext ctx) {
+      _currentInterface = _currentMasterInterface;
+   }
+
+   @Override
+   public void exitIfi_address(Ifi_addressContext ctx) {
+      _currentInterfacePrefix = null;
+   }
+
+   @Override
+   public void exitIfi_filter(Ifi_filterContext ctx) {
+      FilterContext filter = ctx.filter();
+      if (filter.direction() != null) {
+         String name = filter.name.getText();
+         DirectionContext direction = filter.direction();
+         if (direction.INPUT() != null) {
+            _currentInterface.setIncomingFilter(name);
+         }
+         else if (direction.OUTPUT() != null) {
+            _currentInterface.setOutgoingFilter(name);
+         }
+      }
+   }
+
+   @Override
+   public void exitIfia_preferred(Ifia_preferredContext ctx) {
+      _currentInterface.setPreferredPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
+   public void exitIfia_primary(Ifia_primaryContext ctx) {
+      _currentInterface.setPrimaryPrefix(_currentInterfacePrefix);
+   }
+
+   @Override
+   public void exitIfia_vrrp_group(Ifia_vrrp_groupContext ctx) {
+      _currentVrrpGroup = null;
+   }
+
+   @Override
+   public void exitIfiav_preempt(Ifiav_preemptContext ctx) {
+      _currentVrrpGroup.setPreempt(true);
+   }
+
+   @Override
+   public void exitIfiav_priority(Ifiav_priorityContext ctx) {
+      int priority = toInt(ctx.priority);
+      _currentVrrpGroup.setPriority(priority);
+   }
+
+   @Override
+   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
+      Ip virtualAddress = new Ip(ctx.IP_ADDRESS().getText());
+      int prefixLength = _currentInterfacePrefix.getPrefixLength();
+      _currentVrrpGroup
+            .setVirtualAddress(new Prefix(virtualAddress, prefixLength));
+   }
+
+   @Override
+   public void exitIfiso_address(Ifiso_addressContext ctx) {
+      IsoAddress address = new IsoAddress(ctx.ISO_ADDRESS().getText());
+      _currentInterface.setIsoAddress(address);
+   }
+
+   @Override
+   public void exitInt_named(Int_namedContext ctx) {
+      _currentInterface = null;
+      _currentMasterInterface = null;
+   }
+
+   @Override
+   public void exitIs_export(Is_exportContext ctx) {
+      Set<String> policies = new LinkedHashSet<>();
+      for (VariableContext policy : ctx.policies) {
+         policies.add(policy.getText());
+      }
+      _currentRoutingInstance.getIsisSettings().getExportPolicies()
+            .addAll(policies);
+   }
+
+   @Override
+   public void exitIs_interface(Is_interfaceContext ctx) {
+      _currentIsisInterface = null;
+   }
+
+   @Override
+   public void exitIs_level(Is_levelContext ctx) {
+      _currentIsisLevelSettings = null;
+   }
+
+   @Override
+   public void exitIs_no_ipv4_routing(Is_no_ipv4_routingContext ctx) {
+      _currentRoutingInstance.getIsisSettings().setNoIpv4Routing(true);
+   }
+
+   @Override
+   public void exitIsi_level(Isi_levelContext ctx) {
+      _currentIsisInterfaceLevelSettings = null;
+   }
+
+   @Override
+   public void exitIsi_passive(Isi_passiveContext ctx) {
+      _currentIsisInterface.getIsisSettings().setPassive(true);
+   }
+
+   @Override
+   public void exitIsi_point_to_point(Isi_point_to_pointContext ctx) {
+      _currentIsisInterface.getIsisSettings().setPointToPoint(true);
+   }
+
+   @Override
+   public void exitIsil_enable(Isil_enableContext ctx) {
+      _currentIsisInterfaceLevelSettings.setEnabled(true);
+   }
+
+   @Override
+   public void exitIsil_metric(Isil_metricContext ctx) {
+      int metric = toInt(ctx.DEC());
+      _currentIsisInterfaceLevelSettings.setMetric(metric);
+   }
+
+   @Override
+   public void exitIsil_te_metric(Isil_te_metricContext ctx) {
+      int teMetric = toInt(ctx.DEC());
+      _currentIsisInterfaceLevelSettings.setTeMetric(teMetric);
+   }
+
+   @Override
+   public void exitIsl_disable(Isl_disableContext ctx) {
+      _currentIsisLevelSettings.setEnabled(false);
+   }
+
+   @Override
+   public void exitIsl_wide_metrics_only(Isl_wide_metrics_onlyContext ctx) {
+      _currentIsisLevelSettings.setWideMetricsOnly(true);
+   }
+
+   @Override
+   public void exitIst_credibility_protocol_preference(
+         Ist_credibility_protocol_preferenceContext ctx) {
+      _currentRoutingInstance.getIsisSettings()
+            .setTrafficEngineeringCredibilityProtocolPreference(true);
+   }
+
+   @Override
+   public void exitIst_family_shortcuts(Ist_family_shortcutsContext ctx) {
+      if (ctx.INET6() != null) {
+         todo(ctx, F_IPV6);
+      }
+      else { // ipv4
+         _currentRoutingInstance.getIsisSettings()
+               .setTrafficEngineeringShortcuts(true);
+      }
+   }
+
+   @Override
+   public void exitO_area(O_areaContext ctx) {
+      _currentArea = null;
+   }
+
+   @Override
+   public void exitO_export(O_exportContext ctx) {
+      String name = ctx.name.getText();
+      _currentRoutingInstance.getOspfExportPolicies().add(name);
+   }
+
+   @Override
+   public void exitOa_interface(Oa_interfaceContext ctx) {
+      _currentOspfInterface = null;
+   }
+
+   @Override
+   public void exitP_bgp(P_bgpContext ctx) {
+      _currentBgpGroup = null;
+   }
+
+   @Override
+   public void exitPo_community(Po_communityContext ctx) {
+      _currentCommunityList = null;
+   }
+
+   @Override
+   public void exitPo_policy_statement(Po_policy_statementContext ctx) {
+      _currentPolicyStatement = null;
+   }
+
+   public void exitPo_prefix_list(Po_prefix_listContext ctx) {
+      _currentPrefixList = null;
+   }
+
+   @Override
+   public void exitPoc_invert_match(Poc_invert_matchContext ctx) {
       _currentCommunityList.setInvertMatch(true);
    }
 
    @Override
-   public void exitCt_members(Ct_membersContext ctx) {
+   public void exitPoc_members(Poc_membersContext ctx) {
       if (ctx.community_regex() != null) {
          String text = ctx.community_regex().getText();
          _currentCommunityList.getLines().add(new CommunityListLine(text));
@@ -2442,43 +2950,52 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFlat_juniper_configuration(
-         Flat_juniper_configurationContext ctx) {
-      if (_hasZones) {
-         if (_defaultCrossZoneAction == null) {
-            _defaultCrossZoneAction = LineAction.REJECT;
-         }
-         _configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
-         _configuration.setDefaultInboundAction(LineAction.REJECT);
-      }
-      else {
-         _configuration.setDefaultInboundAction(LineAction.ACCEPT);
-      }
+   public void exitPoplt_ip6(Poplt_ip6Context ctx) {
+      _currentPrefixList.setIpv6(true);
+      todo(ctx, F_IPV6);
    }
 
    @Override
-   public void exitFromt_as_path(Fromt_as_pathContext ctx) {
+   public void exitPoplt_network(Poplt_networkContext ctx) {
+      Prefix prefix = new Prefix(ctx.network.getText());
+      _currentPrefixList.getPrefixes().add(prefix);
+   }
+
+   @Override
+   public void exitPoplt_network6(Poplt_network6Context ctx) {
+      _currentPrefixList.setIpv6(true);
+      todo(ctx, F_IPV6);
+   }
+
+   @Override
+   public void exitPops_common(Pops_commonContext ctx) {
+      _currentPsTerm = null;
+      _currentPsThens = null;
+   }
+
+   @Override
+   public void exitPopsf_as_path(Popsf_as_pathContext ctx) {
       String name = ctx.name.getText();
       PsFromAsPath fromAsPath = new PsFromAsPath(name);
       _currentPsTerm.getFroms().add(fromAsPath);
    }
 
    @Override
-   public void exitFromt_color(Fromt_colorContext ctx) {
+   public void exitPopsf_color(Popsf_colorContext ctx) {
       int color = toInt(ctx.color);
       PsFromColor fromColor = new PsFromColor(color);
       _currentPsTerm.getFroms().add(fromColor);
    }
 
    @Override
-   public void exitFromt_community(Fromt_communityContext ctx) {
+   public void exitPopsf_community(Popsf_communityContext ctx) {
       String name = ctx.name.getText();
       PsFromCommunity fromCommunity = new PsFromCommunity(name);
       _currentPsTerm.getFroms().add(fromCommunity);
    }
 
    @Override
-   public void exitFromt_family(Fromt_familyContext ctx) {
+   public void exitPopsf_family(Popsf_familyContext ctx) {
       PsFrom from;
       if (ctx.INET() != null) {
          from = new PsFromFamilyInet();
@@ -2493,7 +3010,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFromt_interface(Fromt_interfaceContext ctx) {
+   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
       String name = ctx.id.name.getText();
       String unit = null;
       if (ctx.id.unit != null) {
@@ -2525,7 +3042,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFromt_local_preference(Fromt_local_preferenceContext ctx) {
+   public void exitPopsf_local_preference(Popsf_local_preferenceContext ctx) {
       int localPreference = toInt(ctx.localpref);
       PsFromLocalPreference fromLocalPreference = new PsFromLocalPreference(
             localPreference);
@@ -2533,38 +3050,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFromt_metric(Fromt_metricContext ctx) {
+   public void exitPopsf_metric(Popsf_metricContext ctx) {
       int metric = toInt(ctx.metric);
       PsFromMetric fromMetric = new PsFromMetric(metric);
       _currentPsTerm.getFroms().add(fromMetric);
    }
 
    @Override
-   public void exitFromt_policy(Fromt_policyContext ctx) {
+   public void exitPopsf_policy(Popsf_policyContext ctx) {
       String policyName = toComplexPolicyStatement(ctx.policy_expression());
       PsFrom from = new PsFromPolicyStatement(policyName);
       _currentPsTerm.getFroms().add(from);
    }
 
    @Override
-   public void exitFromt_prefix_list(Fromt_prefix_listContext ctx) {
+   public void exitPopsf_prefix_list(Popsf_prefix_listContext ctx) {
       String name = ctx.name.getText();
       PsFrom from = new PsFromPrefixList(name);
       _currentPsTerm.getFroms().add(from);
    }
 
    @Override
-   public void exitFromt_prefix_list_filter(
-         Fromt_prefix_list_filterContext ctx) {
+   public void exitPopsf_prefix_list_filter(
+         Popsf_prefix_list_filterContext ctx) {
       String name = ctx.name.getText();
       PsFrom from;
-      if (ctx.fromt_prefix_list_filter_tail().plft_exact() != null) {
+      if (ctx.popsfpl_exact() != null) {
          from = new PsFromPrefixList(name);
       }
-      else if (ctx.fromt_prefix_list_filter_tail().plft_longer() != null) {
+      else if (ctx.popsfpl_longer() != null) {
          from = new PsFromPrefixListFilterLonger(name);
       }
-      else if (ctx.fromt_prefix_list_filter_tail().plft_orlonger() != null) {
+      else if (ctx.popsfpl_orlonger() != null) {
          from = new PsFromPrefixListFilterOrLonger(name);
       }
       else {
@@ -2575,14 +3092,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFromt_protocol(Fromt_protocolContext ctx) {
+   public void exitPopsf_protocol(Popsf_protocolContext ctx) {
       RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
       PsFromProtocol fromProtocol = new PsFromProtocol(protocol);
       _currentPsTerm.getFroms().add(fromProtocol);
    }
 
    @Override
-   public void exitFromt_route_filter(Fromt_route_filterContext ctx) {
+   public void exitPopsf_route_filter(Popsf_route_filterContext ctx) {
       _currentRouteFilterPrefix = null;
       _currentRoute6FilterPrefix = null;
       _currentRouteFilter = null;
@@ -2591,787 +3108,94 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitFromt_route_filter_then(Fromt_route_filter_thenContext ctx) {
+   public void exitPopsfrf_then(Popsfrf_thenContext ctx) {
       _currentPsThens = _currentPsTerm.getThens();
    }
 
    @Override
-   public void exitFwfromt_destination_address(
-         Fwfromt_destination_addressContext ctx) {
-      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
-         Prefix prefix;
-         if (ctx.IP_PREFIX() != null) {
-            prefix = new Prefix(ctx.IP_PREFIX().getText());
-         }
-         else {
-            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
-                  Prefix.MAX_PREFIX_LENGTH);
-         }
-         FwFrom from;
-         if (ctx.EXCEPT() != null) {
-            from = new FwFromDestinationAddressExcept(prefix);
-         }
-         else {
-            from = new FwFromDestinationAddress(prefix);
-         }
-         _currentFwTerm.getFroms().add(from);
-      }
+   public void exitPopst_accept(Popst_acceptContext ctx) {
+      _currentPsThens.add(PsThenAccept.INSTANCE);
    }
 
    @Override
-   public void exitFwfromt_destination_port(
-         Fwfromt_destination_portContext ctx) {
-      if (ctx.port() != null) {
-         int port = getPortNumber(ctx.port());
-         SubRange subrange = new SubRange(port, port);
-         FwFrom from = new FwFromDestinationPort(subrange);
-         _currentFwTerm.getFroms().add(from);
-      }
-      else if (ctx.range() != null) {
-         for (SubrangeContext subrangeContext : ctx.range().range_list) {
-            SubRange subrange = toSubRange(subrangeContext);
-            FwFrom from = new FwFromDestinationPort(subrange);
-            _currentFwTerm.getFroms().add(from);
-         }
-      }
-   }
-
-   @Override
-   public void exitFwfromt_destination_prefix_list(
-         Fwfromt_destination_prefix_listContext ctx) {
+   public void exitPopst_community_add(Popst_community_addContext ctx) {
       String name = ctx.name.getText();
-      // temporary
-      if (_currentFilter.getFamily() != Family.INET) {
-         _configuration.getIgnoredPrefixLists().add(name);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-         from = new FwFromDestinationPrefixListExcept(name);
-      }
-      else {
-         from = new FwFromDestinationPrefixList(name);
-      }
-      _currentFwTerm.getFroms().add(from);
+      PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitFwfromt_first_fragment(Fwfromt_first_fragmentContext ctx) {
-      SubRange subRange = new SubRange(0, 0);
-      FwFrom from = new FwFromFragmentOffset(subRange, false);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_fragment_offset(Fwfromt_fragment_offsetContext ctx) {
-      SubRange subRange = toSubRange(ctx.subrange());
-      FwFrom from = new FwFromFragmentOffset(subRange, false);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_fragment_offset_except(
-         Fwfromt_fragment_offset_exceptContext ctx) {
-      SubRange subRange = toSubRange(ctx.subrange());
-      FwFrom from = new FwFromFragmentOffset(subRange, true);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_icmp_code(Fwfromt_icmp_codeContext ctx) {
-      if (_currentFirewallFamily == Family.INET6) {
-         // TODO: support icmpv6
-         return;
-      }
-      SubRange icmpCodeRange;
-      if (ctx.subrange() != null) {
-         icmpCodeRange = toSubRange(ctx.subrange());
-      }
-      else if (ctx.icmp_code() != null) {
-         int icmpCode = toIcmpCode(ctx.icmp_code());
-         icmpCodeRange = new SubRange(icmpCode, icmpCode);
-      }
-      else {
-         throw new BatfishException("Invalid icmp-code");
-      }
-      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_icmp_type(Fwfromt_icmp_typeContext ctx) {
-      if (_currentFirewallFamily == Family.INET6) {
-         // TODO: support icmpv6
-         return;
-      }
-      SubRange icmpTypeRange;
-      if (ctx.subrange() != null) {
-         icmpTypeRange = toSubRange(ctx.subrange());
-      }
-      else if (ctx.icmp_type() != null) {
-         int icmpType = toIcmpType(ctx.icmp_type());
-         icmpTypeRange = new SubRange(icmpType, icmpType);
-      }
-      else {
-         throw new BatfishException("Invalid icmp-type");
-      }
-      FwFrom from = new FwFromIcmpType(icmpTypeRange);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_is_fragment(Fwfromt_is_fragmentContext ctx) {
-      SubRange subRange = new SubRange(0, 0);
-      FwFrom from = new FwFromFragmentOffset(subRange, true);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_port(Fwfromt_portContext ctx) {
-      if (ctx.port() != null) {
-         int port = getPortNumber(ctx.port());
-         SubRange subrange = new SubRange(port, port);
-         FwFrom from = new FwFromPort(subrange);
-         _currentFwTerm.getFroms().add(from);
-      }
-      else if (ctx.range() != null) {
-         for (SubrangeContext subrangeContext : ctx.range().range_list) {
-            SubRange subrange = toSubRange(subrangeContext);
-            FwFrom from = new FwFromPort(subrange);
-            _currentFwTerm.getFroms().add(from);
-         }
-      }
-   }
-
-   @Override
-   public void exitFwfromt_prefix_list(Fwfromt_prefix_listContext ctx) {
+   public void exitPopst_community_delete(Popst_community_deleteContext ctx) {
       String name = ctx.name.getText();
-      // temporary
-      if (_currentFilter.getFamily() != Family.INET) {
-         _configuration.getIgnoredPrefixLists().add(name);
-      }
-      FwFromPrefixList from = new FwFromPrefixList(name);
-      _currentFwTerm.getFroms().add(from);
+      PsThenCommunityDelete then = new PsThenCommunityDelete(name,
+            _configuration);
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitFwfromt_protocol(Fwfromt_protocolContext ctx) {
-      IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-      FwFrom from = new FwFromProtocol(protocol);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_source_address(Fwfromt_source_addressContext ctx) {
-      if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
-         Prefix prefix;
-         if (ctx.IP_PREFIX() != null) {
-            prefix = new Prefix(ctx.IP_PREFIX().getText());
-         }
-         else {
-            prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()),
-                  Prefix.MAX_PREFIX_LENGTH);
-         }
-         FwFrom from;
-         if (ctx.EXCEPT() != null) {
-            from = new FwFromSourceAddressExcept(prefix);
-         }
-         else {
-            from = new FwFromSourceAddress(prefix);
-         }
-         _currentFwTerm.getFroms().add(from);
-      }
-   }
-
-   @Override
-   public void exitFwfromt_source_port(Fwfromt_source_portContext ctx) {
-      if (ctx.port() != null) {
-         int port = getPortNumber(ctx.port());
-         SubRange subrange = new SubRange(port, port);
-         FwFrom from = new FwFromSourcePort(subrange);
-         _currentFwTerm.getFroms().add(from);
-      }
-      else if (ctx.range() != null) {
-         for (SubrangeContext subrangeContext : ctx.range().range_list) {
-            SubRange subrange = toSubRange(subrangeContext);
-            FwFrom from = new FwFromSourcePort(subrange);
-            _currentFwTerm.getFroms().add(from);
-         }
-      }
-   }
-
-   @Override
-   public void exitFwfromt_source_prefix_list(
-         Fwfromt_source_prefix_listContext ctx) {
+   public void exitPopst_community_set(Popst_community_setContext ctx) {
       String name = ctx.name.getText();
-      // temporary
-      if (_currentFilter.getFamily() != Family.INET) {
-         _configuration.getIgnoredPrefixLists().add(name);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-         from = new FwFromSourcePrefixListExcept(name);
-      }
-      else {
-         from = new FwFromSourcePrefixList(name);
-      }
-      _currentFwTerm.getFroms().add(from);
+      PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitFwfromt_tcp_established(Fwfromt_tcp_establishedContext ctx) {
-      List<TcpFlags> tcpFlags = new ArrayList<>();
-      TcpFlags alt1 = new TcpFlags();
-      alt1.setUseAck(true);
-      alt1.setAck(true);
-      tcpFlags.add(alt1);
-      TcpFlags alt2 = new TcpFlags();
-      alt2.setUseRst(true);
-      alt2.setRst(true);
-      tcpFlags.add(alt2);
-      FwFrom from = new FwFromTcpFlags(tcpFlags);
-      _currentFwTerm.getFroms().add(from);
+   public void exitPopst_local_preference(Popst_local_preferenceContext ctx) {
+      int localPreference = toInt(ctx.localpref);
+      PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitFwfromt_tcp_flags(Fwfromt_tcp_flagsContext ctx) {
-      List<TcpFlags> tcpFlags = toTcpFlags(ctx.tcp_flags());
-      FwFrom from = new FwFromTcpFlags(tcpFlags);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwfromt_tcp_initial(Fwfromt_tcp_initialContext ctx) {
-      List<TcpFlags> tcpFlags = new ArrayList<>();
-      TcpFlags alt1 = new TcpFlags();
-      alt1.setUseAck(true);
-      alt1.setAck(false);
-      alt1.setUseSyn(true);
-      alt1.setSyn(true);
-      tcpFlags.add(alt1);
-      FwFrom from = new FwFromTcpFlags(tcpFlags);
-      _currentFwTerm.getFroms().add(from);
-   }
-
-   @Override
-   public void exitFwft_term(Fwft_termContext ctx) {
-      _currentFwTerm = null;
-   }
-
-   @Override
-   public void exitFwt_filter(Fwt_filterContext ctx) {
-      _currentFilter = null;
-   }
-
-   @Override
-   public void exitFwthent_accept(Fwthent_acceptContext ctx) {
-      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
-   }
-
-   @Override
-   public void exitFwthent_discard(Fwthent_discardContext ctx) {
-      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
-   }
-
-   @Override
-   public void exitFwthent_next_ip(Fwthent_next_ipContext ctx) {
-      Prefix nextPrefix;
-      if (ctx.ip != null) {
-         Ip nextIp = new Ip(ctx.ip.getText());
-         nextPrefix = new Prefix(nextIp, 32);
-      }
-      else {
-         nextPrefix = new Prefix(ctx.prefix.getText());
-      }
-      FwThenNextIp then = new FwThenNextIp(nextPrefix);
-      _currentFwTerm.getThens().add(then);
-      _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
-      _currentFilter.setRoutingPolicy(true);
-   }
-
-   @Override
-   public void exitFwthent_next_term(Fwthent_next_termContext ctx) {
-      _currentFwTerm.getThens().add(FwThenNextTerm.INSTANCE);
-   }
-
-   @Override
-   public void exitFwthent_nop(Fwthent_nopContext ctx) {
-      _currentFwTerm.getThens().add(FwThenNop.INSTANCE);
-   }
-
-   @Override
-   public void exitFwthent_reject(Fwthent_rejectContext ctx) {
-      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
-   }
-
-   @Override
-   public void exitFwthent_routing_instance(
-         Fwthent_routing_instanceContext ctx) {
-      // TODO: implement
-      _w.unimplemented(
-            ConfigurationBuilder.F_FIREWALL_TERM_THEN_ROUTING_INSTANCE);
-      _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
-   }
-
-   @Override
-   public void exitGt_metric(Gt_metricContext ctx) {
+   public void exitPopst_metric(Popst_metricContext ctx) {
       int metric = toInt(ctx.metric);
-      _currentGeneratedRoute.setMetric(metric);
+      PsThenMetric then = new PsThenMetric(metric);
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitGt_policy(Gt_policyContext ctx) {
-      if (_currentGeneratedRoute != null) { // not ipv6
-         String policy = ctx.policy.getText();
-         _currentGeneratedRoute.getPolicies().add(policy);
+   public void exitPopst_next_hop(Popst_next_hopContext ctx) {
+      PsThen then;
+      if (ctx.IP_ADDRESS() != null) {
+         Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
+         then = new PsThenNextHopIp(nextHopIp);
       }
-   }
-
-   @Override
-   public void exitHibt_protocols(Hibt_protocolsContext ctx) {
-      HostProtocol protocol = toHostProtocol(ctx.hib_protocol());
-      String termName = protocol.name();
-      FwTerm newTerm = new FwTerm(termName);
-      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-      newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
-      newTerm.getThens().add(FwThenAccept.INSTANCE);
-   }
-
-   @Override
-   public void exitHibt_system_services(Hibt_system_servicesContext ctx) {
-      HostSystemService service = toHostSystemService(ctx.hib_system_service());
-      String termName = service.name();
-      FwTerm newTerm = new FwTerm(termName);
-      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
-      newTerm.getFromHostServices().add(new FwFromHostService(service));
-      newTerm.getThens().add(FwThenAccept.INSTANCE);
-   }
-
-   @Override
-   public void exitIfamat_preferred(Ifamat_preferredContext ctx) {
-      _currentInterface.setPreferredPrefix(_currentInterfacePrefix);
-   }
-
-   @Override
-   public void exitIfamat_primary(Ifamat_primaryContext ctx) {
-      _currentInterface.setPrimaryPrefix(_currentInterfacePrefix);
-   }
-
-   @Override
-   public void exitIfamt_address(Ifamt_addressContext ctx) {
-      _currentInterfacePrefix = null;
-   }
-
-   @Override
-   public void exitIfamt_filter(Ifamt_filterContext ctx) {
-      FilterContext filter = ctx.filter();
-      if (filter.filter_tail() != null) {
-         if (filter.filter_tail().ft_direction() != null) {
-            Ft_directionContext ftd = filter.filter_tail().ft_direction();
-            String name = ftd.name.getText();
-            DirectionContext direction = ftd.direction();
-            if (direction.INPUT() != null) {
-               _currentInterface.setIncomingFilter(name);
-            }
-            else if (direction.OUTPUT() != null) {
-               _currentInterface.setOutgoingFilter(name);
-            }
-         }
+      else {
+         todo(ctx, F_POLICY_TERM_THEN_NEXT_HOP);
+         return;
       }
+      _currentPsThens.add(then);
    }
 
    @Override
-   public void exitIkegt_address(Ikegt_addressContext ctx) {
-      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
-      _currentIkeGateway.setAddress(ip);
+   public void exitPopst_next_policy(Popst_next_policyContext ctx) {
+      _currentPsThens.add(PsThenNextPolicy.INSTANCE);
    }
 
    @Override
-   public void exitIkegt_external_interface(
-         Ikegt_external_interfaceContext ctx) {
-      Interface_idContext interfaceId = ctx.interface_id();
-      Interface iface = initInterface(interfaceId);
-      _currentIkeGateway.setExternalInterface(iface);
+   public void exitPopst_reject(Popst_rejectContext ctx) {
+      _currentPsThens.add(PsThenReject.INSTANCE);
    }
 
    @Override
-   public void exitIkegt_ike_policy(Ikegt_ike_policyContext ctx) {
-      String name = ctx.name.getText();
-      _currentIkeGateway.setIkePolicy(name);
-   }
-
-   @Override
-   public void exitIkegt_local_address(Ikegt_local_addressContext ctx) {
-      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
-      _currentIkeGateway.setLocalAddress(ip);
-   }
-
-   @Override
-   public void exitIkeprt_authentication_algorithm(
-         Ikeprt_authentication_algorithmContext ctx) {
-      IkeAuthenticationAlgorithm alg = toIkeAuthenticationAlgorithm(
-            ctx.ike_authentication_algorithm());
-      _currentIkeProposal.setAuthenticationAlgorithm(alg);
-   }
-
-   @Override
-   public void exitIkeprt_authentication_method(
-         Ikeprt_authentication_methodContext ctx) {
-      IkeAuthenticationMethod authenticationMethod = toIkeAuthenticationMethod(
-            ctx.ike_authentication_method());
-      _currentIkeProposal.setAuthenticationMethod(authenticationMethod);
-   }
-
-   @Override
-   public void exitIkeprt_dh_group(Ikeprt_dh_groupContext ctx) {
-      DiffieHellmanGroup group = toDhGroup(ctx.dh_group());
-      _currentIkeProposal.setDiffieHellmanGroup(group);
-   }
-
-   @Override
-   public void exitIkeprt_encryption_algorithm(
-         Ikeprt_encryption_algorithmContext ctx) {
-      EncryptionAlgorithm alg = toEncryptionAlgorithm(
-            ctx.encryption_algorithm());
-      _currentIkeProposal.setEncryptionAlgorithm(alg);
-   }
-
-   @Override
-   public void exitIkeprt_lifetime_seconds(Ikeprt_lifetime_secondsContext ctx) {
-      int lifetimeSeconds = toInt(ctx.seconds);
-      _currentIkeProposal.setLifetimeSeconds(lifetimeSeconds);
-   }
-
-   @Override
-   public void exitIkept_pre_shared_key(Ikept_pre_shared_keyContext ctx) {
-      String key = unquote(ctx.key.getText());
-      String decodedKeyHash = JuniperUtils
-            .decryptAndHashJuniper9CipherText(key);
-      _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
-   }
-
-   @Override
-   public void exitIkept_proposal_set(Ikept_proposal_setContext ctx) {
-      Set<String> proposalsInSet = initIkeProposalSet(ctx.proposal_set_type());
-      _currentIkePolicy.getProposals().addAll(proposalsInSet);
-   }
-
-   @Override
-   public void exitIkept_proposals(Ikept_proposalsContext ctx) {
-      String proposal = ctx.name.getText();
-      _currentIkePolicy.getProposals().add(proposal);
-   }
-
-   @Override
-   public void exitIket_gateway(Iket_gatewayContext ctx) {
-      _currentIkeGateway = null;
-   }
-
-   @Override
-   public void exitIket_policy(Iket_policyContext ctx) {
-      _currentIkePolicy = null;
-   }
-
-   @Override
-   public void exitIket_proposal(Iket_proposalContext ctx) {
-      _currentIkeProposal = null;
-   }
-
-   @Override
-   public void exitIntt_named(Intt_namedContext ctx) {
-      _currentInterface = null;
-      _currentMasterInterface = null;
-   }
-
-   @Override
-   public void exitIpsecprt_authentication_algorithm(
-         Ipsecprt_authentication_algorithmContext ctx) {
-      IpsecAuthenticationAlgorithm alg = toIpsecAuthenticationAlgorithm(
-            ctx.ipsec_authentication_algorithm());
-      _currentIpsecProposal.setAuthenticationAlgorithm(alg);
-   }
-
-   @Override
-   public void exitIpsecprt_encryption_algorithm(
-         Ipsecprt_encryption_algorithmContext ctx) {
-      EncryptionAlgorithm alg = toEncryptionAlgorithm(
-            ctx.encryption_algorithm());
-      _currentIpsecProposal.setEncryptionAlgorithm(alg);
-   }
-
-   @Override
-   public void exitIpsecprt_lifetime_kilobytes(
-         Ipsecprt_lifetime_kilobytesContext ctx) {
-      int lifetimeKilobytes = toInt(ctx.kilobytes);
-      _currentIpsecProposal.setLifetimeKilobytes(lifetimeKilobytes);
-   }
-
-   @Override
-   public void exitIpsecprt_lifetime_seconds(
-         Ipsecprt_lifetime_secondsContext ctx) {
-      int lifetimeSeconds = toInt(ctx.seconds);
-      _currentIpsecProposal.setLifetimeSeconds(lifetimeSeconds);
-   }
-
-   @Override
-   public void exitIpsecprt_protocol(Ipsecprt_protocolContext ctx) {
-      IpsecProtocol protocol = toIpsecProtocol(ctx.ipsec_protocol());
-      _currentIpsecProposal.setProtocol(protocol);
-   }
-
-   @Override
-   public void exitIpsecpt_perfect_forward_secrecy(
-         Ipsecpt_perfect_forward_secrecyContext ctx) {
-      DiffieHellmanGroup dhGroup = toDhGroup(ctx.dh_group());
-      _currentIpsecPolicy.setPfsKeyGroup(dhGroup);
-   }
-
-   @Override
-   public void exitIpsecpt_proposal_set(Ipsecpt_proposal_setContext ctx) {
-      Set<String> proposalsInSet = initIpsecProposalSet(
-            ctx.proposal_set_type());
-      _currentIpsecPolicy.getProposals().addAll(proposalsInSet);
-   }
-
-   @Override
-   public void exitIpsecpt_proposals(Ipsecpt_proposalsContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecPolicy.getProposals().add(name);
-   }
-
-   @Override
-   public void exitIpsect_policy(Ipsect_policyContext ctx) {
-      _currentIpsecPolicy = null;
-   }
-
-   @Override
-   public void exitIpsect_proposal(Ipsect_proposalContext ctx) {
-      _currentIpsecProposal = null;
-   }
-
-   @Override
-   public void exitIpsect_vpn(Ipsect_vpnContext ctx) {
-      _currentIpsecVpn = null;
-   }
-
-   @Override
-   public void exitIpsecvit_gateway(Ipsecvit_gatewayContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecVpn.setGateway(name);
-   }
-
-   @Override
-   public void exitIpsecvit_ipsec_policy(Ipsecvit_ipsec_policyContext ctx) {
-      String name = ctx.name.getText();
-      _currentIpsecVpn.setIpsecPolicy(name);
-   }
-
-   @Override
-   public void exitIpsecvt_bind_interface(Ipsecvt_bind_interfaceContext ctx) {
-      Interface iface = initInterface(ctx.interface_id());
-      _currentIpsecVpn.setBindInterface(iface);
-   }
-
-   @Override
-   public void exitIsisilt_enable(Isisilt_enableContext ctx) {
-      _currentIsisInterfaceLevelSettings.setEnabled(true);
-   }
-
-   @Override
-   public void exitIsisilt_metric(Isisilt_metricContext ctx) {
-      int metric = toInt(ctx.DEC());
-      _currentIsisInterfaceLevelSettings.setMetric(metric);
-   }
-
-   @Override
-   public void exitIsisilt_te_metric(Isisilt_te_metricContext ctx) {
-      int teMetric = toInt(ctx.DEC());
-      _currentIsisInterfaceLevelSettings.setTeMetric(teMetric);
-   }
-
-   @Override
-   public void exitIsisit_level(Isisit_levelContext ctx) {
-      _currentIsisInterfaceLevelSettings = null;
-   }
-
-   @Override
-   public void exitIsisit_passive(Isisit_passiveContext ctx) {
-      _currentIsisInterface.getIsisSettings().setPassive(true);
-   }
-
-   @Override
-   public void exitIsisit_point_to_point(Isisit_point_to_pointContext ctx) {
-      _currentIsisInterface.getIsisSettings().setPointToPoint(true);
-   }
-
-   @Override
-   public void exitIsislt_disable(Isislt_disableContext ctx) {
-      _currentIsisLevelSettings.setEnabled(false);
-   }
-
-   @Override
-   public void exitIsislt_wide_metrics_only(
-         Isislt_wide_metrics_onlyContext ctx) {
-      _currentIsisLevelSettings.setWideMetricsOnly(true);
-   }
-
-   @Override
-   public void exitIsist_export(Isist_exportContext ctx) {
-      Set<String> policies = new LinkedHashSet<>();
-      for (VariableContext policy : ctx.policies) {
-         policies.add(policy.getText());
-      }
-      _currentRoutingInstance.getIsisSettings().getExportPolicies()
-            .addAll(policies);
-   }
-
-   @Override
-   public void exitIsist_interface(Isist_interfaceContext ctx) {
-      _currentIsisInterface = null;
-   }
-
-   @Override
-   public void exitIsist_level(Isist_levelContext ctx) {
-      _currentIsisLevelSettings = null;
-   }
-
-   @Override
-   public void exitIsist_no_ipv4_routing(Isist_no_ipv4_routingContext ctx) {
-      _currentRoutingInstance.getIsisSettings().setNoIpv4Routing(true);
-   }
-
-   @Override
-   public void exitIsistet_credibility_protocol_preference(
-         Isistet_credibility_protocol_preferenceContext ctx) {
-      _currentRoutingInstance.getIsisSettings()
-            .setTrafficEngineeringCredibilityProtocolPreference(true);
-   }
-
-   @Override
-   public void exitIsistet_family_shortcuts(
-         Isistet_family_shortcutsContext ctx) {
-      if (ctx.INET6() != null) {
-         todo(ctx, F_IPV6);
-      }
-      else { // ipv4
-         _currentRoutingInstance.getIsisSettings()
-               .setTrafficEngineeringShortcuts(true);
-      }
-   }
-
-   @Override
-   public void exitIsofamt_address(Isofamt_addressContext ctx) {
-      IsoAddress address = new IsoAddress(ctx.ISO_ADDRESS().getText());
-      _currentInterface.setIsoAddress(address);
-   }
-
-   @Override
-   public void exitIt_disable(It_disableContext ctx) {
-      _currentInterface.setActive(false);
-   }
-
-   @Override
-   public void exitIt_enable(It_enableContext ctx) {
-      _currentInterface.setActive(true);
-   }
-
-   @Override
-   public void exitIt_unit(It_unitContext ctx) {
-      _currentInterface = _currentMasterInterface;
-   }
-
-   @Override
-   public void exitLast_loops(Last_loopsContext ctx) {
-      todo(ctx, F_BGP_LOCAL_AS_LOOPS);
-      int loops = toInt(ctx.DEC());
-      _currentBgpGroup.setLoops(loops);
-   }
-
-   @Override
-   public void exitLast_number(Last_numberContext ctx) {
-      int localAs = toInt(ctx.as);
-      _currentBgpGroup.setLocalAs(localAs);
-   }
-
-   @Override
-   public void exitLast_private(Last_privateContext ctx) {
-      todo(ctx, F_BGP_LOCAL_AS_PRIVATE);
-   }
-
-   @Override
-   public void exitOt_area(Ot_areaContext ctx) {
-      _currentArea = null;
-   }
-
-   @Override
-   public void exitOt_export(Ot_exportContext ctx) {
-      String name = ctx.name.getText();
-      _currentRoutingInstance.getOspfExportPolicies().add(name);
-   }
-
-   @Override
-   public void exitPlt_ip6(Plt_ip6Context ctx) {
-      _currentPrefixList.setIpv6(true);
-      todo(ctx, F_IPV6);
-   }
-
-   @Override
-   public void exitPlt_network(Plt_networkContext ctx) {
-      Prefix prefix = new Prefix(ctx.network.getText());
-      _currentPrefixList.getPrefixes().add(prefix);
-   }
-
-   @Override
-   public void exitPlt_network6(Plt_network6Context ctx) {
-      _currentPrefixList.setIpv6(true);
-      todo(ctx, F_IPV6);
-   }
-
-   @Override
-   public void exitPot_community(Pot_communityContext ctx) {
-      _currentCommunityList = null;
-   }
-
-   @Override
-   public void exitPot_policy_statement(Pot_policy_statementContext ctx) {
-      _currentPolicyStatement = null;
-   }
-
-   public void exitPot_prefix_list(Pot_prefix_listContext ctx) {
-      _currentPrefixList = null;
-   }
-
-   @Override
-   public void exitPst_term_tail(Pst_term_tailContext ctx) {
-      _currentPsTerm = null;
-      _currentPsThens = null;
-   }
-
-   @Override
-   public void exitRibt_aggregate(Ribt_aggregateContext ctx) {
-      _currentAggregateRoute = null;
-   }
-
-   @Override
-   public void exitRit_interface(Rit_interfaceContext ctx) {
+   public void exitRi_interface(Ri_interfaceContext ctx) {
       Interface iface = initInterface(ctx.id);
       iface.setRoutingInstance(_currentRoutingInstance.getName());
    }
 
    @Override
-   public void exitRit_named_routing_instance(
-         Rit_named_routing_instanceContext ctx) {
+   public void exitRi_named_routing_instance(
+         Ri_named_routing_instanceContext ctx) {
       _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
    }
 
    @Override
-   public void exitRoftt_export(Roftt_exportContext ctx) {
-      String name = ctx.name.getText();
-      _configuration.getDefaultRoutingInstance()
-            .setForwardingTableExportPolicy(name);
+   public void exitRo_aggregate(Ro_aggregateContext ctx) {
+      _currentAggregateRoute = null;
    }
 
    @Override
-   public void exitRot_autonomous_system(Rot_autonomous_systemContext ctx) {
+   public void exitRo_autonomous_system(Ro_autonomous_systemContext ctx) {
       if (ctx.as != null) {
          int as = toInt(ctx.as);
          _currentRoutingInstance.setAs(as);
@@ -3379,19 +3203,100 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitRot_generate(Rot_generateContext ctx) {
+   public void exitRo_generate(Ro_generateContext ctx) {
       _currentGeneratedRoute = null;
    }
 
    @Override
-   public void exitRot_router_id(Rot_router_idContext ctx) {
+   public void exitRo_router_id(Ro_router_idContext ctx) {
       Ip id = new Ip(ctx.id.getText());
       _currentRoutingInstance.setRouterId(id);
    }
 
    @Override
-   public void exitRot_static(Rot_staticContext ctx) {
+   public void exitRo_static(Ro_staticContext ctx) {
       _currentStaticRoute = null;
+   }
+
+   @Override
+   public void exitRoa_community(Roa_communityContext ctx) {
+      long community = CommonUtil
+            .communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
+      _configuration.getAllStandardCommunities().add(community);
+      _currentAggregateRoute.getCommunities().add(community);
+   }
+
+   @Override
+   public void exitRoa_preference(Roa_preferenceContext ctx) {
+      int preference = toInt(ctx.preference);
+      _currentAggregateRoute.setPreference(preference);
+   }
+
+   @Override
+   public void exitRoa_tag(Roa_tagContext ctx) {
+      int tag = toInt(ctx.tag);
+      _currentAggregateRoute.setTag(tag);
+   }
+
+   @Override
+   public void exitRoaa_path(Roaa_pathContext ctx) {
+      AsPath asPath = toAsPath(ctx.path);
+      _currentAggregateRoute.setAsPath(asPath);
+   }
+
+   @Override
+   public void exitRof_export(Rof_exportContext ctx) {
+      String name = ctx.name.getText();
+      _configuration.getDefaultRoutingInstance()
+            .setForwardingTableExportPolicy(name);
+   }
+
+   @Override
+   public void exitRog_metric(Rog_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      _currentGeneratedRoute.setMetric(metric);
+   }
+
+   @Override
+   public void exitRog_policy(Rog_policyContext ctx) {
+      if (_currentGeneratedRoute != null) { // not ipv6
+         String policy = ctx.policy.getText();
+         _currentGeneratedRoute.getPolicies().add(policy);
+      }
+   }
+
+   @Override
+   public void exitRosr_discard(Rosr_discardContext ctx) {
+      _currentStaticRoute.setDrop(true);
+   }
+
+   @Override
+   public void exitRosr_metric(Rosr_metricContext ctx) {
+      int metric = toInt(ctx.metric);
+      _currentStaticRoute.setMetric(metric);
+   }
+
+   @Override
+   public void exitRosr_next_hop(Rosr_next_hopContext ctx) {
+      if (ctx.IP_ADDRESS() != null) {
+         Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
+         _currentStaticRoute.setNextHopIp(nextHopIp);
+      }
+      else if (ctx.interface_id() != null) {
+         initInterface(ctx.interface_id());
+         _currentStaticRoute.setNextHopInterface(ctx.interface_id().getText());
+      }
+   }
+
+   @Override
+   public void exitRosr_reject(Rosr_rejectContext ctx) {
+      _currentStaticRoute.setDrop(true);
+   }
+
+   @Override
+   public void exitRosr_tag(Rosr_tagContext ctx) {
+      int tag = toInt(ctx.tag);
+      _currentStaticRoute.setTag(tag);
    }
 
    @Override
@@ -3400,22 +3305,222 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitS_protocols_bgp(S_protocols_bgpContext ctx) {
-      _currentBgpGroup = null;
-   }
-
-   @Override
    public void exitS_routing_options(S_routing_optionsContext ctx) {
       _currentRib = null;
    }
 
    @Override
-   public void exitSect_zones(Sect_zonesContext ctx) {
+   public void exitSe_zones(Se_zonesContext ctx) {
       _hasZones = true;
    }
 
    @Override
-   public void exitSpmt_application(Spmt_applicationContext ctx) {
+   public void exitSeik_gateway(Seik_gatewayContext ctx) {
+      _currentIkeGateway = null;
+   }
+
+   @Override
+   public void exitSeik_policy(Seik_policyContext ctx) {
+      _currentIkePolicy = null;
+   }
+
+   @Override
+   public void exitSeik_proposal(Seik_proposalContext ctx) {
+      _currentIkeProposal = null;
+   }
+
+   @Override
+   public void exitSeikg_address(Seikg_addressContext ctx) {
+      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+      _currentIkeGateway.setAddress(ip);
+   }
+
+   @Override
+   public void exitSeikg_external_interface(
+         Seikg_external_interfaceContext ctx) {
+      Interface_idContext interfaceId = ctx.interface_id();
+      Interface iface = initInterface(interfaceId);
+      _currentIkeGateway.setExternalInterface(iface);
+   }
+
+   @Override
+   public void exitSeikg_ike_policy(Seikg_ike_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIkeGateway.setIkePolicy(name);
+   }
+
+   @Override
+   public void exitSeikg_local_address(Seikg_local_addressContext ctx) {
+      Ip ip = new Ip(ctx.IP_ADDRESS().getText());
+      _currentIkeGateway.setLocalAddress(ip);
+   }
+
+   @Override
+   public void exitSeikp_pre_shared_key(Seikp_pre_shared_keyContext ctx) {
+      String key = unquote(ctx.key.getText());
+      String decodedKeyHash = JuniperUtils
+            .decryptAndHashJuniper9CipherText(key);
+      _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
+   }
+
+   @Override
+   public void exitSeikp_proposal_set(Seikp_proposal_setContext ctx) {
+      Set<String> proposalsInSet = initIkeProposalSet(ctx.proposal_set_type());
+      _currentIkePolicy.getProposals().addAll(proposalsInSet);
+   }
+
+   @Override
+   public void exitSeikp_proposals(Seikp_proposalsContext ctx) {
+      String proposal = ctx.name.getText();
+      _currentIkePolicy.getProposals().add(proposal);
+   }
+
+   @Override
+   public void exitSeikpr_authentication_algorithm(
+         Seikpr_authentication_algorithmContext ctx) {
+      IkeAuthenticationAlgorithm alg = toIkeAuthenticationAlgorithm(
+            ctx.ike_authentication_algorithm());
+      _currentIkeProposal.setAuthenticationAlgorithm(alg);
+   }
+
+   @Override
+   public void exitSeikpr_authentication_method(
+         Seikpr_authentication_methodContext ctx) {
+      IkeAuthenticationMethod authenticationMethod = toIkeAuthenticationMethod(
+            ctx.ike_authentication_method());
+      _currentIkeProposal.setAuthenticationMethod(authenticationMethod);
+   }
+
+   @Override
+   public void exitSeikpr_dh_group(Seikpr_dh_groupContext ctx) {
+      DiffieHellmanGroup group = toDhGroup(ctx.dh_group());
+      _currentIkeProposal.setDiffieHellmanGroup(group);
+   }
+
+   @Override
+   public void exitSeikpr_encryption_algorithm(
+         Seikpr_encryption_algorithmContext ctx) {
+      EncryptionAlgorithm alg = toEncryptionAlgorithm(
+            ctx.encryption_algorithm());
+      _currentIkeProposal.setEncryptionAlgorithm(alg);
+   }
+
+   @Override
+   public void exitSeikpr_lifetime_seconds(Seikpr_lifetime_secondsContext ctx) {
+      int lifetimeSeconds = toInt(ctx.seconds);
+      _currentIkeProposal.setLifetimeSeconds(lifetimeSeconds);
+   }
+
+   @Override
+   public void exitSeip_policy(Seip_policyContext ctx) {
+      _currentIpsecPolicy = null;
+   }
+
+   @Override
+   public void exitSeip_proposal(Seip_proposalContext ctx) {
+      _currentIpsecProposal = null;
+   }
+
+   @Override
+   public void exitSeip_vpn(Seip_vpnContext ctx) {
+      _currentIpsecVpn = null;
+   }
+
+   @Override
+   public void exitSeipp_perfect_forward_secrecy(
+         Seipp_perfect_forward_secrecyContext ctx) {
+      DiffieHellmanGroup dhGroup = toDhGroup(ctx.dh_group());
+      _currentIpsecPolicy.setPfsKeyGroup(dhGroup);
+   }
+
+   @Override
+   public void exitSeipp_proposal_set(Seipp_proposal_setContext ctx) {
+      Set<String> proposalsInSet = initIpsecProposalSet(
+            ctx.proposal_set_type());
+      _currentIpsecPolicy.getProposals().addAll(proposalsInSet);
+   }
+
+   @Override
+   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecPolicy.getProposals().add(name);
+   }
+
+   @Override
+   public void exitSeippr_authentication_algorithm(
+         Seippr_authentication_algorithmContext ctx) {
+      IpsecAuthenticationAlgorithm alg = toIpsecAuthenticationAlgorithm(
+            ctx.ipsec_authentication_algorithm());
+      _currentIpsecProposal.setAuthenticationAlgorithm(alg);
+   }
+
+   @Override
+   public void exitSeippr_encryption_algorithm(
+         Seippr_encryption_algorithmContext ctx) {
+      EncryptionAlgorithm alg = toEncryptionAlgorithm(
+            ctx.encryption_algorithm());
+      _currentIpsecProposal.setEncryptionAlgorithm(alg);
+   }
+
+   @Override
+   public void exitSeippr_lifetime_kilobytes(
+         Seippr_lifetime_kilobytesContext ctx) {
+      int lifetimeKilobytes = toInt(ctx.kilobytes);
+      _currentIpsecProposal.setLifetimeKilobytes(lifetimeKilobytes);
+   }
+
+   @Override
+   public void exitSeippr_lifetime_seconds(Seippr_lifetime_secondsContext ctx) {
+      int lifetimeSeconds = toInt(ctx.seconds);
+      _currentIpsecProposal.setLifetimeSeconds(lifetimeSeconds);
+   }
+
+   @Override
+   public void exitSeippr_protocol(Seippr_protocolContext ctx) {
+      IpsecProtocol protocol = toIpsecProtocol(ctx.ipsec_protocol());
+      _currentIpsecProposal.setProtocol(protocol);
+   }
+
+   @Override
+   public void exitSeipv_bind_interface(Seipv_bind_interfaceContext ctx) {
+      Interface iface = initInterface(ctx.interface_id());
+      _currentIpsecVpn.setBindInterface(iface);
+   }
+
+   @Override
+   public void exitSeipvi_gateway(Seipvi_gatewayContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn.setGateway(name);
+   }
+
+   @Override
+   public void exitSeipvi_ipsec_policy(Seipvi_ipsec_policyContext ctx) {
+      String name = ctx.name.getText();
+      _currentIpsecVpn.setIpsecPolicy(name);
+   }
+
+   @Override
+   public void exitSep_default_policy(Sep_default_policyContext ctx) {
+      if (ctx.PERMIT_ALL() != null) {
+         _defaultCrossZoneAction = LineAction.ACCEPT;
+      }
+      else if (ctx.DENY_ALL() != null) {
+         _defaultCrossZoneAction = LineAction.REJECT;
+      }
+   }
+
+   @Override
+   public void exitSep_from_zone(Sep_from_zoneContext ctx) {
+      _currentFilter = null;
+   }
+
+   @Override
+   public void exitSepf_policy(Sepf_policyContext ctx) {
+      _currentFwTerm = null;
+   }
+
+   @Override
+   public void exitSepfpm_application(Sepfpm_applicationContext ctx) {
       if (ctx.ANY() != null) {
          return;
       }
@@ -3438,8 +3543,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSpmt_destination_address(
-         Spmt_destination_addressContext ctx) {
+   public void exitSepfpm_destination_address(
+         Sepfpm_destination_addressContext ctx) {
       if (ctx.address_specifier().ANY() != null) {
          return;
       }
@@ -3463,7 +3568,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSpmt_source_address(Spmt_source_addressContext ctx) {
+   public void exitSepfpm_source_address(Sepfpm_source_addressContext ctx) {
       if (ctx.address_specifier().ANY() != null) {
          return;
       }
@@ -3487,7 +3592,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSpmt_source_identity(Spmt_source_identityContext ctx) {
+   public void exitSepfpm_source_identity(Sepfpm_source_identityContext ctx) {
       if (ctx.ANY() != null) {
          return;
       }
@@ -3499,33 +3604,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSpt_default_policy_tail(Spt_default_policy_tailContext ctx) {
-      if (ctx.PERMIT_ALL() != null) {
-         _defaultCrossZoneAction = LineAction.ACCEPT;
-      }
-      else if (ctx.DENY_ALL() != null) {
-         _defaultCrossZoneAction = LineAction.REJECT;
-      }
-   }
-
-   @Override
-   public void exitSpt_from_zone(Spt_from_zoneContext ctx) {
-      _currentFilter = null;
-   }
-
-   @Override
-   public void exitSpt_policy(Spt_policyContext ctx) {
-      _currentFwTerm = null;
-   }
-
-   @Override
-   public void exitSptt_deny(Sptt_denyContext ctx) {
+   public void exitSepfpt_deny(Sepfpt_denyContext ctx) {
       _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
    }
 
    @Override
-   public void exitSptt_permit(Sptt_permitContext ctx) {
-      if (ctx.sptt_permit_tail().sptpt_tunnel() != null) {
+   public void exitSepfpt_permit(Sepfpt_permitContext ctx) {
+      if (ctx.sepfptp_tunnel() != null) {
          // Used for dynamic VPNs (no bind interface tied to a zone)
          // TODO: change from deny to appropriate action when implemented
          todo(ctx, F_PERMIT_TUNNEL);
@@ -3537,37 +3622,66 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
-   public void exitSrt_discard(Srt_discardContext ctx) {
-      _currentStaticRoute.setDrop(true);
+   public void exitSez_security_zone(Sez_security_zoneContext ctx) {
+      _currentZone = null;
+      _currentZoneInboundFilter = null;
    }
 
    @Override
-   public void exitSrt_metric(Srt_metricContext ctx) {
-      int metric = toInt(ctx.metric);
-      _currentStaticRoute.setMetric(metric);
+   public void exitSezs_address_book(Sezs_address_bookContext ctx) {
+      _currentAddressBook = null;
    }
 
    @Override
-   public void exitSrt_next_hop(Srt_next_hopContext ctx) {
-      if (ctx.IP_ADDRESS() != null) {
-         Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
-         _currentStaticRoute.setNextHopIp(nextHopIp);
-      }
-      else if (ctx.interface_id() != null) {
-         initInterface(ctx.interface_id());
-         _currentStaticRoute.setNextHopInterface(ctx.interface_id().getText());
-      }
+   public void exitSezs_interfaces(Sezs_interfacesContext ctx) {
+      _currentZoneInterface = null;
    }
 
    @Override
-   public void exitSrt_reject(Srt_rejectContext ctx) {
-      _currentStaticRoute.setDrop(true);
+   public void exitSezsa_address(Sezsa_addressContext ctx) {
+      String name = ctx.name.getText();
+      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, prefix);
+      _currentZone.getAddressBook().getEntries().put(name, addressEntry);
    }
 
    @Override
-   public void exitSrt_tag(Srt_tagContext ctx) {
-      int tag = toInt(ctx.tag);
-      _currentStaticRoute.setTag(tag);
+   public void exitSezsa_address_set(Sezsa_address_setContext ctx) {
+      _currentAddressSetAddressBookEntry = null;
+   }
+
+   @Override
+   public void exitSezsaa_address(Sezsaa_addressContext ctx) {
+      String name = ctx.name.getText();
+      _currentAddressSetAddressBookEntry.getEntries()
+            .add(new AddressSetEntry(name, _currentAddressBook));
+   }
+
+   @Override
+   public void exitSezsaa_address_set(Sezsaa_address_setContext ctx) {
+      String name = ctx.name.getText();
+      _currentAddressSetAddressBookEntry.getEntries()
+            .add(new AddressSetEntry(name, _currentAddressBook));
+   }
+
+   @Override
+   public void exitSezsh_protocols(Sezsh_protocolsContext ctx) {
+      HostProtocol protocol = toHostProtocol(ctx.hib_protocol());
+      String termName = protocol.name();
+      FwTerm newTerm = new FwTerm(termName);
+      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
+      newTerm.getFromHostProtocols().add(new FwFromHostProtocol(protocol));
+      newTerm.getThens().add(FwThenAccept.INSTANCE);
+   }
+
+   @Override
+   public void exitSezsh_system_services(Sezsh_system_servicesContext ctx) {
+      HostSystemService service = toHostSystemService(ctx.hib_system_service());
+      String termName = service.name();
+      FwTerm newTerm = new FwTerm(termName);
+      _currentZoneInboundFilter.getTerms().put(termName, newTerm);
+      newTerm.getFromHostServices().add(new FwFromHostService(service));
+      newTerm.getThens().add(FwThenAccept.INSTANCE);
    }
 
    @Override
@@ -3586,87 +3700,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    public void exitSy_host_name(Sy_host_nameContext ctx) {
       String hostname = ctx.variable().getText();
       _currentRoutingInstance.setHostname(hostname);
-   }
-
-   @Override
-   public void exitSzszt_address_book(Szszt_address_bookContext ctx) {
-      _currentAddressBook = null;
-   }
-
-   @Override
-   public void exitSzszt_interfaces(Szszt_interfacesContext ctx) {
-      _currentZoneInterface = null;
-   }
-
-   @Override
-   public void exitSzt_security_zone(Szt_security_zoneContext ctx) {
-      _currentZone = null;
-      _currentZoneInboundFilter = null;
-   }
-
-   @Override
-   public void exitTht_accept(Tht_acceptContext ctx) {
-      _currentPsThens.add(PsThenAccept.INSTANCE);
-   }
-
-   @Override
-   public void exitTht_community_add(Tht_community_addContext ctx) {
-      String name = ctx.name.getText();
-      PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_community_delete(Tht_community_deleteContext ctx) {
-      String name = ctx.name.getText();
-      PsThenCommunityDelete then = new PsThenCommunityDelete(name,
-            _configuration);
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_community_set(Tht_community_setContext ctx) {
-      String name = ctx.name.getText();
-      PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_local_preference(Tht_local_preferenceContext ctx) {
-      int localPreference = toInt(ctx.localpref);
-      PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_metric(Tht_metricContext ctx) {
-      int metric = toInt(ctx.metric);
-      PsThenMetric then = new PsThenMetric(metric);
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_next_hop(Tht_next_hopContext ctx) {
-      PsThen then;
-      if (ctx.IP_ADDRESS() != null) {
-         Ip nextHopIp = new Ip(ctx.IP_ADDRESS().getText());
-         then = new PsThenNextHopIp(nextHopIp);
-      }
-      else {
-         todo(ctx, F_POLICY_TERM_THEN_NEXT_HOP);
-         return;
-      }
-      _currentPsThens.add(then);
-   }
-
-   @Override
-   public void exitTht_next_policy(Tht_next_policyContext ctx) {
-      _currentPsThens.add(PsThenNextPolicy.INSTANCE);
-   }
-
-   @Override
-   public void exitTht_reject(Tht_rejectContext ctx) {
-      _currentPsThens.add(PsThenReject.INSTANCE);
    }
 
    public JuniperConfiguration getConfiguration() {

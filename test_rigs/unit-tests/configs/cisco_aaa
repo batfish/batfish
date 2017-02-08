@@ -15,7 +15,7 @@ aaa accounting send stop-record authentication failure
 aaa accounting system default start-stop group tacacs+
 aaa accounting update newinfo
 aaa authentication banner ^CUnauthorized access prohibited by law - disconnect now!^C
-aaa authentication dot1x default group radius"
+aaa authentication dot1x default group radius
 aaa authentication enable default enable
 aaa authentication enable implicit-user
 aaa authentication http console TACACS+ LOCAL

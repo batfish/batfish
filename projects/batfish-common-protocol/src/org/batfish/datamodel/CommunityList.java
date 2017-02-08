@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +27,7 @@ public class CommunityList extends ComparableStructure<String> {
     */
    private static final long serialVersionUID = 1L;
 
-   private transient Set<Long> _denyCache;
+   private transient Set<Long> _deniedCache;
 
    private boolean _invertMatch;
 
@@ -35,7 +37,7 @@ public class CommunityList extends ComparableStructure<String> {
     */
    private final List<CommunityListLine> _lines;
 
-   private transient Set<Long> _permitCache;
+   private transient Set<Long> _permittedCache;
 
    /**
     * Constructs a CommunityList with the given name for {@link #_name}, and
@@ -73,36 +75,50 @@ public class CommunityList extends ComparableStructure<String> {
 
    private boolean newPermits(long community) {
       boolean accept = false;
+      boolean match = false;
+      Boolean matchingLineAccepts = null;
       for (CommunityListLine line : _lines) {
          Pattern p = Pattern.compile(line.getRegex());
          String communityStr = CommonUtil.longToCommunity(community);
          Matcher matcher = p.matcher(communityStr);
-         if (matcher.find() ^ _invertMatch) {
-            accept = line.getAction() == LineAction.ACCEPT;
+         if (matcher.find()) {
+            match = true;
+            matchingLineAccepts = line.getAction() == LineAction.ACCEPT;
             break;
          }
       }
+      if (match) {
+         if (_invertMatch) {
+            accept = false;
+         }
+         else {
+            accept = matchingLineAccepts;
+         }
+      }
       if (accept) {
-         _permitCache.add(community);
+         _permittedCache.add(community);
       }
       else {
-         _denyCache.add(community);
+         _deniedCache.add(community);
       }
       return accept;
    }
 
    public boolean permits(long community) {
-      if (_permitCache == null) {
-         _denyCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-         _permitCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-      }
-      else if (_permitCache.contains(community)) {
-         return true;
-      }
-      else if (_denyCache.contains(community)) {
-         return false;
-      }
+      // if (_permittedCache.contains(community)) {
+      // return true;
+      // }
+      // else if (_deniedCache.contains(community)) {
+      // return false;
+      // }
       return newPermits(community);
+   }
+
+   private void readObject(ObjectInputStream in)
+         throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+      _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
    }
 
    public void setInvertMatch(boolean invertMatch) {

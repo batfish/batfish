@@ -159,6 +159,11 @@ boolean_tag_is_rp_stanza
    TAG int_comp int_expr
 ;
 
+continue_rm_stanza
+:
+   CONTINUE DEC? NEWLINE
+;
+
 delete_rp_stanza
 :
    DELETE COMMUNITY
@@ -363,7 +368,6 @@ null_rm_stanza
    (
       DESCRIPTION
       | SUB_ROUTE_MAP
-      | CONTINUE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -392,7 +396,8 @@ prepend_as_path_rp_stanza
 
 rm_stanza
 :
-   match_rm_stanza
+   continue_rm_stanza
+   | match_rm_stanza
    | null_rm_stanza
    | set_rm_stanza
 ;

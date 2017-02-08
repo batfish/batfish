@@ -6,7 +6,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public class MatchRouteType extends AbstractBooleanExpr {
+public class MatchRouteType extends BooleanExpr {
 
    /**
     *
@@ -16,11 +16,34 @@ public class MatchRouteType extends AbstractBooleanExpr {
    private RouteTypeExpr _type;
 
    @JsonCreator
-   public MatchRouteType() {
+   private MatchRouteType() {
    }
 
    public MatchRouteType(RouteTypeExpr type) {
       _type = type;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj) {
+         return true;
+      }
+      if (obj == null) {
+         return false;
+      }
+      if (getClass() != obj.getClass()) {
+         return false;
+      }
+      MatchRouteType other = (MatchRouteType) obj;
+      if (_type == null) {
+         if (other._type != null) {
+            return false;
+         }
+      }
+      else if (!_type.equals(other._type)) {
+         return false;
+      }
+      return true;
    }
 
    @Override
@@ -32,6 +55,14 @@ public class MatchRouteType extends AbstractBooleanExpr {
 
    public RouteTypeExpr getType() {
       return _type;
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_type == null) ? 0 : _type.hashCode());
+      return result;
    }
 
    public void setType(RouteTypeExpr type) {

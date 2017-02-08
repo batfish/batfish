@@ -10,7 +10,7 @@ public class NodesPathResult {
 
    private NodesPath _path;
 
-   private SortedMap<String, JsonNode> _result;
+   private SortedMap<ConcretePath, JsonNode> _result;
 
    public Integer getNumResults() {
       return _numResults;
@@ -20,7 +20,7 @@ public class NodesPathResult {
       return _path;
    }
 
-   public SortedMap<String, JsonNode> getResult() {
+   public SortedMap<ConcretePath, JsonNode> getResult() {
       return _result;
    }
 
@@ -32,7 +32,7 @@ public class NodesPathResult {
       _path = path;
    }
 
-   public void setResult(SortedMap<String, JsonNode> result) {
+   public void setResult(SortedMap<ConcretePath, JsonNode> result) {
       _result = result;
    }
 

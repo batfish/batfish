@@ -489,7 +489,7 @@ public final class Flow implements Comparable<Flow> {
          icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
          icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
       }
-      return "Flow<ingressNode:" + _ingressNode + "ingressVrf:" + _ingressVrf
+      return "Flow<ingressNode:" + _ingressNode + " ingressVrf:" + _ingressVrf
             + " srcIp:" + _srcIp + " dstIp:" + _dstIp + " ipProtocol:"
             + _ipProtocol + srcPortStr + dstPortStr + " dscp: " + _dscp
             + " ecn:" + _ecn + " fragmentOffset:" + _fragmentOffset

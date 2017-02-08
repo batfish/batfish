@@ -17,26 +17,6 @@ base_extended_community_regex
    )+
 ;
 
-color2t_add_color
-:
-   ADD color2 = DEC
-;
-
-color2t_color
-:
-   color2 = DEC
-;
-
-colort_add_color
-:
-   ADD color = DEC
-;
-
-colort_color
-:
-   color = DEC
-;
-
 community_regex
 :
    (
@@ -44,191 +24,11 @@ community_regex
    )* base_community_regex
 ;
 
-ct_invert_match
-:
-   INVERT_MATCH
-;
-
-ct_members
-:
-   MEMBERS
-   (
-      extended_community
-      | standard_community
-      // community_regex intentionally on bottom
-
-      | community_regex
-      | extended_community_regex
-      // invalid_community_regex MUST BE LAST
-
-      | invalid_community_regex
-   )
-;
-
 extended_community_regex
 :
    (
       base_extended_community_regex PIPE
    )* base_extended_community_regex
-;
-
-fromt_area
-:
-   AREA area = IP_ADDRESS
-;
-
-fromt_as_path
-:
-   AS_PATH
-   (
-      name = variable
-   )?
-;
-
-fromt_color
-:
-   COLOR color = DEC
-;
-
-fromt_community
-:
-   COMMUNITY name = variable
-;
-
-fromt_family
-:
-   FAMILY
-   (
-      INET
-      | INET6
-   )
-;
-
-fromt_instance
-:
-   INSTANCE name = variable
-;
-
-fromt_interface
-:
-   INTERFACE id = interface_id
-;
-
-fromt_level
-:
-   LEVEL DEC
-;
-
-fromt_local_preference
-:
-   LOCAL_PREFERENCE
-   (
-      localpref = DEC
-      | s_apply_groups
-   )
-;
-
-fromt_metric
-:
-   METRIC
-   (
-      metric = DEC
-      | s_apply_groups
-   )
-;
-
-fromt_neighbor
-:
-   NEIGHBOR
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-   )
-;
-
-fromt_origin
-:
-   ORIGIN origin_type
-;
-
-fromt_policy
-:
-   POLICY expr = policy_expression
-;
-
-fromt_prefix_list
-:
-   PREFIX_LIST name = variable
-;
-
-fromt_prefix_list_filter
-:
-   PREFIX_LIST_FILTER name = variable fromt_prefix_list_filter_tail
-;
-
-fromt_prefix_list_filter_tail
-:
-   plft_exact
-   | plft_longer
-   | plft_orlonger
-;
-
-fromt_protocol
-:
-   PROTOCOL protocol = routing_protocol
-;
-
-fromt_rib
-:
-   RIB name = variable
-;
-
-fromt_route_filter
-:
-   ROUTE_FILTER
-   (
-      IP_PREFIX
-      | IPV6_PREFIX
-   ) fromt_route_filter_tail then = fromt_route_filter_then?
-;
-
-fromt_route_filter_tail
-:
-   rft_exact
-   | rft_longer
-   | rft_orlonger
-   | rft_prefix_length_range
-   | rft_through
-   | rft_upto
-;
-
-fromt_route_filter_then
-:
-   tt_then_tail
-;
-
-fromt_route_type
-:
-   ROUTE_TYPE
-   (
-      EXTERNAL
-      | INTERNAL
-   )
-;
-
-fromt_source_address_filter
-:
-// reference to router filter tail is intentional
-   SOURCE_ADDRESS_FILTER
-   (
-      IP_PREFIX
-      | IPV6_PREFIX
-   ) fromt_route_filter_tail
-;
-
-fromt_tag
-:
-   TAG DEC
 ;
 
 invalid_community_regex
@@ -247,141 +47,341 @@ metric_expression
    )?
 ;
 
-plft_exact
+po_as_path
 :
-   EXACT
+   AS_PATH name = variable regex = AS_PATH_REGEX
 ;
 
-plft_longer
+po_community
 :
-   LONGER
+   COMMUNITY name = variable
+   (
+      poc_invert_match
+      | poc_members
+   )
 ;
 
-plft_orlonger
+po_condition
 :
-   ORLONGER
+   CONDITION null_filler
 ;
 
-plt_apply_path
-:
-   APPLY_PATH path = DOUBLE_QUOTED_STRING
-;
-
-plt_ip6
-:
-   ip6 = IPV6_ADDRESS
-;
-
-plt_network
-:
-   network = IP_PREFIX
-;
-
-plt_network6
-:
-   network = IPV6_PREFIX
-;
-
-pot_apply_groups
-:
-   s_apply_groups
-;
-
-pot_as_path
-:
-   AS_PATH name = variable pot_as_path_tail
-;
-
-pot_as_path_tail
-:
-   regex = AS_PATH_REGEX
-;
-
-pot_community
-:
-   COMMUNITY name = variable pot_community_tail
-;
-
-pot_community_tail
-:
-   ct_invert_match
-   | ct_members
-;
-
-pot_condition
-:
-   CONDITION s_null_filler
-;
-
-pot_policy_statement
+po_policy_statement
 :
    POLICY_STATEMENT
    (
       WILDCARD
       | name = variable
-   ) pot_policy_statement_tail
+   )
+   (
+      pops_term
+      | pops_common
+   )
 ;
 
-pot_policy_statement_tail
+po_prefix_list
 :
-   pst_term
-   | pst_term_tail
+   PREFIX_LIST name = variable
+   (
+      apply
+      | poplt_apply_path
+      | poplt_network
+      | poplt_network6
+   )
 ;
 
-pot_prefix_list
+poc_invert_match
 :
-   PREFIX_LIST name = variable pot_prefix_list_tail
+   INVERT_MATCH
 ;
 
-pot_prefix_list_tail
+poc_members
 :
-// intentional blank
+   MEMBERS
+   (
+      extended_community
+      | standard_community
+      // community_regex intentionally on bottom
 
-   | plt_apply_path
-   | plt_network
-   | plt_network6
+      | community_regex
+      | extended_community_regex
+      // invalid_community_regex MUST BE LAST
+
+      | invalid_community_regex
+   )
 ;
 
-pst_term
+poplt_apply_path
+:
+   APPLY_PATH path = DOUBLE_QUOTED_STRING
+;
+
+poplt_ip6
+:
+   ip6 = IPV6_ADDRESS
+;
+
+poplt_network
+:
+   network = IP_PREFIX
+;
+
+poplt_network6
+:
+   network = IPV6_PREFIX
+;
+
+pops_common
+:
+   apply
+   | pops_from
+   | pops_then
+   | pops_to
+;
+
+pops_from
+:
+   FROM
+   (
+      popsf_area
+      | popsf_as_path
+      | popsf_color
+      | popsf_community
+      | popsf_family
+      | popsf_instance
+      | popsf_interface
+      | popsf_level
+      | popsf_local_preference
+      | popsf_metric
+      | popsf_neighbor
+      | popsf_origin
+      | popsf_policy
+      | popsf_prefix_list
+      | popsf_prefix_list_filter
+      | popsf_protocol
+      | popsf_rib
+      | popsf_route_filter
+      | popsf_route_type
+      | popsf_source_address_filter
+      | popsf_tag
+   )
+;
+
+pops_term
 :
    TERM
    (
       WILDCARD
       | name = variable
-   ) pst_term_tail
+   ) pops_common
 ;
 
-pst_term_tail
+pops_then
 :
-// intentional blank
-
-   | tt_apply_groups
-   | tt_from
-   | tt_then
-   | tt_to
+   THEN popst_common
 ;
 
-rft_exact
+pops_to
+:
+   TO
+   (
+      popsto_level
+      | popsto_rib
+   )
+;
+
+popsf_area
+:
+   AREA area = IP_ADDRESS
+;
+
+popsf_as_path
+:
+   AS_PATH
+   (
+      name = variable
+   )?
+;
+
+popsf_color
+:
+   COLOR color = DEC
+;
+
+popsf_community
+:
+   COMMUNITY name = variable
+;
+
+popsf_family
+:
+   FAMILY
+   (
+      INET
+      | INET6
+   )
+;
+
+popsf_instance
+:
+   INSTANCE name = variable
+;
+
+popsf_interface
+:
+   INTERFACE id = interface_id
+;
+
+popsf_level
+:
+   LEVEL DEC
+;
+
+popsf_local_preference
+:
+   LOCAL_PREFERENCE
+   (
+      localpref = DEC
+      | apply_groups
+   )
+;
+
+popsf_metric
+:
+   METRIC
+   (
+      metric = DEC
+      | apply_groups
+   )
+;
+
+popsf_neighbor
+:
+   NEIGHBOR
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
+;
+
+popsf_origin
+:
+   ORIGIN origin_type
+;
+
+popsf_policy
+:
+   POLICY expr = policy_expression
+;
+
+popsf_prefix_list
+:
+   PREFIX_LIST name = variable
+;
+
+popsf_prefix_list_filter
+:
+   PREFIX_LIST_FILTER name = variable
+   (
+      popsfpl_exact
+      | popsfpl_longer
+      | popsfpl_orlonger
+   )
+;
+
+popsf_protocol
+:
+   PROTOCOL protocol = routing_protocol
+;
+
+popsf_rib
+:
+   RIB name = variable
+;
+
+popsf_route_filter
+:
+   ROUTE_FILTER
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   ) popsfrf_common then = popsfrf_then?
+;
+
+popsf_route_type
+:
+   ROUTE_TYPE
+   (
+      EXTERNAL
+      | INTERNAL
+   )
+;
+
+popsf_source_address_filter
+:
+   SOURCE_ADDRESS_FILTER
+   (
+      IP_PREFIX
+      | IPV6_PREFIX
+   ) popsfrf_common
+;
+
+popsf_tag
+:
+   TAG DEC
+;
+
+popsfpl_exact
 :
    EXACT
 ;
 
-rft_longer
+popsfpl_longer
 :
    LONGER
 ;
 
-rft_orlonger
+popsfpl_orlonger
 :
    ORLONGER
 ;
 
-rft_prefix_length_range
+popsfrf_common
+:
+   popsfrf_exact
+   | popsfrf_longer
+   | popsfrf_orlonger
+   | popsfrf_prefix_length_range
+   | popsfrf_through
+   | popsfrf_upto
+;
+
+popsfrf_exact
+:
+   EXACT
+;
+
+popsfrf_longer
+:
+   LONGER
+;
+
+popsfrf_orlonger
+:
+   ORLONGER
+;
+
+popsfrf_prefix_length_range
 :
    PREFIX_LENGTH_RANGE FORWARD_SLASH low = DEC DASH FORWARD_SLASH high = DEC
 ;
 
-rft_through
+popsfrf_then
+:
+   popst_common
+;
+
+popsfrf_through
 :
    THROUGH
    (
@@ -390,37 +390,22 @@ rft_through
    )
 ;
 
-rft_upto
+popsfrf_upto
 :
    UPTO FORWARD_SLASH high = DEC
 ;
 
-s_policy_options
-:
-   POLICY_OPTIONS s_policy_options_tail
-;
-
-s_policy_options_tail
-:
-   pot_apply_groups
-   | pot_as_path
-   | pot_community
-   | pot_condition
-   | pot_policy_statement
-   | pot_prefix_list
-;
-
-tht_accept
+popst_accept
 :
    ACCEPT
 ;
 
-tht_as_path_expand
+popst_as_path_expand
 :
    AS_PATH_EXPAND LAST_AS COUNT DEC
 ;
 
-tht_as_path_prepend
+popst_as_path_prepend
 :
    AS_PATH_PREPEND
    (
@@ -429,129 +414,148 @@ tht_as_path_prepend
    )
 ;
 
-tht_color
+popst_color
 :
-   COLOR tht_color_tail
+   COLOR
+   (
+      apply
+      | popstc_add_color
+      | popstc_color
+   )
 ;
 
-tht_color_tail
+popst_color2
 :
-   apply
-   | colort_add_color
-   | colort_color
+   COLOR2
+   (
+      apply
+      | popstc2_add_color
+      | popstc2_color
+   )
 ;
 
-tht_color2
+popst_common
 :
-   COLOR2 tht_color2_tail
+   popst_accept
+   | popst_as_path_expand
+   | popst_as_path_prepend
+   | popst_color
+   | popst_color2
+   | popst_community_add
+   | popst_community_delete
+   | popst_community_set
+   | popst_cos_next_hop_map
+   | popst_default_action_accept
+   | popst_default_action_reject
+   | popst_external
+   | popst_forwarding_class
+   | popst_install_nexthop
+   | popst_local_preference
+   | popst_metric
+   | popst_metric_add
+   | popst_metric_expression
+   | popst_metric_igp
+   | popst_metric2
+   | popst_metric2_expression
+   | popst_next_hop
+   | popst_next_policy
+   | popst_next_term
+   | popst_null
+   | popst_origin
+   | popst_priority
+   | popst_reject
+   | popst_tag
 ;
 
-tht_color2_tail
-:
-   apply
-   | color2t_add_color
-   | color2t_color
-;
-
-tht_community_add
+popst_community_add
 :
    COMMUNITY ADD name = variable
 ;
 
-tht_community_delete
+popst_community_delete
 :
    COMMUNITY DELETE name = variable
 ;
 
-tht_community_set
+popst_community_set
 :
    COMMUNITY SET name = variable
 ;
 
-tht_cos_next_hop_map
+popst_cos_next_hop_map
 :
    COS_NEXT_HOP_MAP name = variable
 ;
 
-tht_default_action_accept
+popst_default_action_accept
 :
    DEFAULT_ACTION ACCEPT
 ;
 
-tht_default_action_reject
+popst_default_action_reject
 :
    DEFAULT_ACTION REJECT
 ;
 
-tht_external
+popst_external
 :
    EXTERNAL TYPE DEC
 ;
 
-tht_forwarding_class
+popst_forwarding_class
 :
    FORWARDING_CLASS variable
 ;
 
-tht_install_nexthop
+popst_install_nexthop
 :
-   INSTALL_NEXTHOP s_null_filler
+   INSTALL_NEXTHOP null_filler
 ;
 
-tht_local_preference
+popst_local_preference
 :
    LOCAL_PREFERENCE
    (
       localpref = DEC
-      | s_apply_groups
+      | apply_groups
    )
 ;
 
-tht_metric
+popst_metric
 :
    METRIC
    (
       metric = DEC
-      | s_apply_groups
+      | apply_groups
    )
 ;
 
-tht_metric_add
+popst_metric_add
 :
    METRIC ADD metric = DEC
 ;
 
-tht_metric2
+popst_metric2
 :
    METRIC2 metric2 = DEC
 ;
 
-tht_metric_expression
+popst_metric_expression
 :
    METRIC EXPRESSION metric_expression
 ;
 
-tht_metric_igp
+popst_metric_igp
 :
    METRIC IGP offset = DEC?
 ;
 
-tht_metric2_expression
+popst_metric2_expression
 :
    METRIC2 EXPRESSION metric_expression
 ;
 
-tht_next_policy
-:
-   NEXT POLICY
-;
-
-tht_next_term
-:
-   NEXT TERM
-;
-
-tht_next_hop
+popst_next_hop
 :
    NEXT_HOP
    (
@@ -562,17 +566,27 @@ tht_next_hop
    )
 ;
 
-tht_null
+popst_next_policy
 :
-   LOAD_BALANCE s_null_filler
+   NEXT POLICY
 ;
 
-tht_origin
+popst_next_term
+:
+   NEXT TERM
+;
+
+popst_null
+:
+   LOAD_BALANCE null_filler
+;
+
+popst_origin
 :
    ORIGIN IGP
 ;
 
-tht_priority
+popst_priority
 :
    PRIORITY
    (
@@ -581,106 +595,55 @@ tht_priority
    )
 ;
 
-tht_reject
+popst_reject
 :
    REJECT
 ;
 
-tht_tag
+popst_tag
 :
    TAG DEC
 ;
 
-tot_level
+popstc_add_color
+:
+   ADD color = DEC
+;
+
+popstc_color
+:
+   color = DEC
+;
+
+popstc2_add_color
+:
+   ADD color2 = DEC
+;
+
+popstc2_color
+:
+   color2 = DEC
+;
+
+popsto_level
 :
    LEVEL DEC
 ;
 
-tot_rib
+popsto_rib
 :
    RIB variable
 ;
 
-tt_apply_groups
+s_policy_options
 :
-   s_apply_groups
-;
-
-tt_from
-:
-   FROM tt_from_tail
-;
-
-tt_from_tail
-:
-   fromt_area
-   | fromt_as_path
-   | fromt_color
-   | fromt_community
-   | fromt_family
-   | fromt_instance
-   | fromt_interface
-   | fromt_level
-   | fromt_local_preference
-   | fromt_metric
-   | fromt_neighbor
-   | fromt_origin
-   | fromt_policy
-   | fromt_prefix_list
-   | fromt_prefix_list_filter
-   | fromt_protocol
-   | fromt_rib
-   | fromt_route_filter
-   | fromt_route_type
-   | fromt_source_address_filter
-   | fromt_tag
-;
-
-tt_then
-:
-   THEN tt_then_tail
-;
-
-tt_then_tail
-:
-   tht_accept
-   | tht_as_path_expand
-   | tht_as_path_prepend
-   | tht_color
-   | tht_color2
-   | tht_community_add
-   | tht_community_delete
-   | tht_community_set
-   | tht_cos_next_hop_map
-   | tht_default_action_accept
-   | tht_default_action_reject
-   | tht_external
-   | tht_forwarding_class
-   | tht_install_nexthop
-   | tht_local_preference
-   | tht_metric
-   | tht_metric_add
-   | tht_metric_expression
-   | tht_metric_igp
-   | tht_metric2
-   | tht_metric2_expression
-   | tht_next_hop
-   | tht_next_policy
-   | tht_next_term
-   | tht_null
-   | tht_origin
-   | tht_priority
-   | tht_reject
-   | tht_tag
-;
-
-tt_to
-:
-   TO tt_to_tail
-;
-
-tt_to_tail
-:
-   tot_level
-   | tot_rib
+   POLICY_OPTIONS
+   (
+      apply
+      | po_as_path
+      | po_community
+      | po_condition
+      | po_policy_statement
+      | po_prefix_list
+   )
 ;

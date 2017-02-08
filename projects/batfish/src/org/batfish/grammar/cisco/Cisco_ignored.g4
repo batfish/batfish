@@ -103,7 +103,6 @@ null_block
             | INSPECT
             | INTERNAL
             | NAME_SERVER
-            | PIM
             | POLICY_LIST
             | RATE_LIMIT
             | RECEIVE
@@ -805,7 +804,6 @@ null_single
                   AS_PATH
                )
             )
-            | LOGGING
             |
             (
                SNMP_SERVER

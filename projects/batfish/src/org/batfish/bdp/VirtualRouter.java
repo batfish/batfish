@@ -722,9 +722,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                   /*
                    * CREATE OUTGOING ROUTE
                    */
+                  Ip remoteLocalIp = remoteBgpNeighbor.getLocalIp();
                   if (remoteExportPolicy.process(remoteRoute, null,
-                        transformedOutgoingRouteBuilder,
-                        remoteBgpNeighbor.getLocalIp(), remoteVrfName)) {
+                        transformedOutgoingRouteBuilder, remoteLocalIp,
+                        remoteVrfName)) {
                      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder
                            .build();
                      BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
@@ -826,6 +827,10 @@ public class VirtualRouter extends ComparableStructure<String> {
          int admin = RoutingProtocol.OSPF
                .getDefaultAdministrativeCost(_c.getConfigurationFormat());
          EdgeSet edges = topology.getNodeEdges().get(node);
+         if (edges == null) {
+            // there are no edges, so OSPF won't produce anything
+            return false;
+         }
          for (Edge edge : edges) {
             if (!edge.getNode1().equals(node)) {
                continue;
@@ -898,6 +903,10 @@ public class VirtualRouter extends ComparableStructure<String> {
          int admin = RoutingProtocol.OSPF
                .getDefaultAdministrativeCost(_c.getConfigurationFormat());
          EdgeSet edges = topology.getNodeEdges().get(node);
+         if (edges == null) {
+            // there are no edges, so OSPF won't produce anything
+            return false;
+         }
          for (Edge edge : edges) {
             if (!edge.getNode1().equals(node)) {
                continue;

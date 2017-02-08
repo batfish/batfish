@@ -2,6 +2,18 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "parseStatus" : {
+        "plane_0_spine_0" : "PASSED",
+        "plane_1_spine_0" : "PASSED",
+        "pod_0_leaf_0" : "PASSED",
+        "pod_0_leaf_1" : "PASSED",
+        "pod_0_tor_0" : "PASSED",
+        "pod_0_tor_1" : "PASSED",
+        "pod_1_leaf_0" : "PASSED",
+        "pod_1_leaf_1" : "PASSED",
+        "pod_1_tor_0" : "PASSED",
+        "pod_1_tor_1" : "PASSED"
+      },
       "parseTrees" : {
         "plane_0_spine_0" : {
           "sentences" : [
@@ -346,10 +358,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -765,10 +777,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -1248,10 +1260,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -1731,10 +1743,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -2189,10 +2201,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -2647,10 +2659,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -3130,10 +3142,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -3613,10 +3625,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -4071,10 +4083,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -4529,10 +4541,10 @@
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'  <== mode:DEFAULT_MODE",
-            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "    (s_logging",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "      (logging_console",
             "        CONSOLE:'console'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -4700,78 +4712,21 @@
             "IPV4_18_OR_LONGER"
           ]
         }
-      },
-      "warnings" : {
-        "plane_0_spine_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "plane_1_spine_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_leaf_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_leaf_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_tor_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_0_tor_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_leaf_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_leaf_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_tor_0" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        },
-        "pod_1_tor_1" : {
-          "Red flags" : {
-            "1" : "UNUSED: Unused ipv4 prefix-list: 'DEFAULT_IPV4'",
-            "2" : "UNUSED: Unused ipv4 prefix-list: 'IPV4_18_OR_LONGER'",
-            "3" : "UNUSED: Unused standard community-list: 'LEAK_COMMUNITY'"
-          }
-        }
+      }
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "parseStatus" : {
+        "plane_0_spine_0" : "PASSED",
+        "plane_1_spine_0" : "PASSED",
+        "pod_0_leaf_0" : "PASSED",
+        "pod_0_leaf_1" : "PASSED",
+        "pod_0_tor_0" : "PASSED",
+        "pod_0_tor_1" : "PASSED",
+        "pod_1_leaf_0" : "PASSED",
+        "pod_1_leaf_1" : "PASSED",
+        "pod_1_tor_0" : "PASSED",
+        "pod_1_tor_1" : "PASSED"
       }
     }
   ],

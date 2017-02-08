@@ -92,17 +92,23 @@ public class Interface extends ComparableStructure<String> {
 
    private int _nativeVlan;
 
+   private boolean _ospfActive;
+
+   private Long _ospfArea;
+
    private Integer _ospfCost;
 
    private int _ospfDeadInterval;
 
    private int _ospfHelloMultiplier;
 
+   private boolean _ospfPassive;
+
    private String _outgoingFilter;
 
    private Prefix _prefix;
 
-   private Boolean _proxyArp;
+   private boolean _proxyArp;
 
    private String _routingPolicy;
 
@@ -181,6 +187,14 @@ public class Interface extends ComparableStructure<String> {
       return _nativeVlan;
    }
 
+   public boolean getOspfActive() {
+      return _ospfActive;
+   }
+
+   public Long getOspfArea() {
+      return _ospfArea;
+   }
+
    public Integer getOspfCost() {
       return _ospfCost;
    }
@@ -193,6 +207,10 @@ public class Interface extends ComparableStructure<String> {
       return _ospfHelloMultiplier;
    }
 
+   public boolean getOspfPassive() {
+      return _ospfPassive;
+   }
+
    public String getOutgoingFilter() {
       return _outgoingFilter;
    }
@@ -201,7 +219,7 @@ public class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
-   public Boolean getProxyArp() {
+   public boolean getProxyArp() {
       return _proxyArp;
    }
 
@@ -269,6 +287,14 @@ public class Interface extends ComparableStructure<String> {
       _nativeVlan = vlan;
    }
 
+   public void setOspfActive(boolean ospfActive) {
+      _ospfActive = ospfActive;
+   }
+
+   public void setOspfArea(Long ospfArea) {
+      _ospfArea = ospfArea;
+   }
+
    public void setOspfCost(int ospfCost) {
       _ospfCost = ospfCost;
    }
@@ -281,6 +307,10 @@ public class Interface extends ComparableStructure<String> {
       _ospfHelloMultiplier = multiplier;
    }
 
+   public void setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
+   }
+
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
    }
@@ -289,7 +319,7 @@ public class Interface extends ComparableStructure<String> {
       _prefix = prefix;
    }
 
-   public void setProxyArp(Boolean proxyArp) {
+   public void setProxyArp(boolean proxyArp) {
       _proxyArp = proxyArp;
    }
 
