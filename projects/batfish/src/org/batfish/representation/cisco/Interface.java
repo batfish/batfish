@@ -108,7 +108,7 @@ public class Interface extends ComparableStructure<String> {
 
    private Prefix _prefix;
 
-   private Boolean _proxyArp;
+   private boolean _proxyArp;
 
    private String _routingPolicy;
 
@@ -219,7 +219,7 @@ public class Interface extends ComparableStructure<String> {
       return _prefix;
    }
 
-   public Boolean getProxyArp() {
+   public boolean getProxyArp() {
       return _proxyArp;
    }
 
@@ -319,7 +319,7 @@ public class Interface extends ComparableStructure<String> {
       _prefix = prefix;
    }
 
-   public void setProxyArp(Boolean proxyArp) {
+   public void setProxyArp(boolean proxyArp) {
       _proxyArp = proxyArp;
    }
 

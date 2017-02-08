@@ -26,6 +26,7 @@ s_snmp_server
       | ss_file_transfer
       | ss_host
       | ss_null
+      | ss_removed
       | ss_tftp_server_list
       | ss_trap_source
    )
@@ -142,6 +143,11 @@ ss_null
       | VIEW
       | VRF
    ) ~NEWLINE* NEWLINE
+;
+
+ss_removed
+:
+   ~NEWLINE* REMOVED ~NEWLINE* NEWLINE
 ;
 
 ss_tftp_server_list

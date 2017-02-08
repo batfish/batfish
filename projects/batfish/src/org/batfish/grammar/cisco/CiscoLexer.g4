@@ -9669,7 +9669,7 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'*#] | '[' | ']' | [/.] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'"*#] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
@@ -9681,13 +9681,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!+$'*#] | '[' | ']' )
+   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!+$'*#] | '[' | ']' | ':' )
+   ~( [ \t\n\r(),!+$'"*#] | '[' | ']' | ':' )
 ;
 
 fragment

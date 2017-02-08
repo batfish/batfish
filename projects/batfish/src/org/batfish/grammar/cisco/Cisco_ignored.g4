@@ -804,7 +804,6 @@ null_single
                   AS_PATH
                )
             )
-            | LOGGING
             |
             (
                SNMP_SERVER

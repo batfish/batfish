@@ -161,7 +161,7 @@ logging_trap
 
 s_logging
 :
-   LOGGING
+   NO? LOGGING
    (
       logging_archive
       | logging_buffered

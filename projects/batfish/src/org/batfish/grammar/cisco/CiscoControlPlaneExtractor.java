@@ -28,6 +28,7 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoParser.*;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -435,6 +436,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Interface newInterface = _configuration.getInterfaces().get(name);
       if (newInterface == null) {
          newInterface = new Interface(name);
+         initInterface(newInterface, _configuration.getVendor());
          _configuration.getInterfaces().put(name, newInterface);
          initInterface(newInterface, ctx);
       }
@@ -1138,6 +1140,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (String name : names) {
          if (_configuration.getCf().getLines().get(name) == null) {
             Line line = new Line(name);
+            line.setLoginAuthentication(
+                  AaaAuthenticationLogin.DEFAULT_LIST_NAME);
             _configuration.getCf().getLines().put(name, line);
          }
       }
@@ -1148,6 +1152,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void enterS_logging(S_loggingContext ctx) {
       if (_configuration.getCf().getLogging() == null) {
          _configuration.getCf().setLogging(new Logging());
+      }
+      if (ctx.NO() != null) {
+         _no = true;
       }
    }
 
@@ -2619,6 +2626,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_buffered(Logging_bufferedContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer size = null;
       Integer severityNum = null;
       String severity = null;
@@ -2658,6 +2668,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_console(Logging_consoleContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer severityNum = null;
       String severity = null;
       if (ctx.logging_severity() != null) {
@@ -2676,6 +2689,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_host(Logging_hostContext ctx) {
+      if (_no) {
+         return;
+      }
       Logging logging = _configuration.getCf().getLogging();
       String hostname = ctx.hostname.getText();
       LoggingHost host = new LoggingHost(hostname);
@@ -2685,12 +2701,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitLogging_on(Logging_onContext ctx) {
       Logging logging = _configuration.getCf().getLogging();
-      logging.setOn(true);
+      logging.setOn(!_no);
    }
 
    @Override
    public void exitLogging_source_interface(
          Logging_source_interfaceContext ctx) {
+      if (_no) {
+         return;
+      }
       Logging logging = _configuration.getCf().getLogging();
       String sourceInterface = toInterfaceName(ctx.interface_name());
       logging.setSourceInterface(sourceInterface);
@@ -2698,6 +2717,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitLogging_trap(Logging_trapContext ctx) {
+      if (_no) {
+         return;
+      }
       Integer severityNum = null;
       String severity = null;
       if (ctx.logging_severity() != null) {
@@ -3765,6 +3787,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_logging(S_loggingContext ctx) {
+      _no = false;
+   }
+
+   @Override
    public void exitS_no_access_list_extended(
          S_no_access_list_extendedContext ctx) {
       String name = ctx.ACL_NUM_EXTENDED().getText();
@@ -4439,6 +4466,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       else {
          throw convError(Ip.class, ctx);
+      }
+   }
+
+   private void initInterface(Interface iface, ConfigurationFormat format) {
+      if (format == ConfigurationFormat.CISCO_IOS) {
+         iface.setProxyArp(true);
       }
    }
 
