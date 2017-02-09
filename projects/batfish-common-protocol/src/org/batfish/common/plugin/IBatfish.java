@@ -25,6 +25,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.grammar.GrammarSettings;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -58,6 +59,8 @@ public interface IBatfish extends IPluginConsumer {
    String getDifferentialFlowTag();
 
    String getFlowTag();
+
+   GrammarSettings getGrammarSettings();
 
    FlowHistory getHistory();
 

@@ -110,6 +110,7 @@ import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.assertion.AssertionCombinedParser;
 import org.batfish.grammar.assertion.AssertionExtractor;
@@ -1559,6 +1560,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       else {
          throw new BatfishException("Could not determine flow tag");
       }
+   }
+
+   @Override
+   public GrammarSettings getGrammarSettings() {
+      return _settings;
    }
 
    @Override

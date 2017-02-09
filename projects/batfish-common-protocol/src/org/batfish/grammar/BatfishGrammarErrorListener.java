@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.batfish.main.Settings;
 
 public abstract class BatfishGrammarErrorListener
       implements ANTLRErrorListener {
@@ -15,7 +14,7 @@ public abstract class BatfishGrammarErrorListener
 
    protected final String _grammarName;
 
-   protected final Settings _settings;
+   protected final GrammarSettings _settings;
 
    protected BatfishSyntaxErrorHandler _syntaxErrorHandler;
 
