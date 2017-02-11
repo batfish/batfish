@@ -10,18 +10,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 
-public abstract class AbstractRib<R extends AbstractRoute>
-      implements Serializable {
+public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
    private class ByteTrie implements Serializable {
 
@@ -41,6 +42,12 @@ public abstract class AbstractRib<R extends AbstractRoute>
          int prefixLength = prefix.getPrefixLength();
          BitSet bits = getAddressBits(prefix.getAddress());
          _root.addRoute(route, bits, prefixLength, 0);
+      }
+
+      public boolean containsPathFromPrefix(Prefix prefix) {
+         int prefixLength = prefix.getPrefixLength();
+         BitSet bits = getAddressBits(prefix.getAddress());
+         return _root.containsPathFromPrefix(bits, prefixLength, 0);
       }
 
       public Set<R> getPrefix(Ip address, BitSet addressBits) {
@@ -108,6 +115,39 @@ public abstract class AbstractRib<R extends AbstractRoute>
             _right.collectRoutes(routes);
          }
          routes.addAll(_routes);
+      }
+
+      public boolean containsPathFromPrefix(BitSet bits, int prefixLength,
+            int depth) {
+         if (prefixLength == depth) {
+            if (depth == 0 && _routes.isEmpty()) {
+               return false;
+            }
+            else {
+               return true;
+            }
+         }
+         else {
+            boolean currentBit = bits.get(depth);
+            if (currentBit) {
+               if (_right == null) {
+                  return false;
+               }
+               else {
+                  return _right.containsPathFromPrefix(bits, prefixLength,
+                        depth + 1);
+               }
+            }
+            else {
+               if (_left == null) {
+                  return false;
+               }
+               else {
+                  return _left.containsPathFromPrefix(bits, prefixLength,
+                        depth + 1);
+               }
+            }
+         }
       }
 
       private Set<R> getLongestPrefixMatch(Ip address, BitSet bits) {
@@ -235,23 +275,17 @@ public abstract class AbstractRib<R extends AbstractRoute>
       _trie = new ByteTrie();
    }
 
+   @Override
    public void addRoute(R route) {
       _trie.addRoute(route);
    }
 
-   /**
-    * Compare the preferability of one route with anther
-    *
-    * @param lhs
-    *           1st route with which to compare preference
-    * @param rhs
-    *           2nd route with which to compare preference
-    * @return -1 if lhs route is less preferable than rhs; 0 if lhs route and
-    *         rhs are equally preferable (i.e. for multipath routing); 1 if lhs
-    *         route is strictly more preferred than rhs
-    */
-   public abstract int comparePreference(R lhs, R rhs);
+   @Override
+   public boolean containsPathFromPrefix(Prefix prefix) {
+      return _trie.containsPathFromPrefix(prefix);
+   }
 
+   @Override
    public final MultiSet<Prefix> getPrefixCount() {
       MultiSet<Prefix> prefixCount = new TreeMultiSet<>();
       for (R route : getRoutes()) {
@@ -261,10 +295,22 @@ public abstract class AbstractRib<R extends AbstractRoute>
       return prefixCount;
    }
 
+   @Override
+   public final SortedSet<Prefix> getPrefixes() {
+      SortedSet<Prefix> prefixes = new TreeSet<>();
+      Set<R> routes = getRoutes();
+      for (R route : routes) {
+         prefixes.add(route.getNetwork());
+      }
+      return prefixes;
+   }
+
+   @Override
    public Set<R> getRoutes() {
       return _trie.getRoutes();
    }
 
+   @Override
    public final Map<Integer, Map<Ip, List<AbstractRoute>>> getRoutesByPrefixPopularity() {
       Map<Integer, Map<Ip, List<AbstractRoute>>> map = new TreeMap<>();
       MultiSet<Prefix> prefixCountSet = getPrefixCount();
@@ -287,15 +333,18 @@ public abstract class AbstractRib<R extends AbstractRoute>
       return map;
    }
 
+   @Override
    public Set<R> longestPrefixMatch(Ip address) {
       BitSet bits = getAddressBits(address);
       return _trie.getPrefix(address, bits);
    }
 
+   @Override
    public boolean mergeRoute(R route) {
       return _trie.mergeRoute(route);
    }
 
+   @Override
    public final Map<Prefix, Set<Ip>> nextHopIpsByPrefix() {
       Map<Prefix, Set<Ip>> map = new TreeMap<>();
       for (AbstractRoute route : getRoutes()) {

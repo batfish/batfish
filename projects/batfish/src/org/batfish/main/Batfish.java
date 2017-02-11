@@ -3396,7 +3396,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       EdgeSet edges = new EdgeSet();
       Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
       configurations.forEach((nodeName, node) -> {
-         node.getInterfaces().forEach((ifaceName, iface) -> {
+         for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
+            String ifaceName = e.getKey();
+            Interface iface = e.getValue();
             if (!iface.isLoopback(node.getConfigurationFormat())
                   && iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
@@ -3415,7 +3417,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   }
                }
             }
-         });
+         }
       });
       for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
          for (NodeInterfacePair p1 : bucket) {

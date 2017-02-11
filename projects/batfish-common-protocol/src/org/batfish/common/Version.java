@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public final class Version {
 
-   private static final String VERSION = "0.3.1";
+   private static final String VERSION = "0.4.0";
 
    public static String getVersion() {
       return VERSION;

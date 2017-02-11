@@ -1,10 +1,10 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,13 +33,13 @@ public class BgpProcess implements Serializable {
     * advertised by this process if permitted by their respective generation
     * policies
     */
-   private Set<GeneratedRoute> _generatedRoutes;
+   private SortedSet<GeneratedRoute> _generatedRoutes;
 
    /**
     * A map of all the bgp neighbors with which the router owning this process
     * is configured to peer, keyed by prefix
     */
-   private Map<Prefix, BgpNeighbor> _neighbors;
+   private SortedMap<Prefix, BgpNeighbor> _neighbors;
 
    private transient PrefixSpace _originationSpace;
 
@@ -49,8 +49,8 @@ public class BgpProcess implements Serializable {
     * Constructs a BgpProcess
     */
    public BgpProcess() {
-      _neighbors = new HashMap<>();
-      _generatedRoutes = new HashSet<>();
+      _neighbors = new TreeMap<>();
+      _generatedRoutes = new TreeSet<>();
    }
 
    /**
@@ -58,7 +58,7 @@ public class BgpProcess implements Serializable {
     */
    @JsonProperty(GENERATED_ROUTES_VAR)
    @JsonPropertyDescription("IPV4 routes generated in the BGP RIB that are not imported into the main RIB for this VRF")
-   public Set<GeneratedRoute> getGeneratedRoutes() {
+   public SortedSet<GeneratedRoute> getGeneratedRoutes() {
       return _generatedRoutes;
    }
 
@@ -67,7 +67,7 @@ public class BgpProcess implements Serializable {
     */
    @JsonProperty(NEIGHBORS_VAR)
    @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
-   public Map<Prefix, BgpNeighbor> getNeighbors() {
+   public SortedMap<Prefix, BgpNeighbor> getNeighbors() {
       return _neighbors;
    }
 
@@ -83,12 +83,12 @@ public class BgpProcess implements Serializable {
    }
 
    @JsonProperty(GENERATED_ROUTES_VAR)
-   public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
+   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
    }
 
    @JsonProperty(NEIGHBORS_VAR)
-   public void setNeighbors(Map<Prefix, BgpNeighbor> neighbors) {
+   public void setNeighbors(SortedMap<Prefix, BgpNeighbor> neighbors) {
       _neighbors = neighbors;
    }
 

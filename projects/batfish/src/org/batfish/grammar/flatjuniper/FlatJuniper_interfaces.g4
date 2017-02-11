@@ -568,7 +568,7 @@ int_named
       (
          (
             node = variable COLON
-         )? name = variable
+         )? name = variable_interface_name
       )
    )
    (
@@ -608,4 +608,13 @@ speed_abbreviation
 :
    G
    | M
+;
+
+variable_interface_name
+:
+   ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | DEC | NEWLINE |
+   OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
+   (
+      COLON DEC
+   )?
 ;
