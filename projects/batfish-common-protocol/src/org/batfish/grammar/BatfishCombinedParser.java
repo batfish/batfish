@@ -12,7 +12,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.batfish.common.BatfishException;
-import org.batfish.main.Settings;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
@@ -30,7 +29,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
    private BatfishParserErrorListener _parserErrorListener;
 
-   private Settings _settings;
+   private GrammarSettings _settings;
 
    private List<Integer> _tokenModes;
 
@@ -39,7 +38,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
    private final List<String> _warnings;
 
    public BatfishCombinedParser(Class<P> pClass, Class<L> lClass, String input,
-         Settings settings) {
+         GrammarSettings settings) {
       _settings = settings;
       _tokenModes = new ArrayList<>();
       _currentModeStart = 0;
@@ -96,7 +95,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       return _parserErrorListener;
    }
 
-   public Settings getSettings() {
+   public GrammarSettings getSettings() {
       return _settings;
    }
 

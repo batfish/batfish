@@ -22,6 +22,10 @@ public final class GeneratedRoute extends AbstractRoute
 
       private String _nextHopInterface;
 
+      public Builder() {
+         _asPath = new AsPath();
+      }
+
       @Override
       public GeneratedRoute build() {
          GeneratedRoute gr = new GeneratedRoute(_network, _nextHopIp);

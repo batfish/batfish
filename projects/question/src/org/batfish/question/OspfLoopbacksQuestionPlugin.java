@@ -212,7 +212,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                                  for (Prefix prefix : iface.getAllPrefixes()) {
                                     ConnectedRoute route = new ConnectedRoute(
                                           prefix, interfaceName);
-                                    if (exportPolicy.process(route, null,
+                                    if (exportPolicy.process(route,
                                           new OspfExternalRoute.Builder(), null,
                                           vrf.getName())) {
                                        exported = true;

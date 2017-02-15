@@ -6,7 +6,7 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-address_family_s_stanza
+rs_address_family
 :
    ADDRESS_FAMILY
    (
@@ -16,80 +16,69 @@ address_family_s_stanza
    (
       UNICAST
       | MULTICAST
-   ) NEWLINE common_s_stanza*
+   ) NEWLINE rs_route*
 ;
 
-common_s_stanza
-:
-   static_route_s_stanza
-;
-
-router_static_stanza
-:
-   ROUTER STATIC NEWLINE s_stanza*
-;
-
-s_stanza
-:
-   address_family_s_stanza
-   | common_s_stanza
-   | vrf_s_stanza
-;
-
-static_route_s_stanza
+rs_route
 :
    (
-      IP_PREFIX
-      | IPV6_PREFIX
+      prefix = IP_PREFIX
+      | prefix6 = IPV6_PREFIX
    )
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-      | interface_name
+      nhip = IP_ADDRESS
+      | nhip6 = IPV6_ADDRESS
+      | nhint = interface_name
       (
-         IP_ADDRESS
-         | IPV6_ADDRESS
+         nhip = IP_ADDRESS
+         | nhip6 = IPV6_ADDRESS
       )?
-   ) static_route_s_tail* NEWLINE
-;
-
-static_route_s_tail
-:
+   )
    (
-      BFD FAST_DETECT
       (
+         BFD FAST_DETECT
          (
-            MINIMUM_INTERVAL minimum_interval = DEC
-         )
-         |
-         (
-            MULTIPLIER multiplier = DEC
-         )
-      )*
-   )
-   | distance = DEC
-   |
-   (
-      DESCRIPTION description=RAW_TEXT
-   )
-   | PERMANENT
-   |
-   (
-      TAG tag = DEC
-   )
-   |
-   (
-      TRACK track = variable
-   )
+            (
+               MINIMUM_INTERVAL minimum_interval = DEC
+            )
+            |
+            (
+               MULTIPLIER multiplier = DEC
+            )
+         )*
+      )
+      | distance = DEC
+      |
+      (
+         DESCRIPTION description = RAW_TEXT
+      )
+      | PERMANENT
+      |
+      (
+         TAG tag = DEC
+      )
+      |
+      (
+         TRACK track = variable
+      )
+   )* NEWLINE
 ;
 
-vrf_s_stanza
+rs_vrf
 :
-   VRF name = variable NEWLINE vs_stanza*
+   VRF name = variable NEWLINE
+   (
+      rs_address_family
+      | rs_route
+   )*
 ;
 
-vs_stanza
+s_router_static
 :
-   address_family_s_stanza
-   | common_s_stanza
+   ROUTER STATIC NEWLINE
+   (
+      rs_address_family
+      | rs_route
+      | rs_vrf
+   )*
 ;

@@ -1,11 +1,15 @@
 package org.batfish.datamodel;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -178,8 +182,6 @@ public class PrefixSpace implements Serializable {
 
    }
 
-   private static final int NUM_BITS = 32;
-
    /**
     *
     */
@@ -191,22 +193,25 @@ public class PrefixSpace implements Serializable {
       b.order(ByteOrder.LITTLE_ENDIAN);
       b.putInt(addressAsInt);
       BitSet bitsWithHighestMostSignificant = BitSet.valueOf(b.array());
-      BitSet bits = new BitSet(NUM_BITS);
-      for (int i = NUM_BITS - 1, j = 0; i >= 0; i--, j++) {
+      BitSet bits = new BitSet(Prefix.MAX_PREFIX_LENGTH);
+      for (int i = Prefix.MAX_PREFIX_LENGTH - 1, j = 0; i >= 0; i--, j++) {
          bits.set(j, bitsWithHighestMostSignificant.get(i));
       }
       return bits;
    }
 
+   private transient ConcurrentMap<Prefix, Boolean> _cache;
+
    private BitTrie _trie;
 
    public PrefixSpace() {
       _trie = new BitTrie();
+      _cache = new ConcurrentHashMap<>();
    }
 
    @JsonCreator
    public PrefixSpace(Set<PrefixRange> prefixRanges) {
-      _trie = new BitTrie();
+      this();
       for (PrefixRange prefixRange : prefixRanges) {
          _trie.addPrefixRange(prefixRange);
       }
@@ -226,7 +231,15 @@ public class PrefixSpace implements Serializable {
    }
 
    public boolean containsPrefix(Prefix prefix) {
-      return containsPrefixRange(PrefixRange.fromPrefix(prefix));
+      if (_cache.containsKey(prefix)) {
+         return _cache.get(prefix);
+      }
+      else {
+         boolean contained = containsPrefixRange(
+               PrefixRange.fromPrefix(prefix));
+         _cache.put(prefix, contained);
+         return contained;
+      }
    }
 
    public boolean containsPrefixRange(PrefixRange prefixRange) {
@@ -276,6 +289,12 @@ public class PrefixSpace implements Serializable {
    public boolean overlaps(PrefixSpace intersectSpace) {
       PrefixSpace intersection = intersection(intersectSpace);
       return !intersection.isEmpty();
+   }
+
+   private void readObject(ObjectInputStream in)
+         throws IOException, ClassNotFoundException {
+      in.defaultReadObject();
+      _cache = new ConcurrentHashMap<>();
    }
 
    @Override

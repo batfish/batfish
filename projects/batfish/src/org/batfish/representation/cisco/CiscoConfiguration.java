@@ -1272,8 +1272,22 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (routeMap != null) {
                routeMap.getReferers().put(proc,
                      "bgp ipv4 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv4 advertised network route-map");
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               Conjunction exportNetworkConditions = new Conjunction();
+               PrefixSpace space = new PrefixSpace();
+               space.addPrefix(prefix);
+               exportNetworkConditions.getConjuncts().add(new MatchPrefixSet(
+                     new DestinationNetwork(), new ExplicitPrefixSet(space)));
+               exportNetworkConditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+               exportNetworkConditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+               // TODO: ban aggregates?
+               exportNetworkConditions.getConjuncts().add(
+                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+               exportNetworkConditions.getConjuncts().add(we);
+               preFilterConditions.getDisjuncts().add(exportNetworkConditions);
             }
             else {
                undefined("Reference to bgp ipv4 advertised network route-map: '"
@@ -1295,8 +1309,23 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (routeMap != null) {
                routeMap.getReferers().put(proc,
                      "bgp ipv6 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv6 advertised network route-map");
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               Conjunction exportNetwork6Conditions = new Conjunction();
+               Prefix6Space space6 = new Prefix6Space();
+               space6.addPrefix6(prefix6);
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new MatchPrefix6Set(new DestinationNetwork6(),
+                           new ExplicitPrefix6Set(space6)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+               // TODO: ban aggregates?
+               exportNetwork6Conditions.getConjuncts().add(
+                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+               exportNetwork6Conditions.getConjuncts().add(we);
+               preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
             }
             else {
                undefined("Reference to bgp ipv6 advertised network route-map: '"
@@ -1307,8 +1336,6 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
 
       // add prefilter policy for explicitly advertised networks
-      Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
-      localRfLists.add(localFilter);
       preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
             new DestinationNetwork(), new NamedPrefixSet(localFilterName)));
 
@@ -2230,6 +2257,40 @@ public class CiscoConfiguration extends VendorConfiguration {
                break;
             }
          }
+      }
+
+      // create summarization filters for inter-area routes
+      for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries()
+            .entrySet()) {
+         long areaLong = e1.getKey();
+         Map<Prefix, Boolean> summaries = e1.getValue();
+         OspfArea area = areas.get(areaLong);
+         String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":"
+               + areaLong + "~";
+         RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+         c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+         if (area == null) {
+            area = new OspfArea(areaLong);
+            areas.put(areaLong, area);
+         }
+         area.setSummaryFilter(summaryFilterName);
+         for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+            Prefix prefix = e2.getKey();
+            boolean advertise = e2.getValue();
+            int prefixLength = prefix.getPrefixLength();
+            int filterMinPrefixLength = advertise
+                  ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                  : prefixLength;
+            summaryFilter.addLine(
+                  new RouteFilterLine(LineAction.REJECT, prefix, new SubRange(
+                        filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+            area.getSummaries().put(prefix, advertise);
+            if (!advertise) {
+
+            }
+         }
+         summaryFilter.addLine(new RouteFilterLine(LineAction.ACCEPT,
+               Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
       }
 
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";

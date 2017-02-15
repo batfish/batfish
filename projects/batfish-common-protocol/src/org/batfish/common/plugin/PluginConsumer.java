@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.GZIPInputStream;
@@ -32,7 +29,6 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectInputStream;
 
@@ -74,7 +70,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
    }
 
-   private <S extends Serializable> S deserializeObject(byte[] data,
+   protected <S extends Serializable> S deserializeObject(byte[] data,
          Class<S> outputClass) {
       try {
          boolean isJavaSerializationData = isJavaSerializationData(data);
@@ -104,28 +100,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
       return deserializeObject(data, outputClass);
    }
 
-   public <S extends Serializable> Map<String, S> deserializeObjects(
-         Map<Path, String> namesByPath, Class<S> outputClass) {
-      BatfishLogger logger = getLogger();
-      Map<String, byte[]> dataByName = new TreeMap<>();
-      namesByPath.forEach((inputPath, name) -> {
-         logger.debug("Reading " + outputClass.getName() + " '" + name
-               + "' from '" + inputPath.toString() + "'");
-         byte[] data = fromGzipFile(inputPath);
-         logger.debug(" ...OK\n");
-         dataByName.put(name, data);
-      });
-      Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
-      dataByName.keySet().parallelStream().forEach(name -> {
-         byte[] data = dataByName.get(name);
-         S object = deserializeObject(data, outputClass);
-         unsortedOutput.put(name, object);
-      });
-      Map<String, S> output = new TreeMap<>(unsortedOutput);
-      return output;
-   }
-
-   private byte[] fromGzipFile(Path inputFile) {
+   protected byte[] fromGzipFile(Path inputFile) {
       try {
          FileInputStream fis = new FileInputStream(inputFile.toFile());
          GZIPInputStream gis = new GZIPInputStream(fis);
@@ -259,29 +234,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
       }
    }
 
-   public <S extends Serializable> void serializeObjects(
-         Map<Path, S> objectsByPath) {
-      BatfishLogger logger = getLogger();
-      Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
-      objectsByPath.keySet().parallelStream().forEach(outputPath -> {
-         S object = objectsByPath.get(outputPath);
-         byte[] gzipData = toGzipData(object);
-         dataByPath.put(outputPath, gzipData);
-      });
-      dataByPath.forEach((outputPath, data) -> {
-         logger.debug("Writing: \"" + outputPath.toString() + "\"...");
-         try {
-            Files.write(outputPath, data);
-         }
-         catch (IOException e) {
-            throw new BatfishException(
-                  "Failed to write: '" + outputPath.toString() + "'");
-         }
-         logger.debug("OK\n");
-      });
-   }
-
-   private byte[] toGzipData(Serializable object) {
+   protected byte[] toGzipData(Serializable object) {
       try {
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          GZIPOutputStream gos = new GZIPOutputStream(baos);

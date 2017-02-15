@@ -9,6 +9,10 @@ public class Rib extends AbstractRib<AbstractRoute> {
     */
    private static final long serialVersionUID = 1L;
 
+   public Rib(VirtualRouter owner) {
+      super(owner);
+   }
+
    @Override
    public int comparePreference(AbstractRoute lhs, AbstractRoute rhs) {
       int lhsAdmin = lhs.getAdministrativeCost();

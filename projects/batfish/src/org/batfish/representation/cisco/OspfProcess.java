@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.batfish.common.util.ComparableStructure;
@@ -53,6 +54,8 @@ public class OspfProcess extends ComparableStructure<String> {
 
    private Ip _routerId;
 
+   private Map<Long, Map<Prefix, Boolean>> _summaries;
+
    private Set<OspfWildcardNetwork> _wildcardNetworks;
 
    public OspfProcess(String name) {
@@ -66,6 +69,7 @@ public class OspfProcess extends ComparableStructure<String> {
       _interfaceWhitelist = new HashSet<>();
       _wildcardNetworks = new TreeSet<>();
       _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+      _summaries = new TreeMap<>();
    }
 
    public void computeNetworks(Collection<Interface> interfaces) {
@@ -144,6 +148,10 @@ public class OspfProcess extends ComparableStructure<String> {
 
    public Ip getRouterId() {
       return _routerId;
+   }
+
+   public Map<Long, Map<Prefix, Boolean>> getSummaries() {
+      return _summaries;
    }
 
    public Set<OspfWildcardNetwork> getWildcardNetworks() {

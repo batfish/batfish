@@ -10,8 +10,8 @@ public class OspfExternalType2Route extends OspfExternalRoute {
    private final int _costToAdvertiser;
 
    public OspfExternalType2Route(Prefix prefix, Ip nextHopIp, int admin,
-         int metric, int costToAdvertiser) {
-      super(prefix, nextHopIp, admin, metric, OspfMetricType.E2);
+         int metric, int costToAdvertiser, String advertiser) {
+      super(prefix, nextHopIp, admin, metric, OspfMetricType.E2, advertiser);
       _costToAdvertiser = costToAdvertiser;
    }
 

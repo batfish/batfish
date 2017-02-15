@@ -286,7 +286,7 @@ public class WorkMgr {
          String stackTrace = ExceptionUtils.getFullStackTrace(e);
          _logger.error(String.format("exception: %s\n", stackTrace));
       }
-      
+
       _workQueueMgr.processTaskCheckResult(work, task);
 
       // if the task ended, send a hint to the pool manager to look up worker

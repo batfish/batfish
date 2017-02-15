@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
@@ -49,7 +50,15 @@ public class SetOrigin extends Statement {
 
    @Override
    public Result execute(Environment environment) {
-      throw new BatfishException("unimplemented");
+      BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment
+            .getOutputRoute();
+      OriginType originType = _origin.evaluate(environment);
+      bgpRoute.setOriginType(originType);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+         environment.getIntermediateBgpAttributes().setOriginType(originType);
+      }
+      Result result = new Result();
+      return result;
    }
 
    public OriginExpr getOriginType() {

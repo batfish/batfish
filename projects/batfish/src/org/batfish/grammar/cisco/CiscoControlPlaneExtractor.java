@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -1015,6 +1016,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterRouter_rip_stanza(Router_rip_stanzaContext ctx) {
       todo(ctx, F_RIP);
+   }
+
+   @Override
+   public void enterRs_vrf(Rs_vrfContext ctx) {
+      _currentVrf = ctx.name.getText();
    }
 
    @Override
@@ -3660,6 +3666,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitRoa_range(Roa_rangeContext ctx) {
+      OspfProcess proc = currentVrf().getOspfProcess();
+      Prefix prefix = new Prefix(ctx.prefix.getText());
+      boolean advertise = ctx.NOT_ADVERTISE() == null;
+      Map<Prefix, Boolean> area = proc.getSummaries().get(_currentOspfArea);
+      if (area == null) {
+         area = new TreeMap<>();
+         proc.getSummaries().put(_currentOspfArea, area);
+      }
+      area.put(prefix, advertise);
+   }
+
+   @Override
+   public void exitRoi_cost(Roi_costContext ctx) {
+      Interface iface = _configuration.getInterfaces()
+            .get(_currentOspfInterface);
+      int cost = toInteger(ctx.cost);
+      iface.setOspfCost(cost);
+   }
+
+   @Override
    public void exitRoi_passive(Roi_passiveContext ctx) {
       if (ctx.ENABLE() != null) {
          _currentOspfProcess.getPassiveInterfaceList()
@@ -3727,6 +3754,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitRouter_isis_stanza(Router_isis_stanzaContext ctx) {
       _currentIsisProcess = null;
+   }
+
+   @Override
+   public void exitRs_route(Rs_routeContext ctx) {
+      if (ctx.prefix != null) {
+         Prefix prefix = new Prefix(ctx.prefix.getText());
+         Ip nextHopIp = null;
+         String nextHopInterface = null;
+         if (ctx.nhip != null) {
+            nextHopIp = new Ip(ctx.nhip.getText());
+         }
+         if (ctx.nhint != null) {
+            nextHopInterface = ctx.nhint.getText();
+         }
+         int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
+         if (ctx.distance != null) {
+            distance = toInteger(ctx.distance);
+         }
+         Integer tag = null;
+         if (ctx.tag != null) {
+            tag = toInteger(ctx.tag);
+         }
+
+         boolean permanent = ctx.PERMANENT() != null;
+         Integer track = null;
+         if (ctx.track != null) {
+            // TODO: handle named instead of numbered track
+         }
+         StaticRoute route = new StaticRoute(prefix, nextHopIp,
+               nextHopInterface, distance, tag, track, permanent);
+         currentVrf().getStaticRoutes().add(route);
+      }
+      else if (ctx.prefix6 != null) {
+         // TODO: ipv6 static route
+      }
+   }
+
+   @Override
+   public void exitRs_vrf(Rs_vrfContext ctx) {
+      _currentVrf = Configuration.DEFAULT_VRF_NAME;
    }
 
    @Override

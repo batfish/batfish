@@ -151,8 +151,7 @@ public class WorkQueueMgr {
       work.setAssignment(assignedWorker);
    }
 
-   public synchronized void processTaskCheckResult(QueuedWork work,
-         Task task) {
+   public synchronized void processTaskCheckResult(QueuedWork work, Task task) {
 
       // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
       // Unknown, UnreachableOrBadResponse}
@@ -186,8 +185,8 @@ public class WorkQueueMgr {
          work.clearAssignment();
          break;
       case UnreachableOrBadResponse:
-         if (work
-               .getLastTaskCheckResult().getStatus() == TaskStatus.UnreachableOrBadResponse) {
+         if (work.getLastTaskCheckResult()
+               .getStatus() == TaskStatus.UnreachableOrBadResponse) {
             // if we saw the same thing last time around, free the task to be
             // scheduled elsewhere
             work.setStatus(WorkStatusCode.UNASSIGNED);
