@@ -276,6 +276,7 @@ Package: ${PACKAGE_NAME}
 Conflicts: batfish
 Replaces: batfish
 Provides: batfish
+Breaks: z3
 Version: $VERSION
 Section: web
 Priority: optional
