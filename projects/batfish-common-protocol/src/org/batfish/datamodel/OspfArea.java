@@ -1,7 +1,9 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -19,14 +21,23 @@ public class OspfArea extends ComparableStructure<Long>
 
    private static final long serialVersionUID = 1L;
 
+   private static final String SUMMARIES_VAR = "summaries";
+
+   private static final String SUMMARY_FILTER_VAR = "summaryFilter";
+
    private transient SortedSet<String> _interfaceNames;
 
    private SortedSet<Interface> _interfaces;
+
+   private SortedMap<Prefix, Boolean> _summaries;
+
+   private String summaryFilter;
 
    @JsonCreator
    public OspfArea(@JsonProperty(NAME_VAR) Long number) {
       super(number);
       _interfaces = new TreeSet<>();
+      _summaries = new TreeMap<>();
    }
 
    @JsonProperty(INTERFACES_VAR)
@@ -46,6 +57,16 @@ public class OspfArea extends ComparableStructure<Long>
       return _interfaces;
    }
 
+   @JsonProperty(SUMMARIES_VAR)
+   public SortedMap<Prefix, Boolean> getSummaries() {
+      return _summaries;
+   }
+
+   @JsonProperty(SUMMARY_FILTER_VAR)
+   public String getSummaryFilter() {
+      return summaryFilter;
+   }
+
    public void resolveReferences(final Configuration owner) {
       if (_interfaceNames != null) {
          _interfaces = new TreeSet<>(_interfaceNames.stream()
@@ -62,6 +83,16 @@ public class OspfArea extends ComparableStructure<Long>
    @JsonIgnore
    public void setInterfaces(SortedSet<Interface> interfaces) {
       _interfaces = interfaces;
+   }
+
+   @JsonProperty(SUMMARIES_VAR)
+   public void setSummaries(SortedMap<Prefix, Boolean> summaries) {
+      _summaries = summaries;
+   }
+
+   @JsonProperty(SUMMARY_FILTER_VAR)
+   public void setSummaryFilter(String summaryFilterName) {
+      this.summaryFilter = summaryFilterName;
    }
 
 }

@@ -2494,7 +2494,6 @@ stanza
    | router_isis_stanza
    | router_multicast_stanza
    | router_rip_stanza
-   | router_static_stanza
    | rsvp_stanza
    | s_aaa
    | s_archive
@@ -2570,6 +2569,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_static
    | s_router_vrrp
    | s_sccp
    | s_service

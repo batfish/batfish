@@ -449,11 +449,13 @@ public class WorkMgrService {
                work.getWorkItem().getContainerName());
 
          BatfishObjectMapper mapper = new BatfishObjectMapper();
-         String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
+         String taskStr = mapper
+               .writeValueAsString(work.getLastTaskCheckResult());
 
          return new JSONArray(Arrays.asList(CoordConsts.SVC_SUCCESS_KEY,
                (new JSONObject()
-                     .put(CoordConsts.SVC_WORKSTATUS_KEY, work.getStatus().toString())
+                     .put(CoordConsts.SVC_WORKSTATUS_KEY,
+                           work.getStatus().toString())
                      .put(CoordConsts.SVC_TASKSTATUS_KEY, taskStr))));
       }
       catch (FileExistsException | FileNotFoundException

@@ -1,19 +1,21 @@
 {
-  "answerElements" : [ {
-    "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
-    "bgpIterations" : {
-      "1" : 2,
-      "2" : 2,
-      "3" : 2,
-      "4" : 2,
-      "5" : 2,
-      "6" : 2,
-      "7" : 2,
-      "8" : 2
-    },
-    "dependentRoutesIterations" : 8,
-    "ospfInternalIterations" : 3,
-    "totalRoutes" : 298
-  } ],
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
+      "bgpRoutesByIteration" : {
+        "1" : 16,
+        "2" : 38,
+        "3" : 96,
+        "4" : 124,
+        "5" : 138,
+        "6" : 156,
+        "7" : 160,
+        "8" : 162
+      },
+      "dependentRoutesIterations" : 8,
+      "ospfInternalIterations" : 3,
+      "totalRoutes" : 298
+    }
+  ],
   "status" : "SUCCESS"
 }

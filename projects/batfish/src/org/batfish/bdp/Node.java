@@ -26,7 +26,9 @@ public final class Node extends ComparableStructure<String> {
       _nodes = nodes;
       _virtualRouters = new TreeMap<>();
       for (String vrfName : _c.getVrfs().keySet()) {
-         _virtualRouters.put(vrfName, new VirtualRouter(vrfName, _c, _nodes));
+         VirtualRouter vr = new VirtualRouter(vrfName, _c, _nodes);
+         vr.initRibs();
+         _virtualRouters.put(vrfName, vr);
       }
    }
 

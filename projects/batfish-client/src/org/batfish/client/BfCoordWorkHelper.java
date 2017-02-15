@@ -270,7 +270,7 @@ public class BfCoordWorkHelper {
                .request(MediaType.APPLICATION_OCTET_STREAM)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         _logger.info(response.getStatus() + " " + response.getStatusInfo()
+         _logger.debug(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -699,7 +699,7 @@ public class BfCoordWorkHelper {
          Response response = webTarget.request(MediaType.APPLICATION_JSON)
                .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-         _logger.infof(response.getStatus() + " " + response.getStatusInfo()
+         _logger.debugf(response.getStatus() + " " + response.getStatusInfo()
                + " " + response + "\n");
 
          if (response.getStatus() != Response.Status.OK.getStatusCode()) {
@@ -709,7 +709,7 @@ public class BfCoordWorkHelper {
 
          String sobj = response.readEntity(String.class);
          JSONArray array = new JSONArray(sobj);
-         _logger.infof("response: %s [%s] [%s]\n", array.toString(),
+         _logger.debugf("response: %s [%s] [%s]\n", array.toString(),
                array.get(0), array.get(1));
 
          if (!array.get(0).equals(CoordConsts.SVC_SUCCESS_KEY)) {

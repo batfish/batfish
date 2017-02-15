@@ -25,8 +25,6 @@ public interface IRib<R extends AbstractRoute> extends Serializable {
     */
    int comparePreference(R lhs, R rhs);
 
-   boolean containsPathFromPrefix(Prefix prefix);
-
    MultiSet<Prefix> getPrefixCount();
 
    SortedSet<Prefix> getPrefixes();

@@ -414,13 +414,20 @@ public class Client extends AbstractClient implements IClient {
 
       Pair<WorkStatusCode, String> response = _workHelper
             .getWorkStatus(wItem.getId());
-
-      while (response.getFirst() != WorkStatusCode.TERMINATEDABNORMALLY
-            && response.getFirst() != WorkStatusCode.TERMINATEDNORMALLY
-            && response.getFirst() != WorkStatusCode.ASSIGNMENTERROR) {
+      if (response == null) {
+         return false;
+      }
+      WorkStatusCode status = response.getFirst();
+      while (status != WorkStatusCode.TERMINATEDABNORMALLY
+            && status != WorkStatusCode.TERMINATEDNORMALLY
+            && status != WorkStatusCode.ASSIGNMENTERROR) {
          printWorkStatusResponse(response);
          Thread.sleep(1 * 1000);
          response = _workHelper.getWorkStatus(wItem.getId());
+         if (response == null) {
+            return false;
+         }
+         status = response.getFirst();
       }
       printWorkStatusResponse(response);
 
@@ -1028,7 +1035,8 @@ public class Client extends AbstractClient implements IClient {
    private void printWorkStatusResponse(Pair<WorkStatusCode, String> response) {
 
       if (_logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
-         _logger.infof("status: %s\n", response.getFirst());
+         WorkStatusCode status = response.getFirst();
+         _logger.infof("status: %s\n", status);
 
          BatfishObjectMapper mapper = new BatfishObjectMapper();
          Task task;
@@ -1036,12 +1044,12 @@ public class Client extends AbstractClient implements IClient {
             task = mapper.readValue(response.getSecond(), Task.class);
          }
          catch (IOException e) {
-            _logger.errorf("Could not deserliaze task object: %s\n", e);
+            _logger.errorf("Could not deserialize task object: %s\n", e);
             return;
          }
 
          if (task == null) {
-            _logger.infof(".... null\n");
+            _logger.infof(".... no task information\n");
             return;
          }
 
@@ -1050,12 +1058,19 @@ public class Client extends AbstractClient implements IClient {
          // when log level is INFO, we only print the last batch
          // else print all
          for (int i = 0; i < batches.size(); i++) {
-            if (i == batches.size() - 1) {
+            if (i == batches.size() - 1
+                  || status == WorkStatusCode.TERMINATEDNORMALLY
+                  || status == WorkStatusCode.TERMINATEDABNORMALLY) {
                _logger.infof(".... %s\n", batches.get(i).toString());
             }
             else {
                _logger.debugf(".... %s\n", batches.get(i).toString());
             }
+         }
+         if (status == WorkStatusCode.TERMINATEDNORMALLY
+               || status == WorkStatusCode.TERMINATEDABNORMALLY) {
+            _logger.infof(".... %s: %s\n", task.getTerminated().toString(),
+                  status);
          }
       }
    }

@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1094,6 +1095,37 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
+   public <S extends Serializable> Map<String, S> deserializeObjects(
+         Map<Path, String> namesByPath, Class<S> outputClass) {
+      String outputClassName = outputClass.getName();
+      BatfishLogger logger = getLogger();
+      Map<String, byte[]> dataByName = new TreeMap<>();
+      AtomicInteger readCompleted = newBatch(
+            "Reading and unpacking files containg '" + outputClassName
+                  + "' instances",
+            namesByPath.size());
+      namesByPath.forEach((inputPath, name) -> {
+         logger.debug("Reading and gunzipping" + outputClassName + " '" + name
+               + "' from '" + inputPath.toString() + "'");
+         byte[] data = fromGzipFile(inputPath);
+         logger.debug(" ...OK\n");
+         dataByName.put(name, data);
+         readCompleted.incrementAndGet();
+      });
+      Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
+      AtomicInteger deserializeCompleted = newBatch(
+            "Deserializing '" + outputClassName + "' instances",
+            dataByName.size());
+      dataByName.keySet().parallelStream().forEach(name -> {
+         byte[] data = dataByName.get(name);
+         S object = deserializeObject(data, outputClass);
+         unsortedOutput.put(name, object);
+         deserializeCompleted.incrementAndGet();
+      });
+      Map<String, S> output = new TreeMap<>(unsortedOutput);
+      return output;
+   }
+
    public Map<String, GenericConfigObject> deserializeVendorConfigurations(
          Path serializedVendorConfigPath) {
       _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
@@ -2096,6 +2128,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public DataPlane loadDataPlane() {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
+         newBatch("Loading data plane from disk", 0);
          dp = deserializeObject(
                _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
                DataPlane.class);
@@ -2728,12 +2761,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .filter(path -> !path.getFileName().toString().startsWith("."))
             .collect(Collectors.toList()).toArray(new Path[] {});
       Arrays.sort(configFilePaths);
+      AtomicInteger completed = newBatch("Reading network configuration files",
+            configFilePaths.length);
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
          String fileText = fileTextRaw
                + ((fileTextRaw.length() != 0) ? "\n" : "");
          configurationData.put(file, fileText);
+         completed.incrementAndGet();
       }
       printElapsedTime();
       return configurationData;
@@ -2871,6 +2907,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    public Answer run() {
+      newBatch("Begin job", 0);
       loadPlugins();
       if (_dataPlanePlugin == null) {
          _dataPlanePlugin = new BdpDataPlanePlugin();
@@ -3206,6 +3243,40 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       });
       serializeObjects(output);
       printElapsedTime();
+   }
+
+   public <S extends Serializable> void serializeObjects(
+         Map<Path, S> objectsByPath) {
+      if (objectsByPath.isEmpty()) {
+         return;
+      }
+      BatfishLogger logger = getLogger();
+      Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+      int size = objectsByPath.size();
+      String className = objectsByPath.values().iterator().next().getClass()
+            .getName();
+      AtomicInteger serializeCompleted = newBatch(
+            "Serializing '" + className + "' instances", size);
+      objectsByPath.keySet().parallelStream().forEach(outputPath -> {
+         S object = objectsByPath.get(outputPath);
+         byte[] gzipData = toGzipData(object);
+         dataByPath.put(outputPath, gzipData);
+         serializeCompleted.incrementAndGet();
+      });
+      AtomicInteger writeCompleted = newBatch(
+            "Packing and writing '" + className + "' instances to disk", size);
+      dataByPath.forEach((outputPath, data) -> {
+         logger.debug("Writing: \"" + outputPath.toString() + "\"...");
+         try {
+            Files.write(outputPath, data);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to write: '" + outputPath.toString() + "'");
+         }
+         logger.debug("OK\n");
+         writeCompleted.incrementAndGet();
+      });
    }
 
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {

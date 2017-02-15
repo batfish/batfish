@@ -163,7 +163,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
                         ConnectedRoute route = new ConnectedRoute(prefix,
                               interfaceName);
                         for (RoutingPolicy exportPolicy : exportPolicies) {
-                           if (exportPolicy.process(route, null,
+                           if (exportPolicy.process(route,
                                  new BgpRoute.Builder(), null, vrf.getName())) {
                               exported = true;
                               break outerloop;

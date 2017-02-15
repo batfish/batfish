@@ -33,12 +33,12 @@
 	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-server-2.16.jar"/>
 	<classpathentry kind="lib" path="lib/jersey/jersey-media-json-jettison-2.16.jar"/>
 	<classpathentry kind="lib" path="lib/jettison/jettison-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar" sourcepath="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/mimepull-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/lib/jersey-media-multipart-2.17.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-annotations-2.9.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-core-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-core-2.9.0-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/jackson/jackson-databind-2.9.0-SNAPSHOT.jar" sourcepath="lib/jackson/jackson-databind-2.9.0-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-1.0.11-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/scala/scala-library-2.12.0.jar"/>
 	<classpathentry kind="lib" path="lib/scala/scala-reflect-2.12.0.jar"/>

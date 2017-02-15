@@ -2259,6 +2259,40 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       }
 
+      // create summarization filters for inter-area routes
+      for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries()
+            .entrySet()) {
+         long areaLong = e1.getKey();
+         Map<Prefix, Boolean> summaries = e1.getValue();
+         OspfArea area = areas.get(areaLong);
+         String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":"
+               + areaLong + "~";
+         RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+         c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+         if (area == null) {
+            area = new OspfArea(areaLong);
+            areas.put(areaLong, area);
+         }
+         area.setSummaryFilter(summaryFilterName);
+         for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+            Prefix prefix = e2.getKey();
+            boolean advertise = e2.getValue();
+            int prefixLength = prefix.getPrefixLength();
+            int filterMinPrefixLength = advertise
+                  ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                  : prefixLength;
+            summaryFilter.addLine(
+                  new RouteFilterLine(LineAction.REJECT, prefix, new SubRange(
+                        filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+            area.getSummaries().put(prefix, advertise);
+            if (!advertise) {
+
+            }
+         }
+         summaryFilter.addLine(new RouteFilterLine(LineAction.ACCEPT,
+               Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      }
+
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
       RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
             c);
