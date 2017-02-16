@@ -1521,6 +1521,11 @@ CONFDCONFIG
    'confdConfig'
 ;
 
+CONFIG
+:
+   'config'
+;
+
 CONFIG_COMMANDS
 :
    'config-commands'
@@ -1528,7 +1533,7 @@ CONFIG_COMMANDS
 
 CONFIG_REGISTER
 :
-   'config-register'
+   'config'
 ;
 
 CONFIGURATION
@@ -3808,7 +3813,7 @@ INTERAREA
 
 INTERFACE
 :
-   'interface'
+   'int' 'erface'?
    { enableIPV6_ADDRESS = false; }
 
    -> pushMode ( M_Interface )
@@ -7409,14 +7414,9 @@ SHOW
    'show'
 ;
 
-SHUT
-:
-   'shut'
-;
-
 SHUTDOWN
 :
-   'shutdown'
+   'shut' 'down'?
 ;
 
 SIGNAL
@@ -7556,7 +7556,7 @@ SOFT_PREEMPTION
 
 SOFT_RECONFIGURATION
 :
-   'soft-reconfiguration'
+   'soft' '-reconfiguration'?
 ;
 
 SONET

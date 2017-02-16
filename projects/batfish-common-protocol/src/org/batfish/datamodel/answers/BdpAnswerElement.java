@@ -3,8 +3,6 @@ package org.batfish.datamodel.answers;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class BdpAnswerElement implements AnswerElement {
 
    private SortedMap<Integer, Integer> _bgpRoutesByIteration;
@@ -36,7 +34,7 @@ public class BdpAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
       sb.append("Computation summary:\n");
       sb.append("   OSPF-internal iterations: " + _dependentRoutesIterations

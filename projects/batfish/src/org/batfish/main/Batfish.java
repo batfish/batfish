@@ -1933,6 +1933,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (String failed : convertAnswer.getFailed()) {
          answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
       }
+      _logger.info(answerElement.prettyPrint());
       return answerElement;
    }
 

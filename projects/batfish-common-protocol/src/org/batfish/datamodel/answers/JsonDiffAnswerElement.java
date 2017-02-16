@@ -4,7 +4,6 @@ import org.batfish.common.util.JsonDiff;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class JsonDiffAnswerElement implements AnswerElement {
 
@@ -24,7 +23,7 @@ public class JsonDiffAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       final StringBuilder sb = new StringBuilder(
             "Difference between base and delta\n");
       sb.append(_jsonDiff.prettyPrint("  "));

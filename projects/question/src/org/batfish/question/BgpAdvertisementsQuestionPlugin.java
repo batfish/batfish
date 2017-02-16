@@ -16,7 +16,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -30,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -153,13 +151,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       @JsonProperty(SENT_IBGP_ADVERTISEMENTS_VAR)
       public SortedMap<String, SortedSet<BgpAdvertisement>> getSentIbgpAdvertisements() {
          return _sentIbgpAdvertisements;
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
 
       @JsonProperty(ALL_REQUESTED_ADVERTISEMENTS_VAR)

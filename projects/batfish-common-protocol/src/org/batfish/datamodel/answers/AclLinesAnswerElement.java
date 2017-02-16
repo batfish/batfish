@@ -9,7 +9,6 @@ import org.batfish.datamodel.IpAccessList;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class AclLinesAnswerElement implements AnswerElement {
 
@@ -178,7 +177,7 @@ public class AclLinesAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder sb = new StringBuilder(
             "Results for unreachable ACL lines\n");
       // private SortedMap<String, SortedMap<String,

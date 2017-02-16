@@ -19,6 +19,8 @@ public class ParseVendorConfigurationResult extends
 
    private ParseTreeSentences _parseTree;
 
+   private ParseStatus _status;
+
    private VendorConfiguration _vc;
 
    private Warnings _warnings;
@@ -40,9 +42,11 @@ public class ParseVendorConfigurationResult extends
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
-         BatfishLoggerHistory history, Path file, Warnings warnings) {
+         BatfishLoggerHistory history, Path file, Warnings warnings,
+         ParseStatus status) {
       super(elapsedTime, history);
       _file = file;
+      _status = status;
       _warnings = warnings;
    }
 
@@ -81,7 +85,7 @@ public class ParseVendorConfigurationResult extends
             }
             if (_vc.getUnrecognized()) {
                answerElement.getParseStatus().put(hostname,
-                     ParseStatus.UNRECOGNIZED);
+                     ParseStatus.PARTIALLY_UNRECOGNIZED);
             }
             else {
                answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
@@ -90,7 +94,7 @@ public class ParseVendorConfigurationResult extends
       }
       else {
          String filename = _file.getFileName().toString();
-         answerElement.getParseStatus().put(filename, ParseStatus.FAILED);
+         answerElement.getParseStatus().put(filename, _status);
       }
    }
 

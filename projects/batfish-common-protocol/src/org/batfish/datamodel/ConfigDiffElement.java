@@ -7,15 +7,12 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConfigDiffElement implements AnswerElement {
 
@@ -119,12 +116,6 @@ public class ConfigDiffElement implements AnswerElement {
    public boolean isEmpty() {
       return _diff.isEmpty() && _diffInfo.isEmpty() && _inBeforeOnly.isEmpty()
             && _inAfterOnly.isEmpty();
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
    @JsonProperty(DIFF_VAR)

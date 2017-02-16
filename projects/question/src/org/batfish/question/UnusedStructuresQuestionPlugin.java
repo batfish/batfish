@@ -18,7 +18,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
@@ -35,7 +34,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          final StringBuilder sb = new StringBuilder();
          _unusedStructures.forEach((node, types) -> {
             sb.append(node + ":\n");

@@ -50,9 +50,14 @@ public abstract class Question implements IQuestion {
 
    // by default, pretty printing is Json
    // override this function in derived classes to do something more meaningful
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
+      try {
+         return mapper.writeValueAsString(this);
+      }
+      catch (JsonProcessingException e) {
+         throw new BatfishException("Failed to pretty-print question", e);
+      }
    }
 
    protected String prettyPrintBase() {
