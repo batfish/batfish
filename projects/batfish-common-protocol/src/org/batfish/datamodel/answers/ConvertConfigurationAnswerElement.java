@@ -10,8 +10,6 @@ import java.util.TreeSet;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class ConvertConfigurationAnswerElement
       implements AnswerElement, Serializable {
 
@@ -52,7 +50,7 @@ public class ConvertConfigurationAnswerElement
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder retString = new StringBuilder(
             "Results from converting vendor configurations\n");
 

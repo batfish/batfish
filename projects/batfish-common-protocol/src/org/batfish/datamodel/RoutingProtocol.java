@@ -84,10 +84,12 @@ public enum RoutingProtocol {
             break;
          case EMPTY:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IGNORED:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -122,9 +124,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -159,9 +163,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -193,9 +199,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -226,10 +234,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -260,10 +270,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -294,10 +306,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -329,9 +343,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -363,9 +379,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -397,9 +415,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -431,9 +451,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -477,6 +499,7 @@ public enum RoutingProtocol {
          case AWS_VPC:
          case BLADENETWORK:
          case EMPTY:
+         case F5:
          case FLAT_JUNIPER:
          case FLAT_VYOS:
          case HOST:
@@ -485,6 +508,7 @@ public enum RoutingProtocol {
          case JUNIPER:
          case JUNIPER_SWITCH:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:

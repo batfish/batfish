@@ -1006,8 +1006,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
       setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
-      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
-      setDefaultProperty(ARG_IGNORE_UNKNOWN, false);
+      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
+      setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
       setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
       setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);

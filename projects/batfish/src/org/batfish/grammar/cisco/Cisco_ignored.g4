@@ -513,7 +513,6 @@ null_inner
          | SERVICE_TYPE
          | SESSION
          | SEVERITY
-         | SHUT
          | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
@@ -611,6 +610,7 @@ null_single
       | CFS
       | CLOCK
       | CNS
+      | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
       | CTS

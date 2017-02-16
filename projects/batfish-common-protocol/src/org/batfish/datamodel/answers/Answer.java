@@ -58,7 +58,7 @@ public class Answer {
       return _status;
    }
 
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder string = new StringBuilder();
 
       string.append("Status: " + _status + "\n");

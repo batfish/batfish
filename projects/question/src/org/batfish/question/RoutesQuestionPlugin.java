@@ -30,7 +30,6 @@ import org.codehaus.jettison.json.JSONObject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -115,7 +114,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
 
          for (Entry<String, SortedSet<Route>> e : _routesByHostname

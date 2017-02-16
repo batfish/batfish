@@ -1,13 +1,10 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConfigurationDiff implements AnswerElement {
 
@@ -121,12 +118,6 @@ public class ConfigurationDiff implements AnswerElement {
             && _interfacesDiff == null && _ipAccessListsDiff == null
             && _vrfsDiff == null && _routeFilterListsDiff == null
             && _routingPoliciesDiff == null;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)

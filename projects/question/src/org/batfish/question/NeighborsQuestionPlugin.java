@@ -81,7 +81,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder("Results for neighbors\n");
 
          if (_lanNeighbors != null) {

@@ -8,8 +8,6 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class ParseVendorConfigurationAnswerElement
       implements AnswerElement, Serializable {
 
@@ -50,7 +48,7 @@ public class ParseVendorConfigurationAnswerElement
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder retString = new StringBuilder(
             "Results of parsing vendor configurations\n");
 

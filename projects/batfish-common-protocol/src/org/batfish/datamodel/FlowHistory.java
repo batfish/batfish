@@ -11,7 +11,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class FlowHistory implements AnswerElement {
 
@@ -63,7 +62,7 @@ public class FlowHistory implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder retString = new StringBuilder("\n");
       for (String flowStr : _traces.keySet()) {
          Flow flow = _flowsByText.get(flowStr);

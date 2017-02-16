@@ -1,7 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class EnvironmentCreationAnswerElement implements AnswerElement {
 
    private String _newEnvironmentName;
@@ -17,7 +15,7 @@ public class EnvironmentCreationAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       // having environment name GUIDs printed messes with consistency of output
       // return "New environment: '" + _newEnvironmentName
       // + "' successfully created from old environment: '"

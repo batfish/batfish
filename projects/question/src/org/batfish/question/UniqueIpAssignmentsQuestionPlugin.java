@@ -26,7 +26,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
@@ -73,7 +72,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
                "Results for unique IP assignment check\n");
          if (_allIps != null) {
