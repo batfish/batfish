@@ -89,29 +89,7 @@ public class WorkMgrService {
    }
 
    private void checkClientVersion(String clientVersion) throws Exception {
-
-      List<Integer> myBits = Version.getVersionBreakdown(Version.getVersion());
-      List<Integer> clientBits;
-
-      try {
-         clientBits = Version.getVersionBreakdown(clientVersion);
-
-         if (clientBits.size() != 3) {
-            throw new IllegalArgumentException("Client version " + clientVersion
-                  + " does not have 3 subparts");
-         }
-      }
-      catch (Exception e) {
-         throw new IllegalArgumentException(
-               "Bad client version format in " + clientVersion);
-      }
-
-      if (myBits.get(0) != clientBits.get(0)
-            || myBits.get(1) != clientBits.get(1)) {
-         throw new IllegalArgumentException("Client version " + clientVersion
-               + " is not compatible with server version "
-               + Version.getVersion());
-      }
+      Version.checkCompatibleVersion("Service", "Client", clientVersion);
    }
 
    private void checkContainerAccessibility(String apiKey, String containerName)

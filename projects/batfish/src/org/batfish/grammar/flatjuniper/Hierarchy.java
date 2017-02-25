@@ -25,7 +25,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.main.Settings;
-import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
 public class Hierarchy {
@@ -502,7 +502,7 @@ public class Hierarchy {
                      message += ": Partial path match within applied group: \""
                            + partialMatch.pathString() + "\"";
                   }
-                  throw new PartialGroupMatchBatfishException(message);
+                  throw new PartialGroupMatchException(message);
                }
                partialMatch._nodes.add(matchNode);
                currentGroupNode = matchNode;

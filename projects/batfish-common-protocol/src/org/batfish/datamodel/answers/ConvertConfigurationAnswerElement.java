@@ -24,6 +24,8 @@ public class ConvertConfigurationAnswerElement
 
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
 
+   private String _version;
+
    private SortedMap<String, Warnings> _warnings;
 
    public ConvertConfigurationAnswerElement() {
@@ -43,6 +45,10 @@ public class ConvertConfigurationAnswerElement
 
    public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {
       return _unusedStructures;
+   }
+
+   public String getVersion() {
+      return _version;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -104,6 +110,10 @@ public class ConvertConfigurationAnswerElement
    public void setUnusedStructures(
          SortedMap<String, SortedMap<String, SortedSet<String>>> unusedStructures) {
       _unusedStructures = unusedStructures;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

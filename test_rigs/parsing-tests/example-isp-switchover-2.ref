@@ -9709,7 +9709,8 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -9795,7 +9796,8 @@
             "inbound_route_filter"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

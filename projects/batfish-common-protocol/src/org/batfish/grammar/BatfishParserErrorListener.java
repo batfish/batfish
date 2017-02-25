@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.batfish.common.BatfishException;
+import org.batfish.common.DebugBatfishException;
 import org.batfish.common.util.CommonUtil;
 
 public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
@@ -109,7 +109,7 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
       String error = sb.toString();
       if (_settings.getThrowOnParserError()) {
-         throw new BatfishException("\n" + error);
+         throw new DebugBatfishException("\n" + error);
       }
       else {
          _combinedParser.getErrors().add(error);
