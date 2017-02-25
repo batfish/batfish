@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -285,6 +286,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       dp.setTopology(topology);
       dp.setFlowSinks(_batfish.computeFlowSinks(configurations,
             differentialContext, topology));
+      dp.setVersion(Version.getVersion());
       _batfish.newBatch("Writing data plane to disk", 0);
       _batfish.writeDataPlane(dp);
       _batfish.printElapsedTime();

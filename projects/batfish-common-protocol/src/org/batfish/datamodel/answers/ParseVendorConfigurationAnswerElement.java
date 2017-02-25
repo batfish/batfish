@@ -20,6 +20,8 @@ public class ParseVendorConfigurationAnswerElement
 
    private SortedMap<String, ParseTreeSentences> _parseTrees;
 
+   private String _version;
+
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
@@ -41,6 +43,10 @@ public class ParseVendorConfigurationAnswerElement
 
    public SortedMap<String, ParseTreeSentences> getParseTrees() {
       return _parseTrees;
+   }
+
+   public String getVersion() {
+      return _version;
    }
 
    public SortedMap<String, Warnings> getWarnings() {
@@ -84,6 +90,10 @@ public class ParseVendorConfigurationAnswerElement
 
    public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
       _parseTrees = parseTrees;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

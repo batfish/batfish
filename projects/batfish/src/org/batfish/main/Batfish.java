@@ -44,6 +44,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
+import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.IBatfish;
@@ -2114,6 +2115,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
+         ConvertConfigurationAnswerElement ccae = getConvertConfigurationAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed configurations", ccae.getVersion())) {
+            repairConfigurations();
+         }
          configurations = deserializeConfigurations(
                _testrigSettings.getSerializeIndependentPath());
          _cachedConfigurations.put(_testrigSettings, configurations);
@@ -2127,12 +2133,25 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public DataPlane loadDataPlane() {
+      return loadDataPlane(false);
+   }
+
+   private DataPlane loadDataPlane(boolean postRepair) {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
          newBatch("Loading data plane from disk", 0);
          dp = deserializeObject(
                _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
                DataPlane.class);
+         if (!Version.isCompatibleVersion("Service", "Old Data Plane",
+               dp.getVersion())) {
+            if (postRepair) {
+               throw new BatfishException("Failed to repair data plane");
+            }
+            else {
+               dp = repairDataPlane();
+            }
+         }
          _dataPlanes.put(_testrigSettings, dp);
       }
       return dp;
@@ -2863,6 +2882,33 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _answererCreators.put(questionClassName, answererCreator);
    }
 
+   private void repairConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeIndependentPath();
+      CommonUtil.deleteDirectory(outputPath);
+      ParseVendorConfigurationAnswerElement pvcae = getParseVendorConfigurationAnswerElement();
+      if (!Version.isCompatibleVersion("Service", "Old parsed configurations",
+            pvcae.getVersion())) {
+         repairVendorConfigurations();
+      }
+      Path inputPath = _testrigSettings.getSerializeVendorPath();
+      serializeIndependentConfigs(inputPath, outputPath);
+   }
+
+   private DataPlane repairDataPlane() {
+      Path dataPlanePath = _testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
+      CommonUtil.delete(dataPlanePath);
+      computeDataPlane(false);
+      return loadDataPlane(true);
+   }
+
+   private void repairVendorConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeVendorPath();
+      CommonUtil.deleteDirectory(outputPath);
+      Path testRigPath = _testrigSettings.getTestRigPath();
+      serializeVendorConfigs(testRigPath, outputPath);
+   }
+
    private AnswerElement report() {
       ReportAnswerElement answerElement = new ReportAnswerElement();
       checkQuestionsDirExists();
@@ -3182,6 +3228,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }
@@ -3288,6 +3335,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }

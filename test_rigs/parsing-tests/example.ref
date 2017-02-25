@@ -10284,7 +10284,8 @@
             "  NEWLINE:'\\n\\n'  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -10379,6 +10380,7 @@
           ]
         }
       },
+      "version" : "0.6.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {

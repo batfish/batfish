@@ -5891,7 +5891,8 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -5904,7 +5905,8 @@
             "st0.1"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

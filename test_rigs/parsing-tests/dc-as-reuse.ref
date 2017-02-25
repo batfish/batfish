@@ -4617,7 +4617,8 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -4712,7 +4713,8 @@
             "IPV4_18_OR_LONGER"
           ]
         }
-      }
+      },
+      "version" : "0.6.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

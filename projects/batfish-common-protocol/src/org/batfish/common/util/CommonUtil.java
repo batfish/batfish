@@ -30,6 +30,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 
+import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -103,6 +104,24 @@ public class CommonUtil {
                "Could not create directories leading up to and including '"
                      + path.toString() + "'",
                e);
+      }
+   }
+
+   public static void delete(Path path) {
+      try {
+         Files.delete(path);
+      }
+      catch (IOException e) {
+         throw new BatfishException("Failed to delete file: " + path, e);
+      }
+   }
+
+   public static void deleteDirectory(Path path) {
+      try {
+         FileUtils.deleteDirectory(path.toFile());
+      }
+      catch (IOException | NullPointerException e) {
+         throw new BatfishException("Could not delete directory: " + path, e);
       }
    }
 

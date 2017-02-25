@@ -19,7 +19,7 @@ public class ParseVendorConfigurationResult extends
 
    private ParseTreeSentences _parseTree;
 
-   private ParseStatus _status;
+   private final ParseStatus _status;
 
    private VendorConfiguration _vc;
 
@@ -29,6 +29,7 @@ public class ParseVendorConfigurationResult extends
          BatfishLoggerHistory history, Path file, Throwable failureCause) {
       super(elapsedTime, history, failureCause);
       _file = file;
+      _status = ParseStatus.FAILED;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
@@ -39,6 +40,8 @@ public class ParseVendorConfigurationResult extends
       _parseTree = parseTree;
       _vc = vc;
       _warnings = warnings;
+      // parse status is determined from other fields
+      _status = null;
    }
 
    public ParseVendorConfigurationResult(long elapsedTime,
