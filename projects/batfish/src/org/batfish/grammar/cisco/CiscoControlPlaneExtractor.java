@@ -53,6 +53,9 @@ import org.batfish.datamodel.Prefix6Space;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpHost;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -108,9 +111,6 @@ import org.batfish.datamodel.vendor_family.cisco.LoggingType;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
-import org.batfish.datamodel.vendor_family.cisco.SnmpCommunity;
-import org.batfish.datamodel.vendor_family.cisco.SnmpHost;
-import org.batfish.datamodel.vendor_family.cisco.SnmpServer;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
@@ -402,6 +402,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    private BgpPeerGroup _dummyPeerGroup;
 
+   private ConfigurationFormat _format;
+
    private boolean _inBlockNeighbor;
 
    private boolean _inIpv6BgpPeer;
@@ -421,10 +423,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    private final Warnings _w;
 
    public CiscoControlPlaneExtractor(String text,
-         BatfishCombinedParser<?, ?> parser, Warnings warnings,
-         boolean unrecognizedAsRedFlag) {
+         BatfishCombinedParser<?, ?> parser, ConfigurationFormat format,
+         Warnings warnings, boolean unrecognizedAsRedFlag) {
       _text = text;
       _parser = parser;
+      _format = format;
       _unimplementedFeatures = new TreeSet<>();
       _w = warnings;
       _peerGroupStack = new ArrayList<>();
@@ -581,6 +584,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterCisco_configuration(Cisco_configurationContext ctx) {
       _configuration = new CiscoConfiguration(_unimplementedFeatures);
+      _configuration.setVendor(_format);
       _currentVrf = Configuration.DEFAULT_VRF_NAME;
    }
 
@@ -1065,6 +1069,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_ip_domain(S_ip_domainContext ctx) {
+      _no = ctx.NO() != null;
+   }
+
+   @Override
    public void enterS_ip_pim(S_ip_pimContext ctx) {
       _no = ctx.NO() != null;
    }
@@ -1207,8 +1216,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void enterS_snmp_server(S_snmp_serverContext ctx) {
-      if (_configuration.getCf().getSnmpServer() == null) {
-         _configuration.getCf().setSnmpServer(new SnmpServer());
+      if (_configuration.getSnmpServer() == null) {
+         SnmpServer snmpServer = new SnmpServer();
+         snmpServer.setVrf(Configuration.DEFAULT_VRF_NAME);
+         _configuration.setSnmpServer(snmpServer);
+
       }
    }
 
@@ -1241,8 +1253,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void enterSs_community(Ss_communityContext ctx) {
       String name = ctx.name.getText();
-      Map<String, SnmpCommunity> communities = _configuration.getCf()
-            .getSnmpServer().getCommunities();
+      Map<String, SnmpCommunity> communities = _configuration.getSnmpServer()
+            .getCommunities();
       SnmpCommunity community = communities.get(name);
       if (community == null) {
          community = new SnmpCommunity(name);
@@ -1266,8 +1278,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       else {
          throw new BatfishException("Invalid host");
       }
-      Map<String, SnmpHost> hosts = _configuration.getCf().getSnmpServer()
-            .getHosts();
+      Map<String, SnmpHost> hosts = _configuration.getSnmpServer().getHosts();
       SnmpHost host = hosts.get(hostname);
       if (host == null) {
          host = new SnmpHost(hostname);
@@ -1656,6 +1667,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitDistribute_list_bgp_tail(
          Distribute_list_bgp_tailContext ctx) {
       todo(ctx, F_BGP_NEIGHBOR_DISTRIBUTE_LIST);
+   }
+
+   @Override
+   public void exitDomain_name(Domain_nameContext ctx) {
+      String domainName = ctx.hostname.getText();
+      _configuration.setDomainName(domainName);
+   }
+
+   @Override
+   public void exitDomain_name_server(Domain_name_serverContext ctx) {
+      Set<String> dnsServers = _configuration.getDnsServers();
+      String hostname = ctx.hostname.getText();
+      dnsServers.add(hostname);
    }
 
    @Override
@@ -2230,6 +2254,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitIf_switchport(If_switchportContext ctx) {
+      if (ctx.NO() != null) {
+         for (Interface iface : _currentInterfaces) {
+            iface.setSwitchportMode(SwitchportMode.NONE);
+         }
+      }
+   }
+
+   @Override
    public void exitIf_switchport_access(If_switchport_accessContext ctx) {
       if (ctx.vlan != null) {
          int vlan = toInteger(ctx.vlan);
@@ -2429,6 +2462,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    public void exitIp_default_gateway_stanza(
          Ip_default_gateway_stanzaContext ctx) {
       todo(ctx, F_IP_DEFAULT_GATEWAY);
+   }
+
+   @Override
+   public void exitIp_domain_name(Ip_domain_nameContext ctx) {
+      if (!_no) {
+         String domainName = ctx.hostname.getText();
+         _configuration.setDomainName(domainName);
+      }
+      else {
+         _configuration.setDomainName(null);
+      }
+
    }
 
    @Override
@@ -3798,11 +3843,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
    @Override
    public void exitS_domain_name(S_domain_nameContext ctx) {
-      StringBuilder sb = new StringBuilder();
-      for (Token namePart : ctx.name_parts) {
-         sb.append(namePart.getText());
-      }
-      String domainName = sb.toString();
+      String domainName = ctx.hostname.getText();
       _configuration.setDomainName(domainName);
    }
 
@@ -3832,9 +3873,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_ip_domain(S_ip_domainContext ctx) {
+      _no = false;
+   }
+
+   @Override
    public void exitS_ip_domain_name(S_ip_domain_nameContext ctx) {
-      String name = ctx.name.getText();
-      _configuration.setDomainName(name);
+      String domainName = ctx.hostname.getText();
+      _configuration.setDomainName(domainName);
+   }
+
+   @Override
+   public void exitS_ip_name_server(S_ip_name_serverContext ctx) {
+      Set<String> dnsServers = _configuration.getDnsServers();
+      String domainName = ctx.hostname.getText();
+      dnsServers.add(domainName);
    }
 
    @Override
@@ -4105,7 +4158,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          String trapName = ctx.snmp_trap_type.getText();
          SortedSet<String> subfeatureNames = new TreeSet<>(ctx.subfeature
                .stream().map(s -> s.getText()).collect(Collectors.toList()));
-         SortedMap<String, SortedSet<String>> traps = _configuration.getCf()
+         SortedMap<String, SortedSet<String>> traps = _configuration
                .getSnmpServer().getTraps();
          SortedSet<String> subfeatures = traps.get(trapName);
          if (subfeatures == null) {
@@ -4537,8 +4590,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    private void initInterface(Interface iface, ConfigurationFormat format) {
-      if (format == ConfigurationFormat.CISCO_IOS) {
+      switch (format) {
+      case CISCO_IOS:
          iface.setProxyArp(true);
+         break;
+
+      case ARISTA:
+         if (iface.getName().startsWith("Ethernet")) {
+            iface.setSwitchportMode(SwitchportMode.ACCESS);
+         }
+         break;
+
+      // $CASES-OMITTED$
+      default:
+         break;
+
       }
    }
 

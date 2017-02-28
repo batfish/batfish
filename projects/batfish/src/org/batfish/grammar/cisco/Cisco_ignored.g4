@@ -52,7 +52,6 @@ null_block
       | DEVICE
       | DHCPRELAY
       | DO STOP
-      | DOMAIN
       | DOT1X
       | DOT1X_ENABLE
       | DUAL_MODE_DEFAULT_VLAN
@@ -102,7 +101,6 @@ null_block
             | ICMP_ERRORS
             | INSPECT
             | INTERNAL
-            | NAME_SERVER
             | POLICY_LIST
             | RATE_LIMIT
             | RECEIVE
@@ -672,7 +670,6 @@ null_single
             | CLASSLESS
             | DEFAULT_NETWORK
             | DEVICE
-            | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
             | DVMRP

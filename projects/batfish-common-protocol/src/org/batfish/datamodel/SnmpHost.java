@@ -1,4 +1,4 @@
-package org.batfish.datamodel.vendor_family.cisco;
+package org.batfish.datamodel;
 
 import org.batfish.common.util.ComparableStructure;
 

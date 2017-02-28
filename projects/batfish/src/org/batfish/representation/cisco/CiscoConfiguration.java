@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -160,6 +162,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _controlPlaneAccessGroups;
 
+   private NavigableSet<String> _dnsServers;
+
    private String _domainName;
 
    private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
@@ -224,6 +228,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _snmpAccessLists;
 
+   private SnmpServer _snmpServer;
+
    private final Set<String> _sshAcls;
 
    private final Set<String> _sshIpv6Acls;
@@ -253,6 +259,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
+      _dnsServers = new TreeSet<>();
       _expandedCommunityLists = new TreeMap<>();
       _extendedAccessLists = new TreeMap<>();
       _extendedIpv6AccessLists = new TreeMap<>();
@@ -436,6 +443,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Vrf getDefaultVrf() {
       return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+   }
+
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
    }
 
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -636,6 +647,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Set<String> getSnmpAccessLists() {
       return _snmpAccessLists;
+   }
+
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
    }
 
    public Set<String> getSshAcls() {
@@ -911,6 +926,10 @@ public class CiscoConfiguration extends VendorConfiguration {
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
    }
 
    @Override
@@ -2775,6 +2794,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+      c.setDnsServers(_dnsServers);
 
       processLines();
       processFailoverSettings();
@@ -2803,6 +2823,12 @@ public class CiscoConfiguration extends VendorConfiguration {
       // initialize vrfs
       for (String vrfName : _vrfs.keySet()) {
          c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
+      }
+
+      // snmp server
+      if (_snmpServer != null) {
+         String snmpServerVrf = _snmpServer.getVrf();
+         c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
       }
 
       // convert as path access lists to vendor independent format

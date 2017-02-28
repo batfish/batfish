@@ -37,6 +37,9 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpHost;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
@@ -1433,6 +1436,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
    private RoutingInstance _currentRoutingInstance;
 
+   private SnmpCommunity _currentSnmpCommunity;
+
+   private SnmpServer _currentSnmpServer;
+
    private StaticRoute _currentStaticRoute;
 
    private Zone _currentToZone;
@@ -1577,6 +1584,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
          _currentInterface = new Interface(unitFullName);
          _currentInterface
                .setRoutingInstance(_currentRoutingInstance.getName());
+         _currentInterface.setParent(_currentMasterInterface);
          units.put(unitFullName, _currentInterface);
       }
    }
@@ -1623,18 +1631,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void enterInt_named(Int_namedContext ctx) {
       Interface currentInterface;
-      if (ctx.name == null) {
+      if (ctx.interface_id() == null) {
          currentInterface = _configuration.getGlobalMasterInterface();
       }
       else {
-         String ifaceName = ctx.name.getText();
+         String ifaceName = getInterfaceName(ctx.interface_id());
          Map<String, Interface> interfaces;
          String nodeDevicePrefix = "";
-         if (ctx.node == null) {
+         if (ctx.interface_id().node == null) {
             interfaces = _configuration.getInterfaces();
          }
          else {
-            String nodeDeviceName = ctx.node.getText();
+            String nodeDeviceName = ctx.interface_id().node.getText();
             nodeDevicePrefix = nodeDeviceName + ":";
             NodeDevice nodeDevice = _configuration.getNodeDevices()
                   .get(nodeDeviceName);
@@ -1650,6 +1658,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             currentInterface = new Interface(fullIfaceName);
             currentInterface
                   .setRoutingInstance(_currentRoutingInstance.getName());
+            currentInterface
+                  .setParent(_configuration.getGlobalMasterInterface());
             interfaces.put(fullIfaceName, currentInterface);
          }
       }
@@ -2054,6 +2064,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterS_snmp(S_snmpContext ctx) {
+      SnmpServer snmpServer = _currentRoutingInstance.getSnmpServer();
+      if (snmpServer == null) {
+         snmpServer = new SnmpServer();
+         snmpServer.setVrf(_currentRoutingInstance.getName());
+         _currentRoutingInstance.setSnmpServer(snmpServer);
+      }
+      _currentSnmpServer = snmpServer;
+   }
+
+   @Override
    public void enterSeik_gateway(Seik_gatewayContext ctx) {
       String name = ctx.name.getText();
       _currentIkeGateway = _configuration.getIkeGateways().get(name);
@@ -2246,6 +2267,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                      + "\" because a different type of address-book entry with that name already exists",
                e);
       }
+   }
+
+   @Override
+   public void enterSnmp_community(Snmp_communityContext ctx) {
+      String community = ctx.comm.getText();
+      SnmpCommunity snmpCommunity = _currentSnmpServer.getCommunities()
+            .get(community);
+      if (snmpCommunity == null) {
+         snmpCommunity = new SnmpCommunity(community);
+         _currentSnmpServer.getCommunities().put(community, snmpCommunity);
+      }
+      _currentSnmpCommunity = snmpCommunity;
    }
 
    @Override
@@ -2713,6 +2746,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    @Override
    public void exitI_enable(I_enableContext ctx) {
       _currentInterface.setActive(true);
+   }
+
+   @Override
+   public void exitI_mtu(I_mtuContext ctx) {
+      int size = toInt(ctx.size);
+      _currentInterface.setMtu(size);
    }
 
    @Override
@@ -3310,6 +3349,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitS_snmp(S_snmpContext ctx) {
+      _currentSnmpServer = null;
+   }
+
+   @Override
    public void exitSe_zones(Se_zonesContext ctx) {
       _hasZones = true;
    }
@@ -3685,6 +3729,44 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void exitSnmp_community(Snmp_communityContext ctx) {
+      _currentSnmpCommunity = null;
+   }
+
+   @Override
+   public void exitSnmpc_authorization(Snmpc_authorizationContext ctx) {
+      if (ctx.READ_ONLY() != null) {
+         _currentSnmpCommunity.setRo(true);
+      }
+      else if (ctx.READ_WRITE() != null) {
+         _currentSnmpCommunity.setRw(true);
+      }
+      else {
+         throw new BatfishException("Invalid authorization");
+      }
+   }
+
+   @Override
+   public void exitSnmpc_client_list_name(Snmpc_client_list_nameContext ctx) {
+      String list = ctx.name.getText();
+      _currentSnmpCommunity.setAccessList(list);
+      // TODO: verify whether both ipv4 and ipv6 list should be set with this
+      // command
+      _currentSnmpCommunity.setAccessList6(list);
+   }
+
+   @Override
+   public void exitSnmptgtd_targets(Snmptgtd_targetsContext ctx) {
+      Ip ip = new Ip(ctx.target.getText());
+      String name = ip.toString();
+      SnmpHost host = _currentSnmpServer.getHosts().get(name);
+      if (host == null) {
+         host = new SnmpHost(ip.toString());
+         _currentSnmpServer.getHosts().put(name, host);
+      }
+   }
+
+   @Override
    public void exitSy_default_address_selection(
          Sy_default_address_selectionContext ctx) {
       _configuration.setDefaultAddressSelection(true);
@@ -3702,8 +3784,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentRoutingInstance.setHostname(hostname);
    }
 
+   @Override
+   public void exitSy_name_server(Sy_name_serverContext ctx) {
+      Set<String> dnsServers = _configuration.getDnsServers();
+      String hostname = ctx.hostname.getText();
+      dnsServers.add(hostname);
+   }
+
    public JuniperConfiguration getConfiguration() {
       return _configuration;
+   }
+
+   private String getInterfaceName(Interface_idContext ctx) {
+      String name = ctx.name.getText();
+      if (ctx.suffix != null) {
+         name += ":" + ctx.suffix.getText();
+      }
+      return name;
    }
 
    private String initIkeProposal(IkeProposal proposal) {

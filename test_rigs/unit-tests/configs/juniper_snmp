@@ -1,6 +1,7 @@
 #
 set system host-name juniper_snmp
 set snmp community "dummycommunity" authorization read-only
+set snmp community "dummycommunity" client-list-name bippetyboo
 set snmp community "dummycommunity" clients 1.2.3.0/24
 set snmp traceoptions flag pdu
 set snmp trap-group trap-destinations categories authentication

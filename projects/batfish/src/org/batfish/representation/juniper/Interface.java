@@ -51,9 +51,13 @@ public class Interface extends ComparableStructure<String> {
 
    private String _incomingFilter;
 
+   private transient boolean _inherited;
+
    private final IsisInterfaceSettings _isisSettings;
 
    private IsoAddress _isoAddress;
+
+   private Integer _mtu;
 
    private int _nativeVlan;
 
@@ -68,6 +72,8 @@ public class Interface extends ComparableStructure<String> {
    private final Set<Ip> _ospfPassiveAreas;
 
    private String _outgoingFilter;
+
+   private Interface _parent;
 
    private Prefix _preferredPrefix;
 
@@ -145,6 +151,10 @@ public class Interface extends ComparableStructure<String> {
       return _isoAddress;
    }
 
+   public Integer getMtu() {
+      return _mtu;
+   }
+
    public int getNativeVlan() {
       return _nativeVlan;
    }
@@ -171,6 +181,10 @@ public class Interface extends ComparableStructure<String> {
 
    public String getOutgoingFilter() {
       return _outgoingFilter;
+   }
+
+   public Interface getParent() {
+      return _parent;
    }
 
    public Prefix getPreferredPrefix() {
@@ -201,6 +215,18 @@ public class Interface extends ComparableStructure<String> {
       return _vrrpGroups;
    }
 
+   public void inheritUnsetFields() {
+      if (_parent != null) {
+         if (!_inherited) {
+            _inherited = true;
+            _parent.inheritUnsetFields();
+            if (_mtu == null) {
+               _mtu = _parent._mtu;
+            }
+         }
+      }
+   }
+
    public void setAccessVlan(int vlan) {
       _accessVlan = vlan;
    }
@@ -219,6 +245,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setIsoAddress(IsoAddress address) {
       _isoAddress = address;
+   }
+
+   public void setMtu(Integer mtu) {
+      _mtu = mtu;
    }
 
    public void setNativeVlan(int vlan) {
@@ -243,6 +273,10 @@ public class Interface extends ComparableStructure<String> {
 
    public void setOutgoingFilter(String accessListName) {
       _outgoingFilter = accessListName;
+   }
+
+   public void setParent(Interface parent) {
+      _parent = parent;
    }
 
    public void setPreferredPrefix(Prefix prefix) {

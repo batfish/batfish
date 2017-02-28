@@ -313,6 +313,7 @@
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_policy_options.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_routing_instances.g4"/>
                <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_security.g4"/>
+               <fileset dir="src/org/batfish/grammar/flatjuniper" includes="FlatJuniper_snmp.g4"/>
             </dependencies>
          </antlr4parser>
          <antlr4parser grammar.name="FlatVyosParser" grammar.packagedir="org/batfish/grammar/flatvyos">

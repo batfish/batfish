@@ -47,6 +47,7 @@ ri_named_routing_instance
       | ri_null
       | ri_protocols
       | ri_route_distinguisher
+      | ri_snmp
       | ri_vrf_export
       | ri_vrf_import
       | ri_vrf_table_label
@@ -64,7 +65,6 @@ ri_null
       | FORWARDING_OPTIONS
       | PROVIDER_TUNNEL
       | SERVICES
-      | SNMP
    ) null_filler
 ;
 
@@ -80,6 +80,11 @@ ri_route_distinguisher
       DEC
       | IP_ADDRESS
    ) COLON DEC
+;
+
+ri_snmp
+:
+   s_snmp
 ;
 
 ri_vrf_export

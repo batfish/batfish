@@ -76,6 +76,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private LineAction _defaultInboundAction;
 
+   private NavigableSet<String> _dnsServers;
+
    private String _domainName;
 
    private NavigableMap<String, IkeGateway> _ikeGateways;
@@ -137,6 +139,7 @@ public final class Configuration extends ComparableStructure<String> {
       super(hostname);
       _asPathAccessLists = new TreeMap<>();
       _communityLists = new TreeMap<>();
+      _dnsServers = new TreeSet<>();
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
       _ikeProposals = new TreeMap<>();
@@ -193,6 +196,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonIgnore
    public Vrf getDefaultVrf() {
       return _vrfs.get(DEFAULT_VRF_NAME);
+   }
+
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
    }
 
    @JsonPropertyDescription("Domain name of this node.")
@@ -429,6 +436,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    public void setDefaultInboundAction(LineAction defaultInboundAction) {
       _defaultInboundAction = defaultInboundAction;
+   }
+
+   public void setDnsServers(NavigableSet<String> dnsServers) {
+      _dnsServers = dnsServers;
    }
 
    public void setDomainName(String domainName) {

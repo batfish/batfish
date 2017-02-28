@@ -1,4 +1,4 @@
-package org.batfish.datamodel.vendor_family.cisco;
+package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.SortedMap;
@@ -18,6 +18,8 @@ public class SnmpServer implements Serializable {
 
    private SortedMap<String, SortedSet<String>> _traps;
 
+   private String _vrf;
+
    public SnmpServer() {
       _communities = new TreeMap<>();
       _hosts = new TreeMap<>();
@@ -36,6 +38,10 @@ public class SnmpServer implements Serializable {
       return _traps;
    }
 
+   public String getVrf() {
+      return _vrf;
+   }
+
    public void setCommunities(SortedMap<String, SnmpCommunity> communities) {
       _communities = communities;
    }
@@ -46,6 +52,10 @@ public class SnmpServer implements Serializable {
 
    public void setTraps(SortedMap<String, SortedSet<String>> traps) {
       _traps = traps;
+   }
+
+   public void setVrf(String vrf) {
+      _vrf = vrf;
    }
 
 }

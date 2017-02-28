@@ -8,7 +8,7 @@ public final class Version {
 
    private static final String UNKNOWN_VERSION = "0.0.0";
 
-   private static final String VERSION = "0.6.0";
+   private static final String VERSION = "0.7.0";
 
    public static void checkCompatibleVersion(String myName, String otherName,
          String otherVersion) {

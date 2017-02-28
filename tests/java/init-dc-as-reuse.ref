@@ -2,19 +2,19 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
-      "parseStatus" : {
-        "plane_0_spine_0" : "PASSED",
-        "plane_1_spine_0" : "PASSED",
-        "pod_0_leaf_0" : "PASSED",
-        "pod_0_leaf_1" : "PASSED",
-        "pod_0_tor_0" : "PASSED",
-        "pod_0_tor_1" : "PASSED",
-        "pod_1_leaf_0" : "PASSED",
-        "pod_1_leaf_1" : "PASSED",
-        "pod_1_tor_0" : "PASSED",
-        "pod_1_tor_1" : "PASSED"
-      },
-      "version" : "0.6.0"
+            "parseStatus" : {
+              "plane_0_spine_0" : "PASSED",
+              "plane_1_spine_0" : "PASSED",
+              "pod_0_leaf_0" : "PASSED",
+              "pod_0_leaf_1" : "PASSED",
+              "pod_0_tor_0" : "PASSED",
+              "pod_0_tor_1" : "PASSED",
+              "pod_1_leaf_0" : "PASSED",
+              "pod_1_leaf_1" : "PASSED",
+              "pod_1_tor_0" : "PASSED",
+              "pod_1_tor_1" : "PASSED"
+            },
+        "version" : "0.7.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -110,7 +110,7 @@
           ]
         }
       },
-      "version" : "0.6.0"
+      "version" : "0.7.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
