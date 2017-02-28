@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security;
+FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -53,6 +53,7 @@ s_common
    | s_routing_instances
    | s_routing_options
    | s_security
+   | s_snmp
    | s_system
    | s_vlans
 ;
@@ -113,6 +114,7 @@ s_system
       sy_default_address_selection
       | sy_domain_name
       | sy_host_name
+      | sy_name_server
       | sy_null
    )
 ;
@@ -171,6 +173,11 @@ sy_host_name
    HOST_NAME variable
 ;
 
+sy_name_server
+:
+   NAME_SERVER hostname = variable
+;
+
 sy_null
 :
    (
@@ -190,7 +197,6 @@ sy_null
       | MAX_CONFIGURATIONS_ON_FLASH
       | MAX_CONFIGURATION_ROLLBACKS
       | NAME_RESOLUTION
-      | NAME_SERVER
       | NO_REDIRECTS
       | NTP
       | PORTS

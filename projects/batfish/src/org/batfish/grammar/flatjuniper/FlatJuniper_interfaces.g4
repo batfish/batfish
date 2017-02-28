@@ -564,12 +564,7 @@ int_named
 :
    (
       WILDCARD
-      |
-      (
-         (
-            node = variable COLON
-         )? name = variable_interface_name
-      )
+      | interface_id
    )
    (
       i_common
@@ -608,13 +603,4 @@ speed_abbreviation
 :
    G
    | M
-;
-
-variable_interface_name
-:
-   ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | DEC | NEWLINE |
-   OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
-   (
-      COLON DEC
-   )?
 ;

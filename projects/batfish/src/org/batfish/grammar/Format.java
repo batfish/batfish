@@ -45,8 +45,8 @@ public final class Format {
    }
 
    private ConfigurationFormat checkArista() {
-      Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
-            .matcher(_fileText);
+      Matcher aristaMatcher = Pattern
+            .compile("(?m)^.*boot system flash.*\\.swi").matcher(_fileText);
       if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
       }

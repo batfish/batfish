@@ -342,6 +342,11 @@ AUTHENTICATION_TYPE
    'authentication-type'
 ;
 
+AUTHORIZATION
+:
+   'authorization'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -417,6 +422,11 @@ BRIDGE_DOMAINS
    'bridge-domains'
 ;
 
+CATEGORIES
+:
+   'categories'
+;
+
 CCC
 :
    'ccc'
@@ -445,6 +455,16 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT_LIST_NAME
+:
+   'client-list-name'
+;
+
+CLIENTS
+:
+   'clients'
 ;
 
 CLUSTER
@@ -499,6 +519,11 @@ CONNECTIONS
 CONNECTIONS_LIMIT
 :
    'connections-limit'
+;
+
+CONTACT
+:
+   'contact'
 ;
 
 COS_NEXT_HOP_MAP
@@ -3616,6 +3641,16 @@ REALAUDIO
    'realaudio'
 ;
 
+READ_ONLY
+:
+   'read-only'
+;
+
+READ_WRITE
+:
+   'read-write'
+;
+
 READVERTISE
 :
    'readvertise'
@@ -4211,6 +4246,11 @@ TARGETED_BROADCAST
    'targeted-broadcast'
 ;
 
+TARGETS
+:
+   'targets'
+;
+
 TCP
 :
    'tcp'
@@ -4319,6 +4359,21 @@ TRACK
 TRAFFIC_ENGINEERING
 :
    'traffic-engineering'
+;
+
+TRAP_DESTINATIONS
+:
+   'trap-destinations'
+;
+
+TRAP_GROUP
+:
+   'trap-group'
+;
+
+TRAP_OPTIONS
+:
+   'trap-options'
 ;
 
 TRAPS

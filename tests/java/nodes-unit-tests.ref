@@ -1574,6 +1574,27 @@
             }
           }
         },
+        "cisco_domain" : {
+          "name" : "cisco_domain",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "dnsServers" : [
+            "1.2.3.4",
+            "2.3.4.5"
+          ],
+          "domainName" : "my.domain.name",
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "cisco_domain"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "cisco_dot11" : {
           "name" : "cisco_dot11",
           "configurationFormat" : "CISCO_NX",
@@ -2233,7 +2254,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "137.164.25.57/30",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2251,7 +2272,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2269,7 +2290,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2287,7 +2308,7 @@
               "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2881,7 +2902,6 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "domainName" : "my.domain.name",
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -2959,7 +2979,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.3.3.0/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2981,7 +3001,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.1.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3284,7 +3304,12 @@
           "defaultInboundAction" : "ACCEPT",
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_snmp",
+              "hostname" : "cisco_snmp"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
               "snmpServer" : {
                 "communities" : {
                   "dummycommunity" : {
@@ -3386,13 +3411,9 @@
                     "vlancreate",
                     "vlandelete"
                   ]
-                }
+                },
+                "vrf" : "default"
               }
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default"
             }
           }
         },
@@ -6421,7 +6442,27 @@
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
-              "name" : "default"
+              "name" : "default",
+              "snmpServer" : {
+                "communities" : {
+                  "\"dummycommunity\"" : {
+                    "name" : "\"dummycommunity\"",
+                    "accessList" : "bippetyboo",
+                    "accessList6" : "bippetyboo",
+                    "ro" : true,
+                    "rw" : false
+                  }
+                },
+                "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  },
+                  "2.3.4.5" : {
+                    "name" : "2.3.4.5"
+                  }
+                },
+                "vrf" : "default"
+              }
             }
           }
         },

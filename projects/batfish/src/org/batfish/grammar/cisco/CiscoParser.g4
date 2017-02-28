@@ -300,6 +300,16 @@ dhcp_profile_null
    ) ~NEWLINE* NEWLINE
 ;
 
+domain_name
+:
+   NAME hostname = variable_hostname NEWLINE
+;
+
+domain_name_server
+:
+   NAME_SERVER hostname = variable_hostname NEWLINE
+;
+
 dspf_null
 :
    NO?
@@ -505,6 +515,22 @@ ip_dhcp_null
       | NETWORK
       | NEXT_SERVER
       | OPTION
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_domain_name
+:
+   NAME
+   (
+      VRF vrf = variable
+   )? hostname = variable_hostname NEWLINE
+;
+
+ip_domain_null
+:
+   (
+      LIST
+      | LOOKUP
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1735,12 +1761,18 @@ s_dial_peer
    )*
 ;
 
+s_domain
+:
+   DOMAIN
+   (
+      domain_name
+      | domain_name_server
+   )
+;
+
 s_domain_name
 :
-   DOMAIN_NAME
-   (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+   DOMAIN_NAME hostname = variable_hostname NEWLINE
 ;
 
 s_dot11
@@ -1870,12 +1902,26 @@ s_ip_dhcp
    )*
 ;
 
+s_ip_domain
+:
+   NO? IP DOMAIN
+   (
+      ip_domain_name
+      | ip_domain_null
+   )
+;
+
 s_ip_domain_name
 :
-   IP DOMAIN_NAME name = variable
+   IP DOMAIN_NAME hostname = variable_hostname
    (
       USE_VRF variable
    )? NEWLINE
+;
+
+s_ip_name_server
+:
+   IP NAME_SERVER hostname = variable_hostname NEWLINE
 ;
 
 s_ip_nat
@@ -2509,6 +2555,7 @@ stanza
    | s_ctl_file
    | s_dhcp
    | s_dial_peer
+   | s_domain
    | s_domain_name
    | s_dot11
    | s_dspfarm
@@ -2526,7 +2573,9 @@ stanza
    | s_hostname
    | s_interface
    | s_ip_dhcp
+   | s_ip_domain
    | s_ip_domain_name
+   | s_ip_name_server
    | s_ip_nat
    | s_ip_pim
    | s_ip_sla

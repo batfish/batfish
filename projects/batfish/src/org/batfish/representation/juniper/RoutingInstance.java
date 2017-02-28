@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.SnmpServer;
 
 public class RoutingInstance implements Serializable {
 
@@ -52,6 +53,8 @@ public class RoutingInstance implements Serializable {
    private final Map<String, RoutingInformationBase> _ribs;
 
    private Ip _routerId;
+
+   private SnmpServer _snmpServer;
 
    private final JuniperSystem _system;
 
@@ -155,6 +158,10 @@ public class RoutingInstance implements Serializable {
       return _routerId;
    }
 
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
+   }
+
    public JuniperSystem getSystem() {
       return _system;
    }
@@ -182,6 +189,10 @@ public class RoutingInstance implements Serializable {
 
    public void setRouterId(Ip routerId) {
       _routerId = routerId;
+   }
+
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
    }
 
 }

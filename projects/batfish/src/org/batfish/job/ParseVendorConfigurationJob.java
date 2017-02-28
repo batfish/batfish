@@ -154,7 +154,7 @@ public class ParseVendorConfigurationJob
                _settings, format);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
-               _warnings, _settings.getUnrecognizedAsRedFlag());
+               format, _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 
       case HOST:

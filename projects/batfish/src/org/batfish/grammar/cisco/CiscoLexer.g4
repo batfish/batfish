@@ -4414,6 +4414,11 @@ LOGOUT_WARNING
    'logout-warning'
 ;
 
+LOOKUP
+:
+   'lookup'
+;
+
 LOOPBACK
 :
    'loopback'

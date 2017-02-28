@@ -40,6 +40,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -59,7 +60,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.0.1.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -81,7 +82,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.12.11.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -104,7 +105,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.1.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -886,6 +887,27 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
+                  "1.10.1.1/32" : {
+                    "name" : "1.10.1.1/32",
+                    "address" : "1.10.1.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 16843009,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
+                    "group" : "as1",
+                    "localAs" : 1,
+                    "localIp" : "1.1.1.1",
+                    "remoteAs" : 1,
+                    "remotePrefix" : "1.10.1.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "3.2.2.2/32" : {
                     "name" : "3.2.2.2/32",
                     "address" : "3.2.2.2",
@@ -924,27 +946,6 @@
                     "remotePrefix" : "5.6.7.8/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : false,
-                    "vrf" : "default"
-                  },
-                  "1.10.1.1/32" : {
-                    "name" : "1.10.1.1/32",
-                    "address" : "1.10.1.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 16843009,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
-                    "group" : "as1",
-                    "localAs" : 1,
-                    "localIp" : "1.1.1.1",
-                    "remoteAs" : 1,
-                    "remotePrefix" : "1.10.1.1/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
                     "vrf" : "default"
                   },
                   "10.12.11.2/32" : {
@@ -1041,6 +1042,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -1060,7 +1062,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.0.2.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1082,7 +1084,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.13.22.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1104,7 +1106,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.14.22.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1127,7 +1129,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.2.2.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -1951,28 +1953,6 @@
                     "sendCommunity" : true,
                     "vrf" : "default"
                   },
-                  "10.14.22.4/32" : {
-                    "name" : "10.14.22.4/32",
-                    "address" : "10.14.22.4",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 16908802,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
-                    "group" : "as4",
-                    "importPolicy" : "as4_to_as1",
-                    "localAs" : 1,
-                    "localIp" : "10.14.22.1",
-                    "remoteAs" : 4,
-                    "remotePrefix" : "10.14.22.4/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : false,
-                    "vrf" : "default"
-                  },
                   "10.13.22.3/32" : {
                     "name" : "10.13.22.3/32",
                     "address" : "10.13.22.3",
@@ -1993,6 +1973,28 @@
                     "remotePrefix" : "10.13.22.3/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "10.14.22.4/32" : {
+                    "name" : "10.14.22.4/32",
+                    "address" : "10.14.22.4",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 16908802,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
+                    "group" : "as4",
+                    "importPolicy" : "as4_to_as1",
+                    "localAs" : 1,
+                    "localIp" : "10.14.22.1",
+                    "remoteAs" : 4,
+                    "remotePrefix" : "10.14.22.4/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : false,
                     "vrf" : "default"
                   }
                 },
@@ -2026,6 +2028,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -2045,7 +2048,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.0.1.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2068,7 +2071,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.0.2.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2091,7 +2094,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "1.10.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2299,27 +2302,6 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
-                  "1.2.2.2/32" : {
-                    "name" : "1.2.2.2/32",
-                    "address" : "1.2.2.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 17432833,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~",
-                    "group" : "as1",
-                    "localAs" : 1,
-                    "localIp" : "1.10.1.1",
-                    "remoteAs" : 1,
-                    "remotePrefix" : "1.2.2.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
                   "1.1.1.1/32" : {
                     "name" : "1.1.1.1/32",
                     "address" : "1.1.1.1",
@@ -2337,6 +2319,27 @@
                     "localIp" : "1.10.1.1",
                     "remoteAs" : 1,
                     "remotePrefix" : "1.1.1.1/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "1.2.2.2/32" : {
+                    "name" : "1.2.2.2/32",
+                    "address" : "1.2.2.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 17432833,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~",
+                    "group" : "as1",
+                    "localAs" : 1,
+                    "localIp" : "1.10.1.1",
+                    "remoteAs" : 1,
+                    "remotePrefix" : "1.2.2.2/32",
                     "routeReflectorClient" : true,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -2404,6 +2407,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -2424,7 +2428,7 @@
               "ospfPassive" : false,
               "outgoingFilter" : "INSIDE_TO_AS1",
               "prefix" : "10.12.11.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2447,7 +2451,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.11.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2470,7 +2474,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.12.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -2493,7 +2497,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3330,6 +3334,27 @@
               ],
               "bgpProcess" : {
                 "neighbors" : {
+                  "2.1.2.1/32" : {
+                    "name" : "2.1.2.1/32",
+                    "address" : "2.1.2.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620225,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.1.1",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.2.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
@@ -3369,27 +3394,6 @@
                     "localIp" : "10.12.11.2",
                     "remoteAs" : 1,
                     "remotePrefix" : "10.12.11.1/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "2.1.2.1/32" : {
-                    "name" : "2.1.2.1/32",
-                    "address" : "2.1.2.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620225,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.1.1",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -3458,6 +3462,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -3478,7 +3483,7 @@
               "ospfPassive" : false,
               "outgoingFilter" : "INSIDE_TO_AS3",
               "prefix" : "10.23.21.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3501,7 +3506,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.21.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3524,7 +3529,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.22.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -3547,7 +3552,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4365,6 +4370,27 @@
               ],
               "bgpProcess" : {
                 "neighbors" : {
+                  "2.1.2.1/32" : {
+                    "name" : "2.1.2.1/32",
+                    "address" : "2.1.2.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620226,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.1.2",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.2.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
@@ -4407,27 +4433,6 @@
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
-                  },
-                  "2.1.2.1/32" : {
-                    "name" : "2.1.2.1/32",
-                    "address" : "2.1.2.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620226,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.1.2",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.2.1/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
                   }
                 },
                 "routerId" : "2.1.1.2"
@@ -4461,6 +4466,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -4480,7 +4486,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.11.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4503,7 +4509,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.21.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4527,7 +4533,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.12.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4551,7 +4557,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.11.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4574,7 +4580,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.2.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -4867,48 +4873,6 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
-                  "2.1.1.2/32" : {
-                    "name" : "2.1.1.2/32",
-                    "address" : "2.1.1.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620481,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.2.1",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.1.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "2.1.3.2/32" : {
-                    "name" : "2.1.3.2/32",
-                    "address" : "2.1.3.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620481,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.2.1",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.3.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
                   "2.1.1.1/32" : {
                     "name" : "2.1.1.1/32",
                     "address" : "2.1.1.1",
@@ -4930,6 +4894,27 @@
                     "sendCommunity" : true,
                     "vrf" : "default"
                   },
+                  "2.1.1.2/32" : {
+                    "name" : "2.1.1.2/32",
+                    "address" : "2.1.1.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620481,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.2.1",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.1.2/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.3.1/32" : {
                     "name" : "2.1.3.1/32",
                     "address" : "2.1.3.1",
@@ -4947,6 +4932,27 @@
                     "localIp" : "2.1.2.1",
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.1/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "2.1.3.2/32" : {
+                    "name" : "2.1.3.2/32",
+                    "address" : "2.1.3.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620481,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.2.1",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.3.2/32",
                     "routeReflectorClient" : true,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -4986,6 +4992,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -5005,7 +5012,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.22.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5028,7 +5035,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.12.12.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5051,7 +5058,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.21.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5074,7 +5081,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.22.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5097,7 +5104,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.2.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5355,48 +5362,6 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
-                  "2.1.1.2/32" : {
-                    "name" : "2.1.1.2/32",
-                    "address" : "2.1.1.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620482,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.2.2",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.1.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "2.1.3.2/32" : {
-                    "name" : "2.1.3.2/32",
-                    "address" : "2.1.3.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620482,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.2.2",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.3.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
                   "2.1.1.1/32" : {
                     "name" : "2.1.1.1/32",
                     "address" : "2.1.1.1",
@@ -5418,6 +5383,27 @@
                     "sendCommunity" : true,
                     "vrf" : "default"
                   },
+                  "2.1.1.2/32" : {
+                    "name" : "2.1.1.2/32",
+                    "address" : "2.1.1.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620482,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.1.2~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.2.2",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.1.2/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.3.1/32" : {
                     "name" : "2.1.3.1/32",
                     "address" : "2.1.3.1",
@@ -5435,6 +5421,27 @@
                     "localIp" : "2.1.2.2",
                     "remoteAs" : 2,
                     "remotePrefix" : "2.1.3.1/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "2.1.3.2/32" : {
+                    "name" : "2.1.3.2/32",
+                    "address" : "2.1.3.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620482,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.2.2",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.3.2/32",
                     "routeReflectorClient" : true,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -5486,6 +5493,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -5504,7 +5512,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.34.101.4/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5526,7 +5534,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.34.201.4/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5549,7 +5557,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.128.0.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5572,7 +5580,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.128.1.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -5594,7 +5602,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.1.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6166,6 +6174,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -6185,7 +6194,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.21.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6208,7 +6217,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.11.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6230,7 +6239,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.34.101.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6253,7 +6262,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.3.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6705,6 +6714,27 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
+                  "2.1.2.1/32" : {
+                    "name" : "2.1.2.1/32",
+                    "address" : "2.1.2.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620737,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.3.1",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.2.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
@@ -6744,27 +6774,6 @@
                     "localIp" : "2.34.101.3",
                     "remoteAs" : 65001,
                     "remotePrefix" : "2.34.101.4/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "2.1.2.1/32" : {
-                    "name" : "2.1.2.1/32",
-                    "address" : "2.1.2.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620737,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.3.1",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -6813,6 +6822,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -6832,7 +6842,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.22.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6855,7 +6865,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.23.12.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6877,7 +6887,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.34.201.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -6900,7 +6910,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "2.1.3.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7352,6 +7362,27 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
+                  "2.1.2.1/32" : {
+                    "name" : "2.1.2.1/32",
+                    "address" : "2.1.2.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 33620738,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
+                    "group" : "as2",
+                    "localAs" : 2,
+                    "localIp" : "2.1.3.2",
+                    "remoteAs" : 2,
+                    "remotePrefix" : "2.1.2.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "2.1.2.2/32" : {
                     "name" : "2.1.2.2/32",
                     "address" : "2.1.2.2",
@@ -7391,27 +7422,6 @@
                     "localIp" : "2.34.201.3",
                     "remoteAs" : 65001,
                     "remotePrefix" : "2.34.201.4/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "2.1.2.1/32" : {
-                    "name" : "2.1.2.1/32",
-                    "address" : "2.1.2.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 33620738,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
-                    "group" : "as2",
-                    "localAs" : 2,
-                    "localIp" : "2.1.3.2",
-                    "remoteAs" : 2,
-                    "remotePrefix" : "2.1.2.1/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -7480,6 +7490,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -7498,7 +7509,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.23.21.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7521,7 +7532,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.0.1.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -7544,7 +7555,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.1.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -8276,6 +8287,27 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
+                  "3.10.1.1/32" : {
+                    "name" : "3.10.1.1/32",
+                    "address" : "3.10.1.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 50397441,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
+                    "group" : "as3",
+                    "localAs" : 3,
+                    "localIp" : "3.1.1.1",
+                    "remoteAs" : 3,
+                    "remotePrefix" : "3.10.1.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "10.23.21.2/32" : {
                     "name" : "10.23.21.2/32",
                     "address" : "10.23.21.2",
@@ -8294,27 +8326,6 @@
                     "localIp" : "10.23.21.3",
                     "remoteAs" : 2,
                     "remotePrefix" : "10.23.21.2/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "3.10.1.1/32" : {
-                    "name" : "3.10.1.1/32",
-                    "address" : "3.10.1.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 50397441,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
-                    "group" : "as3",
-                    "localAs" : 3,
-                    "localIp" : "3.1.1.1",
-                    "remoteAs" : 3,
-                    "remotePrefix" : "3.10.1.1/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -8381,6 +8392,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -8400,7 +8412,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.0.2.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -8422,7 +8434,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "10.13.22.3/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -8445,7 +8457,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.2.2.2/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9120,6 +9132,27 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
+                  "3.10.1.1/32" : {
+                    "name" : "3.10.1.1/32",
+                    "address" : "3.10.1.1",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 50463234,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
+                    "group" : "as3",
+                    "localAs" : 3,
+                    "localIp" : "3.2.2.2",
+                    "remoteAs" : 3,
+                    "remotePrefix" : "3.10.1.1/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
                   "10.13.22.1/32" : {
                     "name" : "10.13.22.1/32",
                     "address" : "10.13.22.1",
@@ -9138,27 +9171,6 @@
                     "localIp" : "10.13.22.3",
                     "remoteAs" : 1,
                     "remotePrefix" : "10.13.22.1/32",
-                    "routeReflectorClient" : false,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
-                  "3.10.1.1/32" : {
-                    "name" : "3.10.1.1/32",
-                    "address" : "3.10.1.1",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 50463234,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
-                    "group" : "as3",
-                    "localAs" : 3,
-                    "localIp" : "3.2.2.2",
-                    "remoteAs" : 3,
-                    "remotePrefix" : "3.10.1.1/32",
                     "routeReflectorClient" : false,
                     "sendCommunity" : true,
                     "vrf" : "default"
@@ -9193,6 +9205,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "domainName" : "lab.local",
           "interfaces" : {
             "FastEthernet0/0" : {
               "name" : "FastEthernet0/0",
@@ -9212,7 +9225,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.0.2.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9235,7 +9248,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.0.1.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9257,7 +9270,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "90.90.90.1/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9279,7 +9292,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "90.90.90.2/24",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9302,7 +9315,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "prefix" : "3.10.1.1/32",
-              "proxyArp" : false,
+              "proxyArp" : true,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "vrf" : "default"
@@ -9522,27 +9535,6 @@
               "name" : "default",
               "bgpProcess" : {
                 "neighbors" : {
-                  "3.2.2.2/32" : {
-                    "name" : "3.2.2.2/32",
-                    "address" : "3.2.2.2",
-                    "advertiseExternal" : false,
-                    "advertiseInactive" : false,
-                    "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : false,
-                    "clusterId" : 50987265,
-                    "defaultMetric" : 0,
-                    "dynamic" : false,
-                    "ebgpMultihop" : false,
-                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
-                    "group" : "as3",
-                    "localAs" : 3,
-                    "localIp" : "3.10.1.1",
-                    "remoteAs" : 3,
-                    "remotePrefix" : "3.2.2.2/32",
-                    "routeReflectorClient" : true,
-                    "sendCommunity" : true,
-                    "vrf" : "default"
-                  },
                   "3.1.1.1/32" : {
                     "name" : "3.1.1.1/32",
                     "address" : "3.1.1.1",
@@ -9560,6 +9552,27 @@
                     "localIp" : "3.10.1.1",
                     "remoteAs" : 3,
                     "remotePrefix" : "3.1.1.1/32",
+                    "routeReflectorClient" : true,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  },
+                  "3.2.2.2/32" : {
+                    "name" : "3.2.2.2/32",
+                    "address" : "3.2.2.2",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "clusterId" : 50987265,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
+                    "group" : "as3",
+                    "localAs" : 3,
+                    "localIp" : "3.10.1.1",
+                    "remoteAs" : 3,
+                    "remotePrefix" : "3.2.2.2/32",
                     "routeReflectorClient" : true,
                     "sendCommunity" : true,
                     "vrf" : "default"

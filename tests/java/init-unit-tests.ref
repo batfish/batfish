@@ -34,6 +34,7 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
+        "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
         "cisco_dspfarm" : "PASSED",
@@ -162,7 +163,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.6.0",
+      "version" : "0.7.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -317,6 +318,11 @@
           ],
           "ssh ipv6 access-list" : [
             "ipv6-vty-acl"
+          ]
+        },
+        "juniper_snmp" : {
+          "prefix-list" : [
+            "bippetyboo"
           ]
         },
         "named_and_numbered_lists" : {
@@ -598,7 +604,7 @@
           ]
         }
       },
-      "version" : "0.6.0",
+      "version" : "0.7.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -724,6 +730,7 @@
         "cisco_controller" : "PASSED",
         "cisco_crypto" : "PASSED",
         "cisco_dhcp" : "PASSED",
+        "cisco_domain" : "PASSED",
         "cisco_dot11" : "PASSED",
         "cisco_dot1x" : "PASSED",
         "cisco_dspfarm" : "PASSED",
