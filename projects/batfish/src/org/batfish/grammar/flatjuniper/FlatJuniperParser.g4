@@ -1,7 +1,7 @@
 parser grammar FlatJuniperParser;
 
 import
-FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp;
+FlatJuniper_applications, FlatJuniper_common, FlatJuniper_fabric, FlatJuniper_firewall, FlatJuniper_interfaces, FlatJuniper_policy_options, FlatJuniper_protocols, FlatJuniper_routing_instances, FlatJuniper_security, FlatJuniper_snmp, FlatJuniper_system;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -107,18 +107,6 @@ s_null
    | ri_null
 ;
 
-s_system
-:
-   SYSTEM
-   (
-      sy_default_address_selection
-      | sy_domain_name
-      | sy_host_name
-      | sy_name_server
-      | sy_null
-   )
-;
-
 s_version
 :
    VERSION VERSION_STRING
@@ -156,63 +144,6 @@ set_line_tail
    s_groups
    | statement
    | s_version
-;
-
-sy_default_address_selection
-:
-   DEFAULT_ADDRESS_SELECTION
-;
-
-sy_domain_name
-:
-   DOMAIN_NAME variable
-;
-
-sy_host_name
-:
-   HOST_NAME variable
-;
-
-sy_name_server
-:
-   NAME_SERVER hostname = variable
-;
-
-sy_null
-:
-   (
-      ACCOUNTING
-      | ALLOW_V4MAPPED_PACKETS
-      | ARP
-      | AUTHENTICATION_ORDER
-      | BACKUP_ROUTER
-      | COMMIT
-      | DDOS_PROTECTION
-      | DOMAIN_SEARCH
-      | EXTENSIONS
-      | INTERNET_OPTIONS
-      | LICENSE
-      | LOCATION
-      | LOGIN
-      | MAX_CONFIGURATIONS_ON_FLASH
-      | MAX_CONFIGURATION_ROLLBACKS
-      | NAME_RESOLUTION
-      | NO_REDIRECTS
-      | NTP
-      | PORTS
-      | PROCESSES
-      | RADIUS_OPTIONS
-      | RADIUS_SERVER
-      | ROOT_AUTHENTICATION
-      | SAVED_CORE_CONTEXT
-      | SAVED_CORE_FILES
-      | SCRIPTS
-      | SERVICES
-      | SWITCHOVER_ON_ROUTING_CRASH
-      | SYSLOG
-      | TACPLUS_SERVER
-      | TIME_ZONE
-   ) null_filler
 ;
 
 vlt_description

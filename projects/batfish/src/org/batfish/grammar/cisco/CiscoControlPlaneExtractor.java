@@ -753,6 +753,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterLogging_address(Logging_addressContext ctx) {
+      if (_no) {
+         return;
+      }
+      Logging logging = _configuration.getCf().getLogging();
+      String hostname = ctx.hostname.getText();
+      LoggingHost host = new LoggingHost(hostname);
+      logging.getHosts().put(hostname, host);
+   }
+
+   @Override
    public void enterNeighbor_block_rb_stanza(
          Neighbor_block_rb_stanzaContext ctx) {
       _currentBlockNeighborAddressFamilies.clear();
@@ -1232,6 +1243,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void enterS_tacacs_server(S_tacacs_serverContext ctx) {
+      _no = ctx.NO() != null;
+   }
+
+   @Override
    public void enterS_vrf_context(S_vrf_contextContext ctx) {
       String vrf = ctx.name.getText();
       _currentVrf = vrf;
@@ -1364,6 +1380,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
          _currentPeerSession = proc.getPeerSessions().get(name);
       }
       pushPeer(_currentPeerSession);
+   }
+
+   @Override
+   public void enterTs_host(Ts_hostContext ctx) {
+      String hostname = ctx.hostname.getText();
+      if (!_no) {
+         _configuration.getTacacsServers().add(hostname);
+      }
    }
 
    @Override
@@ -2756,6 +2780,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitLogging_server(Logging_serverContext ctx) {
+      if (_no) {
+         return;
+      }
+      Logging logging = _configuration.getCf().getLogging();
+      String hostname = ctx.hostname.getText();
+      LoggingHost host = new LoggingHost(hostname);
+      logging.getHosts().put(hostname, host);
+   }
+
+   @Override
    public void exitLogging_source_interface(
          Logging_source_interfaceContext ctx) {
       if (_no) {
@@ -3959,6 +3994,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    }
 
    @Override
+   public void exitS_tacacs_server(S_tacacs_serverContext ctx) {
+      _no = false;
+   }
+
+   @Override
    public void exitS_vrf_context(S_vrf_contextContext ctx) {
       _currentVrf = Configuration.DEFAULT_VRF_NAME;
    }
@@ -4359,6 +4399,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    @Override
    public void exitSwitching_mode_stanza(Switching_mode_stanzaContext ctx) {
       todo(ctx, F_SWITCHING_MODE);
+   }
+
+   @Override
+   public void exitT_server(T_serverContext ctx) {
+      String hostname = ctx.hostname.getText();
+      _configuration.getTacacsServers().add(hostname);
    }
 
    @Override

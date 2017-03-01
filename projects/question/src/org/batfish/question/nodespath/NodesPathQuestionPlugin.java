@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -119,6 +120,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          for (int i = 0; i < paths.size(); i++) {
             indices.add(i);
          }
+         AtomicInteger completed = _batfish.newBatch("NodesPath queries",
+               indices.size());
          indices.parallelStream().forEach(i -> {
             NodesPath nodesPath = paths.get(i);
             String path = nodesPath.getPath();
@@ -178,6 +181,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                nodePathResult.setResult(result);
             }
             results.put(i, nodePathResult);
+            completed.incrementAndGet();
          });
          NodesPathAnswerElement answerElement = new NodesPathAnswerElement();
          answerElement.getResults().putAll(results);

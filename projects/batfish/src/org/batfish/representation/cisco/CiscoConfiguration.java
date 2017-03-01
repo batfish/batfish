@@ -240,6 +240,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
 
+   private NavigableSet<String> _tacacsServers;
+
    private transient Set<String> _unimplementedFeatures;
 
    private transient Set<String> _unusedPeerGroups;
@@ -289,6 +291,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       _standardAccessLists = new TreeMap<>();
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
+      _tacacsServers = new TreeSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
@@ -671,6 +674,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
       return _standardIpv6AccessLists;
+   }
+
+   public NavigableSet<String> getTacacsServers() {
+      return _tacacsServers;
    }
 
    @Override
@@ -2795,6 +2802,14 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
       c.setDnsServers(_dnsServers);
+      c.setTacacsServers(_tacacsServers);
+      if (_cf.getNtp() != null) {
+         c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));
+      }
+      if (_cf.getLogging() != null) {
+         c.setLoggingServers(
+               new TreeSet<>(_cf.getLogging().getHosts().keySet()));
+      }
 
       processLines();
       processFailoverSettings();
@@ -2950,6 +2965,13 @@ public class CiscoConfiguration extends VendorConfiguration {
       // convert routing processes
       _vrfs.forEach((vrfName, vrf) -> {
          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+
+         // add snmp trap servers to main list
+         if (newVrf.getSnmpServer() != null) {
+            c.getSnmpTrapServers()
+                  .addAll(newVrf.getSnmpServer().getHosts().keySet());
+         }
+
          // convert static routes
          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
             newVrf.getStaticRoutes().add(toStaticRoute(c, staticRoute));

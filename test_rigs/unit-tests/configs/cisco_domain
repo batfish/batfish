@@ -7,6 +7,7 @@ domain-name my.domain.name
 ip domain name my.domain.name
 ip domain name vrf blip my.domain.name
 ip domain-name my.domain.name use-vrf blip
+ip name-server vrf blip 1.2.3.4
 ip name-server 1.2.3.4
 !
 

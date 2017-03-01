@@ -71,6 +71,7 @@
         "cisco_stcapp" : "PASSED",
         "cisco_style_acl1" : "PASSED",
         "cisco_style_acl2" : "PASSED",
+        "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
@@ -114,9 +115,12 @@
         "juniper_firewall" : "PASSED",
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
+        "juniper_ntp" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
+        "juniper_syslog" : "PASSED",
         "juniper_system" : "PASSED",
+        "juniper_tacplus" : "PASSED",
         "local_v6_addr" : "PASSED",
         "mac_access_list" : "PASSED",
         "msdp_originator_id" : "PASSED",
@@ -191,6 +195,11 @@
             "7" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/0.292' not declared before OSPF process",
             "8" : "MISCELLANEOUS: OSPF: Interface: 'HundredGigE0/2/0/3' not declared before OSPF process",
             "9" : "MISCELLANEOUS: OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
+          }
+        },
+        "juniper_tacplus" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: apply-groups statement at path: \"system tacplus-server 1.2.3.4\" refers to non-existent group \"bippety\n"
           }
         },
         "nexus-arista-router-bgp" : {
@@ -767,6 +776,7 @@
         "cisco_stcapp" : "PASSED",
         "cisco_style_acl1" : "PASSED",
         "cisco_style_acl2" : "PASSED",
+        "cisco_tacacs" : "PASSED",
         "cisco_track" : "PASSED",
         "cisco_vdc" : "PASSED",
         "cisco_vlan" : "PASSED",
@@ -810,9 +820,12 @@
         "juniper_firewall" : "PASSED",
         "juniper_interfaces" : "PASSED",
         "juniper_misc" : "PASSED",
+        "juniper_ntp" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
+        "juniper_syslog" : "PASSED",
         "juniper_system" : "PASSED",
+        "juniper_tacplus" : "PASSED",
         "local_v6_addr" : "PASSED",
         "mac_access_list" : "PASSED",
         "msdp_originator_id" : "PASSED",

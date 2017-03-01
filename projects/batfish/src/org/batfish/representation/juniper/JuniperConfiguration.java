@@ -152,6 +152,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private final Map<String, NodeDevice> _nodeDevices;
 
+   private NavigableSet<String> _ntpServers;
+
    private final Map<String, PolicyStatement> _policyStatements;
 
    private final Map<String, PrefixList> _prefixLists;
@@ -161,6 +163,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
    private final Map<String, RouteFilter> _routeFilters;
 
    private final Map<String, RoutingInstance> _routingInstances;
+
+   private NavigableSet<String> _syslogHosts;
+
+   private NavigableSet<String> _tacplusServers;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -190,6 +196,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
       _nodeDevices = new TreeMap<>();
+      _ntpServers = new TreeSet<>();
       _prefixLists = new TreeMap<>();
       _policyStatements = new TreeMap<>();
       _roles = new RoleSet();
@@ -197,6 +204,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _routingInstances = new TreeMap<>();
       _routingInstances.put(Configuration.DEFAULT_VRF_NAME,
             _defaultRoutingInstance);
+      _syslogHosts = new TreeSet<>();
+      _tacplusServers = new TreeSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _zones = new TreeMap<>();
    }
@@ -579,6 +588,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return _nodeDevices;
    }
 
+   public NavigableSet<String> getNtpServers() {
+      return _ntpServers;
+   }
+
    public final Map<String, PolicyStatement> getPolicyStatements() {
       return _policyStatements;
    }
@@ -598,6 +611,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    public final Map<String, RoutingInstance> getRoutingInstances() {
       return _routingInstances;
+   }
+
+   public NavigableSet<String> getSyslogHosts() {
+      return _syslogHosts;
+   }
+
+   public NavigableSet<String> getTacplusServers() {
+      return _tacplusServers;
    }
 
    @Override
@@ -768,6 +789,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   public void setSyslogHosts(NavigableSet<String> syslogHosts) {
+      _syslogHosts = syslogHosts;
    }
 
    @Override
@@ -1457,6 +1482,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setRoles(_roles);
       _c.setDomainName(_defaultRoutingInstance.getDomainName());
       _c.setDnsServers(_dnsServers);
+      _c.setLoggingServers(_syslogHosts);
+      _c.setNtpServers(_ntpServers);
+      _c.setTacacsServers(_tacplusServers);
       for (String riName : _routingInstances.keySet()) {
          _c.getVrfs().put(riName, new Vrf(riName));
       }

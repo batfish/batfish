@@ -2167,6 +2167,11 @@ DIRECTED_BROADCAST
    'directed-broadcast'
 ;
 
+DIRECTED_REQUEST
+:
+   'directed-request'
+;
+
 DISABLE
 :
    'disable'
@@ -8169,6 +8174,11 @@ TERMINAL
 TERMINAL_TYPE
 :
    'terminal-type'
+;
+
+TEST
+:
+   'test'
 ;
 
 TFTP
