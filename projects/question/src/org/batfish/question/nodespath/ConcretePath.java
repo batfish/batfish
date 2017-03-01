@@ -17,8 +17,8 @@ public class ConcretePath implements Comparable<ConcretePath> {
    }
 
    public ConcretePath(String text) {
-      String endsCut = text.substring(3, text.length() - 2);
-      _parts = Arrays.asList(endsCut.split("'\\]\\['"));
+      String endsCut = text.substring(2, text.length() - 1);
+      _parts = Arrays.asList(endsCut.split("\\]\\["));
    }
 
    @Override
@@ -73,10 +73,10 @@ public class ConcretePath implements Comparable<ConcretePath> {
    @Override
    public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("'" + _parts.get(0) + "'");
+      sb.append(_parts.get(0));
       for (int i = 1; i < _parts.size(); i++) {
          String currentPart = _parts.get(i);
-         sb.append("->" + "'" + currentPart + "'");
+         sb.append("->" + currentPart);
       }
       String result = sb.toString();
       return result;

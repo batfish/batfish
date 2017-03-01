@@ -6,6 +6,24 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+logging_address
+:
+   hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
+   (
+      (
+         VRF vrf = variable
+      )
+      |
+      (
+         SEVERITY severity = variable
+      )
+   )* NEWLINE
+;
+
 logging_archive
 :
    ARCHIVE ~NEWLINE* NEWLINE
@@ -27,6 +45,23 @@ logging_archive_null
 logging_buffered
 :
    BUFFERED size = DEC? logging_severity? NEWLINE
+;
+
+logging_common
+:
+   logging_address
+   | logging_archive
+   | logging_buffered
+   | logging_console
+   | logging_enable
+   | logging_format
+   | logging_host
+   | logging_null
+   | logging_on
+   | logging_server
+   | logging_source_interface
+   | logging_suppress
+   | logging_trap
 ;
 
 logging_console
@@ -89,9 +124,7 @@ logging_null
       | EVENTS
       | FACILITY
       | HISTORY
-      | IP_ADDRESS
       | IP
-      | IPV6_ADDRESS
       | LEVEL
       | LINECARD
       | LOGFILE
@@ -101,12 +134,10 @@ logging_null
       | QUEUE_LIMIT
       | RATE_LIMIT
       | SEQUENCE_NUMS
-      | SERVER
       | SERVER_ARP
       | SNMP_AUTHFAIL
       | SYNCHRONOUS
       | TIMESTAMP
-      | VRF
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -126,6 +157,15 @@ logging_severity
    | INFORMATIONAL
    | NOTIFICATIONS
    | WARNINGS
+;
+
+logging_server
+:
+   SERVER hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) ~NEWLINE* NEWLINE
 ;
 
 logging_source_interface
@@ -159,20 +199,16 @@ logging_trap
    TRAP logging_severity? NEWLINE
 ;
 
+logging_vrf
+:
+   VRF vrf = variable logging_common
+;
+
 s_logging
 :
    NO? LOGGING
    (
-      logging_archive
-      | logging_buffered
-      | logging_console
-      | logging_enable
-      | logging_format
-      | logging_host
-      | logging_null
-      | logging_on
-      | logging_source_interface
-      | logging_suppress
-      | logging_trap
+      logging_common
+      | logging_vrf
    )
 ;

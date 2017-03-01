@@ -236,8 +236,6 @@ null_block
       | SYSTEM_INIT
       | SYSTEM_MAX
       | TABLE_MAP
-      | TACACS
-      | TACACS_SERVER
       | TAG_TYPE
       | TASKGROUP
       | TCP

@@ -2846,6 +2846,14 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "loggingServers" : [
+            "1.2.3.4",
+            "10.246.131.130",
+            "10.246.131.138",
+            "11.2.3.4",
+            "137.164.80.152",
+            "2001:220::141"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_logging",
@@ -2856,18 +2864,27 @@
                 },
                 "console" : { },
                 "hosts" : {
+                  "1.2.3.4" : {
+                    "name" : "1.2.3.4"
+                  },
                   "10.246.131.130" : {
                     "name" : "10.246.131.130"
                   },
                   "10.246.131.138" : {
                     "name" : "10.246.131.138"
                   },
+                  "11.2.3.4" : {
+                    "name" : "11.2.3.4"
+                  },
                   "137.164.80.152" : {
                     "name" : "137.164.80.152"
+                  },
+                  "2001:220::141" : {
+                    "name" : "2001:220::141"
                   }
                 },
                 "on" : true,
-                "sourceInterface" : "Vlan1",
+                "sourceInterface" : "Management0",
                 "trap" : {
                   "severity" : "errors",
                   "severityNum" : 3
@@ -3302,6 +3319,9 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "snmpTrapServers" : [
+            "10.1.2.3"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_snmp"
@@ -3525,6 +3545,29 @@
           },
           "vendorFamily" : {
             "cisco" : { }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "cisco_tacacs" : {
+          "name" : "cisco_tacacs",
+          "configurationFormat" : "CISCO_NX",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "tacacsServers" : [
+            "1.2.3.4",
+            "example.com"
+          ],
+          "vendorFamily" : {
+            "cisco" : {
+              "features" : {
+                "tacacs+" : true
+              },
+              "hostname" : "cisco_tacacs"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -5484,6 +5527,9 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ntpServers" : [
+            "1.2.3.4"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "ios_xr_ntp",
@@ -6422,6 +6468,21 @@
             }
           }
         },
+        "juniper_ntp" : {
+          "name" : "juniper_ntp",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "ntpServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "juniper_routing_options" : {
           "name" : "juniper_routing_options",
           "configurationFormat" : "FLAT_JUNIPER",
@@ -6466,11 +6527,41 @@
             }
           }
         },
+        "juniper_syslog" : {
+          "name" : "juniper_syslog",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "loggingServers" : [
+            "1.2.3.4"
+          ],
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "juniper_system" : {
           "name" : "juniper_system",
           "configurationFormat" : "FLAT_JUNIPER",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "juniper_tacplus" : {
+          "name" : "juniper_tacplus",
+          "configurationFormat" : "FLAT_JUNIPER",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "tacacsServers" : [
+            "1.2.3.4"
+          ],
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
@@ -7709,6 +7800,10 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ntpServers" : [
+            "1.2.3.4",
+            "10.1.2.3"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nexus_ntp",

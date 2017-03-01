@@ -1921,7 +1921,10 @@ s_ip_domain_name
 
 s_ip_name_server
 :
-   IP NAME_SERVER hostname = variable_hostname NEWLINE
+   IP NAME_SERVER
+   (
+      VRF vrf = variable
+   )? hostname = variable_hostname NEWLINE
 ;
 
 s_ip_nat
@@ -2261,6 +2264,24 @@ s_switchport
       ACCESS
       | ROUTED
    ) NEWLINE
+;
+
+s_tacacs
+:
+   TACACS
+   (
+      t_null
+      | t_server
+   )
+;
+
+s_tacacs_server
+:
+   NO? TACACS_SERVER
+   (
+      ts_host
+      | ts_null
+   )
 ;
 
 s_tap
@@ -2629,6 +2650,8 @@ stanza
    | s_statistics
    | s_stcapp
    | s_switchport
+   | s_tacacs
+   | s_tacacs_server
    | s_tap
    | s_track
    | s_tunnel_group
@@ -2664,6 +2687,18 @@ switching_mode_stanza
    SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
+t_null
+:
+   (
+      SOURCE_INTERFACE
+   ) ~NEWLINE* NEWLINE
+;
+
+t_server
+:
+   SERVER hostname = variable_hostname NEWLINE
+;
+
 tap_null
 :
    NO?
@@ -2694,6 +2729,26 @@ track_null
       DELAY
       | OBJECT
       | TYPE
+   ) ~NEWLINE* NEWLINE
+;
+
+ts_host
+:
+   HOST hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+ts_null
+:
+   (
+      DEADTIME
+      | DIRECTED_REQUEST
+      | KEY
+      | TEST
+      | TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
 

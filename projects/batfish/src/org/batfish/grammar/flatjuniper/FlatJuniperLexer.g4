@@ -257,6 +257,11 @@ APPLY_PATH
    'apply-path'
 ;
 
+ARCHIVE
+:
+   'archive'
+;
+
 AREA
 :
    'area'
@@ -402,6 +407,11 @@ BMP
    'bmp'
 ;
 
+BOOT_SERVER
+:
+   'boot-server'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -420,6 +430,11 @@ BRIDGE
 BRIDGE_DOMAINS
 :
    'bridge-domains'
+;
+
+BROADCAST_CLIENT
+:
+   'broadcast-client'
 ;
 
 CATEGORIES
@@ -521,6 +536,11 @@ CONNECTIONS_LIMIT
    'connections-limit'
 ;
 
+CONSOLE
+:
+   'console'
+;
+
 CONTACT
 :
    'contact'
@@ -549,6 +569,11 @@ CVSPSERVER
 CWR
 :
    'cwr'
+;
+
+DAEMON
+:
+   'daemon'
 ;
 
 DAMPING
@@ -861,6 +886,11 @@ EXP
    'exp'
 ;
 
+EXPLICIT_PRIORITY
+:
+   'explicit-priority'
+;
+
 EXPORT
 :
    'export'
@@ -904,6 +934,11 @@ FABRIC
 FABRIC_OPTIONS
 :
    'fabric-options'
+;
+
+FACILITY_OVERRIDE
+:
+   'facility-override'
 ;
 
 FAIL_FILTER
@@ -1399,6 +1434,11 @@ INSTANCE
 INSTANCE_TYPE
 :
    'instance-type'
+;
+
+INTERACTIVE_COMMANDS
+:
+   'interactive-commands'
 ;
 
 INTERCONNECT_DEVICE
@@ -2486,6 +2526,11 @@ KERBEROS_SEC
    'kerberos-sec'
 ;
 
+KERNEL
+:
+   'kernel'
+;
+
 KEYS
 :
    'keys'
@@ -2664,6 +2709,11 @@ LOCATION
 LOG
 :
    'log'
+;
+
+LOG_PREFIX
+:
+   'log-prefix'
 ;
 
 LOG_UPDOWN
@@ -3931,6 +3981,11 @@ SCTP
    'sctp'
 ;
 
+SECRET
+:
+   'secret'
+;
+
 SECURITY
 :
    'security'
@@ -3939,6 +3994,11 @@ SECURITY
 SECURITY_ZONE
 :
    'security-zone'
+;
+
+SERVER
+:
+   'server'
 ;
 
 SERVICE
@@ -4004,6 +4064,11 @@ SHORTCUTS
 SIMPLE
 :
    'simple'
+;
+
+SINGLE_CONNECTION
+:
+   'single-connection'
 ;
 
 SIP
@@ -4316,6 +4381,11 @@ THROUGH
    'through'
 ;
 
+TIME_FORMAT
+:
+   'time-format'
+;
+
 TIME_EXCEEDED
 :
    'time-exceeded'
@@ -4329,6 +4399,11 @@ TIME_ZONE
 TIMED
 :
    'timed'
+;
+
+TIMEOUT
+:
+   'timeout'
 ;
 
 TO

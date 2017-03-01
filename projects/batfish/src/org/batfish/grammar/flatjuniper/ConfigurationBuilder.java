@@ -2282,6 +2282,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    }
 
    @Override
+   public void enterSy_tacplus_server(Sy_tacplus_serverContext ctx) {
+      String hostname = ctx.hostname.getText();
+      _configuration.getTacplusServers().add(hostname);
+   }
+
+   @Override
+   public void enterSyn_server(Syn_serverContext ctx) {
+      String hostname = ctx.hostname.getText();
+      _configuration.getNtpServers().add(hostname);
+   }
+
+   @Override
+   public void enterSys_host(Sys_hostContext ctx) {
+      String hostname = ctx.hostname.getText();
+      _configuration.getSyslogHosts().add(hostname);
+   }
+
+   @Override
    public void exitA_application(A_applicationContext ctx) {
       _currentApplication = null;
       _currentApplicationTerm = null;
