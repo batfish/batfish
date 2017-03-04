@@ -103,7 +103,7 @@
               "ospfDeadInterval" : 0,
               "ospfEnabled" : true,
               "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
+              "ospfPassive" : true,
               "prefix" : "1.1.1.1/32",
               "proxyArp" : true,
               "switchportMode" : "NONE",

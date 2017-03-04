@@ -6,11 +6,17 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 
 @JsonSchemaDescription("An OSPF routing process")
 public class OspfProcess implements Serializable {
+
+   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
    private static final long serialVersionUID = 1L;
 
@@ -19,6 +25,8 @@ public class OspfProcess implements Serializable {
    private String _exportPolicy;
 
    private Set<GeneratedRoute> _generatedRoutes;
+
+   private transient Map<Pair<Ip, Ip>, OspfNeighbor> _ospfNeighbors;
 
    private Double _referenceBandwidth;
 
@@ -44,6 +52,11 @@ public class OspfProcess implements Serializable {
       return _generatedRoutes;
    }
 
+   @JsonIgnore
+   public Map<Pair<Ip, Ip>, OspfNeighbor> getOspfNeighbors() {
+      return _ospfNeighbors;
+   }
+
    @JsonPropertyDescription("The reference bandwidth by which an interface's bandwidth is divided to determine its OSPF cost")
    public Double getReferenceBandwidth() {
       return _referenceBandwidth;
@@ -52,6 +65,38 @@ public class OspfProcess implements Serializable {
    @JsonPropertyDescription("The router-id of this OSPF process")
    public Ip getRouterId() {
       return _routerId;
+   }
+
+   public void initInterfaceCosts() {
+      for (OspfArea area : _areas.values()) {
+         for (Interface i : area.getInterfaces()) {
+            String interfaceName = i.getName();
+            if (i.getActive()) {
+               Integer ospfCost = i.getOspfCost();
+               if (ospfCost == null) {
+                  if (interfaceName.startsWith("Vlan")) {
+                     // TODO: fix for non-cisco
+                     ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
+                  }
+                  else {
+                     if (i.getBandwidth() != null) {
+                        ospfCost = Math.max(
+                              (int) (_referenceBandwidth / i.getBandwidth()),
+                              1);
+                     }
+                     else {
+                        String hostname = i.getOwner().getHostname();
+                        throw new BatfishException(
+                              "Expected non-null interface bandwidth for \""
+                                    + hostname + "\":\"" + interfaceName
+                                    + "\"");
+                     }
+                  }
+               }
+               i.setOspfCost(ospfCost);
+            }
+         }
+      }
    }
 
    public void setAreas(Map<Long, OspfArea> areas) {
@@ -64,6 +109,11 @@ public class OspfProcess implements Serializable {
 
    public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
       _generatedRoutes = generatedRoutes;
+   }
+
+   @JsonIgnore
+   public void setOspfNeighbors(Map<Pair<Ip, Ip>, OspfNeighbor> ospfNeighbors) {
+      _ospfNeighbors = ospfNeighbors;
    }
 
    public void setReferenceBandwidth(Double referenceBandwidth) {

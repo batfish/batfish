@@ -221,7 +221,15 @@
             "        IP_ADDRESS:'0.255.255.255'  <== mode:DEFAULT_MODE",
             "        AREA:'area'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
-            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_passive_interface",
+            "        PASSIVE_INTERFACE:'passive-interface'  <== mode:DEFAULT_MODE",
+            "        (interface_name",
+            "          M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
+            "          (range",
+            "            (subrange",
+            "              DEC:'0'  <== mode:M_Interface)))",
+            "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (router_bgp_stanza",
             "      ROUTER:'router'  <== mode:DEFAULT_MODE",
@@ -10298,7 +10306,7 @@
           ]
         }
       },
-      "version" : "0.7.0"
+      "version" : "0.8.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -10393,7 +10401,7 @@
           ]
         }
       },
-      "version" : "0.7.0",
+      "version" : "0.8.0",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {
