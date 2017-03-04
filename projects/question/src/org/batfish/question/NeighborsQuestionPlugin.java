@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -394,7 +393,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
 
-      private Set<NeighborType> _neighborTypes;
+      private SortedSet<NeighborType> _neighborTypes;
 
       private String _node1Regex;
 
@@ -403,7 +402,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       public NeighborsQuestion() {
          _node1Regex = ".*";
          _node2Regex = ".*";
-         _neighborTypes = EnumSet.noneOf(NeighborType.class);
+         _neighborTypes = new TreeSet<>();
       }
 
       @Override
@@ -417,7 +416,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(NEIGHBOR_TYPES_VAR)
-      public Set<NeighborType> getNeighborTypes() {
+      public SortedSet<NeighborType> getNeighborTypes() {
          return _neighborTypes;
       }
 
@@ -476,11 +475,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                   setNode1Regex(parameters.getString(paramKey));
                   break;
                case NEIGHBOR_TYPES_VAR:
-                  setNeighborTypes(
+                  setNeighborTypes(new TreeSet<>(
                         new ObjectMapper().<Set<NeighborType>> readValue(
                               parameters.getString(paramKey),
                               new TypeReference<Set<NeighborType>>() {
-                              }));
+                              })));
                   break;
                case NODE2_REGEX_VAR:
                   setNode2Regex(parameters.getString(paramKey));
@@ -496,7 +495,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
          }
       }
 
-      public void setNeighborTypes(Set<NeighborType> neighborTypes) {
+      public void setNeighborTypes(SortedSet<NeighborType> neighborTypes) {
          _neighborTypes = neighborTypes;
       }
 

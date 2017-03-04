@@ -606,8 +606,8 @@
     "neighborTypes" : [
       "ebgp",
       "ibgp",
-      "ospf",
-      "lan"
+      "lan",
+      "ospf"
     ],
     "node1Regex" : ".*",
     "node2Regex" : ".*"
