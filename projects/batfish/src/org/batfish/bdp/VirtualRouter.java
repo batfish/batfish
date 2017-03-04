@@ -42,8 +42,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class VirtualRouter extends ComparableStructure<String> {
 
-   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
-
    /**
     *
     */
@@ -545,31 +543,9 @@ public class VirtualRouter extends ComparableStructure<String> {
    }
 
    public void initOspfInterfaceCosts() {
-      if (_vrf.getOspfProcess() != null) {
-         _vrf.getInterfaces().forEach((interfaceName, i) -> {
-            if (i.getActive()) {
-               Integer ospfCost = i.getOspfCost();
-               if (ospfCost == null) {
-                  if (interfaceName.startsWith("Vlan")) {
-                     // TODO: fix for non-cisco
-                     ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
-                  }
-                  else {
-                     if (i.getBandwidth() != null) {
-                        ospfCost = Math.max((int) (_vrf.getOspfProcess()
-                              .getReferenceBandwidth() / i.getBandwidth()), 1);
-                     }
-                     else {
-                        throw new BatfishException(
-                              "Expected non-null interface bandwidth for \""
-                                    + _c.getHostname() + "\":\"" + interfaceName
-                                    + "\"");
-                     }
-                  }
-               }
-               i.setOspfCost(ospfCost);
-            }
-         });
+      OspfProcess proc = _vrf.getOspfProcess();
+      if (proc != null) {
+         proc.initInterfaceCosts();
       }
    }
 

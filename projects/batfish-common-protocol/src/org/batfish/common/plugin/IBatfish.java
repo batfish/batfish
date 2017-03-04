@@ -78,6 +78,9 @@ public interface IBatfish extends IPluginConsumer {
 
    void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
+   void initRemoteOspfNeighbors(Map<String, Configuration> configurations,
+         Map<Ip, Set<String>> ipOwners, Topology topology);
+
    void initRoutes(Map<String, Configuration> configurations);
 
    Map<String, Configuration> loadConfigurations();

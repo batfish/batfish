@@ -38,7 +38,7 @@ get neighbors
 echo # --> can help ensure that adjacencies are as expected (i.e., interfaces are properly configured)
 
 echo # we can also ask for protocol-level adjacencies 
-get neighbors neighborType=["ebgp"]
+get neighbors neighborTypes=["ebgp"]
 echo # --> can help ensure that protocol sessions are configured correctly
 
 echo ##############

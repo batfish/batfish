@@ -2,9 +2,12 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.batfish.common.BatfishException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -113,7 +116,7 @@ public class PrefixTrie implements Serializable {
       }
 
       private Prefix getLongestPrefixMatch(Ip address, BitSet bits) {
-         if (_prefix.contains(address)) {
+         if (_prefix != null && _prefix.contains(address)) {
             return _prefix;
          }
          else {
@@ -174,11 +177,26 @@ public class PrefixTrie implements Serializable {
    }
 
    public boolean add(Prefix prefix) {
+      if (prefix == null) {
+         throw new BatfishException("Cannot add null prefix to trie");
+      }
       boolean changed = _prefixes.add(prefix);
       if (changed) {
          _trie.addPrefix(prefix);
       }
       return changed;
+   }
+
+   public boolean addAll(Collection<Prefix> prefixes) {
+      boolean changed = false;
+      for (Prefix prefix : prefixes) {
+         changed = changed || add(prefix);
+      }
+      return changed;
+   }
+
+   public boolean containsIp(Ip address) {
+      return _trie.getLongestPrefixMatch(address) != null;
    }
 
    public boolean containsPathFromPrefix(Prefix prefix) {
