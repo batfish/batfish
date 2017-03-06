@@ -4668,7 +4668,7 @@
           ]
         }
       },
-      "version" : "0.8.0"
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -4764,7 +4764,7 @@
           ]
         }
       },
-      "version" : "0.8.0"
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
