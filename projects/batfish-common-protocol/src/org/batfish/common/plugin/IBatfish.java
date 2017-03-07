@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
 import org.batfish.common.Answerer;
+import org.batfish.common.Directory;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -65,6 +66,8 @@ public interface IBatfish extends IPluginConsumer {
    FlowHistory getHistory();
 
    ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement();
+
+   Directory getTestrigFileTree();
 
    void initBgpAdvertisements(Map<String, Configuration> configurations);
 

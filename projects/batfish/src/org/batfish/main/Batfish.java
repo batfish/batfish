@@ -43,6 +43,7 @@ import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.Directory;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
@@ -3738,6 +3739,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                + edge.getNode2() + ":" + edge.getInt2() + "\n");
       }
       printElapsedTime();
+   }
+
+   @Override
+   public Directory getTestrigFileTree() {
+      Path trPath = _testrigSettings.getTestRigPath();
+      Directory dir = new Directory(trPath);
+      return dir;
    }
 
 }
