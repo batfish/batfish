@@ -454,6 +454,11 @@ variable
    ~NEWLINE
 ;
 
+variable_hostname
+:
+   ~(USE_VRF | NEWLINE | VRF)+
+;
+
 variable_permissive
 :
    (

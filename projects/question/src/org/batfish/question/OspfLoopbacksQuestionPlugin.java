@@ -28,7 +28,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -98,7 +97,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
                "Results for OSPF loopbacks check\n");
          // if (_active.size() > 0) {
@@ -212,7 +211,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                                  for (Prefix prefix : iface.getAllPrefixes()) {
                                     ConnectedRoute route = new ConnectedRoute(
                                           prefix, interfaceName);
-                                    if (exportPolicy.process(route, null,
+                                    if (exportPolicy.process(route,
                                           new OspfExternalRoute.Builder(), null,
                                           vrf.getName())) {
                                        exported = true;

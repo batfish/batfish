@@ -52,7 +52,6 @@ null_block
       | DEVICE
       | DHCPRELAY
       | DO STOP
-      | DOMAIN
       | DOT1X
       | DOT1X_ENABLE
       | DUAL_MODE_DEFAULT_VLAN
@@ -102,7 +101,6 @@ null_block
             | ICMP_ERRORS
             | INSPECT
             | INTERNAL
-            | NAME_SERVER
             | POLICY_LIST
             | RATE_LIMIT
             | RECEIVE
@@ -238,8 +236,6 @@ null_block
       | SYSTEM_INIT
       | SYSTEM_MAX
       | TABLE_MAP
-      | TACACS
-      | TACACS_SERVER
       | TAG_TYPE
       | TASKGROUP
       | TCP
@@ -513,7 +509,6 @@ null_inner
          | SERVICE_TYPE
          | SESSION
          | SEVERITY
-         | SHUT
          | SIGNING
          | SINGLE_CONNECTION
          | SINGLE_ROUTER_MODE
@@ -611,6 +606,7 @@ null_single
       | CFS
       | CLOCK
       | CNS
+      | CONFIG
       | CONFIG_REGISTER
       | CONSOLE
       | CTS
@@ -672,7 +668,6 @@ null_single
             | CLASSLESS
             | DEFAULT_NETWORK
             | DEVICE
-            | DOMAIN
             | DOMAIN_LIST
             | DOMAIN_LOOKUP
             | DVMRP

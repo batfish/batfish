@@ -23,7 +23,6 @@ import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -58,13 +57,6 @@ public class AssertQuestionPlugin extends QuestionPlugin {
 
       public SortedMap<Integer, Assertion> getPassing() {
          return _passing;
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
 
       public void setFail(Boolean fail) {

@@ -263,10 +263,12 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.8.1"
     },
     {
-      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement"
+      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

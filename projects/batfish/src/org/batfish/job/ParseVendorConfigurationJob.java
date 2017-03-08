@@ -24,6 +24,7 @@ import org.batfish.main.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.main.Warnings;
 import org.batfish.representation.VendorConfiguration;
@@ -113,22 +114,19 @@ public class ParseVendorConfigurationJob
       if (format == ConfigurationFormat.UNKNOWN) {
          format = Format.identifyConfigurationFormat(_fileText);
       }
-      boolean empty = false;
       switch (format) {
+
       case EMPTY:
-         empty = true;
-      case IGNORED:
-         String emptyOrIgnoredError = "Empty or ignored file: '" + currentPath
-               + "'\n";
-         if (empty) {
-            _warnings.redFlag(emptyOrIgnoredError);
-         }
-         else {
-            _warnings.pedantic(emptyOrIgnoredError);
-         }
+         _warnings.redFlag("Empty file: '" + currentPath + "'\n");
          elapsedTime = System.currentTimeMillis() - startTime;
          return new ParseVendorConfigurationResult(elapsedTime,
-               _logger.getHistory(), _file, _warnings);
+               _logger.getHistory(), _file, _warnings, ParseStatus.EMPTY);
+
+      case IGNORED:
+         _warnings.pedantic("Ignored file: '" + currentPath + "'\n");
+         elapsedTime = System.currentTimeMillis() - startTime;
+         return new ParseVendorConfigurationResult(elapsedTime,
+               _logger.getHistory(), _file, _warnings, ParseStatus.IGNORED);
 
       case ARISTA:
       case CISCO_IOS:
@@ -156,7 +154,7 @@ public class ParseVendorConfigurationJob
                _settings, format);
          combinedParser = ciscoParser;
          extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser,
-               _warnings, _settings.getUnrecognizedAsRedFlag());
+               format, _warnings, _settings.getUnrecognizedAsRedFlag());
          break;
 
       case HOST:
@@ -258,7 +256,9 @@ public class ParseVendorConfigurationJob
       case ALCATEL_AOS:
       case AWS_VPC:
       case BLADENETWORK:
+      case F5:
       case JUNIPER_SWITCH:
+      case MRV_COMMANDS:
       case MSS:
       case VXWORKS:
          String unsupportedError = "Unsupported configuration format: '"
@@ -273,7 +273,8 @@ public class ParseVendorConfigurationJob
             _warnings.unimplemented(unsupportedError);
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file, _warnings);
+                  _logger.getHistory(), _file, _warnings,
+                  ParseStatus.UNSUPPORTED);
          }
 
       case UNKNOWN:
@@ -290,7 +291,7 @@ public class ParseVendorConfigurationJob
             _warnings.unimplemented(unknownError);
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(elapsedTime,
-                  _logger.getHistory(), _file, _warnings);
+                  _logger.getHistory(), _file, _warnings, ParseStatus.UNKNOWN);
          }
       }
 

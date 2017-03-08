@@ -14,7 +14,6 @@ import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class ParseTreesQuestionPlugin extends QuestionPlugin {
 
@@ -32,7 +31,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
          sb.append("Parse trees of vendor configurations\n");
          for (String name : _parseTrees.keySet()) {
@@ -98,7 +97,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          return getName();
       }
 

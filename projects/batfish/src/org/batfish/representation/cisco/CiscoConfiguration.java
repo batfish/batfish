@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -160,6 +162,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _controlPlaneAccessGroups;
 
+   private NavigableSet<String> _dnsServers;
+
    private String _domainName;
 
    private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
@@ -224,6 +228,8 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    private final Set<String> _snmpAccessLists;
 
+   private SnmpServer _snmpServer;
+
    private final Set<String> _sshAcls;
 
    private final Set<String> _sshIpv6Acls;
@@ -233,6 +239,8 @@ public class CiscoConfiguration extends VendorConfiguration {
    private final Map<String, StandardCommunityList> _standardCommunityLists;
 
    private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
+
+   private NavigableSet<String> _tacacsServers;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -253,6 +261,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       _cf = new CiscoFamily();
       _classMapAccessGroups = new TreeSet<>();
       _controlPlaneAccessGroups = new TreeSet<>();
+      _dnsServers = new TreeSet<>();
       _expandedCommunityLists = new TreeMap<>();
       _extendedAccessLists = new TreeMap<>();
       _extendedIpv6AccessLists = new TreeMap<>();
@@ -282,6 +291,7 @@ public class CiscoConfiguration extends VendorConfiguration {
       _standardAccessLists = new TreeMap<>();
       _standardIpv6AccessLists = new TreeMap<>();
       _standardCommunityLists = new TreeMap<>();
+      _tacacsServers = new TreeSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _verifyAccessLists = new HashSet<>();
       _vrfs = new TreeMap<>();
@@ -436,6 +446,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Vrf getDefaultVrf() {
       return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+   }
+
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
    }
 
    public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -638,6 +652,10 @@ public class CiscoConfiguration extends VendorConfiguration {
       return _snmpAccessLists;
    }
 
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
+   }
+
    public Set<String> getSshAcls() {
       return _sshAcls;
    }
@@ -656,6 +674,10 @@ public class CiscoConfiguration extends VendorConfiguration {
 
    public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
       return _standardIpv6AccessLists;
+   }
+
+   public NavigableSet<String> getTacacsServers() {
+      return _tacacsServers;
    }
 
    @Override
@@ -911,6 +933,10 @@ public class CiscoConfiguration extends VendorConfiguration {
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
    }
 
    @Override
@@ -1272,8 +1298,22 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (routeMap != null) {
                routeMap.getReferers().put(proc,
                      "bgp ipv4 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv4 advertised network route-map");
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               Conjunction exportNetworkConditions = new Conjunction();
+               PrefixSpace space = new PrefixSpace();
+               space.addPrefix(prefix);
+               exportNetworkConditions.getConjuncts().add(new MatchPrefixSet(
+                     new DestinationNetwork(), new ExplicitPrefixSet(space)));
+               exportNetworkConditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+               exportNetworkConditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+               // TODO: ban aggregates?
+               exportNetworkConditions.getConjuncts().add(
+                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+               exportNetworkConditions.getConjuncts().add(we);
+               preFilterConditions.getDisjuncts().add(exportNetworkConditions);
             }
             else {
                undefined("Reference to bgp ipv4 advertised network route-map: '"
@@ -1295,8 +1335,23 @@ public class CiscoConfiguration extends VendorConfiguration {
             if (routeMap != null) {
                routeMap.getReferers().put(proc,
                      "bgp ipv6 advertised network route-map");
-               // TODO: implement instead of advertising unconditionally
-               _w.unimplemented("bgp ipv6 advertised network route-map");
+               BooleanExpr we = bgpRedistributeWithEnvironmentExpr(
+                     new CallExpr(mapName));
+               Conjunction exportNetwork6Conditions = new Conjunction();
+               Prefix6Space space6 = new Prefix6Space();
+               space6.addPrefix6(prefix6);
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new MatchPrefix6Set(new DestinationNetwork6(),
+                           new ExplicitPrefix6Set(space6)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+               exportNetwork6Conditions.getConjuncts()
+                     .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+               // TODO: ban aggregates?
+               exportNetwork6Conditions.getConjuncts().add(
+                     new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+               exportNetwork6Conditions.getConjuncts().add(we);
+               preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
             }
             else {
                undefined("Reference to bgp ipv6 advertised network route-map: '"
@@ -1307,8 +1362,6 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
 
       // add prefilter policy for explicitly advertised networks
-      Set<RouteFilterList> localRfLists = new LinkedHashSet<>();
-      localRfLists.add(localFilter);
       preFilterConditions.getDisjuncts().add(new MatchPrefixSet(
             new DestinationNetwork(), new NamedPrefixSet(localFilterName)));
 
@@ -2232,6 +2285,40 @@ public class CiscoConfiguration extends VendorConfiguration {
          }
       }
 
+      // create summarization filters for inter-area routes
+      for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries()
+            .entrySet()) {
+         long areaLong = e1.getKey();
+         Map<Prefix, Boolean> summaries = e1.getValue();
+         OspfArea area = areas.get(areaLong);
+         String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":"
+               + areaLong + "~";
+         RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+         c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+         if (area == null) {
+            area = new OspfArea(areaLong);
+            areas.put(areaLong, area);
+         }
+         area.setSummaryFilter(summaryFilterName);
+         for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+            Prefix prefix = e2.getKey();
+            boolean advertise = e2.getValue();
+            int prefixLength = prefix.getPrefixLength();
+            int filterMinPrefixLength = advertise
+                  ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                  : prefixLength;
+            summaryFilter.addLine(
+                  new RouteFilterLine(LineAction.REJECT, prefix, new SubRange(
+                        filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+            area.getSummaries().put(prefix, advertise);
+            if (!advertise) {
+
+            }
+         }
+         summaryFilter.addLine(new RouteFilterLine(LineAction.ACCEPT,
+               Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+      }
+
       String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
       RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName,
             c);
@@ -2714,6 +2801,15 @@ public class CiscoConfiguration extends VendorConfiguration {
       c.setRoles(_roles);
       c.setDefaultInboundAction(LineAction.ACCEPT);
       c.setDefaultCrossZoneAction(LineAction.ACCEPT);
+      c.setDnsServers(_dnsServers);
+      c.setTacacsServers(_tacacsServers);
+      if (_cf.getNtp() != null) {
+         c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));
+      }
+      if (_cf.getLogging() != null) {
+         c.setLoggingServers(
+               new TreeSet<>(_cf.getLogging().getHosts().keySet()));
+      }
 
       processLines();
       processFailoverSettings();
@@ -2742,6 +2838,12 @@ public class CiscoConfiguration extends VendorConfiguration {
       // initialize vrfs
       for (String vrfName : _vrfs.keySet()) {
          c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
+      }
+
+      // snmp server
+      if (_snmpServer != null) {
+         String snmpServerVrf = _snmpServer.getVrf();
+         c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
       }
 
       // convert as path access lists to vendor independent format
@@ -2863,6 +2965,13 @@ public class CiscoConfiguration extends VendorConfiguration {
       // convert routing processes
       _vrfs.forEach((vrfName, vrf) -> {
          org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
+
+         // add snmp trap servers to main list
+         if (newVrf.getSnmpServer() != null) {
+            c.getSnmpTrapServers()
+                  .addAll(newVrf.getSnmpServer().getHosts().keySet());
+         }
+
          // convert static routes
          for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
             newVrf.getStaticRoutes().add(toStaticRoute(c, staticRoute));

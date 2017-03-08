@@ -29,8 +29,6 @@ public class CiscoFamily implements Serializable {
 
    private SortedMap<String, Service> _services;
 
-   private SnmpServer _snmpServer;
-
    private Sntp _sntp;
 
    private Boolean _sourceRoute;
@@ -80,10 +78,6 @@ public class CiscoFamily implements Serializable {
       return _services;
    }
 
-   public SnmpServer getSnmpServer() {
-      return _snmpServer;
-   }
-
    public Sntp getSntp() {
       return _sntp;
    }
@@ -130,10 +124,6 @@ public class CiscoFamily implements Serializable {
 
    public void setServices(SortedMap<String, Service> services) {
       _services = services;
-   }
-
-   public void setSnmpServer(SnmpServer snmpServer) {
-      _snmpServer = snmpServer;
    }
 
    public void setSntp(Sntp sntp) {

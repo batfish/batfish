@@ -80,8 +80,13 @@ public class Task {
 
       @Override
       public String toString() {
-         return String.format("%s: %s: %s/%d", _startDate.toString(),
-               _description, _completed.toString(), _size);
+         if (_size > 0) {
+            return String.format("%s: %s: %s/%d", _startDate.toString(),
+                  _description, _completed.toString(), _size);
+         }
+         else {
+            return String.format("%s: %s", _startDate.toString(), _description);
+         }
       }
 
    }

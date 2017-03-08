@@ -16,12 +16,12 @@ test tests/java/compareSameName.ref get compareSameName
 test tests/java/error.ref -error get error
 test tests/java/ipsecVpnCheck.ref get ipsecVpnCheck
 test tests/java/isisLoopbacks.ref get isisLoopbacks
-test tests/java/neighbors.ref get neighbors
-test tests/java/neighbors-ebgp.ref get neighbors neighborType=["ebgp"]
+test tests/java/neighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"]
 test tests/java/nodes-summary.ref get nodes summary=true
 test tests/java/nodes.ref get nodes summary=false
 test tests/java/nodes-diff.ref get nodes summary=false | differential=true
 test tests/java/ospfLoopbacks.ref get ospfLoopbacks
+test tests/java/ospfSessionCheck.ref get ospfsessioncheck
 test tests/java/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/java/routes.ref get routes
 test tests/java/routes-diff.ref get routes differential=true

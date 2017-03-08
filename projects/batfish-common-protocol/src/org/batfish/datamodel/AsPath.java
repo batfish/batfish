@@ -26,6 +26,15 @@ public class AsPath extends ArrayList<AsSet> {
       return false;
    }
 
+   public AsPath copy() {
+      AsPath asPath = new AsPath();
+      for (AsSet set : this) {
+         AsSet newSet = new AsSet(set);
+         asPath.add(newSet);
+      }
+      return asPath;
+   }
+
    public String getAsPathString() {
       StringBuilder sb = new StringBuilder();
       for (AsSet asSet : this) {

@@ -84,10 +84,12 @@ public enum RoutingProtocol {
             break;
          case EMPTY:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IGNORED:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -122,9 +124,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -159,9 +163,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -193,9 +199,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -226,10 +234,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -260,10 +270,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -294,10 +306,12 @@ public enum RoutingProtocol {
             return 115;
          case EMPTY:
          case IGNORED:
+         case F5:
          case BLADENETWORK:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -329,9 +343,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -363,9 +379,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -397,9 +415,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -431,9 +451,11 @@ public enum RoutingProtocol {
          case EMPTY:
          case IGNORED:
          case BLADENETWORK:
+         case F5:
          case HOST:
          case IPTABLES:
          case MRV:
+         case MRV_COMMANDS:
          case MSS:
          case UNKNOWN:
          case VXWORKS:
@@ -459,6 +481,69 @@ public enum RoutingProtocol {
       throw new BatfishException(
             "Missing default administrative cost for protocol: '"
                   + _protocolName + "' for vendor '" + vendor.toString() + "'");
+   }
+
+   public int getSummaryAdministrativeCost(ConfigurationFormat vendor) {
+      switch (this) {
+      case OSPF_IA:
+         switch (vendor) {
+         case CISCO_IOS:
+         case CISCO_IOS_XR:
+         case CISCO_NX:
+         case FORCE10:
+         case FOUNDRY:
+            return 254;
+
+         case ALCATEL_AOS:
+         case ARISTA:
+         case AWS_VPC:
+         case BLADENETWORK:
+         case EMPTY:
+         case F5:
+         case FLAT_JUNIPER:
+         case FLAT_VYOS:
+         case HOST:
+         case IGNORED:
+         case IPTABLES:
+         case JUNIPER:
+         case JUNIPER_SWITCH:
+         case MRV:
+         case MRV_COMMANDS:
+         case MSS:
+         case UNKNOWN:
+         case VXWORKS:
+         case VYOS:
+         default:
+            throw new BatfishException(
+                  "Unsupported vendor for OSPF inter-area summary administrative cost: "
+                        + vendor.toString());
+         }
+
+      case AGGREGATE:
+      case BGP:
+      case CONNECTED:
+      case EGP:
+      case IBGP:
+      case IGP:
+      case ISIS:
+      case ISIS_EL1:
+      case ISIS_EL2:
+      case ISIS_L1:
+      case ISIS_L2:
+      case LDP:
+      case LOCAL:
+      case MSDP:
+      case OSPF:
+      case OSPF3:
+      case OSPF_E1:
+      case OSPF_E2:
+      case RSVP:
+      case STATIC:
+      default:
+         throw new BatfishException(
+               "Unuspported protocol for summary administrative cost: "
+                     + protocolName());
+      }
    }
 
    @JsonValue

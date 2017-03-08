@@ -20,7 +20,8 @@
         "host2" : "PASSED",
         "testrig/iptables/host1.iptables" : "PASSED",
         "testrig/iptables/host2.iptables" : "PASSED"
-      }
+      },
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -115,6 +116,7 @@
           ]
         }
       },
+      "version" : "0.8.1",
       "warnings" : {
         "as1border1" : {
           "Red flags" : {

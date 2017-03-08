@@ -11,6 +11,10 @@ public class OspfRib extends AbstractRib<OspfRoute> {
     */
    private static final long serialVersionUID = 1L;
 
+   public OspfRib(VirtualRouter owner) {
+      super(owner);
+   }
+
    @Override
    public int comparePreference(OspfRoute lhs, OspfRoute rhs) {
       int lhsTypeCost = getTypeCost(lhs.getProtocol());

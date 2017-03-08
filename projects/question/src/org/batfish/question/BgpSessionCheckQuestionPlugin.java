@@ -31,7 +31,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -87,7 +86,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       private static final String REMOTE_IP_UNKNOWN_VAR = "remoteIpUnknown";
 
-      private SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> _allBgpNeighborSummarys;
+      private SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> _allBgpNeighbors;
 
       private SortedMap<String, SortedMap<String, SortedSet<Prefix>>> _broken;
 
@@ -136,7 +135,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       private SortedMap<String, SortedMap<String, SortedSet<Prefix>>> _remoteIpUnknown;
 
       public BgpSessionCheckAnswerElement() {
-         _allBgpNeighborSummarys = new TreeMap<>();
+         _allBgpNeighbors = new TreeMap<>();
          _broken = new TreeMap<>();
          _ebgpBroken = new TreeMap<>();
          _ibgpBroken = new TreeMap<>();
@@ -201,7 +200,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       @JsonProperty(ALL_BGP_NEIGHBORS_VAR)
       public SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> getAllBgpNeighbors() {
-         return _allBgpNeighborSummarys;
+         return _allBgpNeighbors;
       }
 
       @JsonProperty(BROKEN_VAR)
@@ -320,7 +319,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
          sb.append(prettyPrintCategory(_ebgpLocalIpOnLoopback,
                EBGP_LOCAL_IP_ON_LOOPBACK_VAR));
@@ -358,8 +357,8 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   sb.append("    " + vrf + ":\n");
                   SortedSet<Prefix> neighbors = e2.getValue();
                   for (Prefix prefix : neighbors) {
-                     BgpNeighborSummary summary = _allBgpNeighborSummarys
-                           .get(hostname).get(vrf).get(prefix);
+                     BgpNeighborSummary summary = _allBgpNeighbors.get(hostname)
+                           .get(vrf).get(prefix);
                      int localAs = summary.getLocalAs();
                      Ip localIp = summary.getLocalIp();
                      int remoteAs = summary.getRemoteAs();
@@ -384,9 +383,9 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(ALL_BGP_NEIGHBORS_VAR)
-      public void setAllBgpNeighborSummarys(
-            SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> allBgpNeighborSummarys) {
-         _allBgpNeighborSummarys = allBgpNeighborSummarys;
+      public void setAllBgpNeighbors(
+            SortedMap<String, SortedMap<String, SortedMap<Prefix, BgpNeighborSummary>>> allBgpNeighbors) {
+         _allBgpNeighbors = allBgpNeighbors;
       }
 
       @JsonProperty(BROKEN_VAR)
@@ -830,7 +829,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       private static final String NODE2_REGEX_VAR = "node2Regex";
 
-      private Set<String> _foreignBgpGroups;
+      private SortedSet<String> _foreignBgpGroups;
 
       private String _node1Regex;
 
@@ -848,7 +847,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(FOREIGN_BGP_GROUPS_VAR)
-      public Set<String> getForeignBgpGroups() {
+      public SortedSet<String> getForeignBgpGroups() {
          return _foreignBgpGroups;
       }
 
@@ -872,7 +871,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
          return false;
       }
 
-      public void setForeignBgpGroups(Set<String> foreignBgpGroups) {
+      public void setForeignBgpGroups(SortedSet<String> foreignBgpGroups) {
          _foreignBgpGroups = foreignBgpGroups;
       }
 
@@ -891,10 +890,10 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
             try {
                switch (paramKey) {
                case FOREIGN_BGP_GROUPS_VAR:
-                  setForeignBgpGroups(new ObjectMapper()
+                  setForeignBgpGroups(new TreeSet<>(new ObjectMapper()
                         .<Set<String>> readValue(parameters.getString(paramKey),
                               new TypeReference<Set<String>>() {
-                              }));
+                              })));
                   break;
                case NODE1_REGEX_VAR:
                   setNode1Regex(parameters.getString(paramKey));

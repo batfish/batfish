@@ -30,7 +30,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -76,7 +75,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder(
                "Results for BGP loopbacks check\n");
          // if (_exported.size() > 0) {
@@ -163,7 +162,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
                         ConnectedRoute route = new ConnectedRoute(prefix,
                               interfaceName);
                         for (RoutingPolicy exportPolicy : exportPolicies) {
-                           if (exportPolicy.process(route, null,
+                           if (exportPolicy.process(route,
                                  new BgpRoute.Builder(), null, vrf.getName())) {
                               exported = true;
                               break outerloop;

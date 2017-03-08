@@ -10,8 +10,9 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
+import org.batfish.grammar.GrammarSettings;
 
-public final class Settings extends BaseSettings {
+public final class Settings extends BaseSettings implements GrammarSettings {
 
    public static final class EnvironmentSettings {
 
@@ -769,10 +770,12 @@ public final class Settings extends BaseSettings {
       return _logTee;
    }
 
+   @Override
    public int getMaxParserContextLines() {
       return _maxParserContextLines;
    }
 
+   @Override
    public int getMaxParserContextTokens() {
       return _maxParserContextTokens;
    }
@@ -905,10 +908,12 @@ public final class Settings extends BaseSettings {
       return _testrig;
    }
 
+   @Override
    public boolean getThrowOnLexerError() {
       return _throwOnLexerError;
    }
 
+   @Override
    public boolean getThrowOnParserError() {
       return _throwOnParserError;
    }
@@ -1001,8 +1006,8 @@ public final class Settings extends BaseSettings {
       setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
       setDefaultProperty(ARG_HELP, false);
       setDefaultProperty(ARG_HISTOGRAM, false);
-      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, false);
-      setDefaultProperty(ARG_IGNORE_UNKNOWN, false);
+      setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
+      setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
       setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
       setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
       setDefaultProperty(ARG_LOG_TEE, false);
@@ -1432,6 +1437,7 @@ public final class Settings extends BaseSettings {
       return _prettyPrintAnswer;
    }
 
+   @Override
    public boolean printParseTree() {
       return _printParseTree;
    }
@@ -1520,10 +1526,12 @@ public final class Settings extends BaseSettings {
       _taskId = taskId;
    }
 
+   @Override
    public void setThrowOnLexerError(boolean throwOnLexerError) {
       _throwOnLexerError = throwOnLexerError;
    }
 
+   @Override
    public void setThrowOnParserError(boolean throwOnParserError) {
       _throwOnParserError = throwOnParserError;
    }

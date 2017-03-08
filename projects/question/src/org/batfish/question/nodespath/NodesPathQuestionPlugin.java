@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -26,7 +27,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder("Results for nodespath\n");
 
          for (Integer index : _results.keySet()) {
@@ -120,6 +120,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
          for (int i = 0; i < paths.size(); i++) {
             indices.add(i);
          }
+         AtomicInteger completed = _batfish.newBatch("NodesPath queries",
+               indices.size());
          indices.parallelStream().forEach(i -> {
             NodesPath nodesPath = paths.get(i);
             String path = nodesPath.getPath();
@@ -179,6 +181,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
                nodePathResult.setResult(result);
             }
             results.put(i, nodePathResult);
+            completed.incrementAndGet();
          });
          NodesPathAnswerElement answerElement = new NodesPathAnswerElement();
          answerElement.getResults().putAll(results);
@@ -233,7 +236,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          StringBuilder sb = new StringBuilder();
          _results.forEach((index, diff) -> {
             SortedMap<ConcretePath, JsonNode> added = diff.getAdded();

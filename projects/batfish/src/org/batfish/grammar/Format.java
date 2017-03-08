@@ -45,8 +45,8 @@ public final class Format {
    }
 
    private ConfigurationFormat checkArista() {
-      Matcher aristaMatcher = Pattern.compile("(?m)^boot system flash.*\\.swi")
-            .matcher(_fileText);
+      Matcher aristaMatcher = Pattern
+            .compile("(?m)^.*boot system flash.*\\.swi").matcher(_fileText);
       if (aristaMatcher.find()) {
          return ConfigurationFormat.ARISTA;
       }
@@ -106,6 +106,15 @@ public final class Format {
       return null;
    }
 
+   private ConfigurationFormat checkF5() {
+      Matcher configurationHostname = Pattern.compile("(?m)^tmsh .*$")
+            .matcher(_fileText);
+      if (configurationHostname.find()) {
+         return ConfigurationFormat.F5;
+      }
+      return null;
+   }
+
    private ConfigurationFormat checkFlatVyos() {
       if (_fileText.contains("set system config-management commit-revisions")) {
          return ConfigurationFormat.FLAT_VYOS;
@@ -161,6 +170,15 @@ public final class Format {
    private ConfigurationFormat checkMrv() {
       if (_fileText.contains("System.SystemName")) {
          return ConfigurationFormat.MRV;
+      }
+      return null;
+   }
+
+   private ConfigurationFormat checkMrvCommands() {
+      Matcher configurationHostname = Pattern
+            .compile("(?m)^configuration hostname .*$").matcher(_fileText);
+      if (configurationHostname.find()) {
+         return ConfigurationFormat.MRV_COMMANDS;
       }
       return null;
    }
@@ -237,6 +255,10 @@ public final class Format {
          return format;
       }
       blacklist();
+      format = checkF5();
+      if (format != null) {
+         return format;
+      }
       format = checkCiscoXr();
       if (format != null) {
          return format;
@@ -250,6 +272,10 @@ public final class Format {
          return format;
       }
       format = checkMrv();
+      if (format != null) {
+         return format;
+      }
+      format = checkMrvCommands();
       if (format != null) {
          return format;
       }

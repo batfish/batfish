@@ -13,7 +13,6 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -22,8 +21,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
@@ -96,13 +93,6 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
       public SortedMap<String, SortedSet<String>> getRunning() {
          return _running;
-      }
-
-      @Override
-      public String prettyPrint() throws JsonProcessingException {
-         // TODO: change this function to pretty print the answer
-         ObjectMapper mapper = new BatfishObjectMapper();
-         return mapper.writeValueAsString(this);
       }
 
       public void setInactive(SortedMap<String, SortedSet<String>> inactive) {

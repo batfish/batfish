@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.regex.Pattern;
 
 import org.batfish.common.BatfishException;
@@ -35,6 +36,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
@@ -119,6 +122,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private final RoutingInstance _defaultRoutingInstance;
 
+   private NavigableSet<String> _dnsServers;
+
    private final Map<String, FirewallFilter> _filters;
 
    private final Map<String, AddressBook> _globalAddressBooks;
@@ -147,6 +152,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    private final Map<String, NodeDevice> _nodeDevices;
 
+   private NavigableSet<String> _ntpServers;
+
    private final Map<String, PolicyStatement> _policyStatements;
 
    private final Map<String, PrefixList> _prefixLists;
@@ -156,6 +163,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
    private final Map<String, RouteFilter> _routeFilters;
 
    private final Map<String, RoutingInstance> _routingInstances;
+
+   private NavigableSet<String> _syslogHosts;
+
+   private NavigableSet<String> _tacplusServers;
 
    private transient Set<String> _unimplementedFeatures;
 
@@ -172,6 +183,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _defaultCrossZoneAction = LineAction.ACCEPT;
       _defaultRoutingInstance = new RoutingInstance(
             Configuration.DEFAULT_VRF_NAME);
+      _dnsServers = new TreeSet<>();
       _filters = new TreeMap<>();
       _globalAddressBooks = new TreeMap<>();
       _ignoredPrefixLists = new HashSet<>();
@@ -184,6 +196,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
       _nodeDevices = new TreeMap<>();
+      _ntpServers = new TreeSet<>();
       _prefixLists = new TreeMap<>();
       _policyStatements = new TreeMap<>();
       _roles = new RoleSet();
@@ -191,6 +204,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _routingInstances = new TreeMap<>();
       _routingInstances.put(Configuration.DEFAULT_VRF_NAME,
             _defaultRoutingInstance);
+      _syslogHosts = new TreeSet<>();
+      _tacplusServers = new TreeSet<>();
       _unimplementedFeatures = unimplementedFeatures;
       _zones = new TreeMap<>();
    }
@@ -516,6 +531,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return _defaultRoutingInstance;
    }
 
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
+   }
+
    public final Map<String, FirewallFilter> getFirewallFilters() {
       return _filters;
    }
@@ -569,6 +588,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return _nodeDevices;
    }
 
+   public NavigableSet<String> getNtpServers() {
+      return _ntpServers;
+   }
+
    public final Map<String, PolicyStatement> getPolicyStatements() {
       return _policyStatements;
    }
@@ -588,6 +611,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
    public final Map<String, RoutingInstance> getRoutingInstances() {
       return _routingInstances;
+   }
+
+   public NavigableSet<String> getSyslogHosts() {
+      return _syslogHosts;
+   }
+
+   public NavigableSet<String> getTacplusServers() {
+      return _tacplusServers;
    }
 
    @Override
@@ -758,6 +789,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
    @Override
    public void setRoles(RoleSet roles) {
       _roles.addAll(roles);
+   }
+
+   public void setSyslogHosts(NavigableSet<String> syslogHosts) {
+      _syslogHosts = syslogHosts;
    }
 
    @Override
@@ -942,6 +977,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String name = iface.getName();
       org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(
             name, _c);
+      Integer mtu = iface.getMtu();
+      if (mtu != null) {
+         newIface.setMtu(mtu);
+      }
       newIface.setVrrpGroups(iface.getVrrpGroups());
       newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
       Zone zone = _interfaceZones.get(iface);
@@ -1442,6 +1481,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setConfigurationFormat(_vendor);
       _c.setRoles(_roles);
       _c.setDomainName(_defaultRoutingInstance.getDomainName());
+      _c.setDnsServers(_dnsServers);
+      _c.setLoggingServers(_syslogHosts);
+      _c.setNtpServers(_ntpServers);
+      _c.setTacacsServers(_tacplusServers);
       for (String riName : _routingInstances.keySet()) {
          _c.getVrfs().put(riName, new Vrf(riName));
       }
@@ -1570,6 +1613,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (Entry<String, Interface> eUnit : allInterfaces.entrySet()) {
          String unitName = eUnit.getKey();
          Interface unitIface = eUnit.getValue();
+         unitIface.inheritUnsetFields();
          org.batfish.datamodel.Interface newUnitIface = toInterface(unitIface);
          _c.getInterfaces().put(unitName, newUnitIface);
          org.batfish.datamodel.Vrf vrf = newUnitIface.getVrf();
@@ -1647,8 +1691,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.setDefaultCrossZoneAction(_defaultCrossZoneAction);
       _c.setDefaultInboundAction(_defaultInboundAction);
 
-      _routingInstances.forEach((riName, ri) -> {
+      for (Entry<String, RoutingInstance> e : _routingInstances.entrySet()) {
+         String riName = e.getKey();
+         RoutingInstance ri = e.getValue();
          Vrf vrf = _c.getVrfs().get(riName);
+
+         // snmp
+         SnmpServer snmpServer = ri.getSnmpServer();
+         vrf.setSnmpServer(snmpServer);
+         if (snmpServer != null) {
+            for (SnmpCommunity community : snmpServer.getCommunities()
+                  .values()) {
+               String listName = community.getAccessList();
+               if (listName != null) {
+                  PrefixList prefixList = _prefixLists.get(listName);
+                  if (prefixList != null) {
+                     prefixList.getReferers().put(community,
+                           "prefix-list for community: " + community.getName());
+                  }
+                  else {
+                     undefined(
+                           "Reference to undefined snmp community prefix-list: '"
+                                 + listName + "'",
+                           PREFIX_LIST, listName);
+                  }
+               }
+            }
+         }
 
          // static routes
          for (StaticRoute route : _defaultRoutingInstance.getRibs()
@@ -1706,7 +1775,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             BgpProcess proc = createBgpProcess(ri);
             vrf.setBgpProcess(proc);
          }
-      });
+      }
 
       // mark forwarding table export policy if it exists
       String forwardingTableExportPolicyName = _defaultRoutingInstance

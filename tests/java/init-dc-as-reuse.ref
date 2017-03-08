@@ -13,7 +13,8 @@
         "pod_1_leaf_1" : "PASSED",
         "pod_1_tor_0" : "PASSED",
         "pod_1_tor_1" : "PASSED"
-      }
+      },
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -108,7 +109,8 @@
             "IPV4_18_OR_LONGER"
           ]
         }
-      }
+      },
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

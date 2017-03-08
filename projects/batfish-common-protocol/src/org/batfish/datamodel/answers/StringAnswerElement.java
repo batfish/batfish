@@ -1,7 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class StringAnswerElement implements AnswerElement {
 
    private String _answer;
@@ -20,7 +18,7 @@ public class StringAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       return _answer;
    }
 

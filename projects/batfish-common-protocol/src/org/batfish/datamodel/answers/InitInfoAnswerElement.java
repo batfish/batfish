@@ -8,7 +8,6 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class InitInfoAnswerElement implements AnswerElement {
 
@@ -31,14 +30,18 @@ public class InitInfoAnswerElement implements AnswerElement {
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       final StringBuilder sb = new StringBuilder();
       int pedanticCount = 0;
       int redFlagCount = 0;
       int unimplementedCount = 0;
+      int emptyCount = 0;
       int failedCount = 0;
+      int ignoredCount = 0;
       int passedCount = 0;
+      int unknownCount = 0;
       int unrecognizedCount = 0;
+      int unsupportedCount = 0;
       if (!_warnings.isEmpty()) {
          sb.append("DETAILED WARNINGS\n");
          for (String name : _warnings.keySet()) {
@@ -72,7 +75,7 @@ public class InitInfoAnswerElement implements AnswerElement {
             failedCount++;
             break;
 
-         case UNRECOGNIZED:
+         case PARTIALLY_UNRECOGNIZED:
             sb.append("  " + hostname
                   + ": contained at least one unrecognized line\n");
             unrecognizedCount++;
@@ -81,6 +84,23 @@ public class InitInfoAnswerElement implements AnswerElement {
          case PASSED:
             passedCount++;
             break;
+
+         case EMPTY:
+            sb.append("  " + hostname + ": empty file\n");
+            emptyCount++;
+
+         case IGNORED:
+            sb.append("  " + hostname + ": explicitly ignored by user\n");
+            ignoredCount++;
+
+         case UNKNOWN:
+            sb.append("  " + hostname + ": unknown configuration format\n");
+            unknownCount++;
+
+         case UNSUPPORTED:
+            sb.append("  " + hostname
+                  + ": known but unsupported configuration format\n");
+            unsupportedCount++;
 
          default:
             break;
@@ -107,8 +127,21 @@ public class InitInfoAnswerElement implements AnswerElement {
          sb.append("    Contained unrecognized line(s): " + unrecognizedCount
                + "\n");
       }
+      if (emptyCount > 0) {
+         sb.append("    Empty file: " + emptyCount + "\n");
+      }
+      if (ignoredCount > 0) {
+         sb.append("    Explicitly ignored by user: " + ignoredCount + "\n");
+      }
       if (failedCount > 0) {
          sb.append("    Failed to parse: " + failedCount + "\n");
+      }
+      if (unknownCount > 0) {
+         sb.append("    Unknown configuration format: " + unknownCount + "\n");
+      }
+      if (unsupportedCount > 0) {
+         sb.append("    Known but unsupported configuration format: "
+               + unsupportedCount + "\n");
       }
       return sb.toString();
    }

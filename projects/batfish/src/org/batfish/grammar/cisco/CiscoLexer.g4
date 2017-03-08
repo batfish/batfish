@@ -1521,6 +1521,11 @@ CONFDCONFIG
    'confdConfig'
 ;
 
+CONFIG
+:
+   'config'
+;
+
 CONFIG_COMMANDS
 :
    'config-commands'
@@ -1528,7 +1533,7 @@ CONFIG_COMMANDS
 
 CONFIG_REGISTER
 :
-   'config-register'
+   'config'
 ;
 
 CONFIGURATION
@@ -2160,6 +2165,11 @@ DIRECT
 DIRECTED_BROADCAST
 :
    'directed-broadcast'
+;
+
+DIRECTED_REQUEST
+:
+   'directed-request'
 ;
 
 DISABLE
@@ -3808,7 +3818,7 @@ INTERAREA
 
 INTERFACE
 :
-   'interface'
+   'int' 'erface'?
    { enableIPV6_ADDRESS = false; }
 
    -> pushMode ( M_Interface )
@@ -4407,6 +4417,11 @@ LOGIN_ATTEMPTS
 LOGOUT_WARNING
 :
    'logout-warning'
+;
+
+LOOKUP
+:
+   'lookup'
 ;
 
 LOOPBACK
@@ -7409,14 +7424,9 @@ SHOW
    'show'
 ;
 
-SHUT
-:
-   'shut'
-;
-
 SHUTDOWN
 :
-   'shutdown'
+   'shut' 'down'?
 ;
 
 SIGNAL
@@ -7556,7 +7566,7 @@ SOFT_PREEMPTION
 
 SOFT_RECONFIGURATION
 :
-   'soft-reconfiguration'
+   'soft' '-reconfiguration'?
 ;
 
 SONET
@@ -8164,6 +8174,11 @@ TERMINAL
 TERMINAL_TYPE
 :
    'terminal-type'
+;
+
+TEST
+:
+   'test'
 ;
 
 TFTP

@@ -1,5 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.routing_policy.Environment;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class VarOrigin extends OriginExpr {
@@ -40,6 +43,13 @@ public class VarOrigin extends OriginExpr {
          return false;
       }
       return true;
+   }
+
+   @Override
+   public OriginType evaluate(Environment environment) {
+      throw new UnsupportedOperationException(
+            "no implementation for generated method"); // TODO Auto-generated
+                                                       // method stub
    }
 
    public String getVar() {

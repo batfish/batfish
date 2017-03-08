@@ -566,7 +566,6 @@ null_bgp_tail
       | RECONNECT_INTERVAL
       | SEND_LABEL
       | SESSION_OPEN_MODE
-      | SHUTDOWN
       | SOFT_RECONFIGURATION
       | SUPPRESS_FIB_PENDING
       | SYNCHRONIZATION
@@ -814,10 +813,7 @@ session_group_rb_stanza
 
 shutdown_bgp_tail
 :
-   (
-      SHUTDOWN
-      | SHUT
-   ) NEWLINE
+   SHUTDOWN NEWLINE
 ;
 
 subnet_bgp_tail

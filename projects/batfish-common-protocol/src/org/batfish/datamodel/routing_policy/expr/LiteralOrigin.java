@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.routing_policy.Environment;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -47,6 +48,11 @@ public class LiteralOrigin extends OriginExpr {
          return false;
       }
       return true;
+   }
+
+   @Override
+   public OriginType evaluate(Environment environment) {
+      return _originType;
    }
 
    public Integer getAsNum() {

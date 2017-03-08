@@ -52,29 +52,6 @@ public class PoolMgrService {
       }
    }
 
-   private boolean isCompatibleWorkerVersion(String workerVersion)
-         throws Exception {
-
-      List<Integer> myBits = Version.getVersionBreakdown(Version.getVersion());
-      List<Integer> workerBits;
-
-      try {
-         workerBits = Version.getVersionBreakdown(workerVersion);
-
-         if (workerBits.size() != 3) {
-            throw new IllegalArgumentException("Worker version " + workerVersion
-                  + " does not have 3 subparts");
-         }
-      }
-      catch (Exception e) {
-         throw new IllegalArgumentException(
-               "Bad worker version format in " + workerVersion);
-      }
-
-      return (myBits.get(0) == workerBits.get(0)
-            && myBits.get(1) == workerBits.get(1));
-   }
-
    // functions for pool management
    @GET
    @Path(CoordConsts.SVC_POOL_UPDATE_RSC)
@@ -135,7 +112,8 @@ public class PoolMgrService {
                return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                      "Worker version not specified"));
             }
-            if (!isCompatibleWorkerVersion(workerVersion)) {
+            if (!Version.isCompatibleVersion("Service", "Worker",
+                  workerVersion)) {
                return new JSONArray(Arrays.asList(CoordConsts.SVC_FAILURE_KEY,
                      "Worker version " + workerVersion
                            + "is incompatible with coordinator version "

@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -47,6 +50,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
    Map<String, Node> _nodes;
 
    Topology _topology;
+
+   private String _version;
 
    @Override
    public FibMap getFibs() {
@@ -288,8 +293,27 @@ public class BdpDataPlane implements Serializable, DataPlane {
    }
 
    @Override
+   public SortedMap<String, SortedMap<String, IRib<AbstractRoute>>> getRibs() {
+      SortedMap<String, SortedMap<String, IRib<AbstractRoute>>> ribs = new TreeMap<>();
+      _nodes.forEach((hostname, node) -> {
+         SortedMap<String, IRib<AbstractRoute>> byVrf = new TreeMap<>();
+         ribs.put(hostname, byVrf);
+         node._virtualRouters.forEach((vrf, virtualRouter) -> {
+            IRib<AbstractRoute> rib = virtualRouter._mainRib;
+            byVrf.put(vrf, rib);
+         });
+      });
+      return ribs;
+   }
+
+   @Override
    public EdgeSet getTopologyEdges() {
       return _topology.getEdges();
+   }
+
+   @Override
+   public String getVersion() {
+      return _version;
    }
 
    protected void initIpOwners(Map<String, Configuration> configurations,
@@ -322,6 +346,10 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
    public void setTopology(Topology topology) {
       _topology = topology;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
 }

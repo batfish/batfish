@@ -11,7 +11,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class InitInfoQuestionPlugin extends QuestionPlugin {
 
@@ -67,7 +66,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public String prettyPrint() throws JsonProcessingException {
+      public String prettyPrint() {
          return getName() + " " + SUMMARY_VAR + "=" + _summary;
       }
 

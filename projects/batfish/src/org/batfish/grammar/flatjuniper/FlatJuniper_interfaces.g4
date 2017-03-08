@@ -564,12 +564,7 @@ int_named
 :
    (
       WILDCARD
-      |
-      (
-         (
-            node = variable COLON
-         )? name = variable
-      )
+      | interface_id
    )
    (
       i_common

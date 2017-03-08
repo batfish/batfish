@@ -25,6 +25,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.grammar.GrammarSettings;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -59,6 +60,8 @@ public interface IBatfish extends IPluginConsumer {
 
    String getFlowTag();
 
+   GrammarSettings getGrammarSettings();
+
    FlowHistory getHistory();
 
    ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement();
@@ -74,6 +77,9 @@ public interface IBatfish extends IPluginConsumer {
          Map<Ip, Set<String>> ipOwners);
 
    void initRemoteIpsecVpns(Map<String, Configuration> configurations);
+
+   void initRemoteOspfNeighbors(Map<String, Configuration> configurations,
+         Map<Ip, Set<String>> ipOwners, Topology topology);
 
    void initRoutes(Map<String, Configuration> configurations);
 

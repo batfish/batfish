@@ -19,8 +19,6 @@ IptablesLexer*.java
 IptablesParser*.java
 JuniperLexer*.java
 JuniperParser*.java
-LogiQLLexer*.java
-LogiQLParser*.java
 MrvLexer*.java
 MrvParser*.java
 RoleLexer*.java

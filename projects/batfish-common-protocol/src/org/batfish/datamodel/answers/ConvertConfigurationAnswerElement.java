@@ -10,8 +10,6 @@ import java.util.TreeSet;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class ConvertConfigurationAnswerElement
       implements AnswerElement, Serializable {
 
@@ -25,6 +23,8 @@ public class ConvertConfigurationAnswerElement
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _undefinedReferences;
 
    private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
+
+   private String _version;
 
    private SortedMap<String, Warnings> _warnings;
 
@@ -47,12 +47,16 @@ public class ConvertConfigurationAnswerElement
       return _unusedStructures;
    }
 
+   public String getVersion() {
+      return _version;
+   }
+
    public SortedMap<String, Warnings> getWarnings() {
       return _warnings;
    }
 
    @Override
-   public String prettyPrint() throws JsonProcessingException {
+   public String prettyPrint() {
       StringBuilder retString = new StringBuilder(
             "Results from converting vendor configurations\n");
 
@@ -106,6 +110,10 @@ public class ConvertConfigurationAnswerElement
    public void setUnusedStructures(
          SortedMap<String, SortedMap<String, SortedSet<String>>> unusedStructures) {
       _unusedStructures = unusedStructures;
+   }
+
+   public void setVersion(String version) {
+      _version = version;
    }
 
    public void setWarnings(SortedMap<String, Warnings> warnings) {

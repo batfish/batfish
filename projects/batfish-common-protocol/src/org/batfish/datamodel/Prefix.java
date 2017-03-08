@@ -90,6 +90,10 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       return (start <= ipAsLong && ipAsLong <= end);
    }
 
+   public boolean containsPrefix(Prefix prefix) {
+      return contains(prefix._address) && _prefixLength < prefix._prefixLength;
+   }
+
    @Override
    public boolean equals(Object obj) {
       if (this == obj) {

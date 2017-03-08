@@ -300,6 +300,16 @@ dhcp_profile_null
    ) ~NEWLINE* NEWLINE
 ;
 
+domain_name
+:
+   NAME hostname = variable_hostname NEWLINE
+;
+
+domain_name_server
+:
+   NAME_SERVER hostname = variable_hostname NEWLINE
+;
+
 dspf_null
 :
    NO?
@@ -505,6 +515,22 @@ ip_dhcp_null
       | NETWORK
       | NEXT_SERVER
       | OPTION
+   ) ~NEWLINE* NEWLINE
+;
+
+ip_domain_name
+:
+   NAME
+   (
+      VRF vrf = variable
+   )? hostname = variable_hostname NEWLINE
+;
+
+ip_domain_null
+:
+   (
+      LIST
+      | LOOKUP
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1735,12 +1761,18 @@ s_dial_peer
    )*
 ;
 
+s_domain
+:
+   DOMAIN
+   (
+      domain_name
+      | domain_name_server
+   )
+;
+
 s_domain_name
 :
-   DOMAIN_NAME
-   (
-      name_parts += ~NEWLINE
-   )+ NEWLINE
+   DOMAIN_NAME hostname = variable_hostname NEWLINE
 ;
 
 s_dot11
@@ -1870,12 +1902,29 @@ s_ip_dhcp
    )*
 ;
 
+s_ip_domain
+:
+   NO? IP DOMAIN
+   (
+      ip_domain_name
+      | ip_domain_null
+   )
+;
+
 s_ip_domain_name
 :
-   IP DOMAIN_NAME name = variable
+   IP DOMAIN_NAME hostname = variable_hostname
    (
       USE_VRF variable
    )? NEWLINE
+;
+
+s_ip_name_server
+:
+   IP NAME_SERVER
+   (
+      VRF vrf = variable
+   )? hostname = variable_hostname NEWLINE
 ;
 
 s_ip_nat
@@ -2217,6 +2266,24 @@ s_switchport
    ) NEWLINE
 ;
 
+s_tacacs
+:
+   TACACS
+   (
+      t_null
+      | t_server
+   )
+;
+
+s_tacacs_server
+:
+   NO? TACACS_SERVER
+   (
+      ts_host
+      | ts_null
+   )
+;
+
 s_tap
 :
    NO? TAP ~NEWLINE* NEWLINE
@@ -2494,7 +2561,6 @@ stanza
    | router_isis_stanza
    | router_multicast_stanza
    | router_rip_stanza
-   | router_static_stanza
    | rsvp_stanza
    | s_aaa
    | s_archive
@@ -2510,6 +2576,7 @@ stanza
    | s_ctl_file
    | s_dhcp
    | s_dial_peer
+   | s_domain
    | s_domain_name
    | s_dot11
    | s_dspfarm
@@ -2527,7 +2594,9 @@ stanza
    | s_hostname
    | s_interface
    | s_ip_dhcp
+   | s_ip_domain
    | s_ip_domain_name
+   | s_ip_name_server
    | s_ip_nat
    | s_ip_pim
    | s_ip_sla
@@ -2570,6 +2639,7 @@ stanza
    | s_router_eigrp
    | s_router_ospf
    | s_router_ospfv3
+   | s_router_static
    | s_router_vrrp
    | s_sccp
    | s_service
@@ -2580,6 +2650,8 @@ stanza
    | s_statistics
    | s_stcapp
    | s_switchport
+   | s_tacacs
+   | s_tacacs_server
    | s_tap
    | s_track
    | s_tunnel_group
@@ -2615,6 +2687,18 @@ switching_mode_stanza
    SWITCHING_MODE ~NEWLINE* NEWLINE
 ;
 
+t_null
+:
+   (
+      SOURCE_INTERFACE
+   ) ~NEWLINE* NEWLINE
+;
+
+t_server
+:
+   SERVER hostname = variable_hostname NEWLINE
+;
+
 tap_null
 :
    NO?
@@ -2645,6 +2729,26 @@ track_null
       DELAY
       | OBJECT
       | TYPE
+   ) ~NEWLINE* NEWLINE
+;
+
+ts_host
+:
+   HOST hostname =
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   ) ~NEWLINE* NEWLINE
+;
+
+ts_null
+:
+   (
+      DEADTIME
+      | DIRECTED_REQUEST
+      | KEY
+      | TEST
+      | TIMEOUT
    ) ~NEWLINE* NEWLINE
 ;
 

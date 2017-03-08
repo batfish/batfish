@@ -11,7 +11,7 @@
 	<classpathentry kind="lib" path="lib/commons/commons-configuration-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons/commons-cli-1.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1.jar" sourcepath="lib/jaxrs-ri/api/javax.ws.rs-api-2.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/aopalliance-repackaged-2.4.0-b09.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/asm-debug-all-5.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrs-ri/ext/hk2-api-2.4.0-b09.jar"/>

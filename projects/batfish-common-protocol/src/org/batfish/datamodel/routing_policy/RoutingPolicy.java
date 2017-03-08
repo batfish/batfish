@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -79,10 +78,10 @@ public class RoutingPolicy extends ComparableStructure<String> {
       return _statements;
    }
 
-   public boolean process(AbstractRoute inputRoute, AbstractRoute6 inputRoute6,
+   public boolean process(AbstractRoute inputRoute,
          AbstractRouteBuilder<?> outputRoute, Ip peerAddress, String vrf) {
-      Environment environment = new Environment(_owner, vrf, inputRoute,
-            inputRoute6, outputRoute, peerAddress);
+      Environment environment = new Environment(_owner, vrf, inputRoute, null,
+            outputRoute, peerAddress);
       Result result = call(environment);
       return result.getBooleanValue();
    }

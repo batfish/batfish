@@ -9,7 +9,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.*;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.common.BatfishException;
-import org.batfish.main.PartialGroupMatchBatfishException;
+import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 import org.batfish.main.Warnings;
 
@@ -53,7 +53,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
          int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
          _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
       }
-      catch (PartialGroupMatchBatfishException e) {
+      catch (PartialGroupMatchException e) {
          String message = "Exception processing apply-groups statement at path: \""
                + _currentPath.pathString() + "\" with group \"" + groupName
                + "\": " + e.getMessage() + ": caused by: "
@@ -96,7 +96,8 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
    @Override
    public void enterInterface_id(Interface_idContext ctx) {
-      if (_enablePathRecording && ctx.unit != null) {
+      if (_enablePathRecording
+            && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
          _enablePathRecording = false;
          _reenablePathRecording = true;
          String text = ctx.getText();

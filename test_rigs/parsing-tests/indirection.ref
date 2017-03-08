@@ -31,7 +31,7 @@
             "          (s_interfaces",
             "            INTERFACES:'interfaces'  <== mode:DEFAULT_MODE",
             "            (int_named",
-            "              (variable",
+            "              (interface_id",
             "                VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'  <== mode:DEFAULT_MODE",
@@ -545,7 +545,7 @@
             "          (s_interfaces",
             "            INTERFACES:'interfaces'  <== mode:DEFAULT_MODE",
             "            (int_named",
-            "              (variable",
+            "              (interface_id",
             "                VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'  <== mode:DEFAULT_MODE",
@@ -567,7 +567,7 @@
             "          (s_interfaces",
             "            INTERFACES:'interfaces'  <== mode:DEFAULT_MODE",
             "            (int_named",
-            "              (variable",
+            "              (interface_id",
             "                VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'  <== mode:DEFAULT_MODE",
@@ -938,10 +938,12 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
-      }
+      },
+      "version" : "0.8.1"
     },
     {
-      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement"
+      "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "version" : "0.8.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +44,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.Pair;
+import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.IBatfish;
@@ -69,6 +71,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Prefix;
@@ -110,6 +113,7 @@ import org.batfish.datamodel.collections.RouteSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.assertion.AssertionCombinedParser;
 import org.batfish.grammar.assertion.AssertionExtractor;
@@ -1093,6 +1097,37 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
+   public <S extends Serializable> Map<String, S> deserializeObjects(
+         Map<Path, String> namesByPath, Class<S> outputClass) {
+      String outputClassName = outputClass.getName();
+      BatfishLogger logger = getLogger();
+      Map<String, byte[]> dataByName = new TreeMap<>();
+      AtomicInteger readCompleted = newBatch(
+            "Reading and unpacking files containg '" + outputClassName
+                  + "' instances",
+            namesByPath.size());
+      namesByPath.forEach((inputPath, name) -> {
+         logger.debug("Reading and gunzipping" + outputClassName + " '" + name
+               + "' from '" + inputPath.toString() + "'");
+         byte[] data = fromGzipFile(inputPath);
+         logger.debug(" ...OK\n");
+         dataByName.put(name, data);
+         readCompleted.incrementAndGet();
+      });
+      Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
+      AtomicInteger deserializeCompleted = newBatch(
+            "Deserializing '" + outputClassName + "' instances",
+            dataByName.size());
+      dataByName.keySet().parallelStream().forEach(name -> {
+         byte[] data = dataByName.get(name);
+         S object = deserializeObject(data, outputClass);
+         unsortedOutput.put(name, object);
+         deserializeCompleted.incrementAndGet();
+      });
+      Map<String, S> output = new TreeMap<>(unsortedOutput);
+      return output;
+   }
+
    public Map<String, GenericConfigObject> deserializeVendorConfigurations(
          Path serializedVendorConfigPath) {
       _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
@@ -1562,6 +1597,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
+   public GrammarSettings getGrammarSettings() {
+      return _settings;
+   }
+
+   @Override
    public FlowHistory getHistory() {
       FlowHistory flowHistory = new FlowHistory();
       if (_settings.getDiffQuestion()) {
@@ -1628,16 +1668,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    public ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement() {
       return deserializeObject(_testrigSettings.getParseAnswerPath(),
             ParseVendorConfigurationAnswerElement.class);
-   }
-
-   public Path getPrecomputedRoutesPath() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getPrecomputedRoutesPath();
-   }
-
-   public Path getSerializedTopologyPath() {
-      return _testrigSettings.getEnvironmentSettings()
-            .getSerializedTopologyPath();
    }
 
    public Settings getSettings() {
@@ -1895,6 +1925,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       for (String failed : convertAnswer.getFailed()) {
          answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
       }
+      _logger.info(answerElement.prettyPrint());
       return answerElement;
    }
 
@@ -2041,6 +2072,112 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    @Override
+   public void initRemoteOspfNeighbors(
+         Map<String, Configuration> configurations,
+         Map<Ip, Set<String>> ipOwners, Topology topology) {
+      for (Entry<String, Configuration> e : configurations.entrySet()) {
+         String hostname = e.getKey();
+         Configuration c = e.getValue();
+         for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
+            Vrf vrf = e2.getValue();
+            OspfProcess proc = vrf.getOspfProcess();
+            if (proc != null) {
+               proc.initInterfaceCosts();
+               proc.setOspfNeighbors(new TreeMap<>());
+               if (proc != null) {
+                  String vrfName = e2.getKey();
+                  for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
+                     long areaNum = e3.getKey();
+                     OspfArea area = e3.getValue();
+                     for (Interface iface : area.getInterfaces()) {
+                        String ifaceName = iface.getName();
+                        EdgeSet ifaceEdges = topology.getInterfaceEdges()
+                              .get(new NodeInterfacePair(hostname, ifaceName));
+                        boolean hasNeighbor = false;
+                        Ip localIp = iface.getPrefix().getAddress();
+                        if (ifaceEdges != null) {
+                           for (Edge edge : ifaceEdges) {
+                              if (edge.getNode1().equals(hostname)) {
+                                 String remoteHostname = edge.getNode2();
+                                 String remoteIfaceName = edge.getInt2();
+                                 Configuration remoteNode = configurations
+                                       .get(remoteHostname);
+                                 Interface remoteIface = remoteNode
+                                       .getInterfaces().get(remoteIfaceName);
+                                 Vrf remoteVrf = remoteIface.getVrf();
+                                 String remoteVrfName = remoteVrf.getName();
+                                 OspfProcess remoteProc = remoteVrf
+                                       .getOspfProcess();
+                                 if (remoteProc.getOspfNeighbors() == null) {
+                                    remoteProc
+                                          .setOspfNeighbors(new TreeMap<>());
+                                 }
+                                 if (remoteProc != null) {
+                                    OspfArea remoteArea = remoteProc.getAreas()
+                                          .get(areaNum);
+                                    if (remoteArea != null
+                                          && remoteArea.getInterfaceNames()
+                                                .contains(remoteIfaceName)) {
+                                       Ip remoteIp = remoteIface.getPrefix()
+                                             .getAddress();
+                                       Pair<Ip, Ip> localKey = new Pair<>(
+                                             localIp, remoteIp);
+                                       OspfNeighbor neighbor = proc
+                                             .getOspfNeighbors().get(localKey);
+                                       if (neighbor == null) {
+                                          hasNeighbor = true;
+
+                                          // initialize local neighbor
+                                          neighbor = new OspfNeighbor(localKey);
+                                          neighbor.setArea(areaNum);
+                                          neighbor.setVrf(vrfName);
+                                          neighbor.setOwner(c);
+                                          neighbor.setInterface(iface);
+                                          proc.getOspfNeighbors().put(localKey,
+                                                neighbor);
+
+                                          // initialize remote neighbor
+                                          Pair<Ip, Ip> remoteKey = new Pair<>(
+                                                remoteIp, localIp);
+                                          OspfNeighbor remoteNeighbor = new OspfNeighbor(
+                                                remoteKey);
+                                          remoteNeighbor.setArea(areaNum);
+                                          remoteNeighbor.setVrf(remoteVrfName);
+                                          remoteNeighbor.setOwner(remoteNode);
+                                          remoteNeighbor
+                                                .setInterface(remoteIface);
+                                          remoteProc.getOspfNeighbors()
+                                                .put(remoteKey, remoteNeighbor);
+
+                                          // link neighbors
+                                          neighbor.setRemoteOspfNeighbor(
+                                                remoteNeighbor);
+                                          remoteNeighbor.setRemoteOspfNeighbor(
+                                                neighbor);
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                        if (!hasNeighbor) {
+                           Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
+                           OspfNeighbor neighbor = new OspfNeighbor(key);
+                           neighbor.setArea(areaNum);
+                           neighbor.setVrf(vrfName);
+                           neighbor.setOwner(c);
+                           neighbor.setInterface(iface);
+                           proc.getOspfNeighbors().put(key, neighbor);
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   @Override
    public void initRoutes(Map<String, Configuration> configurations) {
       Set<Route> globalRoutes = _dataPlanePlugin.getRoutes();
       for (Configuration node : configurations.values()) {
@@ -2075,6 +2212,11 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
+         ConvertConfigurationAnswerElement ccae = getConvertConfigurationAnswerElement();
+         if (!Version.isCompatibleVersion("Service",
+               "Old processed configurations", ccae.getVersion())) {
+            repairConfigurations();
+         }
          configurations = deserializeConfigurations(
                _testrigSettings.getSerializeIndependentPath());
          _cachedConfigurations.put(_testrigSettings, configurations);
@@ -2088,11 +2230,25 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    @Override
    public DataPlane loadDataPlane() {
+      return loadDataPlane(false);
+   }
+
+   private DataPlane loadDataPlane(boolean postRepair) {
       DataPlane dp = _dataPlanes.get(_testrigSettings);
       if (dp == null) {
+         newBatch("Loading data plane from disk", 0);
          dp = deserializeObject(
                _testrigSettings.getEnvironmentSettings().getDataPlanePath(),
                DataPlane.class);
+         if (!Version.isCompatibleVersion("Service", "Old Data Plane",
+               dp.getVersion())) {
+            if (postRepair) {
+               throw new BatfishException("Failed to repair data plane");
+            }
+            else {
+               dp = repairDataPlane();
+            }
+         }
          _dataPlanes.put(_testrigSettings, dp);
       }
       return dp;
@@ -2722,12 +2878,15 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
             .filter(path -> !path.getFileName().toString().startsWith("."))
             .collect(Collectors.toList()).toArray(new Path[] {});
       Arrays.sort(configFilePaths);
+      AtomicInteger completed = newBatch("Reading network configuration files",
+            configFilePaths.length);
       for (Path file : configFilePaths) {
          _logger.debug("Reading: \"" + file.toString() + "\"\n");
          String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
          String fileText = fileTextRaw
                + ((fileTextRaw.length() != 0) ? "\n" : "");
          configurationData.put(file, fileText);
+         completed.incrementAndGet();
       }
       printElapsedTime();
       return configurationData;
@@ -2820,6 +2979,33 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       _answererCreators.put(questionClassName, answererCreator);
    }
 
+   private void repairConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeIndependentPath();
+      CommonUtil.deleteDirectory(outputPath);
+      ParseVendorConfigurationAnswerElement pvcae = getParseVendorConfigurationAnswerElement();
+      if (!Version.isCompatibleVersion("Service", "Old parsed configurations",
+            pvcae.getVersion())) {
+         repairVendorConfigurations();
+      }
+      Path inputPath = _testrigSettings.getSerializeVendorPath();
+      serializeIndependentConfigs(inputPath, outputPath);
+   }
+
+   private DataPlane repairDataPlane() {
+      Path dataPlanePath = _testrigSettings.getEnvironmentSettings()
+            .getDataPlanePath();
+      CommonUtil.delete(dataPlanePath);
+      computeDataPlane(false);
+      return loadDataPlane(true);
+   }
+
+   private void repairVendorConfigurations() {
+      Path outputPath = _testrigSettings.getSerializeVendorPath();
+      CommonUtil.deleteDirectory(outputPath);
+      Path testRigPath = _testrigSettings.getTestRigPath();
+      serializeVendorConfigs(testRigPath, outputPath);
+   }
+
    private AnswerElement report() {
       ReportAnswerElement answerElement = new ReportAnswerElement();
       checkQuestionsDirExists();
@@ -2865,6 +3051,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
    }
 
    public Answer run() {
+      newBatch("Begin job", 0);
       loadPlugins();
       if (_dataPlanePlugin == null) {
          _dataPlanePlugin = new BdpDataPlanePlugin();
@@ -3138,6 +3325,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
          Path outputPath) {
       Answer answer = new Answer();
       ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }
@@ -3202,6 +3390,40 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       printElapsedTime();
    }
 
+   public <S extends Serializable> void serializeObjects(
+         Map<Path, S> objectsByPath) {
+      if (objectsByPath.isEmpty()) {
+         return;
+      }
+      BatfishLogger logger = getLogger();
+      Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+      int size = objectsByPath.size();
+      String className = objectsByPath.values().iterator().next().getClass()
+            .getName();
+      AtomicInteger serializeCompleted = newBatch(
+            "Serializing '" + className + "' instances", size);
+      objectsByPath.keySet().parallelStream().forEach(outputPath -> {
+         S object = objectsByPath.get(outputPath);
+         byte[] gzipData = toGzipData(object);
+         dataByPath.put(outputPath, gzipData);
+         serializeCompleted.incrementAndGet();
+      });
+      AtomicInteger writeCompleted = newBatch(
+            "Packing and writing '" + className + "' instances to disk", size);
+      dataByPath.forEach((outputPath, data) -> {
+         logger.debug("Writing: \"" + outputPath.toString() + "\"...");
+         try {
+            Files.write(outputPath, data);
+         }
+         catch (IOException e) {
+            throw new BatfishException(
+                  "Failed to write: '" + outputPath.toString() + "'");
+         }
+         logger.debug("OK\n");
+         writeCompleted.incrementAndGet();
+      });
+   }
+
    private Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
       Answer answer = new Answer();
       boolean configsFound = false;
@@ -3210,6 +3432,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Path networkConfigsPath = testRigPath
             .resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
       ParseVendorConfigurationAnswerElement answerElement = new ParseVendorConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
       if (_settings.getVerboseParse()) {
          answer.addAnswerElement(answerElement);
       }
@@ -3390,7 +3613,9 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       EdgeSet edges = new EdgeSet();
       Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
       configurations.forEach((nodeName, node) -> {
-         node.getInterfaces().forEach((ifaceName, iface) -> {
+         for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
+            String ifaceName = e.getKey();
+            Interface iface = e.getValue();
             if (!iface.isLoopback(node.getConfigurationFormat())
                   && iface.getActive()) {
                for (Prefix prefix : iface.getAllPrefixes()) {
@@ -3409,7 +3634,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                   }
                }
             }
-         });
+         }
       });
       for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
          for (NodeInterfacePair p1 : bucket) {

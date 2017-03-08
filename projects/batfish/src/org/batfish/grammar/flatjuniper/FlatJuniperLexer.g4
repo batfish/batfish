@@ -257,6 +257,11 @@ APPLY_PATH
    'apply-path'
 ;
 
+ARCHIVE
+:
+   'archive'
+;
+
 AREA
 :
    'area'
@@ -342,6 +347,11 @@ AUTHENTICATION_TYPE
    'authentication-type'
 ;
 
+AUTHORIZATION
+:
+   'authorization'
+;
+
 AUTO_EXPORT
 :
    'auto-export'
@@ -397,6 +407,11 @@ BMP
    'bmp'
 ;
 
+BOOT_SERVER
+:
+   'boot-server'
+;
+
 BOOTPC
 :
    'bootpc'
@@ -415,6 +430,16 @@ BRIDGE
 BRIDGE_DOMAINS
 :
    'bridge-domains'
+;
+
+BROADCAST_CLIENT
+:
+   'broadcast-client'
+;
+
+CATEGORIES
+:
+   'categories'
 ;
 
 CCC
@@ -445,6 +470,16 @@ CLASS_OF_SERVICE
 CLEAR
 :
    'clear'
+;
+
+CLIENT_LIST_NAME
+:
+   'client-list-name'
+;
+
+CLIENTS
+:
+   'clients'
 ;
 
 CLUSTER
@@ -501,6 +536,16 @@ CONNECTIONS_LIMIT
    'connections-limit'
 ;
 
+CONSOLE
+:
+   'console'
+;
+
+CONTACT
+:
+   'contact'
+;
+
 COS_NEXT_HOP_MAP
 :
    'cos-next-hop-map'
@@ -524,6 +569,11 @@ CVSPSERVER
 CWR
 :
    'cwr'
+;
+
+DAEMON
+:
+   'daemon'
 ;
 
 DAMPING
@@ -836,6 +886,11 @@ EXP
    'exp'
 ;
 
+EXPLICIT_PRIORITY
+:
+   'explicit-priority'
+;
+
 EXPORT
 :
    'export'
@@ -879,6 +934,11 @@ FABRIC
 FABRIC_OPTIONS
 :
    'fabric-options'
+;
+
+FACILITY_OVERRIDE
+:
+   'facility-override'
 ;
 
 FAIL_FILTER
@@ -1374,6 +1434,11 @@ INSTANCE
 INSTANCE_TYPE
 :
    'instance-type'
+;
+
+INTERACTIVE_COMMANDS
+:
+   'interactive-commands'
 ;
 
 INTERCONNECT_DEVICE
@@ -2461,6 +2526,11 @@ KERBEROS_SEC
    'kerberos-sec'
 ;
 
+KERNEL
+:
+   'kernel'
+;
+
 KEYS
 :
    'keys'
@@ -2639,6 +2709,11 @@ LOCATION
 LOG
 :
    'log'
+;
+
+LOG_PREFIX
+:
+   'log-prefix'
 ;
 
 LOG_UPDOWN
@@ -3616,6 +3691,16 @@ REALAUDIO
    'realaudio'
 ;
 
+READ_ONLY
+:
+   'read-only'
+;
+
+READ_WRITE
+:
+   'read-write'
+;
+
 READVERTISE
 :
    'readvertise'
@@ -3896,6 +3981,11 @@ SCTP
    'sctp'
 ;
 
+SECRET
+:
+   'secret'
+;
+
 SECURITY
 :
    'security'
@@ -3904,6 +3994,11 @@ SECURITY
 SECURITY_ZONE
 :
    'security-zone'
+;
+
+SERVER
+:
+   'server'
 ;
 
 SERVICE
@@ -3969,6 +4064,11 @@ SHORTCUTS
 SIMPLE
 :
    'simple'
+;
+
+SINGLE_CONNECTION
+:
+   'single-connection'
 ;
 
 SIP
@@ -4211,6 +4311,11 @@ TARGETED_BROADCAST
    'targeted-broadcast'
 ;
 
+TARGETS
+:
+   'targets'
+;
+
 TCP
 :
    'tcp'
@@ -4276,6 +4381,11 @@ THROUGH
    'through'
 ;
 
+TIME_FORMAT
+:
+   'time-format'
+;
+
 TIME_EXCEEDED
 :
    'time-exceeded'
@@ -4289,6 +4399,11 @@ TIME_ZONE
 TIMED
 :
    'timed'
+;
+
+TIMEOUT
+:
+   'timeout'
 ;
 
 TO
@@ -4319,6 +4434,21 @@ TRACK
 TRAFFIC_ENGINEERING
 :
    'traffic-engineering'
+;
+
+TRAP_DESTINATIONS
+:
+   'trap-destinations'
+;
+
+TRAP_GROUP
+:
+   'trap-group'
+;
+
+TRAP_OPTIONS
+:
+   'trap-options'
 ;
 
 TRAPS

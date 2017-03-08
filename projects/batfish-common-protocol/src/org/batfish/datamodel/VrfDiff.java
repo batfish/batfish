@@ -1,12 +1,8 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.util.BatfishObjectMapper;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class VrfDiff extends ConfigDiffElement {
 
@@ -94,12 +90,6 @@ public class VrfDiff extends ConfigDiffElement {
             && _interfacesDiff == null && _ipAccessListsDiff == null
             && _vrfsDiff == null && _routeFilterListsDiff == null
             && _routingPoliciesDiff == null;
-   }
-
-   @Override
-   public String prettyPrint() throws JsonProcessingException {
-      ObjectMapper mapper = new BatfishObjectMapper();
-      return mapper.writeValueAsString(this);
    }
 
    @JsonProperty(AS_PATH_ACCESS_LISTS_DIFF_VAR)

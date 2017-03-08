@@ -70,6 +70,8 @@ public class Vrf extends ComparableStructure<String> {
 
    private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
+   private SnmpServer _snmpServer;
+
    private NavigableSet<StaticRoute> _staticRoutes;
 
    @JsonCreator
@@ -181,6 +183,10 @@ public class Vrf extends ComparableStructure<String> {
       return _sentIbgpAdvertisements;
    }
 
+   public SnmpServer getSnmpServer() {
+      return _snmpServer;
+   }
+
    @JsonPropertyDescription("Static routes for this VRF")
    @JsonProperty(STATIC_ROUTES_VAR)
    public NavigableSet<StaticRoute> getStaticRoutes() {
@@ -246,6 +252,10 @@ public class Vrf extends ComparableStructure<String> {
    @JsonProperty(OSPF_PROCESS_VAR)
    public void setOspfProcess(OspfProcess process) {
       _ospfProcess = process;
+   }
+
+   public void setSnmpServer(SnmpServer snmpServer) {
+      _snmpServer = snmpServer;
    }
 
    @JsonProperty(STATIC_ROUTES_VAR)

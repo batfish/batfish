@@ -76,6 +76,8 @@ public final class Configuration extends ComparableStructure<String> {
 
    private LineAction _defaultInboundAction;
 
+   private NavigableSet<String> _dnsServers;
+
    private String _domainName;
 
    private NavigableMap<String, IkeGateway> _ikeGateways;
@@ -95,6 +97,10 @@ public final class Configuration extends ComparableStructure<String> {
    private NavigableMap<String, IpsecProposal> _ipsecProposals;
 
    private NavigableMap<String, IpsecVpn> _ipsecVpns;
+
+   private NavigableSet<String> _loggingServers;
+
+   private NavigableSet<String> _ntpServers;
 
    private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
 
@@ -126,6 +132,10 @@ public final class Configuration extends ComparableStructure<String> {
 
    private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
+   private NavigableSet<String> _snmpTrapServers;
+
+   private NavigableSet<String> _tacacsServers;
+
    private VendorFamily _vendorFamily;
 
    private Map<String, Vrf> _vrfs;
@@ -137,6 +147,7 @@ public final class Configuration extends ComparableStructure<String> {
       super(hostname);
       _asPathAccessLists = new TreeMap<>();
       _communityLists = new TreeMap<>();
+      _dnsServers = new TreeSet<>();
       _ikeGateways = new TreeMap<>();
       _ikePolicies = new TreeMap<>();
       _ikeProposals = new TreeMap<>();
@@ -146,10 +157,14 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecPolicies = new TreeMap<>();
       _ipsecProposals = new TreeMap<>();
       _ipsecVpns = new TreeMap<>();
+      _loggingServers = new TreeSet<>();
+      _ntpServers = new TreeSet<>();
       _roles = new RoleSet();
       _routeFilterLists = new TreeMap<>();
       _route6FilterLists = new TreeMap<>();
       _routingPolicies = new TreeMap<>();
+      _snmpTrapServers = new TreeSet<>();
+      _tacacsServers = new TreeSet<>();
       _vendorFamily = new VendorFamily();
       _vrfs = new TreeMap<>();
       _zones = new TreeMap<>();
@@ -193,6 +208,10 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonIgnore
    public Vrf getDefaultVrf() {
       return _vrfs.get(DEFAULT_VRF_NAME);
+   }
+
+   public NavigableSet<String> getDnsServers() {
+      return _dnsServers;
    }
 
    @JsonPropertyDescription("Domain name of this node.")
@@ -256,6 +275,14 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonPropertyDescription("Dictionary of all IPSEC VPNs for this node.")
    public NavigableMap<String, IpsecVpn> getIpsecVpns() {
       return _ipsecVpns;
+   }
+
+   public NavigableSet<String> getLoggingServers() {
+      return _loggingServers;
+   }
+
+   public NavigableSet<String> getNtpServers() {
+      return _ntpServers;
    }
 
    @JsonIgnore
@@ -329,6 +356,14 @@ public final class Configuration extends ComparableStructure<String> {
    @JsonIgnore
    public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
       return _sentIbgpAdvertisements;
+   }
+
+   public NavigableSet<String> getSnmpTrapServers() {
+      return _snmpTrapServers;
+   }
+
+   public NavigableSet<String> getTacacsServers() {
+      return _tacacsServers;
    }
 
    @JsonPropertyDescription("Object containing vendor-specific information for this node.")
@@ -431,6 +466,10 @@ public final class Configuration extends ComparableStructure<String> {
       _defaultInboundAction = defaultInboundAction;
    }
 
+   public void setDnsServers(NavigableSet<String> dnsServers) {
+      _dnsServers = dnsServers;
+   }
+
    public void setDomainName(String domainName) {
       _domainName = domainName;
    }
@@ -482,6 +521,14 @@ public final class Configuration extends ComparableStructure<String> {
       _ipsecVpns = ipsecVpns;
    }
 
+   public void setLoggingServers(NavigableSet<String> loggingServers) {
+      _loggingServers = loggingServers;
+   }
+
+   public void setNtpServers(NavigableSet<String> ntpServers) {
+      _ntpServers = ntpServers;
+   }
+
    public void setRoles(RoleSet roles) {
       _roles = roles;
    }
@@ -501,6 +548,14 @@ public final class Configuration extends ComparableStructure<String> {
    public void setRoutingPolicies(
          NavigableMap<String, RoutingPolicy> routingPolicies) {
       _routingPolicies = routingPolicies;
+   }
+
+   public void setSnmpTrapServers(NavigableSet<String> snmpTrapServers) {
+      _snmpTrapServers = snmpTrapServers;
+   }
+
+   public void setTacacsServers(NavigableSet<String> tacacsServers) {
+      _tacacsServers = tacacsServers;
    }
 
    public void setVendorFamily(VendorFamily vendorFamily) {

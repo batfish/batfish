@@ -11,6 +11,10 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     */
    private static final long serialVersionUID = 1L;
 
+   public BgpRib(VirtualRouter owner) {
+      super(owner);
+   }
+
    @Override
    public int comparePreference(BgpRoute lhs, BgpRoute rhs) {
       // first compare local preference

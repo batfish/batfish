@@ -4,6 +4,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
    public static class Builder extends AbstractRouteBuilder<OspfExternalRoute> {
 
+      private String _advertiser;
+
       private Integer _costToAdvertiser;
 
       private OspfMetricType _ospfMetricType;
@@ -14,21 +16,33 @@ public abstract class OspfExternalRoute extends OspfRoute {
          OspfExternalRoute route;
          if (protocol == RoutingProtocol.OSPF_E1) {
             route = new OspfExternalType1Route(_network, _nextHopIp, _admin,
-                  _metric);
+                  _metric, _advertiser);
          }
          else {
             route = new OspfExternalType2Route(_network, _nextHopIp, _admin,
-                  _metric, _costToAdvertiser);
+                  _metric, _costToAdvertiser, _advertiser);
          }
          return route;
+      }
+
+      public String getAdvertiser() {
+         return _advertiser;
+      }
+
+      public Integer getCostToAdvertiser() {
+         return _costToAdvertiser;
       }
 
       public OspfMetricType getOspfMetricType() {
          return _ospfMetricType;
       }
 
+      public void setAdvertiser(String advertiser) {
+         _advertiser = advertiser;
+      }
+
       public void setCostToAdvertiser(int costToAdvertiser) {
-         _costToAdvertiser = 0;
+         _costToAdvertiser = costToAdvertiser;
       }
 
       public void setOspfMetricType(OspfMetricType ospfMetricType) {
@@ -42,11 +56,14 @@ public abstract class OspfExternalRoute extends OspfRoute {
     */
    private static final long serialVersionUID = 1L;
 
+   private final String _advertiser;
+
    private final OspfMetricType _ospfMetricType;
 
    public OspfExternalRoute(Prefix prefix, Ip nextHopIp, int admin, int metric,
-         OspfMetricType ospfMetricType) {
+         OspfMetricType ospfMetricType, String advertiser) {
       super(prefix, nextHopIp, admin, metric);
+      _advertiser = advertiser;
       _ospfMetricType = ospfMetricType;
    }
 
@@ -77,6 +94,10 @@ public abstract class OspfExternalRoute extends OspfRoute {
          return false;
       }
       return true;
+   }
+
+   public String getAdvertiser() {
+      return _advertiser;
    }
 
    @Override
