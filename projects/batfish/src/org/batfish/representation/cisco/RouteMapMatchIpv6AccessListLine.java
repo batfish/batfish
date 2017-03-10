@@ -18,12 +18,16 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<String> _listNames;
+   private final Set<String> _listNames;
 
    private boolean _routing;
 
-   public RouteMapMatchIpv6AccessListLine(Set<String> names) {
+   private final int _statementLine;
+
+   public RouteMapMatchIpv6AccessListLine(Set<String> names,
+         int statementLine) {
       _listNames = names;
+      _statementLine = statementLine;
    }
 
    public Set<String> getListNames() {
@@ -56,8 +60,9 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
             list = ipAccessList;
          }
          if (list == null) {
-            cc.undefined("Reference to undefined ipv6 access-list: " + listName,
-                  CiscoConfiguration.IPV6_ACCESS_LIST, listName);
+            cc.undefined(CiscoStructureType.IPV6_ACCESS_LIST, listName,
+                  CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
+                  _statementLine);
          }
          else {
             String msg = "route-map match ipv6 access-list line";

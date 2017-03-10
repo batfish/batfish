@@ -15,10 +15,13 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<String> _listNames;
+   private final Set<String> _listNames;
 
-   public RouteMapMatchCommunityListLine(Set<String> names) {
+   private final int _statementLine;
+
+   public RouteMapMatchCommunityListLine(Set<String> names, int statementLine) {
       _listNames = names;
+      _statementLine = statementLine;
    }
 
    public Set<String> getListNames() {
@@ -48,8 +51,9 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
                   .add(new MatchCommunitySet(new NamedCommunitySet(listName)));
          }
          else {
-            cc.undefined("Reference to undefined community-list: " + listName,
-                  CiscoConfiguration.COMMUNITY_LIST, listName);
+            cc.undefined(CiscoStructureType.COMMUNITY_LIST, listName,
+                  CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
+                  _statementLine);
          }
       }
       return d.simplify();

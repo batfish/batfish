@@ -18,12 +18,16 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<String> _listNames;
+   private final Set<String> _listNames;
 
    private boolean _routing;
 
-   public RouteMapMatchIpAccessListLine(Set<String> names) {
-      _listNames = names;
+   private final int _statementLine;
+
+   public RouteMapMatchIpAccessListLine(Set<String> listNames,
+         int statementLine) {
+      _listNames = listNames;
+      _statementLine = statementLine;
    }
 
    public Set<String> getListNames() {
@@ -56,8 +60,9 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
             list = ipAccessList;
          }
          if (list == null) {
-            cc.undefined("Reference to undefined ip access-list: " + listName,
-                  CiscoConfiguration.IP_ACCESS_LIST, listName);
+            cc.undefined(CiscoStructureType.IP_ACCESS_LIST, listName,
+                  CiscoStructureUsage.ROUTE_MAP_MATCH_IP_ACCESS_LIST,
+                  _statementLine);
          }
          else {
             String msg = "route-map match ip access-list line";

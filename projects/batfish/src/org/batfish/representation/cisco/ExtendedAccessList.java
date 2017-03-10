@@ -9,17 +9,24 @@ public class ExtendedAccessList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private List<ExtendedAccessListLine> _lines;
 
    private StandardAccessList _parent;
 
-   public ExtendedAccessList(String id) {
+   public ExtendedAccessList(String id, int definitionLine) {
       super(id);
+      _definitionLine = definitionLine;
       _lines = new ArrayList<>();
    }
 
    public void addLine(ExtendedAccessListLine all) {
       _lines.add(all);
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public List<ExtendedAccessListLine> getLines() {

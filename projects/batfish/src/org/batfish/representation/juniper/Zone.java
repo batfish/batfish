@@ -32,7 +32,7 @@ public final class Zone extends ComparableStructure<String> {
       super(name);
       _addressBook = new AddressBook(name, globalAddressBooks);
       _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name,
-            Family.INET);
+            Family.INET, -1);
       _inboundInterfaceFilters = new TreeMap<>();
       _interfaces = new TreeSet<>();
       _toZonePolicies = new TreeMap<>();

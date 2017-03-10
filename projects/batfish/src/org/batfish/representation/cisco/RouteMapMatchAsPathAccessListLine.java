@@ -14,10 +14,14 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
 
    private static final long serialVersionUID = 1L;
 
-   private Set<String> _listNames;
+   private final Set<String> _listNames;
 
-   public RouteMapMatchAsPathAccessListLine(Set<String> names) {
+   private final int _statementLine;
+
+   public RouteMapMatchAsPathAccessListLine(Set<String> names,
+         int statementLine) {
       _listNames = names;
+      _statementLine = statementLine;
    }
 
    public Set<String> getListNames() {
@@ -37,9 +41,9 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
             disjuncts.add(new MatchAsPath(new NamedAsPathSet(listName)));
          }
          else {
-            cc.undefined(
-                  "Reference to undefined ip as-path access-list: " + listName,
-                  CiscoConfiguration.AS_PATH_ACCESS_LIST, listName);
+            cc.undefined(CiscoStructureType.AS_PATH_ACCESS_LIST, listName,
+                  CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST,
+                  _statementLine);
          }
       }
       return d.simplify();

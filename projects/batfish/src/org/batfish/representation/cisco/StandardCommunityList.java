@@ -10,11 +10,18 @@ public final class StandardCommunityList extends ComparableStructure<String> {
 
    private static final long serialVersionUID = 1L;
 
+   private final int _definitionLine;
+
    private final List<StandardCommunityListLine> _lines;
 
-   public StandardCommunityList(String name) {
+   public StandardCommunityList(String name, int definitionLine) {
       super(name);
+      _definitionLine = definitionLine;
       _lines = new ArrayList<>();
+   }
+
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public List<StandardCommunityListLine> getLines() {
@@ -22,7 +29,8 @@ public final class StandardCommunityList extends ComparableStructure<String> {
    }
 
    public ExpandedCommunityList toExpandedCommunityList() {
-      ExpandedCommunityList newList = new ExpandedCommunityList(_key);
+      ExpandedCommunityList newList = new ExpandedCommunityList(_key,
+            _definitionLine);
       for (StandardCommunityListLine line : _lines) {
          List<Long> standardCommunities = line.getCommunities();
          String regex;

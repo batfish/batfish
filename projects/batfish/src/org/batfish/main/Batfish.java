@@ -1512,12 +1512,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       return configurations;
    }
 
-   @Override
-   public ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement() {
-      return deserializeObject(_testrigSettings.getConvertAnswerPath(),
-            ConvertConfigurationAnswerElement.class);
-   }
-
    public DataPlanePlugin getDataPlanePlugin() {
       return _dataPlanePlugin;
    }
@@ -1691,6 +1685,13 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
 
    public boolean getTerminatedWithException() {
       return _terminatedWithException;
+   }
+
+   @Override
+   public Directory getTestrigFileTree() {
+      Path trPath = _testrigSettings.getTestRigPath();
+      Directory dir = new Directory(trPath);
+      return dir;
    }
 
    public String getTestrigName() {
@@ -1902,7 +1903,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       checkConfigurations();
       InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
       ParseVendorConfigurationAnswerElement parseAnswer = getParseVendorConfigurationAnswerElement();
-      ConvertConfigurationAnswerElement convertAnswer = getConvertConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
       if (!summary) {
          SortedMap<String, org.batfish.common.Warnings> warnings = answerElement
                .getWarnings();
@@ -2213,7 +2214,7 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       Map<String, Configuration> configurations = _cachedConfigurations
             .get(_testrigSettings);
       if (configurations == null) {
-         ConvertConfigurationAnswerElement ccae = getConvertConfigurationAnswerElement();
+         ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement();
          if (!Version.isCompatibleVersion("Service",
                "Old processed configurations", ccae.getVersion())) {
             repairConfigurations();
@@ -2227,6 +2228,32 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
       processDeltaConfigurations(configurations);
       disableUnusableVpnInterfaces(configurations);
       return configurations;
+   }
+
+   @Override
+   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement() {
+      return loadConvertConfigurationAnswerElement(true);
+   }
+
+   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
+         boolean firstAttempt) {
+      ConvertConfigurationAnswerElement ccae = deserializeObject(
+            _testrigSettings.getConvertAnswerPath(),
+            ConvertConfigurationAnswerElement.class);
+      if (!Version.isCompatibleVersion("Service",
+            "Old processed configurations", ccae.getVersion())) {
+         if (firstAttempt) {
+            repairConfigurations();
+            return loadConvertConfigurationAnswerElement(false);
+         }
+         else {
+            throw new BatfishException(
+                  "Version error repairing configurations for convert configuration answer element");
+         }
+      }
+      else {
+         return ccae;
+      }
    }
 
    @Override
@@ -3739,13 +3766,6 @@ public class Batfish extends PluginConsumer implements AutoCloseable, IBatfish {
                + edge.getNode2() + ":" + edge.getInt2() + "\n");
       }
       printElapsedTime();
-   }
-
-   @Override
-   public Directory getTestrigFileTree() {
-      Path trPath = _testrigSettings.getTestRigPath();
-      Directory dir = new Directory(trPath);
-      return dir;
    }
 
 }

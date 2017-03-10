@@ -5904,21 +5904,25 @@
           ]
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "unusedStructures" : {
         "junos-srx-3" : {
-          "ike-gateway" : [
-            "gateway-1"
-          ],
-          "interface" : [
-            "st0.1"
-          ]
+          "ike gateway" : {
+            "gateway-1" : [
+              28
+            ]
+          },
+          "secure tunnel interface" : {
+            "st0.1" : [
+              59
+            ]
+          }
         }
       },
-      "version" : "0.8.1"
+      "version" : "0.9.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

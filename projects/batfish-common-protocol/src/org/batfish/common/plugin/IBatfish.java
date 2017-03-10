@@ -55,8 +55,6 @@ public interface IBatfish extends IPluginConsumer {
 
    Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
-   ConvertConfigurationAnswerElement getConvertConfigurationAnswerElement();
-
    String getDifferentialFlowTag();
 
    String getFlowTag();
@@ -87,6 +85,8 @@ public interface IBatfish extends IPluginConsumer {
    void initRoutes(Map<String, Configuration> configurations);
 
    Map<String, Configuration> loadConfigurations();
+
+   ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
 
    DataPlane loadDataPlane();
 

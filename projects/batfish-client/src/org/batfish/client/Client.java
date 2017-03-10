@@ -1608,7 +1608,7 @@ public class Client extends AbstractClient implements IClient {
             }
          }
          catch (Exception e) {
-            _logger.errorf("Exception in comparing test results: "
+            _logger.error("Exception in comparing test results: "
                   + ExceptionUtils.getStackTrace(e));
          }
       }

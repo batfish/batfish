@@ -37,7 +37,6 @@ import org.batfish.representation.vyos.RouteMapMatchPrefixList;
 import org.batfish.representation.vyos.RouteMapRule;
 import org.batfish.representation.vyos.StaticNextHopRoute;
 import org.batfish.representation.vyos.VyosConfiguration;
-import org.batfish.representation.vyos.VyosVendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
       implements ControlPlaneExtractor {
@@ -173,7 +172,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
    private final Set<String> _unimplementedFeatures;
 
-   private VyosVendorConfiguration _vendorConfiguration;
+   private VyosConfiguration _vendorConfiguration;
 
    private final Warnings _w;
 
@@ -208,7 +207,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    @Override
    public void enterFlat_vyos_configuration(
          Flat_vyos_configurationContext ctx) {
-      _vendorConfiguration = new VyosVendorConfiguration();
+      _vendorConfiguration = new VyosConfiguration();
       _configuration = _vendorConfiguration;
    }
 
@@ -612,7 +611,8 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
    public void exitRmmt_ip_address_prefix_list(
          Rmmt_ip_address_prefix_listContext ctx) {
       String name = ctx.name.getText();
-      RouteMapMatch match = new RouteMapMatchPrefixList(name);
+      int statementLine = ctx.name.getStart().getLine();
+      RouteMapMatch match = new RouteMapMatchPrefixList(name, statementLine);
       _currentRouteMapRule.getMatches().add(match);
    }
 

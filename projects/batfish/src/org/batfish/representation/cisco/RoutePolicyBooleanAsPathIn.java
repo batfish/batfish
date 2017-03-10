@@ -17,8 +17,11 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
 
    private final AsPathSetExpr _asExpr;
 
-   public RoutePolicyBooleanAsPathIn(AsPathSetExpr expr) {
+   private final int _expressionLine;
+
+   public RoutePolicyBooleanAsPathIn(AsPathSetExpr expr, int expressionLine) {
       _asExpr = expr;
+      _expressionLine = expressionLine;
    }
 
    public AsPathSetExpr getName() {
@@ -33,8 +36,8 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
          String name = named.getName();
          AsPathSet asPathSet = cc.getAsPathSets().get(name);
          if (asPathSet == null) {
-            cc.undefined("Reference to undefined as-path-set: " + name,
-                  CiscoConfiguration.AS_PATH_SET, name);
+            cc.undefined(CiscoStructureType.AS_PATH_SET, name,
+                  CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN, _expressionLine);
             return BooleanExprs.False.toStaticBooleanExpr();
          }
          else {

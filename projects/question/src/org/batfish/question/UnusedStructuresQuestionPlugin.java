@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -23,13 +22,13 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
    public static class UnusedStructuresAnswerElement implements AnswerElement {
 
-      private SortedMap<String, SortedMap<String, SortedSet<String>>> _unusedStructures;
+      private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> _unusedStructures;
 
       public UnusedStructuresAnswerElement() {
          _unusedStructures = new TreeMap<>();
       }
 
-      public SortedMap<String, SortedMap<String, SortedSet<String>>> getUnusedStructures() {
+      public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> getUnusedStructures() {
          return _unusedStructures;
       }
 
@@ -40,16 +39,17 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
             sb.append(node + ":\n");
             types.forEach((type, members) -> {
                sb.append("  " + type + ":\n");
-               for (String member : members) {
-                  sb.append("    " + member + "\n");
-               }
+               members.forEach((member, lines) -> {
+                  sb.append(
+                        "    " + member + " lines " + lines.toString() + "\n");
+               });
             });
          });
          return sb.toString();
       }
 
       public void setUnusedStructures(
-            SortedMap<String, SortedMap<String, SortedSet<String>>> undefinedReferences) {
+            SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> undefinedReferences) {
          _unusedStructures = undefinedReferences;
       }
    }
@@ -62,9 +62,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
       @Override
       public AnswerElement answer() {
-
          UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
-
          Pattern nodeRegex;
          try {
             nodeRegex = Pattern.compile(question.getNodeRegex());
@@ -75,20 +73,15 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                         + question.getNodeRegex() + "\"",
                   e);
          }
-
          _batfish.checkConfigurations();
          UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
          ConvertConfigurationAnswerElement ccae = _batfish
-               .getConvertConfigurationAnswerElement();
-         for (Entry<String, SortedMap<String, SortedSet<String>>> e : ccae
-               .getUnusedStructures().entrySet()) {
-            String hostname = e.getKey();
-            if (!nodeRegex.matcher(hostname).matches()) {
-               continue;
+               .loadConvertConfigurationAnswerElement();
+         ccae.getUnusedStructures().forEach((hostname, byType) -> {
+            if (nodeRegex.matcher(hostname).matches()) {
+               answerElement.getUnusedStructures().put(hostname, byType);
             }
-            SortedMap<String, SortedSet<String>> byType = e.getValue();
-            answerElement.getUnusedStructures().put(hostname, byType);
-         }
+         });
          return answerElement;
       }
 

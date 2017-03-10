@@ -11,10 +11,13 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
 
    private static final long serialVersionUID = 1L;
 
-   private String _name;
+   private final int _expressionLine;
 
-   public RoutePolicyPrefixSetName(String name) {
+   private final String _name;
+
+   public RoutePolicyPrefixSetName(String name, int expressionLine) {
       _name = name;
+      _expressionLine = expressionLine;
    }
 
    public String getName() {
@@ -28,8 +31,8 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
          return null;
       }
       else if (!cc.getPrefix6Lists().containsKey(_name)) {
-         cc.undefined("Reference to undefined ipv6 prefix-list: " + _name,
-               CiscoConfiguration.PREFIX6_LIST, _name);
+         cc.undefined(CiscoStructureType.PREFIX6_LIST, _name,
+               CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET, _expressionLine);
       }
       else {
          Prefix6List list = cc.getPrefix6Lists().get(_name);
@@ -46,8 +49,8 @@ public class RoutePolicyPrefixSetName extends RoutePolicyPrefixSet {
          return null;
       }
       else if (!cc.getPrefixLists().containsKey(_name)) {
-         cc.undefined("Reference to undefined ipv4 prefix-list: " + _name,
-               CiscoConfiguration.PREFIX_LIST, _name);
+         cc.undefined(CiscoStructureType.PREFIX_LIST, _name,
+               CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET, _expressionLine);
       }
       else {
          PrefixList list = cc.getPrefixLists().get(_name);

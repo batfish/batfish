@@ -1,0 +1,20 @@
+package org.batfish.representation.vyos;
+
+import org.batfish.representation.StructureUsage;
+
+public enum VyosStructureUsage implements StructureUsage {
+
+   ROUTE_MAP_MATCH_PREFIX_LIST("route-map match prefix-list");
+
+   private final String _description;
+
+   private VyosStructureUsage(String description) {
+      _description = description;
+   }
+
+   @Override
+   public String getDescription() {
+      return _description;
+   }
+
+}

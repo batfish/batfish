@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.batfish.datamodel.Ip;
 
@@ -28,11 +28,11 @@ public class BgpGroup implements Serializable {
 
    private Boolean _ebgpMultihop;
 
-   private final List<String> _exportPolicies;
+   private final Map<String, Integer> _exportPolicies;
 
    protected String _groupName;
 
-   private final List<String> _importPolicies;
+   private final Map<String, Integer> _importPolicies;
 
    protected transient boolean _inherited;
 
@@ -53,8 +53,8 @@ public class BgpGroup implements Serializable {
    private BgpGroupType _type;
 
    public BgpGroup() {
-      _exportPolicies = new ArrayList<>();
-      _importPolicies = new ArrayList<>();
+      _exportPolicies = new LinkedHashMap<>();
+      _importPolicies = new LinkedHashMap<>();
    }
 
    public final void cascadeInheritance() {
@@ -80,13 +80,13 @@ public class BgpGroup implements Serializable {
             _ebgpMultihop = _parent._ebgpMultihop;
          }
          if (_exportPolicies.size() == 0) {
-            _exportPolicies.addAll(_parent._exportPolicies);
+            _exportPolicies.putAll(_parent._exportPolicies);
          }
          if (_groupName == null) {
             _groupName = _parent._groupName;
          }
          if (_importPolicies.size() == 0) {
-            _importPolicies.addAll(_parent._importPolicies);
+            _importPolicies.putAll(_parent._importPolicies);
          }
          if (_localAs == null) {
             _localAs = _parent._localAs;
@@ -126,7 +126,7 @@ public class BgpGroup implements Serializable {
       return _ebgpMultihop;
    }
 
-   public final List<String> getExportPolicies() {
+   public final Map<String, Integer> getExportPolicies() {
       return _exportPolicies;
    }
 
@@ -134,7 +134,7 @@ public class BgpGroup implements Serializable {
       return _groupName;
    }
 
-   public final List<String> getImportPolicies() {
+   public final Map<String, Integer> getImportPolicies() {
       return _importPolicies;
    }
 

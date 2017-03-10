@@ -6,6 +6,7 @@ import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class IpsecProposal extends ComparableStructure<String> {
@@ -77,6 +78,8 @@ public class IpsecProposal extends ComparableStructure<String> {
 
    private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
 
+   private final int _definitionLine;
+
    private EncryptionAlgorithm _encryptionAlgorithm;
 
    private Integer _lifetimeKilobytes;
@@ -86,8 +89,14 @@ public class IpsecProposal extends ComparableStructure<String> {
    private IpsecProtocol _protocol;
 
    @JsonCreator
-   public IpsecProposal(@JsonProperty(NAME_VAR) String name) {
+   private IpsecProposal(@JsonProperty(NAME_VAR) String name) {
       super(name);
+      _definitionLine = -1;
+   }
+
+   public IpsecProposal(String name, int definitionLine) {
+      super(name);
+      _definitionLine = definitionLine;
    }
 
    public boolean compatibleWith(IpsecProposal rhs) {
@@ -98,6 +107,11 @@ public class IpsecProposal extends ComparableStructure<String> {
 
    public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
       return _authenticationAlgorithm;
+   }
+
+   @JsonIgnore
+   public int getDefinitionLine() {
+      return _definitionLine;
    }
 
    public EncryptionAlgorithm getEncryptionAlgorithm() {
