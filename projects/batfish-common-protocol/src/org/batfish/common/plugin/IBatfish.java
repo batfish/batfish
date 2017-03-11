@@ -63,8 +63,6 @@ public interface IBatfish extends IPluginConsumer {
 
    FlowHistory getHistory();
 
-   ParseVendorConfigurationAnswerElement getParseVendorConfigurationAnswerElement();
-
    Directory getTestrigFileTree();
 
    void initBgpAdvertisements(Map<String, Configuration> configurations);
@@ -89,6 +87,8 @@ public interface IBatfish extends IPluginConsumer {
    ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
 
    DataPlane loadDataPlane();
+
+   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
    AnswerElement multipath(HeaderSpace headerSpace);
 

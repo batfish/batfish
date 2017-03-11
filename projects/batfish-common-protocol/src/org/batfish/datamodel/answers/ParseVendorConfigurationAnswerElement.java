@@ -16,6 +16,8 @@ public class ParseVendorConfigurationAnswerElement
     */
    private static final long serialVersionUID = 1L;
 
+   private SortedMap<String, String> _fileMap;
+
    private SortedMap<String, ParseStatus> _parseStatus;
 
    private SortedMap<String, ParseTreeSentences> _parseTrees;
@@ -25,6 +27,7 @@ public class ParseVendorConfigurationAnswerElement
    private SortedMap<String, Warnings> _warnings;
 
    public ParseVendorConfigurationAnswerElement() {
+      _fileMap = new TreeMap<>();
       _parseStatus = new TreeMap<>();
       _parseTrees = new TreeMap<>();
       _warnings = new TreeMap<>();
@@ -35,6 +38,10 @@ public class ParseVendorConfigurationAnswerElement
          _warnings.put(name, new Warnings());
       }
       _warnings.get(name).getRedFlagWarnings().add(warning);
+   }
+
+   public SortedMap<String, String> getFileMap() {
+      return _fileMap;
    }
 
    public SortedMap<String, ParseStatus> getParseStatus() {
@@ -82,6 +89,10 @@ public class ParseVendorConfigurationAnswerElement
       }
 
       return retString.toString();
+   }
+
+   public void setFileMap(SortedMap<String, String> fileMap) {
+      _fileMap = fileMap;
    }
 
    public void setParseStatus(SortedMap<String, ParseStatus> parseStatus) {

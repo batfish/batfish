@@ -92,6 +92,8 @@ public class ParseVendorConfigurationResult extends
             }
             else {
                answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+               answerElement.getFileMap().put(hostname,
+                     _file.getFileName().toString());
             }
          }
       }

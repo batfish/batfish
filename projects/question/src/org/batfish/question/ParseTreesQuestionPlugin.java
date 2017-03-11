@@ -62,7 +62,7 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
          _batfish.checkConfigurations();
          ParseTreesAnswerElement answerElement = new ParseTreesAnswerElement();
          ParseVendorConfigurationAnswerElement parseAnswer = _batfish
-               .getParseVendorConfigurationAnswerElement();
+               .loadParseVendorConfigurationAnswerElement();
          answerElement._parseTrees = parseAnswer.getParseTrees();
          return answerElement;
       }

@@ -10,8 +10,10 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.Problem;
+import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -21,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
    public static class UndefinedReferencesAnswerElement
-         implements AnswerElement {
+         extends ProblemsAnswerElement {
 
       private SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>> _undefinedReferences;
 
@@ -66,7 +68,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       }
 
       @Override
-      public AnswerElement answer() {
+      public UndefinedReferencesAnswerElement answer() {
          UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
          Pattern nodeRegex;
          try {
@@ -85,6 +87,34 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
          ccae.getUndefinedReferences().forEach((hostname, byType) -> {
             if (nodeRegex.matcher(hostname).matches()) {
                answerElement.getUndefinedReferences().put(hostname, byType);
+            }
+         });
+         ParseVendorConfigurationAnswerElement pvcae = _batfish
+               .loadParseVendorConfigurationAnswerElement();
+         SortedMap<String, String> hostnameFilenameMap = pvcae.getFileMap();
+         answerElement.getUndefinedReferences().forEach((hostname, byType) -> {
+            String filename = hostnameFilenameMap.get(hostname);
+            if (filename != null) {
+               byType.forEach((type, byName) -> {
+                  byName.forEach((name, byUsage) -> {
+                     byUsage.forEach((usage, lines) -> {
+                        String problemShort = "undefined:" + type + ":usage:"
+                              + usage + ":" + name;
+                        Problem problem = answerElement.getProblems()
+                              .get(problemShort);
+                        if (problem == null) {
+                           problem = new Problem();
+                           String problemLong = "Undefined reference to structure of type: '"
+                                 + type + "' with usage: '" + usage
+                                 + "' named '" + name + "'";
+                           problem.setDescription(problemLong);
+                           answerElement.getProblems().put(problemShort,
+                                 problem);
+                        }
+                        problem.getFiles().put(filename, lines);
+                     });
+                  });
+               });
             }
          });
          return answerElement;

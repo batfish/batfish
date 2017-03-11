@@ -2,6 +2,14 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "D1" : "D1.cfg",
+        "D2" : "D2.cfg",
+        "R" : "R.cfg",
+        "S" : "S.cfg",
+        "SL" : "SL.cfg",
+        "SR" : "SR.cfg"
+      },
       "parseStatus" : {
         "D1" : "PASSED",
         "D2" : "PASSED",

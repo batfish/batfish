@@ -2,6 +2,11 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "n1" : "n1",
+        "n2" : "n2",
+        "n3" : "n3"
+      },
       "parseStatus" : {
         "n1" : "PASSED",
         "n2" : "PASSED",
